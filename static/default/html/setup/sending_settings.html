@@ -23,20 +23,21 @@
       <span id="validation-port">
         <label class="validation-message">{{_("Port")}}</label>
         <select id="route-add-port">
-          <option value="587">587</option>
-          <option value="465">465</option>
-          <option value="25">25</option>
+          <option value="587" <% if (port === 587) { %>selected<% } %>>587</option>
+          <option value="465" <% if (port === 465) { %>selected<% } %>>465</option>
+          <option value="25" <% if (port === 25) { %>selected<% } %>>25</option>
           <option value="other">{{_("Other")}}</option>
         </select>
         <span class="hide">
-          <input id="setup-route-port" type="text" name="port" value="<%= port %>">
+          <input id="input-setup-sending-port" type="text" name="port" value="<%= port %>">
+          <label class="validation-message">{{_("Protocol")}}</label>
+          <input id="input-setup-sending-protocol" type="text" name="protocol" value="<%= protocol %>">
         </span>
       </span>
       <div id="setup-sending-check-auth">
         <a href="#" id="btn-setup-sending-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Route")}}</a>
       </div>
     </fieldset>
-    <input type="hidden" name="protocol" value="<%= protocol %>">
     <input type="hidden" name="_section" value="routes.<%= id %>">
     <input type="hidden" id="input-sending-complete" value="<%= complete %>">
     <div class="clearfix">

@@ -99,9 +99,14 @@ var SendingView = Backbone.View.extend({
     var port = $(e.target).val();
     if (port === 'other') {
       $(e.target).hide();
-      $('#setup-route-port').parent('span').fadeIn();
+      $('#input-setup-sending-port').parent('span').fadeIn();
+      $('#input-setup-sending-protocol').val('smtp');
+    } else if (port == 465) {
+      $('#input-setup-sending-port').val(port);
+      $('#input-setup-sending-protocol').val('smtpssl');
     } else {
-      $('#setup-route-port').val(port);
+      $('#input-setup-sending-protocol').val('smtp');
+      $('#input-setup-sending-port').val(port);
     }
   },
   actionCheckAuth: function(e) {
