@@ -265,6 +265,8 @@ class OldPostingList(object):
 
     @classmethod
     def _Optimize(cls, session, idx, force=False):
+        return  # Disabled, this is incompatible with new posting lists!
+
         postinglist_kb = session.config.sys.postinglist_kb
 
         # Pass 1: Compact all files that are 90% or more of our target size
