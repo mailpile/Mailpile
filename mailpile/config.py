@@ -1727,8 +1727,8 @@ class ConfigManager(ConfigDict):
             return d
 
     def clean_tempfile_dir(self):
-        td = self.tempfile_dir()
         try:
+            td = self.tempfile_dir()
             files = os.listdir(td)
             random.shuffle(files)
             for fn in files:
