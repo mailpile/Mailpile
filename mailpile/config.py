@@ -1060,13 +1060,44 @@ class ConfigManager(ConfigDict):
     the settings themselves, as well as global objects like the index and
     references to any background worker threads.
     """
-    DEFAULT_WORKDIR = os.environ.get('MAILPILE_HOME',
-                                     os.path.expanduser('~/.mailpile'))
+    @classmethod
+    def DEFAULT_WORKDIR(self):
+        # The Mailpile environment variable trumps everything
+        workdir = os.getenv('MAILPILE_HOME')
+        if workdir:
+            return workdir
+
+        # Backwards compatibility: If the old ~/.mailpile exists, use it.
+        workdir = os.path.expanduser('~/.mailpile')
+        if os.path.exists(workdir) and os.path.isdir(workdir):
+            return workdir
+
+        # FIXME: the logic below should be rewritten to use the appdirs
+        #        python packages, as per issue #870
+
+        basedir = None
+        if 'win' in sys.platform:
+            # Obey Windows conventions (more or less?)
+            basedir = os.getenv('APPDATA', os.path.expanduser('~'))
+
+        elif 'darwin' in sys.platform:
+            # Obey Mac OS X conventions
+            basedir = os.path.expanduser('~/Library/Application Support')
+
+        else:
+            # Assume other platforms are Unixy
+            basedir = os.getenv('XDG_DATA_HOME',
+                                os.path.expanduser('~/.local/share'))
+
+        if basedir:
+            return os.path.join(basedir, 'Mailpile')
+        else:
+            return os.path.expanduser('~/.mailpile')
 
     def __init__(self, workdir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
-        self.workdir = workdir or self.DEFAULT_WORKDIR
+        self.workdir = workdir or self.DEFAULT_WORKDIR()
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
@@ -1111,7 +1142,7 @@ class ConfigManager(ConfigDict):
         if not os.path.exists(self.workdir):
             if session:
                 session.ui.notify(_('Creating: %s') % self.workdir)
-            os.mkdir(self.workdir)
+            os.makedirs(self.workdir, mode=0700)
 
     def parse_config(self, session, data, source='internal'):
         """
