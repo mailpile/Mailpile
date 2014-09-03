@@ -66,15 +66,24 @@ var SendingView = Backbone.View.extend({
     this.$el.html(_.template($("#template-setup-sending").html()));
 
     // Load Data & Add to Collection
-    Mailpile.API.settings_get({ var: 'routes' }, function(result) {
+    Mailpile.API.setup_profiles_get({}, function(result) {
 
       if (_.isEmpty(result.result.routes)) {
         Backbone.history.navigate('#sending/add', true);
       }
 
-      _.each(result.result.routes, function(val, key) {
-        if (val.name && val.host) {
-          var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
+      var profile_routes = {};
+      _.each(result.result.profiles, function(profile, profile_id) {
+        if (_.has(profile_routes, profile.route_id)) {
+          profile_routes[profile.route_id]++;
+        } else {
+          profile_routes[profile.route_id] = 1;
+        }
+      });
+
+      _.each(result.result.routes, function(route, route_id) {
+        if (route.name && route.host) {
+          var sending = new SendingModel(_.extend({id: route_id, action: 'Edit', used_by: profile_routes[route_id] }, route));
           SourcesCollection.add(sending);
           $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
         }
