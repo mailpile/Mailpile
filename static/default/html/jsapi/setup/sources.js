@@ -145,8 +145,8 @@ var SourcesView = Backbone.View.extend({
 
     // Has Unconfigured Mailboxes (action)
     if (event.data.have_unknown) {
-      $('#setup-setup-notice-' + event.data.id)
-        .html('<em>{{_("Source has unconfigured mailboxes")}}</em> <a href="/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
+      $('#setup-item-notice-' + event.data.id)
+        .html('{{_("Source has unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
         .fadeIn();
 
       $('#setup-sources-analyzing').hide();
@@ -199,14 +199,14 @@ var SourcesView = Backbone.View.extend({
     if (event.data.connection && event.data.connection.live && !event.data.connection.error[0]) {
       message = this.eventProcessing(event);
     }
+    else if (event.data.connection.error[0] == 'auth') {
+      message =  '{{_("Can not connect to server")}}';
+      $('#setup-item-notice-' + event.data.id)
+        .html(event.data.connection.error[1] + ' <a href="/setup/#sources/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Edit Now")}}</a>')
+        .fadeIn();
+    }
     else if (!event.data.connection.live && !event.data.connection.error[0]) {
       message = '{{_("Not connected to server")}}';
-    }
-    else if (!event.data.connection.live && event.data.connection.error[0] == 'auth') {
-      message =  '{{_("Can not connect to mailserver")}}';
-      $('#setup-source-notice-' + event.data.id)
-        .html('{{_("The username & password are incorrect")}} <a href="/setup/#sources/' + event.data.id + '">{{_("edit them now")}}</a>')
-        .fadeIn();
     }
     else if (!event.data.connection.live && event.data.connection.error[0]) {
       message = event.data.connection.error[1];
