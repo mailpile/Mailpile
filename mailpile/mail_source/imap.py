@@ -580,9 +580,13 @@ class ImapMailSource(BaseMailSource):
 
     def open_mailbox(self, mbx_id, mfn):
         if FormatMbxId(mbx_id) in self.my_config.mailbox:
-            proto_me, path = mfn.split('/', 1)
-            if proto_me.startswith('src:'):
-                return SharedImapMailbox(self.session, self, mailbox_path=path)
+            try:
+                proto_me, path = mfn.split('/', 1)
+                if proto_me.startswith('src:'):
+                    return SharedImapMailbox(self.session, self,
+                                             mailbox_path=path)
+            except ValueError:
+                pass
         return False
 
     def _has_mailbox_changed(self, mbx, state):
