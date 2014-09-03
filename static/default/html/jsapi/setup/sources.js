@@ -164,8 +164,8 @@ var SourcesView = Backbone.View.extend({
 
     // Is Copying
     if (event.data.copying) {
-      if (event.data.copying.running && event.data.copying.total) {
-        message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
+      if (event.data.copying && event.data.copying.total) {
+        message = '{{_("Downloading")}} ' + event.data.counters.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
       } else if (event.data.copying && event.data.copying.running) {
         message = '{{_("Found messages to download")}}';
       } else if (event.data.copying && event.data.copying.complete) {
