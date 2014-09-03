@@ -65,14 +65,17 @@ var PassphraseView = Backbone.View.extend({
 
       Mailpile.API.setup_crypto_post(passphrase_data, function(result) {
         if (result.status == 'success') {
-          $('#identity-vault-lock')
-            .find('.icon-lock-closed')
-            .removeClass('icon-lock-closed')
-            .addClass('icon-lock-open color-08-green bounce');
-
           if (result.result.creating_key) {
+            $('#identity-vault-lock')
+              .find('.icon-lock-closed')
+              .removeClass('icon-lock-closed')
+              .addClass('icon-key color-08-green bounce');
             $('#setup-passphrase-creating').fadeIn().removeClass('hide');
           } else {
+            $('#identity-vault-lock')
+              .find('.icon-lock-closed')
+              .removeClass('icon-lock-closed')
+              .addClass('icon-lock-open color-08-green bounce');
             $('#setup-crypto-chosen_key').html(Mailpile.nice_fingerprint(result.result.chosen_key));
             $('#setup-passphrase-authenticated').fadeIn();
           }
