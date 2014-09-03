@@ -19,21 +19,3 @@ Currently we are pulling binaries from the following locations:
 
 The files on www.mailpile.is either come from the other sources, or have
 been built by us using PIP under Windows.
-
-
-## The NSIS installer
-
-In order for the NSIS installer script to work, you need to add three things
-to this directory (the above step will take care of this for you):
-
-  - A folder called GnuPG, containing a standalone Windows build of
-    GnuPG >= 2.0.25.
-  - A folder called OpenSSL, containing a standalone Windows build of
-    OpenSSL >= 1.0.1h.
-  - A folder called Python27, containing a standalone Windows build of
-    Python >= 2.7.6 - including all the python modules Mailpile depends on.
-
-On top of that, you need to install NSIS (Nullsoft Installer System).
-
-Then run `makensis mailpile.nsi`.
-
