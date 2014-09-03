@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.crypto.gpgi import GPG_BINARY
 from mailpile.safe_popen import Popen, PIPE
 from mailpile.util import md5_hex, CryptoLock
 from mailpile.util import sha512b64 as genkey
@@ -658,7 +659,7 @@ class DecryptingStreamer(InputCoprocess):
         if self.state == self.STATE_RAW_DATA:
             return None
         elif self.state == self.STATE_PGP_DATA:
-            gpg = ["gpg", "--batch"]
+            gpg = [GPG_BINARY, "--batch"]
             if self.gpg_pass:
                 gpg.extend(["--no-use-agent", "--passphrase-fd=0"])
             return gpg

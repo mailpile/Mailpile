@@ -25,9 +25,8 @@ DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 GPG_BINARY = 'gpg'
-if sys.platform == "win32":
+if 'win' in sys.platform:
     GPG_BINARY = 'GnuPG\\gpg.exe'
-    print "On Windows, so switching binary path"
 BLOCKSIZE = 65536
 
 openpgp_trust = {"-": _("Trust not calculated"),
