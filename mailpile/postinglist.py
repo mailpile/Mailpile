@@ -515,8 +515,7 @@ class GlobalPostingList(OldPostingList):
     def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
         count = 0
         global GLOBAL_GPL
-        if (GLOBAL_GPL
-                and (not lazy or len(GLOBAL_GPL) > 40*1024)):
+        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 10240)):
             keys = sorted(GLOBAL_GPL.keys())
             pls = GlobalPostingList(session, '')
             for sig in keys:
