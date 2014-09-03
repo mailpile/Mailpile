@@ -1067,10 +1067,12 @@ class ConfigManager(ConfigDict):
         if workdir:
             return workdir
 
-        # Backwards compatibility: If the old ~/.mailpile exists, use it.
-        workdir = os.path.expanduser('~/.mailpile')
-        if os.path.exists(workdir) and os.path.isdir(workdir):
-            return workdir
+        profile = os.getenv('MAILPILE_PROFILE', 'default')
+        if profile == 'default':
+            # Backwards compatibility: If the old ~/.mailpile exists, use it.
+            workdir = os.path.expanduser('~/.mailpile')
+            if os.path.exists(workdir) and os.path.isdir(workdir):
+                return workdir
 
         # FIXME: the logic below should be rewritten to use the appdirs
         #        python packages, as per issue #870
@@ -1079,20 +1081,15 @@ class ConfigManager(ConfigDict):
         if 'win' in sys.platform:
             # Obey Windows conventions (more or less?)
             basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-
         elif 'darwin' in sys.platform:
             # Obey Mac OS X conventions
             basedir = os.path.expanduser('~/Library/Application Support')
-
         else:
             # Assume other platforms are Unixy
             basedir = os.getenv('XDG_DATA_HOME',
                                 os.path.expanduser('~/.local/share'))
 
-        if basedir:
-            return os.path.join(basedir, 'Mailpile')
-        else:
-            return os.path.expanduser('~/.mailpile')
+        return os.path.join(basedir, 'Mailpile', profile)
 
     def __init__(self, workdir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
