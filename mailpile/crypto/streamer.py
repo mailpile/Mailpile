@@ -255,7 +255,7 @@ class ChecksummingStreamer(OutputCoprocess):
                 self.fd.close()
                 self.md5filter.close()
                 self.tempfile.close()
-                os.remove(self.temppath)
+                safe_remove(self.temppath)
             except (IOError, OSError):
                 pass
             raise
@@ -292,9 +292,9 @@ class ChecksummingStreamer(OutputCoprocess):
         # 1st save just renames the tempfile
         if (not self.saved and
                 (('a' not in mode) or not exists)):
-            if exists:
-                os.remove(filename)
             try:
+                if exists:
+                    os.remove(filename)
                 os.rename(self.temppath, filename)
                 self.saved = True
                 return

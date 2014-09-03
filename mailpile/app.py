@@ -86,7 +86,7 @@ def Interact(session):
         if session.config.sys.history_length > 0:
             readline.write_history_file(session.config.history_file())
         else:
-            os.remove(session.config.history_file())
+            safe_remove(session.config.history_file())
     except OSError:
         pass
 
@@ -203,6 +203,9 @@ def Main(args):
 
         if session.interactive and config.sys.debug:
             session.ui.display_result(Action(session, 'ps', ''))
+
+        # Remove anything that we couldn't remove before
+        safe_remove()
 
 
 _plugins.register_commands(InteractCommand, WaitCommand)

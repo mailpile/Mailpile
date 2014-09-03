@@ -1033,7 +1033,7 @@ class VCardStore(dict):
                         raise
                     except ValueError:
                         if fn.startswith('tmp'):
-                            os.remove(os.path.join(self.vcard_dir, fn))
+                            safe_remove(os.path.join(self.vcard_dir, fn))
                     except:
                         if session:
                             if 'vcard' in self.config.sys.debug:
@@ -1085,10 +1085,7 @@ class VCardStore(dict):
     def del_vcards(self, *cards):
         for card in cards:
             self.deindex_vcard(card)
-            try:
-                os.remove(card.filename)
-            except (OSError, IOError):
-                pass
+            safe_remove(card.filename)
 
     def choose_from_address(vcards, *args, **kwargs):
         """

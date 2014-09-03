@@ -470,6 +470,27 @@ def decrypt_and_parse_lines(fd, parser, config,
             _parser([line])
 
 
+
+# This is a hack to deal with the fact that Windows sometimes won't
+# let us delete files right away because it thinks they are still open.
+# Any failed removal just gets queued up for later.
+#
+PENDING_REMOVAL = []
+PENDING_REMOVAL_LOCK = threading.Lock()
+
+def safe_remove(filename=None):
+    with PENDING_REMOVAL_LOCK:
+        if filename:
+            PENDING_REMOVAL.append(filename)
+        for fn in PENDING_REMOVAL[:]:
+            try:
+                os.remove(fn)
+                PENDING_REMOVAL.remove(fn)
+            except (OSError, IOError):
+                pass
+        return (filename and filename not in PENDING_REMOVAL)
+
+
 def backup_file(filename, backups=5, min_age_delta=0):
     if os.path.exists(filename):
         if os.stat(filename).st_mtime >= time.time() - min_age_delta:

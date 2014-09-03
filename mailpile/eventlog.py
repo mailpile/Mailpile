@@ -10,6 +10,7 @@ from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import EventRLock, EventLock, CleanText, json_helper
+from mailpile.util import safe_remove
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
@@ -369,6 +370,6 @@ class EventLog(object):
         keep = keep or self.KEEP_LOGS
         for lf in self._list_logfiles()[:-keep]:
             try:
-                os.remove(os.path.join(self.logdir, lf))
+                safe_remove(os.path.join(self.logdir, lf))
             except OSError:
                 pass

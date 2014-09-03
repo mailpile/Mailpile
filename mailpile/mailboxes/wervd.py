@@ -9,6 +9,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 from mailpile.crypto.streamer import *
+from mailpile.util import safe_remove
 
 
 class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
@@ -29,34 +30,18 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
 
-    # Note: This song and dance is thanks to Windows, which sometimes
-    #       refuses to remove a file if it is currently in use.
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
         fn = self._lookup(key)
         del self._toc[key]
-        if hasattr(self, '_removing'):
-            self._removing.append(fn)
-        else:
-            self._removing = [fn]
-        self._really_remove()
-
-    def _really_remove(self):
-        if not hasattr(self, '_removing'):
-            return
-        for fn in self._removing[:]:
-            try:
-                os.remove(os.path.join(self._path, fn))
-                self._removing.remove(fn)
-            except (OSError, IOError):
-                print 'POSTPONING REMOVAL OF %s' % fn
+        safe_remove(fn)
 
     def _refresh(self):
         mailbox.Maildir._refresh(self)
         # WERVD mail names don't have dots in them
         for t in [k for k in self._toc.keys() if '.' in k]:
             del self._toc[t]
-        self._really_remove()
+        safe_remove()  # Try to remove any postponed removals
 
     def _get_fd(self, key):
         fd = open(os.path.join(self._path, self._lookup(key)), 'rb')

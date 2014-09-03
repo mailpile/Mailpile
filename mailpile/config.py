@@ -1377,9 +1377,11 @@ class ConfigManager(ConfigDict):
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=900)
-        if sys.platform == "win32":
-            try: os.remove(self.conffile)
-            except WindowsError: pass
+        if 'win' in sys.platform:
+            try:
+                os.remove(self.conffile)
+            except WindowsError:
+                pass
         os.rename(newfile, self.conffile)
 
         with open(pubfile, 'wb') as fd:
@@ -1732,7 +1734,7 @@ class ConfigManager(ConfigDict):
             for fn in files:
                 fn = os.path.join(td, fn)
                 if os.path.isfile(fn):
-                    os.remove(fn)
+                    safe_remove(fn)
         except (OSError, IOError):
             pass
 
