@@ -52,6 +52,7 @@ cd "$WORKDIR/DMG/Mailpile.app/Contents/Resources/"
 rm -f Mailpile Mailpile-Brew
 cp -a "$WORKDIR/Mailpile" .
 tar xfz "$WORKDIR"/Mailpile-Brew.LATEST.tar.gz
+cp -f "Mailpile/packages/macosx/mp-in-terminal.sh" script
 
 echo '=== Clean up and slim down...'
 (cd Mailpile && make clean)
