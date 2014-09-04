@@ -70,7 +70,7 @@ rm -rf Mailpile-Brew/Cellar/python/*/Frameworks/*/*/Current/lib/*/test/
 
 echo -n '=== Generate our DMG: iso..'
 cd "$WORKDIR/DMG/"
-chmod -R ugo-w .
+chmod -R go-w .
 genisoimage -quiet -D -V 'Mailpile' -no-pad -r -apple -o ../DMG.iso .
 echo -n ' dmg..'
 cd "$WORKDIR/"
