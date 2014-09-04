@@ -3,9 +3,9 @@
 # This is necessary, since some version/configurations of Terminal will
 # change to a different CWD.  We record where we are now, in a place we
 # are sure to be able to find it later.
-mkdir -p '~/Library/Application Support/Mailpile'
-chmod 700 '~/Library/Application Support/Mailpile'
-pwd > '~/Library/Application Support/Mailpile/osx.pwd'
+mkdir -p "$HOME/Library/Application Support/Mailpile"
+chmod 700 "$HOME/Library/Application Support/Mailpile"
+pwd > "$HOME/Library/Application Support/Mailpile/osx.pwd"
 
 # This checks if Mailpile is already running and just opens a new browser
 # window/tab if it is...

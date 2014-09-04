@@ -1,6 +1,6 @@
 #!/bin/bash
-[ -e '~/Library/Application Support/Mailpile/osx.pwd' ] \
-    && cd "$(cat '~/Library/Application Support/Mailpile/osx.pwd')"
+[ -e "$HOME/Library/Application Support/Mailpile/osx.pwd" ] \
+    && cd $(cat "$HOME/Library/Application Support/Mailpile/osx.pwd")
 
 export MAILPILE_BREW_ROOT="$(pwd)/Mailpile-Brew"
 export MAILPILE_ROOT="$(pwd)/Mailpile"
