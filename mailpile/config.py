@@ -1078,10 +1078,10 @@ class ConfigManager(ConfigDict):
         #        python packages, as per issue #870
 
         basedir = None
-        if 'win' in sys.platform:
+        if sys.platform.startswith('win'):
             # Obey Windows conventions (more or less?)
             basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-        elif 'darwin' in sys.platform:
+        elif sys.platform.startswith('darwin'):
             # Obey Mac OS X conventions
             basedir = os.path.expanduser('~/Library/Application Support')
         else:
@@ -1377,7 +1377,7 @@ class ConfigManager(ConfigDict):
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=900)
-        if 'win' in sys.platform:
+        if sys.platform.startswith('win'):
             try:
                 os.remove(self.conffile)
             except WindowsError:

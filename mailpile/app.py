@@ -101,7 +101,7 @@ class InteractCommand(Command):
         session, config = self.session, self.session.config
 
         session.interactive = True
-        if sys.stdout.isatty() and sys.platform != "win32":
+        if sys.stdout.isatty() and sys.platform[:3] != "win":
             session.ui.term = ANSIColors()
 
         # Create and start the rest of the threads, load the index.

@@ -22,7 +22,7 @@ MD5_SUM_PLACEHOLDER = MD5_SUM_FORMAT % ('0' * LEN_MD5)
 MD5_SUM_RE = re.compile('(?m)^' + MD5_SUM_FORMAT % (r'[^\n]+',))
 
 OPENSSL_COMMAND = "openssl"
-if sys.platform == "win32":
+if sys.platform.startswith("win"):
     OPENSSL_COMMAND = 'OpenSSL\\bin\\openssl.exe'
 
 class IOFilter(threading.Thread):

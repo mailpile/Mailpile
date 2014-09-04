@@ -95,7 +95,7 @@ class Safe_Popen(Unsafe_Popen):
         #    1. Prevent file descriptor leaks from causing deadlocks
         #    2. Prevent signals from propagating
         #
-        if sys.platform == 'win32':
+        if sys.platform.startswith('win'):
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP  # 2.
             if (stdin is not None or
                     stdout is not None or

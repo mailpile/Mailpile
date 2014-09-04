@@ -19,7 +19,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     @classmethod
     def parse_path(cls, config, fn, create=False):
         if (((cls.supported_platform is None) or
-             (cls.supported_platform in sys.platform.lower())) and
+             (cls.supported_platform == sys.platform[:3].lower())) and
                 ((os.path.isdir(fn) and
                   os.path.exists(os.path.join(fn, 'cur')) and
                   os.path.exists(os.path.join(fn, 'wervd.ver'))) or

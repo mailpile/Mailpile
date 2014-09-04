@@ -25,7 +25,7 @@ DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 GPG_BINARY = 'gpg'
-if 'win' in sys.platform:
+if sys.platform.startswith('win'):
     GPG_BINARY = 'GnuPG\\gpg.exe'
 BLOCKSIZE = 65536
 
