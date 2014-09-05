@@ -113,9 +113,8 @@ $(document).ready(function() {
   $('.compose-choice-wrapper').qtip({
     content: {
       title: true,
-      text: function(event, api) {
-        var address = $(event.target).data('address');
-        var contact_data = _.findWhere(Mailpile.instance.search_addresses, {address: address});
+      text: function(e, api) {
+        var contact_data = _.findWhere(Mailpile.instance.addresses, {address: $(e.target).data('address')});
         return _.template($('#tooltip-contact-details').html(), contact_data);
       }
     },
@@ -127,23 +126,23 @@ $(document).ready(function() {
         width: 10,
         height: 10
       },
-      classes: 'qtip-thread-crypto'
+      classes: 'qtip-contact-details'
     },
     position: {
       my: 'bottom center',
-      at: 'top center',
+      at: 'bottom center',
 			viewport: $(window),
 			adjust: {
-				x: -5,  y: 0
+				x: 5,  y: -20
 			}
     },
     show: {
-      event: 'click',
+      event: 'mouseenter',
       delay: 100
     },
     hide: {
       event: false,
-      inactive: 800
+      inactive: 1200
     }
   });
 

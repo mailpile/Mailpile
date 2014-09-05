@@ -7,14 +7,24 @@
 </script>
 
 <script id="tooltip-contact-details" type="text/template">
-  <h3><a href="/contacts/view/<%= address %>/"><%= fn %></a></h3>
+  <div class="user clearfix half-bottom">
+    <% if (photo) { %>
+    <a class="avatar" href="/contacts/view/<%= address %>/"><img src="<%= photo %>"></a>
+    <% } else { %>
+    <a href="/contacts/view/<%= address %>/"><span class="icon-user"></span></a>
+    <% } %>
+    <div class="name">
+      <a href="/contacts/view/<%= address %>/"><%= fn %></a>
+      <span class="address"><%= address %></span>
+    </div>
+  </div>
+  <div class="text-center hide">
   <% if (flags.secure) { %>
-  <select class="compose-address-change-key">
     <% _.each(keys, function(key) { %>
-    <option><%= key.fingerprint %></option>
+    <%= key.fingerprint %>
     <% }); %>
-  </select>
   <% } else { %>
-  <a href="#" class="compose-contact-find-keys">{{_("Find Encryption Keys")}}</a>
+    <a href="#" class="compose-contact-find-keys"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a>
   <% } %>
+  </div>
 </script>
