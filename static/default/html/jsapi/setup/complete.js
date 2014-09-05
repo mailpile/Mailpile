@@ -19,6 +19,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Increasing entropy & scrambling bits")}}',
       '{{_("Patching bugs...")}}',
       '{{_("Indexing kittens...")}}',
+      '{{_("Indexing lovenotes")}}',
       '{{_("Reticulating Splines")}}',
       '{{_("Syntax error in line 45 of this e-mail")}}',
       '{{_("Shoveling more coal into the server")}}',
@@ -53,11 +54,11 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Remember getting your first email address? Remember how it felt like something private?")}}',
       '{{_("Email is a decentralized by design, this means no one company or government owns it!")}}',
       '{{_("Over 100 trillion emails are sent per year, wow!")}}',
-      '{{_("Email is most widely used direct communication protocol every created by humans")}}',
+      '{{_("Email is the most widely used communication protocol ever created by humans")}}',
       '{{_("Email is based on an open standard agreed upon by the entire world and owned by no one")}}'
     ],
     security: [
-      '{{_("BCC-ing NSA")}}',
+      '{{_("BCC-ing the NSA and GCHQ")}}',
       '{{_("Sending encrypted mail to Snowden")}}',
       '{{_("Decrypting an email from Snowden")}}',
       '{{_("The worlds most powerful governments are conducting mass dragnet surveillance")}}',
@@ -70,18 +71,18 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("The more encrypted email you send, the better!")}}',
       '{{_("Make sure you print or save your keys & passphrase somewhere securely")}}',
       '{{_("Mailpile by default encrypts your search index!")}}',
-      '{{_("The most common Email password is 123456, hopefully yours is different ;)")}}'
+      '{{_("The most common Email password is 123456, hopefully yours is different")}}'
     ],
     jokes: [
       '{{_("Good things come to those who wait")}}',
       '{{_("Make free software and be happy")}}',
-      '{{_("Most of Mailpile is made in Iceland, where much of the country believes in elves")}}',
-      '{{_("The founders of Mailpile met in a public hot tub in Reykjavík")}}',
+      '{{_("Most of Mailpile was built from cafes in Reykjavík, Iceland")}}'
+      '{{_("Many Icelanders believe in elves and magical hidden people")}}',
+      '{{_("The founders of Mailpile first met in a public hot tub in Reykjavík")}}',
       '{{_("We like volcanos, do you like volcanos?")}}',
       '{{_("A million hamsters are spinning their wheels right now")}}',
       '{{_("Tapping earth for more geothermal energy")}}',
       '{{_("Digging moat. Filing with alligators. Fortifying walls")}}',
-      '{{_("Indexing lovenotes")}}',
       '{{_("Crossing out swear words...")}}',
       '{{_("Compiling bullshit bingo grid...")}}',
       '{{_("Abandon all hope, ye who enter here")}}',
@@ -96,8 +97,8 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Estimating chance of astroid hitting Earth")}}',
       '{{_("Reading Terms of Service documents")}}',
       '{{_("Catching up on shows on Netflix")}}',
-      '{{_("Oh, you have some very interesting stuff there")}}',
-      '{{_("I think I better understand you better now")}}',
+      '{{_("Oh, you have some very interesting old emails")}}',
+      '{{_("I think I better understand you now")}}',
       '{{_("Your past is just a story you tell yourself")}}',
       '{{_("Checking emails for stolen Winklevoss ideas")}}',
       '{{_("Applying coupons...")}}',
@@ -140,7 +141,7 @@ var CompleteModel = Backbone.Model.extend({
     2: ['icon-trophy', 'icon-robot', 'icon-graph'],
     3: ['icon-message', 'icon-tag', 'icon-compose'],
     4: ['icon-privacy', 'icon-lock-closed', 'icon-key'],
-    5: ['icon-star', 'icon-lightbulb', 'icon-new']
+    5: ['icon-star', 'icon-lightbulb', 'icon-new', 'icon-donate']
   }
 });
 
