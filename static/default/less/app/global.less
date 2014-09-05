@@ -144,6 +144,18 @@
     margin: 30px 25px;
   }
 
+  div.content-small {
+    max-width: 400px;
+  }
+
+  div.content-medium {
+    max-width: 600px;
+  }
+
+  div.content-large {
+    max-width: 800px;
+  }
+
 
 /* Debug */
 
@@ -244,6 +256,9 @@
     width: 100%;
   }
 
+  label.checkbox {
+    margin-bottom: @base-margin;
+  } 
 
   ul.radio-list-items {
     background: @white;
@@ -374,17 +389,60 @@
   .rectangles-outer:hover{ background: @grayLight; }
 
 
-/* Contact Avatar + Name */
+/* User Card - Avatar, Name, Address */
 
-  .global-avatar {
+  .global-user-avatar {
     display: inline-block;
     width: 45px;
     margin-right: 10px;
   }
 
-  .global-avatar-img {
+  .global-user-avatar-img {
     width: 45px;
     border-radius: 3px;
+  }
+
+  .global-user-name(@width:120px) {
+    width: @width;
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .global-user-name-a(@size:14px) {
+    display: inline-block;
+    font-size: @size;
+    font-weight: bold;
+    word-break: break-word;
+    color: @grayDark;
+    vertical-align: top;
+    margin-bottom: 5px;
+  }
+
+  .global-user-address(@size:12px) {
+    display: inline-block;
+    color: @gray;
+    font-size: @size;
+    font-weight: normal;    
+  }
+
+  .user .avatar {
+    .global-user-avatar();
+  }
+
+  .user .avatar img {
+    .global-user-avatar-img();
+  }
+
+  .user .name {
+    .global-user-name();
+  }
+
+  .user .name a {
+    .global-user-name-a(16px);
+  }
+
+  .user .address {
+    .global-user-address(12px);
   }
 
 

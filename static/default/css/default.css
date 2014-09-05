@@ -5408,6 +5408,9 @@ label.radio-list-item .icon-key {
   border-radius: 4.5px;
 }
 /* Setup - Complete */
+#setup-complete-message {
+  line-height: 48px;
+}
 #setup-complete-icon {
   font-size: 100px;
   line-height: 100px;
@@ -5731,6 +5734,15 @@ div.content-normal {
   position: relative;
   margin: 30px 25px;
 }
+div.content-small {
+  max-width: 400px;
+}
+div.content-medium {
+  max-width: 600px;
+}
+div.content-large {
+  max-width: 800px;
+}
 /* Debug */
 #debug {
   width: 100%;
@@ -5812,6 +5824,9 @@ input[type="address"].input-full,
 textarea.input-full,
 select.input-full {
   width: 100%;
+}
+label.checkbox {
+  margin-bottom: 20px;
 }
 ul.radio-list-items {
   background: #ffffff;
@@ -5919,15 +5934,44 @@ table.background-white td {
 .rectangles-outer:hover {
   background: #f6f6f6;
 }
-/* Contact Avatar + Name */
-.global-avatar {
+/* User Card - Avatar, Name, Address */
+.global-user-avatar {
   display: inline-block;
   width: 45px;
   margin-right: 10px;
 }
-.global-avatar-img {
+.global-user-avatar-img {
   width: 45px;
   border-radius: 3px;
+}
+.user .avatar {
+  display: inline-block;
+  width: 45px;
+  margin-right: 10px;
+}
+.user .avatar img {
+  width: 45px;
+  border-radius: 3px;
+}
+.user .name {
+  width: 120px;
+  display: inline-block;
+  vertical-align: top;
+}
+.user .name a {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold;
+  word-break: break-word;
+  color: #4d4d4d;
+  vertical-align: top;
+  margin-bottom: 5px;
+}
+.user .address {
+  display: inline-block;
+  color: #b3b3b3;
+  font-size: 12px;
+  font-weight: normal;
 }
 /* Crypto */
 .vault-lock-outer {
@@ -7793,6 +7837,22 @@ a.modal-tag-color-option:hover {
 .qtip-thread-crypto .qtip-icon .ui-icon {
   background-color: #FBFBFB;
   color: #555;
+}
+/* Tooltips - Contact Details */
+.qtip-contact-details {
+  border: 1px solid #b3b3b3;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  background: #ffffff;
+  padding: 5px 10px 0px 10px;
+  -moz-box-shadow: 1px 1px 2px 0px #cccccc;
+  -webkit-box-shadow: 1px 1px 2px 0px #cccccc;
+  box-shadow: 1px 1px 2px 0px #cccccc;
+}
+.qtip-contact-details .qtip-content {
+  width: 220px;
+  margin-top: 5px;
 }
 /* =============== Tablet Style =============== */
 @media only screen and (max-width: 1024px) {
