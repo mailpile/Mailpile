@@ -44,7 +44,7 @@
       </p>
       <span id="validation-passphrase">
         <span class="validation-message"></span>
-        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
       </span>
       <span id="validation-passphrase_confirm">
         <label class="validation-message">{{_("Confirm your passphrase")}}</label>
@@ -61,7 +61,7 @@
         <li class="text-left">
         <label class="radio-list-item">
           <div class="radio text-right">
-            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key or setup_crypto.result.secret_keys|length == 1 %}checked{% endif %} tabindex="1">
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key or setup_crypto.result.secret_keys|length == 1 or loop.index == 1 %}checked{% endif %} tabindex="1">
           </div>
           <div class="icon text-center">
             <span class="icon-key"></span>
@@ -105,7 +105,7 @@
           {{_("Enter passphrase for the encryption you selected")}}
           {% endif %}
         </label>
-        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
+        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
       </span>
       <div id="setup-passphrase-existing-confirm">
         <span id="validation-passphrase_confirm">
