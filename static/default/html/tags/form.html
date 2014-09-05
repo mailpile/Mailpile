@@ -19,7 +19,12 @@
     <label>{{_("Slug")}}</label>
     <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
 
-    <div id="form-tag-details" class="{% if state.command_url == "/tags/add/" %}hide{% endif %}">
+    <div id="form-tag-details" class="content-medium {% if state.command_url == "/tags/add/" %}hide{% endif %}">
+
+      <label class="checkbox">
+        <input id="data-tag-label" type="checkbox" name="label" value="true" {% if tag.label %}checked{% endif %}> {{_("Show in search results")}}
+      </label>
+
       <label>{{_("Display")}}</label>
       <select name="display" id="data-tag-display">
         <option value="tag"{% if tag.display == "tag"%} selected="selected"{% endif %}>{{_("Tag")}}</option>
@@ -39,17 +44,19 @@
         {% endfor %}
       </select>
       {% endif %}
-  
+
       <label>{{_("Template")}}</label>
       <select name="template">
         <option value="default">{{_("Default")}}</option>
       </select>
 
       {% if tag.subtags %}
-      <h3>{{_("Subtags")}}</h3>
-      <ul>
+      <h3 class="add-top">{{_("Subtags")}}</h3>
+      <ul class="items grouped">
         {% for sub in tag.subtags %}
-        <li><span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} - <a href="/tags/edit.html?only={{sub.slug}}">{{_("edit")}}</a></li>
+        <li class="grouped">
+          <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} - <a href="/tags/edit.html?only={{sub.slug}}">{{_("Edit Tag")}}</a>
+        </li>
         {% endfor %}
       </ul>
       {% endif %}

@@ -177,6 +177,17 @@ $(document).on('change', '#data-tag-parent', function(e) {
 });
 
 
+/* Tag - Update Label */
+$(document).on('change', '#data-tag-label', function(e) {
+  var label = 'false';
+  if ($(this).is(':checked')) {
+    label = 'true';
+  }
+  Mailpile.tag_update($('#data-tag-tid').val(), 'label', label, function(response) {
+    Mailpile.notification(response);
+  });
+});
+
 $(document).ready(function() {
 
   // Slugify
