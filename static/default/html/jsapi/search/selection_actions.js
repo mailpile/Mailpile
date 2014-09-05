@@ -26,7 +26,7 @@ $(document).on('click', '.bulk-action-tag', function() {
 
 /* Search - Bulk Action - Archive */
 $(document).on('click', '.bulk-action-archive', function() {
-  Mailpile.API.tag_post({ del: 'inbox', mid: Mailpile.messages_cache}, function() {
+  Mailpile.API.tag_post({ del: 'inbox', mid: Mailpile.messages_cache}, function(result) {
 
     // Notifications
     Mailpile.notification(result);
@@ -46,8 +46,11 @@ $(document).on('click', '.bulk-action-archive', function() {
 
 
 /* Search - Bulk Action - Trash */
-$(document).on('click', '.bulk-action-trash', function() {
-  Mailpile.API.tag_post({ add: 'trash', del: 'new', mid: Mailpile.messages_cache}, function() {
+$(document).on('click', '.bulk-action-trash', function(result) {
+  Mailpile.API.tag_post({ add: 'trash', del: 'new', mid: Mailpile.messages_cache}, function(result) {
+
+    // Notifications
+    Mailpile.notification(result);
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
@@ -65,7 +68,10 @@ $(document).on('click', '.bulk-action-trash', function() {
 
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
-  Mailpile.API.tag_post({ add: 'spam', del: 'new', mid: Mailpile.messages_cache}, function() {
+  Mailpile.API.tag_post({ add: 'spam', del: 'new', mid: Mailpile.messages_cache}, function(result) {
+
+    // Notifications
+    Mailpile.notification(result);
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
