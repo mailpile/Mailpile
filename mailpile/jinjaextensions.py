@@ -765,6 +765,6 @@ class MailpileCommand(Extension):
 
     def _show_nagification(self, nag):
         now = long((time.time() + 0.5) * 1000)
-        if now > nag:
+        if now > nag and nag != -1:
             return True
         return False
