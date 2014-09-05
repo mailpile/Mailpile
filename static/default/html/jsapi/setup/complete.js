@@ -2,6 +2,7 @@
 var CompleteModel = Backbone.Model.extend({
   defaults: {
     copying: [
+      '{{_("Mail is being imported into your Mailpile")}}',
       '{{_("Dont look now, we are copying things")}}',
       '{{_("Copying your mail, please do not be alarmed!")}}',
       '{{_("Copying mail. This could take a while")}}',
@@ -55,7 +56,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Email is a decentralized by design, this means no one company or government owns it!")}}',
       '{{_("Over 100 trillion emails are sent per year, wow!")}}',
       '{{_("Email is the most widely used communication protocol ever created by humans")}}',
-      '{{_("Email is based on an open standard agreed upon by the entire world and owned by no one")}}'
+      '{{_("Email uses an open standard agreed upon by the entire world & owned by no one")}}'
     ],
     security: [
       '{{_("BCC-ing the NSA and GCHQ")}}',
@@ -76,7 +77,7 @@ var CompleteModel = Backbone.Model.extend({
     jokes: [
       '{{_("Good things come to those who wait")}}',
       '{{_("Make free software and be happy")}}',
-      '{{_("Most of Mailpile was built from cafes in Reykjavík, Iceland")}}'
+      '{{_("Most of Mailpile was built from cafes in Reykjavík, Iceland")}}',
       '{{_("Many Icelanders believe in elves and magical hidden people")}}',
       '{{_("The founders of Mailpile first met in a public hot tub in Reykjavík")}}',
       '{{_("We like volcanos, do you like volcanos?")}}',
@@ -139,7 +140,7 @@ var CompleteModel = Backbone.Model.extend({
     0: 'icon-like',
     1: 'icon-inbox',
     2: ['icon-trophy', 'icon-robot', 'icon-graph'],
-    3: ['icon-message', 'icon-tag', 'icon-compose'],
+    3: ['icon-message', 'icon-tag', 'icon-compose', 'icon-search'],
     4: ['icon-privacy', 'icon-lock-closed', 'icon-key'],
     5: ['icon-star', 'icon-lightbulb', 'icon-new', 'icon-donate']
   }
