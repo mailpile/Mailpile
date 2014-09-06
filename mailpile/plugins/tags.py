@@ -433,7 +433,8 @@ class AddTag(TagCommand):
                     tags[i][v] = vlist[i]
         if tags:
             config.tags.extend(tags)
-            self._reorder_all_tags()
+            if save:
+                self._reorder_all_tags()
             self.finish(save=save)
 
         return self._success(_('Added %d tags') % len(tags),
