@@ -105,7 +105,12 @@ Mailpile.compose_address_field = function(id) {
     formatSelection: function(state, elem) {
 
       // Add To Model
-      Mailpile.instance.search_addresses.push(state);
+      var contact_data = _.findWhere(Mailpile.instance.addresses, {address: state.address });
+      if (!contact_data) {
+        Mailpile.instance.addresses[Math.random().toString(16).substring(6)] = state;
+      } else {
+        state = contact_data;
+      }
 
       // Create HTML
       var avatar = '<span class="icon-user"></span>';
@@ -113,15 +118,17 @@ Mailpile.compose_address_field = function(id) {
       var secure = '<span class="icon-blank"></span>';
 
       if (state.photo) {
-        avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
+        avatar = '<img src="' + state.photo + '">';
       }
+
       if (!state.fn) {
         name = state.address;
       }
+
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed"></span>';
       }
-      return '<div class="compose-choice-wrapper" data-address="' + state.address + '">' + avatar + '<span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span></div>';
+      return '<span class="avatar">' + avatar + '</span> <span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span>';
     },
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
@@ -130,18 +137,20 @@ Mailpile.compose_address_field = function(id) {
   });
 
   /* Check encryption state */
-  $('#' + id).select2('data', Mailpile.compose_analyze_recipients($('#' + id).val()));
+  $('#'+id).select2('data', Mailpile.compose_analyze_recipients($('#' + id).val()));
 
   /* On select update encryption state */
-  $('#' + id).on('select2-selecting', function(e) {
-      var status = Mailpile.compose_determine_encryption(mid, e.val);
-      Mailpile.compose_render_encryption(status);
-    }).on('select2-removed', function(e) {
+  $('#'+id).on('select2-selecting', function(e) {
+    var status = Mailpile.compose_determine_encryption(mid, e.val);
+    Mailpile.compose_render_encryption(status);
+    Mailpile.tooltip_compose_contact_details();
+  });
+
+  $('#'+id).on('select2-removed', function(e) {
       var status = Mailpile.compose_determine_encryption(mid, false);
       Mailpile.compose_render_encryption(status);
   });
 };
-
 
 $(document).on('click', '.compose-contact-find-keys', function() {
   var address = $(this).data('address');

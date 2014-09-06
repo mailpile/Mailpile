@@ -103,19 +103,19 @@ Mailpile.tooltip_compose_crypto_encryption = function() {
 };
 
 
-$(document).ready(function() {
-
-  // Show Crypto Tooltips
-  Mailpile.tooltip_compose_crypto_signature();
-  Mailpile.tooltip_compose_crypto_encryption();
 
 
-  $('.compose-choice-wrapper').qtip({
+Mailpile.tooltip_compose_contact_details = function() {
+  $('.select2-search-choice').qtip({
     content: {
       title: true,
       text: function(e, api) {
-        var contact_data = _.findWhere(Mailpile.instance.addresses, {address: $(e.target).data('address')});
-        return _.template($('#tooltip-contact-details').html(), contact_data);
+        if ($(e.target).html()) {
+          var contact_data = _.findWhere(Mailpile.instance.addresses, {address: $(e.target).find('.compose-choice-name').data('address')});
+          if (contact_data) {
+            return _.template($('#tooltip-contact-details').html(), contact_data);
+          }
+        }
       }
     },
     style: {
@@ -133,17 +133,26 @@ $(document).ready(function() {
       at: 'bottom center',
 			viewport: $(window),
 			adjust: {
-				x: 5,  y: -20
+				x: 5,  y: -2
 			}
     },
     show: {
       event: 'mouseenter',
-      delay: 100
+      delay: 50
     },
     hide: {
-      event: false,
-      inactive: 1200
+      event: true,
+      inactive: 750
     }
   });
+};
+
+
+$(document).ready(function() {
+
+  // Show Crypto Tooltips
+  Mailpile.tooltip_compose_crypto_signature();
+  Mailpile.tooltip_compose_crypto_encryption();
+  Mailpile.tooltip_compose_contact_details();
 
 });

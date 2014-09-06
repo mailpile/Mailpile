@@ -9,12 +9,12 @@
 <script id="tooltip-contact-details" type="text/template">
   <div class="user clearfix half-bottom">
     <% if (photo) { %>
-    <a class="avatar" href="/contacts/view/<%= address %>/"><img src="<%= photo %>"></a>
+    <a class="avatar" href="/contacts/view/<%= address %>/" target="_blank"><img src="<%= photo %>"></a>
     <% } else { %>
-    <a href="/contacts/view/<%= address %>/"><span class="icon-user"></span></a>
+    <a href="/contacts/view/<%= address %>/" target="_blank"><span class="icon-user"></span></a>
     <% } %>
     <div class="name">
-      <a href="/contacts/view/<%= address %>/"><%= fn %></a>
+      <a href="/contacts/view/<%= address %>/" target="_blank"><%= fn %></a>
       <span class="address"><%= address %></span>
     </div>
   </div>
