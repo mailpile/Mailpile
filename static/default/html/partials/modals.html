@@ -51,6 +51,15 @@
 </script>
 
 
+<!-- Modal - Tag Picker -->
+<script id="template-modal-tag-picker-item" type="text/template">
+  <tr class="modal-tag-picker-item <%= display %>" data-tid="<%= tid %>">
+    <td class="tag text-left color-<%= label_color %>"><span class="<%= icon %>"></span> <span class="text"><%= name %></span></td>
+    <td class="selection text-right">0 Selected</td>
+    <td class="checkbox text-center"><input type="checkbox" value="<%= tid %>"></td>
+  </tr>
+</script>
+
 <script id="modal-tag-picker" type="text/template">
   <div class="modal-dialog">
   <form id="form-tag-picker">
