@@ -1734,19 +1734,25 @@ class ConfigPrint(Command):
     SYNOPSIS = ('P', 'print', 'settings', '[-short] <var>')
     ORDER = ('Config', 3)
     CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = False
+
+    HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
         'var': 'section.variable',
         'short': 'Set True to omit unchanged values (defaults)'
     }
-    IS_USER_ACTIVITY = True
+    HTTP_POST_VARS = {
+        'user': 'Authenticate as user',
+        'pass': 'Authenticate with password'
+    }
 
-    def _maybe_all(self, list_all, data):
+    def _maybe_all(self, list_all, data, key_types):
         if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
                 rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
-                    rv[key] = self._maybe_all(True, rv[key])
+                    rv[key] = self._maybe_all(True, rv[key], key_types)
             return rv
         return data
 
@@ -1756,19 +1762,37 @@ class ConfigPrint(Command):
         invalid = []
 
         args = list(self.args)
-        if args and args[0] == '-short':
-            list_all = not args.pop(0)
-        else:
-            list_all = True
+        list_all = self.data.get('short', ['-short' in args])[0]
 
-        # FIXME: Are there privacy implications here somewhere?
+        # FIXME: Shouldn't we suppress critical variables as well?
+        key_types = ['public', 'critical']
+        if self.data.get('_method') == 'POST':
+            if 'pass' in self.data:
+                from mailpile.auth import CheckPassword
+                password = self.data['pass'][0]
+                auth_user = CheckPassword(config,
+                                          self.data.get('user', [None])[0],
+                                          password)
+                if auth_user == 'DEFAULT':
+                    key_types += ['key']
+                result['_auth_user'] = auth_user
+                result['_auth_pass'] = password
+
         for key in (args + self.data.get('var', [])):
+            if key in ('-short', ):
+                continue
             try:
-                result[key] = self._maybe_all(list_all, config.walk(key))
-            except KeyError:
+                data = config.walk(key, key_types=key_types)
+                result[key] = self._maybe_all(list_all, data, key_types)
+            except (KeyError, AccessError):
                 invalid.append(key)
+
         if invalid:
-            return self._error(_('Invalid keys'), info={'keys': invalid})
+            return self._error(_('Invalid keys'),
+                               result=result, info={
+                                   'keys': invalid,
+                                   'key_types': key_types
+                               })
         else:
             return self._success(_('Displayed settings'), result=result)
 

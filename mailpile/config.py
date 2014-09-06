@@ -19,6 +19,7 @@ from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.util import AccessError
 import mailpile.i18n
 
 try:
@@ -547,6 +548,12 @@ def RuledContainer(pcls):
             self.as_config(_type=_type).write(of)
             return of.getvalue()
 
+        def key_types(self, key):
+            if hasattr(self.rules[key], '_types'):
+                return self.rules[key]._types
+            else:
+                return []
+
         def as_config(self, config=None, _type=None):
             config = config or CommentedEscapedConfigParser()
             section = self._name
@@ -556,9 +563,7 @@ def RuledContainer(pcls):
 
             keys = self.rules.keys()
             if _type:
-                keys = [k for k in keys
-                        if hasattr(self.rules[k], '_types')
-                        and _type in self.rules[k]._types]
+                keys = [k for k in keys if _type in self.key_types(k)]
 
             ignore = self.ignored_keys() | set(['_any'])
             if not _type:
@@ -685,7 +690,7 @@ def RuledContainer(pcls):
             return set([k for k in self.rules
                         if self.rules[k][self.RULE_CHECKER] == _IgnoreCheck])
 
-        def walk(self, path, parent=0):
+        def walk(self, path, parent=0, key_types=None):
             if '.' in path:
                 sep = '.'
             else:
@@ -698,6 +703,9 @@ def RuledContainer(pcls):
             else:
                 vlist = []
             for part in path_parts:
+                if key_types is not None:
+                    if [t for t in cfg.key_types(part) if t not in key_types]:
+                        raise AccessError(_('Access denied to %s') % part)
                 cfg = cfg[part]
             if parent:
                 return tuple([cfg] + vlist)

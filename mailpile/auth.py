@@ -69,6 +69,12 @@ def SetLoggedIn(cmd, user=None, redirect=False, session_id=None):
         return True
 
 
+def CheckPassword(config, username, password):
+    # FIXME: Do something with the username
+    return (config.gnupg_passphrase and
+            config.gnupg_passphrase.compare(password)) and 'DEFAULT'
+
+
 SESSION_CACHE = UserSessionCache()
 
 
@@ -128,8 +134,7 @@ class Authenticate(Command):
         if not user:
             try:
                 # Verify the passphrase
-                if (config.gnupg_passphrase and
-                        config.gnupg_passphrase.compare(password)):
+                if CheckPassword(config, None, password):
                     sps = config.gnupg_passphrase
                 else:
                     sps = VerifyAndStorePassphrase(config, passphrase=password)
