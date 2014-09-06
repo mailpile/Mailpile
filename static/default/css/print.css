@@ -19,3 +19,6 @@ body {
 .thread-item-text {
   clear: both;
 }
+.hide-when-printing {
+  display: none;
+}
