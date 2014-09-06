@@ -131,9 +131,9 @@
           {% set emails = [from.address] + emails %}
         {% endif %}
         {% for profile_email in emails %}
-          {% set profile = profiles.emails[profile_email]
+          {% set profile = (profile_email in profiles.emails)
                            and profiles.profiles[profiles.emails[profile_email]]
-                           or {'fn': from.fn, 'email': from.address} %}
+                           or {'fn': from.fn} %}
           <li role="presentation">
             <a href="#" class="compose-from" data-mid="{{mid}}">
               <span class="avatar">
