@@ -143,8 +143,9 @@ class GravatarImporter(VCardImporter):
                     mediatype='image/jpeg'
                 ))
 
-            vcard.add(VCardLine(name='email', value=email))
-            results.append(vcard)
+            if gcard or gjson or img:
+                vcard.add(VCardLine(name='email', value=email))
+                results.append(vcard)
         return results
 
 
