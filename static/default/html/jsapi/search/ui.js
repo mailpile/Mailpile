@@ -9,6 +9,17 @@ Mailpile.pile_action_select = function(item) {
     // Add To Data Model
     Mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
+    // Add Tags
+    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.data('mid') });
+    _.each(metadata.tag_tids, function(tid, key) {
+      var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
+      if (tag.type === 'tag') {
+        if (_.indexOf(Mailpile.tags_cache, tag.tid) === -1) {
+          Mailpile.tags_cache.push(tag.tid);
+        }
+      }
+    });
+
     // Update Bulk UI
     Mailpile.bulk_actions_update_ui();
 
@@ -23,8 +34,20 @@ Mailpile.pile_action_select = function(item) {
 
 /* Search - Action Unselect */
 Mailpile.pile_action_unselect = function(item) {
+
     // Remove From Data Model
     Mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
+
+    // Remove Tags
+    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.data('mid') });
+    _.each(metadata.tag_tids, function(tid, key) {
+      var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
+      if (tag.type === 'tag') {
+        if (_.indexOf(Mailpile.tags_cache, tag.tid) > -1) {
+          Mailpile.tags_cache = _.without(Mailpile.tags_cache, tag.tid);
+        }
+      }
+    });
 
     // Hide Actions
     Mailpile.bulk_actions_update_ui();
@@ -78,19 +101,36 @@ Mailpile.render_modal_tags = function() {
       var tags_html     = '';
       var archive_html  = '';
 
-      $.each(data.result.tags, function(key, value) {
-        if (value.display === 'priority') {
-          priority_data = value;
+      /* FIXME: show user mixture of selected tags already
+      var selected_tids = {};
+      _.each(Mailpile.messages_cache, function(mid, key) {
+        var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
+        _.each(metadata.tag_tids, function(tid, key) {
+          if (selected_tids[tid] === undefined) {
+            selected_tids[tid] = 1;
+          } else {
+            selected_tids[tid]++;
+          }
+        });
+      });
+      */
+
+      // Build Tags List
+      _.each(data.result.tags, function(tag, key) {
+
+        if (tag.display === 'priority' && tag.type === 'tag') {
+          priority_data = tag;
           priority_html += _.template(template_html, priority_data);
         }
-        else if (value.display === 'tag') {
-          tag_data = value;
+        else if (tag.display === 'tag' && tag.type === 'tag') {
+          tag_data = tag;
           tags_html += _.template($('#template-modal-tag-picker-item').html(), tag_data);
         }
-        else if (value.display === 'archive') {
-          archive_data = value;
+        else if (tag.display === 'archive' && tag.type === 'tag') {
+          archive_data = tag;
           archive_html += _.template($('#template-modal-tag-picker-item').html(), archive_data);
         }
+
       });
 
       var modal_html = $("#modal-tag-picker").html();
@@ -99,8 +139,7 @@ Mailpile.render_modal_tags = function() {
     });
  
   } else {
-    // FIXME: Needs more internationalization support
-    alert('No Messages Selected');
+    Mailpile.notification({ status: 'info', message: '{{_("No Messages Selected")}}' });
   }
 };
 
