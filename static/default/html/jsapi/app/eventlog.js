@@ -24,7 +24,6 @@ EventLog.heartbeat_warning = function() {
 
 
 EventLog.request = function(conditions, callback) {
-  console.log('EventLog.request()');
 
   // Hide Connection Down
   if ($('#connection-down').length) {
@@ -42,15 +41,12 @@ EventLog.request = function(conditions, callback) {
 
 
 EventLog.poll = function() {
-  console.log('EventLog.poll()');
   // Request everything new
   EventLog.request({since: EventLog.last_ts, wait: 20});
 };
 
 
 EventLog.process_result = function(result, textstatus) {
-
-  console.log('EventLog.process_result()');
 
   for (event in result.result.events) {
     var ev = result.result.events[event];
