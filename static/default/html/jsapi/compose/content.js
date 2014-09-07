@@ -19,15 +19,26 @@ Mailpile.compose_analyze_recipients = function(addresses) {
 
   // Is Valid & Has Multiple
   if (addresses) {
+
     // FIXME: Only solves the comma specific issue. We should do a full RFC 2822 solution eventually.
     var multiple = addresses.split(/>, */);
+    var tail = '';
 
+    // Has Multiple
     if (multiple.length > 1) {
+
       $.each(multiple, function(key, value){
-        existing.push(Mailpile.compose_analyze_address(value + '>')); // Add back on the '>' since the split pulled it off.
+        // Check for <
+        if (value.indexOf('<') > -1) {
+          tail = '>';
+        }
+        existing.push(Mailpile.compose_analyze_address(value + tail)); // Add back on the '>' since the split pulled it off.
       });
     } else {
-      existing.push(Mailpile.compose_analyze_address(multiple[0] + '>'));
+      if (multiple[0].indexOf('<') > -1) {
+        tail = '>';
+      }
+      existing.push(Mailpile.compose_analyze_address(multiple[0] + tail));
     }
 
     return existing;
