@@ -1,48 +1,63 @@
 <div class="setup-box setup-box-medium add-top animated bounceInUp">
-  <h2 class="text-center"><span class="icon-settings"></span> {{_("Setup")}}</h2>
-  <table class="full-width add-top">
-  <tr>
-    <td>
-      <h3 class="half-bottom"><span class="icon-lock-closed"></span> {{_("Encryption Keys")}}</h3>
-      <p>Manage your encryption keys and the passphrase you access your Mailpile with</p>
-      <a href="/setup/crypto/" class="button-primary ad-bottom">{{_("Edit")}}</a>
-    </td>
-    <td>
-      <h3 class="half-bottom"><span class="icon-profiles"></span> {{_("Profiles")}}</h3>
-      <p>Manage profiles that you send messages from & store on your encryption key</p>
-      <a href="/setup/#profiles" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3 class="half-bottom"><span class="icon-inbox"></span> {{_("Mail Sources")}}</h3>
-      <p>Manage sources of where your messages from and how they're organized.</p>
-      <a href="/setup/#sources" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-    <td>
-      <h3 class="half-bottom"><span class="icon-routes"></span> {{_("Sending Routes")}}</h3>
-      <p>Sending Routes are the means of how you "send" your messages.</p>
-      <a href="/setup/#sending" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3 class="half-bottom"><span class="icon-privacy"></span> {{_("Security")}}</h3>
-      <p>Security settings of how you keep things safe and sound and away from unwanted prying eyes.</p>
-      <a href="/setup/#security" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-    <td>
-      <h3 class="half-bottom"><span class="icon-list"></span> {{_("Backups")}}</h3>
-      <p>Configure how your Mailpile is backed up so you never lose your emails and contacts.</p>
-      <a href="/setup/#backups" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3 class="half-bottom"><span class="icon-list"></span> {{_("Access")}}</h3>
-      <p>Want to access your Mailpile from your smartphone, tablet or work computer?</p>
-      <a href="/setup/#access" class="button-primary add-bottom">{{_("Edit")}}</a>
-    </td>
-  </tr>
-  </table>
+  <h2 class="text-center"><span class="icon-settings"></span> {{_("Your Setup")}}</h2>
+  <ul class="setup-list-items">  
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-home"></span> {{_("Language")}}</h4>
+        <a href="/setup/welcome/" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Change the default language of your Mailpile.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-lock-closed"></span> {{_("Encryption Keys")}}</h4>
+        <a href="/setup/crypto/" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Your encryption keys and the passphrase you access your Mailpile with.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-profiles"></span> {{_("Profiles")}}</h4>
+        <a href="/setup/#profiles" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Manage profiles that you send messages from and that get stored on your encryption key.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-inbox"></span> {{_("Mail Sources")}}</h4>
+        <a href="/setup/#sources" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Mail Sources of where your messages come from and how they're organized.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-routes"></span> {{_("Sending Routes")}}</h4>
+        <a href="/setup/#sending" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Sending Routes are the means of how you "send" messages to other people.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-privacy"></span> {{_("Security")}}</h4>
+        <a href="/setup/#security" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Security settings of how you keep things safe and away from unwanted prying eyes.
+    </li>
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-list"></span> {{_("Backups")}}</h4>
+        <a href="/settings/backup-keys.html" class="right"><span class="icon-eye"></span> {{_("View")}}</a>
+      </div>
+      Configure how your Mailpile is backed up so you never lose your emails and contacts.
+    </li>
+    <!-- FIXME: Access
+    <li class="setup-item">
+      <div class="clearfix">
+        <h4 class="left"><span class="icon-list"></span> {{_("Access")}}</h4>
+        <a href="/setup/#access" class="right"><span class="icon-settings"></span> {{_("Edit")}}</a>
+      </div>
+      Want to access your Mailpile from your smartphone, tablet or work computer?
+    </li>
+    -->
+  </ul>
 </div>
