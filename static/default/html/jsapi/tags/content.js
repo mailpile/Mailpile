@@ -1,4 +1,4 @@
-/* Pile - Tag Add */
+/* Tag - Tag Add */
 Mailpile.tag_add = function(tag_add, mids, complete) {
   $.ajax({
 	  url			 : Mailpile.api.tag,
@@ -19,26 +19,12 @@ Mailpile.tag_add = function(tag_add, mids, complete) {
 };
 
 
-Mailpile.tag_update = function(tid, setting, value, complete) {
-
-  // Prep Update Value
+/* Tag - Make Setting Data */
+Mailpile.tag_setting = function(tid, setting, value) {
   var key = 'tags.' + tid + '.' + setting;
   var setting = {};
   setting[key] = value;
-
-  $.ajax({
-	  url			 : Mailpile.api.tag_update,
-	  type		 : 'POST',
-	  data     : setting,
-	  dataType : 'json',
-    success  : function(response) {
-      if (response.status == 'success') {
-        complete(response.result);
-      } else {
-        Mailpile.notification(response);
-      }
-    }
-  });
+  return setting;
 };
 
 
@@ -61,7 +47,10 @@ $(document).on('click', '.modal-tag-icon-option', function() {
   var old  = $('#data-tag-icon').val();
   var icon = $(this).data('icon');
 
-  Mailpile.tag_update(tid, 'icon', icon, function() {
+  var setting = Mailpile.tag_setting(tid, 'icon', icon);
+  Mailpile.API.settings_set_post(setting, function(result) { 
+
+    Mailpile.notification(result);
 
     // Update Sidebar
     $('#sidebar-tag-' + tid).find('span.sidebar-icon').removeClass(old).addClass(icon);
@@ -96,7 +85,10 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
   var name = $(this).data('name');
   var hex = $(this).data('hex');
 
-  Mailpile.tag_update(tid, 'label_color', name, function() {
+  var setting = Mailpile.tag_setting(tid, 'label_color', name);
+  Mailpile.API.settings_set_post(setting, function(result) { 
+
+    Mailpile.notification(result);
 
     // Update Sidebar
     $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', hex);
@@ -145,34 +137,38 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
 
 /* Tag - Update the Name & Slug */
 $(document).on('blur', '#data-tag-add-tag', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function(response) {
-    Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
-      Mailpile.notification(response);
-    });
+  var settings = {};
+  settings['tags.' + $('#data-tag-tid').val() + '.name'] = $(this).val();
+  settings['tags.' + $('#data-tag-tid').val() + '.slug'] = $('#data-tag-add-slug').val();
+  Mailpile.API.settings_set_post(settings, function(result) {
+    Mailpile.notification(result);
   });
 });
 
 
 /* Tag - Update the Slug */
 $(document).on('blur', '#data-tag-add-slug', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
-    Mailpile.notification(response);
+  var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val());
+  Mailpile.API.settings_set_post(setting, function(result) { 
+    Mailpile.notification(result);
   });
 });
 
 
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function(response) {
-    Mailpile.notification(response);
+  var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'display', $(this).val());
+  Mailpile.API.settings_set_post(setting, function(result) {
+    Mailpile.notification(result);
   });  
 });
 
 
 /* Tag - Update parent */
 $(document).on('change', '#data-tag-parent', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function(response) {
-    Mailpile.notification(response);
+  var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'parent', $(this).val());
+  Mailpile.API.settings_set_post(setting, function(result) {
+    Mailpile.notification(result);
   });  
 });
 
@@ -183,8 +179,9 @@ $(document).on('change', '#data-tag-label', function(e) {
   if ($(this).is(':checked')) {
     label = 'true';
   }
-  Mailpile.tag_update($('#data-tag-tid').val(), 'label', label, function(response) {
-    Mailpile.notification(response);
+  var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'label', label);
+  Mailpile.API.settings_set_post(setting, function(result) {
+    Mailpile.notification(result);
   });
 });
 
