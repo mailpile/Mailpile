@@ -53,16 +53,12 @@ Mailpile.notification = function(result) {
     result.action = 20000;
   }
 
-  console.log(result);
-
-
   // Show Notification
   var notification_html = _.template($('#template-notification-bubble').html(), result);
   $('#notification-bubbles').append(notification_html);
   setTimeout(function() {
     $('#event-' + result.event_id).fadeIn('fast');
   }, 250);
-
 
   // If Not Nagify, default
   if (result.complete === 'hide' && result.type !== 'nagify') {
