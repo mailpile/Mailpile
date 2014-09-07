@@ -124,49 +124,46 @@ $(document).on('submit', '#form-tag-picker', function(e) {
     tag_data = _.extend(tag_data, { del: Mailpile.tags_cache });
   }
 
-  console.log(tag_data);
-
   // Send Result
-  /*
-  Mailpile.API.tag_post({}, function(result) {
+  Mailpile.API.tag_post(tag_data, function(result) {
 
     // Notifications
     Mailpile.notification(result);
 
-    var tag_link_template = $('#template-search-pile-tags-link').html();
+    // Add Tags to UI
+    if (result.status === 'success') {
 
-    $.each(result.msg_ids, function(key, mid) {
+      var tag_link_template = $('#template-search-tags-link').html();
 
-      // Assign selector to minimize load on traversing DOM
-      $item = $('#pile-message-' + mid + ' td.subject span.item-tags'); 
+      // Affected MID's
+      _.each(result.result.msg_ids, function(mid, key) {
 
-      // Add Icon
-      if ($item.find('span.icon-tag').length < 1) {
-        $item.html('<span class="icon-tag"></span>');
-      }
-
-      // Add Tags
-      $.each(result.tagged, function(key, tag) {
-        tag.mid = mid;
-        $item.append(_.template(tag_link_template, tag));
+        // Select to minimize load traversing DOM
+        $item = $('#pile-message-' + mid).find('td.subject span.item-tags');
+  
+        // Add / Remove Tags from UI
+        if (action == 'add') {
+          _.each(Mailpile.tags_cache, function(tid, key) {
+            if ($('#pile-message-tag-' + tid + '-' + mid).length < 1) {
+              var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
+              tag['mid'] = mid;
+              $item.append(_.template(tag_link_template, tag));
+            }
+          });
+        }
+        else if (action === 'remove') {
+          _.each(Mailpile.tags_cache, function(tid, key) {
+            if ($('#pile-message-tag-' + tid + '-' + mid).length >= 1) {
+              $('#pile-message-tag-' + tid + '-' + mid).remove();
+            };
+          });
+        }
       });
+    }
 
-      // Remove Tags
-      $.each(result.untagged, function(key, untag) {
-        console.log('performing UNTAG on: ' + untag);
- //       if ($('#pile-message-tag-' + mid + '-' + tid).length) {
- //         $('#pile-message-tag-' + mid + '-' + tid).remove();
- //       };
-      });
-    });
-
-    // Clean Caches and hide Modal
-    Mailpile.messages_cache = [];
-    Mailpile.tags_cache = [];
+    // Hide Modal
     $('#modal-full').modal('hide');
   });
-  */
-
 });
 
 
