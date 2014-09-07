@@ -56,7 +56,7 @@
   <tr class="modal-tag-picker-item <%= display %>" data-tid="<%= tid %>">
     <td class="tag text-left color-<%= label_color %>"><span class="<%= icon %>"></span> <span class="text"><%= name %></span></td>
     <td class="selection text-right" id="tag-selected-<%= tid %>">
-      <% if (_.indexOf(Mailpile.tags_cache, tid) > -1) { %>Yo Dawg<% } %>
+      <% if (selected[tid]) { %><%= selected[tid] %> {{_("Messages")}}<% } %>
     </td>
     <td class="checkbox text-center">
       <input class="tag-picker-checkbox" type="checkbox" name="tid" value="<%= tid %>" <% if (_.indexOf(Mailpile.tags_cache, tid) > -1) { %>checked<% } %>>
@@ -74,19 +74,13 @@
       </div>
       <div class="modal-body modal-body-light-gray">
         <table class="modal-tag-picker-items">
-        <tr class="modal-tag-picker-header" data-display="priority">
-          <td colspan="3">{{_("Priority Tags")}}</td>
-        </tr>
         <%= priority %>
+        <!--
         <tr class="modal-tag-picker-header" data-display="tag">
           <td colspan="2">{{_("Tags")}}</td>
           <td class="text-center"><a class="modal-tag-picker-expand">&middot;&middot;&middot;&middot;</a></td>
-        </tr>
+        </tr> -->
         <%= tags %>
-        <tr class="modal-tag-picker-header" data-display="archive">
-          <td colspan="2">{{_("Archived")}}</td>
-          <td class="text-center"><a class="modal-tag-picker-expand">&middot;&middot;&middot;&middot;</a></td>
-        </tr>
         <%= archive %>
         </table>
       </div>

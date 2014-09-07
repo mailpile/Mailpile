@@ -101,7 +101,7 @@ Mailpile.render_modal_tags = function() {
       var tags_html     = '';
       var archive_html  = '';
 
-      /* FIXME: show user mixture of selected tags already
+      /// Show tags in selected messages
       var selected_tids = {};
       _.each(Mailpile.messages_cache, function(mid, key) {
         var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
@@ -113,24 +113,21 @@ Mailpile.render_modal_tags = function() {
           }
         });
       });
-      */
 
       // Build Tags List
       _.each(data.result.tags, function(tag, key) {
-
         if (tag.display === 'priority' && tag.type === 'tag') {
-          priority_data = tag;
+          priority_data  = _.extend(tag, { selected: selected_tids });
           priority_html += _.template(template_html, priority_data);
         }
         else if (tag.display === 'tag' && tag.type === 'tag') {
-          tag_data = tag;
+          tag_data   = _.extend(tag, { selected: selected_tids });
           tags_html += _.template($('#template-modal-tag-picker-item').html(), tag_data);
         }
         else if (tag.display === 'archive' && tag.type === 'tag') {
-          archive_data = tag;
+          archive_data  = _.extend(tag, { selected: selected_tids });
           archive_html += _.template($('#template-modal-tag-picker-item').html(), archive_data);
         }
-
       });
 
       var modal_html = $("#modal-tag-picker").html();
