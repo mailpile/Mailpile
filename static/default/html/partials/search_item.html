@@ -36,7 +36,7 @@
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <span class="pile-message-tag" id="pile-message-tag-{{tag.tid}}-{{mid}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
+      <span class="pile-message-tag color-{{tag.label_color}}" id="pile-message-tag-{{tag.tid}}-{{mid}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
         <span class="pile-message-tag-icon {{tag.icon}}"></span>
         <span class="pile-message-tag-name">{{tag.name}}</span>
       </span>
