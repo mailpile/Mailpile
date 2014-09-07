@@ -223,6 +223,11 @@
 </script>
 
 
+<script id="template-thread-notification-draft-trash" type="text/template">
+  <a href="#" onclick="window.location.reload(true);"><span class="icon-trash"></span> {{_("Draft was deleted")}} <span class="instruction">({{_("click to reload")}})</span></a>
+</script>
+
+
 <script id="template-notification-bubble" type="text/template">
   <div id="event-<%= event_id %>" class="notification-bubble <%= status %> hide">
     <span class="icon <%= icon %>"></span> 

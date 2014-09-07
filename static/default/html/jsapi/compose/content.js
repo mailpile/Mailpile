@@ -346,11 +346,16 @@ $(document).on('click', '.compose-message-trash', function() {
     type     : 'POST',
     data     : { mid: mid },
     success  : function(response) {
-      Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_2) {
-        if (response_2.status == 'success') {
-          $('#form-compose-' + mid).slideUp('fast');
+      Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_trash) {
+        if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/draft/') {
+          window.location.href = '/in/inbox/';
+        }
+        else if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/') {
+          $('#form-compose-' + mid).removeClass('form-compose clearfix')
+                              .addClass('thread-notification')
+                              .html($('#template-thread-notification-draft-trash').html());
         } else {
-          Mailpile.notification(response_2.status, response_2.message);
+          Mailpile.notification(response_trash.status, response_trash.message);
         }
       });
     }
