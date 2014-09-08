@@ -18,7 +18,6 @@ var ProfilesSettingsView = Backbone.View.extend({
     "click #btn-setup-profile-edit"       : "processSettingsEdit"
   },
   show: function() {
-    $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var new_model = this.model.defaults;
     Mailpile.API.setup_profiles_get({}, function(result) {
       var add_data = _.extend(new_model, {routes: result.result.routes, provider: ''});
