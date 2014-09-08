@@ -157,6 +157,15 @@ var ProfilesSettingsView = Backbone.View.extend({
     // Show Add Route Form
     if (route_id == 'new') {
 
+      // Update Profile Model
+      ProfilesSettingsView.model.set({
+        name: $('#input-setup-profile-name').val(),
+        email: $('#input-setup-profile-email').val(),
+        pass: $('#input-setup-profile-pass').val(),
+        note: $('#input-setup-profile-note').val()
+      });
+
+      // Prep Route Model
       var domain = $('#input-setup-profile-email').val().replace(/.*@/, "");
       SendingView.model.set({
         id: Math.random().toString(36).substring(2),
