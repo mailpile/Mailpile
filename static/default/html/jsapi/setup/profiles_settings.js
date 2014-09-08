@@ -23,6 +23,7 @@ var ProfilesSettingsView = Backbone.View.extend({
     Mailpile.API.setup_profiles_get({}, function(result) {
       var add_data = _.extend(new_model, {routes: result.result.routes, provider: ''});
       $('#setup').html(_.template($('#template-setup-profiles-add').html(), add_data));
+      TooltipsView.showHelp();
     });
   },
   showEdit: function(id) {

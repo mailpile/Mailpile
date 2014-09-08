@@ -20,6 +20,31 @@ var TooltipsView = Backbone.View.extend({
       }
     });
   },
+  showHelp: function() {
+    $('.setup-help-tooltip').qtip({
+      style: {
+       tip: {
+          corner: 'bottom center',
+          mimic: 'bottom center',
+          border: 0,
+          width: 10,
+          height: 10
+        },
+        classes: 'qtip-tipped'
+      },
+      position: {
+        my: 'bottom center',
+        at: 'top center',
+  			viewport: $(window),
+  			adjust: {
+  				x: 0,  y: 5
+  			}
+      },
+      show: {
+        delay: 350
+      }
+    });
+  },
   showProgress: function() {
     $('.setup-progress-circle').qtip({
       style: {
