@@ -1750,6 +1750,9 @@ class ConfigPrint(Command):
         if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
+                if [t for t in data.key_types(key) if t not in key_types]:
+                    # Silently omit things that are considered sensitive
+                    continue
                 rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
                     rv[key] = self._maybe_all(True, rv[key], key_types)
@@ -1762,10 +1765,12 @@ class ConfigPrint(Command):
         invalid = []
 
         args = list(self.args)
-        list_all = self.data.get('short', ['-short' in args])[0]
+        list_all = not self.data.get('short', ['-short' in args])[0]
 
         # FIXME: Shouldn't we suppress critical variables as well?
         key_types = ['public', 'critical']
+        access_denied = False
+
         if self.data.get('_method') == 'POST':
             if 'pass' in self.data:
                 from mailpile.auth import CheckPassword
@@ -1784,14 +1789,18 @@ class ConfigPrint(Command):
             try:
                 data = config.walk(key, key_types=key_types)
                 result[key] = self._maybe_all(list_all, data, key_types)
-            except (KeyError, AccessError):
+            except AccessError:
+                access_denied = True
+                invalid.append(key)
+            except KeyError:
                 invalid.append(key)
 
         if invalid:
             return self._error(_('Invalid keys'),
                                result=result, info={
                                    'keys': invalid,
-                                   'key_types': key_types
+                                   'key_types': key_types,
+                                   'access_denied': access_denied
                                })
         else:
             return self._success(_('Displayed settings'), result=result)

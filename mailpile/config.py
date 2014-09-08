@@ -549,7 +549,9 @@ def RuledContainer(pcls):
             return of.getvalue()
 
         def key_types(self, key):
-            if hasattr(self.rules[key], '_types'):
+            if key not in self.rules:
+                key = '_any'
+            if key in self.rules and hasattr(self.rules[key], '_types'):
                 return self.rules[key]._types
             else:
                 return []
