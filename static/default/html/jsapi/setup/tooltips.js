@@ -37,7 +37,7 @@ var TooltipsView = Backbone.View.extend({
         at: 'top center',
   			viewport: $(window),
   			adjust: {
-  				x: 0,  y: 5
+  				x: 0,  y: -3
   			}
       },
       show: {
