@@ -27,20 +27,23 @@ var StateModel = Backbone.Model.extend({
     else if (check.profiles && view == '#profiles') {
       state = '#profiles';
     }
+    else if (check.crypto && view == '#profiles/add') {
+      state = '#profiles/add';
+    }
     else if (!check.routes) {
-      state = '#sending/add';
+      state = '#sending';
     }
     else if (check.routes && view == '#sending') {
       state = '#sending';
     }
     else if (!check.sources) {
-      state = '#sources/add';
-    }
-    else if (check.profiles && view == '#sources/add') {
-      state = '#sources/add';
+      state = '#sources';
     }
     else if (check.sources && view == '#sources') {
       state = '#sources';
+    }
+    else if (check.profiles && view == '#sources/add') {
+      state = '#sources/add';
     }
     else if (check.complete && view == '#complete') {
       state = '#complete';
