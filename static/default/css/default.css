@@ -5413,6 +5413,10 @@ span.setup-progress-line {
   margin: 20px 8px 0px 8px;
 }
 /* Setup - Details */
+label span.setup-help-tooltip {
+  color: #b3b3b3;
+  cursor: pointer;
+}
 a.setup-check-connection {
   font-weight: normal;
 }
@@ -5758,7 +5762,7 @@ label.radio-list-item .icon-key {
   box-sizing: border-box;
 }
 .sub-navigation > ul {
-  margin: 10px 15px;
+  margin: 10px;
 }
 .sub-navigation > ul > li {
   margin: 0px 5px;
