@@ -107,35 +107,45 @@ var SourcesView = Backbone.View.extend({
     Mailpile.API.settings_get({ var: 'sources' }, function(result) {
 
       // Redirect to Add
-      if (_.isEmpty(result.result.sources)) {
-        Backbone.history.navigate('#sources/add', true);
-      }
+      if (!_.isEmpty(result.result.sources)) {
 
-      // Loop Sources
-      var can_next = [];
-      _.each(result.result.sources, function(val, key) {
+        // Hide Description
+        $('#setup-source-list-description').hide();
 
-        // Tally CanNext
-        if (!_.isEmpty(val.mailbox) && val.enabled) {
-          can_next.push(true); 
+        // Loop Sources
+        var can_next = [];
+        _.each(result.result.sources, function(val, key) {
+  
+          // Tally CanNext
+          if (!_.isEmpty(val.mailbox) && val.enabled) {
+            can_next.push(true); 
+          } else {
+            can_next.push(false);
+          }
+  
+          // Render HTML Items
+          var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
+          SourcesCollection.add(source);
+          $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
+        });
+  
+        // Display (or not) Next Button
+        if (StateModel.attributes.result.complete) {
+          $('#setup-profiles-list-buttons').hide();
+        }
+        else if (StateModel.attributes.result.sources === true && _.indexOf(can_next, true) > -1) {
+          SourcesCollection.can_next = true;
         } else {
-          can_next.push(false);
+          $('#setup-sources-not-configured').show();
         }
 
-        // Render HTML Items
-        var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
-        SourcesCollection.add(source);
-        $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
-      });
-
-      // Display (or not) Next Button
-      if (StateModel.attributes.result.complete) {
-        $('#setup-profiles-list-buttons').hide();
-      }
-      else if (StateModel.attributes.result.sources === true && _.indexOf(can_next, true) > -1) {
-        SourcesCollection.can_next = true;
       } else {
-        $('#setup-sources-not-configured').show();
+        // Show Description
+        $('#setup-source-list-description').show();
+
+        // Hide List & Buttons
+        $('#setup-sources-list-items').hide();
+        $('#setup-profiles-list-buttons').hide();
       }
     });
 

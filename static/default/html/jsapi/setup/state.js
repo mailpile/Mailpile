@@ -36,14 +36,14 @@ var StateModel = Backbone.Model.extend({
     else if (check.routes && view == '#sending') {
       state = '#sending';
     }
-    else if (!check.sources) {
-      state = '#sources';
+    else if (check.profiles && view == '#sources/add') {
+      state = '#sources/add';
     }
     else if (check.sources && view == '#sources') {
       state = '#sources';
     }
-    else if (check.profiles && view == '#sources/add') {
-      state = '#sources/add';
+    else if (!check.sources) {
+      state = '#sources';
     }
     else if (check.complete && view == '#complete') {
       state = '#complete';
