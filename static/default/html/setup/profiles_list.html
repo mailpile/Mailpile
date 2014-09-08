@@ -1,11 +1,12 @@
 <div id="setup-profiles-list" class="setup-box setup-box-medium add-top animated bounceInUp">
   <div class="clearfix">
-    <h2 class="left"><span class="icon-profiles"></span> Profiles</h2>
-    <a href="#profiles/add" class="button-primary right"><span class="icon-plus"></span> Add Profile</a>
+    <h2 class="left"><span class="icon-profiles"></span> {{_("Profiles")}}</h2>
+    <a href="#profiles/add" class="button-primary right"><span class="icon-plus"></span> {{_("Add Profile")}}</a>
   </div>
-  {% if not setup_profiles.result.profiles %}
-  <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
-  {% endif %}
+  <div id="setup-profiles-list-description">
+    <p class="half-top">
+      {{_("Profiles define how you send e-mail, which addresses and identities you use for your different roles in life: work, school, family...")}} {{_("You don't need new email addresses to use Mailpile, just add profiles for your existing addresses!")}}</p>
+  </div>
   <ul id="setup-profiles-list-items" class="setup-list-items"></ul>
   <div id="setup-profiles-list-buttons" class="clearfix">
     <a href="/setup/crypto/" class="button-secondary left">{{_("Previous")}}</a>

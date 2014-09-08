@@ -67,37 +67,42 @@ var ProfilesView = Backbone.View.extend({
     // Load Data & Add to Collection
     Mailpile.API.setup_profiles_get({}, function(result) {
 
-      if (_.isEmpty(result.result.profiles)) {
-        Backbone.history.navigate('#profiles/add', true);
-      }
+      if (!_.isEmpty(result.result.profiles)) {
 
-      // Can Go Next
-      var can_next = [];
-      _.each(result.result.profiles, function(val, key) {
-        if (val.route_id) {
-          can_next.push(true); 
+        $('#setup-profiles-list-description').hide();
+
+        // Can Go Next
+        var can_next = [];
+        _.each(result.result.profiles, function(val, key) {
+          if (val.route_id) {
+            can_next.push(true); 
+          } else {
+            can_next.push(false);
+          }
+  
+          var profile = new ProfileModel(_.extend({id: key, action: 'Edit'}, val));
+          ProfilesCollection.add(profile);
+          $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
+        });
+  
+        // Hide Delete (if only 1 profile)
+        if (ProfilesCollection.length === 1) {
+          $('.setup-profile-remove').parent().hide();
+        }
+  
+        // Display (or not) Button
+        if (StateModel.attributes.result.complete) {
+          $('#setup-profiles-list-buttons').hide();
+        }
+        else if (_.indexOf(can_next, true) > -1) {
+          $('#btn-setup-profiles-next').show();
         } else {
-          can_next.push(false);
+          $('#setup-profiles-no-next').show();
         }
 
-        var profile = new ProfileModel(_.extend({id: key, action: 'Edit'}, val));
-        ProfilesCollection.add(profile);
-        $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
-      });
-
-      // Hide Delete (if only 1 profile)
-      if (ProfilesCollection.length === 1) {
-        $('.setup-profile-remove').parent().hide();
-      }
-
-      // Display (or not) Button
-      if (StateModel.attributes.result.complete) {
-        $('#setup-profiles-list-buttons').hide();
-      }
-      else if (_.indexOf(can_next, true) > -1) {
-        $('#btn-setup-profiles-next').show();
       } else {
-        $('#setup-profiles-no-next').show();
+        $('#setup-profiles-list-buttons').hide();
+        $('#setup-profiles-list-items').hide();
       }
     });
 
