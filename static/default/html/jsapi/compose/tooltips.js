@@ -110,12 +110,24 @@ Mailpile.tooltip_compose_contact_details = function() {
     content: {
       title: true,
       text: function(e, api) {
-        if ($(e.target).html()) {
-          var contact_data = _.findWhere(Mailpile.instance.addresses, {address: $(e.target).find('.compose-choice-name').data('address')});
-          if (contact_data) {
-            return _.template($('#tooltip-contact-details').html(), contact_data);
-          }
+        $target = $(e.target);
+
+        var address = $target.data('address');
+
+        if ($target.hasClass('select2-search-choice')) {
+          address = $target.find('.compose-choice-name').data('address');
         }
+        if ($target.hasClass('select2-search-choice-close')) {
+          address = $target.parent().find('.compose-choice-name').data('address');
+        }
+        if ($target.is('img')) {
+          address = $target.parent().parent().find('.compose-choice-name').data('address');
+        } 
+
+        var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
+        if (contact_data) {
+          return _.template($('#tooltip-contact-details').html(), contact_data);
+        }        
       }
     },
     style: {
@@ -133,7 +145,7 @@ Mailpile.tooltip_compose_contact_details = function() {
       at: 'bottom center',
 			viewport: $(window),
 			adjust: {
-				x: 5,  y: -2
+				x: 5,  y: -25
 			}
     },
     show: {

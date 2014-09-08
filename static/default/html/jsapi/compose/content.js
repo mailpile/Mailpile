@@ -101,7 +101,7 @@ Mailpile.compose_address_field = function(id) {
     },
     formatResult: function(state) {
       var avatar = '<span class="icon-user"></span>';
-      var secure = '<span class="icon-blank"></span>';
+      var secure = '';
       if (state.photo) {
         avatar = '<img src="' + state.photo + '">';
       }
@@ -124,12 +124,12 @@ Mailpile.compose_address_field = function(id) {
       }
 
       // Create HTML
-      var avatar = '<span class="icon-user"></span>';
+      var avatar = '<span class="avatar icon-user" data-address="' + state.address + '"></span>';
       var name   = state.fn;
-      var secure = '<span class="icon-blank"></span>';
+      var secure = '';
 
       if (state.photo) {
-        avatar = '<img src="' + state.photo + '">';
+        avatar = '<span class="avatar"><img src="' + state.photo + '" data-address="' + state.address + '"></span>';
       }
 
       if (!state.fn) {
@@ -137,9 +137,9 @@ Mailpile.compose_address_field = function(id) {
       }
 
       if (state.flags.secure) {
-        secure = '<span class="icon-lock-closed"></span>';
+        secure = '<span class="icon-lock-closed" data-address="' + state.address + '"></span>';
       }
-      return '<span class="avatar">' + avatar + '</span> <span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span>';
+      return avatar + ' <span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span>';
     },
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
