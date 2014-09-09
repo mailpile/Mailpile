@@ -14,6 +14,7 @@ import ConfigParser
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 from urllib import quote, unquote
 from urlparse import urlparse
+from appdirs import AppDirs
 
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
@@ -1090,22 +1091,10 @@ class ConfigManager(ConfigDict):
             if os.path.exists(workdir) and os.path.isdir(workdir):
                 return workdir
 
-        # FIXME: the logic below should be rewritten to use the appdirs
-        #        python packages, as per issue #870
-
-        basedir = None
-        if sys.platform.startswith('win'):
-            # Obey Windows conventions (more or less?)
-            basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-        elif sys.platform.startswith('darwin'):
-            # Obey Mac OS X conventions
-            basedir = os.path.expanduser('~/Library/Application Support')
-        else:
-            # Assume other platforms are Unixy
-            basedir = os.getenv('XDG_DATA_HOME',
-                                os.path.expanduser('~/.local/share'))
-
-        return os.path.join(basedir, 'Mailpile', profile)
+        # Use platform-specific defaults
+        # via https://github.com/ActiveState/appdirs
+        dirs = AppDirs("Mailpile")
+        return os.path.join(dirs.user_data_dir, profile)
 
     def __init__(self, workdir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
