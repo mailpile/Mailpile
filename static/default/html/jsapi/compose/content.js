@@ -139,6 +139,7 @@ Mailpile.compose_address_field = function(id) {
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed" data-address="' + state.address + '"></span>';
       }
+
       return avatar + ' <span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span>';
     },
     formatSelectionTooBig: function() {
@@ -154,7 +155,10 @@ Mailpile.compose_address_field = function(id) {
   $('#'+id).on('select2-selecting', function(e) {
     var status = Mailpile.compose_determine_encryption(mid, e.val);
     Mailpile.compose_render_encryption(status);
-    Mailpile.tooltip_compose_contact_details();
+
+    setTimeout(function() {
+      Mailpile.tooltip_compose_contact_details();
+    }, 350);
   });
 
   $('#'+id).on('select2-removed', function(e) {

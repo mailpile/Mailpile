@@ -6079,8 +6079,9 @@ table.background-white td {
 }
 .user .name a {
   display: inline-block;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
+  line-height: 16px;
   word-break: break-word;
   color: #4d4d4d;
   vertical-align: top;
@@ -7966,7 +7967,7 @@ a.modal-tag-color-option:hover {
   box-shadow: 1px 1px 2px 0px #cccccc;
 }
 .qtip-contact-details .qtip-content {
-  width: 220px;
+  width: 215px;
   margin-top: 5px;
 }
 /* =============== Tablet Style =============== */

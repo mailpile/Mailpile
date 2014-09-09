@@ -112,6 +112,8 @@ Mailpile.tooltip_compose_contact_details = function() {
       text: function(e, api) {
         $target = $(e.target);
 
+        console.log($target);
+
         var address = $target.data('address');
 
         if ($target.hasClass('select2-search-choice')) {
