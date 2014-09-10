@@ -30,7 +30,8 @@ class BaseMailSource(threading.Thread):
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
     RESCAN_BATCH_SIZE = 100     # Index at most this many new e-mails at once
-    MAX_PATHS = 100             # Abort if asked to scan too many directories
+    MAX_MAILBOXES = 100         # Max number of mailboxes we add
+    MAX_PATHS = 5000            # Abort if asked to scan too many directories
 
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.BaseMailSource'
@@ -266,27 +267,38 @@ class BaseMailSource(threading.Thread):
         ostate, self._state = self._state, 'Discovery'
         try:
             existing = self._existing_mailboxes()
+            max_mailboxes = self.MAX_MAILBOXES - len(existing)
             adding = []
             paths = (paths or self.my_config.discovery.paths)[:]
             while paths:
                 raw_fn = paths.pop(0)
                 fn = os.path.normpath(os.path.expanduser(raw_fn))
                 fn = os.path.abspath(fn)
-                if (raw_fn in existing or
-                        fn in existing or
-                        not os.path.exists(fn)):
+                if not os.path.exists(fn):
                     continue
-                if self.is_mailbox(fn):
-                    adding.append(fn)
+
+                if raw_fn not in existing and fn not in existing:
+                    if self.is_mailbox(fn):
+                        adding.append(fn)
+                    if len(adding) > max_mailboxes:
+                        break
+
                 if os.path.isdir(fn):
                     try:
                         for f in [f for f in os.listdir(fn)
                                   if f not in ('.', '..')]:
-                            paths.append(os.path.join(fn, f))
-                            if len(paths) > self.MAX_PATHS:
-                                return -1
+                            nfn = os.path.join(fn, f)
+                            if (len(adding) <= max_mailboxes and
+                                    nfn not in existing and
+                                    self.is_mailbox(nfn)):
+                                adding.append(nfn)
+                            if (len(paths) <= self.MAX_PATHS and
+                                    os.path.isdir(nfn)):
+                                paths.append(nfn)
                     except OSError:
                         pass
+                if len(adding) > max_mailboxes:
+                    break
 
             new = {}
             for path in adding:
