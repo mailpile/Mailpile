@@ -179,7 +179,7 @@ class SharedImapConn(threading.Thread):
             self.name += ' (closed)'
         return self._conn.close()
 
-    def select(self, mailbox='INBOX', readonly=False):
+    def select(self, mailbox='INBOX', readonly=True):
         # This routine caches the SELECT operations, because we will be
         # making lots and lots of superfluous ones "just in case" as part
         # of multiplexing one IMAP connection for multiple mailboxes.
