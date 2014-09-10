@@ -10,6 +10,10 @@ var SourceModel = Backbone.Model.extend({
     port: 993,
     protocol: '',
     interval: 300,
+    discovery: {
+      paths: [],
+      apply_tags: []
+    },
     'discovery.paths': [],
     'discovery.policy': 'unknown',
     'discovery.local_copy': true,
@@ -51,6 +55,9 @@ var SourceModel = Backbone.Model.extend({
     'discovery.paths': {
       required: false,
       msg: "{{_('Paths to watch for new mailboxes')}}"
+    },
+    discovery: {
+      required: false
     },
     'discovery.policy': {
       oneOf: ['unknown', 'ignore', 'watch','read', 'move', 'sync'],

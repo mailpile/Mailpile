@@ -40,11 +40,11 @@
       </fieldset>
 
       <label>{{_("Where is the mail on this computer located?")}}</label>
-      <input type="text" name="discovery.paths[]" class="input-large" value="" placeholder="/home/chelsea/email" tabindex="4">
+      <input type="text" name="discovery.paths[]" class="input-large" value="<%= discovery.paths['0000'] %>" placeholder="/home/chelsea/email" tabindex="4">
       <label>{{_("Copy messages to Mailpile")}}</label>
       <select name="discovery.local_copy" id="input-setup-source-local-local_copy" class="input-small" tabindex="5">
-        <option value="false" selected="selected">{{_("Do Not Copy")}}</option>
-        <option value="">{{_("Copy")}}</option>
+        <option value="false" <% if (!discovery.local_copy) { %>selected<% } %>>{{_("Do Not Copy")}}</option>
+        <option value="true" <% if (discovery.local_copy) { %>selected<% } %>>{{_("Copy")}}</option>
       </select>
     </div>
 
