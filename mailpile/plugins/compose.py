@@ -107,7 +107,7 @@ def AddComposeMethods(cls):
                 return Email(idx, ephemeral_mid)
 
             msgid, mid = ephemeral_mid.rsplit('-', 1)
-            etype, etarg, msgid = ephemeral_mid.split('-', 2)
+            etype, etarg, msgid = msgid.split('-', 2)
             if etarg not in ('all', 'att'):
                 msgid = etarg + '-' + msgid
             msgid = '<%s>' % msgid.replace('_', '@')
@@ -200,6 +200,11 @@ class CompositionCommand(AddComposeMethods(Search)):
                     else:
                         data = defaults.get(hdr.lower(), '')
                     up.append('%s: %s' % (hdr, data))
+
+                # This preserves in-reply-to, references and any other
+                # headers we're not usually keen on editing.
+                if defaults.get('headers'):
+                    up.append(defaults['headers'])
 
                 # This weird thing converts attachment=1234:bla.txt into a
                 # dict of 1234=>bla.txt values, attachment=1234 to 1234=>None.

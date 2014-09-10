@@ -629,7 +629,11 @@ class Email(object):
                 else:
                     encoded_hdr = self.encoded_hdr(newmsg, hdr)
                     if len(encoded_hdr.strip()) > 0:
-                        outmsg[hdr] = encoded_hdr
+                        if encoded_hdr == '!KEEP':
+                            if hdr in oldmsg:
+                                outmsg[hdr] = oldmsg[hdr]
+                        else:
+                            outmsg[hdr] = encoded_hdr
 
             # Copy over the uneditable headers from the old message
             for hdr in oldmsg.keys():
