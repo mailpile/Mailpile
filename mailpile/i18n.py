@@ -10,6 +10,32 @@ ACTIVE_TRANSLATION = None
 RECENTLY_TRANSLATED_LOCK = threading.Lock()
 RECENTLY_TRANSLATED = []
 
+FORMAT_CHECKED = {}
+
+
+# This little doodad will on-the-fly check whether our translators
+# messed up our format strings in various ways, and suppress the
+# translation if it is obviously broken.
+def _fmt_safe(translation, original):
+    global FORMAT_CHECKED
+    if translation in FORMAT_CHECKED:
+        return FORMAT_CHECKED[translation]
+    if '%' in original:
+        try:
+            assert(len([c for c in translation if c == '%'])
+                   == len([c for c in original if c == '%']))
+            bogon = translation % 1
+            FORMAT_CHECKED[translation] = translation
+        except TypeError:
+            # This just means we gave the wrong argument or the wrong
+            # number of arguments - so the format string itself is OK.
+            FORMAT_CHECKED[translation] = translation
+        except:
+            FORMAT_CHECKED[translation] = original
+    else:
+        FORMAT_CHECKED[translation] = translation
+    return FORMAT_CHECKED[translation]
+
 
 def gettext(string):
     with RECENTLY_TRANSLATED_LOCK:
@@ -18,7 +44,8 @@ def gettext(string):
                                if t != string] + [string]
     if not ACTIVE_TRANSLATION:
         return string
-    return ACTIVE_TRANSLATION.gettext(string).decode('utf-8')
+    return _fmt_safe(ACTIVE_TRANSLATION.gettext(string).decode('utf-8'),
+                     string)
 
 
 def ngettext(string1, string2, n):
@@ -28,9 +55,11 @@ def ngettext(string1, string2, n):
                                if t not in (string1, string2)
                                ] + [string1, string2]
 
+    default = string1 if (n == 1) else string2
     if not ACTIVE_TRANSLATION:
-        return string1 if (n == 1) else string2
-    return ACTIVE_TRANSLATION.ngettext(string1, string2, n).decode('utf-8')
+        return default
+    return _fmt_safe(ACTIVE_TRANSLATION.ngettext(string1, string2, n
+                                                 ).decode('utf-8'), default)
 
 
 class i18n_disabler:
