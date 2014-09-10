@@ -3091,8 +3091,8 @@ msgid ""
 "It seems your Mailpile does not contain any messages, tags or contacts for "
 "the search"
 msgstr ""
-"Il semble que votre boite email ne contienne aucun message, étiquette ou contact pour
-"cette recherche"
+"Il semble que votre boite email ne contienne aucun message, étiquette ou "
+"contact pour cette recherche"
 
 #: static/default/html/search/index.html:33
 msgid "Here are some other options for you"
