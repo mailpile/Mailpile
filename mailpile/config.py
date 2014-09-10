@@ -64,15 +64,21 @@ class SecurePassphraseStorage(object):
         else:
             self.data = None
 
+    def _passphrase_as_bytes(self, passphrase):
+        try:
+            return [ord(c) for c in passphrase.encode('utf-8')]
+        except UnicodeEncodeError:
+            return [ord(c) for c in passphrase]
+
     def set_passphrase(self, passphrase):
         # This stores the passphrase as a list of integers, which is a
         # primitive in-memory obfuscation relying on how Python represents
         # small integers as globally shared objects. Better Than Nothing!
-        self.data = [ord(c) for c in passphrase.decode('utf-8')]
+        self.data = self._passphrase_as_bytes(passphrase)
 
     def compare(self, passphrase):
         return (self.data is not None and
-                self.data == [ord(c) for c in passphrase.decode('utf-8')])
+                self.data == self._passphrase_as_bytes(passphrase))
 
     def read_byte_at(self, offset):
         if self.data is None or offset >= len(self.data):
