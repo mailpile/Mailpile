@@ -35,7 +35,7 @@ var ProfilesSettingsView = Backbone.View.extend({
 
         // Prep Data
         var provider = SetupMagic.providers[profile.email.replace(/.*@/, "")];
-        _.extend(profile, { id: id, action: 'Edit', provider: provider });
+        _.extend(profile, { id: id, action: 'Edit', action_i18n: '{{_("Edit")}}', provider: provider });
         var edit_data = _.extend(profile, {routes: result.result.routes});
 
         // Render

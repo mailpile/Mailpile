@@ -2,7 +2,8 @@
 var ProfileModel = Backbone.Model.extend({
   defaults: {
     id: 'new',
-    action: '{{_("Add")}}',
+    action_i18n: '{{_("Add")}}',
+    action: 'Add',
     warning: 'none',
     name: '',
     email: '',
@@ -80,7 +81,7 @@ var ProfilesView = Backbone.View.extend({
             can_next.push(false);
           }
   
-          var profile = new ProfileModel(_.extend({id: key, action: 'Edit'}, val));
+          var profile = new ProfileModel(_.extend({id: key, action: 'Edit', action_i18n: '{{_("Edit")}}'}, val));
           ProfilesCollection.add(profile);
           $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
         });
