@@ -55,6 +55,7 @@ class Command:
 
     # Event logging settings
     LOG_NOTHING = False
+    LOG_ARGUMENTS = True
     LOG_PROGRESS = False
     LOG_STARTING = '%(name)s: Starting'
     LOG_FINISHED = '%(name)s: %(message)s'
@@ -391,7 +392,9 @@ class Command:
                           'status': self.status or '',
                           'message': self.message or ''}
 
-    def _sloppy_copy(self, data):
+    def _sloppy_copy(self, data, name=None):
+        if name and 'pass' == name[:4]:
+            data = '(SUPPRESSED)'
         def copy_value(v):
             try:
                 unicode(v).encode('utf-8')
@@ -399,18 +402,20 @@ class Command:
             except (UnicodeEncodeError, UnicodeDecodeError):
                 return '(BINARY DATA)'
         if isinstance(data, (list, tuple)):
-            return [self._sloppy_copy(i) for i in data]
+            return [self._sloppy_copy(i, name=name) for i in data]
         elif isinstance(data, dict):
-            return dict((k, self._sloppy_copy(v)) for k, v in data.iteritems())
+            return dict((k, self._sloppy_copy(v, name=k))
+                        for k, v in data.iteritems())
         else:
             return copy_value(data)
 
     def _create_event(self):
         private_data = {}
-        if self.data:
-            private_data['data'] = self._sloppy_copy(self.data)
-        if self.args:
-            private_data['args'] = self._sloppy_copy(self.args)
+        if self.LOG_ARGUMENTS:
+            if self.data:
+                private_data['data'] = self._sloppy_copy(self.data)
+            if self.args:
+                private_data['args'] = self._sloppy_copy(self.args)
 
         self.event = self._make_command_event(private_data)
 
