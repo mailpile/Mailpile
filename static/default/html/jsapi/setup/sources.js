@@ -209,7 +209,7 @@ var SourcesView = Backbone.View.extend({
       } else if (event.data.rescan.total) {
         message = event.data.rescan.total + ' {{_("Messages")}}';
       } else {
-        message = '{{_("Done scaning mailboxes")}}';
+        message = '{{_("Done scanning mailboxes")}}';
       }
     }
 
