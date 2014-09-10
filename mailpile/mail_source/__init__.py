@@ -277,7 +277,9 @@ class BaseMailSource(threading.Thread):
                 if not os.path.exists(fn):
                     continue
 
-                if raw_fn not in existing and fn not in existing:
+                if (raw_fn not in existing and
+                        fn not in existing and
+                        fn not in adding):
                     if self.is_mailbox(fn):
                         adding.append(fn)
                     if len(adding) > max_mailboxes:
@@ -288,12 +290,10 @@ class BaseMailSource(threading.Thread):
                         for f in [f for f in os.listdir(fn)
                                   if f not in ('.', '..')]:
                             nfn = os.path.join(fn, f)
-                            if (len(adding) <= max_mailboxes and
-                                    nfn not in existing and
-                                    self.is_mailbox(nfn)):
-                                adding.append(nfn)
                             if (len(paths) <= self.MAX_PATHS and
                                     os.path.isdir(nfn)):
+                                paths.append(nfn)
+                            elif self.is_mailbox(nfn):
                                 paths.append(nfn)
                     except OSError:
                         pass
