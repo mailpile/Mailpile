@@ -52,7 +52,7 @@ Mailpile = {
       $('textarea').blur();
     }]
   ],
-  nagify: 1000 * 60 * 60 * 24, // Default nag is 1 per day
+  nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
   commands:      [],
   graphselected: [],
   defaults: {
