@@ -28,6 +28,16 @@
   src: url('../webfonts/Mailpile-Normal.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Normal.woff') format('font-woff'), url('../webfonts/Mailpile-Normal.ttf') format('truetype'), url('../webfonts/Mailpile-Normal.svg#wf') format('svg');
 }
 @font-face {
+  font-family: 'Mailpile-500';
+  src: url('../webfonts/Mailpile-500.eot');
+  src: url('../webfonts/Mailpile-500.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-500.woff') format('font-woff'), url('../webfonts/Mailpile-500.ttf') format('truetype'), url('../webfonts/Mailpile-500.svg#wf') format('svg');
+}
+@font-face {
+  font-family: 'Mailpile-700';
+  src: url('../webfonts/Mailpile-700.eot');
+  src: url('../webfonts/Mailpile-700.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-700.woff') format('font-woff'), url('../webfonts/Mailpile-700.ttf') format('truetype'), url('../webfonts/Mailpile-700.svg#wf') format('svg');
+}
+@font-face {
   font-family: 'Mailpile-Interface';
   src: url('../webfonts/Mailpile-Interface.eot');
   src: url('../webfonts/Mailpile-Interface.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Interface.ttf') format('truetype'), url('../webfonts/Mailpile-Interface.woff') format('font-woff'), url('../webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
@@ -3089,7 +3099,7 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"] {
   color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: normal;
@@ -3122,7 +3132,7 @@ input[type="button"] {
 .button:visited,
 .button-primary:visited {
   color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: normal;
@@ -3185,7 +3195,7 @@ input[type="button"]:active {
 /* Secondary */
 .button-secondary {
   color: #4d4d4d !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: normal;
@@ -3238,7 +3248,7 @@ input[type="button"]:active {
 /* Alert */
 .button-alert {
   color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: normal;
@@ -3291,7 +3301,7 @@ input[type="button"]:active {
 /* Warning */
 .button-warning {
   color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: normal;
@@ -4121,8 +4131,8 @@ h4,
 h5,
 h6 {
   color: #333333;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: bold;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
   letter-spacing: 0px;
 }
 h1 a,
@@ -5324,7 +5334,7 @@ x:-o-prefocus,
   position: relative;
   top: 0px;
   left: -95px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .topbar-middle .icon {
   float: right;
@@ -5645,7 +5655,7 @@ label.radio-list-item .icon-key {
   top: -12px;
   left: 0px;
   font-weight: bold;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 18px;
   color: #4d4d4d;
@@ -6577,8 +6587,8 @@ div.notification-bubble a.notification-close:hover {
 }
 #sidebar a.sidebar-tag.has_unread span.sidebar-name,
 #sidebar a.sidebar-tag.has_unread span.sidebar-notification {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: bold;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
 }
 /* Sidebar - Subtags */
 #sidebar ul li.sidebar-subtag {
@@ -7026,7 +7036,7 @@ li.compose-attachment img {
   border-radius: 3px;
 }
 #contact-view .contact-name {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin-bottom: 5px;
 }
 #contact-view .contact-subname {
@@ -7422,7 +7432,7 @@ tr.modal-tag-picker-item td.checkbox {
 /* Pile Speed */
 #pile-speed {
   margin-bottom: 50px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #b3b3b3;
 }
 #pile-speed span {
@@ -7475,10 +7485,10 @@ tr.modal-tag-picker-item td.checkbox {
   display: inline-block;
   margin: 0 20px;
   padding: 8px 0px 5px 0px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 24px;
-  font-weight: bold;
   line-height: 30px;
+  color: #4d4d4d;
 }
 #thread-title ul {
   display: inline-block;
@@ -7724,7 +7734,7 @@ tr.modal-tag-picker-item td.checkbox {
   margin-bottom: 20px;
   font-size: 21px;
   line-height: 24px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
 }
 .thread-item-html {
@@ -7844,7 +7854,7 @@ ul.thread-message-attachments a small {
   max-width: 175px;
   display: block;
   margin-bottom: 10px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 18px;
   letter-spacing: -0.5px;
