@@ -82,6 +82,7 @@ class Events(Command):
                 filters['since'] = time.time()
             time.sleep(self.GATHER_TIME)
 
+        events = []
         while not waiting or expire > time.time():
             if incomplete:
                 events = list(config.event_log.incomplete(**filters))
