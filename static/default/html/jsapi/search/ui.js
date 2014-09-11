@@ -11,14 +11,16 @@ Mailpile.pile_action_select = function(item) {
 
     // Add Tags
     var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.data('mid') });
-    _.each(metadata.tag_tids, function(tid, key) {
-      var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
-      if (tag.type === 'tag') {
-        if (_.indexOf(Mailpile.tags_cache, tag.tid) === -1) {
-          Mailpile.tags_cache.push(tag.tid);
+    if (metadata) {
+      _.each(metadata.tag_tids, function(tid, key) {
+        var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
+        if (tag.type === 'tag') {
+          if (_.indexOf(Mailpile.tags_cache, tag.tid) === -1) {
+            Mailpile.tags_cache.push(tag.tid);
+          }
         }
-      }
-    });
+      });
+    }
 
     // Update Bulk UI
     Mailpile.bulk_actions_update_ui();
