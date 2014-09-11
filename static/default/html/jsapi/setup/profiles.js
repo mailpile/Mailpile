@@ -43,7 +43,7 @@ var ProfileModel = Backbone.Model.extend({
 
 
 var ProfilesCollection = Backbone.Collection.extend({
-  url: '/setup/profiles/as.json',
+  url: '/api/0/setup/profiles/',
   model: ProfileModel
 });
 
@@ -52,7 +52,7 @@ var ProfilesCollection = Backbone.Collection.extend({
 var ProfilesView = Backbone.View.extend({
   initialize: function() {
     Backbone.Validation.bind(this);
-		this.render();
+    this.render();
   },
   render: function() {
     return this;

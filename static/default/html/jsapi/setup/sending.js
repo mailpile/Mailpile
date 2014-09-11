@@ -39,7 +39,7 @@ var SendingModel = Backbone.Model.extend({
 
 
 var SendingCollection = Backbone.Collection.extend({
-  url: '/api/0/settings/as.json?var=routes',
+  url: '/api/0/settings/?var=routes',
   model: SendingModel
 });
 

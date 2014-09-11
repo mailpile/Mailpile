@@ -1,6 +1,6 @@
 /* Setup - State - Model */
 var StateModel = Backbone.Model.extend({
-  url: '/setup/as.json',
+  url: '/api/0/setup/',
   defaults: {
     result: {
       language: false,
@@ -16,7 +16,7 @@ var StateModel = Backbone.Model.extend({
     var check = this.attributes.result;
 
     if (!check.language) {
-      state = '/setup/welcome';
+      state = '/setup/welcome/';
     }
     else if (!check.crypto) {
       state = '/setup/crypto/';

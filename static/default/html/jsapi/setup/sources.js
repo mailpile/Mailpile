@@ -85,7 +85,7 @@ var SourceModel = Backbone.Model.extend({
 
 
 var SourcesCollection = Backbone.Collection.extend({
-  url: '/api/0/settings/as.json?var=sources',
+  url: '/api/0/settings/?var=sources',
   model: SourceModel,
   can_next: false
 });
@@ -94,7 +94,7 @@ var SourcesCollection = Backbone.Collection.extend({
 /* Setup - Sources - View */
 var SourcesView = Backbone.View.extend({
   initialize: function() {
-		this.render();
+    this.render();
   },
   render: function() {
     return this;
