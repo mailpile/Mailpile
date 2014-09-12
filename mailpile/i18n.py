@@ -44,8 +44,17 @@ def gettext(string):
                                if t != string] + [string]
     if not ACTIVE_TRANSLATION:
         return string
-    return _fmt_safe(ACTIVE_TRANSLATION.gettext(string).decode('utf-8'),
-                     string)
+
+    # FIXME: What if our input is utf-8?  Does gettext want us to
+    #        encode it first, or send the UTF-8 string?  Since we are
+    #        not encoding it, the decode below may fail. :(
+    translation = ACTIVE_TRANSLATION.gettext(string)
+    try:
+        translation = translation.decode('utf-8')
+    except UnicodeEncodeError:
+        pass
+
+    return _fmt_safe(translation, string)
 
 
 def ngettext(string1, string2, n):
@@ -58,8 +67,17 @@ def ngettext(string1, string2, n):
     default = string1 if (n == 1) else string2
     if not ACTIVE_TRANSLATION:
         return default
-    return _fmt_safe(ACTIVE_TRANSLATION.ngettext(string1, string2, n
-                                                 ).decode('utf-8'), default)
+
+    # FIXME: What if our input is utf-8?  Does gettext want us to
+    #        encode it first, or send the UTF-8 string?  Since we are
+    #        not encoding it, the decode below may fail. :(
+    translation = ACTIVE_TRANSLATION.ngettext(string1, string2, n)
+    try:
+        translation = translation.decode('utf-8')
+    except UnicodeEncodeError:
+        pass
+
+    return _fmt_safe(translation, default)
 
 
 class i18n_disabler:
