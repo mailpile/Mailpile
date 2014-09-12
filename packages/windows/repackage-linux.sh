@@ -36,7 +36,6 @@ echo '=== Download and extract binary packages'
 rm -rf $WORKDIR/Buildroot && mkdir $WORKDIR/Buildroot
 mkdir -p $WORKDIR/Downloads && cd $WORKDIR/Downloads
 # Maybe later: pywin32-219.win32-py2.7.exe \
-#              Jinja2-2.7.3.win32-py2.7.exe \
 for package in python-2.7.8-win32.zip \
                openssl-1.0.1h-win32.zip \
                gnupg-1.4.18-win32.zip \

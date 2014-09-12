@@ -1,6 +1,6 @@
 # Mailpile - a program for doing stuff with e-mail
 
-Copyright (C) 2011-2013, Bjarni Rúnar Einarsson & friends
+Copyright (C) 2011-2014, Bjarni R. Einarsson, Mailpile ehf and friends.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of either:
