@@ -1,3 +1,14 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+# Anneh <sobolewska.a.m@gmail.com>, 2013
+# tetek <tetek1@gmail.com>, 2013
+# Marcin Koziej <marcin@netresearchnet.org>, 2014
+# Michał 'Rysiek' Woźniak <rysiek@fwioo.pl>, 2014
+# Czesiek <czesiek@hackerspace.pl>, 2014
+# Harcesz <mailpile@harcesz.net>, 2014
 msgid ""
 msgstr ""
 "MIME-Version: 1.0\n"
@@ -7,7 +18,7 @@ msgstr ""
 "Project-Id-Version: MailPile\n"
 "Language: pl\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2014-09-12 15:13+0200\n"
 "Last-Translator: Marcin Koziej <marcinkoziej@nowoczesnapolska.org.pl>\n"
 "Language-Team: \n"
 
