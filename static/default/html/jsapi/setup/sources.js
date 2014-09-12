@@ -1,7 +1,7 @@
 /* Setup - Sources - Model */
 var SourceModel = Backbone.Model.extend({
   defaults: {
-    _section: '', 
+    _section: '',
     action: '{{_("Add")}}',
     name: '',
     username: '',
@@ -25,7 +25,7 @@ var SourceModel = Backbone.Model.extend({
     name: {
       minLength: 2,
       required: true,
-      msg: "{{_('Source Name')}}"      
+      msg: "{{_('Source Name')}}"
     },
     username: {
       required: false,
@@ -34,7 +34,7 @@ var SourceModel = Backbone.Model.extend({
     password: {
       required: false,
       msg: "{{_('Password')}}"
-    }, 
+    },
     host: {
       required: false,
       msg: "{{_('Host')}}"
@@ -47,7 +47,7 @@ var SourceModel = Backbone.Model.extend({
       oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
       required: true,
       msg: "{{_('You must pick a protocol or format')}}"
-    }, 
+    },
     interval: {
       required: false,
       msg: "{{_('How frequently to check for mail')}}"
@@ -107,9 +107,11 @@ var SourcesView = Backbone.View.extend({
     "click .setup-source-disable"      : "processDisable"
   },
   show: function() {
-
     this.$el.html(_.template($("#template-setup-sources").html()));
-
+    this.reload();
+    return this;
+  },
+  reload: function() {
     // Load Data & Add to Collection
     Mailpile.API.settings_get({ var: 'sources' }, function(result) {
 
@@ -122,20 +124,42 @@ var SourcesView = Backbone.View.extend({
         // Loop Sources
         var can_next = [];
         _.each(result.result.sources, function(val, key) {
-  
+
           // Tally CanNext
           if (!_.isEmpty(val.mailbox) && val.enabled) {
-            can_next.push(true); 
+            can_next.push(true);
           } else {
             can_next.push(false);
           }
-  
+
+          // Update or add this source
+          var source = SourcesCollection.findWhere({id: key});
+          if (source) {
+              source.set(val);
+          }
+          else {
+              source = new SourceModel({id: key, action: '{{_("Edit")}}'});
+              source.set(val);
+              SourcesCollection.add(source);
+          }
+
           // Render HTML Items
-          var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
-          SourcesCollection.add(source);
-          $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
+          var existing = $('#setup-source-' + key);
+          var new_elem = _.template($('#template-setup-sources-item').html(), source.attributes);
+          if (existing.length) {
+              // FIXME: We leave the DOM unchanged, so this does not remove
+              //        elements that may have been added elsewhere.
+              //        This is suboptimal in that if the backend data changes
+              //        the user will not be informed, but doing this correctly
+              //        requires cleaning up how other state changes are
+              //        implemented (they'd have to be in the template).
+              // existing.replaceWith(new_elem);
+          }
+          else {
+              $('#setup-sources-list-items').append(new_elem);
+          }
         });
-  
+
         // Display (or not) Next Button
         if (StateModel.attributes.result.complete) {
           $('#setup-profiles-list-buttons').hide();
@@ -173,6 +197,15 @@ var SourcesView = Backbone.View.extend({
     else if (SourcesCollection.can_next && StateModel.attributes.result.sources) {
       $('#setup-sources-next-state').hide();
       $('#btn-setup-sources-next').show();
+    }
+    // Make sure to update state periodically, otherwise we may never
+    // proceed from here unless the user reloads or clicks around.
+    else {
+      StateModel.fetch({
+        'success': function(model) {
+           SourcesView.reload();
+        }
+      });
     }
   },
   eventProcessing: function(event) {
