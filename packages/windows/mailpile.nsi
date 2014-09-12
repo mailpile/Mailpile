@@ -52,7 +52,9 @@ Section "install" InstallationInfo
 	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\Mailpile.exe" "" "$INSTDIR\packages\windows\mailpile.ico"
 	createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" "$INSTDIR\uninstall.exe" "" ""
 	WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCT_NAME}" "$INSTDIR\${PRODUCT_EXE_NAME}"
+
+; This would start Mailpile automatically, not sure we're ready for that
+;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCT_NAME}" "$INSTDIR\${PRODUCT_EXE_NAME}"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME} (remove only)"

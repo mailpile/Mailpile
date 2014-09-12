@@ -1914,9 +1914,24 @@ class Quit(Command):
             import signal
             os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
         except:
-            pass
+            def exiter():
+                time.sleep(1)
+                os._exit(0)
+            threading.Thread(target=exiter).start()
 
         return self._success(_('Shutting down...'))
+
+
+class TrustingQQQ(Command):
+    """Allow anybody to quit the app"""
+    SYNOPSIS = (None, "trustingqqq", None, None)
+
+    def command(self):
+        # FIXME: This is a hack to allow Windows deployments to shut
+        #        down cleanly. Eventually this will take an argument
+        #        specifying a random token that the launcher chooses.
+        Quit.HTTP_AUTH_REQUIRED = False
+        return self._success('OK, anybody can quit!')
 
 
 class Abort(Command):
@@ -2208,6 +2223,6 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort
+    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
