@@ -71,7 +71,7 @@ pytests:
 	@python2 mailpile/mail_source/imap.py
 
 clean:
-	@rm -f *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
+	@rm -f $(find . -name *.pyc) mailpile-tmp.py mailpile.py
 	@rm -f .appver MANIFEST setup.cfg .SELF .*deps
 	@rm -f scripts/less-compiler.mk
 	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ testing/tmp/
