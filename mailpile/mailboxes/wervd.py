@@ -2,11 +2,14 @@ import email.generator
 import email.message
 import mailbox
 import StringIO
-from gettext import gettext as _
+import sys
 
 import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 from mailpile.crypto.streamer import *
+from mailpile.util import safe_remove
 
 
 class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
@@ -16,7 +19,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     @classmethod
     def parse_path(cls, config, fn, create=False):
         if (((cls.supported_platform is None) or
-             (cls.supported_platform in system().lower())) and
+             (cls.supported_platform == sys.platform[:3].lower())) and
                 ((os.path.isdir(fn) and
                   os.path.exists(os.path.join(fn, 'cur')) and
                   os.path.exists(os.path.join(fn, 'wervd.ver'))) or
@@ -24,46 +27,40 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             return (fn, )
         raise ValueError('Not a Maildir: %s' % fn)
 
-    def __init__(self, *args, **kwargs):
-        mailbox.Maildir.__init__(self, *args, **kwargs)
+    def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
 
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
-        os.remove(os.path.join(self._path, self._lookup(key)))
+        fn = self._lookup(key)
+        del self._toc[key]
+        safe_remove(fn)
 
     def _refresh(self):
         mailbox.Maildir._refresh(self)
         # WERVD mail names don't have dots in them
         for t in [k for k in self._toc.keys() if '.' in k]:
             del self._toc[t]
+        safe_remove()  # Try to remove any postponed removals
 
     def _get_fd(self, key):
         fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
-        key = self._encryption_key_func()
+        key = self._decryption_key_func()
         if key:
-            fd = DecryptingStreamer(key, fd)
+            fd = DecryptingStreamer(fd, mep_key=key, name='WERVD')
         return fd
 
     def get_message(self, key):
         """Return a Message representation or raise a KeyError."""
-        fd = self._get_fd(key)
-        try:
+        with self._get_fd(key) as fd:
             if self._factory:
                 return self._factory(fd)
             else:
                 return mailbox.MaildirMessage(fd)
-        finally:
-            fd.close()
 
     def get_string(self, key):
-        fd = None
-        try:
-            fd = self._get_fd(key)
+        with self._get_fd(key) as fd:
             return fd.read()
-        finally:
-            if fd:
-                fd.close()
 
     def get_file(self, key):
         return StringIO.StringIO(self.get_string(key))
@@ -71,12 +68,15 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def add(self, message, copies=1):
         """Add message and return assigned key."""
         key = self._encryption_key_func()
+        es = None
         try:
+            tmpdir = os.path.join(self._path, 'tmp')
             if key:
                 es = EncryptingStreamer(key,
-                                        dir=os.path.join(self._path, 'tmp'))
+                                        dir=tmpdir, name='WERVD',
+                                        delimited=False)
             else:
-                es = ChecksummingStreamer(dir=os.path.join(self._path, 'tmp'))
+                es = ChecksummingStreamer(dir=tmpdir, name='WERVD')
             self._dump_message(message, es)
             es.finish()
 
@@ -102,7 +102,8 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
             return key
         finally:
-            es.close()
+            if es is not None:
+                es.close()
 
     def _dump_message(self, message, target):
         if isinstance(message, email.message.Message):

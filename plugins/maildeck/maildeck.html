@@ -1,4 +1,4 @@
-{% extends "layouts/wide.html" %}
+{% extends "layouts/full-wide.html" %}
 {% block title %}Maildeck{% endblock %}
 {% block content %}
 <div class="">
@@ -36,7 +36,7 @@
 
 <script>
 $(document).ready(function(){
-  new_mailpile.plugins.maildeck.load();
+  Mailpile.plugins.maildeck.load();
 });
 </script>
 {% endblock %}

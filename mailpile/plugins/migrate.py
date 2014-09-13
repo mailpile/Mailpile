@@ -1,11 +1,12 @@
-from gettext import gettext as _
-
 import mailpile.config
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mail_source.mbox import MboxMailSource
 from mailpile.mail_source.maildir import MaildirMailSource
+from mailpile.plugins import PluginManager
+from mailpile.util import *
+from mailpile.vcard import *
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -94,7 +95,10 @@ def migrate_mailboxes(session):
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
     for mbx_id, path, src in config.get_mailboxes():
-        if path == '/dev/null' or src is not None:
+        if (path == '/dev/null' or
+                path.startswith('src:') or
+                src is not None or
+                config.is_editable_mailbox(mbx_id)):
             continue
         elif os.path.exists(os.path.join(path, 'Info.plist')):
             macmaildirs.append((mbx_id, path))
@@ -162,6 +166,29 @@ def migrate_mailboxes(session):
     return True
 
 
+def migrate_profiles(session):
+    config, vcards = session.config, session.config.vcards
+
+    for profile in config.profiles:
+        if profile.email:
+            vcard = vcards.get_vcard(profile.email)
+            if vcard and vcard.email == profile.email:
+                vcards.deindex_vcard(vcard)
+            else:
+                vcard = MailpileVCard(
+                    VCardLine(name='EMAIL', value=profile.email, type='PREF'),
+                    VCardLine(name='FN', value=profile.name or profile.email))
+            vcard.kind = 'profile'
+            if profile.signature:
+                vcard.signature = profile.signature
+            if profile.messageroute:
+                vcard.route = profile.messageroute
+            vcards.add_vcards(vcard)
+
+    config.profiles = {}
+    return True
+
+
 def migrate_cleanup(session):
     config = session.config
 
@@ -206,10 +233,11 @@ def migrate_cleanup(session):
 
 
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
-MIGRATIONS_AFTER_SETUP = [migrate_cleanup]
+MIGRATIONS_AFTER_SETUP = [migrate_profiles, migrate_cleanup]
 MIGRATIONS = {
     'routes': migrate_routes,
     'sources': migrate_mailboxes,
+    'profiles': migrate_profiles,
     'cleanup': migrate_cleanup
 }
 
@@ -223,6 +251,9 @@ class Migrate(Command):
     def command(self, before_setup=True, after_setup=True):
         session = self.session
         err = cnt = 0
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
 
         migrations = []
         for a in self.args:
@@ -246,8 +277,7 @@ class Migrate(Command):
                 self._ignore_exception()
                 err += 1
 
-        if cnt:
-            session.config.save()
+        self._background_save(config=True)
         return self._success(_('Performed %d migrations, failed %d.'
                                ) % (cnt, err))
 

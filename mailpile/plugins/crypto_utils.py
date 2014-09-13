@@ -1,16 +1,13 @@
 import datetime
 import re
 import time
-from gettext import gettext as _
 
-from mailpile.plugins import PluginManager
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
+from mailpile.mailutils import Email, ClearParseCache
+from mailpile.plugins import PluginManager
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email
-
-from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.nicknym import Nicknym
-
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -34,8 +31,8 @@ class GPGKeySearch(Command):
         for q in self.data.get('q', []):
             args.extend(q.split())
 
-        g = GnuPG()
-        return g.search_key(" ".join(args))
+        return self._gnupg().search_key(" ".join(args))
+
 
 class GPGKeyReceive(Command):
     """Fetch a GPG Key."""
@@ -44,15 +41,18 @@ class GPGKeyReceive(Command):
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
 
-
     def command(self):
         keyid = self.data.get("keyid", self.args)
-        g = GnuPG()
         res = []
         for key in keyid:
-            res.append(g.recv_key(key))
+            res.append(self._gnupg().recv_key(key))
+
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
 
         return res
+
 
 class GPGKeyImport(Command):
     """Import a GPG Key."""
@@ -73,8 +73,14 @@ class GPGKeyImport(Command):
             key_data = self.data.get("key_data")
         elif "key_file" in self.data:
             pass
-        g = GnuPG()
-        return g.import_keys(key_data)
+        rv = self._gnupg().import_keys(key_data)
+
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
+
+        return rv
+
 
 class GPGKeySign(Command):
     """Sign a key."""
@@ -85,6 +91,9 @@ class GPGKeySign(Command):
                        'signingkey': 'The key to sign with'}
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         signingkey = None
         keyid = None
         args = list(self.args)
@@ -96,9 +105,13 @@ class GPGKeySign(Command):
         print keyid
         if not keyid:
             return self._error("You must supply a keyid", None)
+        rv = self._gnupg().sign_key(keyid, signingkey)
 
-        g = GnuPG()
-        return g.sign_key(keyid, signingkey)
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
+
+        return rv
 
 
 class GPGKeyImportFromMail(Search):
@@ -138,15 +151,19 @@ class GPGKeyImportFromMail(Search):
         email = Email(idx, list(eids)[0])
         fn, attr = email.extract_attachment(session, attid, mode='inline')
         if attr and attr["data"]:
-            g = GnuPG()
-            res = g.import_keys(attr["data"])
+            res = self._gnupg().import_keys(attr["data"])
+
+            # Previous crypto evaluations may now be out of date, so we
+            # clear the cache so users can see results right away.
+            ClearParseCache(pgpmime=True)
+
             return self._success("Imported key", res)
 
         return self._error("No results found", None)
 
 
 class GPGKeyList(Command):
-    """Import a GPG Key."""
+    """List GPG Keys."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist', 
                 'crypto/gpg/keylist', '<address>')
@@ -163,11 +180,20 @@ class GPGKeyList(Command):
         if addr is None:
             return self._error("Must supply e-mail address", None)
 
-        g = GnuPG()
-        res = g.address_to_keys(args[0])
+        res = self._gnupg().address_to_keys(addr)
         return self._success("Searched for keys for e-mail address", res)
 
 
+class GPGKeyListSecret(Command):
+    """List Secret GPG Keys"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/keylist/secret', 
+                'crypto/gpg/keylist/secret', '<address>')
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self):
+        res = self._gnupg().list_secret_keys()
+        return self._success("Searched for secret keys", res)
 
 
 class GPGUsageStatistics(Search):
@@ -226,45 +252,6 @@ class GPGUsageStatistics(Search):
 
 
 
-class NicknymGetKey(Command):
-    """Get a key from a nickserver"""
-    ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/getkey', 'crypto/nicknym/getkey', 
-        '<address> [<keytype>] [<server>]')
-
-    HTTP_CALLABLE = ('POST',)
-    HTTP_QUERY_VARS = {
-        'address': 'The nick/address to fetch a key for',
-       'keytype': 'What type of key to import (defaults to OpenPGP)',
-       'server': 'The Nicknym server to use (defaults to autodetect)'}
-
-    def command(self):
-        address = self.data.get('address', self.args[0])
-        keytype = self.data.get('keytype', None)
-        server = self.data.get('server', None)
-        if len(self.args) > 1:
-            keytype = self.args[1]
-        else:
-            keytype = 'openpgp'
-
-        if len(self.args) > 2:
-            server = self.args[2]
-
-        n = Nicknym(self.session.config)
-        return n.get_key(address, keytype, server)
-
-class NicknymRefreshKeys(Command):
-    """Get a key from a nickserver"""
-    ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/refreshkeys', 
-        'crypto/nicknym/refreshkeys', '')
-
-    HTTP_CALLABLE = ('POST',)
-
-    def command(self):
-        n = Nicknym(self.session.config)
-        n.refresh_keys()
-        return True
 
 _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
@@ -273,5 +260,4 @@ _plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
 _plugins.register_commands(GPGUsageStatistics)
-_plugins.register_commands(NicknymGetKey)
-_plugins.register_commands(NicknymRefreshKeys)
+_plugins.register_commands(GPGKeyListSecret)

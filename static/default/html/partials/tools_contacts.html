@@ -12,24 +12,3 @@
     'icon': 'plus'
 }] -%}
 {%- include('partials/tools_default.html') -%}
-
-
-{#- ######## OLD STUFF #######
-
-<nav class="sub-navigation clearfix">
-	<ul class="left horizontal">
-    <li {% if command == "contacts" %} class="navigation-on" {% endif %}><a id="button-contact-list" data-filter="all" href="/contacts/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Contacts")}}</span></a></li>
-    <li {% if command == "contacts/add" %} class="navigation-on" {% endif %}><a id="button-contact-add" href="#contact-add"><span class="navigation-icon icon-plus"></span><span class="navigation-text">{{_("Add Contact")}}</span></a></li>
-<!-- <li {% if command == "contacts/import" %} class="navigation-on" {% endif %}><a href="/contacts/import/"><span class="navigation-icon icon-plus"></span>{{_("Import Contacts")}}</a></li> -->
-  </ul>
-</nav>
-<!--
-<div class="bulk-actions clearfix">
-	<div class="left">
-	  <b><span id="bulk-actions-selected-count"></span> {{_("Contacts")}}</b> {{_("selected")}}
-  </div>
-  <ul class="horizontal right">
-  </ul>
-</div>
--->
--#}

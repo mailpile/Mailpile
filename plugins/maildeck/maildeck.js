@@ -3,13 +3,16 @@
  */
 return {
     load: function(e) {
-        new_mailpile.plugins.maildeck.column_add('in:Inbox');
-        new_mailpile.plugins.maildeck.column_add('in:New');
+        Mailpile.plugins.maildeck.column_add('in:Inbox');
+        Mailpile.plugins.maildeck.column_add('in:New');
+        
+        // Add Prefix to search box
+        $('#search-query').val('maildeck: ');
     },
     activity_setup: function(e) {
 
       $('.column-delete').on('click', function(){
-          new_mailpile.plugins.maildeck.column_delete($(this).data('id'));
+          Mailpile.plugins.maildeck.column_delete($(this).data('id'));
       });
     },
     makeid: function() {
@@ -32,7 +35,7 @@ return {
                 return s;
             }
         }
-        var id = "col" + new_mailpile.plugins.maildeck.makeid();
+        var id = "col" + Mailpile.plugins.maildeck.makeid();
 
         // Add HTML Column
         var template_html = $('#template-maildeck-column-header').html();
@@ -61,7 +64,7 @@ return {
     column_refresh: function(id) {
         var col = this.columns[id];
         var self = this;
-        mailpile.command(mailpile.api.search + "?q=" + col["search"], {}, "GET", function(data) {
+        Mailpile.API.search_get({ q: col["search"]}, function(data) {
             self.columns[id]["lastresult"] = data;
             self.column_render(id);
         });

@@ -9,7 +9,7 @@ mp-virtualenv
 .idea
 *.iml
 *.ipr
-static/default/codekit-config.json
+static/default/config.codekit
 .*deps
 scripts/less-compiler.mk
 .DS_Store
@@ -22,3 +22,4 @@ testing/tmp
 testing/gpg-keyring/random_seed
 ghostdriver.log
 static/default/bower_components/
+cover/

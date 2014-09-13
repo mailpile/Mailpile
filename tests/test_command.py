@@ -58,20 +58,14 @@ class TestCommands(MailPileUnittest):
         res = self.mp.help('search')
         self.assertEqual(res.result['pre'], 'Search your mail!')
 
-    def test_help_splash(self):
-        res = self.mp.help_splash()
-        self.assertEqual(len(res.result), 2)
-        self.assertGreater(res.result['splash'], 0)
-        self.assertGreater(res.as_text(), 0)
-
     def test_help_urlmap_as_text(self):
         res = self.mp.help_urlmap()
         self.assertEqual(len(res.result), 1)
         self.assertGreater(res.as_text(), 0)
 
-    def test_autodiscover_crypto_action(self):
-        res = self.mp.discover_crypto_policy()
-        self.assertEqual(res.as_dict()["message"], 'discover_crypto_policy')
+    def test_crypto_policy_auto_set_all_action(self):
+        res = self.mp.crypto_policy_auto_set_all()
+        self.assertEqual(res.as_dict()["message"], 'crypto_policy/auto_set_all')
         self.assertEqual(set(), res.as_dict()['result'])
 
     def test_crypto_policy_action(self):
@@ -124,7 +118,7 @@ class TestGPG(MailPileUnittest):
             }
         }
 
-        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+        with patch('mailpile.commands.GnuPG') as gpg_mock:
             gpg_mock.return_value.search_key.return_value = gpg_result
 
             res = action(self.mp._session, "crypto/gpg/searchkey", "D13C70DA")
@@ -141,7 +135,7 @@ class TestGPG(MailPileUnittest):
             ]
         }
 
-        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+        with patch('mailpile.commands.GnuPG') as gpg_mock:
             gpg_mock.return_value.recv_key.return_value = gpg_result
 
             res = action(self.mp._session, "crypto/gpg/receivekey", "D13C70DA")

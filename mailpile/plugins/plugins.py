@@ -1,7 +1,8 @@
 import os
-from gettext import gettext as _
 
 import mailpile.commands
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 
 
@@ -10,8 +11,9 @@ _plugins = PluginManager(builtin=__file__)
 
 class Plugins(mailpile.commands.Command):
     """List the currently available plugins."""
-    SYNOPSIS = (None, 'plugins', 'plugins', '[<plugins>]')
+    SYNOPSIS = (None, 'plugins', None, '[<plugins>]')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         pm = self.session.config.plugins
@@ -31,11 +33,16 @@ class Plugins(mailpile.commands.Command):
 
 class LoadPlugin(mailpile.commands.Command):
     """Load and enable a given plugin."""
-    SYNOPSIS = (None, 'plugins/load', 'plugins/load', '<plugin>')
+    SYNOPSIS = (None, 'plugins/load', None, '<plugin>')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         config = self.session.config
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.LOADED:
@@ -52,18 +59,23 @@ class LoadPlugin(mailpile.commands.Command):
                 return self._error(_('Failed to load plugin: %s') % plugin,
                                    info={'failed': plugin})
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Loaded plugins: %s') % ', '.join(self.args),
                              {'loaded': self.args})
 
 
 class DisablePlugin(mailpile.commands.Command):
     """Disable a plugin."""
-    SYNOPSIS = (None, 'plugins/disable', 'plugins/disable', '<plugin>')
+    SYNOPSIS = (None, 'plugins/disable', None, '<plugin>')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         config = self.session.config
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.REQUIRED:
@@ -76,7 +88,7 @@ class DisablePlugin(mailpile.commands.Command):
             while plugin in config.sys.plugins:
                 config.sys.plugins.remove(plugin)
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Disabled plugins: %s (restart required)'
                                ) % ', '.join(self.args),
                              {'disabled': self.args})

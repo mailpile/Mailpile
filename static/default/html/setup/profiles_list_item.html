@@ -1,0 +1,23 @@
+<li class="setup-item" id="setup-profile-<%= id %>">
+  <div class="clearfix">
+    <span class="avatar">
+      <% if (photo) { %>
+      <img src="<%= photo %>">
+      <% } else { %>
+      <img src="/static/img/avatar-default.png">
+      <% } %>
+    </span>
+    <span class="name"><%= name %> <% if (note) { %>(<%= note %>)<% } %></span>
+    <span class="email"><%= email %></span>
+    <ul class="horizontal right">
+      <li><a href="#profiles/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+      <li><a href="#" data-id="<%= id %>" class="setup-profile-remove"><span class="icon-circle-x"></span> {{_("Remove")}}</a></li>
+    </ul>
+  </div>
+  <% if (!route_id) { %>
+  <div class="setup-item-notice half-top clearfix">
+    <em>{{_("Needs Sending Route")}}</em>
+    <a href="#profiles/<%= id %>" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>
+  </div>
+  <% } %>
+</li>

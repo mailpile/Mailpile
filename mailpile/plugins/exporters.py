@@ -1,13 +1,14 @@
 import mailbox
 import os
 import time
-from gettext import gettext as _
 
 import mailpile.config
+from mailpile.commands import Command
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+from mailpile.mailutils import Email
 from mailpile.plugins import PluginManager
 from mailpile.util import *
-from mailpile.commands import Command
-from mailpile.mailutils import Email
 
 
 _plugins = PluginManager(builtin=os.path.basename(__file__)[:-3])
@@ -27,7 +28,7 @@ _plugins.register_config_variables('prefs', {
 
 class ExportMail(Command):
     """Export messages to an external mailbox"""
-    SYNOPSIS = (None, 'export', None, '<msgs> [flat] [<fmt>:<path>]')
+    SYNOPSIS = (None, 'export', None, '[-flat] [-notags] <msgs> [<fmt>:<path>]')
     ORDER = ('Searching', 99)
 
     def export_path(self, mbox_type):
@@ -47,17 +48,22 @@ class ExportMail(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         mbox_type = config.prefs.export_format
 
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         args = list(self.args)
         if args and ':' in args[-1]:
             mbox_type, path = args.pop(-1).split(':', 1)
         else:
             path = self.export_path(mbox_type)
 
-        if args and args[-1] == 'flat':
-            flat = True
-            args.pop(-1)
-        else:
-            flat = False
+        flat = notags = False
+        while args and args[0][:1] == '-':
+            option = args.pop(0).replace('-', '')
+            if option == 'flat':
+                flat = True
+            elif option == 'notags':
+                notags = True
 
         if os.path.exists(path):
             return self._error('Already exists: %s' % path)
@@ -85,8 +91,28 @@ class ExportMail(Command):
             if msg_idx not in exported:
                 e = Email(idx, msg_idx)
                 session.ui.mark('Exporting =%s ...' % e.msg_mid())
-                mbox.add(e.get_msg())
-                exported[msg_idx] = 1
+                fd = e.get_file()
+                try:
+                    data = fd.read()
+                    if not notags:
+                        tags = [tag.slug for tag in
+                                (self.session.config.get_tag(t) or t for t
+                                 in e.get_msg_info(idx.MSG_TAGS).split(',')
+                                 if t)
+                                if hasattr(tag, 'slug')]
+                        lf = '\r\n' if ('\r\n' in data[:200]) else '\n'
+                        header, body = data.split(lf+lf, 1)
+                        data = str(lf.join([
+                            header,
+                            'X-Mailpile-Tags: ' + '; '.join(sorted(tags)
+                                                            ).encode('utf-8'),
+                            '',
+                            body
+                        ]))
+                    mbox.add(data.replace('\r\n', '\n'))
+                    exported[msg_idx] = 1
+                finally:
+                    fd.close()
 
         mbox.flush()
 

@@ -1,3 +1,20 @@
+<!-- Connection Down -->
+<script id="template-connection-down" type="text/template">
+  <div id="connection-down">
+    <div class="message">
+      <div id="connection-down-logo" class="add-top animated bounceIn">
+      {% include("../img/logo-color.svg") %}
+      </div>
+      <h1 class="half-top">Can't Connect</h1>
+      <p>This is caused by one of the following:</p>
+      <h3 class="half-top">Your Internet Connection Is Down</h3>
+      <h3 class="">Your Mailpile App Crashed</h3>
+      <p class="add-bottom"><a href="#" id="connection-down-hide">Hide This</a></p>
+    </div>
+  </div>
+</script>
+
+
 <!-- Notifications -->
 <script id="template-notifications" type="text/template">
   <div id="notifications" class="hide">
@@ -94,19 +111,72 @@
 </script>
 
 
-<!-- GPG Crypto -->
+<!-- Crypto - Results and templates for interacting with keyservers -->
+<script id="template-searchkey-running" type="text/template">
+  {{_("We are searching numerous sources for encryption keys that match the address: ")}} <strong><%= query %></strong>
+</script>
+
+<script id="template-searchkey-running" type="text/template">
+  {{_("We are searching numerous sources for encryption keys that match the address: ")}} <strong><%= query %></strong>
+</script>
+
+<script id="template-searchkey-result-item" type="text/template">
+<li class="searchkey-result-item">
+  <div class="clearfix">
+    <div class="avatar"><img src="<%= avatar %>"></div>
+    <div class="name">
+      <%= uid.name %><br>
+      <span><%= uid.email %></span><br>
+      <span><%= uid.note %></span>
+    </div>
+    <span class="icon-fingerprint"></span>
+    <div class="fingerprint">
+      <%= Mailpile.nice_fingerprint(fingerprint) %>
+    </div>
+  </div>
+  <div class="half-top clearfix">
+    <div class="searchkey-result-score left">
+      <% if (score_stars >= 5) { %>
+      <span class="icon-signature-verified color-08-green"></span>
+      <% } else if (score_stars < 5 && score_stars > 2) { %>
+      <span class="icon-signature-unverified color-06-blue"></span>
+      <% } else if (score_stars <= 2 && score_stars >= 0) { %>
+      <span class="icon-signature-unverified color-02-gray"></span>
+      <% } else if (score_stars < 2 && score_stars > -3) { %>
+      <span class="icon-signature-unknown color-10-orange"></span>
+      <% } else if (score_stars < -3) { %>
+      <span class="icon-signature-revoked color-12-red"></span>
+      <% } %>
+      <em><%= score_reason %></em>
+    </div>
+    <div class="searchkey-result-details hide">
+      <h4>Score: <%= score %></h4>
+      <p>This encryption key score is calculated from the following facts
+      <% _.each(origins, function(item) { %>
+      <%= item %><br>
+      <% }); %>
+      </p>
+    </div>
+    <div class="searchkey-result-actions right">
+      <% if (on_keychain) { %>
+      <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
+        <option value="true" selected="selected">{{_("Use This Key")}}</option>
+        <option value="false">{{_("Don't Use This Key")}}</option>
+      </select>
+      <% } else { %>
+      <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>"><span class="icon-key"></span> {{_("Import Key")}}</a>
+      <% } %>
+    </div>
+  </div>
+</li>
+</script>
+
+
 <script id="template-search-keyserver-results" type="text/template">
   <div class="contact-add-search-keyserver">
     <div id="contact-search-keyserver-input"></div>
     <div id="contact-search-keyserver-result"></div>
   </div>
-</script>
-
-
-<script id="template-search-keyserver" type="text/template">
-  <label>{{_("Search for encryption keys matching:")}}</label>
-  <p id="contact-search-keyserver-query"><b><%= query %></b></p>
-  <p><a href="#" class="button-primary" id="button-contact-search-keyserver" data-searching="{{_('Searching keyservers')}}" data-query="<%= query %>" data-complete="{{_('Results for:')}}"><span class="icon-search"></span> {{_("Go")}}</a></p>
 </script>
 
 
@@ -120,3 +190,55 @@
     <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
   </li>
 </script>
+
+
+<script id="template-search-tags-link" type="text/template">
+  <span class="pile-message-tag color-<%= label_color %>" id="pile-message-tag-<%= tid %>-<%= mid %>" data-tid="<%= tid %>" data-mid="<%= mid %>">
+    <span class="pile-message-tag-icon <%= icon %>"></span>
+    <span class="pile-message-tag-name"><%= name %></span>
+  </span>
+</script>
+
+
+<script id="template-modal-private-key-item" type="text/template">
+<li class="grouped">
+  <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>
+  <% if (expiration_date) { %>
+  <em>Key expires: <%= expiration_date %></em>
+  <% } %>
+  <% _.each(uids, function(uid, key) { %>
+  <strong><%= uid.name %></strong><br>
+  <%= uid.email %><br><br>
+  <% }); %>
+  <%= keytype_name %> Key / <%= keysize %> bits
+  <label class="right">
+  Send Key <input type="checkbox" name="send_key" value="<%= fingerprint %>">
+  </label>
+</li>
+</script>
+
+
+<script id="template-thread-notification-unthreaded" type="text/template">
+  <a href="<%= url %>"><span class="icon-links"></span> {{_("Message moved to new thread")}} <span class="instruction">({{_("go to new thread")}})</span></a>
+</script>
+
+
+<script id="template-thread-notification-draft-trash" type="text/template">
+  <a href="#" onclick="window.location.reload(true);"><span class="icon-trash"></span> {{_("Draft was deleted")}} <span class="instruction">({{_("click to reload")}})</span></a>
+</script>
+
+
+<script id="template-notification-bubble" type="text/template">
+  <div id="event-<%= event_id %>" class="notification-bubble <%= status %> hide">
+    <span class="icon <%= icon %>"></span> 
+    <span class="text">
+      <span class="message"><%= message %></span><br> 
+      <% if (type === 'nagify') { %>
+      <span class="action">{{"Want to"}} <a href="<%= action %>" data-event_id="<%= event_id %>" class="action notification-nag">{{_("do it now?")}}</a></span>
+      <% } else if (undo) { %>
+      <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo">{{_("undo")}}</a></span>
+      <% } %>
+    </span>
+    <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-circle-x"></span></a>
+  </div>
+</script> 

@@ -1,7 +1,8 @@
 #coding:utf-8
 import os
-from gettext import gettext as _
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.vcard import *
@@ -31,8 +32,9 @@ class GnuPGImporter(VCardImporter):
         if not self.config.active:
             return []
 
-        gnupg = GnuPG()
+        gnupg = GnuPG(self.session.config)
         keys = gnupg.list_keys()
+
         results = []
         vcards = {}
         for key_id, key in keys.iteritems():
@@ -52,7 +54,7 @@ class GnuPGImporter(VCardImporter):
             elif emails:
                 # This is us taking care to only create one card for each
                 # set of e-mail addresses.
-                card = SimpleVCard(*vcls)
+                card = MailpileVCard(*vcls)
                 for email in emails:
                     vcards[email] = card
                 results.append(card)

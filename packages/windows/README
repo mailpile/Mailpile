@@ -1,0 +1,21 @@
+# Executive summary
+
+The script `repackage-linux.sh` can rebuild the Mailpile installer for
+Windows.  Run it, yay!
+
+... or read on to learn about bits and pieces.
+
+
+## Building the environment
+
+The environment is currently a hodge-podge of things.  This will become
+more polished and move towards a proper build setup over time.
+
+Currently we are pulling binaries from the following locations:
+
+   - http://www.python.org/
+   - http://www.lfd.uci.edu/~gohlke/pythonlibs/
+   - https://www.mailpile.is/files/build/
+
+The files on www.mailpile.is either come from the other sources, or have
+been built by us using PIP under Windows.

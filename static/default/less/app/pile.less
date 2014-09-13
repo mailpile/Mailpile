@@ -103,37 +103,29 @@
 /* Pile Bottom */
 
 	#pile-bottom {
-		margin: 15px;
+		margin: 15px 15px 0px 15px;
 	}
 	
 	#pile-bottom h5 {
-		float: right;
+    margin-top: 10px;
 		color: @grayDark;
 	}
 	
-	#pile-bottom div {
-		float: right;
-		text-align: right;
-	}
-	
-	#pile-bottom a.change-view-size {
-		font-size: 12px;
-		margin: 0 6px;
-		padding: 5px 8px;
-		border-radius: @base-border-radius;
+	#pile-bottom a {
+		margin-right: 15px;
 	}
 
-  #pile-bottom a.view-size-selected {
-    background: @grayMid;
-    color: @black;
+  #pile-empty {
+    padding: @base-padding;
+    background: @white;
+    border-bottom: 1px solid @grayMid;
+    font-size: 14px;
   }
 
-  #pile-bottom ul {
-    clear: both;
-  }
-
-  #pile-bottom ul > li {
-    display: inline;
+  #pile-empty-search-terms {
+    font-size: 24px;
+    font-weight: bold;
+    color: @gray;
   }
 
 
@@ -141,13 +133,12 @@
 
 	#pile-speed {
 	  margin-bottom: 50px;
-		text-align: center;
 		font-family: @mailpile-text-font-family-bold;
 		color: @gray;
 	}
 
 	#pile-speed span {
-		font-size: 24px;
+		font-size: 21px;
 		margin-right: 10px;
 		position: relative;
 		top: 3px;
@@ -158,6 +149,7 @@
 /* Pile	- Drag & Drop */
 	
   #pile-results tr.result:hover    td.draggable, 
+  #pile-results tr.result-hover    td.draggable,
   #pile-results tr.result-on:hover td.draggable {
     background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
     opacity: 0.3;

@@ -1,8 +1,10 @@
 import mailbox
 import os
-from gettext import gettext as _
+import sys
 
 import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 
 
@@ -13,7 +15,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     @classmethod
     def parse_path(cls, config, fn, create=False):
         if (((cls.supported_platform is None) or
-             (cls.supported_platform in system().lower())) and
+             (cls.supported_platform == sys.platform[:3].lower())) and
                 ((os.path.isdir(fn) and
                   os.path.exists(os.path.join(fn, 'cur'))) or
                  (create and not os.path.exists(fn)))):

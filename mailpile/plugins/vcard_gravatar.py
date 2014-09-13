@@ -2,10 +2,11 @@
 import os
 import random
 import time
-from gettext import gettext as _
 from urllib2 import urlopen
 
 import mailpile.util
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
@@ -52,7 +53,7 @@ class GravatarImporter(VCardImporter):
 
         want = []
         vcards = self.session.config.vcards
-        for vcard in vcards.find_vcards([]):
+        for vcard in vcards.find_vcards([], kinds=vcards.KINDS_PEOPLE):
             try:
                 ts = int(vcard.get(self.VCARD_TS).value)
             except IndexError:
@@ -63,6 +64,49 @@ class GravatarImporter(VCardImporter):
                 break
         return want
 
+    def _get(self, url):
+        self.session.ui.mark('Getting: %s' % url)
+        return urlopen(url, data=None, timeout=3).read()
+
+    def check_gravatar(self, vcard, email):
+        img = vcf = json = None
+        for vcl in vcard.get_all('email'):
+            digest = md5_hex(vcl.value.lower())
+            try:
+                if mailpile.util.QUITTING:
+                    return []
+                if not img:
+                    img = self._get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
+                                     ) % (self.config.url,
+                                          digest,
+                                          self.config.size,
+                                          self.config.rating))
+
+                # FIXME
+                #if not vcf:
+                #    vcf = self._get('%s/%s.vcf' % (self.config.url, digest))
+
+                # FIXME
+                #if not json:
+                #    json = self._get('%s/%s.json' % (self.config.url, digest))
+
+                if img or vcf or json:
+                    email = vcl.value
+            except IOError:
+                pass
+
+        if (self.config.default != '404') and not img:
+            try:
+                img = self._get(('%s/avatar/%s.jpg?s=%s&d=%s'
+                                 ) % (self.config.url,
+                                      md5_hex(email.lower()),
+                                      self.config.size,
+                                      self.config.default))
+            except IOError:
+                pass
+
+        return email, img, vcf, json
+
     def get_vcards(self):
         if not self.config.active:
             return []
@@ -70,60 +114,38 @@ class GravatarImporter(VCardImporter):
         def _b64(data):
             return data.encode('base64').replace('\n', '')
 
-        def _get(url):
-            self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url, data=None, timeout=3).read()
-
         results = []
         for contact in self._want_update():
-            if mailpile.util.QUITTING:
-                return []
-
-            vcls = [VCardLine(name=self.VCARD_TS, value=int(time.time()))]
             email = contact.email
             if not email:
                 continue
 
-            img = json = None
-            for vcl in contact.get_all('email'):
-                digest = md5_hex(vcl.value.lower())
-                try:
-                    if mailpile.util.QUITTING:
-                        return []
-                    if not img:
-                        img = _get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
-                                    ) % (self.config.url,
-                                         digest,
-                                         self.config.size,
-                                         self.config.rating))
-                    if not json:
-                        json = _get('%s/%s.json' % (self.config.url, digest))
-                        email = vcl.value
-                except IOError:
-                    pass
+            if mailpile.util.QUITTING:
+                return []
 
-            if json:
-                pass  # FIXME: parse the JSON
+            vcard = MailpileVCard(VCardLine(name=self.VCARD_TS,
+                                            value=int(time.time())))
+            email, img, gcard, gjson = self.check_gravatar(contact, email)
 
-            if (self.config.default != '404') and not img:
-                try:
-                    img = _get(('%s/avatar/%s.jpg?s=%s&d=%s'
-                                ) % (self.config.url,
-                                     md5_hex(email.lower()),
-                                     self.config.size,
-                                     self.config.default))
-                except IOError:
-                    pass
+            if gcard:
+                # FIXME: Is this boring?
+                # vcard.load(data=gcard)
+                pass
+
+            if gjson:
+                # FIXME: This is less boring!
+                pass
 
             if img:
-                vcls.append(VCardLine(
+                vcard.add(VCardLine(
                     name='photo',
                     value='data:image/jpeg;base64,%s' % _b64(img),
                     mediatype='image/jpeg'
                 ))
 
-            vcls.append(VCardLine(name='email', value=email))
-            results.append(SimpleVCard(*vcls))
+            if gcard or gjson or img:
+                vcard.add(VCardLine(name='email', value=email))
+                results.append(vcard)
         return results
 
 

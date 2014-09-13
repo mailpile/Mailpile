@@ -5,13 +5,15 @@ import re
 import urllib
 import json
 import shlex
-from gettext import gettext as _
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string
+
 #from markdown import markdown
 
 from mailpile.commands import Action
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 from mailpile.ui import HttpUserInteraction
 from mailpile.urlmap import UrlMap
@@ -24,86 +26,97 @@ class MailpileCommand(Extension):
 
     def __init__(self, environment):
         Extension.__init__(self, environment)
-        self.env = environment
-        environment.globals['mailpile'] = self._command
-        environment.globals['mailpile_render'] = self._command_render
-        environment.globals['use_data_view'] = self._use_data_view
-        environment.globals['regex_replace'] = self._regex_replace
-        environment.filters['regex_replace'] = self._regex_replace
-        environment.globals['friendly_bytes'] = self._friendly_bytes
-        environment.filters['friendly_bytes'] = self._friendly_bytes
-        environment.globals['friendly_number'] = self._friendly_number
-        environment.filters['friendly_number'] = self._friendly_number
-        environment.globals['show_avatar'] = self._show_avatar
-        environment.filters['show_avatar'] = self._show_avatar
-        environment.globals['navigation_on'] = self._navigation_on
-        environment.filters['navigation_on'] = self._navigation_on
-        environment.globals['has_label_tags'] = self._has_label_tags
-        environment.filters['has_label_tags'] = self._has_label_tags
-        environment.globals['show_message_signature'
-                            ] = self._show_message_signature
-        environment.filters['show_message_signature'
-                            ] = self._show_message_signature
-        environment.globals['show_message_encryption'
-                            ] = self._show_message_encryption
-        environment.filters['show_message_encryption'
-                            ] = self._show_message_encryption
-        environment.globals['contact_url'] = self._contact_url
-        environment.filters['contact_url'] = self._contact_url
-        environment.globals['contact_name'] = self._contact_name
-        environment.filters['contact_name'] = self._contact_name
-        environment.globals['fix_urls'] = self._fix_urls
-        environment.filters['fix_urls'] = self._fix_urls
+        e = self.env = environment
+        s = self
+        e.globals['mailpile'] = s._command
+        e.globals['mailpile_render'] = s._command_render
+        e.globals['use_data_view'] = s._use_data_view
+        e.globals['regex_replace'] = s._regex_replace
+        e.filters['regex_replace'] = s._regex_replace
+        e.globals['friendly_bytes'] = s._friendly_bytes
+        e.filters['friendly_bytes'] = s._friendly_bytes
+        e.globals['friendly_number'] = s._friendly_number
+        e.filters['friendly_number'] = s._friendly_number
+        e.globals['show_avatar'] = s._show_avatar
+        e.filters['show_avatar'] = s._show_avatar
+        e.globals['navigation_on'] = s._navigation_on
+        e.filters['navigation_on'] = s._navigation_on
+        e.globals['has_label_tags'] = s._has_label_tags
+        e.filters['has_label_tags'] = s._has_label_tags
+        e.globals['show_message_signature'] = s._show_message_signature
+        e.filters['show_message_signature'] = s._show_message_signature
+        e.globals['show_message_encryption'] = s._show_message_encryption
+        e.filters['show_message_encryption'] = s._show_message_encryption
+        e.globals['show_text_part_signature'] = s._show_text_part_signature
+        e.filters['show_text_part_signature'] = s._show_text_part_signature
+        e.globals['show_text_part_encryption'] = s._show_text_part_encryption
+        e.filters['show_text_part_encryption'] = s._show_text_part_encryption
+        e.globals['show_crypto_policy'] = s._show_crypto_policy
+        e.filters['show_crypto_policy'] = s._show_crypto_policy
+        e.globals['contact_url'] = s._contact_url
+        e.filters['contact_url'] = s._contact_url
+        e.globals['contact_name'] = s._contact_name
+        e.filters['contact_name'] = s._contact_name
+        e.globals['fix_urls'] = s._fix_urls
+        e.filters['fix_urls'] = s._fix_urls
 
         # See utils.py for these functions:
-        environment.globals['elapsed_datetime'] = elapsed_datetime
-        environment.filters['elapsed_datetime'] = elapsed_datetime
-        environment.globals['friendly_datetime'] = friendly_datetime
-        environment.filters['friendly_datetime'] = friendly_datetime
-        environment.globals['friendly_time'] = friendly_time
-        environment.filters['friendly_time'] = friendly_time
+        e.globals['elapsed_datetime'] = elapsed_datetime
+        e.filters['elapsed_datetime'] = elapsed_datetime
+        e.globals['friendly_datetime'] = friendly_datetime
+        e.filters['friendly_datetime'] = friendly_datetime
+        e.globals['friendly_time'] = friendly_time
+        e.filters['friendly_time'] = friendly_time
 
         # These are helpers for injecting plugin elements
-        environment.globals['get_ui_elements'] = self._get_ui_elements
-        environment.globals['ui_elements_setup'] = self._ui_elements_setup
-        environment.filters['add_state_query_string'] = self._add_state_query_string
+        e.globals['get_ui_elements'] = s._get_ui_elements
+        e.globals['ui_elements_setup'] = s._ui_elements_setup
+        e.filters['add_state_query_string'] = s._add_state_query_string
 
         # This is a worse versin of urlencode, but without it we require
         # Jinja 2.7, which isn't apt-get installable.
-        environment.globals['urlencode'] = self._urlencode
-        environment.filters['urlencode'] = self._urlencode
+        e.globals['urlencode'] = s._urlencode
+        e.filters['urlencode'] = s._urlencode
 
         # Make a function-version of the safe command
-        environment.globals['safe'] = self._safe
-        environment.filters['json'] = self._json
+        e.globals['safe'] = s._safe
+        e.filters['json'] = s._json
 
         # Strip trailing blank lines from email
-        environment.globals['nice_text'] = self._nice_text
-        environment.filters['nice_text'] = self._nice_text
+        e.globals['nice_text'] = s._nice_text
+        e.filters['nice_text'] = s._nice_text
 
         # Strip Re: Fwd: from subject lines
-        environment.globals['nice_subject'] = self._nice_subject
-        environment.filters['nice_subject'] = self._nice_subject
+        e.globals['nice_subject'] = s._nice_subject
+        e.filters['nice_subject'] = s._nice_subject
 
         # Make unruly names a lil bit nicer
-        environment.globals['nice_name'] = self._nice_name
-        environment.filters['nice_name'] = self._nice_name
+        e.globals['nice_name'] = s._nice_name
+        e.filters['nice_name'] = s._nice_name
 
         # Makes a UI usable classification of attachment from mimetype
-        environment.globals['attachment_type'] = self._attachment_type
-        environment.filters['attachment_type'] = self._attachment_type
+        e.globals['attachment_type'] = s._attachment_type
+        e.filters['attachment_type'] = s._attachment_type
 
         # Loads theme settings JSON manifest
-        environment.globals['theme_settings'] = self._theme_settings
-        environment.filters['theme_settings'] = self._theme_settings
+        e.globals['theme_settings'] = s._theme_settings
+        e.filters['theme_settings'] = s._theme_settings
 
         # Separates Fingerprint in 4 char groups
-        environment.globals['nice_fingerprint'] = self._nice_fingerprint
-        environment.filters['nice_fingerprint'] = self._nice_fingerprint
+        e.globals['nice_fingerprint'] = s._nice_fingerprint
+        e.filters['nice_fingerprint'] = s._nice_fingerprint
 
         # Converts Filter +/- tags into arrays
-        environment.globals['make_filter_groups'] = self._make_filter_groups
-        environment.filters['make_filter_groups'] = self._make_filter_groups
+        e.globals['make_filter_groups'] = s._make_filter_groups
+        e.filters['make_filter_groups'] = s._make_filter_groups
+
+        # Make Nice Summary of Recipients
+        e.globals['recipient_summary'] = s._recipient_summary
+        e.filters['recipient_summary'] = s._recipient_summary
+
+        # Nagifications
+        e.globals['show_nagification'] = s._show_nagification
+        e.filters['show_nagification'] = s._show_nagification
 
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -302,6 +315,17 @@ class MailpileCommand(Extension):
     }
 
     @classmethod
+    def _show_text_part_signature(self, status):
+        # Within a text part, mixed state is equivalent to no encryption, and
+        # no signature - the signed/encrypted parts are explictly marked.
+        try:
+            if status and status.startswith('mixed-'):
+                status = 'none'
+        except UndefinedError:
+            status = 'none'
+        return self._show_message_signature(status)
+
+    @classmethod
     def _show_message_signature(self, status):
         # This avoids crashes when attributes are missing.
         try:
@@ -346,9 +370,8 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You don't have any of the private keys that will decrypt this "
-              "message. Perhaps it was encrypted to an old key you don't have "
-              "anymore?")],
+            _("You don't have the encryption key to decrypt this message, "
+              "perhaps it was encrypted to an old key you don't have anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
@@ -369,6 +392,17 @@ class MailpileCommand(Extension):
     }
 
     @classmethod
+    def _show_text_part_encryption(self, status):
+        # Within a text part, mixed state is equivalent to no encryption, and
+        # no signature - the signed/encrypted parts are explictly marked.
+        try:
+            if status and status.startswith('mixed-'):
+                status = 'none'
+        except UndefinedError:
+            status = 'none'
+        return self._show_message_encryption(status)
+
+    @classmethod
     def _show_message_encryption(self, status):
         # This avoids crashes when attributes are missing.
         try:
@@ -386,23 +420,60 @@ class MailpileCommand(Extension):
             'message': message
         }
 
-        return classes
+    _DEFAULT_CRYPTO_POLICY = [
+        _("Automatic"),
+        _("Mailpile will intelligently try to guess and suggest the best "
+          "security with this given contact")]
+    _CRYPTO_POLICY = {
+        "default": [
+            _("Automatic"),
+            _("Mailpile will intelligently try to guess and suggest the best "
+              "security with this given contact")],
+        "none": [
+            _("Don't Sign or Encrypt"),
+            _("Messages will not be encrypted nor signed by your encryption key")],
+        "sign": [
+            _("Only Sign"),
+            _("Messages will only be signed by your encryption key")],
+        "encrypt": [
+            _("Only Encrypt"),
+            _("Messages will only be encrypted but not signed by your encryption key")],
+        "sign-encrypt": [
+            _("Always Encrypt & Sign"),
+            _("Messages will be both encrypted and signed by your encryption key")]
+    }
+
+    @classmethod
+    def _show_crypto_policy(self, policy):
+        # This avoids crashes when attributes are missing.
+        try:
+            if policy.startswith('hack the planet'):
+                pass
+        except UndefinedError:
+            policy = ''
+
+        text, message = self._CRYPTO_POLICY.get(policy, self._DEFAULT_CRYPTO_POLICY)
+
+        return {
+            'text': text,
+            'message': message
+        }
 
     @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
-            url = "/contact/" + person['address'] + "/"
+            url = "/contacts/view/" + person['address'] + "/"
         else:
-            url = "/contact/add/" + person['address'] + "/"
+            url = "/#add-contact"
         return url
 
     @classmethod
-    def _contact_name(self, profiles, person):
+    def _contact_name(self, person):
         name = person['fn']
-        for profile in profiles:
-            if profile['email'] == person['address']:
-                name = _('You')
-                break
+        if (not name or '@' in name) and person.get('email'):
+            vcard = self.env.session.config.vcards.get_vcard(person['email'])
+            if vcard:
+                return vcard.fn
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
@@ -458,19 +529,14 @@ class MailpileCommand(Extension):
                             ' target=_blank ',
                             m.group(2), url, m.group(4), desc, m.group(6)])
 
-        # FIXME: Disabled for now, we will instead grab the mailto: URLs
-        #        using javascript. A mailto: link is a reasonable fallback
-        #        until we have a GET'able compose dialog.
-        #
-        #def mailto_fixer(m):
-        #    return ''.join([m.group(1), 'href=\'javascript:compose("',
-        #                    m.group(3), '")\'>', m.group(5), m.group(6)])
-        #
-        #return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
-        #                     re.sub(self.URL_RE_MAILTO, mailto_fixer,
-        #                            text)))
-
-        return Markup(re.sub(self.URL_RE_HTTP, http_fixer, text))
+        def mailto_fixer(m):
+            return ''.join([m.group(1), 'href="mailto:', m.group(3),
+                            '" class="compose-to-email">',
+                            m.group(5), m.group(6)])
+        
+        return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
+                             re.sub(self.URL_RE_MAILTO, mailto_fixer,
+                                    text)))
 
     def _urlencode(self, s):
         if type(s) == 'Markup':
@@ -499,15 +565,33 @@ class MailpileCommand(Extension):
         return trimmed.strip()
 
     @classmethod
-    def _nice_subject(self, subject):
-        output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', subject)
+    def _nice_subject(self, metadata):
+        #if metadata['subject'] != _("Encrypted Email"):
+        if metadata['subject']:
+            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
+        else:
+            output = '(' + _("No Subject") + ')'
+
         return output
 
     def _nice_name(self, name, truncate=100):
         if len(name) > truncate:
             name = name[:truncate-3] + '...'
         return name
-        
+
+    def _recipient_summary(self, editing_strings, addresses, truncate):
+        summary_list = []
+        recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
+        for aid in recipients:
+            summary_list.append(addresses[aid].fn)
+        summary = ', '.join(summary_list)
+        if len(summary) > truncate:
+            others = ''
+            if len(recipients) > 1:
+                others = _("and") + ' ' + str(len(recipients) - 1) + ' ' + _("others")
+            summary = summary[:truncate] + '... ' + others
+        return summary
+
     def _attachment_type(self, mime):
         if mime in [
             "application/octet-stream",
@@ -657,7 +741,10 @@ class MailpileCommand(Extension):
     def _nice_fingerprint(self, fingerprint):
         if fingerprint:
             slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
-            return slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3]
+            output = ""
+            for group in slices:
+                output += group + " "
+            return output
         else:
             return _("No Fingerprint")
 
@@ -675,3 +762,9 @@ class MailpileCommand(Extension):
         output['add'] = add
         output['remove'] = remove
         return output
+
+    def _show_nagification(self, nag):
+        now = long((time.time() + 0.5) * 1000)
+        if now > nag and nag != -1:
+            return True
+        return False

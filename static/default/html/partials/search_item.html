@@ -36,7 +36,7 @@
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <span class="pile-message-tag" id="pile-message-tag-{{tag.tid}}-{{mid}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
+      <span class="pile-message-tag color-{{tag.label_color}}" id="pile-message-tag-{{tag.tid}}-{{mid}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
         <span class="pile-message-tag-icon {{tag.icon}}"></span>
         <span class="pile-message-tag-name">{{tag.name}}</span>
       </span>
@@ -44,7 +44,12 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
+    <a class="item-subject" href="{{url}}">
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted') %}
+    <span class="icon-lock-closed color-08-green"></span> 
+    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
+    <span class="icon-lock-closed color-12-red"></span> 
+    {% endif %}{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
     <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>

@@ -1,9 +1,11 @@
+import errno
 import mailbox
 import os
 import threading
-from gettext import gettext as _
 
 import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import MBX_ID_LEN, NoSuchMailboxError
 from mailpile.util import *
 
@@ -29,18 +31,19 @@ class MailpileMailbox(mailbox.mbox):
         self._mtime = 0
         self._save_to = None
         self._encryption_key_func = lambda: None
-        self._lock = threading.Lock()
+        self._decryption_key_func = lambda: None
+        self._lock = MboxLock()
 
     def _get_fd(self):
         return open(self._path, 'rb+')
 
     def __setstate__(self, dict):
         self.__dict__.update(dict)
-        self._lock = threading.Lock()
-        self._lock.acquire()
-        self._save_to = None
-        self._encryption_key_func = lambda: None
-        try:
+        self._lock = MboxLock()
+        with self._lock:
+            self._save_to = None
+            self._encryption_key_func = lambda: None
+            self._decryption_key_func = lambda: None
             try:
                 if not os.path.exists(self._path):
                     raise NoSuchMailboxError(self._path)
@@ -52,22 +55,20 @@ class MailpileMailbox(mailbox.mbox):
                     self._file = self._get_fd()
                 else:
                     raise
-        finally:
-            self._lock.release()
         self.update_toc()
 
     def __getstate__(self):
         odict = self.__dict__.copy()
         # Pickle can't handle function objects.
-        for dk in ('_save_to', '_encryption_key_func',
+        for dk in ('_save_to',
+                   '_encryption_key_func', '_decryption_key_func',
                    '_file', '_lock', 'parsed'):
             if dk in odict:
                 del odict[dk]
         return odict
 
     def update_toc(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             fd = self._file
 
             # FIXME: Should also check the mtime.
@@ -102,22 +103,17 @@ class MailpileMailbox(mailbox.mbox):
 
             self._file_length = fd.tell()
             self._mtime = cur_mtime
-        finally:
-            self._lock.release()
         self.save(None)
 
     def save(self, session=None, to=None, pickler=None):
         if to and pickler:
             self._save_to = (pickler, to)
         if self._save_to and len(self) > 0:
-            self._lock.acquire()
-            try:
+            with self._lock:
                 pickler, fn = self._save_to
                 if session:
                     session.ui.mark(_('Saving %s state to %s') % (self, fn))
                 pickler(self, fn)
-            finally:
-                self._lock.release()
 
     def get_msg_size(self, toc_id):
         try:
@@ -126,8 +122,7 @@ class MailpileMailbox(mailbox.mbox):
             return 0
 
     def get_msg_cs(self, start, cs_size, max_length):
-        self._lock.acquire()
-        try:
+        with self._lock:
             if start is None:
                 raise IOError(_('No data found'))
             fd = self._file
@@ -136,8 +131,6 @@ class MailpileMailbox(mailbox.mbox):
             if firstKB == '':
                 raise IOError(_('No data found'))
             return b64w(sha1b64(firstKB)[:4])
-        finally:
-            self._lock.release()
 
     def get_msg_cs1k(self, start, max_length):
         return self.get_msg_cs(start, 1024, max_length)

@@ -1,11 +1,11 @@
 # This plugin generates Javascript, HTML or CSS fragments based on the
 # current theme, skin and active plugins.
 #
-from gettext import gettext as _
-
 import mailpile.config
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+from mailpile.plugins import PluginManager
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
@@ -32,6 +32,7 @@ class JsApi(Command):
     SYNOPSIS = (None, None, 'jsapi', None)
     ORDER = ('Internals', 0)
     HTTP_CALLABLE = ('GET', )
+    HTTP_AUTH_REQUIRED = 'Maybe'
 
     def command(self, save=True, auto=False):
         session, config = self.session, self.session.config

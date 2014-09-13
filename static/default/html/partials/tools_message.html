@@ -1,31 +1,12 @@
 <div id="thread-title" class="sub-navigation clearfix">
-  <h1>{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject|nice_subject }}{% else %}{{_('No Subject')}}{% endif %}</h1>
-  <ul class="horizontal">
-    <li><a href="#"><span class="icon-inbox"></span> {{ result.data.metadata|length }} {{_("Messages")}}</a></li>
-    <li><a class="show-thread-people" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
-    <!-- <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li> -->
-    <li><a class="show-thread-tags" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
-  </ul>
+  <div class="thread-draggable"></div>
+  <div class="thread-details">
+    <h1>{{ nice_subject(result.data.metadata[result.thread_ids[-1]]) }}</h1><br>
+    <ul class="horizontal">
+      <li><a href="#"><span class="icon-message"></span> {{ result.data.metadata|length }} {{_("Messages")}}</a></li>
+      <li><a class="show-thread-people" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
+      <!-- <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li> -->
+      <li><a class="show-thread-tags" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
+    </ul>
+  </div>
 </div>
-{# - set hard_coded_selection_actions = safe('
-  <li><a class="bulk-action" href="#" data-action="later" title="' + _("Move Thread to Later") + '"><span class="icon-later"></span></a></li>
-  <li><a class="bulk-action" href="#" data-action="assign-tags" title="' + _("Assign Tags to Thread") + '"><span class="icon icon-tag"></span></a></li>
-  <li><a class="bulk-action" href="#" data-action="archive" title="' + _("Archive Thread") + '"><span class="icon icon-archive"></span></a></li>
-  <li><a class="bulk-action" href="#" data-action="trash" title="' + _("Delete Thread") + '"><span class="icon icon-trash"></span></a></li>
-') -%}
-{%- set tools_disable_checkbox = True -%}
-{%- set tools_all_in_bulk_actions = True -%}
-{%- include('partials/tools_default.html') -%}
-#}
-
-{#- ####### OLD STUFF #########
-<div class="bulk-actions clearfix">
-  <div class="left">{{ result.data.metadata|length }} {{_("Messages")}}</div>
-  <ul class="horizontal right">
-    <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move Thread to Later")}}"><span class="icon-later"></span></a></li>
-    <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags to Thread")}}"><span class="icon icon-tag"></span></a></li>
-    <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Thread")}}"><span class="icon icon-archive"></span></a></li>
-    <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Thread")}}"><span class="icon icon-trash"></span></a></li>
-  </ul>  
-</div>
-#}

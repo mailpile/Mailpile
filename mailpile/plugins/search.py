@@ -1,9 +1,10 @@
 import datetime
 import re
 import time
-from gettext import gettext as _
 
 from mailpile.commands import Command, SearchResults
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, FormatMbxId
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
@@ -51,7 +52,9 @@ class Search(Command):
 
         def as_text(self):
             if self.result:
-                if isinstance(self.result, (list, set)):
+                if isinstance(self.result, (bool, str, unicode, int, float)):
+                    return unicode(self.result)
+                elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
                 else:
                     return self.result.as_text()
@@ -100,21 +103,29 @@ class Search(Command):
         elif d_end:
             args[:0] = ['@%s' % (d_end - num + 1)]
 
+        start = 0
         if args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
-        else:
-            start = 0
 
-        # FIXME: Is this dumb?
+        prefix = ''
         for arg in args:
-            if ':' in arg or (arg and arg[0] in ('-', '+')):
+            if arg.endswith(':'):
+                prefix = arg
+            elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                prefix = ''
                 session.searched.append(arg.lower())
+            elif prefix and '@' in arg:
+                session.searched.append(prefix + arg.lower())
             else:
-                session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
+                words = re.findall(WORD_REGEXP, arg.lower())
+                session.searched.extend([prefix + word for word in words])
+
+        if not session.searched:
+             session.searched = ['all:mail']
 
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())
@@ -297,7 +308,7 @@ class Extract(Command):
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
             self.fixed_up = False
-            return Command.CommandResult.__init__(self, *args, **kwargs)
+            Command.CommandResult.__init__(self, *args, **kwargs)
 
         def _fixup(self):
             if self.fixed_up:
@@ -327,6 +338,8 @@ class Extract(Command):
             mode = args.pop(0)
 
         if len(args) > 0 and args[-1].startswith('>'):
+            if self.session.config.sys.lockdown:
+                return self._error(_('In lockdown, doing nothing.'))
             name_fmt = args.pop(-1)[1:]
 
         if (args[0].startswith('#') or
@@ -336,11 +349,7 @@ class Extract(Command):
         else:
             cid = args.pop(-1)
 
-        eids = self._choose_messages(args)
-        emails = [Email(idx, i) for i in eids]
-
-        print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
-
+        emails = [Email(idx, i) for i in self._choose_messages(args)]
         results = []
         for e in emails:
             if cid[0] == '*':

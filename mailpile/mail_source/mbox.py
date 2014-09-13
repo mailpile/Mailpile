@@ -1,7 +1,8 @@
 import os
-from gettext import gettext as _
 
 from mailpile.mail_source import BaseMailSource
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 class MboxMailSource(BaseMailSource):
@@ -15,17 +16,21 @@ class MboxMailSource(BaseMailSource):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.watching = -1
 
-    def _unlocked_open(self):
-        mailboxes = self.my_config.mailbox.values()
-        if self.watching == len(mailboxes):
-            return True
-        else:
-            self.watching = len(mailboxes)
+    def close(self):
+        pass
 
-        # Prepare the data section of our event, for keeping state.
-        for d in ('mtimes', 'sizes'):
-            if d not in self.event.data:
-                self.event.data[d] = {}
+    def open(self):
+        with self._lock:
+            mailboxes = self.my_config.mailbox.values()
+            if self.watching == len(mailboxes):
+                return True
+            else:
+                self.watching = len(mailboxes)
+
+            # Prepare the data section of our event, for keeping state.
+            for d in ('mailbox_state', ):
+                if d not in self.event.data:
+                    self.event.data[d] = {}
 
         self._log_status(_('Watching %d mbox mailboxes') % self.watching)
         return True
@@ -36,12 +41,15 @@ class MboxMailSource(BaseMailSource):
             sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
         except (OSError, IOError):
             mt = sz = state['mt'] = state['sz'] = -1
-        return (mt != self.event.data['mtimes'].get(mbx._key) or
-                sz != self.event.data['sizes'].get(mbx._key))
+        mtsz = '%s/%s' % (mt, sz)
+        return (mtsz != self.event.data.get('mailbox_state', {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        self.event.data['mtimes'][mbx._key] = state['mt']
-        self.event.data['sizes'][mbx._key] = state['sz']
+        mtsz = '%s/%s' % (state['mt'], state['sz'])
+        if 'mailbox_state' in self.event.data:
+            self.event.data['mailbox_state'][mbx._key] = mtsz
+        else:
+            self.event.data['mailbox_state'] = {mbx._key: mtsz}
 
     def is_mailbox(self, fn):
         try:

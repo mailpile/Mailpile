@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 import base64
 import copy
 import email.header
@@ -9,11 +10,11 @@ import mailbox
 import mimetypes
 import os
 import quopri
+import random
 import re
 import StringIO
 import threading
 import traceback
-from gettext import gettext as _
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
@@ -28,8 +29,11 @@ from urllib import quote, unquote
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
+from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 from mailpile.vcard import AddressInfo
 
@@ -42,7 +46,7 @@ def FormatMbxId(n):
         n = b36(n)
     if len(n) > MBX_ID_LEN:
         raise ValueError(_('%s is too large to be a mailbox ID') % n)
-    return ('0000' + n)[-MBX_ID_LEN:]
+    return ('0000' + n).lower()[-MBX_ID_LEN:]
 
 
 class NotEditableError(ValueError):
@@ -65,16 +69,79 @@ class NoSuchMailboxError(OSError):
     pass
 
 
-def ParseMessage(fd, pgpmime=True):
-    message = email.parser.Parser().parse(fd)
-    if pgpmime and GnuPG:
+GLOBAL_CONTENT_ID_LOCK = MboxLock()
+GLOBAL_CONTENT_ID = random.randint(0, 0xfffffff)
+
+def MakeContentID():
+    global GLOBAL_CONTENT_ID
+    with GLOBAL_CONTENT_ID_LOCK:
+        GLOBAL_CONTENT_ID += 1
+        GLOBAL_CONTENT_ID %= 0xfffffff
+        return '%x' % GLOBAL_CONTENT_ID
+
+
+GLOBAL_PARSE_CACHE_LOCK = MboxLock()
+GLOBAL_PARSE_CACHE = []
+
+def ClearParseCache(cache_id=None, pgpmime=False, full=False):
+    global GLOBAL_PARSE_CACHE
+    with GLOBAL_PARSE_CACHE_LOCK:
+        GPC = GLOBAL_PARSE_CACHE
+        for i in range(0, len(GPC)):
+            if (full or
+                    (pgpmime and GPC[i][1]) or
+                    (cache_id and GPC[i][0] == cache_id)):
+                GPC[i] = (None, None, None)
+
+
+def ParseMessage(fd, cache_id=None, update_cache=False,
+                     pgpmime=True, config=None):
+    global GLOBAL_PARSE_CACHE
+    if not GnuPG:
+        pgpmime = False
+
+    if cache_id is not None and not update_cache:
+        with GLOBAL_PARSE_CACHE_LOCK:
+            for cid, pm, message in GLOBAL_PARSE_CACHE:
+                if cid == cache_id and pm == pgpmime:
+                    return message
+
+    if pgpmime:
+        message = ParseMessage(fd, cache_id=cache_id,
+                               pgpmime=False,
+                               config=config)
+        if message is None:
+            return None
+        if cache_id is not None:
+            # Caching is enabled, let's not clobber the encrypted version
+            # of this message with a fancy decrypted one.
+            message = copy.deepcopy(message)
+        def MakeGnuPG(*args, **kwargs):
+            return GnuPG(config, *args, **kwargs)
         UnwrapMimeCrypto(message, protocols={
-            'openpgp': GnuPG
+            'openpgp': MakeGnuPG
         })
     else:
+        try:
+            if not hasattr(fd, 'read'):  # Not a file, is it a function?
+                fd = fd()
+            assert(hasattr(fd, 'read'))
+        except (TypeError, AssertionError):
+            return None
+
+        message = email.parser.Parser().parse(fd)
+        msi = message.signature_info = SignatureInfo(bubbly=False)
+        mei = message.encryption_info = EncryptionInfo(bubbly=False)
         for part in message.walk():
-            part.signature_info = SignatureInfo()
-            part.encryption_info = EncryptionInfo()
+            part.signature_info = SignatureInfo(parent=msi)
+            part.encryption_info = EncryptionInfo(parent=mei)
+
+    if cache_id is not None:
+        with GLOBAL_PARSE_CACHE_LOCK:
+            # Keep 25 items, put new ones at the front
+            GLOBAL_PARSE_CACHE[24:] = []
+            GLOBAL_PARSE_CACHE[:0] = [(cache_id, pgpmime, message)]
+
     return message
 
 
@@ -114,7 +181,7 @@ def ExtractEmailAndName(string):
 def MessageAsString(part, unixfrom=False):
     buf = StringIO.StringIO()
     Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
-    return buf.getvalue()
+    return buf.getvalue().replace('--\r\n--', '--\r\n\r\n--')
 
 
 def CleanMessage(config, msg):
@@ -185,7 +252,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     sender_keyid = None
     if config.prefs.openpgp_header:
         try:
-            gnupg = GnuPG()
+            gnupg = GnuPG(config)
             seckeys = dict([(uid["email"], fp) for fp, key
                             in gnupg.list_secret_keys().iteritems()
                             if key["capabilities_map"][0].get("encrypt")
@@ -209,21 +276,26 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
-    if 'openpgp' in crypto_policy:
-
-        # FIXME: Make a more efficient sign+encrypt wrapper
-
-        cleaner = lambda m: CleanMessage(config, m)
-        if 'sign' in crypto_policy:
-            msg = OpenPGPMimeSigningWrapper(config,
-                                            sender=sender,
-                                            cleaner=cleaner,
-                                            recipients=rcpts).wrap(msg)
-        if 'encrypt' in crypto_policy:
-            msg = OpenPGPMimeEncryptingWrapper(config,
-                                               sender=sender,
-                                               cleaner=cleaner,
-                                               recipients=rcpts).wrap(msg)
+    # Should be 'openpgp', but there is no point in being precise
+    if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
+        wrapper = None
+        if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeSignEncryptWrapper
+        elif 'sign' in crypto_policy:
+            wrapper = OpenPGPMimeSigningWrapper
+        elif 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeEncryptingWrapper
+        elif 'none' not in crypto_policy:
+            raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
+        if wrapper:
+            cpi = config.prefs.inline_pgp
+            msg = wrapper(config,
+                          sender=sender,
+                          cleaner=lambda m: CleanMessage(config, m),
+                          recipients=rcpts
+                          ).wrap(msg, prefer_inline=cpi)
+    elif crypto_policy and crypto_policy != 'none':
+        raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
     msg['x-mp-internal-readonly'] = str(int(time.time()))
@@ -275,7 +347,8 @@ class Email(object):
         self.ephemeral_mid = ephemeral_mid
         self.reset_caches(msg_parsed=msg_parsed,
                           msg_parsed_pgpmime=msg_parsed_pgpmime,
-                          msg_info=msg_info)
+                          msg_info=msg_info,
+                          clear_parse_cache=False)
 
     def msg_mid(self):
         return self.ephemeral_mid or b36(self.msg_idx_pos)
@@ -285,7 +358,7 @@ class Email(object):
         hdr_value = value or (msg and msg.get(hdr)) or ''
         try:
             hdr_value.encode('us-ascii')
-        except:
+        except (UnicodeEncodeError, UnicodeDecodeError):
             if hdr.lower() in ('from', 'to', 'cc', 'bcc'):
                 addrs = []
                 for addr in [a.strip() for a in hdr_value.split(',')]:
@@ -312,67 +385,71 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text=None, msg_references=None,
+               msg_subject=None, msg_text='', msg_references=None,
+               msg_id=None, msg_atts=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
-        msg.signature_info = SignatureInfo()
-        msg.encryption_info = EncryptionInfo()
+        msg.signature_info = msi = SignatureInfo(bubbly=False)
+        msg.encryption_info = mei = EncryptionInfo(bubbly=False)
         msg_ts = int(time.time())
 
-        if not msg_from:
-            msg_from = idx.config.get_profile().get('email', None)
-            from_name = idx.config.get_profile().get('name', None)
-            if msg_from and from_name:
-                msg_from = '%s <%s>' % (from_name, msg_from)
+        if msg_from:
+            from_email = AddressHeaderParser(unicode_data=msg_from)[0].address
+            from_profile = idx.config.get_profile(email=from_email)
+        else:
+            from_profile = idx.config.get_profile()
+            from_email = from_profile.get('email', None)
+            from_name = from_profile.get('name', None)
+            if from_email and from_name:
+                msg_from = '%s <%s>' % (from_name, from_email)
         if not msg_from:
             raise NoFromAddressError()
 
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_ts)
-        msg['Message-Id'] = email.utils.make_msgid('mailpile')
+        msg['Message-Id'] = msg_id or email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
+
+        ahp = AddressHeaderParser()
+        norm = lambda a: ', '.join(sorted(list(set(ahp.normalized_addresses(
+            addresses=a, with_keys=True, force_name=True)))))
         if msg_to:
-            msg['To'] = cls.encoded_hdr(None, 'to',
-                                        value=', '.join(set(msg_to)))
+            msg['To'] = cls.encoded_hdr(None, 'to', value=norm(msg_to))
         if msg_cc:
-            msg['Cc'] = cls.encoded_hdr(None, 'cc',
-                                        value=', '.join(set(msg_cc)))
+            msg['Cc'] = cls.encoded_hdr(None, 'cc', value=norm(msg_cc))
         if msg_bcc:
-            msg['Bcc'] = cls.encoded_hdr(None, 'bcc',
-                                         value=', '.join(set(msg_bcc)))
+            msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=norm(msg_bcc))
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
+
+        sig = from_profile.get('signature')
+        if sig and ('\n-- \n' not in (msg_text or '')):
+            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
 
         if msg_text:
             try:
                 msg_text.encode('us-ascii')
                 charset = 'us-ascii'
-            except UnicodeEncodeError:
+            except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
-            textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
-            textpart.signature_info = SignatureInfo()
-            textpart.encryption_info = EncryptionInfo()
-            msg.attach(textpart)
-            del textpart['MIME-Version']
+            tp = MIMEText(msg_text, _subtype='plain', _charset=charset)
+            tp.signature_info = SignatureInfo(parent=msi)
+            tp.encryption_info = EncryptionInfo(parent=mei)
+            msg.attach(tp)
+            del tp['MIME-Version']
 
-        if append_sig:
-            sig = idx.config.get_profile().get('signature', '')
-            if sig not in ['', None]:
-                try:
-                    sig.encode('us-ascii')
-                    charset = 'us-ascii'
-                except UnicodeEncodeError:
-                    charset = 'utf-8'
-                textpart = MIMEText(sig, _subtype='plain', _charset=charset)
-                textpart.signature_info = SignatureInfo()
-                textpart.encryption_info = EncryptionInfo()
-                msg.attach(textpart)
-                del textpart['MIME-Version']
+        if msg_atts:
+            for att in msg_atts:
+                att = copy.deepcopy(att)
+                att.signature_info = SignatureInfo(parent=msi)
+                att.encryption_info = EncryptionInfo(parent=mei)
+                msg.attach(att)
+                del att['MIME-Version']
 
         if save:
-            msg_key = mbx.add(msg)
+            msg_key = mbx.add(MessageAsString(msg))
             msg_to = msg_cc = []
             msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
             msg_id = idx.get_msg_id(msg, msg_ptr)
@@ -421,6 +498,19 @@ class Email(object):
         'encryption': 99,
     }
 
+    def _attachment_aid(self, att):
+        aid = att.get('aid')
+        if not aid:
+            cid = att.get('content-id')  # This comes from afar and might
+                                         # be malicious, so check it.
+            if (cid and
+                    cid == CleanText(cid, banned=(CleanText.WHITESPACE +
+                                                  CleanText.FS)).clean):
+                aid = cid
+            else:
+                aid = 'part:%s' % att['count']
+        return aid
+
     def get_editing_strings(self, tree=None):
         tree = tree or self.get_message_tree()
         strings = {
@@ -436,7 +526,7 @@ class Email(object):
         for mandate in self.MANDATORY_HEADERS:
             hdrs[mandate.lower()] = hdrs.get(mandate.lower(), mandate)
         keys = hdrs.keys()
-        keys.sort(key=lambda k: (self.HEADER_ORDER.get(k, 99), k))
+        keys.sort(key=lambda k: (self.HEADER_ORDER.get(k.lower(), 99), k))
         lowman = [m.lower() for m in self.MANDATORY_HEADERS]
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
@@ -446,8 +536,8 @@ class Email(object):
                 header_lines.append(unicode('%s: %s' % (hdr, data)))
 
         for att in tree['attachments']:
-            strings['attachments'][att['count']] = (att['filename']
-                                                    or '(unnamed)')
+            aid = self._attachment_aid(att)
+            strings['attachments'][aid] = fn = (att['filename'] or '(unnamed)')
 
         if not strings['encryption']:
             strings['encryption'] = unicode(self.config.prefs.crypto_policy)
@@ -464,17 +554,31 @@ class Email(object):
                                   ).replace('\r\n', '\n')
         return strings
 
-    def get_editing_string(self, tree=None):
+    def get_editing_string(self, tree=None, attachment_headers=True):
         tree = tree or self.get_message_tree()
         estrings = self.get_editing_strings(tree)
-        bits = [estrings['headers']]
+        bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
             bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+        if attachment_headers:
+            for att in tree['attachments']:
+                aid = self._attachment_aid(att)
+                bits.append('Attachment-%s: %s' % (aid, (att['filename']
+                                                         or '(unnamed)')))
         bits.append('')
         bits.append(estrings['body'])
         return '\n'.join(bits)
 
-    def make_attachment(self, fn, filedata=None):
+    def _update_att_name(self, part, filename):
+        try:
+            del part['Content-Disposition']
+        except KeyError:
+            pass
+        part.add_header('Content-Disposition', 'attachment',
+                        filename=filename)
+        return part
+
+    def _make_attachment(self, fn, msg, filedata=None):
         if filedata and fn in filedata:
             data = filedata[fn]
         else:
@@ -487,8 +591,11 @@ class Email(object):
             att = MIMEBase(maintype, subtype)
             att.set_payload(data)
             encoders.encode_base64(att)
+        att.add_header('Content-Id', MakeContentID())
         att.add_header('Content-Disposition', 'attachment',
                        filename=os.path.basename(fn))
+        att.signature_info = SignatureInfo(parent=msg.signature_info)
+        att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
 
     def add_attachments(self, session, filenames, filedata=None):
@@ -496,7 +603,9 @@ class Email(object):
             raise NotEditableError(_('Message or mailbox is read-only.'))
         msg = self.get_msg()
         for fn in filenames:
-            msg.attach(self.make_attachment(fn, filedata=filedata))
+            att = self._make_attachment(fn, msg, filedata=filedata)
+            msg.attach(att)
+            del att['MIME-Version']
         return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
@@ -510,15 +619,21 @@ class Email(object):
         else:
             newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
             outmsg = MIMEMultipart()
+            outmsg.signature_info = SignatureInfo(bubbly=False)
+            outmsg.encryption_info = EncryptionInfo(bubbly=False)
 
             # Copy over editable headers from the input string, skipping blanks
             for hdr in newmsg.keys():
-                if hdr.startswith('Attachment-'):
+                if hdr.startswith('Attachment-') or hdr == 'Attachment':
                     pass
                 else:
                     encoded_hdr = self.encoded_hdr(newmsg, hdr)
                     if len(encoded_hdr.strip()) > 0:
-                        outmsg[hdr] = encoded_hdr
+                        if encoded_hdr == '!KEEP':
+                            if hdr in oldmsg:
+                                outmsg[hdr] = oldmsg[hdr]
+                        else:
+                            outmsg[hdr] = encoded_hdr
 
             # Copy over the uneditable headers from the old message
             for hdr in oldmsg.keys():
@@ -533,31 +648,35 @@ class Email(object):
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
-            except:
+            except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
-            textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
-            outmsg.attach(textbody)
-            del textbody['MIME-Version']
 
-            # FIXME: Use markdown and template to generate fancy HTML part
+            tp = MIMEText(new_body, _subtype='plain', _charset=charset)
+            tp.signature_info = SignatureInfo(parent=outmsg.signature_info)
+            tp.encryption_info = EncryptionInfo(parent=outmsg.encryption_info)
+            outmsg.attach(tp)
+            del tp['MIME-Version']
+
+            # FIXME: Use markdown and template to generate fancy HTML part?
 
             # Copy the attachments we are keeping
             attachments = [h for h in newmsg.keys()
-                           if h.startswith('Attachment-')]
+                           if h.lower().startswith('attachment')]
             if attachments:
                 oldtree = self.get_message_tree()
                 for att in oldtree['attachments']:
-                    hdr = 'Attachment-%s' % att['count']
+                    hdr = 'Attachment-%s' % self._attachment_aid(att)
                     if hdr in attachments:
-                        # FIXME: Update the filename to match whatever
-                        #        the user typed
-                        outmsg.attach(att['part'])
+                        outmsg.attach(self._update_att_name(att['part'],
+                                                            newmsg[hdr]))
                         attachments.remove(hdr)
 
             # Attach some new files?
             for hdr in attachments:
                 try:
-                    outmsg.attach(self.make_attachment(newmsg[hdr]))
+                    att = self._make_attachment(newmsg[hdr], outmsg)
+                    outmsg.attach(att)
+                    del att['MIME-Version']
                 except:
                     pass  # FIXME: Warn user that failed...
 
@@ -571,9 +690,11 @@ class Email(object):
             raise NotEditableError(_('Message or mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
+        fd.close()  # Windows needs this
 
         # OK, adding to the mailbox worked
-        newptr = ptr[:MBX_ID_LEN] + mbx.add(newmsg)
+        newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
+        self.update_parse_cache(newmsg)
 
         # Remove the old message...
         mbx.remove(ptr[MBX_ID_LEN:])
@@ -586,17 +707,32 @@ class Email(object):
         self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
         self.index.index_email(session, Email(self.index, self.msg_idx_pos))
 
-        self.reset_caches()
+        self.reset_caches(clear_parse_cache=False)
         return self
 
     def reset_caches(self,
-                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None):
+                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None,
+                     clear_parse_cache=True):
         self.msg_info = msg_info
         self.msg_parsed = msg_parsed
         self.msg_parsed_pgpmime = msg_parsed_pgpmime
+        if clear_parse_cache:
+            self.clear_from_parse_cache()
 
-    def get_msg_info(self, field=None):
-        if not self.msg_info:
+    def update_parse_cache(self, newmsg):
+        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
+            with GLOBAL_PARSE_CACHE_LOCK:
+                GPC = GLOBAL_PARSE_CACHE
+                for i in range(0, len(GPC)):
+                    if GPC[i][0] == self.msg_idx_pos:
+                        GPC[i] = (self.msg_idx_pos, False, newmsg)
+
+    def clear_from_parse_cache(self):
+        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
+            ClearParseCache(cache_id=self.msg_idx_pos)
+
+    def get_msg_info(self, field=None, uncached=False):
+        if uncached or not self.msg_info:
             self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
         if field is None:
             return self.msg_info
@@ -611,7 +747,7 @@ class Email(object):
                 mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
                 fd = mbox.get_file_by_ptr(msg_ptr)
                 # FIXME: How do we know we have the right message?
-                return mbox, msg_ptr, fd
+                return mbox, msg_ptr, FixupForWith(fd)
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
                 print 'WARNING: %s not found' % msg_ptr
@@ -622,19 +758,69 @@ class Email(object):
 
     def get_msg_size(self):
         mbox, ptr, fd = self.get_mbox_ptr_and_fd()
-        fd.seek(0, 2)
-        return fd.tell()
+        with fd:
+            fd.seek(0, 2)
+            return fd.tell()
 
-    def _get_parsed_msg(self, pgpmime):
-        fd = self.get_file()
-        if fd:
-            return ParseMessage(fd, pgpmime=pgpmime)
+    def _get_parsed_msg(self, pgpmime, update_cache=False):
+        cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
+                                        not self.ephemeral_mid) else None
+        return ParseMessage(self.get_file, cache_id=cache_id,
+                                           update_cache=update_cache,
+                                           pgpmime=pgpmime,
+                                           config=self.config)
 
-    def get_msg(self, pgpmime=True):
+    def _update_crypto_state(self):
+        if not (self.config.tags and
+                self.msg_idx_pos >= 0 and
+                self.msg_parsed_pgpmime and
+                not self.ephemeral_mid):
+            return
+
+        import mailpile.plugins.cryptostate as cs
+        kw = cs.meta_kw_extractor(self.index,
+                                  self.msg_mid(),
+                                  self.msg_parsed_pgpmime,
+                                  0, 0)  # msg_size, msg_ts
+
+        # We do NOT want to update tags if we are getting back
+        # a none/none state, as that can happen for the more
+        # complex nested crypto-in-text messages, which a more
+        # forceful parse of the message may have caught earlier.
+        no_sig = self.config.get_tag('mp_sig-none')
+        no_sig = no_sig and '%s:in' % no_sig._key
+        no_enc = self.config.get_tag('mp_enc-none')
+        no_enc = no_enc and '%s:in' % no_enc._key
+        if no_sig not in kw or no_enc not in kw:
+            msg_info = self.get_msg_info()
+            msg_tags = msg_info[self.index.MSG_TAGS].split(',')
+            msg_tags = sorted([t for t in msg_tags if t])
+
+            # Note: this has the side effect of cleaning junk off
+            #       the tag list, not just updating crypto state.
+            def tcheck(tag_id):
+                tag = self.config.get_tag(tag_id)
+                return (tag and tag.slug[:6] not in ('mp_enc', 'mp_sig'))
+            new_tags = sorted([t for t in msg_tags if tcheck(t)] +
+                              [ti.split(':', 1)[0] for ti in kw
+                               if ti.endswith(':in')])
+
+            if msg_tags != new_tags:
+                msg_info[self.index.MSG_TAGS] = ','.join(new_tags)
+                self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
+
+    def get_msg(self, pgpmime=True, crypto_state_feedback=True):
         if pgpmime:
-            if not self.msg_parsed_pgpmime:
-                self.msg_parsed_pgpmime = self._get_parsed_msg(pgpmime)
-            result = self.msg_parsed_pgpmime
+            if self.msg_parsed_pgpmime:
+                result = self.msg_parsed_pgpmime
+            else:
+                result = self._get_parsed_msg(pgpmime)
+                self.msg_parsed_pgpmime = result
+
+                # Post-parse, we want to make sure that the crypto-state
+                # recorded on this message's metadata is up to date.
+                if crypto_state_feedback:
+                    self._update_crypto_state()
         else:
             if not self.msg_parsed:
                 self.msg_parsed = self._get_parsed_msg(pgpmime)
@@ -707,6 +893,7 @@ class Email(object):
                     'content-id': content_id,
                     'filename': pfn,
                 }
+                attributes['aid'] = self._attachment_aid(attributes)
                 if pfn:
                     if '.' in pfn:
                         pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
@@ -861,6 +1048,11 @@ class Email(object):
         #       above
         count = 0
         for part in msg.walk():
+            crypto = {
+                'signature': part.signature_info,
+                'encryption': part.encryption_info,
+            }
+
             mimetype = part.get_content_type()
             if (mimetype.startswith('multipart/')
                     or mimetype == "application/pgp-encrypted"):
@@ -895,25 +1087,30 @@ class Email(object):
                     # the message is HTML only and we want the code below
                     # to try and extract meaning from it.
                     if (start or payload.strip()) != '':
-                        text_parts = self.parse_text_part(payload, charset)
+                        text_parts = self.parse_text_part(payload, charset,
+                                                          crypto)
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
-                tree['attachments'].append({
+                att = {
                     'mimetype': mimetype,
                     'count': count,
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': part.get_filename() or ''
-                })
+                    'filename': part.get_filename() or '',
+                    'crypto': crypto
+                }
+                att['aid'] = self._attachment_aid(att)
+                tree['attachments'].append(att)
 
         if want is None or 'text_parts' in want:
             if tree.get('html_parts') and not tree.get('text_parts'):
                 html_part = tree['html_parts'][0]
                 payload = self._extract_text_from_html(html_part['data'])
                 text_parts = self.parse_text_part(payload,
-                                                  html_part['charset'])
+                                                  html_part['charset'],
+                                                  crypto)
                 tree['text_parts'].extend(text_parts)
 
         if self.is_editable():
@@ -930,6 +1127,8 @@ class Email(object):
                 tree['crypto']['encryption'] = msg.encryption_info
                 tree['crypto']['signature'] = msg.signature_info
 
+        msg.signature_info.mix_bubbles()
+        msg.encryption_info.mix_bubbles()
         return tree
 
     # FIXME: This should be configurable by the user, depending on where
@@ -960,10 +1159,16 @@ class Email(object):
         payload = part.get_payload(None, True) or ''
         return self.decode_text(payload, charset=charset)
 
-    def parse_text_part(self, data, charset):
+    def parse_text_part(self, data, charset, crypto):
+        psi = crypto['signature']
+        pei = crypto['encryption']
         current = {
             'type': 'bogus',
             'charset': charset,
+            'crypto': {
+                'signature': SignatureInfo(parent=psi),
+                'encryption': EncryptionInfo(parent=pei)
+            }
         }
         parse = []
         block = 'body'
@@ -988,6 +1193,10 @@ class Email(object):
                     'type': ltype,
                     'data': ''.join(clines),
                     'charset': charset,
+                    'crypto': {
+                        'signature': SignatureInfo(parent=psi),
+                        'encryption': EncryptionInfo(parent=pei)
+                    }
                 }
                 parse.append(current)
             current['data'] += line
@@ -997,7 +1206,8 @@ class Email(object):
     def parse_line_type(self, line, block):
         # FIXME: Detect forwarded messages, ...
 
-        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n'):
+        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n',
+                                                   '- --\n', '- --\r\n'):
             return 'signature', 'signature'
 
         if block == 'signature':
@@ -1005,7 +1215,7 @@ class Email(object):
 
         stripped = line.rstrip()
 
-        if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
+        if stripped == GnuPG.ARMOR_BEGIN_SIGNED:
             return 'pgpbeginsigned', 'pgpbeginsigned'
         if block == 'pgpbeginsigned':
             if line.startswith('Hash: ') or stripped == '':
@@ -1013,17 +1223,17 @@ class Email(object):
             else:
                 return 'pgpsignedtext', 'pgpsignedtext'
         if block == 'pgpsignedtext':
-            if (stripped == '-----BEGIN PGP SIGNATURE-----'):
+            if stripped == GnuPG.ARMOR_BEGIN_SIGNATURE:
                 return 'pgpsignature', 'pgpsignature'
             else:
                 return 'pgpsignedtext', 'pgpsignedtext'
         if block == 'pgpsignature':
-            if stripped == '-----END PGP SIGNATURE-----':
+            if stripped == GnuPG.ARMOR_END_SIGNATURE:
                 return 'pgpend', 'pgpsignature'
             else:
                 return 'pgpsignature', 'pgpsignature'
 
-        if stripped == '-----BEGIN PGP MESSAGE-----':
+        if stripped == GnuPG.ARMOR_BEGIN_ENCRYPTED:
             return 'pgpbegin', 'pgpbegin'
         if block == 'pgpbegin':
             if ':' in line or stripped == '':
@@ -1031,7 +1241,7 @@ class Email(object):
             else:
                 return 'pgptext', 'pgptext'
         if block == 'pgptext':
-            if stripped == '-----END PGP MESSAGE-----':
+            if stripped == GnuPG.ARMOR_END_ENCRYPTED:
                 return 'pgpend', 'pgpend'
             else:
                 return 'pgptext', 'pgptext'
@@ -1054,7 +1264,8 @@ class Email(object):
         'pgpend': 'pgpverification',
     }
 
-    def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
+    def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
+                                 crypto_state_feedback=True):
         if 'text_parts' not in tree:
             return tree
 
@@ -1072,12 +1283,12 @@ class Email(object):
                 elif part['type'] == 'pgpsignature':
                     pgpdata.append(part)
                     try:
-                        gpg = GnuPG()
+                        gpg = GnuPG(self.config)
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
-                        si = pgpdata[1]['crypto']['signature'
-                                                  ] = gpg.verify(message)
+                        si = gpg.verify(message)
                         pgpdata[0]['data'] = ''
+                        pgpdata[1]['crypto']['signature'] = si
                         pgpdata[2]['data'] = ''
 
                     except Exception, e:
@@ -1089,36 +1300,40 @@ class Email(object):
                 elif part['type'] == 'pgpend':
                     pgpdata.append(part)
 
-                    gpg = GnuPG()
-                    (signature_info, encryption_info, text
-                     ) = gpg.decrypt(''.join([p['data'] for p in pgpdata]))
+                    data = ''.join([p['data'] for p in pgpdata])
+                    gpg = GnuPG(self.config)
+                    si, ei, text = gpg.decrypt(data)
 
                     # FIXME: If the data is binary, we should provide some
                     #        sort of download link or maybe leave the PGP
                     #        blob entirely intact, undecoded.
                     text, charset = self.decode_text(text, binary=False)
 
-                    ei = pgpdata[1]['crypto']['encryption'] = encryption_info
-                    si = pgpdata[1]['crypto']['signature'] = signature_info
-                    if encryption_info["status"] == "decrypted":
-                        pgpdata[1]['data'] = text
+                    pgpdata[1]['crypto']['encryption'] = ei
+                    pgpdata[1]['crypto']['signature'] = si
+                    if ei["status"] == "decrypted":
                         pgpdata[0]['data'] = ""
+                        pgpdata[1]['data'] = text
                         pgpdata[2]['data'] = ""
 
             # Bubbling up!
             if (si or ei) and 'crypto' not in tree:
-                tree['crypto'] = {'signature': SignatureInfo(),
-                                  'encryption': EncryptionInfo()}
+                tree['crypto'] = {'signature': SignatureInfo(bubbly=False),
+                                  'encryption': EncryptionInfo(bubbly=False)}
             if si:
-                tree['crypto']['signature'].mix(si)
+                si.bubble_up(tree['crypto']['signature'])
             if ei:
-                tree['crypto']['encryption'].mix(ei)
+                ei.bubble_up(tree['crypto']['encryption'])
 
         # Cleanup, remove empty 'crypto': {} blocks.
         for part in tree['text_parts']:
             if not part['crypto']:
                 del part['crypto']
 
+        tree['crypto']['signature'].mix_bubbles()
+        tree['crypto']['encryption'].mix_bubbles()
+        if crypto_state_feedback:
+            self._update_crypto_state()
         return tree
 
     def _decode_gpg(self, message, decrypted):
@@ -1165,8 +1380,18 @@ class AddressHeaderParser(list):
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
     u'"Weird Header" <email@somewhere.com>'
+
+    >>> ai = AddressHeaderParser(unicode_data=ahp.TEST_UNICODE_DATA)
+    >>> ai[0].fn
+    u'Bjarni R\\xfanar'
+    >>> ai[0].fn == ahp.TEST_UNICODE_NAME
+    True
+    >>> ai[0].address
+    u'b@c.x'
     """
 
+    TEST_UNICODE_DATA = u'Bjarni R\xfanar <b@c.x#61A015763D28D4>'
+    TEST_UNICODE_NAME = u'Bjarni R\xfanar'
     TEST_HEADER_DATA = """
         bre@klaki.net  ,
         bre@klaki.net Bjarni ,
@@ -1176,7 +1401,7 @@ class AddressHeaderParser(list):
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
-        "This is a key test" <bre@klaki.net#123456789>,
+        "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
         Bjarni is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
@@ -1237,13 +1462,17 @@ class AddressHeaderParser(list):
     # useful info from the message itself.
     DEFAULT_CHARSET_ORDER = ('iso-8859-1', 'utf-8')
 
-    def __init__(self, data=None, charset_order=None, **kwargs):
+    def __init__(self,
+                 data=None, unicode_data=None, charset_order=None, **kwargs):
         self.charset_order = charset_order or self.DEFAULT_CHARSET_ORDER
         self._parse_args = kwargs
-        if data is None:
+        if data is None and unicode_data is None:
             self._reset(**kwargs)
-        else:
+        elif data is not None:
             self.parse(data)
+        else:
+            self.charset_order = ['utf-8']
+            self.parse(unicode_data.encode('utf-8'))
 
     def _reset(self, _raw_data=None, strict=False, _raise=False):
         self._raw_data = _raw_data
@@ -1293,11 +1522,11 @@ class AddressHeaderParser(list):
                 return quopri.decodestring(data, header=True).decode(cs)
 
         for cs in charset_order or self.charset_order:
-             try:
-                 string = string.decode(cs)
-                 break
-             except UnicodeDecodeError:
-                 pass
+            try:
+                string = string.decode(cs)
+                break
+            except UnicodeDecodeError:
+                pass
 
         return re.sub(self.RE_QUOTED, uq, string)
 
@@ -1421,6 +1650,8 @@ class AddressHeaderParser(list):
                              force_name=False):
         if addresses is None:
             addresses = self
+        elif not addresses:
+            addresses = []
         def fmt(ai):
             email = ai.address
             if with_keys and ai.keys:
@@ -1434,7 +1665,7 @@ class AddressHeaderParser(list):
                  return ' '.join([quote and self.quote(email) or email, epart])
             else:
                  return epart
-        return [fmt(ai) for ai in (addresses or [])]
+        return [fmt(ai) for ai in addresses]
 
     def normalized(self, **kwargs):
         return ', '.join(self.normalized_addresses(**kwargs))

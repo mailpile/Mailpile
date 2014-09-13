@@ -1,0 +1,181 @@
+/* Login */
+
+  #login {
+    width: 100%;
+    border: 8px solid @grayMid;
+    box-sizing: border-box;
+  }
+
+  #login-left {
+    width: 65%;
+    height: 100px;
+    background: @grayLight;
+    border-right: 4px solid @grayMid;
+    box-sizing: border-box;
+    display: inline-block;
+    float: left;
+  }
+
+  #login-right {
+    width: 35%;
+    height: 100%;
+    background: @grayLight;
+    border-left: 2px solid @grayMid;
+    box-sizing: border-box;
+    display: inline-block;
+    float: right;
+  }
+
+  #login-logo {
+    width: 223px;
+    position: absolute;
+    top: 13%;
+    left: 20%;
+  }
+
+  #login-logo #logo-icon {
+    width: 150px;
+    height: 100px;
+    display: block;
+    margin: 0px auto 35px auto;
+  }
+
+  #login-logo #logo-name {
+    width: 223px;
+    height: 72px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #login-messages {
+    position: absolute;
+    top: 35%;
+    margin: @base-margin auto;
+    width: 400px;
+    font-weight: bold;
+  }
+
+  #login-vault-lock {
+    margin: 0 auto;
+    position: absolute;
+    top: 10%;
+    left: 55%;
+  }
+
+  #login-details {
+    width: 485px;
+    margin: 0px auto;
+    position: absolute;
+    top: 50%;
+    left: 33%;
+  }
+
+  .form-text {
+    display: inline-block;
+    position: relative;
+    top: -12px;
+    left: 0px;
+    font-family: @mailpile-text-font-family-bold;
+    font-size: 18px;
+    line-height: 18px;
+    color: @grayDark;
+  }
+
+  .form-login {
+    width: 246px;
+    height: 36px;
+    display: inline-block;
+    margin-top: 5px;
+    margin-left: 15px;
+    border-radius: 5px;
+    border: 1px solid @gray;
+  }
+
+  .form-login input {
+    width: 178px;
+    height: 18px;
+    padding: 9px 12px;
+    float: left;    
+    font: normal 18px @text-font-family-bold;
+    border: 0;
+    background: @white;
+    border-radius: 5px 0 0 5px;
+    color: @grayMid;   
+  }
+   
+  .form-login input:focus {
+    outline: 0;
+    background: #fff;
+    box-shadow: 0 0 1px @grayDark inset;
+    color: @grayDark;
+  }
+   
+  .form-login input::-webkit-input-placeholder,
+  .form-login input:-moz-placeholder,
+  .form-login input:-ms-input-placeholder {
+    color: #999;
+    font-weight: normal;
+    font-style: italic;
+  }    
+   
+  .form-login button {
+    overflow: visible;
+    position: relative;
+    float: right;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    height: 36px;
+    width: 44px;
+    font: bold 18px/40px @text-font-family-bold;
+    color: @white;
+    background: @blue;
+    border-radius: 0 3px 3px 0;      
+    text-shadow: 0 -1px 0 rgba(0, 0 ,0, .3);
+  }   
+     
+  .form-login button:hover{     
+    background: darken(@blue, 5%);
+  }   
+     
+  .form-login button:active,
+  .form-login button:focus{   
+    background: darken(@blue, 15%);
+    outline: 0;   
+  }
+
+  .form-login button::-moz-focus-inner { /* remove extra button spacing for Mozilla Firefox */
+    border: 0;
+    padding: 0;
+  }
+
+   .form-login button .icon-key {
+     font-size: 24px;
+     line-height: 24px;
+   }
+
+   .login-wrong-passphrase {
+     background: @orange;
+     display: inline-block;
+     margin: @base-margin auto @base-margin 23%;
+     padding: @base-padding;
+     border-radius: (@base-border-radius * 2);
+     text-align: center;
+     font-weight: bold;
+     font-size: 14px;
+     line-height: 14px;
+     color: @white;
+   }
+
+   .logged-out-message {
+     background: @blue;
+     display: inline-block;
+     margin: @base-margin auto @base-margin 23%;
+     padding: @base-padding;
+     border-radius: (@base-border-radius * 2);
+     text-align: center;
+     font-weight: bold;
+     font-size: 14px;
+     line-height: 14px;
+     color: @white;
+   }

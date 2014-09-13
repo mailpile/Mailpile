@@ -5,8 +5,8 @@
 /* Mailpile */
 
   @mailpile-text-font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	@mailpile-text-font-family-semibold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	@mailpile-text-font-family-bold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-semibold: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-bold: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 
 /* Colors */
@@ -66,7 +66,7 @@
 
 /* Text */
 
-	@text-font-size: 18px;
+	@text-font-size: 14px;
 	@text-font-weight: normal;
 	@text-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	@text-font-family-italic: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -110,7 +110,7 @@
 
 	@headings-color: #333333;
 	@headings-font-family: @mailpile-text-font-family-bold;
-	@headings-font-weight: bold;	
+	@headings-font-weight: normal;	
 	@headings-letter-spacing: 0px;
 	@headings-size-h1: 36px;
 	@headings-size-h2: 30px;
@@ -259,27 +259,27 @@
 	@form-elements-background: #FFFFFF;
 	@form-elements-color: #666666;
 	@form-elements-color-focus: #333333;
-	@form-elements-font-size: 18px;
+	@form-elements-font-size: 16px;
 	@form-elements-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 	@form-border-size: 1px;
-	@form-border-color: #999999;
-	@form-border-radius: 4px;
-	@form-border-color-focus: #666666;
+	@form-border-color: @gray;
+	@form-border-radius: @base-border-radius;
+	@form-border-color-focus: @grayDark;
 
-	@form-select-color: @blue;
-	@form-label-color: @blue;
-
+	@form-select-color: @grayDark;
+	@form-label-color: @grayDark;
 
 
 /* Tables */
+/* REBAR: Add th custom color styling, better actual use of these values */
 
-	@table-background-color: @green;
+	@table-background-color: @white;
 	@table-background-color-striped: #FEFEFE;
 
-	@table-margins: @base-line-height;	
-	@table-padding: 15px;
-	
+	@table-margins: @base-line-height;
+	@table-padding: 10px 0px;
+
 	@table-border: 1px solid @green;
 	@table-border-radius: 5px;
 
@@ -303,6 +303,15 @@
   @boxes-header-font-size: 24px;
   @boxes-paragraph-font-size: 14px;
   @boxes-link-color: @gray;
+
+
+/* Rectangles */
+
+  @rectangles-padding: 10px;
+  @rectangles-header-font-size: 18px;
+  @rectangles-paragraph-font-size: 12px;
+  @rectangles-link-color: @gray;
+  @rectangles-height: 70px;
 
 
 /* Bootstrap */

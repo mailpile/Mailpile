@@ -13,7 +13,7 @@ return {
         $('#sidebar').fadeOut();
         $('#content').fadeOut();
         $('#header').after('<div id="extreme-mashup" style="position: relative; top: 200px" class="text-center"><h1>ALL YOUR MAILBOX ARE BELONG TO ME</h1><p>This could be an extreme plugin that renders a completely new feature or tool or mashup</p><p><button id="no-extreme">Go Back</button></p></div>');
-        $('#no-extreme').on('click', new_mailpile.plugins.demos.new_tool_hide);
+        $('#no-extreme').on('click', Mailpile.plugins.demos.new_tool_hide);
         return false;
     },
     new_tool_hide: function() {
@@ -33,7 +33,7 @@ return {
            'enhance' it. Here we just give it a click handler, but fancier
            plugins could set up event listeners and update the element
            itself based on other app activities. */
-        $(element).click(new_mailpile.plugins.demos.earthquake_click);
+        $(element).click(Mailpile.plugins.demos.earthquake_click);
     },
     earthquake: function(element) {
       $(".boxy").animate({"margin-left": -5}, 40)

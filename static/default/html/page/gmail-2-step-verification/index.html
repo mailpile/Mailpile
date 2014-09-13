@@ -1,0 +1,34 @@
+{% extends "layouts/full.html" %}
+{% block title %}Gmail {{_("2-Step Verification")}} | {{_("Help")}}{% endblock %}
+{% block content %}
+
+<div class="content-normal">
+
+  <h1><span class="icon-help"></span> {{_("Help")}}</h1>
+  
+  <div class="">
+    <h3>Gmail's {{_("2-Step Verification")}}</h3>
+  
+    <p>If you have 2-step verification enabled on your Google (Gmail) account you will need to follow these steps to get your account working with Mailpile.</p>
+    
+    <ol>
+      <li>Go to the Google accounts website, <a href="http://accounts.google.com/" target="_blank">http://accounts.google.com/</a></li>
+      <li>If you haven't already, log in.</li>
+      <li>Click the 'Security' button on the top center of the screen.</li>
+      <li>In the "2-step verification" section, click "Manage your application specific passwords".</li>
+      <li>You may have to reenter your password to continue.</li>
+      <li>In the "Application-specific passwords" section, generate a new password for Mailpile.</li>
+    </ol>
+  
+    <ul>
+      <li>For more information about 2-step verification: <a href="http://www.google.com/landing/2step/" target="_blank">http://www.google.com/landing/2step/</a></li>
+      <li>To turn 2-step verification off: <a href="https://support.google.com/accounts/answer/1064203?hl=en" target="_blank">https://support.google.com/accounts/answer/1064203</a></li>
+      <li>For information about access tokens: <a href="https://accounts.google.com/IssuedAuthSubTokens#accesscodes" target="_blank">https://accounts.google.com/IssuedAuthSubTokens#accesscodes</a></li>
+    </ul>
+  </div>
+
+  {% include("help/bottom.html") %}
+
+</div>
+
+{% endblock %}

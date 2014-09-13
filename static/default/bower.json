@@ -18,9 +18,10 @@
   ],
   "dependencies": {
     "backbone": "~1.1.2",
+    "backbone-validation": "~0.9.1",
     "bootstrap": "~3.1.1",
     "d3": "~3.4.3",
-    "favico.js": "~0.3.4",
+    "favico.js": "~0.3.5",
     "html5shiv": "~3.7.0",
     "jquery": "~2.1.0",
     "jquery-autosize": "~1.18.6",

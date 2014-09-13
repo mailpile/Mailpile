@@ -1,8 +1,48 @@
+# This implements our IMAP mail source. It has been tested against the
+# following IMAP implementations:
+#
+#   * Google's GMail (july 2014)
+#   * UW IMAPD (10.1.legacy from 2001)
+#
+#
+# IMAP resonses seen in the wild:
+#
+# GMail:
+#
+#    Message flags: \* \Answered \Flagged \Draft \Deleted \Seen
+#                   $Phishing receipt-handled $NotPhishing Junk
+#
+#    LIST (\HasNoChildren) "/" "Travel"
+#    LIST (\Noselect \HasChildren) "/" "[Gmail]"
+#
+# UW IMAPD 10.1:
+#
+#    Message flags: \* \Answered \Flagged \Deleted \Draft \Seen
+#
+#    LIST (\NoSelect) "/" 17.03.2002
+#    LIST (\NoInferiors \Marked) "/" in
+#    LIST (\NoInferiors \UnMarked) "/" todays-junk
+#
+# Fastmail.fm:
+#
+#    Message flags: \Answered \Flagged \Draft \Deleted \Seen $X-ME-Annot-2
+#                   $IsMailingList $IsNotification $HasAttachment $HasTD
+#
+#    LIST (\Noinferiors \HasNoChildren) "." INBOX
+#    LIST (\HasNoChildren \Archive) "." Archive
+#    LIST (\HasNoChildren \Drafts) "." Drafts
+#    LIST (\HasNoChildren \Junk) "." "Junk Mail"
+#    LIST (\HasNoChildren \Sent) "." "Sent Items"
+#    LIST (\HasNoChildren \Trash) "." Trash
+#
+# Mykolab.com:
+#
+#
+#
 import os
 import re
 import socket
 import traceback
-from gettext import gettext as _
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 from urllib import quote, unquote
@@ -13,9 +53,11 @@ except ImportError:
     import StringIO
 
 from mailpile.eventlog import Event
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
+from mailpile.util import *
 
 
 IMAP_TOKEN = re.compile('("[^"]*"'
@@ -50,7 +92,11 @@ def _parse_imap(reply):
     pdata = []
     for dline in reply[1]:
         while True:
-            m = IMAP_TOKEN.match(dline)
+            if isinstance(dline, (str, unicode)):
+                m = IMAP_TOKEN.match(dline)
+            else:
+                print 'WARNING: Unparsed IMAP response data: %s' % (dline,)
+                m = None
             if m:
                 token = m.group(0)
                 dline = dline[len(token):]
@@ -83,7 +129,7 @@ class SharedImapConn(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.session = session
-        self._lock = threading.Lock()
+        self._lock = MSrcLock()
         self._conn = conn
         self._idle_mailbox = idle_mailbox
         self._idle_callback = idle_callback
@@ -94,6 +140,7 @@ class SharedImapConn(threading.Thread):
                      'list', 'login', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
+        self._update_name()
         self.start()
 
     def _mk_proxy(self, method):
@@ -128,20 +175,24 @@ class SharedImapConn(threading.Thread):
     def close(self):
         assert(self._lock.locked())
         self._selected = None
+        if '(closed)' not in self.name:
+            self.name += ' (closed)'
         return self._conn.close()
 
-    def select(self, mailbox='INBOX', readonly=False):
+    def select(self, mailbox='INBOX', readonly=True):
         # This routine caches the SELECT operations, because we will be
         # making lots and lots of superfluous ones "just in case" as part
         # of multiplexing one IMAP connection for multiple mailboxes.
         assert(self._lock.locked())
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
-        rv = self._conn.select(mailbox=mailbox, readonly=readonly)
+        rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
                         ('FLAGS', 'EXISTS', 'RECENT', 'UIDVALIDITY'))
             self._selected = ((mailbox, readonly), rv, info)
+        else:
+            info = '(error)'
         if 'imap' in self.session.config.sys.debug:
             self.session.ui.debug('select(%s, %s) = %s %s'
                                   % (mailbox, readonly, rv, info))
@@ -150,9 +201,12 @@ class SharedImapConn(threading.Thread):
     def mailbox_info(self, k, default=None):
         return self._selected[2].get(k, default)
 
-    def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self),
-                           self._conn and self._conn.host or '(dead)')
+    def _update_name(self):
+        name = self._conn and self._conn.host
+        if name:
+            self.name = name
+        elif '(dead)' not in self.name:
+            self.name += ' (dead)'
 
     def __enter__(self):
         if not self._conn:
@@ -173,21 +227,24 @@ class SharedImapConn(threading.Thread):
 
     def quit(self):
         self._conn = None
+        self._update_name()
 
     def run(self):
         # FIXME: Do IDLE stuff if requested.
         try:
-            while True:
+            while self._conn:
                 # By default, all this does is send a NOOP every 120 seconds
                 # to keep the connection alive (or detect errors).
                 time.sleep(120)
-                with self as raw_conn:
-                    raw_conn.noop()
+                if self._conn:
+                    with self as raw_conn:
+                        raw_conn.noop()
         except:
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
         finally:
             self._conn = None
+            self._update_name()
 
 
 class SharedImapMailbox(Mailbox):
@@ -197,7 +254,7 @@ class SharedImapMailbox(Mailbox):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> mailbox = SharedImapMailbox(session, imap, conn_cls=_MockImap)
-    >>> mailbox.add('From: Bjarni\\r\\nBarely a message')
+    >>> #mailbox.add('From: Bjarni\\r\\nBarely a message')
     """
 
     def __init__(self, session, mail_source,
@@ -228,6 +285,7 @@ class SharedImapMailbox(Mailbox):
             return False
 
     def add(self, message):
+        raise Exception('FIXME: Need to RETURN AN ID.')
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.append, self.path, message=message)
             self._assert(ok, _('Failed to add message'))
@@ -242,7 +300,11 @@ class SharedImapMailbox(Mailbox):
         with self.open_imap() as imap:
             uidv, uid = (int(k, 36) for k in key.split('.'))
             ok, data = self.timed_imap(imap.uid, 'FETCH', uid,
-                                       '(RFC822.SIZE FLAGS ENVELOPE)',
+                                       # Note: It seems that either python's
+                                       #       imaplib, or our parser cannot
+                                       #       handle dovecot's ENVELOPE
+                                       #       details. So omit that for now.
+                                       '(RFC822.SIZE FLAGS)',
                                        mailbox=self.path)
             if not ok:
                 raise KeyError
@@ -348,15 +410,17 @@ class ImapMailSource(BaseMailSource):
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.imap.ImapMailSource'
 
-    DEFAULT_TIMEOUT = 15
+    TIMEOUT_INITIAL = 15
+    TIMEOUT_LIVE = 60
     CONN_ERRORS = (IOError, IMAP_IOError, IMAP4.error, TimedOut)
 
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
-        self.timeout = self.DEFAULT_TIMEOUT
+        self.timeout = self.TIMEOUT_INITIAL
         self.watching = -1
         self.capabilities = set()
         self.conn = None
+        self.conn_id = ''
 
     @classmethod
     def Tester(cls, conn_cls, *args, **kwargs):
@@ -376,24 +440,57 @@ class ImapMailSource(BaseMailSource):
             pass
         return BaseMailSource._sleep(self, seconds)
 
-    def _unlocked_open(self, conn_cls=None, throw=False):
-        #
-        # When opening an IMAP connection, we need to do a few things:
-        #  1. Connect, log in
-        #  2. Check the capabilities of the remote server
-        #  3. If there is IDLE support, subscribe to all the paths we
-        #     are currently watching.
+    def _conn_id(self):
+        return md5_hex('\n'.join([str(self.my_config[k]) for k in
+                                  ('host', 'port', 'password', 'username')]))
 
+    def close(self):
+        if self.conn:
+            self.event.data['connection'] = {
+                'live': False,
+                'error': [False, _('Nothing is wrong')]
+            }
+            self.conn.quit()
+            self.conn = None
+
+    def open(self, conn_cls=None, throw=False):
+        conn = self.conn
+        conn_id = self._conn_id()
+        if conn:
+            try:
+                with conn as c:
+                    if (conn_id == self.conn_id and
+                            self.timed(c.noop)[0] == 'OK'):
+                        # Make the timeout longer, so we don't drop things
+                        # on every hiccup and so downloads will be more
+                        # efficient (chunk size relates to timeout).
+                        self.timeout = self.TIMEOUT_LIVE
+                        return conn
+            except self.CONN_ERRORS + (AttributeError, ):
+                pass
+            with self._lock:
+                if self.conn == conn:
+                    self.conn = None
+            conn.quit()
+
+        # This facilitates testing, event should already exist in real life.
+        if self.event:
+            event = self.event
+        else:
+            event = Event(source=self, flags=Event.RUNNING, data={})
+
+        # Prepare the data section of our event, for keeping state.
+        for d in ('mailbox_state',):
+            if d not in event.data:
+                event.data[d] = {}
+        ev = event.data['connection'] = {
+            'live': False,
+            'error': [False, _('Nothing is wrong')]
+        }
+
+        conn = None
         my_config = self.my_config
         mailboxes = my_config.mailbox.values()
-        if self.conn:
-            try:
-                with self.conn as conn:
-                    if self.timed(conn.noop)[0] == 'OK':
-                        return self.conn
-            except self.CONN_ERRORS + (AttributeError, ):
-                self.conn.quit()
-        conn = self.conn = None
 
         # If we are given a conn class, use that - this allows mocks for
         # testing.
@@ -401,65 +498,70 @@ class ImapMailSource(BaseMailSource):
             want_ssl = (my_config.protocol == 'imap_ssl')
             conn_cls = IMAP4_SSL if want_ssl else IMAP4
 
-        # This also facilitates testing, should already exist in real life.
-        if self.event:
-            event = self.event
-        else:
-            event = Event(source=self, flags=Event.RUNNING, data={})
-
-        if 'conn_error' in event.data:
-            del event.data['conn_error']
         try:
             def mkconn():
                 return conn_cls(my_config.host, my_config.port)
             conn = self.timed(mkconn)
+            conn.debug = ('imaplib' in self.session.config.sys.debug
+                          ) and 4 or 0
 
-            ok, data = self.timed_imap(conn.login,
-                                       my_config.username,
-                                       my_config.password)
+            ok, data = self.timed_imap(conn.capability)
+            if ok:
+                capabilities = set(' '.join(data).upper().split())
+            else:
+                capabilities = set()
+
+            #if 'STARTTLS' in capabilities and not want_ssl:
+            #
+            # FIXME: We need to send a STARTTLS and do a switcheroo where
+            #        the connection gets encrypted.
+
+            try:
+                ok, data = self.timed_imap(conn.login,
+                                           my_config.username,
+                                           my_config.password)
+            except IMAP4.error:
+                ok = False
             if not ok:
-                event.data['conn_error'] = _('Bad username or password')
+                ev['error'] = ['auth', _('Invalid username or password')]
                 if throw:
                     raise throw(event.data['conn_error'])
                 return WithaBool(False)
 
-            ok, data = self.timed_imap(conn.capability)
-            if ok:
-                self.capabilities = set(' '.join(data).upper().split())
-            else:
-                self.capabilities = set()
-
-            if 'IDLE' in self.capabilities:
-                self.conn = SharedImapConn(self.session, conn,
-                                           idle_mailbox='INBOX',
-                                           idle_callback=self._idle_callback)
-            else:
-                self.conn = SharedImapConn(self.session, conn)
-
-            # Prepare the data section of our event, for keeping state.
-            for d in ('uidvalidity', 'uidnext'):
-                if d not in event.data:
-                    event.data[d] = {}
+            with self._lock:
+                if self.conn is not None:
+                    raise IOError('Woah, we lost a race.')
+                self.capabilities = capabilities
+                if 'IDLE' in capabilities:
+                    self.conn = SharedImapConn(
+                        self.session, conn,
+                        idle_mailbox='INBOX',
+                        idle_callback=self._idle_callback)
+                else:
+                    self.conn = SharedImapConn(self.session, conn)
 
             if self.event:
                 self._log_status(_('Connected to IMAP server %s'
                                    ) % my_config.host)
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug('CONNECTED %s' % self.conn)
+
+            self.conn_id = conn_id
+            ev['live'] = True
             return self.conn
 
         except TimedOut:
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('Connection timed out')
+            ev['error'] = ['timeout', _('Connection timed out')]
         except (IMAP_IOError, IMAP4.error):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('An IMAP protocol error occurred')
+            ev['error'] = ['protocol', _('An IMAP protocol error occurred')]
         except (IOError, AttributeError, socket.error):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('A network error occurred')
+            ev['error'] = ['network', _('A network error occurred')]
 
         try:
             if conn:
@@ -470,7 +572,7 @@ class ImapMailSource(BaseMailSource):
         except (AttributeError, IOError, socket.error):
             pass
         if throw:
-            raise throw(event.data['conn_error'])
+            raise throw(ev['error'])
         return WithaBool(False)
 
     def _idle_callback(self, data):
@@ -478,36 +580,52 @@ class ImapMailSource(BaseMailSource):
 
     def open_mailbox(self, mbx_id, mfn):
         if FormatMbxId(mbx_id) in self.my_config.mailbox:
-            proto_me, path = mfn.split('/', 1)
-            return SharedImapMailbox(self.session, self, mailbox_path=path)
+            try:
+                proto_me, path = mfn.split('/', 1)
+                if proto_me.startswith('src:'):
+                    return SharedImapMailbox(self.session, self,
+                                             mailbox_path=path)
+            except ValueError:
+                pass
         return False
 
     def _has_mailbox_changed(self, mbx, state):
-        return True
-        # FIXME: This is wrong
-        mt = state['mt'] = long(os.path.getmtime(self._path(mbx)))
-        sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
-        return (mt != self.event.data['mtimes'].get(mbx._key) or
-                sz != self.event.data['sizes'].get(mbx._key))
+        src = self.session.config.open_mailbox(self.session,
+                                               FormatMbxId(mbx._key),
+                                               prefer_local=False)
+        with src.open_imap() as imap:
+            uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
+            ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
+            uvex = '%s/%s' % (uv, ex)
+            return (uvex != self.event.data.get('mailbox_state',
+                                                {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        return True
-        # FIXME: This is wrong
-        self.event.data['mtimes'][mbx._key] = state['mt']
-        self.event.data['sizes'][mbx._key] = state['sz']
+        uvex = '%s/%s' % (state['uv'], state['ex'])
+        if 'mailbox_state' in self.event.data:
+            self.event.data['mailbox_state'][mbx._key] = uvex
+        else:
+            self.event.data['mailbox_state'] = {mbx._key: uvex}
+
+    def _mailbox_name(self, path):
+        # len('src:/') = 5
+        return path[(5 + len(self.my_config._key)):]
 
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
-    def _unlocked_discover_mailboxes(self, unused_paths):
+    def discover_mailboxes(self, unused_paths=None):
         config = self.session.config
         existing = self._existing_mailboxes()
         discovered = []
-        with self._unlocked_open() as raw_conn:
+        with self.open() as raw_conn:
             try:
-                ok, data = self.timed_imap(raw_conn.list)
+                ok, data = self.timed_imap(raw_conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
+                    if '[Gmail]' in path:
+                        # FIXME: Temp hack to ignore the [Gmail] thing
+                        continue
                     path = self._fmt_path(path)
                     if path not in existing:
                         discovered.append((path, flags))
@@ -516,9 +634,7 @@ class ImapMailSource(BaseMailSource):
 
         for path, flags in discovered:
             idx = config.sys.mailbox.append(path)
-            mbx = self._unlocked_take_over_mailbox(idx)
-            if mbx.policy == 'unknown':
-                self.event.data['have_unknown'] = True
+            mbx = self.take_over_mailbox(idx)
 
     def quit(self, *args, **kwargs):
         if self.conn:
@@ -534,7 +650,7 @@ class _MockImap(object):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> imap.open(conn_cls=_MockImap)
-    <SharedImapConn(...)>
+    <SharedImapConn(mock, started ...)>
 
     >>> sorted(imap.capabilities)
     ['IMAP4REV1', 'X-MAGIC-BEANS']
@@ -550,6 +666,7 @@ class _MockImap(object):
     RESULTS = {}
 
     def __init__(self, *args, **kwargs):
+        self.host = 'mock'
         def mkcmd(rval):
             def cmd(*args, **kwargs):
                 return rval

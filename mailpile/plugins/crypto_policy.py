@@ -1,3 +1,5 @@
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.vcard import VCardLine
 from mailpile.commands import Command
@@ -66,7 +68,7 @@ class CryptoPolicyBaseAction(Command):
 
 class AutoDiscoverCryptoPolicy(CryptoPolicyBaseAction):
     """ Auto discovers crypto policy for all known contacts """
-    SYNOPSIS = (None, 'discover_crypto_policy', None, None)
+    SYNOPSIS = (None, 'crypto_policy/auto_set_all', None, None)
     ORDER = ('AutoDiscover', 0)
 
     def _set_crypto_policy(self, email, policy):

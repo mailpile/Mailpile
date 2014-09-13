@@ -1,0 +1,92 @@
+<div id="login">
+  <div id="login-left" class="animated"></div>
+  <div id="login-right" class="animated"></div>
+</div>
+
+<div id="login-logo" class="animated">
+{% include("../img/logo-color.svg") %}
+{% include("../img/logo-name.svg") %}
+</div>
+
+<!--
+<div id="login-messages" class="animated text-center">
+Decrypting Index, Messages, and Contacts
+</div>
+-->
+
+<div id="login-vault-lock" class="vault-lock-outer animated">
+  <div class="vault-lock-inner animated">
+    <div class="vault-lock icon-lock-closed animated"></div>
+  </div>
+</div>
+
+<div id="login-details" class="animated">
+  <div class="form-text">{{_("To Log In Please Enter")}}</div>
+  <form method="POST"
+        {# Avoid adding the action if it is not needed, as it strips off
+           the query string which tells us where to redirect back to. #}
+        {% if state.command_url != "/auth/login/" %}action="/auth/login/"{% endif %}
+        id="form-login" class="form-login clearfix animated">
+    <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
+    <button type="submit" class="submit"><span class="icon-key"></span></button>
+  </form>
+  {% if status_message == 'error' %}
+  <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong passphrase. Try again?")}}</div>
+  {% elif result.login_banner %}
+  <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
+  {% endif %}
+  {% if status_message == 'logout' %}
+  <div class="logged-out-message">{{_("You Have Been Logged Out!")}}</div>
+  {% endif %}
+</div>
+
+<script>
+$(document).ready(function() {
+
+  var height = $(window).height() - 16;
+  $('#content-wide').css({'height': height, 'margin-top': '0px'});
+  $('#login').height(height);
+  $('#login-left').height(height);
+  $('#login-right').height(height);
+
+  $('#login-passphrase').focus();
+});
+
+// Login Form is submitted
+$(document).on('submit', '#form-login', function(e) {
+
+  // Details
+  $('#login-details').addClass('bounceOutDown');
+
+  // Lock
+  setTimeout(function() {
+    $('#login-vault-lock').find('div.vault-lock').addClass('fadeOut');
+  }, 250);
+
+  setTimeout(function() {
+    $('#login-vault-lock').addClass('bounceOutUp');
+  }, 500);
+
+  // Panels
+  setTimeout(function() {
+    $('#login-left').addClass('bounceOutLeft');
+    $('#login-right').addClass('bounceOutRight');
+  }, 850);
+
+  // Loading
+  setTimeout(function() {
+    $('#login-logo .logo-name').addClass('fadeOut');
+    $('#login-logo').css({'left': '40%'});
+  }, 1000);
+
+  setInterval(function() {
+    $("#logo-bluemail").fadeOut(2000);
+    $("#logo-redmail").hide(2000);
+    $("#logo-greenmail").hide(3000);
+    $("#logo-bluemail").fadeIn(2000);
+    $("#logo-greenmail").fadeIn(4000);
+    $("#logo-redmail").fadeIn(6000);
+  }, 1000);
+
+});
+</script>

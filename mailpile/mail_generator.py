@@ -18,6 +18,10 @@ import warnings
 from cStringIO import StringIO
 from email.header import Header
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+
+
 UNDERSCORE = '_'
 NL = '\n'
 

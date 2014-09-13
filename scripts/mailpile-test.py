@@ -33,6 +33,7 @@ from mailpile import Mailpile
 ##[ Black-box test script ]###################################################
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
+ICELANDIC = u'r\xfanar'
 MY_FROM = 'team+testing@mailpile.is'
 MY_NAME = 'Mailpile Team'
 MY_KEYID = '0x7848252F'
@@ -49,6 +50,7 @@ if '-v' not in sys.argv:
 
 cfg.plugins.load('demos', process_manifest=True)
 cfg.plugins.load('hacks', process_manifest=True)
+cfg.plugins.load('smtp_server', process_manifest=True)
 
 
 def contents(fn):
@@ -72,17 +74,26 @@ def say(stuff):
 
 def do_setup():
     # Set up initial tags and such
-    mp.setup()
+    mp.setup('do_gpg_stuff')
+
+    # Setup GPG access credentials and TELL EVERYONE!
+    config.sys.login_banner = 'Pssst! The password is: mailpile'
+    #config.gnupg_passphrase.set_passphrase('mailpile')
+    #config.prefs.gpg_recipient = '3D955B5D7848252F'
+
+    config.vcards.get(MY_FROM).fn = MY_NAME
+    config.prefs.default_email = MY_FROM
+    config.prefs.encrypt_index = True
 
     # Configure our fake mail sending setup
-    config.profiles['0'].email = MY_FROM
-    config.profiles['0'].name = MY_NAME
     config.sys.http_port = 33414
+    config.sys.smtpd.host = 'localhost'
+    config.sys.smtpd.port = 33415
     config.prefs.openpgp_header = 'encrypt'
     config.prefs.crypto_policy = 'openpgp-sign'
 
     if '-v' in sys.argv:
-        config.sys.debug = 'rescan sendmail log compose'
+        config.sys.debug = 'log http vcard rescan sendmail log compose'
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -112,6 +123,7 @@ def test_vcards():
     assert(mp.contacts_view('mr@rogers.com'
                             ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contacts('rogers').result['contacts']) == 1)
+
 
 def test_load_save_rescan():
     say("Testing load/save/rescan")
@@ -162,7 +174,7 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 17)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 18)
 
     say('FIXME: Make sure message signatures verified')
 
@@ -233,33 +245,37 @@ def test_composition():
 
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
-    msg_data['body'] = ['Hello world: thisisauniquestring :)']
+    msg_data['body'] = [
+        ('Hello world: thisisauniquestring :) '+ICELANDIC)
+    ]
     mp.message_update_send(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
 
     # First attempt to send should fail & record failure to event log
+    config.prefs.default_messageroute = 'default'
     config.routes['default'] = {"command": '/no/such/file'}
-    config.profiles['0'].messageroute = 'default'
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result
+                         'data_mid=%s' % new_mid).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'i')
-    assert(len(mp.eventlog('incomplete').result) == 1)
+    assert(len(mp.eventlog('incomplete').result['events']) == 1)
 
     # Second attempt should succeed!
     config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result
+                         'data_mid=%s' % new_mid).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'c')
-    assert(len(mp.eventlog('incomplete').result) == 0)
+    assert(len(mp.eventlog('incomplete').result['events']) == 0)
 
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
-    assert('thisisauniquestring' in contents(mailpile_sent))
+    # This is the base64 encoding of thisisauniquestring
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
+           in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
     assert('secret@test.com' in grep('X-Args', mailpile_sent))
@@ -271,8 +287,10 @@ def test_composition():
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
-    assert('thisisauniquestring' in contents(mailpile_sent))
-    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
+    # This is the base64 encoding of thisisauniquestring
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
+           in contents(mailpile_sent))
+    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
@@ -280,13 +298,34 @@ def test_composition():
     # Test the send method's "bounce" capability
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
-    assert('thisisauniquestring' in contents(mailpile_sent))
-    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
+    # This is the base64 encoding of thisisauniquestring
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
+           in contents(mailpile_sent))
+    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
-    assert('BEGIN PGP SIG' in contents(mailpile_sent))
-    assert('END PGP SIG' in contents(mailpile_sent))
+
+def test_smtp():
+    config.prepare_workers(mp._session, daemons=True)
+    new_mid = mp.message_compose().result['thread_ids'][0]
+    msg_data = {
+        'from': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'mid': [new_mid],
+        'subject': ['This the OTHER TESTMSG...'],
+        'body': ['Hello SMTP world!']
+    }
+    config.prefs.default_messageroute = 'default'
+    config.prefs.always_bcc_self = False
+    config.routes['default'] = {
+        'protocol': 'smtp',
+        'host': 'localhost',
+        'port': 33415
+    }
+    mp.message_update(**msg_data)
+    mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    mp.sendmail()
+    config.stop_workers()
 
 def test_html():
     say("Testing HTML")
@@ -304,6 +343,7 @@ try:
         test_message_data()
         test_html()
         test_composition()
+        test_smtp()
         if '-v' not in sys.argv:
             sys.stderr.write("\nTests passed, woot!\n")
         else:

@@ -2,17 +2,22 @@
 # Mailpile's built-in HTTPD
 #
 ###############################################################################
+import Cookie
 import mimetypes
 import os
+import random
 import socket
 import SocketServer
-from gettext import gettext as _
+import time
+import threading
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
 
 import mailpile.util
 from mailpile.commands import Action
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import *
@@ -20,6 +25,20 @@ from mailpile.ui import *
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
+
+BLOCK_HTTPD_LOCK = UiRLock()
+LIVE_HTTP_REQUESTS = 0
+
+
+def Idle_HTTPD(allowed=1):
+    with BLOCK_HTTPD_LOCK:
+        sleep = 100
+        while (sleep and
+                not mailpile.ui.QUITTING and
+                LIVE_HTTP_REQUESTS > allowed):
+            time.sleep(0.05)
+            sleep -= 1
+        return BLOCK_HTTPD_LOCK
 
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
@@ -60,6 +79,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         #rsplit removes port
         return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
 
+    def http_session(self):
+        """Fetch the session ID from a cookie, or assign a new one"""
+        cookies = Cookie.SimpleCookie(self.headers.get('cookie'))
+        session_id = cookies.get(self.server.session_cookie)
+        if session_id:
+            session_id = session_id.value
+        else:
+            session_id = self.server.make_session_id(self)
+        return session_id
+
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
         return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
@@ -99,6 +128,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.send_header('Content-Type', mimetype)
         for header in header_list:
             self.send_header(header[0], header[1])
+        session_id = self.session.ui.html_variables.get('http_session')
+        if session_id:
+            cookies = Cookie.SimpleCookie()
+            cookies[self.server.session_cookie] = session_id
+            cookies[self.server.session_cookie]['path'] = '/'
+            cookies[self.server.session_cookie]['max-age'] = 24 * 3600
+            self.send_header(*cookies.output().split(': ', 1))
+            self.send_header('Cache-Control', 'no-cache="set-cookie"')
         self.end_headers()
 
     def send_full_response(self, message,
@@ -188,7 +225,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             raise ValueError(_('XMLRPC has been disabled for now.'))
             #return SimpleXMLRPCRequestHandler.do_POST(self)
 
-        config = self.server.session.config
+        # Update thread name for debugging purposes
+        threading.current_thread().name = 'POST:%s' % self.path.split('?')[0]
+
+        self.session, config = self.server.session, self.server.session.config
         post_data = {}
         try:
             ue = 'application/x-www-form-urlencoded'
@@ -218,14 +258,28 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return None
         return self.do_GET(post_data=post_data, method=method)
 
-    def do_GET(self, post_data={}, suppress_body=False, method='GET'):
+    def do_GET(self, *args, **kwargs):
+        global LIVE_HTTP_REQUESTS
+        try:
+            path = self.path.split('?')[0]
+
+            threading.current_thread().name = 'WAIT:%s' % path
+            with BLOCK_HTTPD_LOCK:
+                LIVE_HTTP_REQUESTS += 1
+
+            threading.current_thread().name = 'WORK:%s' % path
+            return self._real_do_GET(*args, **kwargs)
+        finally:
+            LIVE_HTTP_REQUESTS -= 1
+
+    def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         query_data = parse_qs(query)
         opath = path = unquote(path)
 
         # HTTP is stateless, so we create a new session for each request.
+        self.session, config = self.server.session, self.server.session.config
         server_session = self.server.session
-        config = server_session.config
 
         if 'httpdata' in config.sys.debug:
             self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
@@ -238,7 +292,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if path.startswith('/static/'):
             return self.send_file(config, path[len('/static/'):])
 
-        session = Session(config)
+        self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
 
@@ -251,12 +305,17 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                              % (method, opath, query_data, post_data))
 
         idx = session.config.index
-        name = session.config.get_profile().get('name', 'Chelsea Manning')
+        if session.config.loaded_config:
+            name = session.config.get_profile().get('name', 'Chelsea Manning')
+        else:
+            name = 'Chelsea Manning'
+
         session.ui.html_variables = {
             'csrf': self.csrf(),
             'http_host': self.headers.get('host', 'localhost'),
             'http_hostname': self.http_host(),
             'http_method': method,
+            'http_session': self.http_session(),
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',
@@ -266,8 +325,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         try:
             try:
-                commands = UrlMap(session).map(self, method, path,
-                                               query_data, post_data)
+                commands = UrlMap(session).map(
+                    self, method, path, query_data, post_data,
+                    authenticate=(not mailpile.util.TESTING))
             except UsageError:
                 if (not path.endswith('/') and
                         not session.config.sys.debug and
@@ -281,12 +341,24 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 else:
                     raise
 
-            results = [cmd.run() for cmd in commands]
-            session.ui.display_result(results[-1])
+            global LIVE_HTTP_REQUESTS
+            hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
+                             ) else 0
+            try:
+                LIVE_HTTP_REQUESTS -= hang_fix
+                results = [cmd.run() for cmd in commands]
+                session.ui.display_result(results[-1])
+            finally:
+                LIVE_HTTP_REQUESTS += hang_fix
+
         except UrlRedirectException, e:
             return self.send_http_redirect(e.url)
         except SuppressHtmlOutput:
-            return
+            return None
+        except AccessError:
+            self.send_full_response(_('Access Denied'),
+                                    code=403, mimetype='text/plain')
+            return None
         except:
             e = traceback.format_exc()
             session.ui.debug(e)
@@ -318,11 +390,34 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.daemon_threads = True
         self.session = session
         self.sessions = {}
+        self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
-        # FIXME: This could be more securely random
-        self.secret = '-'.join([str(x) for x in [self.socket, self.sspec,
-                                                 time.time(), self.session]])
+
+        # This hash includes the index ofuscation master key, which means
+        # it should be very strongly unguessable.
+        self.secret = b64w(sha512b64(
+            '-'.join([str(x) for x in [session, time.time(),
+                                       random.randint(0, 0xfffffff),
+                                       session.config]])))
+
+        # Generate a new unguessable session cookie name on startup
+        while not self.session_cookie:
+            rn = str(random.randint(0, 0xfffffff))
+            self.session_cookie = CleanText(sha512b64(self.secret, rn),
+                                            banned=CleanText.NONALNUM
+                                            ).clean[:8].lower()
+
+    def make_session_id(self, request):
+        """Generate an unguessable and unauthenticated new session ID."""
+        session_id = None
+        while session_id in self.sessions or session_id is None:
+            session_id = b64w(sha1b64('%s %s %x %s' % (
+                self.secret,
+                request and request.headers,
+                random.randint(0, 0xffffffff),
+                time.time())))
+        return session_id
 
     def finish_request(self, request, client_address):
         try:
@@ -337,6 +432,7 @@ class HttpWorker(threading.Thread):
     def __init__(self, session, sspec):
         threading.Thread.__init__(self)
         self.httpd = HttpServer(session, sspec, HttpRequestHandler)
+        self.daemon = True
         self.session = session
 
     def run(self):

@@ -10,16 +10,19 @@
 /* Thread Title */	
 
   #thread-title {
+    display: table;
     text-align: center;
-    padding: 10px 0 5px 0;
+    padding: 0px 0 0px 0;
   }
 
   #thread-title h1 {
-    margin: 0px;
-    padding: 0px;
+    display: inline-block;
+    margin: 0 @base-margin;
+    padding: 8px 0px 5px 0px;
     font-family: @mailpile-text-font-family-bold;
     font-size: 24px;
-    font-weight: bold;
+    line-height: 30px;
+    color: rgb(77, 77, 77); //@grayDark;
   }
 
   #thread-title ul {
@@ -42,8 +45,24 @@
     color: @grayDark;
   }
 
+  #thread-title div.thread-draggable {
+    width: 12px;
+    height: 100%;
+    display: table-cell;
+    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter:alpha(opacity=30);
+  }
 
-/* Thread Items */
+  #thread-title div.thread-draggable:hover {
+    cursor: move;
+  }
+  
+  #thread-title div.thread-details {
+    display: table-cell;
+  }
+
+/* Thread Snippet - Preview of messages */
 
   .thread-snippet {
     background: @white;
@@ -58,6 +77,48 @@
   .thread-snippet:hover .feedback-expand {
     display: block;
   }
+
+
+/* Thread Notification - Non message items */
+
+  .thread-notification {
+    padding: 10px 15px;
+    background: @white;
+    border-bottom: 1px solid @gray;
+    color: @gray;
+  }
+
+  .thread-notification span.instruction {
+    display: none;
+  }
+
+  .thread-notification a { 
+    width: 100%;
+    height: 100%;
+    display: block;
+    color: @gray;
+    font-weight: normal;
+  }
+
+  .thread-notification:hover {
+    background: @colorExpand;
+  }
+
+  .thread-notification:hover span.instruction {
+    display: inline;
+  }
+
+  .thread-notification:hover a {
+    color: @grayDark;
+  }
+
+  .thread-notification a:hover,
+  .thread-notification:hover a:hover {
+    color: @blue;
+  }
+
+
+/* Thread Message - View of full message */
 
   .thread-message {
     background: @white;
@@ -75,7 +136,7 @@
   }
 
   .thread-item-from-avatar {
-    width: 45px;
+    .global-user-avatar();
     display: table-cell;
     padding-top: 15px;
     padding-left: 15px;
@@ -84,8 +145,7 @@
   }
 
   .thread-item-from-avatar a img {
-    width: 45px;
-    border-radius: 3px;
+    .global-user-avatar-img();
   }
 
   .thread-item-from {
@@ -107,6 +167,10 @@
     font-size: 16px;
     font-weight: bold;
     line-height: 16px;
+  }
+
+  .thread-item-from a:hover {
+    color: @blue;
   }
 
   .thread-item-metadata-address {
@@ -133,7 +197,7 @@
     text-align: right;
     font-size: 14px;
     font-weight: bold;
-    color: @grayDark;
+    color: @gray;
     line-height: 14px;
   }
 
@@ -168,12 +232,11 @@
 
   .thread-item-metadata-details {
     display: none;
-    margin-bottom: 25px;
-    border-bottom: 1px solid @grayMid;
+    padding-bottom: 5px;
   }
 
   .thread-item-metadata-details ul {
-    margin: 10px 0px 15px 20px;
+    margin: 10px 0px 10px 20px;
   }
 
   .thread-item-metadata-details ul li {
@@ -183,6 +246,10 @@
     font-size: 14px;
     font-weight: normal;   
     line-height: 14px;
+  }
+
+	.thread-item-metadata-details a:hover {
+    color: @blue;
   }
   
   .thread-item-metadata-contact {
@@ -198,14 +265,18 @@
     padding-right: 5px;
   }
 
-	.thread-item-metadata-contact a:hover {
-    color: @red;
+  .thread-item-metadata-contact a span {
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 11px;
+    color: @gray;
   }
 
 	.thread-item-metadata-contact a img {
-     width: 21px;
-     height: 21px;
-     padding-right: 5px;
+     width: 24px;
+     height: 24px;
+     border-radius: @base-border-radius;
+     margin-right: 5px;
   }
 
   .thread-item-crypto {
@@ -220,14 +291,16 @@
   .thread-item-crypto-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
 
   .thread-item-crypto-error {
-    width: 40%;
+    width: 50%;
     text-align: center;
-    color: @grayMid;
-    margin-top: @base-margin;
-    margin-bottom: @base-margin;
-    margin-left: @base-margin;
+    color: @gray;
+    margin: 0px auto @base-margin auto;    
   }
-  
+
+  .thread-item-crypto-error p {
+    line-height: 18px;
+  }
+
   .thread-item-crypto-error .icon {
     font-size: 48px;
     line-height: 48px;
@@ -300,6 +373,7 @@
 /* Thread Message Attachments */
 
 	div.thread-message-attachments {
+    margin-top: 15px;
   	margin-left: 20px;
   	margin-bottom: 0px;
 	}
@@ -344,8 +418,13 @@
     margin-bottom: 10px;
   }
 
-  .thread-message-actions li {
+  .thread-message-actions li.action {
     margin-right: 25px;
+  }
+
+  .thread-message-actions li.action ul.dropdown-menu li {
+    display: block;
+    float: none;
   }
 
 	.thread-message-actions-quote {

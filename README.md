@@ -4,14 +4,8 @@
 
 #### What Is Coming Down The Pipe? ####
 
-The month of April you can expect to see the following things implemented in Mailpile
-
-- Eventlog API for user notifications and UI feedback
-- IMAP Support
-- Plugin Architecture ready for actual development
-- SMTorP, sending peer-2-peer emails over Tor
-- Rough UI "setup installer" flow
-
+- Beta release August 8th
+- 1.0 release mid / late September
 
 ---------------------------------------------------------------------------
 

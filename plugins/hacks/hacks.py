@@ -1,7 +1,9 @@
 import json
+import os
 from gettext import gettext as _
 from urllib import urlencode, URLopener
 
+import mailpile.auth
 from mailpile.commands import Command, Help
 from mailpile.mailutils import *
 from mailpile.search import *
@@ -95,6 +97,14 @@ class ViewMetadata(Hacks):
     def _explain(self, i):
         idx = self._idx()
         info = idx.get_msg_at_idx_pos(i)
+        ptags = [self.session.config.get_tag(t) or t
+                 for t in info[idx.MSG_TAGS].split(',') if t]
+        ptags = [t.name for t in ptags if hasattr(t, 'name')]
+        pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
+                               p[MBX_ID_LEN:])
+                 for p in info[idx.MSG_PTRS].split(',') if p]
+        to = idx.expand_to_list(info)
+        cc = idx.expand_to_list(info, idx.MSG_CC)
         return {
             'mid': info[idx.MSG_MID],
             'ptrs': info[idx.MSG_PTRS],
@@ -109,12 +119,21 @@ class ViewMetadata(Hacks):
             'tags': info[idx.MSG_TAGS],
             'replies': info[idx.MSG_REPLIES],
             'thread_mid': info[idx.MSG_THREAD_MID],
+            'parsed': {
+                'date': friendly_datetime(long(info[idx.MSG_DATE], 36)),
+                'tags': ', '.join(ptags),
+                'to': to,
+                'cc': cc,
+                'ptrs': pptrs
+            }
         }
 
     def command(self):
         return self._success(_('Displayed raw metadata'),
             [self._explain(i) for i in self._choose_messages(self.args)])
 
+
+HACKS_SESSION_ID = None
 
 class Http(Hacks):
     """Send HTTP requests to the web server"""
@@ -156,8 +175,19 @@ class Http(Hacks):
             qv = urlencode(qv)
             url += ('?' in url and '&' or '?') + qv
 
+        # Log us in automagically!
+        httpd = self.session.config.http_worker.httpd
+        global HACKS_SESSION_ID
+        if HACKS_SESSION_ID is None:
+            HACKS_SESSION_ID = httpd.make_session_id(None)
+        mailpile.auth.SetLoggedIn(None,
+                                  user='Hacks plugin HTTP client',
+                                  session_id=HACKS_SESSION_ID)
+        cookie = httpd.session_cookie
+
         try:
             uo = URLopener()
+            uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
             if method == 'POST':
                 (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
             else:

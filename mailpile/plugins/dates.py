@@ -1,8 +1,9 @@
 import time
 import datetime
-from gettext import gettext as _
 
 from mailpile.plugins import PluginManager
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 _plugins = PluginManager(builtin=__name__)

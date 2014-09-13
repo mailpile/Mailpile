@@ -16,4 +16,3 @@ class ContactsGuiTest(MailpileSeleniumTest):
 
         # we now should find a contact with name Foo Bar
         self.assert_link_with_text('Foo Bar')
-        self.assert_link_with_text('foo.bar@test.local')

@@ -1,9 +1,12 @@
 import cgi
-from gettext import gettext as _
+import time
 from urlparse import parse_qs, urlparse
-from urllib import quote
+from urllib import quote, urlencode
 
+import mailpile.auth
 from mailpile.commands import Command, COMMANDS
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 
@@ -70,7 +73,8 @@ class UrlMap:
                                            or not strict)))]
 
     def _command(self, name,
-                 args=None, query_data=None, post_data=None, method='GET'):
+                 args=None, query_data=None, post_data=None,
+                 method='GET', async=False):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
 
@@ -161,7 +165,7 @@ class UrlMap:
                     else:
                         data[var] = [d.decode('utf-8') for d in sdata]
 
-        return command(self.session, name, args, data=data)
+        return command(self.session, name, args, data=data, async=async)
 
     OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
                        '.text', '.vcf', '.xml',
@@ -277,7 +281,7 @@ class UrlMap:
         """RESERVED FOR LATER."""
 
     def _map_api_command(self, method, path_parts,
-                         query_data, post_data, fmt='html'):
+                         query_data, post_data, fmt='html', async=False):
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
@@ -298,7 +302,8 @@ class UrlMap:
                                   args=path_parts[bp:],
                                   query_data=query_data,
                                   post_data=post_data,
-                                  method=method)
+                                  method=method,
+                                  async=async)
                 ]
             except UsageError:
                 pass
@@ -308,6 +313,7 @@ class UrlMap:
                                                        '/'.join(path_parts)))
 
     MAP_API = 'api'
+    MAP_ASYNC_API = 'async'
     MAP_PATHS = {
         '': _map_root,
         'in': _map_tag,
@@ -315,7 +321,8 @@ class UrlMap:
         'static': _map_RESERVED,
     }
 
-    def map(self, request, method, path, query_data, post_data):
+    def map(self, request, method, path, query_data, post_data,
+            authenticate=False):
         """
         Convert an HTTP request to a list of mailpile.command objects.
 
@@ -333,6 +340,10 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         UsageError: Not available for GET: bogus
+
+        The root currently just redirects to /in/inbox/:
+        >>> urlmap.map(request, 'GET', '/async/0/search/', {}, {})
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
         The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
@@ -354,23 +365,65 @@ class UrlMap:
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Draft...>]
         """
 
+        if self.session:
+            sid = self.session.ui.html_variables.get('http_session')
+            user_session = (mailpile.auth.SESSION_CACHE.get(sid)
+                            if sid else None)
+        else:
+            user_session = None
+
+        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
+        is_api = path.startswith('/%s/' % self.MAP_API)
+
+        if authenticate:
+            def auth(commands, user_session):
+                if user_session:
+                    if user_session.is_expired():
+                        mailpile.auth.SESSION_CACHE.delete_expired()
+                        user_session = None
+                    else:
+                        user_session.update_ts()
+                if not user_session or not user_session.auth:
+                    for c in commands:
+                        if (c.HTTP_AUTH_REQUIRED is True or
+                               (c.HTTP_AUTH_REQUIRED == 'Maybe' and
+                                self.session.config.prefs.gpg_recipient)):
+                            if is_async or is_api:
+                                raise AccessError()
+                            self.redirect_to_auth_or_setup(method, path,
+                                                           query_data)
+                return commands
+        else:
+            def auth(commands, user_session):
+                return commands
+
         # Check the API first.
-        if path.startswith('/%s/' % self.MAP_API):
+        if is_api or is_async:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise UsageError('Unknown API level: %s' % path_parts[2])
-            return self._map_api_command(method, path_parts[3:],
-                                         query_data, post_data, fmt='json')
+            return auth(self._map_api_command(method, path_parts[3:],
+                                              query_data, post_data,
+                                              fmt='json', async=is_async),
+                        user_session)
 
         path_parts = path[1:].split('/')
         try:
-            return self._map_api_command(method, path_parts[:],
-                                         query_data, post_data)
+            return auth(self._map_api_command(method, path_parts[:],
+                                              query_data, post_data),
+                        user_session)
         except UsageError:
             # Finally check for the registered shortcuts
             if path_parts[0] in self.MAP_PATHS:
+                # Just redirect potentially mapped paths straightaway
+                if authenticate and (not user_session or
+                                     not user_session.auth):
+                    self.redirect_to_auth_or_setup(method, path, query_data)
+
                 mapper = self.MAP_PATHS[path_parts[0]]
-                return mapper(self, request, path_parts, query_data, post_data)
+                return auth(mapper(self, request, path_parts,
+                                   query_data, post_data),
+                            user_session)
             raise
 
     def _url(self, url, output='', qs=''):
@@ -389,6 +442,31 @@ class UrlMap:
     def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
         return self._url('/message/draft/=%s/' % message_id, output)
+
+    def redirect_to_auth_or_setup(self, method, path, query_data, setup=True):
+        """Redirect to the /auth/ or a /setup/* endpoint"""
+        from mailpile.plugins.setup_magic import Setup
+
+        if method.lower() == 'get':
+            qd = [(k, v) for k, vl in query_data.iteritems() for v in vl]
+            if '_path' not in query_data:
+                qd.append(('_path', path))
+        else:
+            qd = []
+
+        if setup:
+            nxt = Setup.Next(self.session.config, mailpile.auth.Authenticate)
+            if nxt.HTTP_AUTH_REQUIRED is True:
+                nxt = mailpile.auth.Authenticate
+            path = '/%s/' % nxt.SYNOPSIS[2]
+        else:
+            path = '/%s/' % mailpile.auth.Authenticate.SYNOPSIS[2]
+
+        raise UrlRedirectException(self._url(path, qs=urlencode(qd)))
+
+    def redirect_to_auth(self, method, path, query_data):
+        return self.redirect_to_auth_or_setup(method, path, query_data,
+                                              setup=False)
 
     def url_tag(self, tag_id, output=''):
         """
@@ -468,7 +546,7 @@ class UrlMap:
         """Return the UI context URL for a command"""
         return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
 
-    def map_as_markdown(self):
+    def map_as_markdown(self, prefix=None):
         """Describe the current URL map as markdown"""
 
         api_version = self.API_VERSIONS[-1]
@@ -489,7 +567,8 @@ class UrlMap:
         ])
         api = '/api/%s' % api_version
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
-            commands = cmds(method)
+            commands = [c for c in cmds(method)
+                        if not prefix or (c[0] and c[0].startswith(prefix))]
             if commands:
                 text.extend([
                     '### %s%s' % (method, method == 'GET' and
@@ -499,6 +578,7 @@ class UrlMap:
             commands.sort()
             for command in commands:
                 cls = command[1]
+                url = self.canonical_url(cls)
                 query_vars = cls.HTTP_QUERY_VARS
                 pos_args = (cls.SYNOPSIS[3] and
                             unicode(cls.SYNOPSIS[3]).replace(' ', '/') or '')
@@ -515,22 +595,24 @@ class UrlMap:
                     pos_args = '%s%s/' % (padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s%s%s' % (self.canonical_url(command[1]),
-                                            pos_args, qs))
+                text.append('    %s%s%s' % (url, pos_args, qs))
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])
                     text.append('    ... POST only: %s' % ps)
             text.append('')
-        text.extend([
-            '',
-            '## Pretty shortcuts (HTML output)',
-            '',
-        ])
-        for path in sorted(self.MAP_PATHS.keys()):
-            doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
-            path = ('/%s/' % path).replace('//', '/')
-            text.append('    %s %s %s' % (path, ' ' * (10 - len(path)), doc))
+
+        if not prefix:
+            text.extend([
+                '',
+                '## Pretty shortcuts (HTML output)',
+                '',
+            ])
+            for path in sorted(self.MAP_PATHS.keys()):
+                doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
+                path = ('/%s/' % path).replace('//', '/')
+                text.append('    %s %s %s' % (path, ' ' * (10 - len(path)), doc))
+
         text.extend([
             '',
             '## Default command URLs (HTML output)',
@@ -539,6 +621,8 @@ class UrlMap:
             '',
         ])
         for command in sorted(list(set(cmds('GET') + cmds('POST')))):
+            if prefix and not command[0].startswith(prefix):
+                continue
             text.append('    /%s/' % (command[0], ))
         text.append('')
         return '\n'.join(text)
@@ -579,7 +663,7 @@ class UrlRedirectThread(Command):
 
 class HelpUrlMap(Command):
     """Describe the current API and URL mapping"""
-    SYNOPSIS = (None, 'help/urlmap', 'help/urlmap', None)
+    SYNOPSIS = (None, 'help/urlmap', 'help/urlmap', '[<prefix>]')
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -597,7 +681,8 @@ class HelpUrlMap(Command):
             return Command.CommandResult.as_html(self, *args, **kwargs)
 
     def command(self):
-        return {'urlmap': UrlMap(self.session).map_as_markdown()}
+        prefix = self.args[0] if self.args else None
+        return {'urlmap': UrlMap(self.session).map_as_markdown(prefix=prefix)}
 
 
 plugin_manager = PluginManager(builtin=True)

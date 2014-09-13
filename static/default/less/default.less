@@ -27,11 +27,12 @@
 @import "../bower_components/rebar/less/rebar/navigation.less";
 @import "../bower_components/rebar/less/rebar/grid.less";
  */
-@import "../bower_components/rebar/less/rebar/boxes.less";
+@import "../bower_components/rebar/less/rebar/rectangles.less";
 @import "../bower_components/rebar/less/rebar/separators.less";
 @import "../bower_components/rebar/less/rebar/shapes.less";
 @import "../bower_components/rebar/less/rebar/tables.less";
 @import "../bower_components/rebar/less/rebar/typography.less";
+
 
 /* Libraries */
 @import "libraries/bootstrap.less";
@@ -41,15 +42,20 @@
 @import "libraries/dropdowns.less";
 @import "libraries/modals.less";
 
+
 /* App */
+@import "app/setup.less";
+@import "app/screens.less";
+@import "app/login.less";
 @import "app/global.less";
-@import "app/messages.less";
 @import "app/notifications.less";
 @import "app/navigation.less";
 @import "app/topbar.less";
 @import "app/sidebar.less";
+@import "app/crypto.less";
 @import "app/compose.less";
 @import "app/contacts.less";
+@import "app/modals.less";
 @import "app/search.less";
 @import "app/pile.less";
 @import "app/thread.less";
@@ -58,3 +64,5 @@
 @import "app/tooltips.less";
 @import "app/tablet.less";
 @import "app/mobile.less";
+/* REBAR: move to core */
+@import "app/validation.less";
