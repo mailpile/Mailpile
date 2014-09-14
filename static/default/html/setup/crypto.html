@@ -29,7 +29,6 @@
         </div>
       </li>
     </ul>
-    <p><em>{{_("Note: this passphrase is also what you use to log in to your Mailpile")}}</em></p>
     <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
@@ -46,6 +45,7 @@
         <span class="validation-message"></span>
         <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
       </span>
+      <p><em>{{_("Note: this passphrase is also what you use to log in to your Mailpile")}}</em></p>
       <span id="validation-passphrase_confirm">
         <label class="validation-message">{{_("Confirm your passphrase")}}</label>
         <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
