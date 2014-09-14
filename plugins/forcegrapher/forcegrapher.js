@@ -5,9 +5,10 @@
 
 return {
     draw: function(graph) {
+
         // Determine & Set Height
         var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
-        var available_width = $("#content-view").width();
+        var available_width = $("#content-wide").width();
 
         $('#pile-graph-canvas').height(available_height);
         $('#pile-graph-canvas').width(available_width);
@@ -40,8 +41,11 @@ return {
         var link = svg.selectAll(".link")
             .data(graph.links)
             .enter().append("line")
-            .style("stroke", "#000")
-            .style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
+            .style("stroke", "#333333")
+            .style("stroke-width", '1px');
+
+        // Calculate # of connections
+        // function(d) { return Math.sqrt(3*d.value); }
 
         var node = svg.selectAll(".node")
               .data(graph.nodes)
@@ -51,25 +55,33 @@ return {
 
         node.append("circle")
             .attr("r", 8)
-            .style("fill", function(d) { return color("#3a6b8c"); })
+            .style("fill", function(d) { return color("#337FB2"); })
 
         node.append("text")
             .attr("x", 12)
             .attr("dy", "0.35em")
-            .style("opacity", "0.3")
-            .text(function(d) { return d.email; });
+            .style({"opacity": "0.3", "font-size": "12px"})
+            .text(function(d) {
+              if (d.name !== undefined) {
+                return d.name;
+              } else {
+                var email_name = d.email.split('@');
+                return email_name[0];
+              }
+            });
 
         link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
 
         node.on("click", function(d, m, q) {
+
             // d.attr("toggled", !d.attr("toggled"));
             // d.style("color", "#f00");
             if (Mailpile.graphselected.indexOf(d["email"]) < 0) {
-                d3.select(node[q][m]).selectAll("circle").style("fill", "#4b7945");
+                d3.select(node[q][m]).selectAll("circle").style("fill", "#4B9441");
                 Mailpile.graphselected.push(d["email"]);
             } else {
                 Mailpile.graphselected.pop(d["email"]);
-                d3.select(node[q][m]).selectAll("circle").style("fill", "#3a6b8c");
+                d3.select(node[q][m]).selectAll("circle").style("fill", "#337FB2");
             }
             Mailpile.graph_actionbuttons();
         });
