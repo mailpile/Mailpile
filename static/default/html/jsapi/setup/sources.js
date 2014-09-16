@@ -258,7 +258,7 @@ var SourcesView = Backbone.View.extend({
       message = this.eventProcessing(event);
     }
     else if (event.data.connection.error[0] == 'auth') {
-      message =  '{{_("Can not connect to server")}}';
+      message =  '{{_("Cannot connect to server")}}';
       $('#setup-item-notice-' + event.data.id)
         .html(event.data.connection.error[1] + ' <a href="/setup/#sources/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Edit Now")}}</a>')
         .fadeIn();
