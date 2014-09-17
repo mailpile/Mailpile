@@ -256,8 +256,9 @@ var ProfilesSettingsView = Backbone.View.extend({
       // Loop through elements
       _.each($('.profile-update'), function(item, key) {
         if ($(item).val() !== '') {
-          var vcard_data = { rid:
-            profile_id, name: $(item).data('vcard_name'),
+          var vcard_data = {
+            rid: profile_id,
+            name: $(item).data('vcard_name'),
             value: $(item).val(),
             replace_all: true
           };
