@@ -7387,7 +7387,7 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #pile-results td.subject {
   min-width: 374px;
-  overflow-x: hidden;
+  overflow: hidden;
   word-wrap: normal;
   word-break: normal;
   white-space: nowrap;
