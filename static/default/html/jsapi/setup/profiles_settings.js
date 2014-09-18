@@ -40,6 +40,7 @@ var ProfilesSettingsView = Backbone.View.extend({
 
         // Render
         $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
+        TooltipsView.showHelp();
 
         // Show Validation Feedback
         ProfilesSettingsView.model.set(edit_data);
