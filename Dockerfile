@@ -17,5 +17,6 @@ ADD . /Mailpile
 
 EXPOSE 33411
 VOLUME ["/.mailpile"]
+VOLUME ["/.gnupg"]
 
 ENTRYPOINT ["/Mailpile/mp", "--www=0.0.0.0:33411", "--wait"]
