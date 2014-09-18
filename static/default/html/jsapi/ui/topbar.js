@@ -10,11 +10,19 @@ $(document).on('submit', '#form-search', function(e) {
   if (search_query.substring(0, 9) === 'contacts:') {
     e.preventDefault();
     $.getJSON("/contacts/" + search_query.substring(10, 999) + "/as.jhtml", function(data) {
-  	  $("#content-view").html(data.result);
+  	  $("#content-wide").html(data.result);
     });
   }
-  else if (search_query.substring(0, 9) === 'tags:') {
-    console.log('trying to search for tags');
+  else if (search_query.substring(0, 5) === 'tags:') {
+    e.preventDefault();
+    $.getJSON("/tags/" + search_query.substring(6, 999) + "/as.jhtml", function(data) {
+  	  $("#content-wide").html(data.result);
+    });
+  }
+  else if (search_query.substring(0, 5) === 'keys:') {
+    e.preventDefault();
+    var query = search_query.substring(6, 999);
+    Mailpile.find_encryption_keys(query);
   }
   else {
     console.log('inside of else, just a normal query');
@@ -44,7 +52,11 @@ $(document).on('click', '#button-compose', function(e) {
 /* Activities - DOM */
 $(document).ready(function() {
   // Command Specific Mods
-  if (Mailpile.instance.state.command_url == '/contacts/') {
+  if (Mailpile.instance.state.command_url === '/contacts/') {
     $('#search-query').val('contacts: ');
   }
+  else if (Mailpile.instance.state.command_url === '/tags/') {
+    $('#search-query').val('tags: ');
+  }
+
 });
