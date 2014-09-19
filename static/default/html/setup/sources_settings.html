@@ -82,8 +82,8 @@
         <td>
           <label>{{_("Download mail or leave on server")}}</label>
           <select name="discovery.local_copy" id="input-setup-source-server-local_copy" class="input-small" tabindex="8">
-            <option value="true" selected="selected">{{_("Download")}}</option>
-            <option value="false">{{_("Do Not Download")}}</option>
+            <option value="true" <% if (discovery['local_copy'] === true) { %>selected<% } %>>{{_("Download")}}</option>
+            <option value="false" <% if (discovery['local_copy'] === false) { %>selected<% }%>>{{_("Do Not Download")}}</option>
           </select>
         </td>
       </tr>

@@ -2,7 +2,9 @@
 {% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
 {% set setup_crypto = mailpile("setup/crypto") %}
-<div id="setup-passphrase" class="setup-box setup-box-medium animated add-top half-bottom bounceInUp">
+
+
+<div id="setup-passphrase" class="setup-box setup-box-medium add-top half-bottom animated fadeIn">
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
       <div class="vault-lock icon-lock-closed animated"></div>
@@ -119,6 +121,8 @@
     <button id="btn-setup-passphrase" type="submit">{{_("Authenticate")}}</button>
   </form>
 </div>
+
+
 
 <script src="/api/0/jsapi/setup.js"></script>
 <script>
