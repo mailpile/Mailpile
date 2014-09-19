@@ -7854,9 +7854,10 @@ ul.thread-message-attachments a small {
   display: block;
   margin-bottom: 10px;
   font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
   font-size: 18px;
   line-height: 18px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.25px;
 }
 .tag-card-name:hover {
   color: #337fb2;
