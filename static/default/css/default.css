@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* Mailpile - Default Theme
 *  Version 0.1.0
 *	 Designed and built by @brennannovak and others
@@ -438,7 +439,6 @@
 /* Bootstrap - Dropdown */
 /* Bootstrap - Modal */
 /* Bower */
-@charset "UTF-8";
 /*!
 Animate.css - http://daneden.me/animate
 Licensed under the MIT license
@@ -3101,7 +3101,7 @@ input[type="button"] {
   color: #ffffff !important;
   font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: normal;
   padding: 7px 10px;
   display: inline-block;
@@ -3134,7 +3134,7 @@ input[type="button"] {
   color: #ffffff !important;
   font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: normal;
   padding: 7px 10px;
   display: inline-block;
@@ -3197,7 +3197,7 @@ input[type="button"]:active {
   color: #4d4d4d !important;
   font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: normal;
   text-decoration: none;
   padding: 7px 10px;
@@ -3250,7 +3250,7 @@ input[type="button"]:active {
   color: #ffffff !important;
   font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: normal;
   text-decoration: none;
   padding: 7px 10px;
@@ -3303,7 +3303,7 @@ input[type="button"]:active {
   color: #ffffff !important;
   font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: normal;
   text-decoration: none;
   padding: 7px 10px;
@@ -7387,7 +7387,7 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #pile-results td.subject {
   min-width: 374px;
-  overflow-x: hidden;
+  overflow: hidden;
   word-wrap: normal;
   word-break: normal;
   white-space: nowrap;
@@ -7854,9 +7854,10 @@ ul.thread-message-attachments a small {
   display: block;
   margin-bottom: 10px;
   font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
   font-size: 18px;
   line-height: 18px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.25px;
 }
 .tag-card-name:hover {
   color: #337fb2;

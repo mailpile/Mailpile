@@ -10,7 +10,7 @@ Mailpile.pile_action_select = function(item) {
     Mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
     // Add Tags
-    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.data('mid') });
+    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.attr('data-mid') });
     if (metadata) {
       _.each(metadata.tag_tids, function(tid, key) {
         var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
@@ -41,7 +41,7 @@ Mailpile.pile_action_unselect = function(item) {
     Mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
 
     // Remove Tags
-    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.data('mid') });
+    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.attr('data-mid') });
     _.each(metadata.tag_tids, function(tid, key) {
       var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
       if (tag.type === 'tag') {

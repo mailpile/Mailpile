@@ -19,7 +19,7 @@ Mailpile = {
   contacts_cache:     [],
   keybindings:        [
     ["normal", "/",      function() { $("#search-query").focus(); return false; }],
-    ["normal", "c",      function() { Mailpile.compose(); }],
+    ["normal", "c",      function() { Mailpile.activities.compose(); }],
     ["normal", "g i",    function() { Mailpile.go("/in/inbox/"); }],
     ["normal", "g d",    function() { Mailpile.go("/in/drafts/"); }],
     ["normal", "g c",    function() { Mailpile.go("/contacts/"); }],
@@ -78,7 +78,8 @@ Mailpile = {
     tags          : "/tags/"
   },
   plugins: [],
-  theme: {}
+  theme: {},
+  activities: {}
 };
 
 

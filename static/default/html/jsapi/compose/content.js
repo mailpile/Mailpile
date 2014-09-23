@@ -324,19 +324,9 @@ $(document).on('click', '.compose-show-details', function(e) {
 
 /* Compose - Create a new email to an address */
 $(document).on('click', 'a', function(e) {
-
   if ($(this).attr('href').startsWith('mailto:')) {
-
     e.preventDefault();
-    var address = $(this).attr('href').replace('mailto:', '');
-
-    Mailpile.API.message_compose_post({to: address}, function(response) {
-      if (response.status === 'success') {
-        window.location.href = Mailpile.urls.message_draft + response.result.created[0] + '/';
-      } else {
-        Mailpile.notification(response);
-      }
-    });
+    Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
   }
 });
 

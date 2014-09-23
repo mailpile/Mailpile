@@ -3,8 +3,10 @@
  */
 return {
     load: function(e) {
-        Mailpile.plugins.maildeck.column_add('in:Inbox');
-        Mailpile.plugins.maildeck.column_add('in:New');
+        Mailpile.plugins.maildeck.column_add('in:github');
+        Mailpile.plugins.maildeck.column_add('javascript');
+        Mailpile.plugins.maildeck.column_add('indieweb');
+        Mailpile.plugins.maildeck.column_add('in:berlin');
         
         // Add Prefix to search box
         $('#search-query').val('maildeck: ');
@@ -84,8 +86,9 @@ return {
             if ($("#" + id + " #mid_" + mid).length) {
                 // Do nothing...
             } else {
-                var subject = metadata.subject.substr(0, 100);
-                if (metadata.subject.length > 100) { 
+
+                var subject = metadata.subject.substr(0, 80);
+                if (metadata.subject.length > 80) { 
                     subject += "...";
                 }
                 tagclasses = "";
@@ -93,12 +96,17 @@ return {
                     tid = metadata.tag_tids[tid];
                     tagclasses += " in_" + result.data.tags[tid].slug;
                 }
-                
+
+                var avatar =  '<span class="icon-user"></span>';
+                if (metadata.from.photo !== undefined) {
+                  avatar = '<img src="' + metadata.from.photo + '">';
+                }
                 var item_data = {
                   mid: mid,
                   classes: tagclasses,
-                  from: metadata.from.fn + '&lt;' + metadata.from.email + '&gt;',
-                  subject: subject
+                  from: metadata.from.fn,
+                  subject: subject,
+                  avatar: avatar
                 }
  
                 // Add HTML Item
@@ -120,7 +128,7 @@ return {
             } else {
                 self.columns[id].countdown--;
             }
-            $("#" + id + " .refresh").html(self.columns[id].countdown);
+            //$("#" + id + " .refresh").html(self.columns[id].countdown);
         }, 1000);
     },
     runsearch: function() {
