@@ -29,7 +29,7 @@ Mailpile = {
     ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
     ["normal", "h",      function() { Mailpile.go("/help/"); }],
     ["normal", "right",  function() { Mailpile.go($('#pile-next').attr('href')); }],
-    ["normal", "left",   function() { Mailpile.go($('#pile-previous').attr('href')); }],
+    ["normal", "left",   function() { if ($('#pile-previous').length) { Mailpile.go($('#pile-previous').attr('href'));} }],
     ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
     ["normal", "space",  function() { Mailpile.bulk_action_select_target(); }],
     ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
