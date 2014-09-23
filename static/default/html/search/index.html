@@ -15,12 +15,12 @@
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left">{{_("Previous")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left">{{_("Next")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-next">{{_("Next")}}</a>
     {% endif %}    
     <h5 class="text-right">
     {% if result.stats.total > 1 %}
