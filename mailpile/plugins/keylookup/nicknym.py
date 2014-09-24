@@ -54,7 +54,6 @@ class Nicknym:
         #       defined in Nicknym standard
         raise NotImplementedError()
 
-
     def _parse_result(self, result):
         """Parse the result into a JSON blob and a signature"""
         # TODO: No signature implemented on server side yet.

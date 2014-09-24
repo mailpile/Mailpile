@@ -251,8 +251,6 @@ class GPGUsageStatistics(Search):
         return self._success("Got statistics for address", res)
 
 
-
-
 _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
 _plugins.register_commands(GPGKeyImport)

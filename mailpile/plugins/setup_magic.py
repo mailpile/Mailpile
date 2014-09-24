@@ -584,16 +584,16 @@ class SetupCrypto(TestableWebbable):
                     editor.start()
 
             with Setup.KEY_WORKER_LOCK:
-                 if now:
-                     start_editor()
-                 elif Setup.KEY_EDITING_THREAD is not None:
-                     Setup.KEY_EDITING_THREAD.on_complete('edit keys',
+                if now:
+                    start_editor()
+                elif Setup.KEY_EDITING_THREAD is not None:
+                    Setup.KEY_EDITING_THREAD.on_complete('edit keys',
+                                                         start_editor)
+                elif Setup.KEY_CREATING_THREAD is not None:
+                    Setup.KEY_CREATING_THREAD.on_complete('edit keys',
                                                           start_editor)
-                 elif Setup.KEY_CREATING_THREAD is not None:
-                     Setup.KEY_CREATING_THREAD.on_complete('edit keys',
-                                                           start_editor)
-                 else:
-                     start_editor()
+                else:
+                    start_editor()
 
     def setup_command(self, session):
         changed = authed = False

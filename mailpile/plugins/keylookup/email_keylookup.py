@@ -107,6 +107,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
 register_crypto_key_lookup_handler(EmailKeyLookupHandler)
 
+
 def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader):
     if mimetype == "application/pgp-keys":
         return ['pgpkey:has']

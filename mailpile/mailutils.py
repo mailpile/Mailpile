@@ -72,6 +72,7 @@ class NoSuchMailboxError(OSError):
 GLOBAL_CONTENT_ID_LOCK = MboxLock()
 GLOBAL_CONTENT_ID = random.randint(0, 0xfffffff)
 
+
 def MakeContentID():
     global GLOBAL_CONTENT_ID
     with GLOBAL_CONTENT_ID_LOCK:
@@ -92,6 +93,7 @@ def ClearParseCache(cache_id=None, pgpmime=False, full=False):
                     (pgpmime and GPC[i][1]) or
                     (cache_id and GPC[i][0] == cache_id)):
                 GPC[i] = (None, None, None)
+
 
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
@@ -116,6 +118,7 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             # Caching is enabled, let's not clobber the encrypted version
             # of this message with a fancy decrypted one.
             message = copy.deepcopy(message)
+
         def MakeGnuPG(*args, **kwargs):
             return GnuPG(config, *args, **kwargs)
         UnwrapMimeCrypto(message, protocols={
@@ -952,6 +955,7 @@ class Email(object):
         try:
             # We compensate for some of the limitations of lxml...
             links, imgs = [], []
+
             def delink(m):
                 url, txt = m.group(1), m.group(2).strip()
                 if txt[:4] in ('http', 'www.'):
@@ -966,6 +970,7 @@ class Email(object):
                                                  txt and (txt + ': ') or '',
                                                  url))
                     return '%s[%d]' % (txt, len(links))
+
             def deimg(m):
                 tag, url = m.group(0), m.group(1)
                 if ' alt=' in tag:
@@ -1652,6 +1657,7 @@ class AddressHeaderParser(list):
             addresses = self
         elif not addresses:
             addresses = []
+
         def fmt(ai):
             email = ai.address
             if with_keys and ai.keys:
@@ -1660,11 +1666,11 @@ class AddressHeaderParser(list):
             else:
                 epart = '<%s>' % email
             if ai.fn:
-                 return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
+                return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
             elif force_name:
-                 return ' '.join([quote and self.quote(email) or email, epart])
+                return ' '.join([quote and self.quote(email) or email, epart])
             else:
-                 return epart
+                return epart
         return [fmt(ai) for ai in addresses]
 
     def normalized(self, **kwargs):

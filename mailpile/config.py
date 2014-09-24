@@ -290,6 +290,7 @@ def _RouteProtocolCheck(proto):
         raise ValueError(_('Invalid message delivery protocol: %s') % proto)
     return proto
 
+
 def _DnsNameValid(dnsname):
     """
     Tests whether a string is a valid dns name, returns a boolean value
@@ -298,6 +299,7 @@ def _DnsNameValid(dnsname):
         return False
     else:
         return True
+
 
 def _HostNameValid(host):
     """
@@ -331,6 +333,7 @@ def _HostNameValid(host):
             return True
     else:
         return True
+
 
 def _HostNameCheck(host):
     """
@@ -438,6 +441,7 @@ def _NewPathCheck(path):
     _PathCheck(os.path.dirname(path))
     return os.path.abspath(path)
 
+
 def _UrlCheck(url):
     """
     Verify that a url parsed string has a valid uri scheme
@@ -460,6 +464,7 @@ def _UrlCheck(url):
         raise ValueError(_("Not a valid url: %s") % url)
     else:
         return url
+
 
 def _EmailCheck(email):
     """
@@ -1815,7 +1820,7 @@ class ConfigManager(ConfigDict):
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
             if daemons and not config.http_worker:
-                 start_httpd(httpd_spec)
+                start_httpd(httpd_spec)
             return
 
         # Start the other workers

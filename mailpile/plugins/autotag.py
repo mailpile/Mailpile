@@ -291,6 +291,7 @@ _plugins.register_slow_periodic_job('retrain_autotag',
                                     'prefs.autotag_retrain_interval',
                                     Retrain.interval_retrain)
 
+
 class Classify(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/classify', None, '<msgs>')
     ORDER = ('Tagging', 9)

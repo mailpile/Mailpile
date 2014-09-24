@@ -691,6 +691,7 @@ class Attach(CompositionCommand):
 
         updated = []
         errors = []
+
         def err(msg):
             errors.append(msg)
             session.ui.error(msg)
