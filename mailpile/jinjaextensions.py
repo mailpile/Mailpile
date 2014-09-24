@@ -550,7 +550,12 @@ class MailpileCommand(Extension):
             return Markup(s).unescape()
 
     def _json(self, d):
-        return self.env.session.ui.render_json(d)
+        json = self.env.session.ui.render_json(d)
+        # These are necessary so the browser doesn't get confused by things
+        # when JSON is included directly into the HTML as a <script>.
+        json = json.replace('<', '\\x3c')
+        json = json.replace('&', '\\x26')
+        return json
 
     def _nice_text(self, text):
         trimmed = ''
