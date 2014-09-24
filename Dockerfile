@@ -15,10 +15,8 @@ RUN make debian-dev && apt-get clean
 # Add code
 ADD . /Mailpile
 
-# Setup
-RUN ./mp --setup
-RUN ./mp --set sys.http_host=0.0.0.0
-
-CMD /Mailpile/mp www
 EXPOSE 33411
-VOLUME /.mailpile
+VOLUME ["/.mailpile"]
+VOLUME ["/.gnupg"]
+
+ENTRYPOINT ["/Mailpile/mp", "--www=0.0.0.0:33411", "--wait"]
