@@ -180,7 +180,7 @@ class GnuPGRecordParser:
         return self.keys
 
     def parse_line(self, line):
-        line = dict(zip(self.record_fields, line.strip().split(":")))
+        line = dict(zip(self.record_fields, map(lambda s: s.replace("\\x3a", ":"), line.strip().split(":"))))
         r = self.dispatch.get(line["record"], self.parse_unknown)
         r(line)
 
