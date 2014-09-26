@@ -172,7 +172,7 @@ class GPGKeyList(Command):
 
     def command(self):
         args = list(self.args)
-        if len(args) >= 0:
+        if len(args) > 0:
             addr = args[0]
         else:
             addr = self.data.get("address", None)
@@ -219,7 +219,7 @@ class GPGUsageStatistics(Search):
 
     def command(self):
         args = list(self.args)
-        if len(args) >= 0:
+        if len(args) > 0:
             addr = args[0]
         else:
             addr = self.data.get("address", None)
