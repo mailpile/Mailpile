@@ -59,13 +59,16 @@ SMTORP_HASHCASH_PREFIX = 'Please collide'
 SMTORP_HASHCASH_FORMAT = (SMTORP_HASHCASH_PREFIX +
                           ' %(bits)d,%(challenge)s or retry. See: %(url)s')
 
+
 def SMTorP_HashCash(rcpt, msg, callback1k=None):
     bits_challenge_etc = msg[len(SMTORP_HASHCASH_PREFIX):].strip()
     bits, challenge = bits_challenge_etc.split()[0].split(',', 1)
+
     def cb(*args, **kwargs):
         play_nice_with_threads()
         if callback1k:
             callback1k(*args, **kwargs)
+
     return '%s##%s' % (rcpt, sha512_512kCollide(challenge, int(bits),
                                                 callback1k=cb))
 
@@ -190,8 +193,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
     def smtp_do_or_die(msg, events, method, *args, **kwargs):
         rc, msg = method(*args, **kwargs)
         if rc != 250:
-           fail(msg + ' (%s %s)' % (rc, msg), events,
-                details={'smtp_error': '%s: %s' % (rc, msg)})
+            fail(msg + ' (%s %s)' % (rc, msg), events,
+                 details={'smtp_error': '%s: %s' % (rc, msg)})
 
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
@@ -212,6 +215,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             proc = Popen(cmd, stdin=PIPE, long_running=True)
             sm_startup = None
             sm_write = proc.stdin.write
+
             def sm_close():
                 proc.stdin.close()
                 rv = proc.wait()
@@ -251,6 +255,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
 
             server = (smtp_ssl and SMTP_SSL or SMTP
                       )(local_hostname='mailpile.local', timeout=25)
+
             def sm_startup():
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
@@ -260,9 +265,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 else:
                     server.connect(host, int(port))
                 if not smtp_ssl:
-                    # We always try to enable TLS, even if the user just requested
-                    # plain-text smtp.  But we only throw errors if the user asked
-                    # for encryption.
+                    # We always try to enable TLS, even if the user just
+                    # requested plain-text smtp.  But we only throw errors
+                    # if the user asked for encryption.
                     try:
                         server.starttls()
                     except:
@@ -270,7 +275,11 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                             raise InsecureSmtpError()
                 if user and pwd:
                     try:
-                        server.login(user, pwd)
+                        server.login(user.encode('utf-8'), pwd.encode('utf-8'))
+                    except UnicodeDecodeError:
+                        fail(_('Bad character in username or password'),
+                             events,
+                             details={'authentication_error': True})
                     except smtplib.SMTPAuthenticationError:
                         fail(_('Invalid username or password'), events,
                              details={'authentication_error': True})
@@ -307,9 +316,10 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                  events)
 
         try:
-            # Run the entire connect/login sequence in a single timer...
+            # Run the entire connect/login sequence in a single timer, but
+            # give it plenty of time in case the network is lame.
             if sm_startup:
-                RunTimed(30, sm_startup)
+                RunTimed(300, sm_startup)
 
             if test_only:
                 return True
@@ -324,9 +334,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 mark(('Sending message... (%d%%)'
                       ) % (100 * (total-len(msg_string))/total), events,
                      log=False)
-                RunTimed(20, sm_write, msg_string[:20480])
+                RunTimed(120, sm_write, msg_string[:20480])
                 msg_string = msg_string[20480:]
-            RunTimed(10, sm_close)
+            RunTimed(30, sm_close)
 
             mark(_n('Message sent, %d byte',
                     'Message sent, %d bytes',
