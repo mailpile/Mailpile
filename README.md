@@ -4,8 +4,8 @@
 
 #### What Is Coming Down The Pipe? ####
 
-- Beta release August 8th
-- 1.0 release mid / late September
+- Community site launch in October
+- 1.0 release in December
 
 ---------------------------------------------------------------------------
 
