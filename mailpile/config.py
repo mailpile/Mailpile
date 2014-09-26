@@ -1093,7 +1093,7 @@ class ConfigManager(ConfigDict):
 
         # Use platform-specific defaults
         # via https://github.com/ActiveState/appdirs
-        dirs = AppDirs("Mailpile")
+        dirs = AppDirs("Mailpile", "Mailpile ehf")
         return os.path.join(dirs.user_data_dir, profile)
 
     def __init__(self, workdir=None, rules={}):
