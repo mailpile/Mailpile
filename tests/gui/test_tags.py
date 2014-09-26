@@ -1,4 +1,8 @@
-from selenium.webdriver.common.by import By
+try:
+    from selenium.webdriver.common.by import By
+except ImportError:
+    pass
+
 from tests.gui import MailpileSeleniumTest
 
 
