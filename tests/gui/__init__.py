@@ -1,9 +1,12 @@
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+try:
+    from selenium import webdriver
+    from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
+    from selenium.common.exceptions import NoSuchElementException
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.wait import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+except ImportError:
+    pass
 
 from mailpile.httpd import HttpWorker
 from tests import MailPileUnittest, get_shared_mailpile
