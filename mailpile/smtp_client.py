@@ -270,7 +270,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                             raise InsecureSmtpError()
                 if user and pwd:
                     try:
-                        server.login(user, pwd)
+                        server.login(str(user), str(pwd))
                     except smtplib.SMTPAuthenticationError:
                         fail(_('Invalid username or password'), events,
                              details={'authentication_error': True})
