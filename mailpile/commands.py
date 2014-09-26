@@ -24,7 +24,7 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import IsMailbox
-from mailpile.mailutils import AddressHeaderParser
+from mailpile.mailutils import AddressHeaderParser, ClearParseCache
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
 from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
@@ -1031,6 +1031,9 @@ class Rescan(Command):
         elif args and args[0].lower() == 'full':
             config.flush_mbox_cache(session, wait=True)
             args.pop(0)
+
+        # Clear the cache first, in case the user is flailing about
+        ClearParseCache(full=True)
 
         msg_idxs = self._choose_messages(args)
         if msg_idxs:
