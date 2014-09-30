@@ -42,7 +42,7 @@ Mailpile is a tool for building and maintaining a tagging search
 engine for a personal collection of e-mail.  It can be used as a
 simple web-mail client.
 """,
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     data_files=data_files,
     install_requires=[
         'lxml>=2.3.2',

@@ -4,8 +4,9 @@
 
 #### What Is Coming Down The Pipe? ####
 
-- Beta release August 8th
-- 1.0 release mid / late September
+- [We are in beta!](https://www.mailpile.is/blog/2014-09-13_Mailpile_Beta_Release.html).
+- Community site launch in October
+- 1.0 release planned for December
 
 ---------------------------------------------------------------------------
 
@@ -33,10 +34,11 @@ allows e-mail to be organized using tags (similar to GMail's labels) and
 the application can be configured to automatically tag incoming mail
 either based on static rules or bayesian classifiers.
 
-**Note:** We are currently at an early alpha state of development, so if you
-just want a useful tool and aren't interested in hacking on the code, you
-should probably check back later or [follow @MailpileTeam on
-Twitter](https://twitter.com/MailpileTeam) and watch for updates.
+**Note:** We are currently "in beta", which means the app's basic features
+are (mostly) in place and packages are available for popular operating
+systems, for people who would like to help test and debug. For more details
+[follow @MailpileTeam on Twitter](https://twitter.com/MailpileTeam)
+or [read our blog](https://www.mailpile.is/blog/).
 
 
 ### Trying Mailpile
@@ -48,13 +50,13 @@ Mailpile looks like, please feel free to check it out.
 
 ### Installing Mailpile
 
-Note that Mailpile is still in early development and is not suitable
-for production or end-user use. However, developers are encouraged to
-give it a try and even help us find bugs, fix them and develop new
-features.
+Note that Mailpile is still in development and is not suitable for
+production or end-user use. However, developers and early adopters are
+encouraged to give it a try and even help us find bugs, fix them
+and develop new features.
 
-Please see [the wiki for
-details](https://github.com/pagekite/Mailpile/wiki/Getting-started).
+Please see our [download page](https://www.mailpile.is/download/) or read
+[the Getting Started guide on our wiki](https://github.com/pagekite/Mailpile/wiki/Getting-started).
 
 
 ## Credits and License ##

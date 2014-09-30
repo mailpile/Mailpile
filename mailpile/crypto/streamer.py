@@ -770,15 +770,15 @@ if __name__ == "__main__":
      assert(fdcheck('IOFilter in incomplete read mode'))
 
      print 'Test the ReadLineIOFilter in incomplete read mode'
-     bc[0], syslogline = 0, ''
+     bc[0], daemonlogline = 0, ''
      with open('/etc/passwd', 'r') as bfd:
          with IOFilter(bfd, counter) as iof:
              for line in iof.reader():
-                 if 'syslog' in line:
-                     syslogline = line
+                 if 'daemon' in line:
+                     daemonlogline = line
                      break
      assert(bc[0] > 80)
-     assert('syslog' in syslogline)
+     assert('daemon' in daemonlogline)
      assert(fdcheck('ReadLineIOFilter in incomplete read mode'))
 
      print 'Null decryption test, md5 verification only'

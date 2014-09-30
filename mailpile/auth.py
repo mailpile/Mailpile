@@ -48,6 +48,10 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         gpgr = key or (gpgr if (gpgr not in (None, '', '!CREATE')) else None)
         assert(gpg.sign('Sign This!', fromkey=gpgr)[0] == 0)
 
+    # Fun side effect: changing the passphrase invalidates the message cache
+    import mailpile.mailutils
+    mailpile.mailutils.ClearParseCache(full=True)
+
     return sps
 
 
