@@ -5,7 +5,7 @@
   </div>
   <form id="form-setup-source-configure" class="standard text-center">
     <% console.log(tags) %>
-    <table class="full-width-table rounded background-white">
+    <table class="full rounded background-white">
     <tr>
       <th class="text-center setup-tooltip" title="{{_('Source of these Messages')}}"><strong>Mailbox</strong></th>
       <th class="text-center setup-tooltip" title="{{_('Create a Tag in your Mailpile')}}"><strong>Mailpile (Tag)</strong></th>
@@ -55,8 +55,8 @@
     </table>
     <input type="hidden" name="_section" value="sources.<%= id %>">
     <div class="clearfix">
-      <a href="#sources" class="button-secondary left">Previous</a>
-      <button id="btn-setup-source-configure" data-id="<%= id %>" class="right">{{_("Save")}}</button>
+      <a href="#sources" class="button-info left">Previous</a>
+      <button id="btn-setup-source-configure" data-id="<%= id %>" class="button-primary right">{{_("Save")}}</button>
     </div>
   </form>
 </div>

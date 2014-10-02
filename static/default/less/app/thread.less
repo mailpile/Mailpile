@@ -12,26 +12,19 @@
   #thread-title {
     display: table;
     text-align: center;
-    padding: 0px 0 0px 0;
+    padding: 0;
   }
 
   #thread-title h1 {
     display: inline-block;
-    margin: 0 @base-margin;
-    padding: 8px 0px 5px 0px;
     font-family: @mailpile-text-font-family-bold;
-    font-size: 24px;
-    line-height: 30px;
+    font-size: 21px;
+    line-height: 24px;
     color: rgb(77, 77, 77); //@grayDark;
   }
 
-  #thread-title ul {
-    display: inline-block;
-    margin: 0 auto;
-  }
-
   #thread-title ul li {
-    margin-right: 15px;
+    margin: 0 10px;
   }
 
   #thread-title ul a {
@@ -61,6 +54,7 @@
   #thread-title div.thread-details {
     display: table-cell;
   }
+
 
 /* Thread Snippet - Preview of messages */
 
@@ -413,21 +407,22 @@
   
 /* Thread Message Actions */
 
-  .thread-message-actions {
+  ul.thread-message-actions {
+    display: block;
     margin-left: 20px;
     margin-bottom: 10px;
   }
 
-  .thread-message-actions li.action {
-    margin-right: 25px;
+  ul.thread-message-actions li.action {
+    margin-right: @base-margin;
   }
 
-  .thread-message-actions li.action ul.dropdown-menu li {
+  ul.thread-message-actions li.action ul.dropdown-menu li {
     display: block;
     float: none;
   }
 
-	.thread-message-actions-quote {
+	a.thread-message-actions-quote {
 	  display: inline-block;
     padding: 0px 4px;
   	border: 1px solid @grayMid;
@@ -439,7 +434,7 @@
   	line-height: 14px;
 	}
 	
-  .thread-message-actions-quote:hover {
+  a.thread-message-actions-quote:hover {
     background: @grayLight;
   }
 
