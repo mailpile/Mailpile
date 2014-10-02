@@ -25,7 +25,7 @@ and the Apache License along with this program. If not, see
 ## Note to contributors ##
 
 This software will not be dual-licensed indefinitely. One of the
-licensed will be dropped before January 2014, although at this time
+licensed will be dropped before the end of 2014, although at this time
 which one has yet to be determined. This change will be made after
 discussions and consultation with the Mailpile Community.
 
