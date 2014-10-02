@@ -61,10 +61,7 @@ class SMTPChannel(smtpd.SMTPChannel):
             smtpd.SMTPChannel.push(self, msg)
 
     def _address_ok(self, address):
-        if self._is_dangerous_address(address):
-            self.is_spam = True
-        elif self._is_spam_address(address):
-            self.is_spam = True
+        self.is_spam = (self._is_dangerous_address(address) or self._is_spam_address(address))
         return True
 
     def _challenge(self):
