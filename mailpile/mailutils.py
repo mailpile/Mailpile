@@ -25,6 +25,7 @@ from lxml.html.clean import Cleaner
 from mailpile.util import *
 from platform import system
 from urllib import quote, unquote
+from datetime import datetime, timedelta
 
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
@@ -297,6 +298,31 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     elif crypto_policy and crypto_policy != 'none':
         raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
+    # Do we want to attach a key to outgoing messages?
+    if str(msg['Attach-PGP-Pubkey']).lower() in ['yes', 'true']:
+        g = GnuPG(config)
+        keys = g.address_to_keys(ExtractEmails(sender)[0])
+        for _, key in keys.iteritems():
+            if not any(key["capabilities_map"].values()):
+                continue
+            # We should never really hit this more than once. But if we do, it
+            # should still be fine.
+            keyid = key["keyid"]
+            data = g.get_pubkey(keyid)
+
+            att = MIMEBase('application', 'pgp-keys')
+            att.set_payload(data)
+            encoders.encode_base64(att)
+            att.add_header('Content-Id', MakeContentID())
+            att.add_header('Content-Disposition', 'attachment',
+                           filename="0x%s.asc" % keyid)
+            att.signature_info = SignatureInfo(parent=msg.signature_info)
+            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            msg.attach(att)
+            del(msg['Attach-PGP-Pubkey'])
+            msg['x-mp-internal-pubkeys-attached'] = "Yes"
+
+
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
@@ -447,6 +473,21 @@ class Email(object):
                 att.encryption_info = EncryptionInfo(parent=mei)
                 msg.attach(att)
                 del att['MIME-Version']
+
+        # Determine if we want to attach a PGP public key due to timing:
+        addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
+        offset = timedelta(days=30)
+        dates = []
+        for addr in addrs:
+            vcard = self.config.vcards.get(addr)
+            lastdate = vcard.get("x-mailpile-last-gpg-key-share")
+            if date:
+                try:
+                    dates.append(datetime.fromtimestamp(float(lastdate)))
+                except ValueError:
+                    pass
+        if all([date+offset < datetime.now() for date in dates]):
+            msg["Attach-PGP-Pubkey"] = "Yes"
 
         if save:
             msg_key = mbx.add(MessageAsString(msg))
