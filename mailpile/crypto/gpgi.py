@@ -817,6 +817,12 @@ class GnuPG:
                                                 "comment": comment})
         return results
 
+    def get_pubkey(self, keyid):
+        retvals = self.run(['--armor',
+                            '--export', keyid]
+                            )[1]["stdout"]
+        return "".join(retvals)
+
     def address_to_keys(self, address):
         res = {}
         keys = self.list_keys()
