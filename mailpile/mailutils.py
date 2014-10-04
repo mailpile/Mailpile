@@ -255,8 +255,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             gnupg = GnuPG(config)
             seckeys = dict([(uid["email"], fp) for fp, key
                             in gnupg.list_secret_keys().iteritems()
-                            if key["capabilities_map"][0].get("encrypt")
-                            and key["capabilities_map"][0].get("sign")
+                            if key["capabilities_map"].get("encrypt")
+                            and key["capabilities_map"].get("sign")
                             for uid in key["uids"]])
             sender_keyid = seckeys.get(sender)
         except (KeyError, TypeError, IndexError, ValueError):

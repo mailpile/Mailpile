@@ -192,7 +192,7 @@ class GnuPGRecordParser:
             "sign": "S" in line["capabilities"],
             "certify": "C" in line["capabilities"],
             "authenticate": "A" in line["capabilities"],
-        },
+        }
         line["disabled"] = "D" in line["capabilities"]
         line["private_key"] = False
         line["subkeys"] = []

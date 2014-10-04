@@ -59,7 +59,7 @@
       <label>{{_("Select the encryption key you would like to use")}}</label>
       <ul class="radio-list-items">
       {% for key, key_info in setup_crypto.result.secret_keys.iteritems() %}
-        {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
+        {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
         <li class="text-left">
         <label class="radio-list-item">
           <div class="radio text-right">
