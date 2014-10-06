@@ -479,13 +479,14 @@ class Email(object):
         offset = timedelta(days=30)
         dates = []
         for addr in addrs:
-            vcard = self.config.vcards.get(addr)
-            lastdate = vcard.get("x-mailpile-last-gpg-key-share")
-            if date:
-                try:
-                    dates.append(datetime.fromtimestamp(float(lastdate)))
-                except ValueError:
-                    pass
+            vcard = idx.config.vcards.get(addr)
+            if vcard != None:
+                lastdate = vcard.gpgshared
+                if lastdate:
+                    try:
+                        dates.append(datetime.fromtimestamp(float(lastdate)))
+                    except ValueError:
+                        pass
         if all([date+offset < datetime.now() for date in dates]):
             msg["Attach-PGP-Pubkey"] = "Yes"
 
