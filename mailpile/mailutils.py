@@ -315,7 +315,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             encoders.encode_base64(att)
             att.add_header('Content-Id', MakeContentID())
             att.add_header('Content-Disposition', 'attachment',
-                           filename="0x%s.asc" % keyid)
+                           filename=_('My encryption key.asc'))
             att.signature_info = SignatureInfo(parent=msg.signature_info)
             att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
             msg.attach(att)
