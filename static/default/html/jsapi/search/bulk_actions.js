@@ -37,8 +37,30 @@ Mailpile.bulk_action_select_target = function() {
   var target = this.search_target;
   var mid = $('#pile-results tr').eq(target).data('mid');
   Mailpile.bulk_cache_add('messages_cache', mid);
-  $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').attr('checked','checked');
+  $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').prop('checked',true);
   this.bulk_actions_update_ui();
+  return true;
+};
+
+
+Mailpile.bulk_action_deselect_target = function() {
+  var target = this.search_target;
+  var mid = $('#pile-results tr').eq(target).data('mid');
+  Mailpile.bulk_cache_remove('messages_cache', mid);
+  $('#pile-message-' + mid).removeClass('result-on').find('input[type=checkbox]').prop('checked', false);
+  this.bulk_actions_update_ui();
+  return true;
+};
+
+
+Mailpile.bulk_action_toggle_target = function() {
+  var target = this.search_target;
+  var mid = $('#pile-results tr').eq(target).data('mid');
+  if ($('#pile-message-' + mid).find('input[type=checkbox]').is(':checked')) {
+    Mailpile.bulk_action_deselect_target();
+  } else {
+    Mailpile.bulk_action_select_target();
+  }
   return true;
 };
 
