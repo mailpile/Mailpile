@@ -192,7 +192,7 @@ class GnuPGRecordParser:
             "sign": "S" in line["capabilities"],
             "certify": "C" in line["capabilities"],
             "authenticate": "A" in line["capabilities"],
-        },
+        }
         line["disabled"] = "D" in line["capabilities"]
         line["private_key"] = False
         line["subkeys"] = []
@@ -816,6 +816,12 @@ class GnuPG:
                                                 "email": email,
                                                 "comment": comment})
         return results
+
+    def get_pubkey(self, keyid):
+        retvals = self.run(['--armor',
+                            '--export', keyid]
+                            )[1]["stdout"]
+        return "".join(retvals)
 
     def address_to_keys(self, address):
         res = {}

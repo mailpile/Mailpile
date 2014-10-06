@@ -289,7 +289,7 @@ class SetupMagic(Command):
                         }
                         session.config.profiles.append(profile)
                     if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
-                           and details["capabilities_map"][0]["encrypt"]):
+                           and details["capabilities_map"]["encrypt"]):
                         session.config.prefs.gpg_recipient = key
                         session.ui.notify(_('Encrypting config to %s') % key)
                     if session.config.prefs.crypto_policy == 'none':
@@ -536,7 +536,7 @@ class SetupCrypto(TestableWebbable):
                 continue
 
             # Ignore keys that cannot both encrypt and sign
-            caps = details["capabilities_map"][0]
+            caps = details["capabilities_map"]
             if not caps["encrypt"] or not caps["sign"]:
                 continue
 

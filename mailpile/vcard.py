@@ -785,6 +785,10 @@ class MailpileVCard(SimpleVCard):
         lambda self: self._vcard_get('x-mailpile-profile-route'),
         lambda self, v: self._vcard_set('x-mailpile-profile-route', v))
 
+    gpgshared = property(
+        lambda self: self._vcard_get('x-mailpile-last-gpg-key-share'),
+        lambda self, v: self._vcard_set('x-mailpile-last-gpg-key-share', v))
+
     random_uid = property(_random_uid)
 
     def _mpcdict(self, vcl):
@@ -799,7 +803,8 @@ class MailpileVCard(SimpleVCard):
 
     MPCARD_SINGLETONS = ('fn', 'kind', 'note',
                          'x-mailpile-profile-signature',
-                         'x-mailpile-profile-route')
+                         'x-mailpile-profile-route',
+                         'x-mailpile-last-gpg-key-share')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
     def as_mpCard(self):
