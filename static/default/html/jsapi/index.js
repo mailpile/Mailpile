@@ -31,7 +31,7 @@ Mailpile = {
     ["normal", "right",  function() { if ($('#pile-next').length) { Mailpile.go($('#pile-next').attr('href'));} }],
     ["normal", "left",   function() { if ($('#pile-previous').length) { Mailpile.go($('#pile-previous').attr('href'));} }],
     ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
-    ["normal", "space",  function() { Mailpile.bulk_action_select_target(); }],
+    ["normal", "space",  function() { Mailpile.bulk_action_toggle_target(); }],
     ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
     ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
     ["normal", "s n",    function() { Mailpile.bulk_action_select_none(); }],
