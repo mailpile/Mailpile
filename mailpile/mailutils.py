@@ -310,12 +310,18 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             keyid = key["keyid"]
             data = g.get_pubkey(keyid)
 
+            try:
+                from_name = key["uids"][0]["name"]
+                filename = _('%s\'s encryption key.asc') % from_name
+            except:
+                filename = _('My encryption key.asc')
+
             att = MIMEBase('application', 'pgp-keys')
             att.set_payload(data)
             encoders.encode_base64(att)
             att.add_header('Content-Id', MakeContentID())
             att.add_header('Content-Disposition', 'attachment',
-                           filename=_('My encryption key.asc'))
+                           filename=filename)
             att.signature_info = SignatureInfo(parent=msg.signature_info)
             att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
             msg.attach(att)
