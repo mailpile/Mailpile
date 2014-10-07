@@ -74,8 +74,8 @@
       <form id="form-settings-route-{{rid}}" class="form-settings-route-edit hide standard">
         <h4>{{_("Edit Route")}}</h4>
         {{ render_form_settings_route(rid, route) }}
-        <input type="submit" value="Cancel" class="button-secondary">
-        <input type="submit" value="Save">
+        <input type="submit" value="Cancel" class="button-info">
+        <input type="submit" value="Save" class="button-primary">
       </form>
     </li>
   {% endfor %}
@@ -114,14 +114,14 @@
   <form id="form-settings-profile-add" class="standard" action="" method="POST">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-secondary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-profiles"></span> {{_("Add Profile")}}</h4>
       </div>
       <div class="modal-body">
         {{ render_form_settings_profile(config.routes) }}
       </div>
       <div class="modal-footer">
-        <button type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
+        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
       </div>
     </div>
   </form>
@@ -133,14 +133,14 @@
   <form id="form-settings-route-add" class="standard" action="" method="POST">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-secondary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-routes"></span> {{_("Add Route")}}</h4>
       </div>
       <div class="modal-body">
         {{ render_form_settings_route('add', config.routes) }}
       </div>
       <div class="modal-footer">
-        <button type="submit"><span class="icon-plus"></span> {{_("Add Route")}}</button>
+        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Route")}}</button>
       </div>
     </div>
   </form>

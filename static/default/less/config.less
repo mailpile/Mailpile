@@ -141,16 +141,18 @@
 
 /* Lists */
 
-	@list-margin-bottom: 25px;
-	@list-margin-left: 30px;
-	@list-padding: ~'';
+  @list-margin: 0 0 0 0;
+	@list-padding: 0px;
   @list-font-size: @text-font-size;
-  @list-line-height: @text-font-size;	
+  @list-line-height: @text-font-size;
 	@list-item-margin: 5px;
 	@list-item-padding: 5px;
-	@list-item-type-ordered: decimal outside;
-	@list-item-type-unordered: square outside;
 
+	@list-unordered-type: none outside;
+	@list-ordered-type: none outside;
+
+  @list-item-horizontal-margin: 0px;
+  
 
 /* Separators */
 
@@ -167,124 +169,194 @@
 
 /* Buttons */
 
-	.button-globals(@color: #eeeeee, @shadow: 1px 1px 1px #333333) {
+	.button-global(@font-family, @font-size, @font-weight, @margin, @padding) {
 
 		// Font
-		color: @color !important;
-		font-family: @mailpile-text-font-family-semibold;
-		font-size: 16px;
-		font-weight: normal;
-		line-height: normal;
+		font-family: @font-family !important;
+		font-size: @font-size !important;
+		font-weight: @font-weight !important;
+		line-height: inherit;
 		text-decoration: none;
 
 		// Display
-		padding: 7px 10px;
+    margin: @margin;
+		padding: @padding;
 		display: inline-block;
 		cursor: pointer;
-		-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
 		box-sizing: border-box;
 
 		// Select
-	  -webkit-user-select:none;
-	  -moz-user-select:none;
-	  -ms-user-select:none;
-	  user-select:none;
-    outline: none;
+    user-select:none;
 
-	  // Animate
-	  -webkit-transition-duration: 0.2s;
-	  -moz-transition-duration: 0.2s;
-    transition-duration: 0.2s;	 
-
-    // Shadow
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,03,0.3);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3);
+    // Animate
+    transition-duration: 0.2s;
 	}
 
-	.button-border(@border-color) {
-		border: 1px solid @border-color, ;
+	.button-colors(@color, @text-shadow, @border-color, @background) {
+
+		color: @color !important;
+		text-shadow: @text-shadow;
+
+		border: 1px solid @border-color;
 		border-top: 1px solid (@border-color + #222222);
 		border-left: 1px solid (@border-color + #222222);
 
-		-moz-border-radius: 4px;
-		-webkit-border-radius: 4px;
 		border-radius: 4px;
+
+    background: @background;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0px 0px rgba(0, 0, 0, 0.2);
+  }
+  
+  .button-colors-hover(@border-color, @background) {
+    border-color: @border-color;
+    background-color: @background;
 	}
 
-	.button-background(@color-top: #666666, @color-bottom: #333333) {
-	  background: @color-top;
-	}
+  .button-colors-active(@border-color, @background) {
+    border-color: @border-color;
+    background-color: @background;
+    box-shadow: inset 0 .17em .1em rgba(0, 0, 0, 0.3);
+  }
 
-	@button-primary-top: @blue;
-	@button-primary-top-hover: darken(@button-primary-top, 12%);
-	@button-primary-bottom: @blue;
-	@button-primary-bottom-hover: darken(@button-primary-bottom, 12%);
-	@button-primary-color: @white;
-	@button-primary-shadow: @text-shadow-on-dark;
-	@button-primary-border: @blue;
-	@button-primary-border-hover: @blue;
-	
-	@button-secondary-top: @white;
-	@button-secondary-top-hover: @grayLight;
-	@button-secondary-bottom: @white;
-	@button-secondary-bottom-hover: @grayLight;
-	@button-secondary-color: @grayDark;
-	@button-secondary-shadow: @grayDark;
-	@button-secondary-border: @gray;
-	@button-secondary-border-hover: @gray;
+  @btn-color: @white;
+  @btn-font-family: @mailpile-text-font-family;
+  @btn-font-size: 16px;
+  @btn-font-weight: bold;
+  @btn-margin: 0px;
+  @btn-padding: 5px 15px;
 
-	@button-alert-top: @green;
-	@button-alert-top-hover: darken(@button-alert-top, 12%);
-	@button-alert-bottom: @green;
-	@button-alert-bottom-hover: darken(@button-alert-bottom, 12%);
-	@button-alert-color: @white;
-	@button-alert-shadow: @text-shadow-on-dark;
-	@button-alert-border: #8596b3;
-	@button-alert-border-hover: @green;
+  @btn-small-font-size: 12px;
+  @btn-small-font-weight: bold;
+  @btn-small-margin: @btn-margin;
+  @btn-small-padding: 2px 10px;
 
-	@button-warning-top: @red;
-	@button-warning-top-hover: darken(@button-warning-top, 20%);
-	@button-warning-bottom: @red;
-	@button-warning-bottom-hover: darken(@button-warning-bottom, 20%);
-	@button-warning-color: @white;
-	@button-warning-shadow: @text-shadow-on-dark;
-	@button-warning-border: #713c2a;
-	@button-warning-border-hover: @red;
+
+/* Button - Primary */
+
+	@btn-primary-color: @white;
+	@btn-primary-text-shadow: @text-shadow-on-dark;
+	@btn-primary-background: @blue;
+	@btn-primary-background-hover: darken(@blue, 5%);
+  @btn-primary-background-active: darken(@blue, 5%);
+	@btn-primary-border-color: darken(@blue, 10%);
+	@btn-primary-border-color-hover: darken(@blue, 15%);
+  @btn-primary-border-color-active: darken(@blue, 15%);
+
+
+/* Button - Secondary */
+
+	@btn-secondary-color: @white;
+	@btn-secondary-text-shadow: @text-shadow-on-dark;
+	@btn-secondary-background: @green;
+	@btn-secondary-background-hover: darken(@green, 5%);
+  @btn-secondary-background-active: darken(@green, 5%);
+	@btn-secondary-border-color: darken(@green, 10%);
+	@btn-secondary-border-color-hover: darken(@green, 10%);
+  @btn-secondary-border-color-active: darken(@green, 10%);
+
+
+/* Button - Info */
+
+	@btn-info-color: @black;
+	@btn-info-text-shadow: 0px 0px 0px;
+	@btn-info-background: @white;
+	@btn-info-background-hover: darken(@grayLight, 5%);
+  @btn-info-background-active: darken(@grayLight, 5%);
+	@btn-info-border-color: darken(@gray, 5%);
+	@btn-info-border-color-hover: darken(@gray, 10%);
+  @btn-info-border-color-active: darken(@gray, 10%);
+
+
+/* Button - Alert */
+
+	@btn-alert-color: @white;
+	@btn-alert-text-shadow: @text-shadow-on-dark;
+	@btn-alert-background: @orange;
+	@btn-alert-background-hover: darken(@orange, 8%);
+	@btn-alert-background-active: darken(@orange, 5%);
+	@btn-alert-border-color: darken(@orange, 10%);
+	@btn-alert-border-color-hover: darken(@orange, 15%);
+	@btn-alert-border-color-active: darken(@orange, 12%);
+
+
+/* Button - Warning */
+
+	@btn-warning-color: @white;
+	@btn-warning-text-shadow: @text-shadow-on-dark;
+  @btn-warning-background: @red;
+	@btn-warning-background-hover: darken(@red, 7%);
+  @btn-warning-background-active: darken(@red, 5%);
+  @btn-warning-border-color: darken(@red, 10%);
+	@btn-warning-border-color-hover: darken(@red, 10%);
+  @btn-warning-border-color-active: darken(@red, 8%);
 
 
 /* Forms */
 
-	@form-elements-background: #FFFFFF;
-	@form-elements-color: #666666;
-	@form-elements-color-focus: #333333;
-	@form-elements-font-size: 16px;
-	@form-elements-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@form-background: #FFFFFF;
+	@form-color: #666666;
+	@form-color-focus: #333333;
+	@form-font-size: 16px;
+	@form-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 	@form-border-size: 1px;
 	@form-border-color: @gray;
 	@form-border-radius: @base-border-radius;
 	@form-border-color-focus: @grayDark;
 
-	@form-select-color: @grayDark;
+  @form-label-margin: 0 0 5px 0;
+  @form-label-font-size: @form-font-size;
+  @form-label-font-style: italic;
+  @form-label-font-weight: normal;
 	@form-label-color: @grayDark;
+
+  @form-input-width: 210px;
+  @form-input-margin: 0 0 @base-margin 0;
+  @form-input-padding: 10px 12px;
+  @form-input-focus: rgba(0, 0, 0,.4);
+
+  @form-textarea-height: 60px;
+
+	@form-select-color: @grayDark;
+  @form-select-padding: 15px 20px;
+
+  @form-tiny: 75px;
+  @form-small: 135px;
+  @form-medium: 350px;
+  @form-large: 500px;
+  @form-full: 100%;
+
+
+/* Validation */
+
+  @validation-border: 1px solid;
+  @validation-font-style: italic;
+  @validation-success-color: @green;
+  @validation-warning-color: @orange;
+  @validation-error-color: @red;
 
 
 /* Tables */
-/* REBAR: Add th custom color styling, better actual use of these values */
 
-	@table-background-color: @white;
-	@table-background-color-striped: #FEFEFE;
+  @table-background-color: @white;
+  @table-hover-background-color: #F5F6DB;
+  @table-zebra-odd-background-color: #F9F9F9;
+  @table-zebra-even-background-color: #FEFEFE;
 
-	@table-margins: @base-line-height;
-	@table-padding: 10px 0px;
+  @table-th-padding: 5px 10px;
+  @table-th-background-color: #f9f9f9;
+  @table-th-font-style: italic;
+  @table-th-font-size: 14px;
 
-	@table-border: 1px solid @green;
-	@table-border-radius: 5px;
+  @table-margin: @base-margin 0;
+  @table-padding: 10px 0px;
 
-	@table-td-border-top: 1px solid @green;
-	@table-line-height: 18px;
+  @table-border: 1px solid #ccc;
+  @table-border-radius: 5px;
+
+  @table-td-border-top: 1px solid #ccc;
+  @table-font-size: 16px;
+  @table-line-height: 16px;
 
 
 /* Grid */

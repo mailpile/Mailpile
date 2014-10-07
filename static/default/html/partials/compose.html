@@ -109,6 +109,7 @@
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
       </ul>
       -->
+
       {% set from = editing_addresses and editing_strings.from_aids and editing_addresses[editing_strings.from_aids.0] or '' %}
       <div class="dropup">
         <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
@@ -153,15 +154,15 @@
       <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
     </div>
     <div class="compose-buttons right" data-mid="{{mid}}">
-      <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
+      <button class="compose-action button-secondary" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span>{{_("Save")}}
       </button>
       {% if command == "view" %}
-      <button class="compose-action" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
+      <button class="compose-action button-primary" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
         <span class="icon-reply"></span> {{_("Reply")}}
       </button>
       {% else %}
-      <button class="compose-action" type="submit" name="send" value="send" alt="{{_("Send")}}">
+      <button class="compose-action button-primary" type="submit" name="send" value="send" alt="{{_("Send")}}">
         <span class="icon-sent"></span> {{_("Send")}}
       </button>
       {% endif %}

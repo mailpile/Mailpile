@@ -6,7 +6,7 @@
 
   <div id="setup-complete-waiting" class="text-center add-top animated fadeIn <% if (StateModel.attributes.result.complete) { %>hide<% } %>">
     <p>{{_("You can wait until importing is finished, see a brief tour, or")}} <a href="{{ config.sys.subdirectory }}/in/inbox/">{{_("Skip To Inbox")}}</a></p>
-    <p><a href="#" id="setup-complete-tour-start" class="button-alert"><span class="icon-flashlight"></span> {{_("Begin Tour")}}</a></p>    
+    <p><a href="#" id="setup-complete-tour-start" class="button-secondary"><span class="icon-flashlight"></span> {{_("Begin Tour")}}</a></p>    
   </div>
   <div id="setup-complete-explore" class="text-center add-top animated <% if (!StateModel.attributes.result.complete) { %>hide<% } %>">
     <p>{{_("Can't wait any longer and want to start using your Mailpile?")}}</p>

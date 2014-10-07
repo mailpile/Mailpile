@@ -3,7 +3,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"></h4>
       </div>
       <div class="modal-body"></div>
@@ -19,7 +19,7 @@
   <form id="form-contact-add" class="standard">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-secondary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-user"></span> {{_("Add Contact")}}</h4>
       </div>
       <div class="modal-body clearfix">
@@ -37,11 +37,11 @@
       </div>
       <div class="modal-footer">
         <!-- FIXME: implement some method of finding encryption keys after this action
-        <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-alert left">
+        <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-secondary left">
           <span class="icon-key"></span> {{_("Find Encryption Keys")}}
         </button>
         -->
-        <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary" data-action="add">
           <span class="icon-plus"></span> {{_("Add")}}
         </button>
       </div>
@@ -74,7 +74,7 @@
   <form id="form-tag-picker">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
       </div>
       <div class="modal-body modal-body-light-gray">
@@ -93,7 +93,7 @@
         <button class="left button-warning" title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">
           <span class="icon-minus"></span> {{_("Remove")}}
         </button>
-        <button title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">
+        <button class="button-primary" title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">
           <span class="icon-plus"></span> {{_("Apply")}}
         </button>
       </div>
@@ -108,14 +108,16 @@
   <div class="modal-dialog">
    <div class="modal-content">
     <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
       <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Encryption Keys")}}</h4>
     </div>
     <div class="modal-body clearfix">
       <ul id="crypto-private-key-list" class="items grouped"></ul>
     </div>
     <div class="modal-footer">
-      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add"><span class="icon-sent"></span> {{_("Send Selected Keys")}}</button>
+      <button class="button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+        <span class="icon-sent"></span> {{_("Send Selected Keys")}}
+      </button>
     </div>
   </div>
   </div>
@@ -127,7 +129,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
           <span class="icon-search"></span>
           <span class="title">{{_("Finding Encryption Keys")}}</span> <img class="progress-spinner" src="{{ config.sys.subdirectory }}/static/css/select2-spinner.gif"/></span>
