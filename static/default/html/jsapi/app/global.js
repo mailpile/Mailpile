@@ -1,5 +1,5 @@
 Mailpile.go = function(url) {
-  window.location.href = url;
+  window.location.href = "{{ config.sys.subdirectory }}" + url;
 };
 
 
