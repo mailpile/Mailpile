@@ -19,12 +19,12 @@
       <ul>
         <li class="nav-search"><a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a></li>
         <li class="{% if command == "edit" %} navigation-on{% endif %}"><a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
-        <li class="{% if command == "contacts" %} navigation-on{% endif %}"><a href="/contacts/" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
-        <li class="{% if state.command_url in ("/tags/", "/filter/list/") %}navigation-on{% endif %}"><a href="/tags/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
+        <li class="{% if command == "contacts" %} navigation-on{% endif %}"><a href="{{ config.sys.subdirectory }}/contacts/" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
+        <li class="{% if state.command_url in ("/tags/", "/filter/list/") %}navigation-on{% endif %}"><a href="{{ config.sys.subdirectory }}/tags/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}"><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ a.icon }}"></a></li>
         {%- endfor -%}
-        <li class="{% if command == "page" %} navigation-on{% endif %}"><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
+        <li class="{% if command == "page" %} navigation-on{% endif %}"><a class="donate" href="{{ config.sys.subdirectory }}/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
           <a href="{{ config.sys.subdirectory }}/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="topbar-settings">
@@ -36,7 +36,7 @@
             <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/#security"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
           </ul>
         </li>
-        <li><a href="/auth/logout/" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
+        <li><a href="{{ config.sys.subdirectory }}/auth/logout/" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>
   </div>
