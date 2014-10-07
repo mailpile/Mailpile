@@ -124,7 +124,7 @@ var SendingView = Backbone.View.extend({
     // Status UI Message
     $('#setup-sending-check-auth')
       .removeClass('color-12-red color-08-green')
-      .html('<em>{{_("Testing Credentials")}}</em> <img src="/static/css/select2-spinner.gif">');
+      .html('<em>{{_("Testing Credentials")}}</em> <img src="{{ config.sys.subdirectory }}/static/css/select2-spinner.gif">');
 
     var sending_data = $('#form-setup-sending-settings').serializeObject();
     sending_data = _.omit(sending_data, '_section');

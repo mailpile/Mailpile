@@ -429,7 +429,7 @@ class UrlMap:
     def _url(self, url, output='', qs=''):
         if output and '.' not in output:
             output = 'as.%s' % output
-        return ''.join([url, output, qs and '?' or '', qs])
+        return ''.join([self.config.sys.subdirectory, url, output, qs and '?' or '', qs])
 
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""

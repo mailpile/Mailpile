@@ -289,6 +289,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             path = '/static/favicon.ico'
         if path.startswith('/_/'):
             path = path[2:]
+        if config.sys.subdirectory and path.startswith(config.sys.subdirectory):
+            path = path[len(config.sys.subdirectory):]
         if path.startswith('/static/'):
             return self.send_file(config, path[len('/static/'):])
 

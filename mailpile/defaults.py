@@ -33,6 +33,7 @@ CONFIG_RULES = {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_port':     p(_('Listening port for web UI'), int,         33411),
+        'subdirectory':  p(_('Subdirectory of web UI'), str,               ''),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
         'snippet_max':    (_('Max length of metadata snippets'), int,     250),

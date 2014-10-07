@@ -82,7 +82,7 @@ Mailpile.results_list = function() {
 Mailpile.update_search = function(ev) {
     $("#pile-newmessages-notification").slideUp("slow");
     console.log("Refreshing ", Mailpile.instance);
-    url = "/api/0/search/as.jhtml?" + $.param(Mailpile.instance.state.query_args);
+    url = "{{ config.sys.subdirectory }}/api/0/search/as.jhtml?" + $.param(Mailpile.instance.state.query_args);
     $.getJSON(url, {}, function(data) {
         if (data.status == "success") {
             $("#content-view").html(data.result);

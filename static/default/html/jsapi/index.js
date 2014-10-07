@@ -108,8 +108,8 @@ Mailpile.API = {
 
 {% endfor %}
   },
-  _sync_url: "/api",
-  _async_url: "/async",
+  _sync_url: "{{ config.sys.subdirectory }}/api",
+  _async_url: "{{ config.sys.subdirectory }}/async",
 };
 
 

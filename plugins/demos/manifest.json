@@ -43,8 +43,8 @@
 
         # Static content can be injected anywhere under the /static/
         # namespace. Optionally, non-obvious mime-types can be specified.
-        "/static/img/demos.png": {"file": "demos.png"},
-        "/static/data/demos.txt": {"file": "manifest.json",
+        "{{ config.sys.subdirectory }}/static/img/demos.png": {"file": "demos.png"},
+        "{{ config.sys.subdirectory }}/static/data/demos.txt": {"file": "manifest.json",
                                    "mimetype": "text/plain"}
     },
 
@@ -74,7 +74,7 @@
                 "context": ["/"],
                 "name": "demo",
                 "text": "(demo)",
-                "icon": "/static/img/demos.png",
+                "icon": "{{ config.sys.subdirectory }}/static/img/demos.png",
                 "description": "New Tool (demo)",
                 "url": "#could-be-a-fallback",
                 "javascript_setup": "new_tool_setup",
@@ -88,7 +88,7 @@
                 "text": "Earthquake (demo)",
                 "description": "This button makes your tags shake",
                 "url": "#useless",
-                "icon": "/static/img/demos.png",
+                "icon": "{{ config.sys.subdirectory }}/static/img/demos.png",
                 "javascript_setup": "earthquake_setup",
                 "javascript_events": {
                     "mouseover": "earthquake"
@@ -118,7 +118,7 @@
                 "text": "Tag List (demo)",
                 "description": "This is a useless button",
                 "url": "#taglist",
-                "icon": "/static/img/demos.png",
+                "icon": "{{ config.sys.subdirectory }}/static/img/demos.png",
                 "javascript_events": {
                     "click": "tag_list"
                 }
@@ -133,7 +133,7 @@
                 "description": "Demo search!!!",
                 "url_args_remove": [["qr", ""]],
                 "url_args_add": [["qr", "demo"]],
-                "icon": "/static/img/demos.png"
+                "icon": "{{ config.sys.subdirectory }}/static/img/demos.png"
             }
         ],
         # Actions that can be performed on selected items

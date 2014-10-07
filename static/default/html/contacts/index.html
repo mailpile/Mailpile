@@ -16,7 +16,7 @@
           {% if contact.photo %}
           <img src="{{contact.photo.0.photo}}">
           {% elif contact.email %}
-          <img src="/static/img/avatar-default.png">
+          <img src="{{ config.sys.subdirectory }}/static/img/avatar-default.png">
           {% endif %}
         </a>
         <a class="contact-card-name" href="/contacts/view/{{ contact.email.0.email }}/">

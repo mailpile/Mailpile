@@ -17,7 +17,7 @@
     <h2>{{importer.format_name}}</h2>
     <p>{{importer.format_description}}</p>
 
-    <form id="form-contact-import-{{importer.short_name}}" action="/api/0/contacts/import/" method="POST">
+    <form id="form-contact-import-{{importer.short_name}}" action="{{ config.sys.subdirectory }}/api/0/contacts/import/" method="POST">
       <input type="hidden" name="csrf" value=""/>
       <input type="hidden" name="format" value="{{importer.short_name}}"/>
 

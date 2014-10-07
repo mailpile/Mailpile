@@ -8,7 +8,7 @@
     },
     "routes": {
         "/maildeck/": {"file": "maildeck.html", "api": 0},
-        "/static/maildeck/icon.png": {"file": "viking.png"}
+        "{{ config.sys.subdirectory }}/static/maildeck/icon.png": {"file": "viking.png"}
     },
     "user_interface": {
         "activities": [
@@ -16,7 +16,7 @@
                 "context": ["/"],
                 "name": "maildeck",
                 "text": "Maildeck",
-                "icon": "/static/maildeck/icon.png",
+                "icon": "{{ config.sys.subdirectory }}/static/maildeck/icon.png",
                 "description": "Maildeck",
                 "url": "/maildeck/",
                 "javascript_setup": "activity_setup"

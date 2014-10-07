@@ -101,7 +101,7 @@ var ProfilesSettingsView = Backbone.View.extend({
       // Status UI Message
       $('#validation-pass').find('.check-auth')
         .removeClass('color-12-red color-08-green')
-        .html('<em>{{_("Testing Credentials")}}</em> <img src="/static/css/select2-spinner.gif">');
+        .html('<em>{{_("Testing Credentials")}}</em> <img src="{{ config.sys.subdirectory }}/static/css/select2-spinner.gif">');
 
       var provider = $('#input-setup-profile-pass').data('provider');
       var presets = SetupMagic.presets[provider];

@@ -1,5 +1,5 @@
 {% if state.command_url in ("/message/draft/", "/message/") %}
-<script src="/static/js/libraries/plupload.full.min.js"></script>
+<script src="{{ config.sys.subdirectory }}/static/js/libraries/plupload.full.min.js"></script>
 {% endif %}
 <script>
 {% if result.data and result.data.addresses %}
@@ -54,4 +54,4 @@ $(document).ready(
   {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
 );
 </script>
-<script src="/api/0/jsapi/app.js"></script>
+<script src="{{ config.sys.subdirectory }}/api/0/jsapi/app.js"></script>
