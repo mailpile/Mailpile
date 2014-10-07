@@ -392,7 +392,7 @@ class TestableWebbable(SetupMagic):
             url = '/'
 
         qs = urlencode([(k, v) for k, vl in data.iteritems() for v in vl])
-        raise UrlRedirectException(''.join([url, '?%s' % qs if qs else '']))
+        raise UrlRedirectException(''.join([self.session.config.sys.subdirectory, url, '?%s' % qs if qs else '']))
 
     def _success(self, message, result=True, advance=False):
         if (advance or

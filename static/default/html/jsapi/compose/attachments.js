@@ -45,7 +45,7 @@ var uploader = function(settings) {
 	browse_button : settings.browse_button, // you can pass in id...
 	container: settings.container, // ... or DOM Element itself
   drop_element: settings.container,
-	url : '/api/0/message/attach/',
+	url : '{{ config.sys.subdirectory }}/api/0/message/attach/',
   multipart : true,
   multipart_params : {'mid': settings.mid},
   file_data_name : 'file-data',

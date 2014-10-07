@@ -147,11 +147,11 @@ class MailpileSeleniumTest(MailPileUnittest):
     @classmethod
     def _get_mailpile_sspec(cls):
         (_, _, config, _) = get_shared_mailpile()
-        return (config.sys.http_host, config.sys.http_port)
+        return (config.sys.http_host, config.sys.http_port, config.sys.subdirectory)
 
     @classmethod
     def _get_mailpile_url(cls):
-        return 'http://%s:%s' % cls._get_mailpile_sspec()
+        return 'http://%s:%s/%s' % cls._get_mailpile_sspec()
 
     @classmethod
     def _start_web_server(cls):

@@ -18,7 +18,7 @@
   </ul>
   </div>
   <h4 class="text-detail animated fadeIn">{{_("You're about to experience secure email like never before!")}}</h4>
-  <form method="POST" action="/setup/welcome/" class="animated bounceIn">
+  <form method="POST" action="{{ config.sys.subdirectory }}/setup/welcome/" class="animated bounceIn">
     <p>
     <select name="language">
       <option value="">{{_("Select Language")}}...</option>

@@ -55,7 +55,7 @@ $('#crypto-policy').on('change', function(e) {
     var data = { email: email, policy: policy }
 
     $.ajax({
-        url : '/api/0/crypto_policy/set/',
+        url : '{{ config.sys.subdirectory }}/api/0/crypto_policy/set/',
         type : 'POST',
         data : data,
         dataType : 'json'

@@ -216,7 +216,7 @@ class UrlMap:
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /in/inbox/ for now.  (FIXME)"""
-        return [UrlRedirect(self.session, 'redirect', arg=['/in/inbox/'])]
+        return [UrlRedirect(self.session, 'redirect', arg=['%s/in/inbox/' % self.config.sys.subdirectory])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """

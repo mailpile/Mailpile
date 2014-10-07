@@ -336,13 +336,13 @@ $(document).on('click', '.compose-message-trash', function() {
   var mid = $(this).data('mid');
   //Mailpile.API.message_unthread({ mid: mid }, function(response) {
   $.ajax({
-    url      : '/api/0/message/unthread/',
+    url      : '{{ config.sys.subdirectory }}/api/0/message/unthread/',
     type     : 'POST',
     data     : { mid: mid },
     success  : function(response) {
       Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_trash) {
         if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/draft/') {
-          window.location.href = '/in/inbox/';
+          window.location.href = '{{ config.sys.subdirectory }}/in/inbox/';
         }
         else if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/') {
           $('#form-compose-' + mid).removeClass('form-compose clearfix')

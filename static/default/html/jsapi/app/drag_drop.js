@@ -53,7 +53,7 @@ Mailpile.sidebar_tags_droppable_opts = {
       } else {
         // FIXME: this action is up for discussion
         // Github Issue - https://github.com/pagekite/Mailpile/issues/794
-        window.location.href = '/in/inbox/';
+        window.location.href = '{{ config.sys.subdirectory }}/in/inbox/';
       }
     });
   }

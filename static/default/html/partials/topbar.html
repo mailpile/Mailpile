@@ -1,12 +1,12 @@
 <div id="notification-bubbles"></div>
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ config.sys.subdirectory }}/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ config.sys.subdirectory }}/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-name.svg") %}
   </a>
   </div>
@@ -26,14 +26,14 @@
         {%- endfor -%}
         <li class="{% if command == "page" %} navigation-on{% endif %}"><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
-          <a href="/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown"><span class="link-icon icon-settings"></span></a>
+          <a href="{{ config.sys.subdirectory }}/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="topbar-settings">
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#profiles"><span class="icon-profiles"></span> {{_("Profiles")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#sources"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#sending"><span class="icon-routes"></span> {{_("Sending Routes")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/welcome/"><span class="icon-settings"></span> {{_("Language")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/crypto/"><span class="icon-lock-closed"></span> {{_("Encryption Keys")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#security"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/#profiles"><span class="icon-profiles"></span> {{_("Profiles")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/#sources"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/#sending"><span class="icon-routes"></span> {{_("Sending Routes")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/welcome/"><span class="icon-settings"></span> {{_("Language")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/crypto/"><span class="icon-lock-closed"></span> {{_("Encryption Keys")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/setup/#security"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
           </ul>
         </li>
         <li><a href="/auth/logout/" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
