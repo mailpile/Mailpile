@@ -125,13 +125,13 @@
   <div class="clearfix">
   <ul class="thread-message-actions horizontal left" data-mid="{{mid}}">
     {% if "quote" in special_text_parts or "signature" in special_text_parts %}
-    <li><a href="#" class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
+    <li class="action"><a href="#" class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
     {% endif %}
     {% if not from.flags.contact and not from.flags.profile %}
-    <li><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
+    <li class="action"><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
     {% endif %}
     {% if "pgp-key" in special_text_parts %}
-    <li><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
+    <li class="action"><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
     {% endif %}
   </ul>
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
@@ -150,6 +150,11 @@
         {% if result.data.metadata|length > 1 %}
         <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> {{_("Remove from Thread")}}</a></li>
         {% endif %}
+        {% for header in message.header_list %}
+        {% if 'List-unsubscribe' == header[0] %}
+        <li role="presentation"><a class="message-action-unsubscribe" role="menuitem" tabindex="-1" data-unsubscribe="{{header[1]}}" href="#"><span class="icon-compose"></span> {{_("Unsubscribe")}}</a></li>
+        {% endif %}
+        {% endfor %}
       </ul>
     </li>
     <li class="action"><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>

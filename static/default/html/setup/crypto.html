@@ -45,19 +45,19 @@
       </p>
       <span id="validation-passphrase">
         <span class="validation-message"></span>
-        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+        <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
       </span>
       <p><em>{{_("Note: this passphrase is also what you use to log in to your Mailpile")}}</em></p>
       <span id="validation-passphrase_confirm">
         <label class="validation-message">{{_("Confirm your passphrase")}}</label>
-        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+        <input id="input-setup-passphrase_confirm" class="medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
       </span>
       <input name="choose_key" value="!CREATE" type="hidden">
 
     {% elif setup_crypto.result.secret_keys|length > 0 %}
 
       <label>{{_("Select the encryption key you would like to use")}}</label>
-      <ul class="radio-list-items">
+      <ul class="radio-list">
       {% for key, key_info in setup_crypto.result.secret_keys.iteritems() %}
         {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
         <li class="text-left">
@@ -107,18 +107,18 @@
           {{_("Enter passphrase for the encryption you selected")}}
           {% endif %}
         </label>
-        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
+        <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
       </span>
       <div id="setup-passphrase-existing-confirm">
         <span id="validation-passphrase_confirm">
           <label class="validation-message"></label>
-          <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="3">
+          <input id="input-setup-passphrase_confirm" class="medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="3">
         </span>
       </div>
       <input type="hidden" id="setup-passphrase-keys-exists" value="exists">
     {% endif %}
 
-    <button id="btn-setup-passphrase" type="submit">{{_("Authenticate")}}</button>
+    <button id="btn-setup-passphrase" class="button-primary" type="submit">{{_("Authenticate")}}</button>
   </form>
 </div>
 

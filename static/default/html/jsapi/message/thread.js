@@ -135,7 +135,7 @@ $(document).ready(function() {
 
     // Scroll to Message
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
-    var msg_top_pos = $('#message-' + thread_id).position().top;
+    var msg_top_pos = $('#message-' + thread_id).position().top + 1;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);

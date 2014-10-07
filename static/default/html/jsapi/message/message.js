@@ -109,6 +109,14 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 });
 
 
+/* Message - Unsubscribe */
+$(document).on('click', '.message-action-unsubscribe', function(e) {
+  e.preventDefault();
+  alert('FIXME: this should compose an email to: ' + $(this).data('unsubscribe'));
+  //Mailpile.activities.compose($(this).data('unsubscribe'));
+});
+
+
 /* Message - Discover keys */
 $(document).on('click', '.message-action-find-keys', function(e) {
   e.preventDefault();

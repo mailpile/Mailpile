@@ -3,6 +3,7 @@
 	#pile-results {
 	  width: 100%;
 	  min-width: 800px;
+    border: 0px;
   }
 
   #pile-results tr.result          { background: @white; }
@@ -16,7 +17,10 @@
 	  padding-bottom: 10px;
     vertical-align: middle;
 		border-spacing: 0px;
+    border-top: 0px;
+    border-right: 0px;
 		border-bottom: 1px solid @grayMid;
+    border-left: 0px;
 		box-sizing: padding-box;
 		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 14px;
@@ -153,7 +157,7 @@
   #pile-results tr.result-on:hover td.draggable {
     background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
     opacity: 0.3;
-    filter:alpha(opacity=30);
+    filter: alpha(opacity=30);
   }	
 	
 	.pile-results-drag {
