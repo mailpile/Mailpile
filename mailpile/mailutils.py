@@ -302,7 +302,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     if str(msg['Attach-PGP-Pubkey']).lower() in ['yes', 'true']:
         g = GnuPG(config)
         keys = g.address_to_keys(ExtractEmails(sender)[0])
-        for _, key in keys.iteritems():
+        for fp, key in keys.iteritems():
             if not any(key["capabilities_map"].values()):
                 continue
             # We should never really hit this more than once. But if we do, it
