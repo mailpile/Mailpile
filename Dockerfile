@@ -1,23 +1,13 @@
 FROM ubuntu:14.04
 
-# Update packages lists
 RUN apt-get update -y
+RUN apt-get install -y python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump
 
-# Force -y for apt-get
-RUN echo "APT::Get::Assume-Yes true;" >>/etc/apt/apt.conf
-
-# Add code & install the requirements
-RUN apt-get install make python-pip && apt-get clean
-ADD Makefile /Mailpile/Makefile
 WORKDIR /Mailpile
-RUN make debian-dev && apt-get clean
-
-# Add code
 ADD . /Mailpile
 
-# Setup
 RUN ./mp setup
 
-CMD /Mailpile/mp --www=0.0.0.0:33411 --wait
+CMD ./mp --www=0.0.0.0:33411 --wait
 EXPOSE 33411
 VOLUME /.share/local/Mailpile
