@@ -31,6 +31,13 @@ echo -n
 $AS_VAGRANT ./mp rescan
 echo
 
+
+echo '.. set subdirectory'
+echo -n
+$AS_VAGRANT ./mp set sys.subdirectory  /mailpile
+echo
+
+
 if [ $? -eq 0 ]; then
   echo 'Done. To start the web interface, enter the following command:'
   echo '$ vagrant ssh -c "cd /srv/Mailpile && ./mp --www=0.0.0.0:33411 --wait"'
