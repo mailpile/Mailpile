@@ -18,9 +18,6 @@ from mailpile.util import *
 __all__ = ['mbox', 'maildir', 'imap']
 
 
-GLOBAL_RESCAN_LOCK = MSrcLock()
-
-
 class BaseMailSource(threading.Thread):
     """
     MailSources take care of managing a group of mailboxes, synchronizing
@@ -170,15 +167,15 @@ class BaseMailSource(threading.Thread):
                                   random.randint(0, 50) == 10):
 
                     self._state = 'Waiting... (rescan)'
-                    with GLOBAL_RESCAN_LOCK:
-                        if self._check_interrupt(clear=False):
-                            self._last_rescan_completed = False
-                            break
-                        count = self.rescan_mailbox(mbx_key, mbx_cfg, path,
-                                                    stop_after=batch)
+                    if self._check_interrupt(clear=False):
+                        self._last_rescan_completed = False
+                        break
+                    count = self.rescan_mailbox(mbx_key, mbx_cfg, path,
+                                                stop_after=batch)
 
                     if count >= 0:
-                        self.event.data['counters']['indexed_messages'] += count
+                        self.event.data['counters'
+                                        ]['indexed_messages'] += count
                         batch -= count
                         complete = ((count == 0 or batch > 0) and
                                     not self._interrupt and
@@ -216,9 +213,8 @@ class BaseMailSource(threading.Thread):
 
         self._state = 'Waiting... (disco)'
         discovered = 0
-        with GLOBAL_RESCAN_LOCK:
-            if not self._check_interrupt():
-                discovered = self.discover_mailboxes()
+        if not self._check_interrupt():
+            discovered = self.discover_mailboxes()
 
         status = []
         if discovered > 0:

@@ -251,8 +251,7 @@ class MailIndex:
             session.ui.mark(_('Loading metadata index...'))
         try:
             import mailpile.mail_source
-            with self._save_lock, self._lock, \
-                    mailpile.mail_source.GLOBAL_RESCAN_LOCK:
+            with self._save_lock, self._lock:
                 with open(self.config.mailindex_file(), 'r') as fd:
                     # We don't raise on errors, in case only some of the chunks
                     # are corrupt - we want to read the rest of them.

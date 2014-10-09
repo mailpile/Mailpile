@@ -1140,29 +1140,20 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
-                        lock = mailpile.mail_source.GLOBAL_RESCAN_LOCK
-                        locked = lock.acquire(False)
-                        if locked:
-                            session.ui.mark(_('Rescanning: %s %s')
-                                            % (fid, fpath))
-                            if which == 'editable':
-                                count = idx.scan_mailbox(session, fid, fpath,
-                                                         config.open_mailbox,
-                                                         process_new=False,
-                                                         editable=True,
-                                                         event=self.event)
-                            else:
-                                count = idx.scan_mailbox(session, fid, fpath,
-                                                         config.open_mailbox,
-                                                         event=self.event)
+                        session.ui.mark(_('Rescanning: %s %s')
+                                        % (fid, fpath))
+                        if which == 'editable':
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     process_new=False,
+                                                     editable=True,
+                                                     event=self.event)
                         else:
-                            session.ui.mark(_('Rescan already in progress'))
-                            count = 0
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     event=self.event)
                     except ValueError:
                         count = -1
-                    finally:
-                        if locked:
-                            lock.release()
                     if count < 0:
                         session.ui.warning(_('Failed to rescan: %s') % fpath)
                     elif count > 0:
@@ -1392,8 +1383,6 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('mailpile.mail_source', 'GLOBAL_RESCAN_LOCK',
-             mailpile.mail_source.GLOBAL_RESCAN_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
              mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
