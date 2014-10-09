@@ -18,7 +18,7 @@
       </li>
       {% else %}
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="/contacts/view/{{from.address}}/">
+        <a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/contacts/view/{{from.address}}/">
           <span class="icon-user"></span> {{_("View Profile")}}
         </a>
       </li>
@@ -29,7 +29,7 @@
         </a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
+        <a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/search/?q=from:{{from.address}}">
           <span class="icon-search"></span> {{_("Search Messages")}}
         </a>
       </li>
@@ -87,6 +87,6 @@
   {% endif %}
   <ul class="clearfix">
     <li>Show:</li>
-    <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+    <li><a href="{{ config.sys.subdirectory }}/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
   </ul>
 </div>

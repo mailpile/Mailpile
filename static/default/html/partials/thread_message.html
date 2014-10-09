@@ -108,11 +108,11 @@
       <li>
       {% set type = attachment_type(att.mimetype) %}
       {% if type == "image-visible" %}
-      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      <a href="{{ config.sys.subdirectory }}/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
       {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
-      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.filenmae }} @ {{ att.length|friendly_bytes }}">
+      <a href="{{ config.sys.subdirectory }}/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.filenmae }} @ {{ att.length|friendly_bytes }}">
         <span class="icon-{{ type}}"></span>
         {{ att.filename }}<small>{{ att.length|friendly_bytes }}</small>
       </a>

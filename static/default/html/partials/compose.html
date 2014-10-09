@@ -79,8 +79,8 @@
         {% if editing_strings.attachments %}
         {% for aid, filename in editing_strings.attachments.iteritems() %}
         <li class="compose-attachment">
-          <a href="/message/attachment/={{ mid }}/{{ aid }}/" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
-          <img src="/message/download/preview/={{ mid }}/{{ aid }}/">
+          <a href="{{ config.sys.subdirectory }}/message/attachment/={{ mid }}/{{ aid }}/" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+          <img src="{{ config.sys.subdirectory }}/message/download/preview/={{ mid }}/{{ aid }}/">
           <div class="compose-attachment-filename">{{filename}}</div>
         </li>
         {% endfor %}

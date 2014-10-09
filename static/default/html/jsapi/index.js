@@ -61,23 +61,23 @@ Mailpile = {
     view_size: "comfy"
   },
   api: {
-    compose      : "/api/0/message/compose/",
-    compose_send : "/api/0/message/update/send/",
-    compose_save : "/api/0/message/update/",
-    contacts     : "/api/0/search/address/",
-    message      : "/api/0/message/=",
-    tag          : "/api/0/tag/",
-    tag_list     : "/api/0/tags/",
-    tag_add      : "/api/0/tags/add/",
-    tag_update   : "/api/0/settings/set/",
-    search_new   : "/api/0/search/?q=in%3Anew",
-    search       : "/api/0/search/",
-    settings_add : "/api/0/settings/add/"
+    compose      : "{{ config.sys.subdirectory }}/api/0/message/compose/",
+    compose_send : "{{ config.sys.subdirectory }}/api/0/message/update/send/",
+    compose_save : "{{ config.sys.subdirectory }}/api/0/message/update/",
+    contacts     : "{{ config.sys.subdirectory }}/api/0/search/address/",
+    message      : "{{ config.sys.subdirectory }}/api/0/message/=",
+    tag          : "{{ config.sys.subdirectory }}/api/0/tag/",
+    tag_list     : "{{ config.sys.subdirectory }}/api/0/tags/",
+    tag_add      : "{{ config.sys.subdirectory }}/api/0/tags/add/",
+    tag_update   : "{{ config.sys.subdirectory }}/api/0/settings/set/",
+    search_new   : "{{ config.sys.subdirectory }}/api/0/search/?q=in%3Anew",
+    search       : "{{ config.sys.subdirectory }}/api/0/search/",
+    settings_add : "{{ config.sys.subdirectory }}/api/0/settings/add/"
   },
   urls: {
-    message_draft : "/message/draft/=",
-    message_sent  : "/thread/=",
-    tags          : "/tags/"
+    message_draft : "{{ config.sys.subdirectory }}/message/draft/=",
+    message_sent  : "{{ config.sys.subdirectory }}/thread/=",
+    tags          : "{{ config.sys.subdirectory }}/tags/"
   },
   plugins: [],
   theme: {},

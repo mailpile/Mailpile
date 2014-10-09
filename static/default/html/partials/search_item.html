@@ -52,7 +52,7 @@
     {% endif %}{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
-    <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
+    <a href="{{ config.sys.subdirectory }}/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
   <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">
