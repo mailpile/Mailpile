@@ -544,26 +544,34 @@ class MailIndex:
             print _('WARNING: No proper Message-ID for %s') % msg_ptr
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
+    def _get_scan_progress(self, mailbox_idx, event=None, reset=False):
+        if event and 'rescans' not in event.data:
+            event.data['rescans'] = []
+            if reset:
+                event.data['rescan'] = {}
+            progress = event.data['rescan']
+        else:
+            progress = {}
+            reset = True
+        if reset:
+            progress.update({
+                'running': True,
+                'complete': False,
+                'mailbox_id': mailbox_idx,
+                'errors': [],
+                'added': 0,
+                'updated': 0,
+                'total': 0,
+                'batch_size': 0
+            })
+        return progress
+
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
                      process_new=None, apply_tags=None, stop_after=None,
                      editable=False, event=None):
-        if event and 'rescans' not in event.data:
-            event.data['rescans'] = []
-            event.data['rescan'] = progress = {}
-        else:
-            progress = {}
-
         mailbox_idx = FormatMbxId(mailbox_idx)
-        progress.update({
-            'running': True,
-            'complete': False,
-            'mailbox_id': mailbox_idx,
-            'errors': [],
-            'added': 0,
-            'updated': 0,
-            'total': 0,
-            'batch_size': 0
-        })
+        progress = self._get_scan_progress(mailbox_idx,
+                                           event=event, reset=True)
 
         def finito(code, message, **kwargs):
             if event:
@@ -644,44 +652,19 @@ class MailIndex:
                 session.ui.mark(parse_status(ui))
 
             # Message new or modified, let's parse it.
-            if 'rescan' in session.config.sys.debug:
-                session.ui.debug('Reading message %s/%s' % (mailbox_idx, i))
-            try:
-                msg_fd = mbox.get_file(i)
-                msg = ParseMessage(msg_fd,
-                                   pgpmime=session.config.prefs.index_encrypted,
-                                   config=session.config)
-            except (IOError, OSError, ValueError, IndexError, KeyError):
-                if session.config.sys.debug:
-                    traceback.print_exc()
-                progress['errors'].append(i)
-                session.ui.warning(('Reading message %s/%s FAILED, skipping'
-                                    ) % (mailbox_idx, i))
-                continue
-
-            optimize = False
-            msg_id = self.get_msg_id(msg, msg_ptr)
-            if msg_id in self.MSGIDS:
-                with self._lock:
-                    self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
-                    updated += 1
-            else:
-                msg_info = self._index_incoming_message(
-                    session, msg_id, msg_ptr, msg_fd.tell(), msg,
-                    last_date + 1, mailbox_idx, process_new, apply_tags)
-                last_date = long(msg_info[self.MSG_DATE], 36)
-                optimize = True
-                added += 1
-
-            play_nice_with_threads()
-            if optimize:
-                GlobalPostingList.Optimize(session, self,
-                                           lazy=True, quick=True)
-
-            progress.update({
-                'added': added,
-                'updated': updated,
-            })
+            last_date, a, u = self.scan_one_message(session,
+                                                    mailbox_idx, mbox, i,
+                                                    msg_ptr=msg_ptr,
+                                                    last_date=last_date,
+                                                    wait=True,
+                                                    process_new=process_new,
+                                                    apply_tags=apply_tags,
+                                                    stop_after=stop_after,
+                                                    editable=editable,
+                                                    event=event,
+                                                    progress=progress)
+            added += a
+            updated += u
 
         with self._lock:
             for msg_ptr in self.PTRS.keys():
@@ -703,6 +686,62 @@ class MailIndex:
                       new=added,
                       updated=updated,
                       complete=(messages_md5 != not_done_yet))
+
+    def scan_one_message(self, session, mailbox_idx, mbox, msg_mbox_key,
+                         wait=False, **kwargs):
+        args = [session, mailbox_idx, mbox, msg_mbox_key]
+        task = 'scan:%s/%s' % (mailbox_idx, msg_mbox_key)
+        if wait:
+            return session.config.scan_worker.do(
+                session, task, lambda: self._real_scan_one(*args, **kwargs))
+        else:
+            session.config.scan_worker.add_task(
+                session, task, lambda: self._real_scan_one(*args, **kwargs))
+            return 0, 0, 0
+
+    def _real_scan_one(self, session,
+                       mailbox_idx, mbox, msg_mbox_idx,
+                       msg_ptr=None, last_date=None,
+                       process_new=None, apply_tags=None, stop_after=None,
+                       editable=False, event=None, progress=None):
+        added = updated = 0
+        msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
+        last_date = last_date or long(time.time())
+        progress = progress or self._get_scan_progress(mailbox_idx,
+                                                       event=event)
+
+        if 'rescan' in session.config.sys.debug:
+            session.ui.debug('Reading message %s/%s'
+                             % (mailbox_idx, msg_mbox_idx))
+        try:
+            msg_fd = mbox.get_file(msg_mbox_idx)
+            msg = ParseMessage(msg_fd,
+                               pgpmime=session.config.prefs.index_encrypted,
+                               config=session.config)
+        except (IOError, OSError, ValueError, IndexError, KeyError):
+            if session.config.sys.debug:
+                traceback.print_exc()
+            progress['errors'].append(i)
+            session.ui.warning(('Reading message %s/%s FAILED, skipping'
+                                ) % (mailbox_idx, msg_mbox_idx))
+            return last_date, added, updated
+
+        msg_id = self.get_msg_id(msg, msg_ptr)
+        if msg_id in self.MSGIDS:
+            with self._lock:
+                self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
+                updated += 1
+        else:
+            msg_info = self._index_incoming_message(
+                session, msg_id, msg_ptr, msg_fd.tell(), msg,
+                last_date + 1, mailbox_idx, process_new, apply_tags)
+            last_date = long(msg_info[self.MSG_DATE], 36)
+            added += 1
+
+        play_nice_with_threads()
+        progress['added'] += added
+        progress['updated'] += updated
+        return last_date, added, updated
 
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,

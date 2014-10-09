@@ -173,17 +173,20 @@ class Worker(threading.Thread):
                    time.time() - self.last_run,
                    len(self.JOBS)))
 
-    def add_task(self, session, name, task, unique=False):
+    def add_task(self, session, name, task, unique=False, first=False):
         with self.LOCK:
             if unique:
                 for s, n, t in self.JOBS:
                     if n == name:
                         return
-            self.JOBS.append((session, name, task))
+            if first:
+                self.JOBS.append((session, name, task))
+            else:
+                self.JOBS[:0] = [(session, name, task)]
             self.LOCK.notify()
 
-    def add_unique_task(self, session, name, task):
-        return self.add_task(session, name, task, unique=True)
+    def add_unique_task(self, session, name, task, **kwargs):
+        return self.add_task(session, name, task, unique=True, **kwargs)
 
     def do(self, session, name, task, unique=False):
         if session and session.main:

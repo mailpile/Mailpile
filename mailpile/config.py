@@ -1125,6 +1125,7 @@ class ConfigManager(ConfigDict):
         self.http_worker = None
         self.dumb_worker = DumbWorker('Dumb worker', None)
         self.slow_worker = self.dumb_worker
+        self.scan_worker = self.dumb_worker
         self.save_worker = self.dumb_worker
         self.async_worker = self.dumb_worker
         self.other_workers = []
@@ -1837,6 +1838,9 @@ class ConfigManager(ConfigDict):
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
+            if config.scan_worker == config.dumb_worker:
+                config.scan_worker = Worker('Scan worker', session)
+                config.scan_worker.start()
             if config.async_worker == config.dumb_worker:
                 config.async_worker = Worker('Async worker', session)
                 config.async_worker.start()
@@ -1900,10 +1904,12 @@ class ConfigManager(ConfigDict):
                            [config.http_worker,
                             config.async_worker,
                             config.slow_worker,
+                            config.scan_worker,
                             config.cron_worker])
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
+            config.scan_worker = config.dumb_worker
             config.async_worker = config.dumb_worker
 
         for wait in (False, True):
