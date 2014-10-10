@@ -1,14 +1,14 @@
 <div id="setup-box-source-configure" class="setup-box setup-box-large add-top add-bottom animated bounceInUp add-bottom">
   <div class="clearfix text-center">
-    <h2><span class="icon-tag"></span> Configure <%= name %></h2>
-    <p class="text-detail remove-bottom">Configure which mailboxes to import & which tags to apply after mail is imported</p>
+    <h2 class="half-bottom"><span class="icon-tag"></span> Configure <%= name %></h2>
+    <p class="text-detail">Configure which mailboxes to import & which tags to apply after mail is imported</p>
   </div>
-  <form id="form-setup-source-configure" class="standard text-center">
+  <form id="form-setup-source-configure" class="standard">
     <% console.log(tags) %>
-    <table class="full rounded background-white">
+    <table class="full rounded background-white add-bottom">
     <tr>
-      <th class="text-center setup-tooltip" title="{{_('Source of these Messages')}}"><strong>Mailbox</strong></th>
-      <th class="text-center setup-tooltip" title="{{_('Create a Tag in your Mailpile')}}"><strong>Mailpile (Tag)</strong></th>
+      <th class="text-center setup-tooltip" title="{{_('Source of these Messages')}}">Mailbox</th>
+      <th class="text-center setup-tooltip" title="{{_('Create a Tag in your Mailpile')}}">Mailpile (Tag)</th>
       <th class="text-center setup-tooltip" title="{{_('Apply the Inbox tag to these Messages')}}"><span class="icon-inbox"></span></th>
       <th class="text-center setup-tooltip" title="{{_('Apply the Drafts tag to these Messages')}}"><span class="icon-compose"></span></th>
       <th class="text-center setup-tooltip" title="{{_('Apply the Sent tag to these Messages')}}"><span class="icon-sent"></span></th>
@@ -18,7 +18,7 @@
     </tr>
     <% _.each(mailbox, function(mailbox, key) { %>
     <tr>
-      <td class="middle text-center">
+      <td class="middle">
         <% if (mailbox.name) { %>
         <%= mailbox.name %>
         <% } else { %>

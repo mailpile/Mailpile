@@ -81,7 +81,7 @@ var SecurityView = Backbone.View.extend({
       var settings = _.values(result.result.prefs);
       settings[6] = true;
       settings = settings.join('-');
-      level = '';
+      level = 'custom';
       _.each(SecurityModel.attributes, function(state, name) {
         var check = _.values(state).join('-');
         if (settings == check) {
@@ -111,6 +111,9 @@ var SecurityView = Backbone.View.extend({
       _.each(SecurityModel.attributes[level], function(state, name) {
         $('#form-setup-security').find('input[name='+name+']').prop('checked', state).val(state);
       });
+    }
+    else if (level === 'custom') {
+      console.log('custom settings');
     }
   },
   processSecurity: function(e) {
