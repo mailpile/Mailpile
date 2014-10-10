@@ -121,8 +121,8 @@ $(document).ready(function() {
       var new_order = (parseFloat(previous) + parseFloat(next)) / 2;
 
       // Save Tag Order
-      Mailpile.tag_update(tid, 'display_order', new_order, function() {
-
+      var tag_setting = Mailpile.tag_setting(tid, 'display_order', new_order);
+      Mailpile.API.settings_set_post(tag_setting, function(result) { 
         // Update Current Element
         $(ui.item).attr('data-display_order', new_order).data('display_order', new_order);
       });
