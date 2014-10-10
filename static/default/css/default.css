@@ -3114,7 +3114,7 @@ input[type="button"]:active,
 .button-info,
 .button-alert,
 .button-warning {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px !important;
   font-weight: 300 !important;
   line-height: inherit;
@@ -3150,7 +3150,7 @@ button.button-small,
 input[type="submit"].button-small,
 input[type="reset"].button-small,
 input[type="button"].button-small {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 12px !important;
   font-weight: bold !important;
   line-height: inherit;
@@ -3164,7 +3164,11 @@ input[type="button"].button-small {
   transition-duration: 0.2s;
 }
 /* Primary */
+button,
 button.button-primary,
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
 input[type="submit"].button-primary,
 input[type="reset"].button-primary,
 input[type="button"].button-primary,
@@ -5535,7 +5539,7 @@ a.setup-progress-circle.complete:hover span.icon {
   background: transparent;
 }
 span.setup-progress-line {
-  width: 100px;
+  width: 90px;
   display: block;
   border-bottom: 1px solid #cccccc;
   margin: 20px 8px 0px 8px;
