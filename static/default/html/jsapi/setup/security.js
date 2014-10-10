@@ -65,14 +65,10 @@ var SecurityView = Backbone.View.extend({
     return this;
   },
   events: {
-    "click #btn-setup-security-save"       : "showPassphrase",
-    "change #input-setup-security-level"   : "actionSecurityLevel",
-    "click #btn-setup-security-passphrase" : "processSecurity"
-  },
-  testThisShit: function(e) {
-
-    e.preventDefault();
-    console.log('yo dawwg town');
+    "click #btn-setup-security-save"         : "showPassphrase",
+    "change #input-setup-security-level"     : "actionSecurityLevel",
+    "submit #form-setup-security-passphrase" : "processSecurity",
+    "click #btn-setup-security-passphrase"   : "processSecurity"
   },
   show: function() {
     Mailpile.API.setup_crypto_get({}, function(result) {
@@ -96,6 +92,7 @@ var SecurityView = Backbone.View.extend({
   showPassphrase: function(e) {
     $('#modal-full').html($('#modal-security-enter-passphrase').html());
     $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    $('#input-setup-security-passphrase').focus();
   },
   actionSecurityLevel: function(e) {
     e.preventDefault();
@@ -117,9 +114,7 @@ var SecurityView = Backbone.View.extend({
     }
   },
   processSecurity: function(e) {
-
     e.preventDefault();
-
     var security_data = $('#form-setup-security').serializeObject();
     _.each($('#form-setup-security input:checkbox:not(:checked)'), function(val, key) {
       security_data[$(val).attr('name')] = false;
