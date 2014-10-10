@@ -23,7 +23,8 @@ var SetupRouter = Backbone.Router.extend({
 		"security"         : "security",
 		"backups"          : "backups",
 		"access"           : "access",
-    "complete"         : "complete"
+    "complete"         : "complete",
+    "language"         : "language"
 	},
 	checkView: function(view) {
     var state = StateModel.checkState(view);
@@ -93,4 +94,7 @@ var SetupRouter = Backbone.Router.extend({
   access: function() {
     AccessView.show();
   },
+  language: function() {
+    LanguageView.show();
+  }
 });
