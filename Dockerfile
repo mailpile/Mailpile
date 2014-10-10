@@ -10,4 +10,4 @@ RUN ./mp setup
 
 CMD ./mp --www=0.0.0.0:33411 --wait
 EXPOSE 33411
-VOLUME /.share/local/Mailpile
+VOLUME /root/.local/share/Mailpile
