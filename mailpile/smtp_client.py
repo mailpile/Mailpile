@@ -202,7 +202,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
         frm_vcard = session.config.vcards.get_vcard(frm)
 
         update_to_vcards = False
-        if msg["x-mp-internal-pubkeys-attached"]:
+        if msg and msg["x-mp-internal-pubkeys-attached"]:
             update_to_vcards = True
             to_vcards = [session.config.vcards.get_vcard(x) for x in to]
             del(msg["x-mp-internal-pubkeys-attached"])

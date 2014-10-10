@@ -50,6 +50,7 @@ var SetupApp = (function ($, Backbone, global) {
       global.SecurityView   = new SecurityView({ el: $('body') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
+      global.LanguageView   = new LanguageView({ el: $('#setup') });
       global.CompleteView   = new CompleteView({ model: new CompleteModel(), el: $('#setup') });
       global.TooltipsView   = new TooltipsView({ el: $('#setup') });
 
