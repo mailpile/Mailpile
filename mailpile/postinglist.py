@@ -23,6 +23,14 @@ GLOBAL_GPL = None
 PLC_CACHE_LOCK = PListLock()
 PLC_CACHE = {}
 
+TIMERS = {
+    'render': 0,
+    'save': 0,
+    'save_count': 0,
+    'load': 0,
+    'load_count': 0,
+}
+
 
 def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
     def save(plc):
@@ -98,6 +106,7 @@ class PostingListContainer(object):
             return self._unlocked_remove(*args, **kwargs)
 
     def _deleted_set(self):
+        # FIXME!
         return set()
 
     def save(self, split=True):
@@ -110,6 +119,7 @@ class PostingListContainer(object):
                     plc.save(split=False)
             return
 
+        t = [time.time()]
         encryption_key = self.config.master_key
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
@@ -119,6 +129,7 @@ class PostingListContainer(object):
                                in ([sig] + [str(v) for v in (values-del_set)]
                                    for sig, values in self.words.iteritems())
                                if len(l) > 1)
+            t.append(time.time())
 
             if not output:
                 try:
@@ -138,13 +149,20 @@ class PostingListContainer(object):
                 with open(outfile, 'wb') as fd:
                     fd.write(output)
 
+            t.append(time.time())
             self.changes = 0
+
+        if len(t) == 3:
+            TIMERS['render'] += t[1] - t[0]
+            TIMERS['save'] += t[2] - t[1]
+            TIMERS['save_count'] += 1
 
     def _splits(self):
         # FIXME
         return [self]
 
     def _load(self):
+        t0 = time.time()
         if not self.fd:
             fn, self.sig = self._GetFilenameAndSig(self.config, self.sig)
             try:
@@ -163,6 +181,8 @@ class PostingListContainer(object):
                 if self.config.sys.debug:
                     traceback.print_exc()
         self.fd = None
+        TIMERS['load'] += time.time() - t0
+        TIMERS['load_count'] += 1
 
     def _unlocked_parse_lines(self, lines):
         for line in lines:

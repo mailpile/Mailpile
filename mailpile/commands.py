@@ -1353,9 +1353,11 @@ class ProgramStatus(Command):
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
                     'Live sessions:\n%s\n\n'
+                    'Postinglist timers:\n%s\n\n'
                     'Threads: (bg delay %.3fs, live=%s, httpd=%s)\n%s\n\n'
                     'Locks:\n%s'
                     ) % (cevents, ievents, sessions,
+                         self.result['pl_timers'],
                          self.result['delay'],
                          self.result['live'],
                          self.result['httpd'],
@@ -1417,6 +1419,7 @@ class ProgramStatus(Command):
                           'userdata': v.data,
                           'userinfo': v.auth} for k, v in
                          mailpile.auth.SESSION_CACHE.iteritems()],
+            'pl_timers': mailpile.postinglist.TIMERS,
             'delay': play_nice_with_threads(sleep=False),
             'live': mailpile.util.LIVE_USER_ACTIVITIES,
             'httpd': mailpile.httpd.LIVE_HTTP_REQUESTS,
