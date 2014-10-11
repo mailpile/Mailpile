@@ -7372,7 +7372,7 @@ tr.modal-tag-picker-item td.checkbox {
   cursor: pointer;
 }
 #pile-results td.draggable {
-  width: 12px;
+  width: 10px;
   cursor: move;
 }
 #pile-results td.draggable:hover {
@@ -8017,6 +8017,24 @@ a.modal-tag-color-option:hover {
 .qtip-contact-details .qtip-content {
   width: 215px;
   margin-top: 5px;
+}
+.tt-dropdown-menu {
+  width: 305px;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 1px 1px 2px 0px #cccccc;
+}
+.tt-suggestion {
+  font-size: 18px;
+}
+.tt-suggestion p {
+  padding: 5px 15px;
+  margin: 0px;
+}
+.tt-cursor {
+  background: #cccccc;
 }
 /* =============== Tablet Style =============== */
 @media only screen and (max-width: 1024px) {
