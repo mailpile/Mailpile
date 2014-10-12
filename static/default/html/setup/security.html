@@ -5,7 +5,7 @@
     <label class="clearfix">{{_("What are your security & privacy preferences?")}}</label>
     <p>
       <select id="input-setup-security-level">
-        <option value="">{{_("select...")}}</option>
+        <option value="custom" <% if (security_level == 'custom' ) { %>selected<% } %>>{{_("Custom")}}</option>
         <option value="tinfoil" <% if (security_level == 'tinfoil' ) { %>selected<% } %>>{{_("You collect tinfoil hats")}}</option>
         <option value="paranoid" <% if (security_level == 'paranoid' ) { %>selected<% } %>>{{_("Relatively paranoid")}}</option>
         <option value="above" <% if (security_level == 'above' ) { %>selected<% } %>>{{_("Above average paranoia")}}</option>
@@ -61,7 +61,7 @@
   </form>
   <div class="clearfix half-top">
     <a href="{{ config.sys.subdirectory }}/setup/#" class="button-info">{{_("Back")}}</a> &nbsp;&nbsp;
-    <button id="btn-setup-security-save" class="right" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
+    <button id="btn-setup-security-save" class="button-primary right" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
       <span class="icon-checkmark"></span> {{_("Save Changes")}}
     </button>
   </div>
