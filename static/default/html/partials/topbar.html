@@ -12,7 +12,7 @@
   </div>
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix" action="/search/">
-		  <input id="search-query" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 alt="{{_("Search")}}" value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
+		  <input id="search-query" class="typeahead" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 alt="{{_("Search")}}" value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
     <nav class="topbar-nav">
@@ -32,7 +32,8 @@
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#sources"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#sending"><span class="icon-routes"></span> {{_("Sending Routes")}}</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#language"><span class="icon-home"></span> {{_("Language")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/crypto/"><span class="icon-key"></span> {{_("Encryption Keys")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#keys"><span class="icon-key"></span> {{_("Encryption Keys")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#passphrase"><span class="icon-lock-closed"></span> {{_("Password")}}</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#security"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
           </ul>
         </li>

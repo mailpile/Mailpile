@@ -54,9 +54,13 @@ $(document).ready(function() {
   // Print JSON for JS Use
   Mailpile.instance['tags'] = {{ tags_json|safe }};
 
+  // Favicon
   var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
   var favicon = new Favico({animation:'popFade'});
   favicon.badge(inbox.stats.new);
+
+  // Show Typeahead
+  Mailpile.activities.render_typeahead();
 
   // Start Eventlog
   //EventLog.init();
