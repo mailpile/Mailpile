@@ -48,6 +48,7 @@ var SetupApp = (function ($, Backbone, global) {
       global.SourcesConfigureView = new SourcesConfigureView({ el: $('#setup') });
       global.SendingView    = new SendingView({ model: new SendingModel(), el: $('#setup') });
       global.SecurityView   = new SecurityView({ el: $('body') });
+      // global.KeysView       = new KeysView({ el: $('body') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
       global.LanguageView   = new LanguageView({ el: $('#setup') });

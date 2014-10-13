@@ -1,0 +1,23 @@
+<!-- Setup - Passphrase -->
+<div class="setup-box setup-box-small add-top animated bounceInUp">
+  <h2 class="text-center"><span class="icon-lock-closed"></span> {{_("Passphrase")}}</h2>
+  <p>{{_("Your passphrase is what you use to login to your Mailpile")}}</p>
+  <form id="form-setup-keys" class="standard">
+    <span id="validation-existing">
+      <label>{{_("Current Prassphrase")}}</label>
+      <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
+    </span>
+    <span id="validation-passphrase">
+      <label class="validation-message text-center">{{_("New Passphrase")}}</label>
+      <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
+    </span>
+    <span id="validation-passphrase_confirm">
+      <label class="validation-message">{{_("Confirm New Passphrase")}}</label>
+      <input id="input-setup-passphrase_confirm" class="medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="3">
+    </span>
+    <div class="clearfix half-top">
+      <a href="/setup/#" class="button-info">{{_("Back")}}</a>
+      <button id="btn-setup-language-settings" class="button-primary right">{{_("Save")}}</button>
+    </div>
+  </form>
+</div>
