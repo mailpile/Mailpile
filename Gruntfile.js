@@ -11,13 +11,9 @@ module.exports = function(grunt) {
         src: [
           'static/default/js/libraries.js',
           'static/default/js/helpers.js',
-          'bower_components/html5shiv/dist/html5shiv.js',
           'bower_components/underscore/underscore.js',
           'bower_components/backbone/backbone.js',
           'bower_components/backbone-validation/dist/backbone-validation.js',
-          'bower_components/bootstrap/js/dropdown.js',
-          'bower_components/bootstrap/js/modal.js',
-          'bower_components/jquery-slugify/dist/slugify.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',
           'bower_components/jquery.ui/ui/jquery.ui.widget.js',
           'bower_components/jquery.ui/ui/jquery.ui.mouse.js',
@@ -26,14 +22,17 @@ module.exports = function(grunt) {
           'bower_components/jquery.ui/ui/jquery.ui.sortable.js',
           'bower_components/jquery.ui/ui/jquery.autoresize.js',
           'bower_components/jquery-timer/jquery.timer.js',
+          'bower_components/qtip2/jquery.qtip.js',
+          'bower_components/jquery-slugify/dist/slugify.js',
+          'bower_components/typeahead.js/dist/typeahead.jquery.js',
+          'bower_components/bootstrap/js/dropdown.js',
+          'bower_components/bootstrap/js/modal.js',
           'bower_components/mousetrap/mousetrap.js',
           'static/default/js/mousetrap.global.bind.js',
           'bower_components/listjs/dist/list.js',
           'bower_components/purl/purl.js',
-          'bower_components/qtip2/jquery.qtip.js',
           'bower_components/favico.js/favico.js',
-          'bower_components/select2/select2.js',
-          'bower_components/typeahead.js/dist/typeahead.jquery.js'
+          'bower_components/select2/select2.js'
         ],
         dest: 'static/default/js/libraries.min.js'
       },
@@ -67,7 +66,12 @@ module.exports = function(grunt) {
         }
       },
       css: {
-        files: ['static/default/less/default.less'],
+        files: [
+          'static/default/less/config.less',
+          'static/default/less/default.less',
+          'static/default/less/app/*.less',
+          'static/default/less/libraries/*.less'
+        ],
         tasks: ['less:style'],
         options: {
           livereload: true,
