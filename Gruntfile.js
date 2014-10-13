@@ -20,7 +20,7 @@ module.exports = function(grunt) {
           'bower_components/jquery.ui/ui/jquery.ui.draggable.js',
           'bower_components/jquery.ui/ui/jquery.ui.droppable.js',
           'bower_components/jquery.ui/ui/jquery.ui.sortable.js',
-          'bower_components/jquery.ui/ui/jquery.autoresize.js',
+          'bower_components/jquery-autosize/jquery.autosize.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/qtip2/jquery.qtip.js',
           'bower_components/jquery-slugify/dist/slugify.js',
