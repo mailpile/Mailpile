@@ -23,6 +23,8 @@
 		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 14px;
 		line-height: 14px;
+    padding-left: 0px;
+    padding-right: 0px;
 	}
 
   #pile-results.comfy  td { padding-top: 10px; padding-bottom: 10px; }
@@ -33,9 +35,8 @@
 	#pile-results tr.in_new a { font-weight: bold;}
   #pile-results td span.pile-message-tag { font-weight: bold; margin-right: 5px; cursor: pointer; }
 
-  #pile-results td.draggable       { width: 12px; cursor: move; }
-  #pile-results td.draggable:hover { cursor: move; }
-
+  #pile-results        td.draggable       { width: 12px; cursor: move; }
+  #pile-results        td.draggable:hover { cursor: move; }
   #pile-results        td.avatar       { width: 44px; text-align: center; }
   #pile-results        td.avatar a     { display: block; text-align: center; }
   #pile-results        td.avatar a img { display: inline-block; border-radius: 2px; }
@@ -65,6 +66,16 @@
     font-size: 11px;
     font-weight: bold;
     line-height: 11px;
+  }
+
+  #pile-results.cozy td.from span.conversation-count {
+    padding: 3px 6px;
+  }
+
+  #pile-results.snug td.from span.conversation-count {
+    padding: 0px;
+    background: transparent;
+    color: @gray;
   }
 
 	#pile-results td.from .icon-reply,
