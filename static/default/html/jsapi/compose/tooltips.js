@@ -128,8 +128,9 @@ Mailpile.tooltip_compose_contact_details = function() {
 
         var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
         if (contact_data) {
-          return _.template($('#tooltip-contact-details').html(), contact_data);
-        }        
+          var contact_template = _.template($('#tooltip-contact-details').html());
+          return contact_template(contact_data);
+        }
       }
     },
     style: {

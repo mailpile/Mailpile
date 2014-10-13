@@ -7,6 +7,7 @@ var HomeView = Backbone.View.extend({
     return this;
   },
   show: function() {
-    this.$el.html(_.template($("#template-setup-home").html()));
+    var home_template = _.template($("#template-setup-home").html());
+    this.$el.html(home_template);
   }
 });

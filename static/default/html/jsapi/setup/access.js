@@ -16,6 +16,7 @@ var AccessView = Backbone.View.extend({
     "click #btn-setup-advanced-access": "showAccess",
   },
   show: function() {
-    this.$el.html(_.template($("#template-setup-access").html()));
+    var access_template = _.template($("#template-setup-access").html());
+    this.$el.html(access_tempalte());
   }
 });
