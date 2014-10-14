@@ -1,0 +1,4 @@
+#!/bin/bash
+cat >/tmp/gpg-input.$$
+/usr/bin/gpg "$@" </tmp/gpg-input.$$ >/tmp/gpg-output.$$
+cat /tmp/gpg-output.$$

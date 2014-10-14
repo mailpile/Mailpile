@@ -286,12 +286,15 @@ def test_composition():
                    ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
                    ['thisisauniquestring'] + MY_FROM.split(),
+                   ['thisisauniquestring',
+                    'in:mp_sig-verified', 'in:mp_enc-none', 'in:sent'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
     # This is the base64 encoding of thisisauniquestring
     assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('Encryption key for' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
