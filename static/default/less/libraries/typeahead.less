@@ -11,7 +11,7 @@
   border-left: 1px solid @gray;
   border-bottom-left-radius: (@base-border-radius * 2);
   border-bottom-right-radius: (@base-border-radius * 2);
-  box-shadow: 1px 1px 2px @grayMid;
+  box-shadow: 1px 1px 2px @grayMid; 
 }
 
 .tt-suggestions {
@@ -19,7 +19,17 @@
 }
 
 .tt-suggestion {
-  font-size: 18px;
+  font-size: 14px;
+}
+
+.tt-suggestion .separator {
+  border-top: 1px solid @grayMid;
+}
+
+.tt-suggestion .avatar {
+  width: 24px;
+  border-radius: @base-border-radius;
+  margin-right: 5px;
 }
 
 .tt-suggestion p {
