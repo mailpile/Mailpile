@@ -215,7 +215,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
                 msg,
                 events)
 
-    attach_pgp_pubkey = False
+    attach_pgp_pubkey = 'no'
     attached_pubkey = False
     crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
@@ -276,7 +276,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
                                                    config.prefs.openpgp_header)
 
     # Do we want to attach a key to outgoing messages?
-    if str(attach_pgp_pubkey).lower() in ['yes', 'true']:
+    if attach_pgp_pubkey in ['yes', 'true']:
         g = GnuPG(config)
         keys = g.address_to_keys(ExtractEmails(sender)[0])
         for fp, key in keys.iteritems():
@@ -296,6 +296,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             att = MIMEBase('application', 'pgp-keys')
             att.set_payload(data)
             encoders.encode_base64(att)
+            del att['MIME-Version']
             att.add_header('Content-Id', MakeContentID())
             att.add_header('Content-Disposition', 'attachment',
                            filename=filename)
