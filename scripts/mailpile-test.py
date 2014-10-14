@@ -246,7 +246,7 @@ def test_composition():
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
     msg_data['body'] = [
-        ('Hello world: thisisauniquestring :) '+ICELANDIC)
+        ('Hello world... thisisauniquestring :) '+ICELANDIC)
     ]
     mp.message_update_send(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
@@ -274,8 +274,10 @@ def test_composition():
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
+    assert('encryption: ' not in contents(mailpile_sent).lower())
+    assert('attach-pgp-pubkey: ' not in contents(mailpile_sent).lower())
+    assert('x-mailpile-' not in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
     assert('secret@test.com' in grep('X-Args', mailpile_sent))
@@ -288,8 +290,7 @@ def test_composition():
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
@@ -299,8 +300,7 @@ def test_composition():
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
