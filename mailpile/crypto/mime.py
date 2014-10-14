@@ -31,6 +31,12 @@ def Normalize(payload):
     return text
 
 
+def MessageAsString(part, unixfrom=False):
+    buf = StringIO.StringIO()
+    Generator(buf).flatten(part, unixfrom=unixfrom)
+    return Normalize(buf.getvalue()).replace('--\r\n--', '--\r\n\r\n--')
+
+
 class EncryptionFailureError(ValueError):
     pass
 
@@ -266,9 +272,7 @@ class MimeWrapper:
         return people
 
     def flatten(self, msg, unixfrom=False):
-        buf = StringIO.StringIO()
-        Generator(buf).flatten(msg, unixfrom=unixfrom, linesep='\r\n')
-        return buf.getvalue()
+        return MessageAsString(msg, unixfrom=unixfrom)
 
     def get_only_text_part(self, msg):
         count = 0
@@ -322,7 +326,7 @@ class MimeSigningWrapper(MimeWrapper):
 
         if prefer_inline is not False:
             message_text = Normalize(prefer_inline.get_payload(None, True)
-                                     .strip() + '\n\n')
+                                     .strip() + '\r\n\r\n')
             status, sig = self.crypto().sign(message_text,
                                              fromkey=from_key,
                                              clearsign=True,
@@ -336,7 +340,7 @@ class MimeSigningWrapper(MimeWrapper):
             MimeWrapper.wrap(self, msg)
             self.attach(msg)
             self.attach(self.sigblock)
-            message_text = Normalize(self.flatten(msg))
+            message_text = self.flatten(msg)
             status, sig = self.crypto().sign(message_text,
                                              fromkey=from_key, armor=True)
             if status == 0:
@@ -397,7 +401,7 @@ class MimeEncryptingWrapper(MimeWrapper):
             del msg['MIME-Version']
             if self.cleaner:
                 self.cleaner(msg)
-            message_text = Normalize(self.flatten(msg))
+            message_text = self.flatten(msg)
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)

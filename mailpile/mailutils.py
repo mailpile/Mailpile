@@ -31,7 +31,7 @@ from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
-from mailpile.crypto.mime import UnwrapMimeCrypto
+from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -177,12 +177,6 @@ def ExtractEmailAndName(string):
             .replace('(', '')
             .replace(')', '')).strip()
     return email, (name or email)
-
-
-def MessageAsString(part, unixfrom=False):
-    buf = StringIO.StringIO()
-    Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
-    return buf.getvalue().replace('--\r\n--', '--\r\n\r\n--')
 
 
 def CleanMessage(config, msg):
