@@ -192,7 +192,7 @@ def CleanMessage(config, msg):
 
         # Remove headers we don't want to expose
         if (lkey.startswith('x-mp-internal-') or
-                lkey in ('bcc', 'encryption')):
+                lkey in ('bcc', 'encryption', 'attach-pgp-pubkey')):
             replacements.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
@@ -221,6 +221,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
                 msg,
                 events)
 
+    attach_pgp_pubkey = False
+    attached_pubkey = False
     crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
 
@@ -232,6 +234,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             sender = sender or val
         elif lhdr == 'encryption':
             crypto_policy = val.lower()
+        elif lhdr == 'attach-pgp-pubkey':
+            attach_pgp_pubkey = val.lower()
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
             rcpts += ExtractEmails(val, strip_keys=False)
 
@@ -277,6 +281,35 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
+    # Do we want to attach a key to outgoing messages?
+    if str(attach_pgp_pubkey).lower() in ['yes', 'true']:
+        g = GnuPG(config)
+        keys = g.address_to_keys(ExtractEmails(sender)[0])
+        for fp, key in keys.iteritems():
+            if not any(key["capabilities_map"].values()):
+                continue
+            # We should never really hit this more than once. But if we do, it
+            # should still be fine.
+            keyid = key["keyid"]
+            data = g.get_pubkey(keyid)
+
+            try:
+                from_name = key["uids"][0]["name"]
+                filename = _('Encryption key for %s.asc') % from_name
+            except:
+                filename = _('My encryption key.asc')
+
+            att = MIMEBase('application', 'pgp-keys')
+            att.set_payload(data)
+            encoders.encode_base64(att)
+            att.add_header('Content-Id', MakeContentID())
+            att.add_header('Content-Disposition', 'attachment',
+                           filename=filename)
+            att.signature_info = SignatureInfo(parent=msg.signature_info)
+            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            msg.attach(att)
+            attached_pubkey = True
+
     # Should be 'openpgp', but there is no point in being precise
     if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
         wrapper = None
@@ -298,38 +331,9 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     elif crypto_policy and crypto_policy != 'none':
         raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
-    # Do we want to attach a key to outgoing messages?
-    if str(msg['Attach-PGP-Pubkey']).lower() in ['yes', 'true']:
-        g = GnuPG(config)
-        keys = g.address_to_keys(ExtractEmails(sender)[0])
-        for fp, key in keys.iteritems():
-            if not any(key["capabilities_map"].values()):
-                continue
-            # We should never really hit this more than once. But if we do, it
-            # should still be fine.
-            keyid = key["keyid"]
-            data = g.get_pubkey(keyid)
-
-            try:
-                from_name = key["uids"][0]["name"]
-                filename = _('%s\'s encryption key.asc') % from_name
-            except:
-                filename = _('My encryption key.asc')
-
-            att = MIMEBase('application', 'pgp-keys')
-            att.set_payload(data)
-            encoders.encode_base64(att)
-            att.add_header('Content-Id', MakeContentID())
-            att.add_header('Content-Disposition', 'attachment',
-                           filename=filename)
-            att.signature_info = SignatureInfo(parent=msg.signature_info)
-            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
-            msg.attach(att)
-            del(msg['Attach-PGP-Pubkey'])
-            msg['x-mp-internal-pubkeys-attached'] = "Yes"
-
-
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
+    if attached_pubkey:
+        msg['x-mp-internal-pubkeys-attached'] = "Yes"
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
