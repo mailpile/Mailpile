@@ -957,6 +957,10 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
                                      tokeys=tokeys, armor=True,
                                      sign=True, fromkey=from_key)
 
+    def _update_crypto_status(self, part):
+        part.signature_info.part_status = 'verified'
+        part.encryption_info.part_status = 'decrypted'
+
 
 class GnuPGExpectScript(threading.Thread):
     STARTUP = 'Startup'
