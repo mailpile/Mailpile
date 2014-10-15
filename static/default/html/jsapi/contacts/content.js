@@ -7,8 +7,8 @@ $(document).on('click', '.btn-activity-contact_add', function(e) {
   $(this).addClass('navigation-on');
 
   var modal_data = { name: '', address: '', extras: '' };
-  var modal_html = $("#modal-contact-add").html();
-  $('#modal-full').html(_.template(modal_html, modal_data));
+  var modal_template = _.template($("#modal-contact-add").html());
+  $('#modal-full').html(modal_template(modal_data));
   $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
 });
 

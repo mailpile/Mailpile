@@ -7,7 +7,8 @@ $(document).ready(function() {
       text: function(event, api) {
         var tooltip_data = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
         tooltip_data['mid'] = $(this).data('mid');
-          return  _.template($('#tooltip-pile-tag-details').html(), tooltip_data);
+        var tooltip_template = _.template($('#tooltip-pile-tag-details').html());
+        return tooltip_template(tooltip_data);
       }
     },
     style: {

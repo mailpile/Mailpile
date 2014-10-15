@@ -86,7 +86,8 @@ var SecurityView = Backbone.View.extend({
       });
 
       var settings_data = _.extend({security_level: level}, result.result.prefs);
-      $('#setup').html(_.template($("#template-setup-security").html(), settings_data));
+      var security_template = _.template($("#template-setup-security").html());
+      $('#setup').html(security_template(settings_data));
     });
   },
   showPassphrase: function(e) {

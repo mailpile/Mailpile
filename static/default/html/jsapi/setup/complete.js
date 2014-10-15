@@ -159,12 +159,14 @@ var CompleteView = Backbone.View.extend({
     "click #setup-complete-tour-start": "showTour"
   },
   show: function() {
+    var complete_template = _.template($('#template-setup-sources-complete').html());
+
     if (!StateModel.attributes.complete) {
       Mailpile.API.settings_set_post({ 'web.setup_complete': true }, function(result) {
-        $('#setup').html(_.template($('#template-setup-sources-complete').html(), {}));
+        $('#setup').html(complete_template({}));
       });
     } else {
-      $('#setup').html(_.template($('#template-setup-sources-complete').html(), {}));
+      $('#setup').html(complete_template({}));
     }
   },
   showTour: function(e) {

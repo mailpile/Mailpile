@@ -3,6 +3,7 @@ import hashlib
 import smtplib
 import socket
 import sys
+import time
 
 import mailpile.util
 from mailpile.util import *
@@ -200,12 +201,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
         frm_vcard = session.config.vcards.get_vcard(frm)
-
-        update_to_vcards = False
-        if msg and msg["x-mp-internal-pubkeys-attached"]:
-            update_to_vcards = True
-            to_vcards = [session.config.vcards.get_vcard(x) for x in to]
-            del(msg["x-mp-internal-pubkeys-attached"])
+        update_to_vcards = msg and msg["x-mp-internal-pubkeys-attached"]
 
         if 'sendmail' in session.config.sys.debug:
             sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n'
@@ -350,11 +346,6 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     total
                     ) % total, events)
 
-            if update_to_vcards:
-                now = datetime.datetime.now().strftime("%s")
-                for vc in to_vcards:
-                    vc.gpgshared = now
-
             for ev in events:
                 for rcpt in to:
                     vcard = session.config.vcards.get_vcard(rcpt)
@@ -362,6 +353,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                         vcard.record_history('send', time.time(), msg_mid)
                         if frm_vcard:
                             vcard.prefer_sender(rcpt, frm_vcard)
+                        if update_to_vcards:
+                            vcard.gpgshared = int(time.time())
                         vcard.save()
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total

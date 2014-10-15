@@ -21,6 +21,8 @@ var SetupRouter = Backbone.Router.extend({
     "sending/:id"      : "sendingEdit",
 		"advanced"         : "advanced",
 		"security"         : "security",
+//    "keys"             : "keys",
+//    "passphrase"       : "passphrase",
 		"backups"          : "backups",
 		"access"           : "access",
     "complete"         : "complete",
@@ -88,6 +90,14 @@ var SetupRouter = Backbone.Router.extend({
   security: function() {
     SecurityView.show();
   },
+/*
+  keys: function() {
+    KeysView.show();
+  },
+  passphrase: function() {
+    PassphraseView.show();
+  },
+*/
   backups: function() {
     BackupsView.show();
   },

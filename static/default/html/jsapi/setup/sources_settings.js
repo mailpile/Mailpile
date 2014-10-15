@@ -19,7 +19,8 @@ var SourcesSettingsView = Backbone.View.extend({
     var source_id = Math.random().toString(36).substring(2);
     var NewSource = new SourceModel();
     NewSource.set({ _section: source_id, id: source_id, });
-    this.$el.html(_.template($('#template-setup-sources-settings').html(), NewSource.attributes));
+    var source_template = _.template($('#template-setup-sources-settings').html());
+    this.$el.html(source_template(NewSource.attributes));
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
@@ -28,7 +29,8 @@ var SourcesSettingsView = Backbone.View.extend({
 
       var source = result.result['sources.'+id];
       source = _.extend(source, {id: id, action: '{{_("Edit")}}'});
-      $('#setup').html(_.template($('#template-setup-sources-settings').html(), source));
+      var source_template = _.template($('#template-setup-sources-settings').html());
+      $('#setup').html(source_template(source));
     });
   },
   actionSelected: function(e) {
