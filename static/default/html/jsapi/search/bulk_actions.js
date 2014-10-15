@@ -55,11 +55,16 @@ Mailpile.bulk_action_deselect_target = function() {
 
 Mailpile.bulk_action_toggle_target = function() {
   var target = this.search_target;
-  var mid = $('#pile-results tr').eq(target).data('mid');
-  if ($('#pile-message-' + mid).find('input[type=checkbox]').is(':checked')) {
-    Mailpile.bulk_action_deselect_target();
+  if (target === 'none') {
+    var mid = $('#pile-results tr').eq(0).data('mid');
+    Mailpile.pile_action_select($('#pile-message-' + mid));
   } else {
-    Mailpile.bulk_action_select_target();
+    var mid = $('#pile-results tr').eq(target).data('mid');
+    if ($('#pile-message-' + mid).find('input[type=checkbox]').is(':checked')) {
+      Mailpile.bulk_action_deselect_target();
+    } else {
+      Mailpile.bulk_action_select_target();
+    }
   }
   return true;
 };
