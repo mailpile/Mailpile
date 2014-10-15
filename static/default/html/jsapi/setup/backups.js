@@ -14,6 +14,7 @@ var BackupsView = Backbone.View.extend({
   },
   events: {},
   show: function() {
-    this.$el.html(_.template($("#template-setup-backups").html()));
+    var backups_template = _.template($("#template-setup-backups").html());
+    this.$el.html(backups_template);
   }
 });

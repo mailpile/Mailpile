@@ -107,7 +107,8 @@ var SourcesView = Backbone.View.extend({
     "click .setup-source-disable"      : "processDisable"
   },
   show: function() {
-    this.$el.html(_.template($("#template-setup-sources").html()));
+    var sources_template = _.template($("#template-setup-sources").html());
+    this.$el.html(sources_template());
     this.reload();
     return this;
   },
@@ -145,7 +146,7 @@ var SourcesView = Backbone.View.extend({
 
           // Render HTML Items
           var existing = $('#setup-source-' + key);
-          var new_elem = _.template($('#template-setup-sources-item').html(), source.attributes);
+          var new_element_template = _.template($('#template-setup-sources-item').html());
           if (existing.length) {
               // FIXME: We leave the DOM unchanged, so this does not remove
               //        elements that may have been added elsewhere.
@@ -156,7 +157,7 @@ var SourcesView = Backbone.View.extend({
               // existing.replaceWith(new_elem);
           }
           else {
-              $('#setup-sources-list-items').append(new_elem);
+              $('#setup-sources-list-items').append(new_element_template(source.attributes));
           }
         });
 

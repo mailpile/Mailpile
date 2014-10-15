@@ -5,22 +5,18 @@
   <link rel="stylesheet" href="{{ config.sys.subdirectory }}/jsapi/as.css" />
   {% endif %}
 
-  <!--[if lt IE 9]>
-    <script src="{{ config.sys.subdirectory }}/static/js/html5.js"></script>
-  <![endif]-->
   <!-- Apple Icons -->
-  <link rel="apple-touch-icon" sizes="57x57" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="57x57" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon-72x72.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="{{ config.sys.subdirectory }}/static/img/apple-touch-icon-114x114.png" />
 
   <!-- Favicon -->
   <link rel="shortcut icon" id="basic-favicon" href="{{ config.sys.subdirectory }}/static/img/favicon.png" />
   <link rel="icon" id="basic-favicon" type="image/png" href="{{ config.sys.subdirectory }}/static/img/favicon.png" />
 
-
-  <script src="{{ config.sys.subdirectory }}/static/js/libraries/jquery.min.js"></script>
-  <script src="{{ config.sys.subdirectory }}/static/js/libraries-min.js"></script>
-
+  <!-- JS Global Libraries -->
+  <script src="{{ config.sys.subdirectory }}/static/js/jquery.min.js"></script>
+  <script src="{{ config.sys.subdirectory }}/static/js/libraries.min.js"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
   <script src="{{ config.sys.subdirectory }}/api/0/jsapi/as.js"></script>
   {% endif %}

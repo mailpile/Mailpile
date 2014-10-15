@@ -63,7 +63,8 @@ var SendingView = Backbone.View.extend({
   },
   show: function() {
 
-    this.$el.html(_.template($("#template-setup-sending").html()));
+    var sending_template = _.template($("#template-setup-sending").html());
+    this.$el.html(sending_template());
 
     // Load Data & Add to Collection
     Mailpile.API.setup_profiles_get({}, function(result) {
@@ -85,7 +86,8 @@ var SendingView = Backbone.View.extend({
         if (route.name && route.host) {
           var sending = new SendingModel(_.extend({id: route_id, action: 'Edit', used_by: profile_routes[route_id] }, route));
           SourcesCollection.add(sending);
-          $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
+          var sending_item_template = _.template($('#template-setup-sending-item').html());
+          $('#setup-sending-list-items').append(sending_item_template(sending.attributes));
         }
       });
     });
@@ -93,15 +95,16 @@ var SendingView = Backbone.View.extend({
   showAdd: function() {
     $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     this.model.set({id: Math.random().toString(36).substring(2) })
-    this.$el.html(_.template($("#template-setup-sending-settings").html(), this.model.attributes));
+    var sending_settings_template = _.template($("#template-setup-sending-settings").html());
+    this.$el.html(sending_settings_template(this.model.attributes));
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
       var sending = result.result['routes.'+id];
       sending_data = _.extend(sending, { id: id, action: 'Edit', complete: 'sending' });
-      console.log(sending);
-      $('#setup').html(_.template($('#template-setup-sending-settings').html(), sending_data));
+      var sending_template = _.template($('#template-setup-sending-settings').html());
+      $('#setup').html(sending_template(sending_data));
     });
   },
   actionChangePort: function(e) {

@@ -133,7 +133,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
     // Add Tags to UI
     if (result.status === 'success') {
 
-      var tag_link_template = $('#template-search-tags-link').html();
+      var tag_link_template = _.template($('#template-search-tags-link').html());
 
       // Affected MID's
       _.each(result.result.msg_ids, function(mid, key) {
@@ -147,7 +147,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
             if ($('#pile-message-tag-' + tid + '-' + mid).length < 1) {
               var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
               tag['mid'] = mid;
-              $item.append(_.template(tag_link_template, tag));
+              $item.append(tag_link_template(tag));
             }
           });
         }

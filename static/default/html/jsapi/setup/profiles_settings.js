@@ -21,7 +21,8 @@ var ProfilesSettingsView = Backbone.View.extend({
     var new_model = this.model.defaults;
     Mailpile.API.setup_profiles_get({}, function(result) {
       var add_data = _.extend(new_model, {routes: result.result.routes, provider: ''});
-      $('#setup').html(_.template($('#template-setup-profiles-add').html(), add_data));
+      var profile_template = _.template($('#template-setup-profiles-add').html());
+      $('#setup').html(profile_template(add_data));
       TooltipsView.showHelp();
     });
   },
@@ -39,7 +40,8 @@ var ProfilesSettingsView = Backbone.View.extend({
         var edit_data = _.extend(profile, {routes: result.result.routes});
 
         // Render
-        $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
+        var profile_template = _.template($('#template-setup-profiles-add').html());
+        $('#setup').html(profile_template(edit_data));
         TooltipsView.showHelp();
 
         // Show Validation Feedback
@@ -180,8 +182,8 @@ var ProfilesSettingsView = Backbone.View.extend({
       // Show Sending Form
       $('#form-setup-profile-settings').hide();
       $('#setup-profiles-route-editing').removeClass('hide').find('span.name').html($('#input-setup-profile-name').val());
-      var sending_html = _.template($("#template-setup-sending-settings").html(), SendingView.model.attributes);
-      $('#setup-profiles-route-settings').html(sending_html).removeClass('hide');
+      var sending_template = _.template($("#template-setup-sending-settings").html());
+      $('#setup-profiles-route-settings').html(sending_template(SendingView.model.attributes)).removeClass('hide');
 
     } else if (route_id === '') {
       $('#input-setup-profile-route_id').removeClass('half-bottom');

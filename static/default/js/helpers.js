@@ -1,10 +1,16 @@
-/* Helpers.js 
-    - a collection of random functions and things
+/* Mailpile - Helpers
+   - a collection of random functions and things
 */
 
 String.prototype.startsWith = function(str) {
   return this.indexOf(str) === 0;
 };
+
+
+String.prototype.contains = function(it) { 
+  return this.indexOf(it) !== -1;
+};
+
 
 Number.prototype.pad = function(size) {
 	// Unfortunate padding function....
@@ -14,10 +20,6 @@ Number.prototype.pad = function(size) {
 	var s = String(this);
 	while (s.length < size) { s = "0" + s; }
 	return s;
-};
-
-String.prototype.contains = function(it) { 
-  return this.indexOf(it) !== -1;
 };
 
 
@@ -60,19 +62,21 @@ function abbrNum(number, decPlaces) {
 }
 
 
-$.fn.serializeObject = function()
-{
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
-        }
-    });
-    return o;
+$.fn.serializeObject = function() {
+
+  var o = {};
+  var a = this.serializeArray();
+
+  $.each(a, function() {
+    if (o[this.name] !== undefined) {
+      if (!o[this.name].push) {
+        o[this.name] = [o[this.name]];
+      }
+      o[this.name].push(this.value || '');
+    } else {
+      o[this.name] = this.value || '';
+    }
+  });
+
+  return o;
 };

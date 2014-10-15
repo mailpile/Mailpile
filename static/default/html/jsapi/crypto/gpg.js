@@ -27,8 +27,9 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
 
     // Show View
     var item_data = _.extend({avatar: avatar, uid: uid, address: query}, key);
-    items_html += _.template($('#template-searchkey-result-item').html(), item_data);
- 
+    var item_template = _.template($('#template-searchkey-result-item').html());
+    items_html += item_template(item_data);
+
     // Set Lookup State (data model)
     var key_data = {fingerprints: key.fingerprint, address: query, origins: key.origins };
     Mailpile.crypto_keylookup.push(key_data);
@@ -62,7 +63,8 @@ Mailpile.find_encryption_keys = function(query) {
     // Running Search
     if (data.runningsearch) {
       var searching_data = { query: query };
-      var searching_html = _.template($("#template-searchkey-running").html(), searching_data);
+      var searching_template = _.template($("#template-searchkey-running").html());
+      var searching_html = searching_template(searching_data);
       $('#modal-full').find('.modal-body').html(searching_html);
     }
     else {

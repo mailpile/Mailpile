@@ -67,10 +67,12 @@ $(document).on('click', '.message-action-unthread', function() {
     data     : { mid: mid },
     success  : function(response) {
       if (response.status === 'success') {
-        var notification_data = { url: Mailpile.urls.message_sent + mid + '/' };
+        var notification_data     = { url: Mailpile.urls.message_sent + mid + '/' };
+        var notification_template = _.template($('#template-thread-notification-unthreaded').html());
+        var notification_html     = notification_template(notification_data);
         $('#message-' + mid).removeClass('thread-snippet thread-message')
                             .addClass('thread-notification')
-                            .html(_.template($('#template-thread-notification-unthreaded').html(), notification_data));
+                            .html(notification_html);
       } else {
         Mailpile.notification(response);
       }
@@ -91,21 +93,19 @@ $(document).on('click', '.message-action-trash', function() {
 /* Message - Add Contact */
 $(document).on('click', '.message-action-add-contact', function(e) {
 
+  // FIXME: Does not work from Dropdown
   e.preventDefault();
   var mid = $(this).parent().parent().data('mid');
-  var name = $(this).data('name');
-  var address = $(this).data('address');
-  var signature = 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html();
+  var modal_data = {
+    name: $(this).data('name'),
+    address: $(this).data('address'),
+    signature: 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html(),
+    mid: mid
+  };
 
-  var modal_html = $("#modal-contact-add").html();
-  $('#modal-full').html(_.template(modal_html, {}));
+  var modal_template = _.template($("#modal-contact-add").html());
+  $('#modal-full').html(modal_template(modal_data));
   $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
-
-  // Add Values
-  $('.contact-add-name').val(name);
-  $('.contact-add-email').val(address);
-  $('.contact-add-signature').html(signature);
-  $('.contact-add-mid').val(mid);
 });
 
 
@@ -144,14 +144,15 @@ $(document).on('click', '.message-action-import-key', function() {
 $(document).on('click', '.message-crypto-action', function() {
   Mailpile.API.crypto_gpg_keylist_secret_get({}, function(result) {
     var mid = $(this).data('mid');
-    var modal_html = $("#modal-send-public-key").html();
     var modal_data = { name: 'User Name', address: 'name@address.org' };
-    $('#modal-full').html(_.template(modal_html, modal_data));
+    var modal_template = _.template($("#modal-send-public-key").html());
+    $('#modal-full').html(modal_template(modal_data));
 
     var key_html = '';
 
     _.each(result.result, function(key) {
-      key_html += _.template($('#template-modal-private-key-item').html(), key);
+      var key_template = _.template($('#template-modal-private-key-item').html());
+      key_html +=  key_template(key);
     });
 
     $('#crypto-private-key-list').html(key_html);
@@ -180,10 +181,10 @@ $(document).on('click', '.message-crypto-investigate', function() {
     // this is tricky as searching multiple calls to keyservers
     // can have much latency and slowness
     Mailpile.API.crypto_gpg_searchkey_get(missing_keys[0], function(data) {
-      var modal_html = $("#modal-search-keyservers").html();
-      $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
+      var modal_template = _.template($("#modal-search-keyservers").html());
+      $('#modal-full').html(modal_template({ keys: '<li>Key of User #1</li>' }));
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
-    });     
+    });
   }
 });
 

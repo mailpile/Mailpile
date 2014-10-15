@@ -83,7 +83,8 @@ var ProfilesView = Backbone.View.extend({
   
           var profile = new ProfileModel(_.extend({id: key, action: 'Edit', action_i18n: '{{_("Edit")}}'}, val));
           ProfilesCollection.add(profile);
-          $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
+          var profile_template = _.template($('#template-setup-profiles-item').html());
+          $('#setup-profiles-list-items').append(profile_template(profile.attributes));
         });
   
         // Hide Delete (if only 1 profile)

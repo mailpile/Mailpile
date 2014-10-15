@@ -38,7 +38,8 @@ var SourcesConfigureView = Backbone.View.extend({
 
         // Render HTML
         var configure = _.extend(source, { id: id, tags: result.result.tags, special_tags: special_tags });
-        $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
+        var configure_template = _.template($('#template-setup-sources-configure').html());
+        $('#setup').html(configure_template(configure));
 
         // Select All (if all)
         if (mailbox_count === checked_count) {

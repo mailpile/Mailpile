@@ -21,5 +21,6 @@ static/default/plugins/
 testing/tmp
 testing/gpg-keyring/random_seed
 ghostdriver.log
-static/default/bower_components/
 cover/
+bower_components/
+node_modules/

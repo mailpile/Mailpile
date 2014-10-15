@@ -98,7 +98,7 @@ Mailpile.render_modal_tags = function() {
     // Open Modal with selection options
     Mailpile.API.tags_get({}, function(data) {
 
-      var template_html = $('#template-modal-tag-picker-item').html();
+      var tag_template = _.template($('#template-modal-tag-picker-item').html());
       var priority_html = '';
       var tags_html     = '';
       var archive_html  = '';
@@ -120,20 +120,20 @@ Mailpile.render_modal_tags = function() {
       _.each(data.result.tags, function(tag, key) {
         if (tag.display === 'priority' && tag.type === 'tag') {
           priority_data  = _.extend(tag, { selected: selected_tids });
-          priority_html += _.template(template_html, priority_data);
+          priority_html += tag_template(priority_data);
         }
         else if (tag.display === 'tag' && tag.type === 'tag') {
           tag_data   = _.extend(tag, { selected: selected_tids });
-          tags_html += _.template($('#template-modal-tag-picker-item').html(), tag_data);
+          tags_html += tag_template(tag_data);
         }
         else if (tag.display === 'archive' && tag.type === 'tag') {
           archive_data  = _.extend(tag, { selected: selected_tids });
-          archive_html += _.template($('#template-modal-tag-picker-item').html(), archive_data);
+          archive_html += tag_template(archive_data);
         }
       });
 
-      var modal_html = $("#modal-tag-picker").html();
-      $('#modal-full').html(_.template(modal_html, { priority: priority_html, tags: tags_html, archive: archive_html }));
+      var modal_template = _.template($("#modal-tag-picker").html());
+      $('#modal-full').html(modal_template({ priority: priority_html, tags: tags_html, archive: archive_html }));
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
     });
  
