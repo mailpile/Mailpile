@@ -55,10 +55,17 @@ Mailpile.bulk_action_deselect_target = function() {
 
 Mailpile.bulk_action_toggle_target = function() {
   var target = this.search_target;
+  // No Target
   if (target === 'none') {
     var mid = $('#pile-results tr').eq(0).data('mid');
-    Mailpile.pile_action_select($('#pile-message-' + mid));
-  } else {
+    if ($('#pile-message-' + mid).find('input[type=checkbox]').is(':checked')) {
+      Mailpile.pile_action_unselect($('#pile-message-' + mid));
+    } else {
+      Mailpile.pile_action_select($('#pile-message-' + mid));
+    }
+  }
+  // Has Target
+  else {
     var mid = $('#pile-results tr').eq(target).data('mid');
     if ($('#pile-message-' + mid).find('input[type=checkbox]').is(':checked')) {
       Mailpile.bulk_action_deselect_target();
