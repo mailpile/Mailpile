@@ -165,15 +165,20 @@ for size in (16, 50, 100, 200, 400, 800, 1600):
 
 er = EncryptedRecordStore('test.aes', 'this is my secret key', 740)
 t0 = time.time()
-for l in range(0, 100 * 1024 + 4321):
+count = 100 * 1024 + 4321
+for l in range(0, count):
     er.save_record(l % 1024, 'bjarni is a happy camper with plenty of stuff '
                              'we must pad this with gibberish and make it '
                              'a fair bit longer, so it makes a good test '
                              'to say about this and that and the other')
-print '100k record writes in %.2f' % (time.time() - t0)
+done = time.time()
+print ('100k record writes in %.2f (%.8f s/op)'
+       % (done - t0, (done - t0) / count))
 
 t0 = time.time()
-for l in range(0, 100*1024):
+for l in range(0, count):
     er.load_record(l % 1024)
-print '100k record reads in %.2f' % (time.time() - t0)
+done = time.time()
+print ('100k record reads in %.2f (%.8f s/op)'
+       % (done - t0, (done - t0) / count))
 er.close()
