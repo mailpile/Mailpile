@@ -67,8 +67,13 @@ Mailpile.activities.render_typeahead = function() {
 
   // List of basic suggestions for search helpers
   var helpers = [
-    { value: 'dates:', helper: '2014-10-13' },
+    { value: 'dates:', helper: '2011-12..2012-04-15' },
+    { value: 'date:', helper: 'date:2013-8-3 +date:2013-9-10' },
+    { value: 'year:', helper: '2013' },
+    { value: 'month:', helper: '8' },
     { value: 'subject:', helper: 'any normal words' },
+    { value: 'att:', helper: 'jpg' },
+    { value: 'has:', helper: 'attachment' },
     { value: 'contacts: ', helper: 'name@email.com' },
     { value: 'to:', helper: 'name@email.com' },
     { value: 'keys:', helper: 'name@email.com / keyid' }
