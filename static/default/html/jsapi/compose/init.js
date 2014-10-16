@@ -1,8 +1,6 @@
-/* Compose - DOM ready */
+/* Compose - Create new instance of composer */
 Mailpile.compose_init = function(mid) {
 
-  console.log('running init for composer');
-  
   // Reset tabindex for To: field
   $('#search-query').attr('tabindex', '-1');
 
@@ -11,30 +9,30 @@ Mailpile.compose_init = function(mid) {
   Mailpile.compose_load_crypto_states();
 
   // Instantiate select2
-  $('.compose-address-field').each(function(key, elem) {
-    Mailpile.compose_address_field($(elem).attr('id'));
-  });
+  Mailpile.compose_address_field('compose-to-' + mid);
+  // FIXME: move to click events
+  Mailpile.compose_address_field('compose-cc-' + mid);
+  Mailpile.compose_address_field('compose-bcc-' + mid);
 
-  // Save Text Composing Objects
-  $('.compose-text').each(function(key, elem) {
-      Mailpile.messages_composing[$(elem).attr('id')] = $(elem).val()
-  });
+
+  // Save Text Composing Objects (move to data model)
+  Mailpile.messages_composing['compose-text-' + mid] = $('compose-text-' + mid).val();
+
 
   // Run Autosave
+  // FIXME: this should be moved to the global event loop
   Mailpile.compose_autosave_timer.play();
   Mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
 
+
   // Initialize Attachments
-  // FIXME: needs dynamic support for multi composers on a page
-  $('.compose-attachments').each(function(key, elem) {
-    var mid = $(elem).data('mid');
-    console.log('js uploader: ' + mid);
-    uploader({
-      browse_button: 'compose-attachment-pick-' + mid,
-      container: 'compose-attachments-' + mid,
-      mid: mid
-    });
+  // FIXME: needs to be bound to unique ID that can be destroyed
+  uploader({
+    browse_button: 'compose-attachment-pick-' + mid,
+    container: 'compose-attachments-' + mid,
+    mid: mid
   });
+
 
   // Show Crypto Tooltips
   Mailpile.tooltip_compose_crypto_signature();
