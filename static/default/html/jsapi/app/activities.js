@@ -69,8 +69,7 @@ Mailpile.activities.render_typeahead = function() {
     { term: 'att:', helper: 'jpg' },
     { term: 'has:', helper: 'attachment' },
     { term: 'contacts: ', helper: 'name@email.com' },
-    { term: 'to:', helper: 'name@email.com' },
-    { term: 'keys:', helper: 'name@email.com / keyid' }
+    { term: 'to:', helper: 'name@email.com' }
   ];
 
   // Create Typeahead
@@ -105,7 +104,7 @@ Mailpile.activities.render_typeahead = function() {
     }
   },{
     name: 'people',
-    displayKey: function(value) { 
+    displayKey: function(value) {
       return value.term + value.address;
     },
     source: peopleMatcher(Mailpile.instance.addresses),
@@ -115,6 +114,16 @@ Mailpile.activities.render_typeahead = function() {
       suggestion: function(data) {
         if (data.photo === undefined) { data.photo = '/static/img/avatar-default.png'; }
         var template = _.template('<div class="tt-suggestion"><p><img class="avatar" src="<%= photo %>"> <%= term %> <%= fn %></p></div>');
+        return template(data);
+      }
+    }
+  },{
+    name: 'keys',
+    displayKey: 'term',
+    source: baseMatcher([{ term: 'keys: team@mailpile.is' },{ term: 'keys: 707775F9' }]),
+    templates: {
+      suggestion: function(data) {
+        var template = _.template('<div class="tt-suggestion"><p><span class="icon-key"></span> <%= term %></p></div>');
         return template(data);
       }
     }
