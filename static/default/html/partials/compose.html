@@ -173,3 +173,9 @@
   <input id="compose-signature" type="hidden" value="">
   <input id="compose-encryption" type="hidden" value="">
 </form>
+<script>
+$(document).ready(function() {
+  console.log('yo dawg');
+  Mailpile.compose_init('{{mid}}');
+});
+</script>

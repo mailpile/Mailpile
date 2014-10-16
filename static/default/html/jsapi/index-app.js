@@ -10,11 +10,13 @@
 {% include("jsapi/crypto/gpg.js") %}
 
 /* JS - Compose */
+{% include("jsapi/compose/init.js") %}
 {% include("jsapi/compose/crypto.js") %}
 {% include("jsapi/compose/autosave.js") %}
 {% include("jsapi/compose/attachments.js") %}
-{% include("jsapi/compose/content.js") %}
+{% include("jsapi/compose/recipients.js") %}
 {% include("jsapi/compose/tooltips.js") %}
+{% include("jsapi/compose/events.js") %}
 {% include("jsapi/compose/ui.js") %}
 
 /* JS - Contacts */
