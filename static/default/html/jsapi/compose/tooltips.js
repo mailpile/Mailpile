@@ -103,8 +103,6 @@ Mailpile.tooltip_compose_crypto_encryption = function() {
 };
 
 
-
-
 Mailpile.tooltip_compose_contact_details = function() {
   $('.select2-search-choice').qtip({
     content: {
@@ -161,13 +159,3 @@ Mailpile.tooltip_compose_contact_details = function() {
     }
   });
 };
-
-
-$(document).ready(function() {
-
-  // Show Crypto Tooltips
-  Mailpile.tooltip_compose_crypto_signature();
-  Mailpile.tooltip_compose_crypto_encryption();
-  Mailpile.tooltip_compose_contact_details();
-
-});

@@ -53,8 +53,8 @@ var uploader = function(settings) {
 		max_file_size : '50mb',
 		mime_types: [
 			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
-			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf"},
-			{title : "Image files", extensions : "jpg,gif,png,svg,psd,tiff,bmp"},
+			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods"},
+			{title : "Image files", extensions : "jpg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
 			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
 			{title : "Zip files", extensions : "zip,rar"},
 			{title : "Crypto files", extensions : "asc,pub,key"}
