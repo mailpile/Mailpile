@@ -17,7 +17,7 @@
 {% include("jsapi/compose/recipients.js") %}
 {% include("jsapi/compose/tooltips.js") %}
 {% include("jsapi/compose/events.js") %}
-{% include("jsapi/compose/ui.js") %}
+{% include("jsapi/compose/complate.js") %}
 
 /* JS - Contacts */
 {% include("jsapi/contacts/display_modes.js") %}
