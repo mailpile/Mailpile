@@ -1,3 +1,4 @@
+import cStringIO
 import email
 import lxml.html
 import re
@@ -701,7 +702,7 @@ class MailIndex:
 
     def _real_scan_one(self, session,
                        mailbox_idx, mbox, msg_mbox_idx,
-                       msg_ptr=None, last_date=None,
+                       msg_ptr=None, msg_data=None, last_date=None,
                        process_new=None, apply_tags=None, stop_after=None,
                        editable=False, event=None, progress=None):
         added = updated = 0
@@ -714,7 +715,10 @@ class MailIndex:
             session.ui.debug('Reading message %s/%s'
                              % (mailbox_idx, msg_mbox_idx))
         try:
-            msg_fd = mbox.get_file(msg_mbox_idx)
+            if msg_data:
+                msg_fd = cStringIO.StringIO(msg_data)
+            else:
+                msg_fd = mbox.get_file(msg_mbox_idx)
             msg = ParseMessage(msg_fd,
                                pgpmime=session.config.prefs.index_encrypted,
                                config=session.config)

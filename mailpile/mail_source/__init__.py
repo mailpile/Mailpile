@@ -518,7 +518,7 @@ class BaseMailSource(threading.Thread):
                     # This forks off a scan job to index the message
                     config.index.scan_one_message(
                         session, mbx_key, loc, loc_key,
-                        wait=False, **scan_args)
+                        wait=False, msg_data=data, **scan_args)
 
                     stop_after -= 1
                     if stop_after == 0:
