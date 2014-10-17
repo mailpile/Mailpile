@@ -653,17 +653,21 @@ class MailIndex:
                 session.ui.mark(parse_status(ui))
 
             # Message new or modified, let's parse it.
-            last_date, a, u = self.scan_one_message(session,
-                                                    mailbox_idx, mbox, i,
-                                                    wait=True,
-                                                    msg_ptr=msg_ptr,
-                                                    last_date=last_date,
-                                                    process_new=process_new,
-                                                    apply_tags=apply_tags,
-                                                    stop_after=stop_after,
-                                                    editable=editable,
-                                                    event=event,
-                                                    progress=progress)
+            try:
+                last_date, a, u = self.scan_one_message(session,
+                                                        mailbox_idx, mbox, i,
+                                                        wait=True,
+                                                        msg_ptr=msg_ptr,
+                                                        last_date=last_date,
+                                                        process_new=process_new,
+                                                        apply_tags=apply_tags,
+                                                        stop_after=stop_after,
+                                                        editable=editable,
+                                                        event=event,
+                                                        progress=progress)
+            except TypeError:
+                a = u = 0
+
             added += a
             updated += u
 
