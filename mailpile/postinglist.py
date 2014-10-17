@@ -158,8 +158,41 @@ class PostingListContainer(object):
             TIMERS['save_count'] += 1
 
     def _splits(self):
-        # FIXME
-        return [self]
+        splits = [self]
+        if len(self.sig) < self.MAX_HASH_LEN:
+            total, sums = 0, {}
+            for sig, values in self.words.iteritems():
+                total += len(values)
+                if len(values) >= (self.MAX_ITEMS / 2):
+                    nsig = sig[:self.MAX_HASH_LEN]
+                else:
+                    nsig = sig[:len(self.sig)+1]
+                if nsig in sums:
+                    sums[nsig] += len(values)
+                else:
+                    sums[nsig] = len(values)
+
+            while total > self.MAX_ITEMS and sums:
+                skeys = sums.keys()
+                skeys.sort(key=lambda k: -sums[k])
+                nsig = skeys[0]
+                total -= sums[nsig]
+                del sums[nsig]
+                try:
+                    fn = self._SaveFile(self.config, nsig)
+                    if not os.path.exists(fn):
+                        open(fn, 'w').close()
+
+                    plc = PostingListContainer(self.session, nsig)
+                    for sig in list(self.words.keys()):
+                        if sig.startswith(nsig):
+                            plc.add(sig, self.words[sig])
+                            del self.words[sig]
+                    splits.append(plc)
+                except (OSError, IOError):
+                    pass
+
+        return splits
 
     def _load(self):
         t0 = time.time()
