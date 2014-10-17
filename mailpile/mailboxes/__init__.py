@@ -63,6 +63,7 @@ def UnorderedPicklable(parent, editable=False):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
             self.source_map = {}
+            self.is_local = False
             self._save_to = None
             self._encryption_key_func = lambda: None
             self._decryption_key_func = lambda: None
@@ -78,6 +79,9 @@ def UnorderedPicklable(parent, editable=False):
             self._decryption_key_func = lambda: None
             if not hasattr(self, 'source_map'):
                 self.source_map = {}
+            if (len(self.source_map) > 0 and
+                    not hasattr(self, 'is_local') or not self.is_local):
+                self.is_local = True
             self.update_toc()
 
         def __getstate__(self):

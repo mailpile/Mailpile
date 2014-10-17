@@ -1564,7 +1564,12 @@ class ConfigManager(ConfigDict):
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
                 mbox = self.load_pickle(pfn)
-            mbox.update_toc()
+            if prefer_local and not mbox.is_local:
+                mbox = None
+            else:
+                mbox.update_toc()
+        except AttributeError:
+            mbox = None
         except KeyboardInterrupt:
             raise
         except IOError:

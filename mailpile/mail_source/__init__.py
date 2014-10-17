@@ -353,14 +353,18 @@ class BaseMailSource(threading.Thread):
 
         if mbx_cfg.local and mbx_cfg.local != '!CREATE':
             if not os.path.exists(mbx_cfg.local):
+                config.flush_mbox_cache(self.session)
                 path, wervd = config.create_local_mailstore(self.session,
                                                             name=mbx_cfg.local)
+                wervd.is_local = mbx_cfg._key
                 mbx_cfg.local = path
                 if save:
                     self._save_config()
 
         elif mbx_cfg.local == '!CREATE' or disco_cfg.local_copy:
+            config.flush_mbox_cache(self.session)
             path, wervd = config.create_local_mailstore(self.session)
+            wervd.is_local = mbx_cfg._key
             mbx_cfg.local = path
             if save:
                 self._save_config()
