@@ -654,9 +654,9 @@ class MailIndex:
             # Message new or modified, let's parse it.
             last_date, a, u = self.scan_one_message(session,
                                                     mailbox_idx, mbox, i,
+                                                    wait=True,
                                                     msg_ptr=msg_ptr,
                                                     last_date=last_date,
-                                                    wait=True,
                                                     process_new=process_new,
                                                     apply_tags=apply_tags,
                                                     stop_after=stop_after,
@@ -721,7 +721,7 @@ class MailIndex:
         except (IOError, OSError, ValueError, IndexError, KeyError):
             if session.config.sys.debug:
                 traceback.print_exc()
-            progress['errors'].append(i)
+            progress['errors'].append(msg_mbox_idx)
             session.ui.warning(('Reading message %s/%s FAILED, skipping'
                                 ) % (mailbox_idx, msg_mbox_idx))
             return last_date, added, updated
