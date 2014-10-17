@@ -188,11 +188,11 @@ class Worker(threading.Thread):
 
             snt = (session, name, task)
             if first:
-                self.JOBS.append(snt)
+                self.JOBS[:0] = [snt]
             elif after:
                 self.JOBS_LATER.append((after, snt))
             else:
-                self.JOBS[:0] = [snt]
+                self.JOBS.append(snt)
 
             self.LOCK.notify()
 
