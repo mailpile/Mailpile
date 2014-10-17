@@ -179,8 +179,14 @@ class MultiContext:
         return self
 
     def __exit__(self, *args, **kwargs):
+        raised = []
         for ctx in reversed(self.contexts):
-            ctx.__exit__(*args, **kwargs)
+            try:
+                ctx.__exit__(*args, **kwargs)
+            except Exception as e:
+                raised.append(e)
+        if raised:
+            raise raised[0]
 
 
 def FixupForWith(obj):
