@@ -1,5 +1,6 @@
-/* Composer - To, Cc, Bcc */
-Mailpile.compose_analyze_address = function(address) {
+/* Composer - Recipients */
+
+Mailpile.Composer.Recipients.analyze_address = function(address) {
   var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
   if (check) {
     if (check[3]) {
@@ -12,8 +13,8 @@ Mailpile.compose_analyze_address = function(address) {
 };
 
 
-/* Compose - Tokenize Input Field */
-Mailpile.compose_analyze_recipients = function(addresses) {
+/* Composer - tokenize input field (to: cc: bcc:) */
+Mailpile.Composer.Recipients.analyze = function(addresses) {
 
   var existing = [];
 
@@ -32,13 +33,13 @@ Mailpile.compose_analyze_recipients = function(addresses) {
         if (value.indexOf('<') > -1) {
           tail = '>';
         }
-        existing.push(Mailpile.compose_analyze_address(value + tail)); // Add back on the '>' since the split pulled it off.
+        existing.push(Mailpile.Composer.Recipients.analyze_address(value + tail)); // Add back on the '>' since the split pulled it off.
       });
     } else {
       if (multiple[0].indexOf('<') > -1) {
         tail = '>';
       }
-      existing.push(Mailpile.compose_analyze_address(multiple[0] + tail));
+      existing.push(Mailpile.Composer.Recipients.analyze_address(multiple[0] + tail));
     }
 
     return existing;
@@ -46,8 +47,8 @@ Mailpile.compose_analyze_recipients = function(addresses) {
 };
 
 
-/* Compose - Instance of select2 contact selecting */
-Mailpile.compose_address_field = function(id) {
+/* Composer - instance of select2 */
+Mailpile.Composer.Recipients.address_field = function(id) {
 
   // Get MID
   var mid = $('#'+id).data('mid');
@@ -131,11 +132,9 @@ Mailpile.compose_address_field = function(id) {
       if (state.photo) {
         avatar = '<span class="avatar"><img src="' + state.photo + '" data-address="' + state.address + '"></span>';
       }
-
       if (!state.fn) {
         name = state.address;
       }
-
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed" data-address="' + state.address + '"></span>';
       }
@@ -150,19 +149,19 @@ Mailpile.compose_address_field = function(id) {
   }).on('select2-selecting', function(e) {
 
     /* On select update encryption state */
-    var status = Mailpile.compose_determine_encryption(mid, e.val);
-    Mailpile.compose_render_encryption(status);
+    var status = Mailpile.Composer.Crypto.determine_encryption(mid, e.val);
+    Mailpile.Composer.Crypto.encryption_toggle(status);
 
     setTimeout(function() {
-      Mailpile.tooltip_compose_contact_details();
+      Mailpile.Composer.Tooltips.contact_details();
     }, 350);
 
   }).on('select2-removed', function(e) {
-      var status = Mailpile.compose_determine_encryption(mid, false);
-      Mailpile.compose_render_encryption(status);
+      var status = Mailpile.Composer.Crypto.determine_encryption(mid, false);
+      Mailpile.Composer.Crypto.encryption_toggle(status);
   });
 
   /* Check encryption state */
-  $('#'+id).select2('data', Mailpile.compose_analyze_recipients($('#' + id).val()));
+  $('#'+id).select2('data', Mailpile.Composer.Recipients.analyze($('#' + id).val()));
 
 };

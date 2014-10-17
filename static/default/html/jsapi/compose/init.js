@@ -1,18 +1,25 @@
-/* Compose - Create new instance of composer */
-Mailpile.compose_init = function(mid) {
+/* Composer */
+Mailpile.Composer = {};
+Mailpile.Composer.Crypto = {};
+Mailpile.Composer.Recipients = {};
+Mailpile.Composer.Tooltips = {};
+Mailpile.Composer.Attachments = {};
+
+/* Composer - Create new instance of composer */
+Mailpile.Composer.init = function(mid) {
 
   // Reset tabindex for To: field
   $('#search-query').attr('tabindex', '-1');
 
   // Load Crypto States
   // FIXME: needs dynamic support for multi composers on a page
-  Mailpile.compose_load_crypto_states();
+  Mailpile.Composer.Crypto.load_states();
 
   // Instantiate select2
-  Mailpile.compose_address_field('compose-to-' + mid);
+  Mailpile.Composer.Recipients.address_field('compose-to-' + mid);
   // FIXME: move to click events
-  Mailpile.compose_address_field('compose-cc-' + mid);
-  Mailpile.compose_address_field('compose-bcc-' + mid);
+  Mailpile.Composer.Recipients.address_field('compose-cc-' + mid);
+  Mailpile.Composer.Recipients.address_field('compose-bcc-' + mid);
 
 
   // Save Text Composing Objects (move to data model)
@@ -21,15 +28,18 @@ Mailpile.compose_init = function(mid) {
 
   // Initialize Attachments
   // FIXME: needs to be bound to unique ID that can be destroyed
-  uploader({
+  Mailpile.Composer.Attachments.uploader({
     browse_button: 'compose-attachment-pick-' + mid,
     container: 'compose-attachments-' + mid,
     mid: mid
   });
 
   // Show Crypto Tooltips
-  Mailpile.tooltip_compose_crypto_signature();
-  Mailpile.tooltip_compose_crypto_encryption();
-  Mailpile.tooltip_compose_contact_details();
+  Mailpile.Composer.Tooltips.signature();
+  Mailpile.Composer.Tooltips.encryption();
+  Mailpile.Composer.Tooltips.contact_details();
+
+  // Autosize
+  //$('#compose-text-' + mid).autosize();
 
 };

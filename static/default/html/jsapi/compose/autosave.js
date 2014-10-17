@@ -1,5 +1,5 @@
 /* Compose - Perform autosave checking & save */
-Mailpile.compose_autosave = function(mid, form_data) {
+Mailpile.Composer.autosave = function(mid, form_data) {
 
   // Text is different, run autosave
   // Should test against model
@@ -38,9 +38,9 @@ Mailpile.compose_autosave = function(mid, form_data) {
 
 
 /* Compose Autosave - finds each compose form and performs action */
-Mailpile.compose_autosave_timer = $.timer(function() {
+Mailpile.Composer.autosave_timer = $.timer(function() {
   // UNTESTED: should handle multiples in a thread
   $('.form-compose').each(function(key, form) {
-    Mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
+    Mailpile.Composer.autosave($(form).data('mid'), $(form).serialize());
   });
 });

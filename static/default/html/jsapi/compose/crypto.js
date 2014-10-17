@@ -1,5 +1,6 @@
-/* Composer - Analyze cyrpto state of a message */
-Mailpile.compose_load_crypto_states = function() {
+/* Composer - Crypto */
+
+Mailpile.Composer.Crypto.load_states = function() {
 
   var state = $('#compose-crypto').val();
   var signature = 'none';
@@ -12,13 +13,13 @@ Mailpile.compose_load_crypto_states = function() {
     encryption = 'encrypt';
   }
 
-  Mailpile.compose_render_signature(signature);
-  Mailpile.compose_render_encryption(encryption);
+  Mailpile.Composer.Crypto.signature_toggle(signature);
+  Mailpile.Composer.Crypto.encryption_toggle(encryption);
 };
 
 
 /* Compose - Set crypto state of message */
-Mailpile.compose_set_crypto_state = function() {
+Mailpile.Composer.Crypto.set_state = function() {
   
   // Returns: none, openpgp-sign, openpgp-encrypt and openpgp-sign-encrypt
   var state = 'none';
@@ -45,7 +46,7 @@ Mailpile.compose_set_crypto_state = function() {
 
 
 /* Compose - Determine possible crypto "signature" of a message */
-Mailpile.compose_determine_signature = function() {
+Mailpile.Composer.Crypto.determine_signature = function() {
 
   if ($('#compose-signature').val() === '') {
     if ($.inArray($('#compose-pgp').val(), ['openpgp-sign', 'openpgp-sign-encrypt']) > -1) {
@@ -62,7 +63,7 @@ Mailpile.compose_determine_signature = function() {
 
 
 /* Compose - Determine possible crypto "encryption" of a message */
-Mailpile.compose_determine_encryption = function(mid, contact) {
+Mailpile.Composer.Crypto.determine_encryption = function(mid, contact) {
 
   var status = 'none';
   var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
@@ -78,7 +79,7 @@ Mailpile.compose_determine_encryption = function(mid, contact) {
   $.each(recipients, function(key, value){  
     if (value) {
       count_total++;
-      var check = Mailpile.compose_analyze_address(value);
+      var check = Mailpile.Composer.Recipients.analyze_address(value);
       if (check.flags.secure) {
         count_secure++;
       }
@@ -97,7 +98,7 @@ Mailpile.compose_determine_encryption = function(mid, contact) {
 
 
 /* Compose - Render crypto "signature" of a message */
-Mailpile.compose_render_signature = function(status) {
+Mailpile.Composer.Crypto.signature_toggle = function(status) {
   if (status === 'sign') {
     $('.compose-crypto-signature').data('crypto_color', 'crypto-color-green');  
     $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed'));
@@ -130,13 +131,13 @@ Mailpile.compose_render_signature = function(status) {
       $('.compose-crypto-signature').removeClass('bounce');
     }, 1000);
 
-    this.compose_set_crypto_state();
+    Mailpile.Composer.Crypto.set_state();
   }
 };
 
 
 /* Compose - Render crypto "encryption" of a message */
-Mailpile.compose_render_encryption = function(status) {
+Mailpile.Composer.Crypto.encryption_toggle = function(status) {
 
   if (status == 'encrypt') {
     $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
@@ -178,6 +179,6 @@ Mailpile.compose_render_encryption = function(status) {
       $('.compose-crypto-encryption').removeClass('bounce');
     }, 1000);
     
-    this.compose_set_crypto_state();
+    Mailpile.Composer.Crypto.set_state();
   }
 };

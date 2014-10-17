@@ -1,10 +1,10 @@
+/* Composer - Events */
+
 $(document).on('click', '.compose-contact-find-keys', function() {
   var address = $(this).data('address');
   Mailpile.find_encryption_keys(address);
 });
 
-
-/* Compose - Change Encryption Status */
 $(document).on('click', '.compose-crypto-encryption', function() {
   var status = $('#compose-encryption').val();
   var change = '';
@@ -13,19 +13,19 @@ $(document).on('click', '.compose-crypto-encryption', function() {
   if (status == 'encrypt') {
     change = 'none';
   } else {
-    if (Mailpile.compose_determine_encryption(mid, false) == "encrypt") {
+    if (Mailpile.Composer.Crypto.determine_encryption(mid, false) == "encrypt") {
       change = 'encrypt';
     }
   }
 
-  Mailpile.compose_render_encryption(change);
-  Mailpile.tooltip_compose_crypto_encryption();
+  Mailpile.Composer.Crypto.encryption_toggle(change);
+  Mailpile.Composer.Tooltips.encryption();
 });
 
 
 /* Compose - Change Signature Status */
 $(document).on('click', '.compose-crypto-signature', function() {
-  var status = Mailpile.compose_determine_signature();
+  var status = Mailpile.Composer.Crypto.determine_signature();
   var change = '';
 
   if (status == 'sign') {
@@ -34,8 +34,8 @@ $(document).on('click', '.compose-crypto-signature', function() {
     change = 'sign';
   }
 
-  Mailpile.compose_render_signature(change);
-  Mailpile.tooltip_compose_crypto_signature();
+  Mailpile.Composer.Crypto.signature_toggle(change);
+  Mailpile.Composer.Tooltips.signature();
 });
 
 
@@ -105,7 +105,7 @@ $(document).on('click', '.compose-action', function(e) {
       }
       // Is Thread Reply
       else if (action === 'reply' && response.status === 'success') {
-        Mailpile.compose_render_message_thread(response.result.thread_ids[0]);
+        Mailpile.Composer.render_message_thread(response.result.thread_ids[0]);
       }
       else {
         Mailpile.notification(response);

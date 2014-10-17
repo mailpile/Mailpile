@@ -1,4 +1,6 @@
-Mailpile.tooltip_compose_crypto_signature = function() {
+/* Composer - Tooltips */
+
+Mailpile.Composer.Tooltips.signature = function() {
   $('.compose-crypto-signature').qtip({
     content: {
       title: false,
@@ -39,7 +41,7 @@ Mailpile.tooltip_compose_crypto_signature = function() {
 };
 
 
-Mailpile.tooltip_compose_crypto_encryption = function() {
+Mailpile.Composer.Tooltips.encryption = function() {
   $('.compose-crypto-encryption').qtip({
     content: {
       title: false,
@@ -103,15 +105,12 @@ Mailpile.tooltip_compose_crypto_encryption = function() {
 };
 
 
-Mailpile.tooltip_compose_contact_details = function() {
+Mailpile.Composer.Tooltips.contact_details = function() {
   $('.select2-search-choice').qtip({
     content: {
       title: true,
       text: function(e, api) {
         $target = $(e.target);
-
-        console.log($target);
-
         var address = $target.data('address');
 
         if ($target.hasClass('select2-search-choice')) {
