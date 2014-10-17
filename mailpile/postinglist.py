@@ -32,19 +32,24 @@ TIMERS = {
 }
 
 
-def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
+def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5, runtime=None):
     def save(plc):
         job_name = _('Save PLC %s') % plc.sig
         session.ui.mark(job_name)
         session.config.save_worker.do(session, job_name, plc.save)
+        play_nice_with_threads()
 
     def remove(ts, plc):
         with PLC_CACHE_LOCK:
             if plc.sig in PLC_CACHE and ts == PLC_CACHE[plc.sig][0]:
                del PLC_CACHE[plc.sig]
 
-    expire = int(time.time()) - max(30, 300 - len(PLC_CACHE))
-    savets = int(time.time()) - 15
+    startt = int(time.time())
+    expire = startt - max(30, 300 - len(PLC_CACHE))
+    savets = startt - 15
+
+    def time_up():
+        return (runtime and startt + runtime < time.time())
 
     with PLC_CACHE_LOCK:
         plc_cache = sorted(PLC_CACHE.values())
@@ -53,12 +58,16 @@ def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
         if plc.changes:
             save(plc)
         remove(ts, plc)
+        if time_up():
+            return
 
     for ts, plc in plc_cache[-keep:]:
         if (plc.changes > min_changes) or (plc.changes and ts < savets):
             save(plc)
         if ts < expire:
             remove(ts, plc)
+        if time_up():
+            return
 
 
 class PostingListContainer(object):
@@ -568,26 +577,40 @@ class OldPostingList(object):
 class GlobalPostingList(OldPostingList):
 
     @classmethod
-    def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
+    def _Optimize(cls, session, idx,
+                  force=False, lazy=False, quick=False, ratio=1.0, runtime=0):
+        starttime = time.time()
         count = 0
         global GLOBAL_GPL
         if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 10240)):
+            # Processing keys in order is more efficient, as it lets things
+            # accumulate in the PLC_CACHE.
             keys = sorted(GLOBAL_GPL.keys())
+            if ratio:
+                keyn = int(len(keys) * ratio)
+                start = random.randint(0, len(keys))
+                # This lets the selection wrap around to the beginning,
+                # so we don't have a bias against writing out the first
+                # keys compared with the others.
+                keys += keys
+                keys = keys[start:start+keyn]
+
             pls = GlobalPostingList(session, '')
             for sig in keys:
+                if (count % 7) == 0:
+                    PLC_CACHE_FlushAndClean(session, min_changes=100000)
                 if (count % 97) == 0:
                     session.ui.mark(('Updating search index... %d%% (%s)'
                                      ) % (count * 100 / len(keys), sig))
-                elif (count % 17) == 0:
-                    play_nice_with_threads()
 
                 # If we're doing a full optimize later, we disable the
                 # compaction here. Otherwise it follows the normal
                 # rules (compacts as necessary).
                 pls._migrate(sig, compact=quick)
-                PLC_CACHE_FlushAndClean(session, min_changes=1000)
                 count += 1
                 if mailpile.util.QUITTING:
+                    break
+                if runtime and starttime + (0.80 * runtime) < time.time():
                     break
             PLC_CACHE_FlushAndClean(session)
             pls.save()
