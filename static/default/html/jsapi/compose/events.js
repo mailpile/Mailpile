@@ -142,16 +142,31 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 
 /* Compose - Details */
 $(document).on('click', '.compose-show-details', function(e) {
+
   e.preventDefault();
   var mid = $(this).data('mid');
   var new_message = $(this).data('message');
+
   if ($('#compose-details-' + mid).hasClass('hide')) {
     var old_message = $(this).html();
+
+    // Instatiate select2
+    if ($('#compose-to-' + mid).val()) {
+      Mailpile.Composer.Recipients.address_field('compose-to-' + mid);
+    }
+    if ($('#compose-cc-' + mid).val()) {
+      Mailpile.Composer.Recipients.address_field('compose-cc-' + mid);
+    }
+    if ($('#compose-bcc-' + mid).val()) {
+      Mailpile.Composer.Recipients.address_field('compose-bcc-' + mid);
+    }
+
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
     $('#compose-to-summary-' + mid).hide();
     $(this).html('<span class="icon-eye"></span> <span class="text">' + new_message + '</span>');
     $(this).data('message', old_message).attr('data-message', old_message);
-  } else {
+  }
+  else {
     var old_message = $(this).find('.text').html();
     $('#compose-details-' + mid).slideUp('fast').addClass('hide');
     $('#compose-to-summary-' + mid).show();
