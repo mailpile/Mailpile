@@ -6,28 +6,28 @@
           {{_("To")}}
         </label>
         <label class="right">
-          <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" href="#">{{_("Cc")}}</a>
-          <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" href="#">{{_("Bcc")}}</a>
+          <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" data-mid="{{mid}}" href="#">{{_("Cc")}}</a>
+          <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" data-mid="{{mid}}" href="#">{{_("Bcc")}}</a>
         </label>
         <input id="compose-to-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
       </div>
       <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
         <label class="left">{{_("Cc")}}</label>
         <label class="right">
-          <a href="#cc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
+          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> hide</a>
         </label>
-        <input id="compose-cc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
+        <input id="compose-cc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="cc" type="text" tabindex="2" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
       </div>
       <div id="compose-bcc-html" class="compose-headers compose-bcc {% if not editing_strings.bcc %}hide{% endif %}">
         <label class="left">{{_("Bcc")}}</label>
         <label class="right">
-          <a href="#bcc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
+          <a href="#bcc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> hide</a>
         </label>
-        <input id="compose-bcc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
+        <input id="compose-bcc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="bcc" type="text" tabindex="3" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
       </div>
       <div class="compose-headers compose-subject">
         <label>{{_("Subject")}}</label>
-        <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
+        <input id="compose-subject" name="subject" tabindex="4" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
       </div>
     </div>
     <div class="compose-options clearfix" data-mid="{{mid}}">
@@ -74,7 +74,7 @@
       #}
     </div>
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
-      <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
+      <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
         <ul id="compose-attachments-files-{{mid}}" class="horizontal">
           {% if editing_strings.attachments %}

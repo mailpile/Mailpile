@@ -17,10 +17,6 @@ Mailpile.Composer.init = function(mid) {
 
   // Instantiate select2
   Mailpile.Composer.Recipients.address_field('compose-to-' + mid);
-  // FIXME: move to click events
-  Mailpile.Composer.Recipients.address_field('compose-cc-' + mid);
-  Mailpile.Composer.Recipients.address_field('compose-bcc-' + mid);
-
 
   // Save Text Composing Objects (move to data model)
   Mailpile.messages_composing['compose-text-' + mid] = $('#compose-text-' + mid).val();

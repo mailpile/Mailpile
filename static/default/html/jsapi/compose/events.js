@@ -43,14 +43,22 @@ $(document).on('click', '.compose-crypto-signature', function() {
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
   var field = $(this).text().toLowerCase();
+  var mid = $(this).data('mid');
   $('#compose-' + field + '-html').show().removeClass('hide');
+
+  // Destroy select2
+  Mailpile.Composer.Recipients.address_field('compose-' + field + '-' + mid);
 });
 
 
 $(document).on('click', '.compose-hide-field', function(e) {
   var field = $(this).attr('href').substr(1);
+  var mid = $(this).data('mid');
   $('#compose-' + field + '-html').hide().addClass('hide');
   $('#compose-' + field + '-show').fadeIn('fast');
+
+  // Destroy select2
+  $('#compose-' + field + '-' + mid).select2('destroy');
 });
 
 
