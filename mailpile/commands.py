@@ -1116,17 +1116,21 @@ class Rescan(Command):
             msg_count = 1
 
             if which in ('both', 'sources'):
-                sources = config.mail_sources.values()
-                sources.sort(key=lambda k: random.randint(0, 100))
-                for src in sources:
-                    if mailpile.util.QUITTING:
-                        break
-                    session.ui.mark(_('Rescanning: %s') % (src, ))
-                    count = src.rescan_now(session)
-                    if count > 0:
-                        msg_count += count
-                        mbox_count += 1
-                    session.ui.mark('\n')
+                ocount = msg_count - 1
+                while ocount != msg_count:
+                    ocount = msg_count
+                    sources = config.mail_sources.values()
+                    sources.sort(key=lambda k: random.randint(0, 100))
+                    for src in sources:
+                        if mailpile.util.QUITTING:
+                            ocount = msg_count
+                            break
+                        session.ui.mark(_('Rescanning: %s') % (src, ))
+                        count = src.rescan_now(session)
+                        if count > 0:
+                            msg_count += count
+                            mbox_count += 1
+                        session.ui.mark('\n')
 
             if which in ('both', 'mailboxes', 'editable'):
                 if which == 'editable':
