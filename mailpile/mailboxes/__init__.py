@@ -118,4 +118,7 @@ def UnorderedPicklable(parent, editable=False):
             fd.seek(0, 2)
             return fd.tell()
 
+        def get_bytes(self, toc_id):
+            return self.get_file(toc_id).read()
+
     return UnorderedPicklableMailbox

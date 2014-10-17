@@ -164,5 +164,8 @@ class MailpileMailbox(mailbox.mbox):
         # multiple PartialFile objects in flight at once.
         return mailbox._PartialFile(self._get_fd(), start, start + length)
 
+    def get_bytes(self, toc_id):
+        return self.get_file(toc_id).read()
+
 
 mailpile.mailboxes.register(90, MailpileMailbox)
