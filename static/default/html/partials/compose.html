@@ -80,7 +80,7 @@
           {% if editing_strings.attachments %}
           {% for aid, filename in editing_strings.attachments.iteritems() %}
           <li class="compose-attachment">
-            <a href="/message/attachment/={{ mid }}/{{ aid }}/" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+            <a href="#" data-mid="{{ mid }}" data-aid="{{ aid }}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
             <img src="/message/download/preview/={{ mid }}/{{ aid }}/">
             <div class="compose-attachment-filename">{{filename}}</div>
           </li>

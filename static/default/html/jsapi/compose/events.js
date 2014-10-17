@@ -215,6 +215,12 @@ $(document).on('click', '.compose-from', function(e) {
 });
 
 
+$(document).on('click', '.compose-attachment-remove', function(e) {
+  var aid = $(this).data('aid');
+  var mid = $(this).data('mid');
+  alert('This should delete an attachment: ' + aid + ' for mid: ' + mid + ' just need API endpoint to do so');
+});
+
 /* Compose - Autogrow composer boxes */
 $(document).on('focus', '.compose-text', function() {
   $(this).autosize();
