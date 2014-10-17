@@ -16,13 +16,7 @@ Mailpile.compose_init = function(mid) {
 
 
   // Save Text Composing Objects (move to data model)
-  Mailpile.messages_composing['compose-text-' + mid] = $('compose-text-' + mid).val();
-
-
-  // Run Autosave
-  // FIXME: this should be moved to the global event loop
-  Mailpile.compose_autosave_timer.play();
-  Mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
+  Mailpile.messages_composing['compose-text-' + mid] = $('#compose-text-' + mid).val();
 
 
   // Initialize Attachments
@@ -32,7 +26,6 @@ Mailpile.compose_init = function(mid) {
     container: 'compose-attachments-' + mid,
     mid: mid
   });
-
 
   // Show Crypto Tooltips
   Mailpile.tooltip_compose_crypto_signature();

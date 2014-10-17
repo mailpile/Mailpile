@@ -2,13 +2,14 @@
 Mailpile.compose_autosave = function(mid, form_data) {
 
   // Text is different, run autosave
+  // Should test against model
   if ($('#compose-text-' + mid).val() !== Mailpile.messages_composing['compose-text-' + mid]) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
     $('#compose-message-autosaving-' + mid).html(autosave_msg).fadeIn();
 
-    // 
+    // Autosave It
   	$.ajax({
   		url			 : Mailpile.api.compose_save,
   		type		 : 'POST',
@@ -31,6 +32,8 @@ Mailpile.compose_autosave = function(mid, form_data) {
       }
   	});
   }
+  // Not Autosaving
+  else { }
 };
 
 

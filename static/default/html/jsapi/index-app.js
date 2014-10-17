@@ -68,10 +68,17 @@ $(document).ready(function() {
   //EventLog.init();
   setTimeout(function() {
 
+    // make event log start async (e.g. for proper page load event handling)
     EventLog.timer = $.timer();
     EventLog.timer.set({ time : 22500, autostart : false });
-    // make event log start async (e.g. for proper page load event handling)
     EventLog.poll();
+
+    // Run Composer Autosave
+    if (Mailpile.instance.state.context_url === '/message/' || 
+        Mailpile.instance.state.context_url === '/message/draft/') {
+      Mailpile.compose_autosave_timer.play();
+      Mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
+    }
 
   }, 1000);
 
