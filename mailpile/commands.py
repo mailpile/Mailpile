@@ -1162,11 +1162,7 @@ class Rescan(Command):
                     session.ui.mark('\n')
 
             msg_count -= 1
-            if msg_count:
-                if not mailpile.util.QUITTING:
-                    GlobalPostingList.Optimize(session, idx, quick=True)
-            else:
-                session.ui.mark(_('Nothing changed'))
+            session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
             return {'aborted': True,
                     'messages': msg_count,
