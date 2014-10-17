@@ -16,6 +16,17 @@ Mailpile.render_thread_message = function(mid) {
 };
 
 
+Mailpile.thread_scroll_to_message = function() {
+  var thread_id = _.keys(Mailpile.instance.messages)[0];
+  var msg_top_pos = $('#message-' + thread_id).position().top + 1;
+  $('#content-view').scrollTop(msg_top_pos - 150);
+
+  setTimeout(function(){
+    $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
+  }, 50);
+};
+
+
 /* Thread - iframe styling */
 Mailpile.thread_html_iframe = function(element) {
   var new_iframe_height = $(element).contents().height();
@@ -26,15 +37,7 @@ Mailpile.thread_html_iframe = function(element) {
 
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
-
- //alert('FIXME: Show all people in conversation');
- var options = {
-   backdrop: true,
-   keyboard: true,
-   show: true,
-   remote: false
- };
-
+ var options = { backdrop: true, keyboard: true, show: true, remote: false };
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-people').html());
  $('#modal-full').modal(options);
@@ -43,14 +46,7 @@ $(document).on('click', '.show-thread-people', function() {
 
 /* Thread - Show Tags In Converstation */
 $(document).on('click', '.show-thread-tags', function() {
-
- var options = {
-   backdrop: true,
-   keyboard: true,
-   show: true,
-   remote: false
- };
-
+ var options = { backdrop: true, keyboard: true, show: true, remote: false };
  $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-tags').html());
  $('#modal-full').modal(options);
@@ -64,15 +60,15 @@ $(document).on('click', '.show-thread-security', function() {
 
 
 /* Thread - Show Metadata Info */
-$(document).on('click', '.show-thread-message-metadata-details', function() {
+$(document).on('click', '.thread-message-metadata-details-toggle', function() {
   var mid = $(this).data('mid');
   var target = '#metadata-details-' + mid;
   if ($(target).css('display') === 'none') {
-    $(target).show('fast');
+    $(target).show('fast').addClass('border-bottom');
     $(this).css('color', '#4d4d4d');
   }
   else {
-    $(target).hide('fast');    
+    $(target).hide('fast').removeClass('border-bottom');
     $(this).css('color', '#ccc');
   }
 });
@@ -121,7 +117,6 @@ $('div.thread-draggable').draggable({
 
     // Update Bulk UI
   	// Style & Select Checkbox
-  	
   },
   stop: function(event, ui) {}
 });
@@ -134,12 +129,7 @@ $(document).ready(function() {
   if (location.href.split("thread/=")[1]) {
 
     // Scroll to Message
-    var thread_id = location.href.split("thread/=")[1].split("/")[0];
-    var msg_top_pos = $('#message-' + thread_id).position().top + 1;
-    $('#content-view').scrollTop(msg_top_pos - 150);
-    setTimeout(function(){
-      $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
-    }, 50);
+    Mailpile.thread_scroll_to_message();
     
     // Show Tooltips
     Mailpile.thread_initialize_tooltips();
