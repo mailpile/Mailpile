@@ -531,6 +531,7 @@ class OldPostingList(object):
                         encryption_key = self.config.master_key
                         with EncryptingStreamer(encryption_key,
                                                 delimited=True,
+                                                dir=self.config.tempfile_dir(),
                                                 name='PostingList') as efd:
                             efd.write(output)
                             efd.save(outfile, mode=mode)
