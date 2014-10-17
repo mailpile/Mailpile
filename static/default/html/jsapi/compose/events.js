@@ -176,15 +176,6 @@ $(document).on('click', '.compose-show-details', function(e) {
 });
 
 
-/* Compose - Create a new email to an address */
-$(document).on('click', 'a', function(e) {
-  if ($(this).attr('href').startsWith('mailto:')) {
-    e.preventDefault();
-    Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
-  }
-});
-
-
 /* Compose - Delete message that's in a composer */
 $(document).on('click', '.compose-message-trash', function() {
   var mid = $(this).data('mid');
