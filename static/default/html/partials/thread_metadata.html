@@ -46,7 +46,7 @@
     {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
     <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
     <span class="thread-item-crypto-info icon {{ signature.color + ' ' + signature.icon }}" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}" data-expand="no"></span>
-    <span class="show-thread-message-metadata-details icon icon-circle-info" data-mid="{{mid}}"></span>
+    <span class="thread-message-metadata-details-toggle icon icon-circle-info" data-mid="{{mid}}"></span>
   </div>
 </div>
 <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">

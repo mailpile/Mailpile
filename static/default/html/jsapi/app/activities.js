@@ -19,16 +19,10 @@ Mailpile.activities.render_typeahead = function() {
   var baseMatcher = function(strs) {
     return function findMatches(q, cb) {
       var matches, substrRegex;
-      // an array that will be populated with substring matches
       matches = [];
-      // regex used to determine if a string contains the substring `q`
       substrRegex = new RegExp(q, 'i');
-      // iterate through the pool of strings and for any string that
-      // contains the substring `q`, add it to the `matches` array
       $.each(strs, function(i, str) {
         if (substrRegex.test(str.term)) {
-          // the typeahead jQuery plugin expects suggestions to a
-          // JavaScript object, refer to typeahead docs for more info
           matches.push(str);
         }
       });
@@ -67,11 +61,15 @@ Mailpile.activities.render_typeahead = function() {
 
   // List of basic suggestions for search helpers
   var helpers = [
-    { value: 'dates:', helper: '2014-10-13' },
-    { value: 'subject:', helper: 'any normal words' },
-    { value: 'contacts: ', helper: 'name@email.com' },
-    { value: 'to:', helper: 'name@email.com' },
-    { value: 'keys:', helper: 'name@email.com / keyid' }
+    { term: 'dates:', helper: '2011-12..2012-04-15' },
+    { term: 'date:', helper: 'date:2013-8-3 +date:2013-9-10' },
+    { term: 'year:', helper: '2013' },
+    { term: 'month:', helper: '8' },
+    { term: 'subject:', helper: 'any normal words' },
+    { term: 'att:', helper: 'jpg' },
+    { term: 'has:', helper: 'attachment' },
+    { term: 'contacts: ', helper: 'name@email.com' },
+    { term: 'to:', helper: 'name@email.com' }
   ];
 
   // Create Typeahead
@@ -81,11 +79,11 @@ Mailpile.activities.render_typeahead = function() {
     minLength: 0
   },{
     name: 'search',
-    displayKey: 'value',
+    displayKey: 'term',
     source: baseMatcher(helpers),
     templates: {
       suggestion: function(data) {
-        var template = _.template('<div class="tt-suggestion"><p><span class="icon-search"></span> <%= value %> <span class="helper"><%= helper %></span></p></div>');
+        var template = _.template('<div class="tt-suggestion"><p><span class="icon-search"></span> <%= term %> <span class="helper"><%= helper %></span></p></div>');
         return template(data);
       }
     }
@@ -106,7 +104,7 @@ Mailpile.activities.render_typeahead = function() {
     }
   },{
     name: 'people',
-    displayKey: function(value) { 
+    displayKey: function(value) {
       return value.term + value.address;
     },
     source: peopleMatcher(Mailpile.instance.addresses),
@@ -116,6 +114,16 @@ Mailpile.activities.render_typeahead = function() {
       suggestion: function(data) {
         if (data.photo === undefined) { data.photo = '{{ config.sys.subdirectory }}/static/img/avatar-default.png'; }
         var template = _.template('<div class="tt-suggestion"><p><img class="avatar" src="<%= photo %>"> <%= term %> <%= fn %></p></div>');
+        return template(data);
+      }
+    }
+  },{
+    name: 'keys',
+    displayKey: 'term',
+    source: baseMatcher([{ term: 'keys: team@mailpile.is' },{ term: 'keys: 707775F9' }]),
+    templates: {
+      suggestion: function(data) {
+        var template = _.template('<div class="tt-suggestion"><p><span class="icon-key"></span> <%= term %></p></div>');
         return template(data);
       }
     }

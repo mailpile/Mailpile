@@ -480,20 +480,21 @@ class Email(object):
                 del att['MIME-Version']
 
         # Determine if we want to attach a PGP public key due to timing:
-        addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
-        offset = timedelta(days=30)
-        dates = []
-        for addr in addrs:
-            vcard = idx.config.vcards.get(addr)
-            if vcard != None:
-                lastdate = vcard.gpgshared
-                if lastdate:
-                    try:
-                        dates.append(datetime.fromtimestamp(float(lastdate)))
-                    except ValueError:
-                        pass
-        if all([date+offset < datetime.now() for date in dates]):
-            msg["Attach-PGP-Pubkey"] = "Yes"
+        if idx.config.prefs.gpg_email_key:
+            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
+            offset = timedelta(days=30)
+            dates = []
+            for addr in addrs:
+                vcard = idx.config.vcards.get(addr)
+                if vcard != None:
+                    lastdate = vcard.gpgshared
+                    if lastdate:
+                        try:
+                            dates.append(datetime.fromtimestamp(float(lastdate)))
+                        except ValueError:
+                            pass
+            if all([date+offset < datetime.now() for date in dates]):
+                msg["Attach-PGP-Pubkey"] = "Yes"
 
         if save:
             msg_key = mbx.add(MessageAsString(msg))

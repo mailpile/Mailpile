@@ -21,7 +21,7 @@
   <div id="setup-passphrase-authenticated" class="hide text-center half-top">
     <h3 class="half-bottom">{{_("Successfully Authenticated")}}</h3>
     <p>{{_("Below is the unique fingerprint of your encryption key. Use this to help other people verify your encryption key by reading it to them in person, phone, or video chat, and have them compare it to the fingerprint on the encryption key they have!")}}</p>
-    <ul class="setup-list-items">
+    <ul class="setup-list-items add-bottom">
       <li class="setup-item">
         <div class="setup-cryto-fingerprint-icon">
           <span class="icon-fingerprint"></span>
@@ -121,8 +121,6 @@
     <button id="btn-setup-passphrase" class="button-primary" type="submit">{{_("Authenticate")}}</button>
   </form>
 </div>
-
-
 
 <script src="{{ config.sys.subdirectory }}/api/0/jsapi/setup.js"></script>
 <script>
