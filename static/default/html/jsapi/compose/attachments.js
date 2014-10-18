@@ -1,45 +1,41 @@
 /* Compose - Attachments */
 
+Mailpile.Composer.Attachments.uploader_image_preview = function(file, mid) {
+
+  var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo($('#compose-attachments-files-' + mid));
+  var image = $(new Image()).appendTo(item);
+
+  // Create an instance of the mOxie Image object. This
+  // utility object provides several means of reading in
+  // and loading image data from various sources.
+  // Wiki: https://github.com/moxiecode/moxie/wiki/Image
+  var preloader = new mOxie.Image();
+
+  // Define the onload BEFORE you execute the load()
+  // command as load() does not execute async.
+  preloader.onload = function() {
+
+      // This will scale the image (in memory) before it
+      // tries to render it. This just reduces the amount
+      // of Base64 data that needs to be rendered.
+      preloader.downsize(100, 100);
+
+      // Now that the image is preloaded, grab the Base64
+      // encoded data URL. This will show the image
+      // without making an Network request using the
+      // client-side file binary.
+      image.prop("src", preloader.getAsDataURL());
+  };
+
+  // Calling the .getSource() on the file will return an
+  // instance of mOxie.File, which is a unified file
+  // wrapper that can be used across the various runtime
+  // Wiki: https://github.com/moxiecode/plupload/wiki/File
+  preloader.load(file.getSource());
+};
+
+
 Mailpile.Composer.Attachments.uploader = function(settings) {
-
-  var dom = {
-    uploader: $('#compose-attachments-' + settings.mid),
-    uploads: $('#compose-attachments-files-' + settings.mid)
-  };
-
-  var upload_image_preview = function(file) {
-
-    var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo(dom.uploads);
-    var image = $(new Image()).appendTo(item);
-
-    // Create an instance of the mOxie Image object. This
-    // utility object provides several means of reading in
-    // and loading image data from various sources.
-    // Wiki: https://github.com/moxiecode/moxie/wiki/Image
-    var preloader = new mOxie.Image();
-
-    // Define the onload BEFORE you execute the load()
-    // command as load() does not execute async.
-    preloader.onload = function() {
-
-        // This will scale the image (in memory) before it
-        // tries to render it. This just reduces the amount
-        // of Base64 data that needs to be rendered.
-        preloader.downsize(100, 100);
-
-        // Now that the image is preloaded, grab the Base64
-        // encoded data URL. This will show the image
-        // without making an Network request using the
-        // client-side file binary.
-        image.prop("src", preloader.getAsDataURL());
-    };
-
-    // Calling the .getSource() on the file will return an
-    // instance of mOxie.File, which is a unified file
-    // wrapper that can be used across the various runtime
-    // Wiki: https://github.com/moxiecode/plupload/wiki/File
-    preloader.load(file.getSource());
-  };
 
   var uploader = new plupload.Uploader({
   	runtimes : 'html5',
@@ -81,15 +77,17 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
       FilesAdded: function(up, files) {
         var start_upload = true;
   
+        // Upload files
       	plupload.each(files, function(file) {
   
-          // Show Preview while uploading
-          upload_image_preview(file);
-  
-          // Add to attachments
-          var attachment_html = '<li class="compose-attachment" aid="' + file.id + '">' + file.name + ' ' + plupload.formatSize(file.size) + '</li>';
-      		$('#compose-attachments-files').append(attachment_html);
-  
+          // Show image preview
+          if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
+            Mailpile.Composer.Attachments.uploader_image_preview(file, settings.mid);
+          } else {
+            var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
+        		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
+          }
+
           // Show Warning for 10mb or larger
           if (file.size > 10485760) {
             start_upload = false;

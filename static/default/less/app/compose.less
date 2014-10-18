@@ -120,7 +120,6 @@
 
   .compose-options ul {
     display: inline-block;
-    margin-left: 10px;
     margin-bottom: 0px;
     padding: 0px;
   }
@@ -200,39 +199,62 @@
   }
 
 
-/* Compose - Body - Attachments */
+/* Compose - Attachments */
 
-  .compose-attachments {
+  div.compose-attachments {
     margin-top: 0px;
-    padding: 10px 10px 10px 10px;
+    padding: 0px 10px 10px 10px;
     font-size: 14px;
   }
   
-  .compose-attachments ul {
+  div.compose-attachments ul.horizontal {
     margin-bottom: 0px;
   }
 
-  li.compose-attachment {
+  ul.horizontal li.compose-attachment {
     width: 100px;
-    padding: @base-padding;
+    padding: 0;
     margin-right: 15px;
+    margin-bottom: 15px;
+    border: 1px solid @grayMid;
+  }
+
+  li.compose-attachment div.preview {
+    height: 100px;
+    display: table-cell;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  li.compose-attachment div.preview span.icon {
+    margin: auto;
+    font-size: 60px;
+    line-height: 60px;
+    color: @gray;
   }
 
   li.compose-attachment img {
-    width: 100px;
+    height: 100px;
+    margin-bottom: 5px;
   }
 
-  .compose-attachment-remove {
+  a.compose-attachment-remove {
     float: right;
-    position: relative;
-    top: 15px;
-    right: 10px;
+    display: inline;
+    background: @white;
+    padding: 3px;
+    border-left: 1px solid @grayMid;
+    border-bottom: 1px solid @grayMid;
+    border-bottom-left-radius: 4px;
+    font-size: 12px;
+    line-height: 12px;
   }
 
-  .compose-attachment-filename {
+  div.compose-attachment-filename {
     overflow: hidden;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .attachment-browswer-unsupported {
