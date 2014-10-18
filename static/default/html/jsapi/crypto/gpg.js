@@ -7,7 +7,7 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
 
     // Loop through UIDs for match to Query
     var uid = _.findWhere(key.uids, {email: query});
-    var avatar   = '/static/img/avatar-default.png';
+    var avatar   = '{{ config.sys.subdirectory }}/static/img/avatar-default.png';
 
     // Try to find Avatar
     if (uid) {

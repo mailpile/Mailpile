@@ -21,7 +21,7 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'tags:') {
     e.preventDefault();
-    $.getJSON("/tags/" + search_query.substring(6, 999) + "/as.jhtml", function(data) {
+    $.getJSON("{{ config.sys.subdirectory }}/tags/" + search_query.substring(6, 999) + "/as.jhtml", function(data) {
   	  $("#content-wide").html(data.result);
     });
   }

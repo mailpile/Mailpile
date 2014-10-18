@@ -114,7 +114,7 @@ Mailpile.activities.render_typeahead = function() {
       header: '<span class="separator"></span>',
       empty: '<div class="tt-suggestion"><p><span class="icon-user"></span> No people match your search</p></div>',
       suggestion: function(data) {
-        if (data.photo === undefined) { data.photo = '/static/img/avatar-default.png'; }
+        if (data.photo === undefined) { data.photo = '{{ config.sys.subdirectory }}/static/img/avatar-default.png'; }
         var template = _.template('<div class="tt-suggestion"><p><img class="avatar" src="<%= photo %>"> <%= term %> <%= fn %></p></div>');
         return template(data);
       }
