@@ -36,3 +36,12 @@ $(document).on('click', '.checkbox-item-picker', function(e) {
 		$(this).data('state', 'selected').addClass('checkbox-item-picker-selected').find('input[type=checkbox]').val('selected').prop('checked', true);
 	}
 });
+
+
+/* Compose - Create a new email to an address */
+$(document).on('click', 'a', function(e) {
+  if ($(this).attr('href').startsWith('mailto:')) {
+    e.preventDefault();
+    Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
+  }
+});

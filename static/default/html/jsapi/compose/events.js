@@ -176,15 +176,6 @@ $(document).on('click', '.compose-show-details', function(e) {
 });
 
 
-/* Compose - Create a new email to an address */
-$(document).on('click', 'a', function(e) {
-  if ($(this).attr('href').startsWith('mailto:')) {
-    e.preventDefault();
-    Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
-  }
-});
-
-
 /* Compose - Delete message that's in a composer */
 $(document).on('click', '.compose-message-trash', function() {
   var mid = $(this).data('mid');
@@ -223,6 +214,12 @@ $(document).on('click', '.compose-from', function(e) {
   $('#compose-from-' + mid).val(name + ' <' + address + '>');
 });
 
+
+$(document).on('click', '.compose-attachment-remove', function(e) {
+  var aid = $(this).data('aid');
+  var mid = $(this).data('mid');
+  alert('This should delete an attachment: ' + aid + ' for mid: ' + mid + ' just need API endpoint to do so');
+});
 
 /* Compose - Autogrow composer boxes */
 $(document).on('focus', '.compose-text', function() {

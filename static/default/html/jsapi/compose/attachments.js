@@ -9,7 +9,7 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
 
   var upload_image_preview = function(file) {
 
-    var item = $("<li></li>").prependTo(dom.uploads);
+    var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo(dom.uploads);
     var image = $(new Image()).appendTo(item);
 
     // Create an instance of the mOxie Image object. This
@@ -55,7 +55,7 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
   		mime_types: [
   			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
   			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods"},
-  			{title : "Image files", extensions : "jpg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
+  			{title : "Image files", extensions : "jpg,jpeg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
   			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
   			{title : "Zip files", extensions : "zip,rar"},
   			{title : "Crypto files", extensions : "asc,pub,key"}
@@ -87,13 +87,13 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
           upload_image_preview(file);
   
           // Add to attachments
-          var attachment_html = '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
+          var attachment_html = '<li class="compose-attachment" aid="' + file.id + '">' + file.name + ' ' + plupload.formatSize(file.size) + '</li>';
       		$('#compose-attachments-files').append(attachment_html);
   
           // Show Warning for 10mb or larger
           if (file.size > 10485760) {
             start_upload = false;
-            alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 10 mb or larger');
+            alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 50 mb or larger');
           }
       	});
   
@@ -105,8 +105,8 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
       	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
       },
       Error: function(up, err) {
-        Mailpile.notations({status: 'error', message: "Error #" + err.code + ": " + err.message });
-        $('#' + err.file.id).find('b').html('Failed');
+        Mailpile.notification({status: 'error', message: "Oops, could not upload attachment because: " + err.message });
+        $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
       }
     }
