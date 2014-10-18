@@ -63,11 +63,11 @@ Please see our [download page](https://www.mailpile.is/download/) or read
 ## Credits and License ##
 
 Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
-it's neat, you should also check out PageKite: <https://pagekite.net/>
+it's neat, you should also check out PageKite: <https://pagekite.net/>. At some point Bjarni, that crafty fellow convinced [Smári](<http://www.smarimccarthy.is/>) and [Brennan](https://brennannovak.com) to start working on the project as well.
 
 The GMail guys get mad props for creating the best webmail service out
 there.  Wishing the Free Software world had something like it is what
-inspired me to start working on this.
+inspired Bjarni to start working on Mailpile. Edward Snowden also gets mad props for inspiring us to try and make PGP usable for journalists and everday folks!
 
 Contributors:
 

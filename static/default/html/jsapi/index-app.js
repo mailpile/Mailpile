@@ -10,12 +10,14 @@
 {% include("jsapi/crypto/gpg.js") %}
 
 /* JS - Compose */
+{% include("jsapi/compose/init.js") %}
 {% include("jsapi/compose/crypto.js") %}
 {% include("jsapi/compose/autosave.js") %}
 {% include("jsapi/compose/attachments.js") %}
-{% include("jsapi/compose/content.js") %}
+{% include("jsapi/compose/recipients.js") %}
 {% include("jsapi/compose/tooltips.js") %}
-{% include("jsapi/compose/ui.js") %}
+{% include("jsapi/compose/events.js") %}
+{% include("jsapi/compose/complete.js") %}
 
 /* JS - Contacts */
 {% include("jsapi/contacts/display_modes.js") %}
@@ -66,10 +68,17 @@ $(document).ready(function() {
   //EventLog.init();
   setTimeout(function() {
 
+    // make event log start async (e.g. for proper page load event handling)
     EventLog.timer = $.timer();
     EventLog.timer.set({ time : 22500, autostart : false });
-    // make event log start async (e.g. for proper page load event handling)
     EventLog.poll();
+
+    // Run Composer Autosave
+    if (Mailpile.instance.state.context_url === '/message/' || 
+        Mailpile.instance.state.context_url === '/message/draft/') {
+      Mailpile.Composer.autosave_timer.play();
+      Mailpile.Composer.autosave_timer.set({ time : 20000, autostart : true });
+    }
 
   }, 1000);
 
