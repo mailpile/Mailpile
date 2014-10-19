@@ -523,6 +523,9 @@ class Command:
     def command(self):
         return None
 
+    def etag_data(self):
+        return []
+
     @classmethod
     def view(cls, result):
         return result

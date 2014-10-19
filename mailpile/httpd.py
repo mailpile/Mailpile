@@ -3,6 +3,7 @@
 #
 ###############################################################################
 import Cookie
+import hashlib
 import mimetypes
 import os
 import random
@@ -141,6 +142,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def send_full_response(self, message,
                            code=200, msg='OK',
                            mimetype='text/html', header_list=[],
+                           cachectrl=None,
                            suppress_body=False):
         """
         Sends the HTTP header and a response list
@@ -168,7 +170,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.send_standard_headers(header_list=(header_list +
                                                 contentLengthHeaders),
                                    mimetype=mimetype,
-                                   cachectrl="no-cache")
+                                   cachectrl=(cachectrl or "no-cache"))
         # Response body
         if not suppress_body:
             self.wfile.write(message or '')
@@ -179,7 +181,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 mimetypes.guess_type(fpath, strict=False)[0] or
                 'application/octet-stream')
 
-    def send_file(self, config, filename):
+    def _mk_etag(self, *args):
+        # This ETag varies by whatever args we give it (e.g. size, mtime,
+        # etc), but is unique per Mailpile instance and should leak nothing
+        # about the actual server configuration.
+        data = '%s-%s' % (self.server.secret, '-'.join((str(a) for a in args)))
+        return hashlib.md5(data).hexdigest()
+
+    def send_file(self, config, filename, suppress_body=False):
         # FIXME: Do we need more security checks?
         if '..' in filename:
             code, msg = 403, "Access denied"
@@ -187,9 +196,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             try:
                 tpl = config.sys.path.get(self.http_host(), 'html_theme')
                 fpath, fd, mt = config.open_file(tpl, filename)
-                mimetype = mt or self.guess_mimetype(fpath)
-                message = fd.read()
-                fd.close()
+                with fd:
+                    mimetype = mt or self.guess_mimetype(fpath)
+                    msg_size = os.path.getsize(fpath)
+                    if not suppress_body:
+                        message = fd.read()
+                    else:
+                        message = None
                 code, msg = 200, "OK"
             except IOError, e:
                 mimetype = 'text/plain'
@@ -199,15 +212,18 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     code, msg = 403, "Access denied"
                 else:
                     code, msg = 500, "Internal server error"
-                message = ""
+                message = None
+                msg_size = 0
 
-        self.log_request(code, message and len(message) or '-')
+        # Note: We assume the actual static content almost never varies
+        #       on a given Mailpile instance, thuse the long TTL and no
+        #       ETag for conditional loads.
+
+        self.log_request(code, msg_size if (message is not None) else '-')
         self.send_http_response(code, msg)
-        self.send_standard_headers(header_list=[('Content-Length',
-                                                len(message or ''))],
+        self.send_standard_headers(header_list=[('Content-Length', msg_size)],
                                    mimetype=mimetype,
-                                   cachectrl=("must-revalidate = False, "
-                                              "max-age = 3600"))
+                                   cachectrl='must-revalidate, max-age=36000')
         self.wfile.write(message or '')
 
     def csrf(self):
@@ -290,7 +306,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if path.startswith('/_/'):
             path = path[2:]
         if path.startswith('/static/'):
-            return self.send_file(config, path[len('/static/'):])
+            return self.send_file(config, path[len('/static/'):],
+                                  suppress_body=suppress_body)
 
         self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
@@ -341,6 +358,23 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 else:
                     raise
 
+            http_headers = []
+            cachectrl = None
+            if 'http' not in config.sys.debug:
+                etag_data = []
+                for c in commands:
+                    etag_data.extend(c.etag_data())
+                if etag_data:
+                    etag = self._mk_etag(*etag_data)
+                    conditional = self.headers.get('if-none-match')
+                    if conditional == etag:
+                        self.send_full_response('OK', code=304,
+                                                msg='Unmodified')
+                        return None
+                    else:
+                        http_headers.append(('ETag', etag))
+                        cachectrl = "must-revalidate, max-age=10"
+
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
                              ) else 0
@@ -368,7 +402,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return None
 
         mimetype, content = session.ui.render_response(session.config)
-        self.send_full_response(content, mimetype=mimetype)
+        self.send_full_response(content,
+                                mimetype=mimetype,
+                                header_list=http_headers,
+                                cachectrl=cachectrl)
 
     def do_PUT(self):
         return self.do_POST(method='PUT')

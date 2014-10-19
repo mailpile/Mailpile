@@ -34,6 +34,17 @@ class JsApi(Command):
     HTTP_CALLABLE = ('GET', )
     HTTP_AUTH_REQUIRED = 'Maybe'
 
+    def etag_data(self):
+        # This summarizes the config state this page depends on, for
+        # generating an ETag which the HTTPD can use for caching.
+        config = self.session.config
+        return ([config.version,
+                 config.timestamp,
+                 # The above should be enough, the rest is belt & suspenders
+                 config.prefs.language,
+                 config.web.setup_complete] +
+                sorted(config.sys.plugins))
+
     def command(self, save=True, auto=False):
         session, config = self.session, self.session.config
 
