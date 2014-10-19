@@ -113,7 +113,7 @@ $(document).on('click', '.compose-action', function(e) {
       }
       // Is Thread Reply
       else if (action === 'reply' && response.status === 'success') {
-        Mailpile.Composer.render_message_thread(response.result.thread_ids[0]);
+        Mailpile.Composer.Complete(response.result.thread_ids[0]);
       }
       else {
         Mailpile.notification(response);
@@ -221,7 +221,13 @@ $(document).on('click', '.compose-attachment-remove', function(e) {
   alert('This should delete an attachment: ' + aid + ' for mid: ' + mid + ' just need API endpoint to do so');
 });
 
-/* Compose - Autogrow composer boxes */
+
 $(document).on('focus', '.compose-text', function() {
   $(this).autosize();
+});
+
+
+$(document).on('click', '.compose-attach-key', function(e) {
+  var mid = $(this).data('mid');
+  Mailpile.Composer.Crypto.AttachKey(mid);
 });

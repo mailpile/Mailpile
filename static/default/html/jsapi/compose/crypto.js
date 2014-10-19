@@ -182,3 +182,13 @@ Mailpile.Composer.Crypto.encryption_toggle = function(status) {
     Mailpile.Composer.Crypto.set_state();
   }
 };
+
+
+Mailpile.Composer.Crypto.AttachKey = function(mid) {
+  $checkbox = $('#compose-attach-key-' + mid)
+  if ($checkbox.is(':checked')) {
+    $checkbox.val('yes');
+  } else {
+    $checkbox.val('no');
+  }
+};

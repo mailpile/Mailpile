@@ -95,8 +95,12 @@
           {% endif %}
         </ul>
         <div class="clearfix"></div>
-        <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>Add Attachment</a>
-        <span class="attachment-browswer-unsupported">Unable to add attachments, <a href="">update your browser?</a></span>
+        <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
+        <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
+        <label class="right compose-attach-key" data-mid="{{mid}}">
+          <input type="checkbox" id="compose-attach-key-{{mid}}" name="attach-pgp-pubkey" {% if config.prefs.gpg_email_key %}value="yes" checked{% else %}value="no"{% endif %}>
+          {{_("Send Encryption Key")}}
+        </label>
       </div>
     </div>
     <div class="compose-actions clearfix">
