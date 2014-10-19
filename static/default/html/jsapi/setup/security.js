@@ -14,7 +14,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': true,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': false
     },
     paranoid: {
       'encrypt_events': true,
@@ -23,7 +24,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     above: {
       'encrypt_events': false,
@@ -32,7 +34,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     concerned: {
       'encrypt_events': false,
@@ -41,7 +44,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     normal: {
       'encrypt_events': false,
@@ -50,7 +54,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': false,
       'encrypt_vcards': false,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     }
   }
 });

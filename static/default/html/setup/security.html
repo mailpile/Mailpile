@@ -39,6 +39,13 @@
         <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked value="true"<% } %>>
         {{_("Encrypt various other things")}}
       </label>
+    </fieldset>
+    <fieldset>
+      <h4 class="half-bottom">{{_("Encryption Keys")}}</h4>
+      <label>
+        <input type="checkbox" name="gpg_email_key">
+        Attach public key to outgoing emails
+      </label>
 <!-- FIXME: Commented out settings not supported by backend 
       <label>
         <input type="checkbox" name="use_tor" checked="">
@@ -47,10 +54,6 @@
       <label>
         <input type="checkbox" name="upload_keyservers">
         Upload your public encryption key to keyservers for better discovery
-      </label>
-      <label>
-        <input type="checkbox" name="email_key">
-        Attach public key to outgoing emails
       </label>
       <label>
         <input type="checkbox" name="use_gravatar">
