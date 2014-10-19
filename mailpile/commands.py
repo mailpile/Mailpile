@@ -33,7 +33,7 @@ from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-class Command:
+class Command(object):
     """Generic command object all others inherit from"""
     SYNOPSIS = (None,     # CLI shortcode, e.g. A:
                 None,     # CLI shortname, e.g. add
@@ -84,9 +84,29 @@ class Command:
             self.error_info = {}
             self.error_info.update(error_info)
             self.message = message
+            self.rendered = {}
+            self.renderers = {
+                'json': self.as_json,
+                'html': self.as_html,
+                'text': self.as_text,
+                'css': self.as_css,
+                'rss': self.as_rss,
+                'xml': self.as_xml,
+                'txt': self.as_txt,
+                'js': self.as_js
+            }
 
         def __nonzero__(self):
             return (self.result and True or False)
+
+        def as_(self, what, *args, **kwargs):
+            if args or kwargs:
+                # Args render things un-cacheable.
+                return self.renderers.get(what)(*args, **kwargs)
+
+            if what not in self.rendered:
+                self.rendered[what] = self.renderers.get(what, self.as_text)()
+            return self.rendered[what]
 
         def as_text(self):
             if isinstance(self.result, bool):
@@ -152,6 +172,13 @@ class Command:
             return self.as_template('txt', template)
 
         def as_template(self, etype, template=None):
+            what = ''.join((etype, '/' if template else '', template or ''))
+            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
+                if self.session.ui.render_mode.endswith(e):
+                    what += ':content'
+            if what in self.rendered:
+                return self.rendered[what]
+
             tpath = self.command_obj.template_path(
                 etype, template_id=self.template_id, template=template)
 
@@ -163,13 +190,14 @@ class Command:
                 return self.session.ui.render_web(
                     self.session.config, [tpath], data)
 
-            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
-                if self.session.ui.render_mode.endswith(e):
-                    data['render_mode'] = 'content'
-                    data['result'] = render()
-                    return self.session.ui.render_json(data)
+            if what.endswith(':content'):
+                data['render_mode'] = 'content'
+                data['result'] = render()
+                self.rendered[what] = self.session.ui.render_json(data)
+            else:
+                self.rendered[what] = render()
 
-            return render()
+            return self.rendered[what]
 
     def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session

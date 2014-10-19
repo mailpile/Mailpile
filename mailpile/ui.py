@@ -336,7 +336,7 @@ class UserInteraction:
         """Render command result objects to the user"""
         self._display_log('', level=self.LOG_RESULT)
         if self.render_mode == 'json':
-            return self._display_result(result.as_json())
+            return self._display_result(result.as_('json'))
         for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
             if self.render_mode.endswith(suffix):
                 if self.render_mode in (suffix, 'j' + suffix):
