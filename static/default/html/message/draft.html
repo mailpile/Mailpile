@@ -21,6 +21,7 @@
       {% if metadata.flags.draft %}
         {% do found_editable.append(mid) %}
         {% set composer_view = "draft" %}
+        {% set attachments = message.attachments %}
         {% set editing_strings = message.editing_strings %}
         {% set editing_addresses = result.data.addresses %}
         {% include("partials/compose.html") %}

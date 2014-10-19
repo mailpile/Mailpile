@@ -78,11 +78,18 @@
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
         <ul id="compose-attachments-files-{{mid}}" class="horizontal">
           {% if editing_strings.attachments %}
-          {% for aid, filename in editing_strings.attachments.iteritems() %}
+          {% for attachment in attachments %}
           <li class="compose-attachment">
-            <a href="#" data-mid="{{ mid }}" data-aid="{{ aid }}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
-            <img src="{{ config.sys.subdirectory }}/message/download/preview/={{ mid }}/{{ aid }}/">
-            <div class="compose-attachment-filename">{{filename}}</div>
+            <a href="#" data-mid="{{mid}}" data-aid="{{attachment.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+            <div class="preview">
+            {% set atype = attachment_type(attachment.mimetype) %}
+            {% if atype == 'image-visible' %}
+            <img src="{{ config.sys.subdirectory }}/message/download/preview/={{mid}}/{{attachment.aid}}/">
+            {% else %}
+            <span class="icon icon-{{atype}}"></span>
+            {% endif %}
+            </div>
+            <div class="compose-attachment-filename">{{attachment.filename}}</div>
           </li>
           {% endfor %}
           {% endif %}
