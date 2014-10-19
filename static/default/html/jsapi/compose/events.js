@@ -13,19 +13,19 @@ $(document).on('click', '.compose-crypto-encryption', function() {
   if (status == 'encrypt') {
     change = 'none';
   } else {
-    if (Mailpile.Composer.Crypto.determine_encryption(mid, false) == "encrypt") {
+    if (Mailpile.Composer.Crypto.DetermineEncryption(mid, false) == "encrypt") {
       change = 'encrypt';
     }
   }
 
-  Mailpile.Composer.Crypto.encryption_toggle(change);
-  Mailpile.Composer.Tooltips.encryption();
+  Mailpile.Composer.Crypto.EncryptionToggle(change);
+  Mailpile.Composer.Tooltips.Encryption();
 });
 
 
 /* Compose - Change Signature Status */
 $(document).on('click', '.compose-crypto-signature', function() {
-  var status = Mailpile.Composer.Crypto.determine_signature();
+  var status = Mailpile.Composer.Crypto.DetermineSignature();
   var change = '';
 
   if (status == 'sign') {
@@ -34,8 +34,8 @@ $(document).on('click', '.compose-crypto-signature', function() {
     change = 'sign';
   }
 
-  Mailpile.Composer.Crypto.signature_toggle(change);
-  Mailpile.Composer.Tooltips.signature();
+  Mailpile.Composer.Crypto.SignatureToggle(change);
+  Mailpile.Composer.Tooltips.Signature();
 });
 
 
@@ -47,7 +47,7 @@ $(document).on('click', '.compose-show-field', function(e) {
   $('#compose-' + field + '-html').show().removeClass('hide');
 
   // Destroy select2
-  Mailpile.Composer.Recipients.address_field('compose-' + field + '-' + mid);
+  Mailpile.Composer.Recipients.AddressField('compose-' + field + '-' + mid);
 });
 
 
@@ -152,13 +152,13 @@ $(document).on('click', '.compose-show-details', function(e) {
 
     // Instatiate select2
     if ($('#compose-to-' + mid).val()) {
-      Mailpile.Composer.Recipients.address_field('compose-to-' + mid);
+      Mailpile.Composer.Recipients.AddressField('compose-to-' + mid);
     }
     if ($('#compose-cc-' + mid).val()) {
-      Mailpile.Composer.Recipients.address_field('compose-cc-' + mid);
+      Mailpile.Composer.Recipients.AddressField('compose-cc-' + mid);
     }
     if ($('#compose-bcc-' + mid).val()) {
-      Mailpile.Composer.Recipients.address_field('compose-bcc-' + mid);
+      Mailpile.Composer.Recipients.AddressField('compose-bcc-' + mid);
     }
 
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');

@@ -1,6 +1,6 @@
 /* Composer - Recipients */
 
-Mailpile.Composer.Recipients.analyze_address = function(address) {
+Mailpile.Composer.Recipients.AnalyzeAddress = function(address) {
   var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
   if (check) {
     if (check[3]) {
@@ -14,7 +14,7 @@ Mailpile.Composer.Recipients.analyze_address = function(address) {
 
 
 /* Composer - tokenize input field (to: cc: bcc:) */
-Mailpile.Composer.Recipients.analyze = function(addresses) {
+Mailpile.Composer.Recipients.Analyze = function(addresses) {
 
   var existing = [];
 
@@ -33,13 +33,13 @@ Mailpile.Composer.Recipients.analyze = function(addresses) {
         if (value.indexOf('<') > -1) {
           tail = '>';
         }
-        existing.push(Mailpile.Composer.Recipients.analyze_address(value + tail)); // Add back on the '>' since the split pulled it off.
+        existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value + tail)); // Add back on the '>' since the split pulled it off.
       });
     } else {
       if (multiple[0].indexOf('<') > -1) {
         tail = '>';
       }
-      existing.push(Mailpile.Composer.Recipients.analyze_address(multiple[0] + tail));
+      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(multiple[0] + tail));
     }
 
     return existing;
@@ -48,7 +48,7 @@ Mailpile.Composer.Recipients.analyze = function(addresses) {
 
 
 /* Composer - instance of select2 */
-Mailpile.Composer.Recipients.address_field = function(id) {
+Mailpile.Composer.Recipients.AddressField = function(id) {
 
   // Get MID
   var mid = $('#'+id).data('mid');
@@ -149,19 +149,19 @@ Mailpile.Composer.Recipients.address_field = function(id) {
   }).on('select2-selecting', function(e) {
 
     /* On select update encryption state */
-    var status = Mailpile.Composer.Crypto.determine_encryption(mid, e.val);
-    Mailpile.Composer.Crypto.encryption_toggle(status);
+    var status = Mailpile.Composer.Crypto.DetermineEncryption(mid, e.val);
+    Mailpile.Composer.Crypto.EncryptionToggle(status);
 
     setTimeout(function() {
-      Mailpile.Composer.Tooltips.contact_details();
+      Mailpile.Composer.Tooltips.ContactDetails();
     }, 350);
 
   }).on('select2-removed', function(e) {
-      var status = Mailpile.Composer.Crypto.determine_encryption(mid, false);
-      Mailpile.Composer.Crypto.encryption_toggle(status);
+      var status = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
+      Mailpile.Composer.Crypto.EncryptionToggle(status);
   });
 
   /* Check encryption state */
-  $('#'+id).select2('data', Mailpile.Composer.Recipients.analyze($('#' + id).val()));
+  $('#'+id).select2('data', Mailpile.Composer.Recipients.Analyze($('#' + id).val()));
 
 };

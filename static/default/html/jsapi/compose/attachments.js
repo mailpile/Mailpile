@@ -1,6 +1,6 @@
 /* Compose - Attachments */
 
-Mailpile.Composer.Attachments.uploader_image_preview = function(file, mid) {
+Mailpile.Composer.Attachments.UploaderImagePreview = function(file, mid) {
 
   var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo($('#compose-attachments-files-' + mid));
   var image = $(new Image()).appendTo(item);
@@ -35,7 +35,7 @@ Mailpile.Composer.Attachments.uploader_image_preview = function(file, mid) {
 };
 
 
-Mailpile.Composer.Attachments.uploader = function(settings) {
+Mailpile.Composer.Attachments.Uploader = function(settings) {
 
   var uploader = new plupload.Uploader({
   	runtimes : 'html5',
@@ -82,7 +82,7 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
   
           // Show image preview
           if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
-            Mailpile.Composer.Attachments.uploader_image_preview(file, settings.mid);
+            Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
           } else {
             var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
         		$('#compose-attachments-files-' + settings.mid).append(attachment_html);

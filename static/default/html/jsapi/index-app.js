@@ -76,8 +76,8 @@ $(document).ready(function() {
     // Run Composer Autosave
     if (Mailpile.instance.state.context_url === '/message/' || 
         Mailpile.instance.state.context_url === '/message/draft/') {
-      Mailpile.Composer.autosave_timer.play();
-      Mailpile.Composer.autosave_timer.set({ time : 20000, autostart : true });
+      Mailpile.Composer.AutosaveTimer.play();
+      Mailpile.Composer.AutosaveTimer.set({ time : 20000, autostart : true });
     }
 
   }, 1000);
