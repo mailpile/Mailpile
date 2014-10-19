@@ -155,9 +155,10 @@ class CompositionCommand(AddComposeMethods(Search)):
         'body': '..',
         'encryption': '..',
         'attachment': '..',
+        'attach-pgp-pubkey': '..',
     }
 
-    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption')
+    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption', 'Attach-PGP-Pubkey')
 
     def _new_msgid(self):
         msgid = (email.utils.make_msgid('mailpile')

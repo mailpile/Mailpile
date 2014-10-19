@@ -149,7 +149,7 @@ var SendingView = Backbone.View.extend({
           $('#setup-sending-check-auth')
             .removeClass('color-08-green color-12-red')
             .html('<a href="#" id="btn-setup-sending-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Route")}}</a>');
-        }, 2000);
+        }, 5000);
     });
   },
   actionBack: function(e) {
