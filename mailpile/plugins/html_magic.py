@@ -33,6 +33,15 @@ class JsApi(Command):
     ORDER = ('Internals', 0)
     HTTP_CALLABLE = ('GET', )
     HTTP_AUTH_REQUIRED = 'Maybe'
+    HTTP_QUERY_VARS = {'ts': 'Cache busting timestamp'}
+
+    def max_age(self):
+        # Set a long TTL if we know which version of the config this request
+        # applies to, as changed config should avoid the outdated cache.
+        if 'ts' in self.data:
+            return 7 * 24 * 3600
+        else:
+            return 30
 
     def etag_data(self):
         # This summarizes the config state this page depends on, for

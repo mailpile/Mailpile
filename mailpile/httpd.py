@@ -362,9 +362,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             cachectrl = None
             if 'http' not in config.sys.debug:
                 etag_data = []
+                max_ages = []
+                have_ed = 0
                 for c in commands:
-                    etag_data.extend(c.etag_data())
-                if etag_data:
+                    max_ages.append(c.max_age())
+                    ed = c.etag_data()
+                    have_ed += 1 if ed else 0
+                    etag_data.extend(ed)
+                if have_ed == len(commands):
                     etag = self._mk_etag(*etag_data)
                     conditional = self.headers.get('if-none-match')
                     if conditional == etag:
@@ -373,7 +378,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                         return None
                     else:
                         http_headers.append(('ETag', etag))
-                        cachectrl = "must-revalidate, max-age=10"
+                max_age = min(max_ages) if max_ages else 10
+                cachectrl = 'must-revalidate, max-age=%d' % max_age
 
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]

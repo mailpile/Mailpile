@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="/static/css/default.css" />
   <link rel="stylesheet" href="/static/css/print.css" media="print" />
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
-  <link rel="stylesheet" href="/jsapi/as.css" />
+  <link rel="stylesheet" href="/jsapi/as.css?ts={{ config.version }}-{{ config.timestamp }}" />
   {% endif %}
 
   <!-- Apple Icons -->
@@ -18,7 +18,7 @@
   <script src="/static/js/jquery.min.js"></script>
   <script src="/static/js/libraries.min.js"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
-  <script src="/api/0/jsapi/as.js"></script>
+  <script src="/api/0/jsapi/as.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
   {% if state.command_url in ("/message/draft/", "/message/") %}
   <script src="/static/js/plupload.full.min.js"></script>
   {% endif %}
@@ -78,6 +78,6 @@
     {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
   );
   </script>
-  <script src="/api/0/jsapi/app.js"></script>
+  <script src="/api/0/jsapi/app.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
   {% endif %}
   {% endif %}

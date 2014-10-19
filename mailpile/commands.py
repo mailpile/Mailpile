@@ -554,6 +554,9 @@ class Command(object):
     def etag_data(self):
         return []
 
+    def max_age(self):
+        return 0
+
     @classmethod
     def view(cls, result):
         return result
@@ -1912,6 +1915,12 @@ class Output(Command):
     HTTP_AUTH_REQUIRED = False
     IS_USER_ACTIVITY = False
     LOG_NOTHING = True
+
+    def etag_data(self):
+        return self.get_render_mode()
+
+    def max_age(self):
+        return 364 * 24 * 3600  # A long time!
 
     def get_render_mode(self):
         return self.args and self.args[0] or 'text'
