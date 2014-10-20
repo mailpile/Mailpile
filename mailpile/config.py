@@ -1416,6 +1416,7 @@ class ConfigManager(ConfigDict):
             for mail_source in self.mail_sources.values():
                 mail_source.wake_up(after=delay)
                 delay += 2
+        self.command_cache.mark_dirty([u'!config'])
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
@@ -1867,7 +1868,7 @@ class ConfigManager(ConfigDict):
                     config.other_workers.append(w)
 
         # Update the cron jobs, if necessary
-        if config.cron_worker:
+        if config.cron_worker and config.event_log:
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
@@ -1883,7 +1884,8 @@ class ConfigManager(ConfigDict):
             def refresh_command_cache():
                 config.async_worker.add_unique_task(
                     config.background, 'refresh_command_cache',
-                    config.command_cache.refresh)
+                    lambda: config.command_cache.refresh(
+                        extend=60, event_log=config.event_log))
             config.cron_worker.add_task('refresh_command_cache',
                                         5, refresh_command_cache)
 

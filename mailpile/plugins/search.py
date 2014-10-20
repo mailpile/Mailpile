@@ -157,9 +157,18 @@ class Search(Command):
 
         return session, idx, self._start, self._num
 
-    def cache_requirements(self):
+    def cache_requirements(self, result):
         msgs = self.session.results[self._start:self._start + self._num]
-        return set(self.session.searched + ['msg:%s' % i for i in msgs])
+        def fix_term(term):
+            # Terms are reversed in the search engine...
+            if term[:1] in ['-', '+']:
+                term = term[1:]
+            term = ':'.join(reversed(term.split(':', 1)))
+            return unicode(term)
+        return set(
+            [fix_term(t) for t in self.session.searched] +
+            [u'%s:msg' % i for i in msgs]
+        )
 
     def command(self):
         session, idx, start, num = self._do_search()
@@ -236,6 +245,7 @@ class View(Search):
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID'
     }
+    COMMAND_CACHE_TTL = 0
 
     class RawResult(dict):
         def _decode(self):

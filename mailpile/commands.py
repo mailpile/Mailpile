@@ -239,19 +239,23 @@ class Command(object):
             return ''
         from mailpile.urlmap import UrlMap
         args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
-        return '%s@%s' % (UrlMap.ui_url(self), md5_hex(str(args)))
+        # The replace() stuff makes these usable as CSS class IDs
+        return ('%s-%s' % (UrlMap.ui_url(self), md5_hex(str(args)))
+                          ).replace('/', '-').replace('.', '-')
 
-    def cache_requirements(self):
+    def cache_requirements(self, result):
         raise NotImplementedError('Cachable commands should override this, '
                                   'returning a set() of requirements.')
 
     def cache_result(self, result):
         if self.COMMAND_CACHE_TTL > 0:
-            print 'CACHING RESULT: %s' % self.cache_id()
+            cache_id = self.cache_id()
+            requirements = self.cache_requirements(result)
+            print 'CACHING RESULT: %s (%s)' % (cache_id, requirements)
             self.session.config.command_cache.cache_result(
-                self.cache_id(),
+                cache_id,
                 time.time() + self.COMMAND_CACHE_TTL,
-                self.cache_requirements(),
+                requirements,
                 self,
                 result
             )
@@ -514,18 +518,20 @@ class Command(object):
         if self.name:
             self.session.ui.finish_command(self.name)
 
-    def _run_sync(self, *args, **kwargs):
+    def _run_sync(self, enable_cache, *args, **kwargs):
+        self._run_args = args
+        self._run_kwargs = kwargs
         self._starting()
 
-        if self.COMMAND_CACHE_TTL > 0:
+        if (self.COMMAND_CACHE_TTL > 0 and
+               'http' not in self.session.config.sys.debug and
+               enable_cache):
             cid = self.cache_id()
             try:
                 rv = self.session.config.command_cache.get_result(cid)
                 self._finishing(self, True, just_cleanup=True)
-                print 'CACHE HIT: %s' % cid
                 return rv
             except:
-                print 'CACHE MISS: %s' % cid
                 pass
 
         def command(self, *args, **kwargs):
@@ -552,7 +558,7 @@ class Command(object):
             def streetcar():
                 try:
                     with MultiContext(self.WITH_CONTEXT):
-                        rv = self._run_sync(*args, **kwargs).as_dict()
+                        rv = self._run_sync(True, *args, **kwargs).as_dict()
                         self.event.private_data.update(rv)
                         self._update_finished_event()
                 except:
@@ -571,7 +577,7 @@ class Command(object):
             return result
 
         else:
-            return self._run_sync(*args, **kwargs)
+            return self._run_sync(True, *args, **kwargs)
 
     def run(self, *args, **kwargs):
         with MultiContext(self.WITH_CONTEXT):
@@ -584,6 +590,10 @@ class Command(object):
                     mailpile.util.LIVE_USER_ACTIVITIES -= 1
             else:
                 return self._run(*args, **kwargs)
+
+    def refresh(self):
+        self._create_event()
+        return self._run_sync(False, *self._run_args, **self._run_kwargs)
 
     def command(self):
         return None

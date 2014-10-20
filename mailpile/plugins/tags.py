@@ -448,8 +448,9 @@ class ListTags(TagCommand):
     HTTP_STRICT_VARS = False
     COMMAND_CACHE_TTL = 3600
 
-    def cache_requirements(self):
-        return set(['config'])
+    def cache_requirements(self, result):
+        return set([u'!config'] +
+                   [u'%s:in' % ti['slug'] for ti in result.result['tags']])
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):

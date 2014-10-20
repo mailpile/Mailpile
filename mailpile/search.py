@@ -1262,6 +1262,7 @@ class MailIndex:
                 # FIXME: we just ignore garbage
                 pass
 
+        self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
         return keywords, snippet
 
     def get_msg_at_idx_pos(self, msg_idx):
@@ -1289,8 +1290,9 @@ class MailIndex:
                 for order in self.INDEX_SORT:
                     self.INDEX_SORT[order].append(0)
 
+        msg_thr_mid = msg_info[self.MSG_THREAD_MID]
         self.INDEX[msg_idx] = original_line or self.m2l(msg_info)
-        self.INDEX_THR[msg_idx] = int(msg_info[self.MSG_THREAD_MID], 36)
+        self.INDEX_THR[msg_idx] = int(msg_thr_mid, 36)
         self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
         for msg_ptr in msg_info[self.MSG_PTRS].split(','):
             self.PTRS[msg_ptr] = msg_idx
@@ -1298,7 +1300,9 @@ class MailIndex:
         self.update_msg_tags(msg_idx, msg_info)
 
         if not original_line:
-            self.config.command_cache.mark_dirty(['msg:%s' % msg_idx])
+            self.config.command_cache.mark_dirty([u'mail:all',
+                                                  u'%s:msg' % msg_idx,
+                                                  u'%s:thread' % msg_thr_mid])
             CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
             self.MODIFIED.add(msg_idx)
             try:
@@ -1367,8 +1371,8 @@ class MailIndex:
                 self.TAGS[tag_id] = eids
         try:
             self.config.command_cache.mark_dirty(
-                ['in:%s' % self.config.tags[tag_id].slug] +
-                ['msg:%s' % eid for eid in added])
+                [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
+                [u'%s:msg' % eid for eid in added])
         except:
             pass
         return added
@@ -1415,8 +1419,8 @@ class MailIndex:
                 self.TAGS[tag_id] -= eids
         try:
             self.config.command_cache.mark_dirty(
-                ['in:%s' % self.config.tags[tag_id].slug] +
-                ['msg:%s' % eid for eid in removed])
+                [u'%s:in' % self.config.tags[tag_id].slug] +
+                [u'%s:msg' % eid for eid in removed])
         except:
             pass
         return removed

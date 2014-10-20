@@ -21,40 +21,65 @@ class CommandCache(object):
     #     - Periodically, the cache is refreshed, which re-runs any dirtied
     #       commands and fires events notifying the UI about changes.
     #
+    # Examples of requirements:
+    #
+    #    - Search terms, eg. 'in:inbox' or 'potato' or 'salad'
+    #    - Messages: 'msg:INDEX' where INDEX is a number (not a MID)
+    #    - Threads: 'thread:MID' were MID is the thread ID.
+    #    - The app configuration: '!config'
+    #
 
     def __init__(self):
-        self.cache = {}
         self.lock = UiRLock()
-        self.dirty = set()
+        self.cache = {}     # The cache itself
+        self.dirty = set()  # Requirements that have changed recently
 
-    def cache_result(self, fprint, expires, req, command_obj, result_obj):
+    def cache_result(self, fprint, expires, req, cmd_obj, result_obj):
         with self.lock:
-            self.cache[str(fprint)] = (expires, req, command_obj, result_obj)
+            # Note: We cache this even if the requirements are "dirty",
+            #       as mere presence in the cache makes this a candidate
+            #       for refreshing.
+            self.cache[str(fprint)] = (expires, req, cmd_obj, result_obj)
 
     def get_result(self, fprint):
-        fprint = str(fprint)
-        if fprint in self.dirty:
+        exp, req, co, ro = self.cache[fprint]
+        if req & self.dirty:
+            # If requirements are dirty, pretend this item does not exist.
             raise KeyError()
         return self.cache[fprint][3]
 
     def mark_dirty(self, requirements):
-        with self.lock:
-            for fprint, (e, r, co, ro) in self.cache.iteritems():
-                for req in requirements:
-                    if req in r:
-                        self.dirty.add(fprint)
-                        break
+        self.dirty |= set(requirements)
+        print 'DIRTY: %s' % requirements
 
-    def refresh(self, extend=60):
+    def refresh(self, extend=60, event_log=None):
         now = time.time()
         with self.lock:
             expired = set([f for f in self.cache if self.cache[f][0] < now])
             for fp in expired:
                 del self.cache[fp]
+
             dirty, self.dirty = self.dirty, set()
+            fingerprints = list(self.cache.keys())
 
-        #for fprint in (dirty - expired):
-        #    exp, req, co, ro = self.cache[fprint]
-        #    ro = co.refresh()
-        #    self.cache[fprint] = (exp + extend, req, co, ro)
+        refreshed = []
+        for fprint in fingerprints:
+            try:
+                exp, req, co, ro = self.cache[fprint]
+                if req & dirty:
+                    ro = co.refresh()
+                    with self.lock:
+                        self.cache[fprint] = (exp + extend, req, co, ro)
+                    refreshed.append(fprint)
+                    play_nice_with_threads()
+            except (ValueError, IndexError, TypeError):
+                # Broken stuff just gets evicted
+                with self.lock:
+                    if fprint in self.cache:
+                        del self.cache[fprint]
 
+        if refreshed and event_log:
+            event_log.log(message=_('New results are available'),
+                          source=self,
+                          data={'cache_ids': refreshed})
+            print 'REFRESHED: %s' % refreshed
