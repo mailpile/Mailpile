@@ -32,7 +32,7 @@
     </div>
     <div class="compose-options clearfix" data-mid="{{mid}}">
       <div class="compose-options-crypto">
-        <div class="compose-crypto-encryption none"
+        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none"
             data-mid="{{mid}}"
             data-crypto_none="{{_("None")}}"
             data-crypto_encrypt="{{_("Encrypted")}}"
@@ -44,7 +44,7 @@
             data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
             <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
         </div>
-        <div class="compose-crypto-signature none"
+        <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none"
             data-mid="{{mid}}"
             data-crypto_signed="{{_("Signed")}}"
             data-crypto_not_signed="{{_("Unsigned")}}"
@@ -181,9 +181,9 @@
       </div>
     </div>
     <input id="compose-mid-{{mid}}" type="hidden" name="mid" value="{{mid}}">
-    <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
-    <input id="compose-signature" type="hidden" value="">
-    <input id="compose-encryption" type="hidden" value="">
+    <input id="compose-crypto-{{mid}}" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+    <input id="compose-signature-{{mid}}" type="hidden" value="">
+    <input id="compose-encryption-{{mid}}" type="hidden" value="">
   </form>
   <script>
   $(document).ready(function() {

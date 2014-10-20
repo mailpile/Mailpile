@@ -5,10 +5,12 @@ $(document).on('click', '.compose-contact-find-keys', function() {
   Mailpile.find_encryption_keys(address);
 });
 
+
 $(document).on('click', '.compose-crypto-encryption', function() {
-  var status = $('#compose-encryption').val();
-  var change = '';
+
   var mid = $(this).data('mid');
+  var status = $('#compose-encryption-' + mid).val();
+  var change = '';
 
   if (status == 'encrypt') {
     change = 'none';
@@ -18,23 +20,25 @@ $(document).on('click', '.compose-crypto-encryption', function() {
     }
   }
 
-  Mailpile.Composer.Crypto.EncryptionToggle(change);
+  Mailpile.Composer.Crypto.EncryptionToggle(change, mid);
   Mailpile.Composer.Tooltips.Encryption();
 });
 
 
 /* Compose - Change Signature Status */
 $(document).on('click', '.compose-crypto-signature', function() {
-  var status = Mailpile.Composer.Crypto.DetermineSignature();
+
+  var mid = $(this).data('mid');
+  var status = Mailpile.Composer.Crypto.DetermineSignature(mid);
   var change = '';
 
-  if (status == 'sign') {
+  if (status === 'sign') {
     change = 'none';
   } else {
     change = 'sign';
   }
-
-  Mailpile.Composer.Crypto.SignatureToggle(change);
+  
+  Mailpile.Composer.Crypto.SignatureToggle(change, mid);
   Mailpile.Composer.Tooltips.Signature();
 });
 

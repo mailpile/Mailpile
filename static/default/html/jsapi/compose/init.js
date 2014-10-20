@@ -13,7 +13,7 @@ Mailpile.Composer.init = function(mid) {
 
   // Load Crypto States
   // FIXME: needs dynamic support for multi composers on a page
-  Mailpile.Composer.Crypto.LoadStates();
+  Mailpile.Composer.Crypto.LoadStates(mid);
 
   // Instantiate select2
   Mailpile.Composer.Recipients.AddressField('compose-to-' + mid);
