@@ -188,3 +188,8 @@ $(document).on('click', '.message-crypto-investigate', function() {
   }
 });
 
+
+$(document).on('click', '.message-crypto-show-inline-key', function() {
+  $(this).hide();
+  $('#message-crypto-inline-key-' + $(this).data('mid')).fadeIn();
+});

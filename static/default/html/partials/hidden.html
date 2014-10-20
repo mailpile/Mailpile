@@ -241,4 +241,11 @@
     </span>
     <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-circle-x"></span></a>
   </div>
-</script> 
+</script>
+
+
+<script id="template-messsage-inline-pgp-key-import" type="text/template">
+  <a href="#" data-mid="<%= mid %>" class="message-crypto-import-key button-secondary half-bottom"><span class="icon-key"></span> {{_("Import Encryption Key")}}</a>
+  <a href="#" data-mid="<%= mid %>" class="message-crypto-show-inline-key">{{_("Show inline encryption key")}}</a>
+  <div id="message-crypto-inline-key-<%= mid %>" class="message-crypto-inline-key half-top hide"><%= pgp_key %></div>
+</script>

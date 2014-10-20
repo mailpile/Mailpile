@@ -17,6 +17,7 @@ Mailpile.render_thread_message = function(mid) {
 
 
 Mailpile.thread_scroll_to_message = function() {
+
   var thread_id = _.keys(Mailpile.instance.messages)[0];
   var msg_top_pos = $('#message-' + thread_id).position().top + 1;
   $('#content-view').scrollTop(msg_top_pos - 150);
@@ -24,6 +25,25 @@ Mailpile.thread_scroll_to_message = function() {
   setTimeout(function(){
     $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
   }, 50);
+};
+
+
+Mailpile.thread_analyze_message = function(mid) {
+
+  // Get Email
+  var email = $('#message-' + mid).find('.thread-item-text').html();
+
+  // Check & Extract Inline PGP Key
+  var check_inline_pgp_key = email.split('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+  if (check_inline_pgp_key) {
+    var pgp_key = '-----BEGIN PGP PUBLIC KEY BLOCK-----' + check_inline_pgp_key.slice(1).join().split('-----END PGP PUBLIC KEY BLOCK-----')[0];
+    pgp_key += '-----END PGP PUBLIC KEY BLOCK-----';
+    // Replace Text
+    var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
+    var import_key_html = key_template({ pgp_key: pgp_key, mid: mid });
+    var new_email = email.replace(pgp_key, import_key_html);
+    $('#message-' + mid).find('.thread-item-text').html(new_email);
+  }
 };
 
 
