@@ -15,6 +15,7 @@ from jinja2 import Environment, BaseLoader, TemplateNotFound
 from urllib import quote, unquote
 from urlparse import urlparse
 
+from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
@@ -1134,6 +1135,7 @@ class ConfigManager(ConfigDict):
         self.event_log = None
         self.index = None
         self.vcards = {}
+        self.command_cache = CommandCache()
         self._mbox_cache = []
         self._running = {}
         self._lock = ConfigRLock()
@@ -1877,6 +1879,13 @@ class ConfigManager(ConfigDict):
                             config.background, 'Rescan',
                             lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
+
+            def refresh_command_cache():
+                config.async_worker.add_unique_task(
+                    config.background, 'refresh_command_cache',
+                    config.command_cache.refresh)
+            config.cron_worker.add_task('refresh_command_cache',
+                                        5, refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
             def optimizer():

@@ -6,7 +6,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
 
-class CommandResultCache(object):
+class CommandCache(object):
     #
     # This is a persistent cache of commands and results we may want
     # to refresh in the background and/or reuse.
@@ -24,25 +24,37 @@ class CommandResultCache(object):
 
     def __init__(self):
         self.cache = {}
+        self.lock = UiRLock()
         self.dirty = set()
 
     def cache_result(self, fprint, expires, req, command_obj, result_obj):
-        self.cache[fprint] = (expires, req, command_obj, result_obj)
+        with self.lock:
+            self.cache[str(fprint)] = (expires, req, command_obj, result_obj)
 
-    def mark_dirty(self, requirement):
-        for fprint, (e, r, co, ro) in self.cache.iteritems():
-            if req in r:
-                self.dirty.add(fprint)
+    def get_result(self, fprint):
+        fprint = str(fprint)
+        if fprint in self.dirty:
+            raise KeyError()
+        return self.cache[fprint][3]
+
+    def mark_dirty(self, requirements):
+        with self.lock:
+            for fprint, (e, r, co, ro) in self.cache.iteritems():
+                for req in requirements:
+                    if req in r:
+                        self.dirty.add(fprint)
+                        break
 
     def refresh(self, extend=60):
         now = time.time()
-        expired = set([f for f in self.cache if self.cache[f][0] < now])
-        for fp in expired:
-            del self.cache[fp]
+        with self.lock:
+            expired = set([f for f in self.cache if self.cache[f][0] < now])
+            for fp in expired:
+                del self.cache[fp]
+            dirty, self.dirty = self.dirty, set()
 
-        dirty, self.dirty = self.dirty, set()
-        for fprint in (dirty - expired):
-            exp, req, co, ro = self.cache[fprint]
-            ro = co.refresh()
-            self.cache[fprint] = (exp + extend, req, co, ro)
+        #for fprint in (dirty - expired):
+        #    exp, req, co, ro = self.cache[fprint]
+        #    ro = co.refresh()
+        #    self.cache[fprint] = (exp + extend, req, co, ro)
 

@@ -1298,6 +1298,7 @@ class MailIndex:
         self.update_msg_tags(msg_idx, msg_info)
 
         if not original_line:
+            self.config.command_cache.mark_dirty(['msg:%s' % msg_idx])
             CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
             self.MODIFIED.add(msg_idx)
             try:
@@ -1364,6 +1365,12 @@ class MailIndex:
                 self.TAGS[tag_id] |= eids
             elif eids:
                 self.TAGS[tag_id] = eids
+        try:
+            self.config.command_cache.mark_dirty(
+                ['in:%s' % self.config.tags[tag_id].slug] +
+                ['msg:%s' % eid for eid in added])
+        except:
+            pass
         return added
 
     def remove_tag(self, session, tag_id,
@@ -1406,6 +1413,12 @@ class MailIndex:
         with self._lock:
             if tag_id in self.TAGS:
                 self.TAGS[tag_id] -= eids
+        try:
+            self.config.command_cache.mark_dirty(
+                ['in:%s' % self.config.tags[tag_id].slug] +
+                ['msg:%s' % eid for eid in removed])
+        except:
+            pass
         return removed
 
     def search_tag(self, session, term, hits, recursion=0):

@@ -44,6 +44,7 @@ class EditableSearchResults(SearchResults):
 def AddComposeMethods(cls):
     class newcls(cls):
         WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
+        COMMAND_CACHE_TTL = 0
 
         def _create_contacts(self, emails):
             try:

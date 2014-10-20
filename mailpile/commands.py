@@ -46,6 +46,7 @@ class Command(object):
     IS_HANGING_ACTIVITY = False
     IS_INTERACTIVE = False
     CONFIG_REQUIRED = True
+    COMMAND_CACHE_TTL = 0   # < 1 = Not cached
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -135,7 +136,8 @@ class Command(object):
                 'state': {
                     'command_url': UrlMap.ui_url(self.command_obj),
                     'context_url': UrlMap.context_url(self.command_obj),
-                    'query_args': self.command_obj.state_as_query_args()
+                    'query_args': self.command_obj.state_as_query_args(),
+                    'cache_id': self.command_obj.cache_id()
                 },
                 'status': self.status,
                 'message': self.message,
@@ -231,6 +233,28 @@ class Command(object):
             args['arg'] = self._sloppy_copy(self.args)
         args.update(self._sloppy_copy(self.data))
         return args
+
+    def cache_id(self, sqa=None):
+        if self.COMMAND_CACHE_TTL < 1:
+            return ''
+        from mailpile.urlmap import UrlMap
+        args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
+        return '%s@%s' % (UrlMap.ui_url(self), md5_hex(str(args)))
+
+    def cache_requirements(self):
+        raise NotImplementedError('Cachable commands should override this, '
+                                  'returning a set() of requirements.')
+
+    def cache_result(self, result):
+        if self.COMMAND_CACHE_TTL > 0:
+            print 'CACHING RESULT: %s' % self.cache_id()
+            self.session.config.command_cache.cache_result(
+                self.cache_id(),
+                time.time() + self.COMMAND_CACHE_TTL,
+                self.cache_requirements(),
+                self,
+                result
+            )
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -469,6 +493,7 @@ class Command(object):
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
                                     error_info=self.error_info)
+        self.cache_result(result)
 
         if not self.run_async:
             self._update_finished_event()
@@ -490,6 +515,19 @@ class Command(object):
             self.session.ui.finish_command(self.name)
 
     def _run_sync(self, *args, **kwargs):
+        self._starting()
+
+        if self.COMMAND_CACHE_TTL > 0:
+            cid = self.cache_id()
+            try:
+                rv = self.session.config.command_cache.get_result(cid)
+                self._finishing(self, True, just_cleanup=True)
+                print 'CACHE HIT: %s' % cid
+                return rv
+            except:
+                print 'CACHE MISS: %s' % cid
+                pass
+
         def command(self, *args, **kwargs):
             if self.CONFIG_REQUIRED:
                 if not self.session.config.loaded_config:
@@ -498,7 +536,6 @@ class Command(object):
                     return self._error(_('Shutting down'))
             return self.command(*args, **kwargs)
         try:
-            self._starting()
             return self._finishing(command, command(self, *args, **kwargs))
         except self.RAISES:
             self.status = 'success'
@@ -1906,6 +1943,26 @@ class AddMailboxes(Command):
 
 ###############################################################################
 
+class Cached(Command):
+    """Fetch results from the command cache."""
+    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
+    ORDER = ('Internals', 7)
+    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    def run(self):
+        try:
+            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
+            return self.session.config.command_cache.get_result(cid)
+        except:
+            self._starting()
+            self._ignore_exception()
+            self._error(self.FAILURE % {'name': self.name,
+                                        'args': ' '.join(self.args)})
+            return self._finishing(self, False)
+
+
 class Output(Command):
     """Choose format for command results."""
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
@@ -2246,8 +2303,8 @@ def Action(session, opt, arg, data=None):
     if config.loaded_config:
         tag = config.get_tag(opt)
         if tag:
-            return GetCommand('search')(session, opt, arg=arg, data=data
-                                        ).run(search=['in:%s' % tag._key])
+            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else'', arg)
+            return GetCommand('search')(session, opt, arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
@@ -2258,6 +2315,7 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
+    RenderPage, Cached, Output,
+    Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

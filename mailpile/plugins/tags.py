@@ -446,6 +446,10 @@ class ListTags(TagCommand):
     SYNOPSIS = (None, 'tags', 'tags', '[<wanted>|!<wanted>] [...]')
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
+    COMMAND_CACHE_TTL = 3600
+
+    def cache_requirements(self):
+        return set(['config'])
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
