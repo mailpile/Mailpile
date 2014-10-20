@@ -245,7 +245,7 @@
 
 
 <script id="template-messsage-inline-pgp-key-import" type="text/template">
-  <a href="#" data-mid="<%= mid %>" class="message-crypto-import-key button-secondary half-bottom"><span class="icon-key"></span> {{_("Import Encryption Key")}}</a>
+  <a href="<%= pgp_href %>" data-mid="<%= mid %>" download="{{_('Encryption Key from')}} <%= name %>.asc" class="message-crypto-import-key button-secondary half-bottom"><span class="icon-key"></span> {{_("Import Encryption Key")}}</a>
   <a href="#" data-mid="<%= mid %>" class="message-crypto-show-inline-key">{{_("Show inline encryption key")}}</a>
   <div id="message-crypto-inline-key-<%= mid %>" class="message-crypto-inline-key half-top hide"><%= pgp_key %></div>
 </script>

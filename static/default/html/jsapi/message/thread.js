@@ -38,9 +38,14 @@ Mailpile.thread_analyze_message = function(mid) {
   if (check_inline_pgp_key) {
     var pgp_key = '-----BEGIN PGP PUBLIC KEY BLOCK-----' + check_inline_pgp_key.slice(1).join().split('-----END PGP PUBLIC KEY BLOCK-----')[0];
     pgp_key += '-----END PGP PUBLIC KEY BLOCK-----';
+
+    // Make HTML5 download href
+    var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
+
     // Replace Text
     var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
-    var import_key_html = key_template({ pgp_key: pgp_key, mid: mid });
+    var name = Mailpile.instance.metadata[mid].from.fn;
+    var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
     var new_email = email.replace(pgp_key, import_key_html);
     $('#message-' + mid).find('.thread-item-text').html(new_email);
   }
