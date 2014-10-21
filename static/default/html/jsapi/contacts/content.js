@@ -9,7 +9,7 @@ $(document).on('click', '.btn-activity-contact_add', function(e) {
   var modal_data = { name: '', address: '', extras: '' };
   var modal_template = _.template($("#modal-contact-add").html());
   $('#modal-full').html(modal_template(modal_data));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 

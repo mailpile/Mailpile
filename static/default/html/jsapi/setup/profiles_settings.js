@@ -59,12 +59,7 @@ var ProfilesSettingsView = Backbone.View.extend({
       $('#modal-full').html($('#modal-gmail-auth-' + message).html());
   
       // Instantiate
-      $('#modal-full').modal({
-        backdrop: true,
-        keyboard: true,
-        show: true,
-        remote: false
-      });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
 
       // Empty Password & Add Testing Link
       setTimeout(function() {

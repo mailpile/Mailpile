@@ -97,7 +97,7 @@ var SecurityView = Backbone.View.extend({
   },
   showPassphrase: function(e) {
     $('#modal-full').html($('#modal-security-enter-passphrase').html());
-    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
     $('#input-setup-security-passphrase').focus();
   },
   actionSecurityLevel: function(e) {
@@ -107,7 +107,7 @@ var SecurityView = Backbone.View.extend({
     // Show Some Snark
     if (level === 'crazy') {
       $('#modal-full').html($('#modal-security-level-idiot').html());
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
       $(e.target).val('');
     }
     else if (_.indexOf(['tinfoil', 'paranoid', 'above', 'concerned', 'normal'], level) > -1) {

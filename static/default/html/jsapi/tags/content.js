@@ -37,7 +37,7 @@ $(document).on('click', '#button-tag-change-icon', function() {
 
   var modal_template = _.template($("#modal-tag-icon-picker").html());
   $('#modal-full').html(modal_template({ icons: icons_html }));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -75,7 +75,7 @@ $(document).on('click', '#button-tag-change-label-color', function(e) {
   var modal_html = $("#modal-tag-color-picker").html();
   var modal_template = _.template(modal_html);
   $('#modal-full').html(modal_template({ colors: colors_html }));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 

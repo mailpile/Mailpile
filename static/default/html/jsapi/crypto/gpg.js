@@ -73,12 +73,7 @@ Mailpile.find_encryption_keys = function(query) {
   });
 
   // Show Modal
-  $('#modal-full').modal({
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 };
 
 

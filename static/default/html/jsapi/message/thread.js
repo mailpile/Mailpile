@@ -62,19 +62,17 @@ Mailpile.thread_html_iframe = function(element) {
 
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
- var options = { backdrop: true, keyboard: true, show: true, remote: false };
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-people').html());
- $('#modal-full').modal(options);
+ $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
 /* Thread - Show Tags In Converstation */
 $(document).on('click', '.show-thread-tags', function() {
- var options = { backdrop: true, keyboard: true, show: true, remote: false };
  $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-tags').html());
- $('#modal-full').modal(options);
+ $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 

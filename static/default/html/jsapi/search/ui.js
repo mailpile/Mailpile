@@ -134,7 +134,7 @@ Mailpile.render_modal_tags = function() {
 
       var modal_template = _.template($("#modal-tag-picker").html());
       $('#modal-full').html(modal_template({ priority: priority_html, tags: tags_html, archive: archive_html }));
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     });
  
   } else {

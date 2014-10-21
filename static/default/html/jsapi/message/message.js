@@ -105,7 +105,7 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 
   var modal_template = _.template($("#modal-contact-add").html());
   $('#modal-full').html(modal_template(modal_data));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -126,17 +126,9 @@ $(document).on('click', '.message-action-find-keys', function(e) {
 
 /* Message - Import key from a message */
 $(document).on('click', '.message-action-import-key', function() {
-
-  var options = {
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  };
-
   $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
   $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
-  $('#modal-full').modal(options);
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -157,12 +149,7 @@ $(document).on('click', '.message-crypto-action', function() {
 
     $('#crypto-private-key-list').html(key_html);
 
-    $('#modal-full').modal({
-      backdrop: true,
-      keyboard: true,
-      show: true,
-      remote: false
-    });
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
   });
 });
 
@@ -183,7 +170,7 @@ $(document).on('click', '.message-crypto-investigate', function() {
     Mailpile.API.crypto_gpg_searchkey_get(missing_keys[0], function(data) {
       var modal_template = _.template($("#modal-search-keyservers").html());
       $('#modal-full').html(modal_template({ keys: '<li>Key of User #1</li>' }));
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     });
   }
 });
