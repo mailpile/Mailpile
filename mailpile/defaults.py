@@ -65,7 +65,7 @@ CONFIG_RULES = {
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
         'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
-        'gpg_email_key':   (_('Attach public key to outgoing messages?'),
+        'gpg_email_key':  (_('Attach public key to outgoing messages?'),
                             bool, True),
         'openpgp_header': X(_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
@@ -97,6 +97,7 @@ CONFIG_RULES = {
     'web': (_("Web Interface Preferences"), False, {
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
+        'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
         'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
