@@ -119,27 +119,3 @@ $(document).on('click', '.thread-message-actions-quote', function() {
 $(document).on('click', '.dropdown-toggle', function() {
   $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
 });
-
-
-/* Search - Dragging items from a Thread to Sidebar */
-$('div.thread-draggable').draggable({
-  containment: "#container",
-  appendTo: 'body',
-  cursor: 'move',
-  scroll: false,
-  revert: false,
-  opacity: 1,
-  helper: function(event) {
-    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving Thread</div>');
-  },
-  start: function(event, ui) {
-
-    // Add Draggable MID
-    var mid = location.href.split("thread/=")[1].split("/")[0];
-    Mailpile.bulk_cache_add('messages_cache', mid);
-
-    // Update Bulk UI
-  	// Style & Select Checkbox
-  },
-  stop: function(event, ui) {}
-});

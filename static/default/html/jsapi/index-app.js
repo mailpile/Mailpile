@@ -44,6 +44,7 @@
 {% include("jsapi/message/thread.js") %}
 {% include("jsapi/message/message.js") %}
 {% include("jsapi/message/tooltips.js") %}
+{% include("jsapi/message/ui.js") %}
 
 /* JS UI Files */
 {% include("jsapi/ui/init.js") %}
