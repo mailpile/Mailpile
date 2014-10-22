@@ -67,11 +67,11 @@
         </li>
       </ul>
       <a class="compose-message-trash right" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
-      {# FIXME: Removed for beta freeze
       {% if command == "view" %}
-      <label class="compose-apply-quote right"><input class="compose-apply-quote" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
+      <label class="compose-apply-quote right" data-mid="{{mid}}" data-quoted_reply="{{config.web.quoted_reply}}">
+        <input id="compose-quoted-reply-{{mid}}" type="checkbox" {% if config.web.quoted_reply in ['enabled', 'unset'] %}checked{% endif %}> {{_("Quote")}}
+      </label>
       {% endif %}
-      #}
     </div>
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
       <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
@@ -95,12 +95,18 @@
           {% endif %}
         </ul>
         <div class="clearfix"></div>
-        <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
-        <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
-        <label class="right compose-attach-key" data-mid="{{mid}}">
-          <input type="checkbox" id="compose-attach-key-{{mid}}" name="attach-pgp-pubkey" {% if config.prefs.gpg_email_key %}value="yes" checked{% else %}value="no"{% endif %}>
-          {{_("Send Encryption Key")}}
-        </label>
+        <ul class="horizontal">
+          <li>
+            <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
+            <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
+          </li>
+          <li class="add-left">
+            <label class="compose-attach-key" data-mid="{{mid}}" title="{{_("Attach your public encryption key to this message")}}">
+              <input type="checkbox" id="compose-attach-key-{{mid}}" name="attach-pgp-pubkey" {% if config.prefs.gpg_email_key %}value="yes" checked{% else %}value="no"{% endif %}>
+              {{_("Attach Key")}}
+              </label>
+          </li>
+        </ul>
       </div>
     </div>
     <div class="compose-actions clearfix">
@@ -121,7 +127,6 @@
           <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
         </ul>
         -->
-  
         {% set from = editing_addresses and editing_strings.from_aids and editing_addresses[editing_strings.from_aids.0] or '' %}
         <div class="dropup">
           <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
@@ -163,7 +168,6 @@
           {% endfor %}
           </ul>
         </div>
-        <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
       </div>
       <div class="compose-buttons right" data-mid="{{mid}}">
         <button class="compose-action button-secondary" type="submit" name="save" value="save" alt="{{_("Save")}}">
@@ -180,6 +184,7 @@
         {% endif %}
       </div>
     </div>
+    <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
     <input id="compose-mid-{{mid}}" type="hidden" name="mid" value="{{mid}}">
     <input id="compose-crypto-{{mid}}" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
     <input id="compose-signature-{{mid}}" type="hidden" value="">

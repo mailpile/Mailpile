@@ -66,21 +66,6 @@ $(document).on('click', '.compose-hide-field', function(e) {
 });
 
 
-/* Compose - Quote */
-$(document).on('click', '.compose-apply-quote', function(e) {
-  e.preventDefault();
-  var mid = $(this).data('mid');
-  if ($(this).attr('checked')) {
-    console.log('is CHECKED ' + mid);
-    $(this).attr('checked', false)
-  }
-  else {
-    console.log('is UNCHECKED ' + mid);
-    $(this).attr('checked', true)
-  }
-});
-
-
 /* Compose - Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
 
@@ -234,4 +219,25 @@ $(document).on('focus', '.compose-text', function() {
 $(document).on('click', '.compose-attach-key', function(e) {
   var mid = $(this).data('mid');
   Mailpile.Composer.Crypto.AttachKey(mid);
+});
+
+
+/* Compose - Quoted Reply */
+$(document).on('click', '.compose-apply-quote', function(e) {
+  var mid = $(this).data('mid');
+  var state = $(this).data('quoted_reply');
+  Mailpile.Composer.Body.QuotedReply(mid, state);
+});
+
+
+$(document).on('submit', '#form-compose-quoted-reply', function(e) {
+  e.preventDefault();
+  var quoted_reply = 'enabled';
+  if ($(this).find('input[type=checkbox]').is(':checked')) {
+    quoted_reply = 'disabled';
+  }
+  Mailpile.API.settings_set_post({ 'web.quoted_reply': quoted_reply }, function(result) {
+    Mailpile.notification(result);
+    $('#modal-full').modal('hide');
+  });
 });
