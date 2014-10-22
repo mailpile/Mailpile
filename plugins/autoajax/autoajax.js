@@ -9,6 +9,8 @@
  *   - Use pushstate to update the browser history and location bar
  */
 
+var update_using_jhtml;
+var prepare_new_content;
 var jhtml_url = function(original_url) {
     var new_url = original_url;
     var html = new_url.indexOf('.html');
@@ -36,32 +38,46 @@ var jhtml_url = function(original_url) {
     return new_url;
 };
 
-var update_using_jhtml = function(original_url) {
-    return $.ajax({
-        url: jhtml_url(original_url),
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            $('#content-view').html(data['results']);
+prepare_new_content = function(selector) {
+    $(selector).find('a').each(function(idx, elem) {
+        var url = $(elem).attr('href');
+        if (url && ((url.indexOf('/in/') == 0) ||
+                    (url.indexOf('/search/') == 0))) {
+            $(elem).click(function(ev) {
+                if (update_using_jhtml(url)) ev.preventDefault();
+            });
         }
     });
 };
 
-$(document).ready(function(){
-    if (Mailpile && Mailpile.instance &&
-            Mailpile.instance['command'] == 'search') {
-        $('a').each(function(idx, elem) {
-            var url = $(elem).attr('href');
-            if (url && ((url.indexOf('/in/') == 0) ||
-                        (url.indexOf('/search/') == 0))) {
-                $(elem).click(function(ev) {
-                    if (update_using_jhtml(url)) ev.preventDefault();
-                });
+update_using_jhtml = function(original_url) {
+    if (Mailpile.instance['command'] == 'search') {
+        var cv = $('#content-view');
+        cv.hide();
+        return $.ajax({
+            url: jhtml_url(original_url),
+            type: 'GET',
+            success: function(data) {
+                cv.html(data['result']).fadeIn('fast');
+                prepare_new_content(cv);
+
+                // FIXME: The back button is still broken
+                history.pushState(null, data['message'], original_url);
             }
         });
+    }
+    else {
+        return false;
+    }
+};
+
+$(document).ready(function(){
+    if (Mailpile && Mailpile.instance) {
+        prepare_new_content('body');
     }
 });
 
 return {
-    'update_using_jhtml': update_using_jhtml
+    'update_using_jhtml': update_using_jhtml,
+    'prepare_new_content': prepare_new_content
 }
