@@ -143,18 +143,3 @@ $('div.thread-draggable').draggable({
   },
   stop: function(event, ui) {}
 });
-
-
-/* Thread Tooltips */
-$(document).ready(function() {
-
-  // Thread Scroll to Message
-  if (location.href.split("thread/=")[1]) {
-
-    // Scroll to Message
-    Mailpile.thread_scroll_to_message();
-    
-    // Show Tooltips
-    Mailpile.thread_initialize_tooltips();
-  }
-});

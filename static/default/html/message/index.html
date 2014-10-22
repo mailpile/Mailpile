@@ -90,6 +90,11 @@
     {% endfor %}
   </ul>
 </div>
+<script>
+$(document).ready(function() {
+  Mailpile.Message.init();
+});
+</script>
 {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
