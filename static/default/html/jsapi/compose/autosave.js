@@ -3,9 +3,7 @@
 Mailpile.Composer.Autosave = function(mid, form_data) {
 
   // Text is different, run autosave
-  // Should test against model
   if ($('#compose-text-' + mid).val() !== Mailpile.Composer.Drafts[mid].body) {
-  //Mailpile.messages_composing['compose-text-' + mid]) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
@@ -21,7 +19,6 @@ Mailpile.Composer.Autosave = function(mid, form_data) {
   	  success  : function(response) {
 
         // Update Message (data model)
-        //Mailpile.messages_composing[mid] = $('#compose-text-' + mid).val();
         Mailpile.Composer.Drafts[mid].body = $('#compose-text-' + mid).val();
 
         // Fadeout autosave UI msg
