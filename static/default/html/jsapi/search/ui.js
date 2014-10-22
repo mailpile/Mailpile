@@ -143,32 +143,39 @@ Mailpile.render_modal_tags = function() {
 };
 
 
-$(document).ready(function() {
-
-  $("#pile-newmessages-notification").click(Mailpile.update_search);
-
-  EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
-
-    if (ev.flags.indexOf("R") != -1) {
-      console.log("Started rescanning...");
-      $("#logo-bluemail").fadeOut(2000);
-      $("#logo-redmail").hide(2000);
-      $("#logo-greenmail").hide(3000);
-      $("#logo-bluemail").fadeIn(2000);
-      $("#logo-greenmail").fadeIn(4000);
-      $("#logo-redmail").fadeIn(6000);
-    }
-
-    if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
-      $("#pile-newmessages-notification").slideDown("slow");
-
-      if (Notification.permission == "granted") {
-        new Notification(ev.data.messages + "{{_(' new messages received')}}", { 
-            body:'{{_("Your pile is growing...")}}',
-            icon:'/static/img/logo-color.png', 
-          }  
-        )
+Mailpile.Search.UI.Draggable = function() {
+  $('td.draggable').draggable({
+    containment: "body",
+    appendTo: 'body',
+    cursor: 'move',
+    scroll: false,
+    revert: false,
+    opacity: 1,
+    helper: function(event) {
+      // FIXME: the word 'message' needs to updated as per Issue #666 mwhuahahaha
+      if (Mailpile.messages_cache.length == 0) {
+        drag_count = '1 message</div>';
+      } else {
+        drag_count = Mailpile.messages_cache.length + ' messages';
       }
-    }
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving ' + drag_count + '</div>');
+    },
+    start: function(event, ui) {
+  
+      // Add Draggable MID
+      Mailpile.bulk_cache_add('messages_cache', $(event.target).parent().data('mid'));
+  
+      // Update Bulk UI
+      Mailpile.bulk_actions_update_ui();
+  
+    	// Style & Select Checkbox
+    	$(event.target).parent().removeClass('result').addClass('result-on')
+    	.data('state', 'selected')
+    	.find('td.checkbox input[type=checkbox]')
+    	.val('selected')
+    	.prop('checked', true);
+    },
+    stop: function(event, ui) {}
   });
-});
+};
+

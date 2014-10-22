@@ -110,11 +110,16 @@ $(document).on('submit', '#form-tag-picker', function(e) {
   var tag_data    = { mid: Mailpile.messages_cache };
 
   // Add Selection
-  _.each($(this).find('input[name=tid]'), function(val, key) {
+  console.log(Mailpile.tags_cache);
+  _.each($(this).find('input.tag-picker-checkbox'), function(val, key) {
+    console.log($(val).val() + ' ---> ' + $(val).is(':checked') + ' ---> ' + _.indexOf(Mailpile.tags_cache, $(val).val()));
     if ($(val).is(':checked') && _.indexOf(Mailpile.tags_cache, $(val).val()) === -1) {
+      console.log('adding to tags_cache ' + $(val).val());
       Mailpile.tags_cache.push($(val).val());
     }
   });
+
+  console.log(Mailpile.tags_cache);
 
   // Make Data Struc
   if (action == 'add') {
@@ -140,7 +145,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
 
         // Select to minimize load traversing DOM
         $item = $('#pile-message-' + mid).find('td.subject span.item-tags');
-  
+
         // Add / Remove Tags from UI
         if (action == 'add') {
           _.each(Mailpile.tags_cache, function(tid, key) {
@@ -168,6 +173,6 @@ $(document).on('submit', '#form-tag-picker', function(e) {
 
 
 $(document).on('click', '.tag-picker-checkbox', function(e) {
-  Mailpile.tags_cache = _.without(Mailpile.tags_cache, $(this).val());
+//  Mailpile.tags_cache = _.without(Mailpile.tags_cache, $(this).val());
 });
 

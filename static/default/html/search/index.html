@@ -48,4 +48,9 @@
     <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
   </div>
 {% endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Search.init();
+});
+</script>
 {% endblock %}
