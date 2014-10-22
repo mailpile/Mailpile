@@ -58,7 +58,3 @@ Mailpile.sidebar_tags_droppable_opts = {
     });
   }
 };
-
-
-/* Search - Make search items draggable to sidebar */
-$('li.sidebar-tags-draggable').droppable(Mailpile.sidebar_tags_droppable_opts);
