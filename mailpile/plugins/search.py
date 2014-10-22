@@ -103,7 +103,7 @@ class Search(Command):
         for order in self.data.get('order', []):
             session.order = order
 
-        num = session.config.prefs.num_results
+        num = def_num = session.config.prefs.num_results
         d_start = int(self.data.get('start', [0])[0])
         d_end = int(self.data.get('end', [0])[0])
         if d_start and d_end:
@@ -115,7 +115,7 @@ class Search(Command):
             args[:0] = ['@%s' % (d_end - num + 1)]
 
         start = 0
-        if args and args[0].startswith('@'):
+        while args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
@@ -126,10 +126,11 @@ class Search(Command):
         self._start = start
         self._num = num
         self._search_state = {
-            'q': [q for q in args if q[:1] != '@' and q not in qrs],
+            'q': [q for q in args if q not in qrs],
             'qr': qrs,
-            'start': [a for a in args if a.startswith('@')],
-            'order': [session.order]
+            'order': [session.order],
+            'start': [str(start + 1)] if start else [],
+            'end': [str(start + num)] if (num != def_num) else []
         }
 
     def _do_search(self, search=None, process_args=False):
