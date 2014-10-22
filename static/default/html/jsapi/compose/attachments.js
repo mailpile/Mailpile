@@ -80,18 +80,18 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
         // Upload files
       	plupload.each(files, function(file) {
   
-          // Show image preview
-          if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
-            Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
-          } else {
-            var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
-        		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
-          }
-
-          // Show Warning for 10mb or larger
-          if (file.size > 10485760) {
+          // Show Warning for 50 mb or larger
+          if (file.size > 52428800) {
             start_upload = false;
-            alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 50 mb or larger');
+            alert(file.name + ' {{_("is")}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")}}');
+          } else {
+           // Show image preview
+            if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
+              Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
+            } else {
+              var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
+          		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
+            }
           }
       	});
   
