@@ -1,8 +1,10 @@
 /* Composer */
 Mailpile.Composer = {};
+Mailpile.Composer.Drafts = {};
 Mailpile.Composer.Crypto = {};
 Mailpile.Composer.Recipients = {};
 Mailpile.Composer.Tooltips = {};
+Mailpile.Composer.Body = {};
 Mailpile.Composer.Attachments = {};
 
 /* Composer - Create new instance of composer */
@@ -15,12 +17,11 @@ Mailpile.Composer.init = function(mid) {
   // FIXME: needs dynamic support for multi composers on a page
   Mailpile.Composer.Crypto.LoadStates(mid);
 
-  // Instantiate select2
+  // Initialize select2
   Mailpile.Composer.Recipients.AddressField('compose-to-' + mid);
 
   // Save Text Composing Objects (move to data model)
-  Mailpile.messages_composing['compose-text-' + mid] = $('#compose-text-' + mid).val();
-
+  Mailpile.Composer.Drafts[mid] = Mailpile.Composer.Model;
 
   // Initialize Attachments
   // FIXME: needs to be bound to unique ID that can be destroyed
@@ -35,7 +36,7 @@ Mailpile.Composer.init = function(mid) {
   Mailpile.Composer.Tooltips.Encryption();
   Mailpile.Composer.Tooltips.ContactDetails();
 
-  // Autosize
-  //$('#compose-text-' + mid).autosize();
+  // Body
+  Mailpile.Composer.Body.Setup(mid);
 
 };
