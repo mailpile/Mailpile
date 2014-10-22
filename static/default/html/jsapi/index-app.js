@@ -1,10 +1,10 @@
 /* JS App Files */
-{% include("jsapi/app/eventlog.js") %}
-{% include("jsapi/app/activities.js") %}
-{% include("jsapi/app/drag_drop.js") %}
-{% include("jsapi/app/global.js") %}
-{% include("jsapi/app/keybindings.js") %}
-{% include("jsapi/app/notifications.js") %}
+{% include("jsapi/global/eventlog.js") %}
+{% include("jsapi/global/activities.js") %}
+{% include("jsapi/global/drag_drop.js") %}
+{% include("jsapi/global/global.js") %}
+{% include("jsapi/global/keybindings.js") %}
+{% include("jsapi/global/notifications.js") %}
 
 /* JS - Crypto */
 {% include("jsapi/crypto/gpg.js") %}
@@ -25,8 +25,9 @@
 {% include("jsapi/contacts/content.js") %}
 
 /* JS - Search */
+{% include("jsapi/search/init.js") %}
 {% include("jsapi/search/bulk_actions.js") %}
-{% include("jsapi/search/content.js") %}
+{% include("jsapi/search/events.js") %}
 {% include("jsapi/search/display_modes.js") %}
 {% include("jsapi/search/selection_actions.js") %}
 {% include("jsapi/search/tooltips.js") %}
@@ -45,6 +46,7 @@
 {% include("jsapi/message/tooltips.js") %}
 
 /* JS UI Files */
+{% include("jsapi/ui/init.js") %}
 {% include("jsapi/ui/content.js") %}
 {% include("jsapi/ui/global.js") %}
 {% include("jsapi/ui/topbar.js") %}

@@ -238,13 +238,6 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
 {% endfor %}
 
 
-/* Mailpile - UI */
-// FIXME: move to alternate file
-Mailpile.UI = {
-  ModalOptions: { backdrop: true, keyboard: true, show: true, remote: false }
-};
-
-
 /* Mailpile - UI - Make fingerprints nicer */
 Mailpile.nice_fingerprint = function(fingerprint) {
   // FIXME: I'd really love to make these individual pieces color coded
