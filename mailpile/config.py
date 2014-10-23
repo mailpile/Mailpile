@@ -1359,6 +1359,7 @@ class ConfigManager(ConfigDict):
         keyfile = self.conf_key
 
         self._mkworkdir(None)
+        self.timestamp = int(time.time())
 
         # FIXME: The master key is actually prefs.obfuscate.index still...
         if not self.master_key:
@@ -1900,8 +1901,8 @@ class ConfigManager(ConfigDict):
                     config.background, 'refresh_command_cache',
                     lambda: config.command_cache.refresh(
                         extend=60, event_log=config.event_log))
-            config.cron_worker.add_task('refresh_command_cache',
-                                        5, refresh_command_cache)
+            config.cron_worker.add_task('refresh_command_cache', 5,
+                                        refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
             def optimizer():

@@ -4,12 +4,13 @@ import mailpile.util
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
+from mailpile.ui import Session
 
 
 class CommandCache(object):
     #
-    # This is a persistent cache of commands and results we may want
-    # to refresh in the background and/or reuse.
+    # This is an in-memory cache of commands and results we may want to
+    # refresh in the background and/or reuse.
     #
     # The way this works:
     #     - Cache-able commands generate a fingerprint describing themselves.
@@ -36,17 +37,24 @@ class CommandCache(object):
 
     def cache_result(self, fprint, expires, req, cmd_obj, result_obj):
         with self.lock:
+            # Make a snapshot of the session, as it provides context
+            snapshot = Session.Snapshot(cmd_obj.session, ui=False)
+            snapshot.ui.render_mode = cmd_obj.session.ui.render_mode
+            cmd_obj.session = result_obj.session = snapshot
+
             # Note: We cache this even if the requirements are "dirty",
             #       as mere presence in the cache makes this a candidate
             #       for refreshing.
-            self.cache[str(fprint)] = (expires, req, cmd_obj, result_obj)
+            self.cache[str(fprint)] = [expires, req, cmd_obj, result_obj]
 
-    def get_result(self, fprint):
-        exp, req, co, ro = self.cache[fprint]
-        if req & self.dirty:
+    def get_result(self, fprint, dirty_check=True):
+        with self.lock:
+            exp, req, co, result_obj = match = self.cache[fprint]
+            match[0] += 60
+        if dirty_check and req & self.dirty:
             # If requirements are dirty, pretend this item does not exist.
             raise KeyError()
-        return self.cache[fprint][3]
+        return result_obj
 
     def mark_dirty(self, requirements):
         self.dirty |= set(requirements)
@@ -69,7 +77,7 @@ class CommandCache(object):
                 if req & dirty:
                     ro = co.refresh()
                     with self.lock:
-                        self.cache[fprint] = (exp + extend, req, co, ro)
+                        self.cache[fprint] = [exp + extend, req, co, ro]
                     refreshed.append(fprint)
                     play_nice_with_threads()
             except (ValueError, IndexError, TypeError):

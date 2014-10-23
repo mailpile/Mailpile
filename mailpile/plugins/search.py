@@ -168,6 +168,7 @@ class Search(Command):
             term = ':'.join(reversed(term.split(':', 1)))
             return unicode(term)
         return set(
+            ['!config'] +
             [fix_term(t) for t in self.session.searched] +
             [u'%s:msg' % i for i in msgs]
         )

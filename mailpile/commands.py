@@ -253,13 +253,10 @@ class Command(object):
 
     def cache_result(self, result):
         if self.COMMAND_CACHE_TTL > 0:
-            cache_id = self.cache_id()
-            requirements = self.cache_requirements(result)
-            print 'CACHING RESULT: %s (%s)' % (cache_id, requirements)
             self.session.config.command_cache.cache_result(
-                cache_id,
+                self.cache_id(),
                 time.time() + self.COMMAND_CACHE_TTL,
-                requirements,
+                self.cache_requirements(result),
                 self,
                 result
             )
@@ -542,6 +539,9 @@ class Command(object):
             cid = self.cache_id()
             try:
                 rv = self.session.config.command_cache.get_result(cid)
+                rv.session.ui = self.session.ui
+                if self.CHANGES_SESSION_CONTEXT:
+                    self.session.copy(rv.session, ui=False)
                 self._finishing(self, True, just_cleanup=True)
                 return rv
             except:
@@ -1977,7 +1977,9 @@ class Cached(Command):
     def run(self):
         try:
             cid = self.args[0] if self.args else self.data.get('id', [None])[0]
-            return self.session.config.command_cache.get_result(cid)
+            rv = self.session.config.command_cache.get_result(cid)
+            self.session.copy(rv.session)
+            return rv
         except:
             self._starting()
             self._ignore_exception()
