@@ -312,7 +312,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
-        if 'context' in query_data:
+
+        if 'context' in post_data:
+            session.load_context(post_data['context'][0])
+        elif 'context' in query_data:
             session.load_context(query_data['context'][0])
 
         if 'http' in config.sys.debug:

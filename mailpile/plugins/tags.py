@@ -240,7 +240,8 @@ class Tag(TagCommand):
     HTTP_POST_VARS = {
         'mid': 'message-ids',
         'add': 'tags',
-        'del': 'tags'
+        'del': 'tags',
+        'context': 'search context, for tagging relative results'
     }
 
     class CommandResult(TagCommand.CommandResult):
@@ -262,12 +263,11 @@ class Tag(TagCommand):
                                          len(self.result['msg_ids']))
 
     def _get_ops_and_msgids(self, words):
+        ops = (['+%s' % t for t in self.data.get('add', []) if t] +
+               ['-%s' % t for t in self.data.get('del', []) if t])
         if 'mid' in self.data:
             msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
-            ops = (['+%s' % t for t in self.data.get('add', []) if t] +
-                   ['-%s' % t for t in self.data.get('del', []) if t])
         else:
-            ops = []
             while words and words[0][0] in ('-', '+'):
                 ops.append(words.pop(0))
             msg_ids = self._choose_messages(words)
