@@ -8,6 +8,7 @@ Mailpile.Search.init = function() {
 
   // Drag Items
   Mailpile.Search.UI.Draggable();
+  Mailpile.Search.UI.ResultDropable();
 
   
   // Render Display Size

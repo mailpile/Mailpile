@@ -179,3 +179,34 @@ Mailpile.Search.UI.Draggable = function() {
   });
 };
 
+
+Mailpile.Search.UI.ResultDropable = function() {
+
+  $('#pile-results tr').droppable({
+    accept: 'a.sidebar-tag',
+    hoverClass: 'result-hover',
+    tolerance: 'pointer',
+    drop: function(event, ui) {
+
+      // Update Cache
+      Mailpile.bulk_cache_add('messages_cache', $(event.target).data('mid'));
+
+      // Save Update
+      Mailpile.API.tag_post({ add: ui.draggable.data('tid'), mid: Mailpile.messages_cache }, function() {
+
+        var tag = _.findWhere(Mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
+        var hex = Mailpile.theme.colors[tag.label_color];
+        var updated = [];
+
+        // Update Multiple Selected Messages
+        if (Mailpile.messages_cache.length > 0) {
+          $.each(Mailpile.messages_cache, function(key, mid) {
+            updated.push(mid);
+            $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + hex + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
+          });
+        }
+      });
+    }
+  });
+
+};
