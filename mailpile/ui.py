@@ -620,22 +620,66 @@ class RawHttpResponder:
 
 class Session(object):
 
+    @classmethod
+    def Snapshot(cls, session, **copy_kwargs):
+        return cls(session.config).copy(session, **copy_kwargs)
+
     def __init__(self, config):
         self.config = config
+
         self.main = False
-        self.order = None
+        self.ui = UserInteraction(config)
+
         self.wait_lock = threading.Condition(UiRLock())
+        self.task_results = []
+
+        self.order = None
         self.results = []
         self.searched = []
-        self.displayed = (0, 0)
-        self.task_results = []
-        self.ui = UserInteraction(config)
+        self.displayed = None
+        self.context = None
 
     def set_interactive(self, val):
         self.ui.interactive = val
 
     interactive = property(lambda s: s.ui.interactive,
                            lambda s, v: s.set_interactive(v))
+
+    def copy(self, session, ui=False, search=True):
+        if ui:
+            self.main = session.main
+            self.ui = session.ui
+        if search:
+            self.order = session.order
+            self.results = session.results[:]
+            self.searched = session.searched[:]
+            self.displayed = session.displayed
+            self.context = session.context
+        return self
+
+    def get_context(self, update=False):
+        if update or not self.context:
+            if self.searched:
+                sid = self.config.search_history.add(self.searched,
+                                                     self.results,
+                                                     self.order)
+                self.context = 'search:%s' % sid
+        return self.context
+
+    def load_context(self, context):
+        if self.context and self.context == context:
+            return context
+        try:
+            if context.startswith('search:'):
+                s, r, o = self.config.search_history.get(self, context[7:])
+                self.searched, self.results, self.order = s, r, o
+                self.displayed = None
+                self.context = context
+                return context
+            else:
+                return False
+        except (KeyError, ValueError):
+            return False
 
     def report_task_completed(self, name, result):
         with self.wait_lock:

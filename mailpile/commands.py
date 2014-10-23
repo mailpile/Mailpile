@@ -46,7 +46,9 @@ class Command(object):
     IS_HANGING_ACTIVITY = False
     IS_INTERACTIVE = False
     CONFIG_REQUIRED = True
+
     COMMAND_CACHE_TTL = 0   # < 1 = Not cached
+    CHANGES_SESSION_CONTEXT = False
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -137,7 +139,8 @@ class Command(object):
                     'command_url': UrlMap.ui_url(self.command_obj),
                     'context_url': UrlMap.context_url(self.command_obj),
                     'query_args': self.command_obj.state_as_query_args(),
-                    'cache_id': self.command_obj.cache_id()
+                    'cache_id': self.command_obj.cache_id(),
+                    'context': self.command_obj.context or ''
                 },
                 'status': self.status,
                 'message': self.message,
@@ -203,6 +206,7 @@ class Command(object):
 
     def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
+        self.context = None
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
         self.status = 'unknown'
@@ -491,6 +495,9 @@ class Command(object):
             self.session.ui.warning('FIXME: %s should use self._success'
                                     ' etc. (issue #383)' % self.__class__)
             self.status = 'success'
+
+        self.context = self.session.get_context(
+            update=self.CHANGES_SESSION_CONTEXT)
 
         self.session.ui.mark(_('Generating result'))
         result = self.CommandResult(self, self.session, self.name,

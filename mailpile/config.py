@@ -16,6 +16,7 @@ from urllib import quote, unquote
 from urlparse import urlparse
 
 from mailpile.command_cache import CommandCache
+from mailpile.search_history import SearchHistory
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
@@ -1136,6 +1137,7 @@ class ConfigManager(ConfigDict):
         self.index = None
         self.vcards = {}
         self.command_cache = CommandCache()
+        self.search_history = SearchHistory()
         self._mbox_cache = []
         self._running = {}
         self._lock = ConfigRLock()
@@ -1310,6 +1312,11 @@ class ConfigManager(ConfigDict):
                                                       mode='rw', mkdir=True),
                                   dec_key_func, enc_key_func
                                   ).load()
+
+        # Load Search History
+        self.search_history = SearchHistory.Load(self,
+                                                 merge=self.search_history)
+
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
@@ -1881,6 +1888,13 @@ class ConfigManager(ConfigDict):
                             lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
+            def search_history_saver():
+                config.save_worker.add_unique_task(
+                    'save_search_history',
+                    lambda: config.search_history.save(config))
+            config.cron_worker.add_task('save_search_history', 951,
+                                        search_history_saver)
+
             def refresh_command_cache():
                 config.async_worker.add_unique_task(
                     config.background, 'refresh_command_cache',
@@ -1954,6 +1968,7 @@ class ConfigManager(ConfigDict):
 
         from mailpile.postinglist import PLC_CACHE_FlushAndClean
         PLC_CACHE_FlushAndClean(config.background, keep=0)
+        config.search_history.save(config)
         save_worker.quit(join=True)
 
         if config.sys.debug:

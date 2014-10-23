@@ -34,6 +34,7 @@ class Search(Command):
     }
     IS_USER_ACTIVITY = True
     COMMAND_CACHE_TTL = 3600
+    CHANGES_SESSION_CONTEXT = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
