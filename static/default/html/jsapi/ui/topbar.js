@@ -54,15 +54,3 @@ $(document).on('click', '#button-compose', function(e) {
   Mailpile.activities.compose();
 });
 
-
-/* Activities - DOM */
-$(document).ready(function() {
-  // Command Specific Mods
-  if (Mailpile.instance.state.command_url === '/contacts/') {
-    $('#search-query').val('contacts: ');
-  }
-  else if (Mailpile.instance.state.command_url === '/tags/') {
-    $('#search-query').val('tags: ');
-  }
-
-});

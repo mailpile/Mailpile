@@ -20,6 +20,7 @@
 {% include("jsapi/compose/body.js") %}
 
 /* JS - Contacts */
+{% include("jsapi/contacts/init.js") %}
 {% include("jsapi/contacts/display_modes.js") %}
 {% include("jsapi/contacts/content.js") %}
 
@@ -36,6 +37,7 @@
 {% include("jsapi/settings/content.js") %}
 
 /* JS - Tags */
+{% include("jsapi/tags/init.js") %}
 {% include("jsapi/tags/content.js") %}
 
 /* JS - Message */
@@ -45,11 +47,10 @@
 {% include("jsapi/message/tooltips.js") %}
 {% include("jsapi/message/ui.js") %}
 
-/* JS UI Files */
+/* JS - UI */
 {% include("jsapi/ui/init.js") %}
 {% include("jsapi/ui/content.js") %}
 {% include("jsapi/ui/global.js") %}
 {% include("jsapi/ui/topbar.js") %}
 {% include("jsapi/ui/sidebar.js") %}
 {% include("jsapi/ui/tooltips.js") %}
-

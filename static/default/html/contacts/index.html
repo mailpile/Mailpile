@@ -47,5 +47,10 @@
   <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Contacts")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5>
 </div>
 
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
 {% endblock %}
 
