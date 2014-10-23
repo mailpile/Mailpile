@@ -1440,7 +1440,7 @@ class MailIndex:
         return results
 
     def search(self, session, searchterms,
-               keywords=None, order=None, recursion=0):
+               keywords=None, order=None, recursion=0, context=None):
         # Stash the raw search terms, decide if this is cached or not
         raw_terms = searchterms[:]
         if keywords is None:
@@ -1480,7 +1480,11 @@ class MailIndex:
         if searchterms and searchterms[0] and searchterms[0][0] == '-':
             searchterms[:0] = ['all:mail']
 
-        r = []
+        if context:
+            r = [(None, set(context))]
+        else:
+            r = []
+
         for term in searchterms:
             if term in STOPLIST:
                 if session:

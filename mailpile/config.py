@@ -1891,7 +1891,7 @@ class ConfigManager(ConfigDict):
 
             def search_history_saver():
                 config.save_worker.add_unique_task(
-                    'save_search_history',
+                    config.background, 'save_search_history',
                     lambda: config.search_history.save(config))
             config.cron_worker.add_task('save_search_history', 951,
                                         search_history_saver)

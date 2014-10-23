@@ -30,7 +30,8 @@ class Search(Command):
         'order': 'sort order',
         'start': 'start position',
         'end': 'end position',
-        'full': 'return all metadata'
+        'full': 'return all metadata',
+        'context': 'refine or redisplay an older search'
     }
     IS_USER_ACTIVITY = True
     COMMAND_CACHE_TTL = 3600
@@ -80,6 +81,7 @@ class Search(Command):
     def _starting(self):
         Command._starting(self)
         session, idx = self.session, self._idx()
+        self._search_args = args = []
 
         def nq(t):
             p = t[0] if (t and t[0] in '-+') else ''
@@ -91,9 +93,15 @@ class Search(Command):
                     pass
             return p+t
 
-        self._search_args = args = list(nq(a) for a in self.args)
+
+        self.context = self.data.get('context', [None])[0]
+        if self.context:
+            args += self.session.searched
+
+        args += [a for a in list(nq(a) for a in self.args) if a not in args]
         for q in self.data.get('q', []):
-            args.extend(nq(a) for a in q.split())
+            ext = [nq(a) for a in q.split()]
+            args.extend([a for a in ext if a not in args])
 
         # Query refinements...
         qrs = []
@@ -133,29 +141,35 @@ class Search(Command):
             'start': [str(start + 1)] if start else [],
             'end': [str(start + num)] if (num != def_num) else []
         }
+        if self.context:
+            self._search_state['context'] = [self.context]
 
     def _do_search(self, search=None, process_args=False):
         session, idx = self.session, self._idx()
 
-        session.searched = search or []
-        if search is None or process_args:
-            prefix = ''
-            for arg in self._search_args:
-                if arg.endswith(':'):
-                    prefix = arg
-                elif ':' in arg or (arg and arg[0] in ('-', '+')):
-                    prefix = ''
-                    session.searched.append(arg.lower())
-                elif prefix and '@' in arg:
-                    session.searched.append(prefix + arg.lower())
-                else:
-                    words = re.findall(WORD_REGEXP, arg.lower())
-                    session.searched.extend([prefix + word for word in words])
-        if not session.searched:
-             session.searched = ['all:mail']
+        if session.searched != self._search_args:
+            session.searched = search or []
+            if search is None or process_args:
+                prefix = ''
+                for arg in self._search_args:
+                    if arg.endswith(':'):
+                        prefix = arg
+                    elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                        prefix = ''
+                        session.searched.append(arg.lower())
+                    elif prefix and '@' in arg:
+                        session.searched.append(prefix + arg.lower())
+                    else:
+                        words = re.findall(WORD_REGEXP, arg.lower())
+                        session.searched.extend([prefix + word
+                                                 for word in words])
+            if not session.searched:
+                session.searched = ['all:mail']
 
-        session.results = list(idx.search(session, session.searched).as_set())
-        idx.sort_results(session, session.results, session.order)
+            context = session.results if self.context else None
+            session.results = list(idx.search(session, session.searched,
+                                              context=context).as_set())
+            idx.sort_results(session, session.results, session.order)
 
         return session, idx, self._start, self._num
 

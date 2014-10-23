@@ -253,13 +253,14 @@ class Command(object):
 
     def cache_result(self, result):
         if self.COMMAND_CACHE_TTL > 0:
-            self.session.config.command_cache.cache_result(
-                self.cache_id(),
-                time.time() + self.COMMAND_CACHE_TTL,
-                self.cache_requirements(result),
-                self,
-                result
-            )
+            cache_id = self.cache_id()
+            if cache_id:
+                self.session.config.command_cache.cache_result(
+                    cache_id,
+                    time.time() + self.COMMAND_CACHE_TTL,
+                    self.cache_requirements(result),
+                    self,
+                    result)
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -499,8 +500,9 @@ class Command(object):
                                     ' etc. (issue #383)' % self.__class__)
             self.status = 'success'
 
-        self.context = self.session.get_context(
-            update=self.CHANGES_SESSION_CONTEXT)
+        if not self.context:
+            self.context = self.session.get_context(
+                update=self.CHANGES_SESSION_CONTEXT)
 
         self.session.ui.mark(_('Generating result'))
         result = self.CommandResult(self, self.session, self.name,
