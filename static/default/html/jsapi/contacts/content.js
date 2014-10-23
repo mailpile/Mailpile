@@ -71,10 +71,3 @@ $('.show-key-details').on('click', function(e) {
   $('#contact-key-details-' + keyid).fadeIn();
 });
 
-
-$(document).ready(function() {
-
-  // Hide Key Details
-  $('.contact-key-details').hide();
-
-});

@@ -141,11 +141,14 @@
   {% else %}
   <h4>{{_("No Conversations")}} :(</h4>
   {% endif %}
-
 {% else %}
     {% set error_title = "contact_missing" %}
     {% include("partials/errors_content.html") %}
 {% endif %}
 </div>
-
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
 {% endblock %}

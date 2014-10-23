@@ -186,9 +186,3 @@ $(document).on('change', '#data-tag-label', function(e) {
   });
 });
 
-$(document).ready(function() {
-
-  // Slugify
-  $('#data-tag-add-slug').slugify('#data-tag-add-tag');
-
-});
