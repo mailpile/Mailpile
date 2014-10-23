@@ -339,10 +339,11 @@ class UserInteraction:
             return self._display_result(result.as_('json'))
         for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
             if self.render_mode.endswith(suffix):
-                if self.render_mode in (suffix, 'j' + suffix):
+                jsuffix = 'j' + suffix
+                if self.render_mode in (suffix, jsuffix):
                     template = 'as.' + suffix
                 else:
-                    template = self.render_mode.replace('.j' + suffix,
+                    template = self.render_mode.replace('.' + jsuffix,
                                                         '.' + suffix)
                 return self._display_result(
                     result.as_template(suffix, template=template))

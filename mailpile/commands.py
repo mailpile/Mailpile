@@ -189,7 +189,6 @@ class Command(object):
 
             data = self.as_dict()
             data['title'] = self.message
-            data['render_mode'] = 'full'
 
             def render():
                 return self.session.ui.render_web(
@@ -200,6 +199,7 @@ class Command(object):
                 data['result'] = render()
                 self.rendered[what] = self.session.ui.render_json(data)
             else:
+                data['render_mode'] = 'full'
                 self.rendered[what] = render()
 
             return self.rendered[what]
@@ -308,7 +308,7 @@ class Command(object):
                 config.index = None
                 session.results = []
                 session.searched = []
-                session.displayed = {'start': 1, 'count': 0}
+                session.displayed = None
             idx = config.get_index(session)
             if wait_all:
                 __do_load2()
@@ -354,11 +354,17 @@ class Command(object):
             all_words.extend(word.split(','))
         for what in all_words:
             if what.lower() == 'these':
-                b = self.session.displayed['stats']['start'] - 1
-                c = self.session.displayed['stats']['count']
-                msg_ids |= set(self.session.results[b:b + c])
+                if self.session.displayed:
+                    b = self.session.displayed['stats']['start'] - 1
+                    c = self.session.displayed['stats']['count']
+                    msg_ids |= set(self.session.results[b:b + c])
+                else:
+                    self.session.ui.warning(_('No results to choose from!'))
             elif what.lower() == 'all':
-                msg_ids |= set(self.session.results)
+                if self.session.results:
+                    msg_ids |= set(self.session.results)
+                else:
+                    self.session.ui.warning(_('No results to choose from!'))
             elif what.startswith('='):
                 try:
                     msg_id = int(what[1:], 36)
@@ -377,13 +383,13 @@ class Command(object):
                 try:
                     b, e = what.split('-')
                     msg_ids |= set(self.session.results[int(b) - 1:int(e)])
-                except:
+                except (ValueError, KeyError, IndexError, TypeError):
                     self.session.ui.warning(_('What message is %s?'
                                               ) % (what, ))
             else:
                 try:
                     msg_ids.add(self.session.results[int(what) - 1])
-                except:
+                except (ValueError, KeyError, IndexError, TypeError):
                     self.session.ui.warning(_('What message is %s?'
                                               ) % (what, ))
         return msg_ids
@@ -1997,7 +2003,7 @@ class Output(Command):
         return 364 * 24 * 3600  # A long time!
 
     def get_render_mode(self):
-        return self.args and self.args[0] or 'text'
+        return self.args and self.args[0] or self.session.ui.render_mode
 
     def command(self):
         m = self.session.ui.render_mode = self.get_render_mode()
