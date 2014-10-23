@@ -1,7 +1,6 @@
 /* JS App Files */
 {% include("jsapi/global/eventlog.js") %}
 {% include("jsapi/global/activities.js") %}
-{% include("jsapi/global/drag_drop.js") %}
 {% include("jsapi/global/global.js") %}
 {% include("jsapi/global/keybindings.js") %}
 {% include("jsapi/global/notifications.js") %}
@@ -53,39 +52,4 @@
 {% include("jsapi/ui/topbar.js") %}
 {% include("jsapi/ui/sidebar.js") %}
 {% include("jsapi/ui/tooltips.js") %}
-
-
-{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
-$(document).ready(function() {
-
-  // Print JSON for JS Use
-  Mailpile.instance['tags'] = {{ tags_json|safe }};
-
-  // Favicon
-  var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
-  var favicon = new Favico({animation:'popFade'});
-  favicon.badge(inbox.stats.new);
-
-  // Show Typeahead
-  Mailpile.activities.render_typeahead();
-
-  // Start Eventlog
-  //EventLog.init();
-  setTimeout(function() {
-
-    // make event log start async (e.g. for proper page load event handling)
-    EventLog.timer = $.timer();
-    EventLog.timer.set({ time : 22500, autostart : false });
-    EventLog.poll();
-
-    // Run Composer Autosave
-    if (Mailpile.instance.state.context_url === '/message/' || 
-        Mailpile.instance.state.context_url === '/message/draft/') {
-      Mailpile.Composer.AutosaveTimer.play();
-      Mailpile.Composer.AutosaveTimer.set({ time : 20000, autostart : true });
-    }
-
-  }, 1000);
-
-});
 
