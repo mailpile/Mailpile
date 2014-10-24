@@ -7,11 +7,12 @@ $(document).on('click', '#search-query', function() {
 /* Search - Special handling of certain queries */
 $(document).on('submit', '#form-search', function(e) {
   var search_query = $('#search-query').val();
-  console.log('Yo yo here');
   if (search_query.substring(0, 3) === 'in:') {
-    console.log('inside the search_query');
-    e.preventDefault();
-    window.location.href = '/in/' + search_query.substring(3, 999) + '/';
+    var more_check = search_query.substring(3, 999).split(' ');
+    if (!more_check[1]) {
+      e.preventDefault();
+      window.location.href = '/in/' + $.trim(search_query.substring(3, 999)) + '/';
+    }
   }
   else if (search_query.substring(0, 9) === 'contacts:') {
     e.preventDefault();

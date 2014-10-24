@@ -143,9 +143,9 @@ Mailpile.render_modal_tags = function() {
 };
 
 
-Mailpile.Search.UI.Draggable = function() {
-  $('td.draggable').draggable({
-    containment: "body",
+Mailpile.UI.Search.Draggable = function(element) {
+  $(element).draggable({
+    containment: 'body',
     appendTo: 'body',
     cursor: 'move',
     scroll: false,
@@ -180,10 +180,9 @@ Mailpile.Search.UI.Draggable = function() {
 };
 
 
-Mailpile.Search.UI.ResultDropable = function() {
-
-  $('#pile-results tr').droppable({
-    accept: 'a.sidebar-tag',
+Mailpile.UI.Search.Dropable = function(element, accept) {
+  $(element).droppable({
+    accept: accept,
     hoverClass: 'result-hover',
     tolerance: 'pointer',
     drop: function(event, ui) {
@@ -208,5 +207,4 @@ Mailpile.Search.UI.ResultDropable = function() {
       });
     }
   });
-
 };

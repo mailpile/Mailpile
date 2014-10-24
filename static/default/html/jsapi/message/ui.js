@@ -1,8 +1,8 @@
+/* UI - Message */
 
-/* Message - drag thread to Sidebar */
-Mailpile.Message.UI.Draggable = function() {
-  $('div.thread-draggable').draggable({
-    containment: "body",
+Mailpile.UI.Message.Draggable = function(element) {
+  $(element).draggable({
+    containment: 'body',
     appendTo: 'body',
     cursor: 'move',
     scroll: false,

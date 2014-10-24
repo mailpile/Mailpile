@@ -1,4 +1,4 @@
-Mailpile.ui_sidebar_toggle_subtags = function(tid, state) {
+Mailpile.UI.Sidebar.SubtagsToggle = function(tid, state) {
   $.each($('.subtag-of-' + tid), function(key, item) {
     if ($(this).css('display') === 'none' && state === 'open') {
       $(this).removeClass('hide');
@@ -18,83 +18,8 @@ Mailpile.ui_sidebar_toggle_subtags = function(tid, state) {
 };
 
 
-$(document).on('click', '.icon-tags', function(e) {
-  e.preventDefault();
-  var tid = $(this).parent().data('tid');
-  Mailpile.ui_sidebar_toggle_subtags(tid, 'toggle');
-});
-
-
-$(document).on('click', '.is-editing', function(e) {
-  e.preventDefault();
-});
-
-
-$(document).on('click', '.button-sidebar-edit', function() {
-
-  var new_message = $(this).data('message');
-  var old_message = $(this).find('span.text').html();
-
-  // Make Editable
-  if ($(this).data('state') === 'done') {
-
-    // Disable Drag & Drop
-    $('a.sidebar-tag').draggable({ disabled: true });
-    
-    // Update Cursor Make Links Not Work
-    $('.sidebar-sortable li').addClass('is-editing');
-
-    // Hide Notification & Subtags
-    $('.sidebar-notification').hide();
-    $('.sidebar-subtag').hide();
-
-    // Add Minus Button
-    $.each($('.sidebar-tag'), function(key, value) {
-      $(this).append('<span class="sidebar-tag-archive icon-minus"></span>');
-    });
-
-    // Update Edit Button
-    $(this).data('message', old_message).data('state', 'editing');
-    $(this).find('span.icon').removeClass('icon-settings').addClass('icon-checkmark');
-
-  } else {
-
-    // Enable Drag & Drop
-    $('a.sidebar-tag').draggable({ disabled: false });    
-
-    // Update Cursor Make Links Not Work
-    $('.sidebar-sortable li').removeClass('is-editing');
-
-    // Show Notification / Hide Minus Button
-    $('.sidebar-notification').show();
-    $('.sidebar-tag-archive').remove();
-
-    // Update Edit Button
-    $(this).data('message', old_message).data('state', 'done');
-    $(this).find('span.icon').removeClass('icon-checkmark').addClass('icon-settings');
-  }
-
-  $(this).find('span.text').html(new_message);
-});
-
-
-$(document).on('click', '.sidebar-tag-archive', function(e) {
-  e.preventDefault();
-  // FIXME: This should use Int. language
-  alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-  var tid = $(this).parent().data('tid');
-  var setting = Mailpile.tag_setting(tid, 'display', 'archive');
-  Mailpile.API.settings_set_post(setting, function(result) { 
-    Mailpile.notification(result);
-    $('#sidebar-tag-' + tid).fadeOut();
-  });
-});
-
-
-$(document).ready(function() {
-
-  // Drag Sort Tag Order
-	$( ".sidebar-sortable" ).sortable({
+Mailpile.UI.Sidebar.Sortable = function() {
+ $('.sidebar-sortable').sortable({
 		placeholder: "sidebar-tags-sortable",
     distance: 13,
     scroll: false,
@@ -128,11 +53,12 @@ $(document).ready(function() {
       });
 		}
 	}).disableSelection();
-  
+};
 
-  // Drag Tags to Search Messages
-  $('a.sidebar-tag').draggable({
-    containment: "#container",
+
+Mailpile.UI.Sidebar.Draggable = function(element) {
+  $(element).draggable({
+    containment: 'body',
     appendTo: 'body',
     cursor: 'move',
     distance: 15,
@@ -150,6 +76,67 @@ $(document).ready(function() {
       return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + hex + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
     }
   });
+};
 
 
-});
+Mailpile.UI.Sidebar.Droppable = function(element, accept) {
+  $(element).droppable({
+    accept: accept,
+    activeClass: 'sidebar-tags-draggable-hover',
+    hoverClass: 'sidebar-tags-draggable-active',
+    tolerance: 'pointer',
+    over: function(event, ui) {
+      var tid = $(this).find('a').data('tid');
+      setTimeout(function() {
+        //Mailpile.UI.SidebarSubtagsToggle(tid, 'open');
+      }, 500);
+    },
+    out: function(event, ui) {
+      var tid = $(this).find('a').data('tid');
+      setTimeout(function() {
+        //Mailpile.UI.SidebarSubtagsToggle(tid, 'close');
+      }, 1000);
+    },
+    drop: function(event, ui) {
+  
+      var tid = $(this).find('a').data('tid');
+  
+      // Add MID to Cache
+      Mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
+  
+      // Add / Delete
+      if (Mailpile.instance.state.command_url == '/message/') {
+        var tags_delete = ['inbox'];
+      } else {
+        var tags_delete = Mailpile.instance.search_tag_ids;
+      }
+  
+      Mailpile.API.tag_post({ add: tid, del: tags_delete, mid: Mailpile.messages_cache}, function(result) {
+  
+        // Show
+        Mailpile.notification(result);
+  
+        // Update Pile View
+        if (Mailpile.instance.state.command_url == '/search/') {
+          $.each(Mailpile.messages_cache, function(key, mid) {
+            $('#pile-message-' + mid).fadeOut('fast');
+          });
+
+          // Empty Bulk Cache
+          Mailpile.messages_cache = [];
+
+          // Update Bulk UI
+          Mailpile.bulk_actions_update_ui();
+
+          // Hide Collapsible
+          Mailpile.UI.Sidebar.SubtagsToggle(tid, 'close');
+
+        } else {
+          // FIXME: this action is up for discussion
+          // Github Issue - https://github.com/pagekite/Mailpile/issues/794
+          window.location.href = '/in/inbox/';
+        }
+      });
+    }
+  });
+};

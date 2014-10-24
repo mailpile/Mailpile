@@ -1,16 +1,16 @@
 /* Search */
 
 Mailpile.Search = {};
-Mailpile.Search.UI = {};
 
 
 Mailpile.Search.init = function() {
 
   // Drag Items
-  Mailpile.Search.UI.Draggable();
-  Mailpile.Search.UI.ResultDropable();
+  Mailpile.UI.Search.Draggable('td.draggable');
+  Mailpile.UI.Search.Dropable('#pile-results tr', 'a.sidebar-tag');
+  Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'td.draggable');
 
-  
+
   // Render Display Size
   if (!localStorage.getItem('view_size')) {
     localStorage.setItem('view_size', Mailpile.defaults.view_size);
