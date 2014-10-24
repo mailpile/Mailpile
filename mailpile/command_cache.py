@@ -58,7 +58,6 @@ class CommandCache(object):
 
     def mark_dirty(self, requirements):
         self.dirty |= set(requirements)
-        print 'DIRTY: %s' % requirements
 
     def refresh(self, extend=60, event_log=None):
         now = time.time()
@@ -90,4 +89,3 @@ class CommandCache(object):
             event_log.log(message=_('New results are available'),
                           source=self,
                           data={'cache_ids': refreshed})
-            print 'REFRESHED: %s' % refreshed
