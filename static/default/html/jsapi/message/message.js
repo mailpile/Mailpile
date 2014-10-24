@@ -13,6 +13,23 @@ Mailpile.get_new_messages = function(actions) {
 };
 
 
+/* Message -  */
+$(document).on('click', '.message-action-reply', function() {
+  var mid = $(this).data('mid');
+  //Mailpile.API.message_reply_post({mid: mid}, function(result) {
+  $.getJSON('/static/reply.json', function(result) {
+    console.log(result);
+    var new_mid = result.result.created[0];
+    console.log(result.result.data.messages[new_mid].editing_strings);
+
+    var composer_template = _.template($('#template-composer').html());
+    $('#message-' + mid).append(composer_template(result.result.data.messages[new_mid].editing_strings));
+
+  });
+});
+
+
+
 /* Message - Create forward and go to composer */
 $(document).on('click', '.message-action-forward', function() {
   var mid = $(this).parent().parent().data('mid');
