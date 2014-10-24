@@ -1,13 +1,27 @@
-/* Message - Get new messsage  */
-Mailpile.get_new_messages = function(actions) {    
-  $.ajax({
-	  url			 : Mailpile.api.search_new,
-	  type		 : 'GET',
-	  dataType : 'json',
-    success  : function(response) {
-      if (response.status == 'success') {
-        actions(response);
-      }
+/* Message */
+
+Mailpile.Message.AnalyzeMessageInline = function(mid) {
+  // Iterate through all plain-text parts of the e-mail
+  $('#message-' + mid).find('.thread-item-text').each(function(i, text_part) {
+    var content = $(text_part).html();
+
+    // Check & Extract Inline PGP Key
+    var pgp_begin = '-----BEGIN PGP PUBLIC KEY BLOCK-----';
+    var pgp_end = '-----END PGP PUBLIC KEY BLOCK-----';
+    var check_inline_pgp_key = content.split(pgp_begin);
+    if (check_inline_pgp_key.length > 1) {
+      var pgp_key = check_inline_pgp_key.slice(1).join().split(pgp_end)[0];
+      pgp_key = pgp_begin + pgp_key + pgp_end;
+
+      // Make HTML5 download href
+      var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
+
+      // Replace Text
+      var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
+      var name = Mailpile.instance.metadata[mid].from.fn;
+      var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
+      var new_content = content.replace(pgp_key, import_key_html);
+      $(text_part).html(new_content);
     }
   });
 };
@@ -15,7 +29,9 @@ Mailpile.get_new_messages = function(actions) {
 
 /* Message -  */
 $(document).on('click', '.message-action-reply', function() {
+
   var mid = $(this).data('mid');
+
   //Mailpile.API.message_reply_post({mid: mid}, function(result) {
   $.getJSON('/static/reply.json', function(result) {
     console.log(result);

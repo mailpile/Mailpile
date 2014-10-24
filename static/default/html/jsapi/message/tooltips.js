@@ -1,5 +1,4 @@
-Mailpile.thread_initialize_tooltips = function() {
-
+Mailpile.Message.Tooltips.Crypto = function() {
   $('.thread-item-crypto-info').qtip({
     content: {
       title: false,

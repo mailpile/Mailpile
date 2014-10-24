@@ -1,7 +1,7 @@
 /* Message - Create new instance of composer */
 
 Mailpile.Message = {};
-
+Mailpile.Message.Tooltips = {};
 
 Mailpile.Message.init = function() {
 
@@ -10,7 +10,7 @@ Mailpile.Message.init = function() {
   Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'div.thread-draggable');
 
 
-  Mailpile.thread_scroll_to_message();
-  Mailpile.thread_initialize_tooltips();
+  Mailpile.UI.Message.ScrollToMessage();
+  Mailpile.Message.Tooltips.Crypto();
 
 };
