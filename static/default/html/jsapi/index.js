@@ -133,18 +133,31 @@ Mailpile.API._ajax_error =  function(base_url, command, data, method, response, 
 
 Mailpile.API._action = function(base_url, command, data, method, callback) {
 
-  if (method != "GET" && method != "POST") {
-    method = "GET";
+  // Output format
+  var output = '';
+  if (data._output) {
+    output = data._output;
+    data = _.omit(data, '_output');
   }
-  if (method == "GET") {
-    for(var k in data) {
-      if(!data[k] || data[k] == undefined) {
+
+  // Default to GET
+  if (method !== 'GET' && method !== 'POST') {
+    method = 'GET';
+  }
+
+  // GET
+  if (method === 'GET') {
+    for (var k in data) {
+      if (!data[k] || data[k] == undefined) {
         delete data[k];
       }
     }
+
+    // Make Querystring
     var params = $.param(data);
+
     $.ajax({
-      url      : base_url + command + "?" + params,
+      url      : base_url + command + output + "?" + params,
       type     : 'GET',
       dataType : 'json',
       success  : callback,
@@ -152,9 +165,11 @@ Mailpile.API._action = function(base_url, command, data, method, callback) {
         Mailpile.API._ajax_error(base_url, command, data, method, response, status);
       }
     });
-  } else if (method =="POST") {
+  }
+  // POST
+  else if (method === 'POST') {
     $.ajax({
-      url      : base_url + command,
+      url      : base_url + command + output,
       type     : 'POST',
       data     : data,
       dataType : 'json',
@@ -163,8 +178,6 @@ Mailpile.API._action = function(base_url, command, data, method, callback) {
         Mailpile.API._ajax_error(base_url, command, data, method, response, status);
       }
     });
-  } else {
-    alert('Somethings rotten in Denmark');
   }
 
   return true;
@@ -199,8 +212,10 @@ Mailpile.API._async_action = function(command, data, method, callback, flags) {
 };
 
 
-/* Create sync & asyn API commands */
+/* Loop Commands */
 {% for command in result.api_methods -%}
+
+/* Create sync API commands */
 Mailpile.API.{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
   var methods = ["{{command.method}}"];
   if (!method || methods.indexOf(method) == -1) {
@@ -214,6 +229,7 @@ Mailpile.API.{{command.url|replace("/", "_")}}_{{command.method|lower}} = functi
   );
 };
 
+/* Create async API commands */
 Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
   var methods = ["{{command.method}}"];
   if (!method || methods.indexOf(method) == -1) {
@@ -242,10 +258,3 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
 {% endif %}
 {% endfor %}
 
-
-/* Mailpile - UI - Make fingerprints nicer */
-Mailpile.nice_fingerprint = function(fingerprint) {
-  // FIXME: I'd really love to make these individual pieces color coded
-  // Pertaining to the hex value pairings & even perhaps toggle-able icons
-  return fingerprint.split(/(....)/).join(' ');
-};
