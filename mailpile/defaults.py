@@ -99,6 +99,7 @@ CONFIG_RULES = {
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
         'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
+        'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, [])
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
