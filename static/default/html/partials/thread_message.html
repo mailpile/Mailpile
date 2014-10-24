@@ -50,7 +50,6 @@
           <div class="thread-item-crypto-line left"></div>
         </div>
         {% endif %}
-
         {% autoescape false %}
         {% set part_text = part.data|nice_text|e|urlize|fix_urls(40, url_danger) %}
         {% if part.type in ("text", "pgpsignedtext") %}

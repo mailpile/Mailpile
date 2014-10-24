@@ -92,19 +92,32 @@
   
 /* Sidebar - Subtags */
 
-  #sidebar ul li.sidebar-subtag { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
-  #sidebar ul li.sidebar-subtag a.sidebar-tag {
+  #sidebar ul.sidebar-subtags {
+    background: @white;
+    border: 1px solid @grayMid;
+    margin: 5px 0px;
+    border-radius: (@base-border-radius * 1.5);
+  }
+
+  #sidebar ul.sidebar-subtags li.sidebar-subtag {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+
+  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag {
     font-size: 16px;
     font-family: Helvetica, Arial, sans-serif;
   }
 
-  #sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-name,
-  #sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-notification {   
+  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.sidebar-name,
+  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.sidebar-notification {
     vertical-align: middle;
     font-family: @mailpile-text-font-family;
     font-weight: normal;
     font-size: 18px;
-    line-height: 24px;    
+    line-height: 24px;
   }
 
 

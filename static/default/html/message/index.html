@@ -55,8 +55,7 @@
 {% endfor %}{# End for loop #}
 
 {% if loop_history|last not in ("edit draft", "edit message") %}
-  {# Give the user the option to reply to the last message in the thread
-     - unless we already did! #}
+  {# Give the user the option to reply to the last message in the thread unless we already did! #}
   {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
   {% if compose %}
     {% set mid = compose.message_ids.0 %}
@@ -90,6 +89,12 @@
     {% endfor %}
   </ul>
 </div>
+
+<script id="template-composer" type="text/template">
+{% set mid = 'reply-all-template' %}
+{% set editing_strings = { 'from_aids': [], 'to': '', 'to_aids': [], 'cc': '', 'cc_aids': [], 'bcc': '', 'bcc_aids': [], 'subject': '', 'body': '', 'attachments': [], 'encryption': '' } %}
+{% set editing_addresses = [] %}
+{% include("partials/compose.html") %}
 <script>
 $(document).ready(function() {
   Mailpile.Message.init();
