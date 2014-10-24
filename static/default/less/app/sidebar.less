@@ -24,11 +24,11 @@
   #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
   #sidebar.snug ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
 
-  #sidebar a.sidebar-tag      {
+  #sidebar a.sidebar-tag {
     position: relative;
-    width: 195px;
+    width: 170px;
     height: 24px;
-    display: table;
+    display: inline-block;
     vertical-align: middle;
     text-align: left;
     transition-duration: 0.2s;
@@ -42,10 +42,10 @@
   #sidebar li.is-editing,
   #sidebar li.is-editing a.sidebar-tag { cursor: move; }
 
-  #sidebar span.sidebar-icon {
+  #sidebar span.icon {
     width: 24px;
     height: 18px;
-    display: table-cell;
+    display: inline-block;
     vertical-align: middle;
     text-align: center;
     font-weight: normal;
@@ -53,11 +53,11 @@
     line-height: 18px;
   }
 
-	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
-  #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
+	#sidebar.cozy span.icon { font-size: 18px; line-height: 18px; }
+  #sidebar.snug span.icon { font-size: 16px; line-height: 16px; }
 
-  #sidebar a.sidebar-tag span.sidebar-name,
-  #sidebar a.sidebar-tag span.sidebar-notification {   
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag > span.notification {
     vertical-align: middle;
     font-family: @mailpile-text-font-family;
     font-weight: normal;
@@ -65,7 +65,7 @@
     line-height: 24px;
   }
 
-  #sidebar a.sidebar-tag span.sidebar-name {
+  #sidebar a.sidebar-tag span.name {
     display: inline-block;
     max-width: 132px;
     padding-left: 5px;
@@ -73,21 +73,26 @@
     overflow-x: hidden;
 	}
 
-  #sidebar a.sidebar-tag span.sidebar-notification {
+  #sidebar a.sidebar-tag span.notification {
     letter-spacing: -.5px;
     color: @gray;
   }
 
-  #sidebar.cozy span.sidebar-name,
-  #sidebar.cozy span.sidebar-notification { font-size: 16px; line-height: 18px; }
-  #sidebar.snug span.sidebar-name,
-  #sidebar.snug span.sidebar-notification { font-size: 14px; line-height: 16px; }
+  #sidebar.cozy span.name,
+  #sidebar.cozy span.notification { font-size: 16px; line-height: 18px; }
+  #sidebar.snug span.name,
+  #sidebar.snug span.notification { font-size: 14px; line-height: 16px; }
 
-  #sidebar a.sidebar-tag.has_unread span.sidebar-name,
-  #sidebar a.sidebar-tag.has_unread span.sidebar-notification {
+  #sidebar a.sidebar-tag.has_unread span.name,
+  #sidebar a.sidebar-tag.has_unread span.notification {
     font-family: @mailpile-text-font-family-bold;
     font-weight: normal;
   }
+
+ #sidebar a.sidebar-tag-expand {
+   display: inline-block;
+   color: @gray;
+ }
 
   
 /* Sidebar - Subtags */
@@ -96,7 +101,7 @@
     background: @white;
     border: 1px solid @grayMid;
     margin: 5px 0px;
-    border-radius: (@base-border-radius * 1.5);
+    border-radius: @base-border-radius;
   }
 
   #sidebar ul.sidebar-subtags li.sidebar-subtag {
@@ -106,18 +111,13 @@
     padding-bottom: 1px;
   }
 
-  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag {
-    font-size: 16px;
-    font-family: Helvetica, Arial, sans-serif;
-  }
-
-  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.sidebar-name,
-  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.sidebar-notification {
+  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.name,
+  #sidebar ul.sidebar-subtags li.sidebar-subtag a.sidebar-tag span.notification {
     vertical-align: middle;
-    font-family: @mailpile-text-font-family;
     font-weight: normal;
-    font-size: 18px;
-    line-height: 24px;
+    font-size: 16px;
+    font-family: @text-font-family;
+    line-height: 18px;
   }
 
 
@@ -151,6 +151,7 @@
   a.sidebar-tag span.sidebar-tag-archive:hover {
     background: @orange;
   }
+
 
 /* Sidebar - Drag & Drop */
 

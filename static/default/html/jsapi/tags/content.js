@@ -53,7 +53,7 @@ $(document).on('click', '.modal-tag-icon-option', function() {
     Mailpile.notification(result);
 
     // Update Sidebar
-    $('#sidebar-tag-' + tid).find('span.sidebar-icon').removeClass(old).addClass(icon);
+    $('#sidebar-tag-' + tid).find('span.icon').removeClass(old).addClass(icon);
 
     // Update Tag Editor
     $('#data-tag-icon').val(icon);
@@ -92,7 +92,7 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
     Mailpile.notification(result);
 
     // Update Sidebar
-    $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', hex);
+    $('#sidebar-tag-' + tid).find('span.icon').css('color', hex);
 
     // Update Tag Editor
     $('#data-tag-label-color').val(name);

@@ -15,9 +15,9 @@
 {% set tag_new_count = tag.stats.new %}
 {% endif %}
   <a href="{{tag.url}}" class="sidebar-tag color-{{tag.label_color}}{% if tag_new_count %} has_unread{% endif %}" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
-    <span class="sidebar-icon {{tag.icon}}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
-    <span class="sidebar-name">{{tag.name}}</span> 
-    <span class="sidebar-notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
+    <span class="icon {{tag.icon}}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
+    <span class="name">{{tag.name}}</span> 
+    <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
   </a>
   {% if tag.get("subtags") %}
   <a href="#" class="sidebar-tag-expand" data-tid="{{tag.tid}}">
@@ -33,10 +33,10 @@
     {% for subtag in tag.subtags %}
     <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}" class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}">
       <a href="{{subtag.url}}" class="sidebar-tag hide" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
-        <span class="sidebar-icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
-        <span class="sidebar-name">{{subtag.name}}</span> 
+        <span class="icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
+        <span class="name">{{subtag.name}}</span> 
         {% if subtag.stats.new %}
-        <span class="sidebar-notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
+        <span class="notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
         {% endif %}
       </a>
     </li>
