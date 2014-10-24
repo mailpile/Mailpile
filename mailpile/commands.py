@@ -711,13 +711,16 @@ class SearchResults(dict):
         }
 
         # Ephemeral messages do not have URLs
-        if '-' not in msg_info[MailIndex.MSG_MID]:
+        if '-' in msg_info[MailIndex.MSG_MID]:
+            expl['flags'].update({
+                'ephemeral': True,
+                'draft': True,
+            })
+        else:
             expl['urls'] = {
                 'thread': self.urlmap.url_thread(msg_info[MailIndex.MSG_MID]),
                 'source': self.urlmap.url_source(msg_info[MailIndex.MSG_MID]),
             }
-        else:
-            expl['flags']['ephemeral'] = True
 
         # Support rich snippets
         if expl['body']['snippet'].startswith('{'):
@@ -746,7 +749,9 @@ class SearchResults(dict):
 
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
-            if self.idx.config.is_editable_message(msg_info):
+            if 'ephemeral' in expl['flags']:
+                pass
+            elif self.idx.config.is_editable_message(msg_info):
                 expl['urls']['editing'] = self.urlmap.url_edit(expl['mid'])
             else:
                 del expl['flags']['draft']

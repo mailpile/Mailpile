@@ -780,7 +780,7 @@ class Email(object):
             ClearParseCache(cache_id=self.msg_idx_pos)
 
     def get_msg_info(self, field=None, uncached=False):
-        if uncached or not self.msg_info:
+        if (uncached or not self.msg_info) and not self.ephemeral_mid:
             self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
         if field is None:
             return self.msg_info

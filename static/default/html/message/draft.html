@@ -13,7 +13,7 @@
   #}
   {% set found_editable = [] %}
   {% set found_requested = [] %}
-  {% for mid in result.thread_ids %}
+  {% for mid in (result.thread_ids or result.message_ids) %}
     {% set message = result.data.messages.get(mid) %}
     {% set metadata = result.data.metadata[mid] %}
     {% if message %}
