@@ -137,7 +137,7 @@ Mailpile.API._action = function(base_url, command, data, method, callback) {
   var output = '';
   if (data._output) {
     output = data._output;
-    data = _.omit(data, '_output');
+    delete data['_output'];
   }
 
   // Default to GET
