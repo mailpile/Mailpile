@@ -1,19 +1,20 @@
-Mailpile.UI.Sidebar.SubtagsToggle = function(tid, state) {
-  $.each($('.subtag-of-' + tid), function(key, item) {
-    if ($(this).css('display') === 'none' && state === 'open') {
-      $(this).removeClass('hide');
-    }
-    else if ($(this).css('display') === 'list-item' && state === 'close') {
-      $(this).addClass('hide');
-    }
-    else if (state === 'toggle') {
-      if ($(this).css('display') === 'none') {
-        $(this).removeClass('hide');
-      }
-      else {
-        $(this).addClass('hide');
-      }
-    }
+Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
+
+  // Show or Hide
+  if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) > -1) {
+    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-expand').addClass('icon-collapse');
+    $('#sidebar-subtags-' + tid).slideDown();
+    var collapsed = _.without(Mailpile.config.web.subtags_collapsed, tid);
+  } else {
+    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-collapse').addClass('icon-expand');
+    $('#sidebar-subtags-' + tid).slideUp();
+    Mailpile.config.web.subtags_collapsed.push(tid);
+    var collapsed = Mailpile.config.web.subtags_collapsed;
+  }
+
+  // Save to Config
+  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) { 
+    Mailpile.config.web.subtags_collapsed = collapsed;
   });
 };
 

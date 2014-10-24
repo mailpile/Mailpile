@@ -1,7 +1,7 @@
-$(document).on('click', '.icon-tags', function(e) {
+$(document).on('click', '.sidebar-tag-expand', function(e) {
   e.preventDefault();
   var tid = $(this).parent().data('tid');
-  Mailpile.UI.SidebarSubtagsToggle(tid, 'toggle');
+  Mailpile.UI.Sidebar.SubtagsToggle(tid);
 });
 
 
