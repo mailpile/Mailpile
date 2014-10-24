@@ -33,6 +33,8 @@ $(document).on('click', 'a.change-view-size', function(e) {
   // Data
   localStorage.setItem('view_size', change_size);
 
-  // Update Config
+  // Update Config & Model
   Mailpile.API.settings_set_post({ 'web.display_density': change_size }, function(result) {});
+  Mailpile.config.web.display_density = change_size;
+
 });

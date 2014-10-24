@@ -13,7 +13,7 @@ Mailpile.Search.init = function() {
 
   // Render Display Size
   if (!localStorage.getItem('view_size')) {
-    localStorage.setItem('view_size', Mailpile.defaults.view_size);
+    localStorage.setItem('view_size', Mailpile.config.web.display_density);
   }
 
   Mailpile.pile_display(localStorage.getItem('view_size'));

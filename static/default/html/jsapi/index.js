@@ -1,3 +1,5 @@
+{% set config_web = config.web|json %}
+
 // Make console.log not crash JS browsers that don't support it
 if (!window.console) window.console = {
   log: $.noop,
@@ -58,7 +60,10 @@ Mailpile = {
   commands:      [],
   graphselected: [],
   defaults: {
-    view_size: "comfy"
+    view_size: "comfy",
+  },
+  config: {
+    web: {{config_web|safe}}
   },
   api: {
     compose      : "/api/0/message/compose/",
