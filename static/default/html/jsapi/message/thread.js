@@ -30,25 +30,29 @@ Mailpile.thread_scroll_to_message = function() {
 
 Mailpile.thread_analyze_message = function(mid) {
 
-  // Get Email
-  var email = $('#message-' + mid).find('.thread-item-text').html();
+  // Iterate through all plain-text parts of the e-mail
+  $('#message-' + mid).find('.thread-item-text').each(function(i, text_part) {
+    var content = $(text_part).html();
 
-  // Check & Extract Inline PGP Key
-  var check_inline_pgp_key = email.split('-----BEGIN PGP PUBLIC KEY BLOCK-----');
-  if (check_inline_pgp_key) {
-    var pgp_key = '-----BEGIN PGP PUBLIC KEY BLOCK-----' + check_inline_pgp_key.slice(1).join().split('-----END PGP PUBLIC KEY BLOCK-----')[0];
-    pgp_key += '-----END PGP PUBLIC KEY BLOCK-----';
+    // Check & Extract Inline PGP Key
+    var pgp_begin = '-----BEGIN PGP PUBLIC KEY BLOCK-----';
+    var pgp_end = '-----END PGP PUBLIC KEY BLOCK-----';
+    var check_inline_pgp_key = content.split(pgp_begin);
+    if (check_inline_pgp_key.length > 1) {
+      var pgp_key = check_inline_pgp_key.slice(1).join().split(pgp_end)[0];
+      pgp_key = pgp_begin + pgp_key + pgp_end;
 
-    // Make HTML5 download href
-    var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
+      // Make HTML5 download href
+      var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
 
-    // Replace Text
-    var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
-    var name = Mailpile.instance.metadata[mid].from.fn;
-    var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
-    var new_email = email.replace(pgp_key, import_key_html);
-    $('#message-' + mid).find('.thread-item-text').html(new_email);
-  }
+      // Replace Text
+      var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
+      var name = Mailpile.instance.metadata[mid].from.fn;
+      var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
+      var new_content = content.replace(pgp_key, import_key_html);
+      $(text_part).html(new_content);
+    }
+  });
 };
 
 
