@@ -31,7 +31,8 @@ class CommandCache(object):
     #    - The app configuration: '!config'
     #
 
-    def __init__(self):
+    def __init__(self, debug=None):
+        self.debug = debug or (lambda s: None)
         self.lock = UiRLock()
         self.cache = {}     # The cache itself
         self.dirty = set()  # Requirements that have changed recently
@@ -47,6 +48,7 @@ class CommandCache(object):
             #       as mere presence in the cache makes this a candidate
             #       for refreshing.
             self.cache[str(fprint)] = [expires, req, cmd_obj, result_obj]
+            self.debug('Cached %s, req=%s' % (fprint, req))
 
     def get_result(self, fprint, dirty_check=True):
         with self.lock:
@@ -59,6 +61,7 @@ class CommandCache(object):
 
     def mark_dirty(self, requirements):
         self.dirty |= set(requirements)
+        self.debug('Marked dirty: %s' % requirements)
 
     def refresh(self, extend=60, event_log=None):
         now = time.time()
@@ -91,3 +94,4 @@ class CommandCache(object):
                           source=self,
                           data={'cache_ids': refreshed},
                           flags=Event.COMPLETE)
+            self.debug('Refreshed: %s' % refreshed)

@@ -181,11 +181,15 @@ class Search(Command):
                 term = term[1:]
             term = ':'.join(reversed(term.split(':', 1)))
             return unicode(term)
-        return set(
-            ['!config'] +
-            [fix_term(t) for t in self.session.searched] +
-            [u'%s:msg' % i for i in msgs]
-        )
+        reqs = set(['!config'] +
+                   [fix_term(t) for t in self.session.searched] +
+                   [u'%s:msg' % i for i in msgs])
+        if self.session.displayed:
+            reqs |= set(u'%s:thread' % int(tmid, 36) for tmid in
+                        self.session.displayed.get('thread_ids', []))
+            reqs |= set(u'%s:msg' % int(tmid, 36) for tmid in
+                        self.session.displayed.get('message_ids', []))
+        return reqs
 
     def command(self):
         session, idx, start, num = self._do_search()

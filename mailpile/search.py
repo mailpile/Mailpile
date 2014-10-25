@@ -285,7 +285,7 @@ class MailIndex:
         self.EMAILS_SAVED = len(self.EMAILS)
 
     def update_msg_tags(self, msg_idx_pos, msg_info):
-        tags = set([t for t in msg_info[self.MSG_TAGS].split(',') if t])
+        tags = set(self.get_tags(msg_info=msg_info))
         with self._lock:
             for tid in (set(self.TAGS.keys()) - tags):
                 self.TAGS[tid] -= set([msg_idx_pos])
@@ -866,7 +866,7 @@ class MailIndex:
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
         # Reset the internal tags on this message
-        for tag_id in [t for t in msg_info[self.MSG_TAGS].split(',') if t]:
+        for tag_id in self.get_tags(msg_info=msg_info):
             tag = session.config.get_tag(tag_id)
             if tag and tag.slug.startswith('mp_'):
                 self.remove_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
@@ -1300,9 +1300,11 @@ class MailIndex:
         self.update_msg_tags(msg_idx, msg_info)
 
         if not original_line:
-            self.config.command_cache.mark_dirty([u'mail:all',
-                                                  u'%s:msg' % msg_idx,
-                                                  u'%s:thread' % msg_thr_mid])
+            dirty_tags = [u'%s:in' % self.config.tags[t].slug for t in
+                          self.get_tags(msg_info=msg_info)]
+            self.config.command_cache.mark_dirty(
+                [u'mail:all', u'%s:msg' % msg_idx,
+                 u'%s:thread' % int(msg_thr_mid, 36)] + dirty_tags)
             CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
             self.MODIFIED.add(msg_idx)
             try:
@@ -1329,7 +1331,10 @@ class MailIndex:
     def get_tags(self, msg_info=None, msg_idx=None):
         if not msg_info:
             msg_info = self.get_msg_at_idx_pos(msg_idx)
-        return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
+        taglist = [r for r in msg_info[self.MSG_TAGS].split(',') if r]
+        if not 'tags' in self.config:
+            return taglist
+        return [r for r in taglist if r in self.config.tags]
 
     def add_tag(self, session, tag_id,
                 msg_info=None, msg_idxs=None, conversation=False):
@@ -1351,6 +1356,7 @@ class MailIndex:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         eids = set()
         added = set()
+        threads = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -1363,6 +1369,7 @@ class MailIndex:
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
                     added.add(msg_idx)
+                    threads.add(msg_info[self.MSG_THREAD_MID])
                 eids.add(msg_idx)
         with self._lock:
             if tag_id in self.TAGS:
@@ -1372,7 +1379,8 @@ class MailIndex:
         try:
             self.config.command_cache.mark_dirty(
                 [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
-                [u'%s:msg' % eid for eid in added])
+                [u'%s:msg' % e_idx for e_idx in added] +
+                [u'%s:thread' % int(mid, 36) for mid in threads])
         except:
             pass
         return added
@@ -1401,6 +1409,7 @@ class MailIndex:
                            ) % (len(msg_idxs), tag_id))
         eids = set()
         removed = set()
+        threads = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -1413,6 +1422,7 @@ class MailIndex:
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
                     removed.add(msg_idx)
+                    threads.add(msg_info[self.MSG_THREAD_MID])
                 eids.add(msg_idx)
         with self._lock:
             if tag_id in self.TAGS:
@@ -1420,7 +1430,8 @@ class MailIndex:
         try:
             self.config.command_cache.mark_dirty(
                 [u'%s:in' % self.config.tags[tag_id].slug] +
-                [u'%s:msg' % eid for eid in removed])
+                [u'%s:msg' % e_idx for e_idx in removed] +
+                [u'%s:thread' % int(mid, 36) for mid in threads])
         except:
             pass
         return removed
@@ -1569,7 +1580,7 @@ class MailIndex:
 
     def _freshness_sorter(self, msg_info):
         ts = long(msg_info[self.MSG_DATE], 36)
-        for tid in msg_info[self.MSG_TAGS].split(','):
+        for tid in self.get_tags(msg_info=msg_info):
             if tid in self._sort_freshness_tags:
                 return ts + self.FRESHNESS_SORT_BOOST
         return ts

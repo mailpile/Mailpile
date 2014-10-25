@@ -1136,12 +1136,16 @@ class ConfigManager(ConfigDict):
         self.event_log = None
         self.index = None
         self.vcards = {}
-        self.command_cache = CommandCache()
         self.search_history = SearchHistory()
         self._mbox_cache = []
         self._running = {}
         self._lock = ConfigRLock()
         self.loaded_config = False
+
+        def cache_debug(msg):
+            if self.background and 'cache' in self.sys.debug:
+                self.background.ui.debug(msg)
+        self.command_cache = CommandCache(debug=cache_debug)
 
         self.gnupg_passphrase = SecurePassphraseStorage()
 
