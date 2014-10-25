@@ -313,7 +313,7 @@ class UserInteraction:
         if len(self.time_tracking) > 1:
             if not name or (self.time_tracking[-1][0] == name):
                 self.time_tracking.pop(-1)
-        print '(%s/%d) POP' % (self, len(self.time_tracking))
+#       print '(%s/%d) POP' % (self, len(self.time_tracking))
         return elapsed
 
     # Higher level command-related methods

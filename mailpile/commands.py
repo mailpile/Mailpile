@@ -487,6 +487,7 @@ class Command(object):
     def _make_command_event(self, private_data):
         return Event(source=self,
                      message=self._fmt_msg(self.LOG_STARTING),
+                     flags=Event.INCOMPLETE,
                      data={},
                      private_data=private_data)
 

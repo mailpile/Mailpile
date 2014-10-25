@@ -1,6 +1,7 @@
 import time
 
 import mailpile.util
+from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
@@ -88,4 +89,5 @@ class CommandCache(object):
         if refreshed and event_log:
             event_log.log(message=_('New results are available'),
                           source=self,
-                          data={'cache_ids': refreshed})
+                          data={'cache_ids': refreshed},
+                          flags=Event.COMPLETE)
