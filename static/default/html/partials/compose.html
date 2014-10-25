@@ -46,11 +46,11 @@
         </div>
         <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none"
             data-mid="{{mid}}"
-            data-crypto_signed="{{_("Signed")}}"
-            data-crypto_not_signed="{{_("Unsigned")}}"
-            data-crypto_signed_error="{{_("Signature Error")}}"
-            data-crypto_title_signed="{{_("This message will be signed with your key. Recipients who have your key will know it actually came from you :)")}}"
-            data-crypto_title_not_signed="{{_("This message will not be signed with your key. Recipients will have no way of knowing it actually came from you.")}}"
+            data-crypto_signed="{{_("Verifiable")}}"
+            data-crypto_not_signed="{{_("Unverifiable")}}"
+            data-crypto_signed_error="{{_("Verification Error")}}"
+            data-crypto_title_signed="{{_("This message will be verifiable with your encryption key. Recipients who have your key will know it actually came from you :)")}}"
+            data-crypto_title_not_signed="{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")}}"
             data-crypto_title_signed_error="{{_("Error accesing your key")}}">
             <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
         </div>
