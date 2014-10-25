@@ -256,12 +256,6 @@ class UserInteraction:
         elif level <= self.log_level:
             self._display_log(message, level)
 
-    def finish_command(self):
-        pass
-
-    def start_command(self):
-        pass
-
     error = lambda self, msg: self.log(self.LOG_ERROR, msg)
     notify = lambda self, msg: self.log(self.LOG_NOTIFY, msg)
     warning = lambda self, msg: self.log(self.LOG_WARNING, msg)
@@ -280,9 +274,11 @@ class UserInteraction:
                 action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
+#       print '(%s/%d) %s' % (self, len(self.time_tracking), action)
 
     def report_marks(self, quiet=False, details=False):
         t = self.times
+#       print '(%s/%d) REPORT' % (self, len(self.time_tracking))
         if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
@@ -299,6 +295,7 @@ class UserInteraction:
 
     def reset_marks(self, mark=True, quiet=False, details=False):
         """This sequence of actions is complete."""
+#       print '(%s/%d) RESET' % (self, len(self.time_tracking))
         if self.times and mark:
             self.mark()
         elapsed = self.report_marks(quiet=quiet, details=details)
@@ -307,6 +304,7 @@ class UserInteraction:
 
     def push_marks(self, subtask):
         """Start tracking a new sub-task."""
+#       print '(%s/%d) PUSH' % (self, len(self.time_tracking))
         self.time_tracking.append((subtask, []))
 
     def pop_marks(self, name=None, quiet=True):
@@ -315,6 +313,7 @@ class UserInteraction:
         if len(self.time_tracking) > 1:
             if not name or (self.time_tracking[-1][0] == name):
                 self.time_tracking.pop(-1)
+        print '(%s/%d) POP' % (self, len(self.time_tracking))
         return elapsed
 
     # Higher level command-related methods

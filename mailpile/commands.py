@@ -261,6 +261,7 @@ class Command(object):
                     self.cache_requirements(result),
                     self,
                     result)
+                self.session.ui.mark(_('Cached result as %s') % cache_id)
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -494,12 +495,6 @@ class Command(object):
             self._update_finished_event()
             return rv
 
-        # FIXME: Remove this when stuff is up to date
-        if self.status == 'unknown':
-            self.session.ui.warning('FIXME: %s should use self._success'
-                                    ' etc. (issue #383)' % self.__class__)
-            self.status = 'success'
-
         if not self.context:
             self.context = self.session.get_context(
                 update=self.CHANGES_SESSION_CONTEXT)
@@ -531,9 +526,9 @@ class Command(object):
             self.session.ui.finish_command(self.name)
 
     def _run_sync(self, enable_cache, *args, **kwargs):
+        self._starting()
         self._run_args = args
         self._run_kwargs = kwargs
-        self._starting()
 
         if (self.COMMAND_CACHE_TTL > 0 and
                'http' not in self.session.config.sys.debug and
@@ -544,6 +539,7 @@ class Command(object):
                 rv.session.ui = self.session.ui
                 if self.CHANGES_SESSION_CONTEXT:
                     self.session.copy(rv.session, ui=False)
+                self.session.ui.mark(_('Using pre-cached result object %s') % cid)
                 self._finishing(self, True, just_cleanup=True)
                 return rv
             except:
@@ -556,6 +552,7 @@ class Command(object):
                 if mailpile.util.QUITTING:
                     return self._error(_('Shutting down'))
             return self.command(*args, **kwargs)
+
         try:
             return self._finishing(command, command(self, *args, **kwargs))
         except self.RAISES:

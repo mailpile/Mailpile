@@ -83,6 +83,10 @@ class Search(Command):
         session, idx = self.session, self._idx()
         self._search_args = args = []
 
+        self.context = self.data.get('context', [None])[0]
+        if self.context:
+            args += self.session.searched
+
         def nq(t):
             p = t[0] if (t and t[0] in '-+') else ''
             t = t[len(p):]
@@ -93,10 +97,6 @@ class Search(Command):
                     pass
             return p+t
 
-
-        self.context = self.data.get('context', [None])[0]
-        if self.context:
-            args += self.session.searched
 
         args += [a for a in list(nq(a) for a in self.args) if a not in args]
         for q in self.data.get('q', []):
@@ -147,7 +147,7 @@ class Search(Command):
     def _do_search(self, search=None, process_args=False):
         session, idx = self.session, self._idx()
 
-        if session.searched != self._search_args:
+        if self.context is None or search or session.searched != self._search_args:
             session.searched = search or []
             if search is None or process_args:
                 prefix = ''
@@ -193,8 +193,8 @@ class Search(Command):
         session.displayed = SearchResults(session, idx,
                                           start=start, num=num,
                                           full_threads=full_threads)
-        session.ui.mark(_('Prepared %d search results') % len(session.results))
-        print '%s' % self._search_state
+        session.ui.mark(_('Prepared %d search results (context=%s)'
+                          ) % (len(session.results), self.context))
         return self._success(_('Found %d results in %.3fs'
                                ) % (len(session.results),
                                     session.ui.report_marks(quiet=True)),

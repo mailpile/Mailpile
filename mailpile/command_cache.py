@@ -39,7 +39,7 @@ class CommandCache(object):
         with self.lock:
             # Make a snapshot of the session, as it provides context
             snapshot = Session.Snapshot(cmd_obj.session, ui=False)
-            snapshot.ui.render_mode = cmd_obj.session.ui.render_mode
+            snapshot.ui = cmd_obj.session.ui
             cmd_obj.session = result_obj.session = snapshot
 
             # Note: We cache this even if the requirements are "dirty",
