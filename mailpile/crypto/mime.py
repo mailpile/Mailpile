@@ -293,6 +293,8 @@ class MimeWrapper:
             if not hl.startswith('content-') and not hl.startswith('mime-'):
                 self.container[h] = msg[h]
                 del msg[h]
+            elif hl == 'mime-version':
+                del msg[h]
         if hasattr(msg, 'signature_info'):
             self.container.signature_info = msg.signature_info
             self.container.encryption_info = msg.encryption_info
