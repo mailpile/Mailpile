@@ -171,7 +171,7 @@ class Search(Command):
                                               context=context).as_set())
             idx.sort_results(session, session.results, session.order)
 
-        return session, idx, self._start, self._num
+        return session, idx
 
     def cache_requirements(self, result):
         msgs = self.session.results[self._start:self._start + self._num]
@@ -192,10 +192,11 @@ class Search(Command):
         return reqs
 
     def command(self):
-        session, idx, start, num = self._do_search()
+        session, idx = self._do_search()
         full_threads = self.data.get('full', False)
         session.displayed = SearchResults(session, idx,
-                                          start=start, num=num,
+                                          start=self._start,
+                                          num=self._num,
                                           full_threads=full_threads)
         session.ui.mark(_('Prepared %d search results (context=%s)'
                           ) % (len(session.results), self.context))

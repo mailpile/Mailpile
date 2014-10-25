@@ -229,13 +229,12 @@ class GPGUsageStatistics(Search):
         if addr is None:
             return self._error("Must supply an address", None)
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr])
+        session, idx = self._do_search(search=["from:%s" % addr])
         total = 0
         for messageid in session.results:
             total += 1
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr, 
-            "has:pgp"])
+        session, idx = self._do_search(search=["from:%s" % addr,  "has:pgp"])
         pgp = 0
         for messageid in session.results:
             pgp += 1
