@@ -84,6 +84,7 @@ def do_setup():
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
     config.prefs.encrypt_index = True
+    config.prefs.inline_pgp = False
 
     # Configure our fake mail sending setup
     config.sys.http_port = 33414
@@ -235,7 +236,8 @@ def test_composition():
         'bcc': ['secret@test.com#%s' % MY_KEYID],
         'mid': [new_mid],
         'subject': ['This the TESTMSG subject'],
-        'body': ['Hello world!']
+        'body': ['Hello world!'],
+        'attach-pgp-pubkey': ['yes']
     }
     mp.message_update(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 1)
