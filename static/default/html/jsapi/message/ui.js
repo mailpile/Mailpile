@@ -9,7 +9,7 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
     success  : function(response) {
       if (response.result) {
         $('#snippet-' + mid).replaceWith(response.result);
-        Mailpile.thread_initialize_tooltips();
+        Mailpile.Message.Tooltips.Crypto();
       }
     },
     error: function() {
