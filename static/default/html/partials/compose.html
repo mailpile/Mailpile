@@ -32,26 +32,17 @@
     </div>
     <div class="compose-options clearfix" data-mid="{{mid}}">
       <div class="compose-options-crypto">
-        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none"
-            data-mid="{{mid}}"
-            data-crypto_none="{{_("None")}}"
-            data-crypto_encrypt="{{_("Encrypted")}}"
-            data-crypto_cannot_encrypt="{{_("Can't Encrypt")}}"
-            data-crypto_encrypt_error="{{_("Error Encrypting")}}"
-            data-crypto_title_none="{{_("This message and metadata will not be encrypted")}}"
-            data-crypto_title_encrypt="{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}"
-            data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
-            data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
+        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none" data-mid="{{mid}}">
             <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
         </div>
         <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none"
             data-mid="{{mid}}"
-            data-crypto_signed="{{_("Verifiable")}}"
-            data-crypto_not_signed="{{_("Unverifiable")}}"
-            data-crypto_signed_error="{{_("Verification Error")}}"
-            data-crypto_title_signed="{{_("This message will be verifiable with your encryption key. Recipients who have your key will know it actually came from you :)")}}"
-            data-crypto_title_not_signed="{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")}}"
-            data-crypto_title_signed_error="{{_("Error accesing your key")}}">
+            data-crypto_signed=""
+            data-crypto_not_signed=""
+            data-crypto_signed_error=""
+            data-crypto_title_signed=""
+            data-crypto_title_not_signed=""
+            data-crypto_title_signed_error="">
             <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
         </div>
       </div>
