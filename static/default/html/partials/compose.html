@@ -85,10 +85,30 @@
             <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
           </li>
           <li class="add-left">
+            {% if config.prefs.gpg_email_key %}
             <label class="compose-attach-key" data-mid="{{mid}}" title="{{_("Attach your public encryption key to this message")}}">
-              <input type="checkbox" id="compose-attach-key-{{mid}}" name="attach-pgp-pubkey" {% if config.prefs.gpg_email_key %}value="yes" checked{% else %}value="no"{% endif %}>
+              <input type="hidden"
+                     value="{%- if editing_strings['attach-pgp-pubkey']
+                                in ('yes', 'true', true) %}yes{% else %}no
+                            {%- endif %}">{# ...
+
+Important! This comment keeps whitespace out of DOM so previousSibling works.
+
+We perform a Javascripty switcheroo here, so we can send negative values back
+if the checkbox is unticked. Without Javascript folks cannot disable sending
+of keys, if the timer thinks it is time to send. But they CAN force sending a
+key, which still makes this checkbox useful.
+
+        ... #}<input type="checkbox" id="compose-attach-key-{{mid}}"
+                     name="attach-pgp-pubkey"
+                     onclick="this.name = '';
+                              this.previousSibling.name = 'attach-pgp-pubkey';
+                              this.previousSibling.value = (this.checked) ? 'yes' : 'no';"
+                     {%- if editing_strings['attach-pgp-pubkey']
+                         in ('yes', 'true', true) %} checked{% endif %}>
               {{_("Attach Key")}}
-              </label>
+            </label>
+            {% endif %}
           </li>
         </ul>
       </div>

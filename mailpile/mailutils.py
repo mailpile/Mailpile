@@ -533,7 +533,8 @@ class Email(object):
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
-    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject', 'Encryption')
+    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
+                         'Encryption', 'Attach-PGP-Pubkey')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -543,7 +544,8 @@ class Email(object):
         'to': 4,
         'cc': 5,
         'bcc': 6,
-        'encryption': 99,
+        'encryption': 98,
+        'attach-pgp-pubkey': 99,
     }
 
     def _attachment_aid(self, att):
@@ -563,7 +565,7 @@ class Email(object):
         tree = tree or self.get_message_tree()
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
-            'encryption': '', 'attachments': {}
+            'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
         }
         header_lines = []
         body_lines = []
