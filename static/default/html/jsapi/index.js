@@ -258,3 +258,6 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
 {% endif %}
 {% endfor %}
 
+
+/* UI Things Included */
+{% include("jsapi/ui/global.js") %}
