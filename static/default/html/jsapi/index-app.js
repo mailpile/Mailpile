@@ -1,19 +1,3 @@
-/* JS App Files */
-{% include("jsapi/global/eventlog.js") %}
-{% include("jsapi/global/activities.js") %}
-{% include("jsapi/global/global.js") %}
-{% include("jsapi/global/keybindings.js") %}
-{% include("jsapi/global/notifications.js") %}
-
-/* JS - UI */
-{% include("jsapi/ui/init.js") %}
-{% include("jsapi/ui/content.js") %}
-{% include("jsapi/ui/events.js") %}
-{% include("jsapi/ui/global.js") %}
-{% include("jsapi/ui/topbar.js") %}
-{% include("jsapi/ui/sidebar.js") %}
-{% include("jsapi/ui/tooltips.js") %}
-
 /* JS - Crypto */
 {% include("jsapi/crypto/gpg.js") %}
 
