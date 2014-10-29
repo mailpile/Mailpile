@@ -18,7 +18,7 @@ $(document).on('click', '.button-sidebar-edit', function() {
   // Make Editable
   if ($(this).data('state') === 'done') {
 
-    Mailpile.UI.SidebarSortable();
+    Mailpile.UI.Sidebar.Sortable();
 
     // Disable Drag & Drop
     $('a.sidebar-tag').draggable({ disabled: true });
