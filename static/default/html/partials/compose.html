@@ -14,7 +14,7 @@
       <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
         <label class="left">{{_("Cc")}}</label>
         <label class="right">
-          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> hide</a>
+          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> {{_("hide")}}</a>
         </label>
         <input id="compose-cc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="cc" type="text" tabindex="2" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
       </div>
@@ -40,12 +40,10 @@
         </div>
       </div>
       <ul class="horizontal" data-mid="{{mid}}">
-        {% if command == "view" %}
         <li id="compose-to-summary-{{mid}}" class="compose-to-summary" data-mid="{{mid}}"></li>
         <li>
-          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
+          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if command != "view" %}hide{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
         </li>
-        {% endif %}
         <li>
           <label id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
         </li>

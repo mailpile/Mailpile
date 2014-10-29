@@ -12,18 +12,21 @@
   {% set metadata = result.data.metadata.get(mid) %}
   {% set message = result.data.messages.get(mid) %}
 
-  {% if message and "editing_strings" in message %}{# Render the composer #}
+  {# Render the composer #}
+  {% if message and "editing_strings" in message %}
     {% set editing_strings = message.editing_strings %}
     {% set editing_addresses = result.data.addresses %}
     {% include("partials/compose.html") %}
     {% do loop_history.append("edit message") %}
 
-  {% elif message %}{# Render full message #}
+  {# Render full message #}
+  {% elif message %}
     {% include("partials/thread_message.html") %}{# Show: Message #}
     {% set show_reply = (mid != last_mid) %}
     {% do loop_history.append("display message") %}
 
-  {% elif metadata.flags.draft %}{# Message is a draft, show composer #}
+  {# Message is a draft, show composer #}
+  {% elif metadata.flags.draft %}
     {# FIXME: We should probably just tell the user this is a draft, make
               loading the composer a manual action UNLESS this is the last
               message in the the thread.
@@ -40,7 +43,7 @@
     {% else %}
       {{_("Could Not Render Composer")}}
     {% endif %}
-  {% else  %}{# Just render snippet view #}
+  {% else %}{# Just render snippet view #}
     <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
@@ -90,17 +93,12 @@
   </ul>
 </div>
 
-<script id="template-composer" type="text/template">
-{% set mid = 'reply-all-template' %}
-{% set editing_strings = { 'from_aids': [], 'to': '', 'to_aids': [], 'cc': '', 'cc_aids': [], 'bcc': '', 'bcc_aids': [], 'subject': '', 'body': '', 'attachments': [], 'encryption': '' } %}
-{% set editing_addresses = [] %}
-{% include("partials/compose.html") %}
 <script>
 $(document).ready(function() {
   Mailpile.Message.init();
 });
 </script>
-{% else %}{# No Result, Show Error #}
+  {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
 {% endif  %}{# if result #}

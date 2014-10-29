@@ -29,18 +29,14 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
 
 /* Message -  */
 $(document).on('click', '.message-action-reply', function() {
-
   var mid = $(this).data('mid');
+  Mailpile.API.message_reply_post({mid: mid, _output: 'composer.jhtml'}, function(result) {
 
-  //Mailpile.API.message_reply_post({mid: mid}, function(result) {
-  $.getJSON('/static/reply.json', function(result) {
-    console.log(result);
-    var new_mid = result.result.created[0];
-    console.log(result.result.data.messages[new_mid].editing_strings);
-
-    var composer_template = _.template($('#template-composer').html());
-    $('#message-' + mid).append(composer_template(result.result.data.messages[new_mid].editing_strings));
-
+    $('#message-' + mid).append(result.result);
+    var new_mid = $('#message-' + mid).find('.form-compose').data('mid');
+    $('#compose-details-' + new_mid).hide();
+    $('#compose-to-summary-' + new_mid).show();
+    $('#compose-show-details-' + new_mid).show();
   });
 });
 
