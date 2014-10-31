@@ -147,6 +147,8 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid) {
     $('#compose-crypto-encryption-' + mid).removeClass('none error cannot').addClass('encrypted');
 
   } else if (status === 'cannot') {
+    console.log('SHOULD BE HERE!');
+
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-orange');
     $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}');
     $('#compose-crypto-encryption-' + mid).find('span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
@@ -190,4 +192,30 @@ Mailpile.Composer.Crypto.AttachKey = function(mid) {
   } else {
     $checkbox.val('no');
   }
+};
+
+
+Mailpile.Composer.Crypto.EncryptHelper = function(mid) {
+
+  // Show Recipients No Keys
+  var status = 'none';
+  var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
+  var unencryptables = [];    
+
+  $.each(addresses.split(/, */), function(key, recipient) {
+    if (recipient) {
+      var check = Mailpile.Composer.Recipients.AnalyzeAddress(recipient);
+      if (!check.flags.secure) {
+        unencryptables.push(check);
+      }
+    }
+  });
+
+  var searching_template = _.template($('#modal-compose-cannot-encrypt').html());
+  var searching_html = searching_template({ unencryptables: unencryptables });
+  $('#modal-full').html(searching_html);
+
+  // Show Modal
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+
 };
