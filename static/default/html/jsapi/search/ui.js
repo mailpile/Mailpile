@@ -11,7 +11,7 @@ Mailpile.pile_action_select = function(item) {
 
     // Add Tags
     var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.attr('data-mid') });
-    if (metadata) {
+    if (metadata && metadata.tag_tids) {
       _.each(metadata.tag_tids, function(tid, key) {
         var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
         if (tag.type === 'tag') {
@@ -42,14 +42,16 @@ Mailpile.pile_action_unselect = function(item) {
 
     // Remove Tags
     var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.attr('data-mid') });
-    _.each(metadata.tag_tids, function(tid, key) {
-      var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
-      if (tag.type === 'tag') {
-        if (_.indexOf(Mailpile.tags_cache, tag.tid) > -1) {
-          Mailpile.tags_cache = _.without(Mailpile.tags_cache, tag.tid);
+    if (metadata && metadata.tag_tids) {
+      _.each(metadata.tag_tids, function(tid, key) {
+        var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
+        if (tag.type === 'tag') {
+          if (_.indexOf(Mailpile.tags_cache, tag.tid) > -1) {
+            Mailpile.tags_cache = _.without(Mailpile.tags_cache, tag.tid);
+          }
         }
-      }
-    });
+      });
+    }
 
     // Hide Actions
     Mailpile.bulk_actions_update_ui();
@@ -107,13 +109,15 @@ Mailpile.render_modal_tags = function() {
       var selected_tids = {};
       _.each(Mailpile.messages_cache, function(mid, key) {
         var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
-        _.each(metadata.tag_tids, function(tid, key) {
-          if (selected_tids[tid] === undefined) {
-            selected_tids[tid] = 1;
-          } else {
-            selected_tids[tid]++;
-          }
-        });
+        if (metadata && metadata.tag_tids) {
+          _.each(metadata.tag_tids, function(tid, key) {
+            if (selected_tids[tid] === undefined) {
+              selected_tids[tid] = 1;
+            } else {
+              selected_tids[tid]++;
+            }
+          });
+        }
       });
 
       // Build Tags List

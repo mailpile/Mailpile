@@ -63,6 +63,7 @@ update_using_jhtml = function(original_url) {
 
                 // FIXME: The back button is still broken
                 history.pushState(null, data['message'], original_url);
+                Mailpile.messages_cache = [];
             }
         });
     }
