@@ -407,6 +407,7 @@ class AddTag(TagCommand):
                 'rules': self.session.config.tags.rules['_any'][1]
             })
 
+        # Extract data from POST or GET
         slugs = self.data.get('slug', [])
         names = self.data.get('name', [])
         if slugs and len(names) != len(slugs):
@@ -416,10 +417,12 @@ class AddTag(TagCommand):
         slugs.extend([Slugify(s, config.tags) for s in self.args])
         names.extend(self.args)
 
+        # Check Slug is valid
         for slug in slugs:
             if slug != Slugify(slug, config.tags):
                 return self._error('Invalid tag slug: %s' % slug)
 
+        # Check Tag is unique
         for tag in config.tags.values():
             if tag.slug in slugs:
                 return self._error('Tag already exists: %s/%s' % (tag.slug,
@@ -432,13 +435,20 @@ class AddTag(TagCommand):
                 if len(vlist) > i and vlist[i]:
                     tags[i][v] = vlist[i]
         if tags:
+            # Add Tag to config
             config.tags.extend(tags)
             if save:
                 self._reorder_all_tags()
             self.finish(save=save)
 
-        return self._success(_('Added %d tags') % len(tags),
-                             {'added': tags})
+        # Get full Tag objects of added tags to return
+        results = []
+        for tag in tags:
+            results.append(GetTagInfo(self.session.config, tag['slug']))
+
+        # Return success
+        return self._success(_('Added %d tags') % len(results),
+                             {'added': results})
 
 
 class ListTags(TagCommand):
