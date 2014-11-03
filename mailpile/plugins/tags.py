@@ -263,8 +263,12 @@ class Tag(TagCommand):
                                          len(self.result['msg_ids']))
 
     def _get_ops_and_msgids(self, words):
-        ops = (['+%s' % t for t in self.data.get('add', []) if t] +
-               ['-%s' % t for t in self.data.get('del', []) if t])
+        # If we are asked to both add and remove a tag, we do neither as
+        # that is nonsense without knowing the order of the operations.
+        deling = set(self.data.get('del', []))
+        adding = set(self.data.get('add', []))
+        ops = (['-%s' % t for t in (deling-adding) if t] +
+               ['+%s' % t for t in (adding-deling) if t])
         if 'mid' in self.data:
             msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
         else:
