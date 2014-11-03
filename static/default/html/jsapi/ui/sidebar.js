@@ -15,8 +15,9 @@ Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
   }
 
   // Save to Config
+  Mailpile.config.web.subtags_collapsed = collapsed;
   Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) { 
-    Mailpile.config.web.subtags_collapsed = collapsed;
+
   });
 };
 

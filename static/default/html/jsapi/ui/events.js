@@ -10,7 +10,7 @@ $(document).on('click', '.is-editing', function(e) {
 });
 
 
-$(document).on('click', '.button-sidebar-edit', function() {
+$(document).on('click', '#button-sidebar-organize', function() {
 
   var new_message = $(this).data('message');
   var old_message = $(this).find('span.text').html();
@@ -70,4 +70,16 @@ $(document).on('click', '.sidebar-tag-archive', function(e) {
     Mailpile.notification(result);
     $('#sidebar-tag-' + tid).fadeOut();
   });
+});
+
+
+$(document).on('click', '#button-sidebar-add', function(e) {
+  e.preventDefault();
+  Mailpile.UI.Modals.AddTag({ location: 'sidebar' });
+});
+
+
+$(document).on('click', '#button-modal-add-tag', function(e) {
+  e.preventDefault();
+  Mailpile.UI.Modals.AddTagProcess($(this).data('location'));
 });

@@ -62,13 +62,24 @@
     </ul>
   </nav>
   <nav id="sidebar-bottom" class="text-center">
-    <a href="#" class="button-sidebar-add" title="{{_("Add Tag")}}">
+    <a href="#" id="button-sidebar-add" title="{{_("Add Tag")}}">
       <span class="icon-plus"></span>
       <span class="text">{{_("Add")}}</span>
     </a>
-    <a href="#" class="button-sidebar-edit" data-message="{{_("Done")}}" data-state="done" title="{{_("Edit Sidebar")}}">
+    <a href="#" id="button-sidebar-organize" data-message="{{_("Done")}}" data-state="done" title="{{_("Edit Sidebar")}}">
       <span class="icon icon-settings"></span>
       <span class="text">{{_("Organize")}}</span>
     </a>
   </nav>
 </div>
+
+
+<script id="template-sidebar-item" type="text/template">
+  <li id="sidebar-tag-<%= tid %>" data-tid="<%= tid %>" data-display_order="<%= display_order %>" class="sidebar-tags-draggable">
+    <a href="/in/<%= slug %>/" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
+      <span class="icon <%= icon %>" style="color: <%= label_color %>;"></span>
+      <span class="name"><%= name %></span>
+      <span class="notification"></span>
+    </a>
+  </li>
+</script>
