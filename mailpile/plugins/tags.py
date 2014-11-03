@@ -383,7 +383,7 @@ class AddTag(TagCommand):
         # Optional initial attributes of tags
         'icon': 'icon-tag',
         'label': 'display as label in search results, or not',
-        'label_color': '03-gray-dark',
+        'label_color': 'the color of the label',
         'display': 'tag display type',
         'template': 'tag template type',
         'search_terms': 'default search associated with this tag',
@@ -411,13 +411,15 @@ class AddTag(TagCommand):
                 'rules': self.session.config.tags.rules['_any'][1]
             })
 
-        # Extract data from POST or GET
+        # Check arguments/POST data, and make sure we have matching numbers
+        # of names and slugs for the tags we're about to create.
         slugs = self.data.get('slug', [])
         names = self.data.get('name', [])
         if slugs and len(names) != len(slugs):
             return self._error('Name/slug pairs do not match')
         elif names and not slugs:
             slugs = [Slugify(n, config.tags) for n in names]
+        # This adds CLI-style arguments to the list
         slugs.extend([Slugify(s, config.tags) for s in self.args])
         names.extend(self.args)
 
