@@ -35,6 +35,6 @@ $(document).on('click', '.pile-tag-delete', function(e) {
 $(document).on('click', '#btn-pile-empty-search-web', function(e) {
   e.preventDefault();
   var query = $('#pile-empty-search-terms').html();
-  Mailpile.find_encryption_keys(query);
+  Mailpile.UI.Modals.CryptoFindKeys(query);
 });
 

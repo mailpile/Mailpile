@@ -27,6 +27,8 @@ Mailpile.Composer.Body.Setup = function(mid) {
   // Is Ephemeral (means .compose-text has quoted_reply)
   if (/\breply-all\b/g.test(mid)) {
 
+  console.log('is here Ephemeral');
+
     // Add Quoted to Model
     Mailpile.Composer.Drafts[mid].quoted_reply = $('#compose-text-' + mid).val();
 
@@ -41,6 +43,9 @@ Mailpile.Composer.Body.Setup = function(mid) {
   }
   // Is Draft add to model
   else {
+
+  console.log('ova der inseead');
+
     Mailpile.Composer.Drafts[mid].body = $('#compose-text-' + mid).val();
   }
 };

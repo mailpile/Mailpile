@@ -29,7 +29,7 @@ $(document).on('submit', '#form-search', function(e) {
   else if (search_query.substring(0, 5) === 'keys:') {
     e.preventDefault();
     var query = search_query.substring(6, 999);
-    Mailpile.find_encryption_keys(query);
+    Mailpile.UI.Modals.CryptoFindKeys(query);
   }
   else {
     console.log('inside of else, just a normal query');

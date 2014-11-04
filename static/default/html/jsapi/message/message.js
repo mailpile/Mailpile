@@ -149,7 +149,7 @@ $(document).on('click', '.message-action-unsubscribe', function(e) {
 /* Message - Discover keys */
 $(document).on('click', '.message-action-find-keys', function(e) {
   e.preventDefault();
-  Mailpile.find_encryption_keys($(this).attr('href'));
+  Mailpile.UI.Modals.CryptoFindKeys($(this).attr('href'));
 });
 
 

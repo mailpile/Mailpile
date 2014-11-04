@@ -1,5 +1,5 @@
-/* Crypto - Render results from Mailpile.find_encryption_keys() */
-Mailpile.render_find_encryption_keys_found = function(data, query) {
+/* Crypto - Render results from Mailpile.UI.Modals.CryptoFindKeys() */
+Mailpile.UI.Modals.CryptoFindKeysResult = function(data, query) {
 
   var items_html = '';
 
@@ -39,16 +39,16 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
 };
 
 
-Mailpile.render_find_encryption_keys_done = function(query) {
+Mailpile.UI.Modals.CryptoFindKeysDone = function(query) {
   $('#modal-full').find('.progress-spinner').addClass('hide');
-  if (!this.crypto_keylookup.length) {
+  if (!Mailpile.crypto_keylookup.length) {
     $('#modal-full').find('.modal-body').html('<p>Sorry, we could not find any encryption keys for the email address: <strong>' + query + '</strong></p>');
   }
 };
 
 
 /* Crypto - Try to find keys locally & remotely */
-Mailpile.find_encryption_keys = function(query) {
+Mailpile.UI.Modals.CryptoFindKeys = function(query) {
 
   $('#modal-full').html($('#modal-search-keyservers').html());
 
@@ -57,7 +57,7 @@ Mailpile.find_encryption_keys = function(query) {
     // Render each result found
     if (data.result) {
       $('#modal-full').find('.modal-title .title').html(data.message);
-      Mailpile.render_find_encryption_keys_found(data, query);
+      Mailpile.UI.Modals.CryptoFindKeysResult(data, query);
     }
 
     // Running Search
@@ -68,7 +68,7 @@ Mailpile.find_encryption_keys = function(query) {
       $('#modal-full').find('.modal-body').html(searching_html);
     }
     else {
-      Mailpile.render_find_encryption_keys_done(query);
+      Mailpile.UI.Modals.CryptoFindKeysDone(query);
     }
   });
 

@@ -1,5 +1,6 @@
 /* JS - Crypto */
 {% include("jsapi/crypto/gpg.js") %}
+{% include("jsapi/crypto/events.js") %}
 
 /* JS - Compose */
 {% include("jsapi/compose/init.js") %}

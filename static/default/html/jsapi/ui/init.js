@@ -5,7 +5,7 @@ Mailpile.UI = {
 };
 
 Mailpile.UI.Sidebar  = {};
-Mailpile.UI.Modals = {};
+Mailpile.UI.Modals   = {};
 Mailpile.UI.Tooltips = {};
 Mailpile.UI.Message  = {};
 Mailpile.UI.Search   = {};

@@ -2,7 +2,7 @@
 
 $(document).on('click', '.compose-contact-find-keys', function() {
   var address = $(this).data('address');
-  Mailpile.find_encryption_keys(address);
+  Mailpile.UI.Modals.CryptoFindKeys(address);
 });
 
 
