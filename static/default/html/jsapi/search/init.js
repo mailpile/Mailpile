@@ -1,7 +1,7 @@
 /* Search */
 
 Mailpile.Search = {};
-
+Mailpile.Search.Tooltips = {};
 
 Mailpile.Search.init = function() {
 
@@ -25,6 +25,8 @@ Mailpile.Search.init = function() {
     }
   });
 
+  // Tooltips
+  Mailpile.Search.Tooltips.MessageTags();
 
   /* STUFF Smari added for notifications
   $("#pile-newmessages-notification").click(Mailpile.update_search);
