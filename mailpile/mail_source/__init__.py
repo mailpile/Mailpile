@@ -385,7 +385,11 @@ class BaseMailSource(threading.Thread):
                 disco_cfg.parent_tag = name
             disco_cfg.parent_tag = self._create_tag(disco_cfg.parent_tag,
                                                     use_existing=False,
+                                                    label=False,
+                                                    icon='icon-mailsource',
                                                     unique=False)
+            if save:
+                self._save_config()
             return disco_cfg.parent_tag
         else:
             return None
@@ -400,6 +404,10 @@ class BaseMailSource(threading.Thread):
         if not disco_cfg.create_tag:
             return
 
+        # Make sure we have a parent tag, as that maybe useful when creating
+        # tag names or the primary tag itself.
+        parent = self._create_parent_tag(save=False)
+
         # We configure the primary_tag with a name, if it doesn't have
         # one already.
         if not mbx_cfg.primary_tag:
@@ -409,16 +417,31 @@ class BaseMailSource(threading.Thread):
         # tags. The gap here allows the user to edit the primary_tag
         # proposal before changing the policy from 'unknown'.
         if mbx_cfg.policy != 'unknown':
-            parent = self._create_parent_tag(save=save)
             try:
+                with_icon, as_label = None, True
+                if mbx_cfg.apply_tags:
+                    # Hmm. Is this too clever? Rationale: if we are always
+                    # applying other tags automatically, then we don't need to
+                    # make the primary tag a label, that's just clutter. Yes?
+                    as_label = False
+                    # Furthermore, when displaying this tag, it makes sense
+                    # to use the icon from the other tag we're applying to.
+                    # these messages. Maybe.
+                    try:
+                        with_icon = config.tags[mbx_cfg.apply_tags[0]].icon
+                    except (KeyError, ValueError):
+                        pass
                 mbx_cfg.primary_tag = self._create_tag(mbx_cfg.primary_tag,
                                                        use_existing=False,
+                                                       label=as_label,
+                                                       icon=with_icon,
                                                        unique=False,
                                                        parent=parent)
-                if save:
-                    self._save_config()
             except (ValueError, IndexError):
                 self.session.ui.debug(traceback.format_exc())
+
+        if save:
+            self._save_config()
 
     BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
 
@@ -447,7 +470,10 @@ class BaseMailSource(threading.Thread):
 
     def _create_tag(self, tag_name_or_id,
                     use_existing=True,
-                    unique=False, parent=None):  # -> tag ID
+                    unique=False,
+                    label=True,
+                    icon=None,
+                    parent=None):  # -> tag ID
         if tag_name_or_id in self.session.config.tags:
             # Short circuit if this is a tag ID for an existing tag
             return tag_name_or_id
@@ -469,6 +495,9 @@ class BaseMailSource(threading.Thread):
             if tags:
                 tags[0].slug = Slugify(tag_name, self.session.config.tags)
                 tags[0].name = tag_name
+                tags[0].label = label
+                if icon:
+                    tags[0].icon = icon
                 if parent:
                     tags[0].parent = parent
                 tag_id = tags[0]._key
@@ -551,6 +580,13 @@ class BaseMailSource(threading.Thread):
 
             with self._lock:
                 apply_tags = mbx_cfg.apply_tags[:]
+
+                parent = self._create_parent_tag(save=True)
+                if parent:
+                    tid = config.get_tag_id(parent)
+                    if tid:
+                        apply_tags.append(tid)
+
                 self._create_primary_tag(mbx_cfg)
                 if mbx_cfg.primary_tag:
                     tid = config.get_tag_id(mbx_cfg.primary_tag)
