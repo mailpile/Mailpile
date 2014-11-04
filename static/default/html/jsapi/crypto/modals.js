@@ -1,4 +1,6 @@
-/* Crypto - Render results from Mailpile.UI.Modals.CryptoFindKeys() */
+/* Modals - Crypto */
+
+/* Modals - Crypto - render result items from Mailpile.UI.Modals.CryptoFindKeys() */
 Mailpile.UI.Modals.CryptoFindKeysResult = function(data, query) {
 
   var items_html = '';
@@ -39,6 +41,7 @@ Mailpile.UI.Modals.CryptoFindKeysResult = function(data, query) {
 };
 
 
+/* Modals - Crypto - done looking up keys */
 Mailpile.UI.Modals.CryptoFindKeysDone = function(query) {
   $('#modal-full').find('.progress-spinner').addClass('hide');
   if (!Mailpile.crypto_keylookup.length) {
@@ -47,7 +50,7 @@ Mailpile.UI.Modals.CryptoFindKeysDone = function(query) {
 };
 
 
-/* Crypto - Try to find keys locally & remotely */
+/* Modals - Crypto - try to find keys locally & remotely */
 Mailpile.UI.Modals.CryptoFindKeys = function(query) {
 
   $('#modal-full').html($('#modal-search-keyservers').html());
