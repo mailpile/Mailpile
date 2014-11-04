@@ -50,10 +50,10 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Do you really need an email to know when you have been retweeted?")}}',
       '{{_("Email is the largest internet based social network on the planet")}}',
       '{{_("Which other technology do you use that is 40 years old?")}}',
-      '{{_("There are 2.5 billion email users worldwide, thats double the amount of Facebook users!")}}',
+      '{{_("There are 2.5 billion email users worldwide; that\'s double the amount of Facebook users!")}}',
       '{{_("Use Mailpile Tags to better organize and search your mail")}}',
       '{{_("Remember getting your first email address? Remember how it felt like something private?")}}',
-      '{{_("Email is a decentralized by design, this means no one company or government owns it!")}}',
+      '{{_("Email is a decentralized by design; this means no one company or government owns it!")}}',
       '{{_("Over 100 trillion emails are sent per year, wow!")}}',
       '{{_("Email is the most widely used communication protocol ever created by humans")}}',
       '{{_("Email uses an open standard agreed upon by the entire world & owned by no one")}}'
@@ -63,7 +63,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Sending encrypted mail to Snowden")}}',
       '{{_("Decrypting an email from Snowden")}}',
       '{{_("The worlds most powerful governments are conducting mass dragnet surveillance")}}',
-      '{{_("Most email can be read by anyone as it travel through the internet")}}',
+      '{{_("Most email can be read by anyone as it travels through the internet")}}',
       '{{_("Encryption ensures that your emails are only read by the intended recipient")}}',
       '{{_("Unencrypted email is more like sending a postcard than sending a letter")}}',
       '{{_("Mailpile uses OpenPGP to encrypt and decrypt your messages securely")}}',
@@ -72,7 +72,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("The more encrypted email you send, the better!")}}',
       '{{_("Make sure you print or save your keys & passphrase somewhere securely")}}',
       '{{_("Mailpile by default encrypts your search index!")}}',
-      '{{_("The most common Email password is 123456, hopefully yours is different")}}'
+      '{{_("The most common Email password is 123456; hopefully yours is different")}}'
     ],
     jokes: [
       '{{_("Good things come to those who wait")}}',
@@ -80,7 +80,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Most of Mailpile was built from cafes in Reykjavík, Iceland")}}',
       '{{_("Many Icelanders believe in elves and magical hidden people")}}',
       '{{_("The founders of Mailpile first met in a public hot tub in Reykjavík")}}',
-      '{{_("We like volcanos, do you like volcanos?")}}',
+      '{{_("We like volcanos. Do you like volcanos?")}}',
       '{{_("A million hamsters are spinning their wheels right now")}}',
       '{{_("Tapping earth for more geothermal energy")}}',
       '{{_("Digging moat. Filing with alligators. Fortifying walls")}}',
