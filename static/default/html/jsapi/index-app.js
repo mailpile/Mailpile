@@ -16,7 +16,7 @@
 /* JS - Contacts */
 {% include("jsapi/contacts/init.js") %}
 {% include("jsapi/contacts/display_modes.js") %}
-{% include("jsapi/contacts/content.js") %}
+{% include("jsapi/contacts/events.js") %}
 
 /* JS - Search */
 {% include("jsapi/search/init.js") %}
