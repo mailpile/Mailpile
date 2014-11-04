@@ -1,6 +1,6 @@
 /* JS - Crypto */
-{% include("jsapi/crypto/gpg.js") %}
 {% include("jsapi/crypto/events.js") %}
+{% include("jsapi/crypto/modals.js") %}
 
 /* JS - Compose */
 {% include("jsapi/compose/init.js") %}
@@ -17,6 +17,7 @@
 {% include("jsapi/contacts/init.js") %}
 {% include("jsapi/contacts/display_modes.js") %}
 {% include("jsapi/contacts/events.js") %}
+{% include("jsapi/contacts/modals.js") %}
 
 /* JS - Search */
 {% include("jsapi/search/init.js") %}
