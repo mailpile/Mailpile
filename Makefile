@@ -78,6 +78,7 @@ pytests:
 	@python2 mailpile/workers.py
 	@python2 mailpile/crypto/streamer.py
 	@python2 mailpile/mail_source/imap.py
+	@python2 mailpile/mailboxes/pop3.py
 
 clean:
 	@rm -f $(find . -name *.pyc) mailpile-tmp.py mailpile.py
