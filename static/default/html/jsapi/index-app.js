@@ -34,7 +34,8 @@
 /* JS - Tags */
 {% include("jsapi/tags/init.js") %}
 {% include("jsapi/tags/modals.js") %}
-{% include("jsapi/tags/content.js") %}
+{% include("jsapi/tags/events.js") %}
+{% include("jaspi/tags/tooltips.js") %}
 
 /* JS - Message */
 {% include("jsapi/message/init.js") %}
