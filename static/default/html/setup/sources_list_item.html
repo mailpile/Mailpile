@@ -11,9 +11,9 @@
       </span>
     </div>
     <% if (enabled) { %>
-    <a href="#" data-id="<%= id %>" class="setup-source-disable right" data-state="<%= enabled %>" data-message="{{_("Disabled")}}">{{_("Enabled")}}</a>
+    <a href="#" data-id="<%= id %>" class="setup-source-disable button-secondary button-small right" data-state="<%= enabled %>" data-message="{{_("Disabled")}}">{{_("Enabled")}}</a>
     <% } else { %>
-    <a href="#" data-id="<%= id %>" class="setup-source-disable right" data-state="<%= enabled %>" data-message="{{_("Enabled")}}">{{_("Disabled")}}</a>
+    <a href="#" data-id="<%= id %>" class="setup-source-disable button-alert button-small right" data-state="<%= enabled %>" data-message="{{_("Enabled")}}">{{_("Disabled")}}</a>
     <% } %>
   </div>
   <div class="half-top clearfix">
