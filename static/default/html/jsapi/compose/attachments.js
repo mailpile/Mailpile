@@ -50,7 +50,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
   		max_file_size : '50mb',
   		mime_types: [
   			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
-  			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods"},
+  			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods,html,md"},
   			{title : "Image files", extensions : "jpg,jpeg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
   			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
   			{title : "Zip files", extensions : "zip,rar"},
@@ -94,7 +94,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
             }
           }
       	});
-  
+
         if (start_upload) {
           uploader.start();
         }
@@ -103,7 +103,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
       	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
       },
       Error: function(up, err) {
-        Mailpile.notification({status: 'error', message: "Oops, could not upload attachment because: " + err.message });
+        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
       }
