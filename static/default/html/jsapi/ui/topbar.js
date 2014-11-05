@@ -55,3 +55,8 @@ $(document).on('click', '#button-compose', function(e) {
   Mailpile.activities.compose();
 });
 
+
+/* Show Settings Dropdown */
+$(document).on('mouseover', '.topbar-nav .dropdown-toggle', function() {
+  $('#settings-menu').dropdown('toggle');
+});

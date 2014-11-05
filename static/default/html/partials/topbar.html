@@ -38,7 +38,7 @@
           <a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
         </li>
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
-          <a href="/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a>
+          <a href="/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown" alt="{{_("Settings")}}" aria-haspopup="true" aria-expanded="false"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="topbar-settings">
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#profiles"><span class="icon-profiles"></span> {{_("Profiles")}}</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="/setup/#sources"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
