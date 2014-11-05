@@ -55,7 +55,7 @@
       <ul class="items grouped">
         {% for sub in tag.subtags %}
         <li class="grouped">
-          <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} - <a href="/tags/edit.html?only={{sub.slug}}">{{_("Edit Tag")}}</a>
+          <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} <a href="/tags/edit.html?only={{sub.slug}}" class="right"><span class="icon-settings"></span> {{_("Settings")}}</a>
         </li>
         {% endfor %}
       </ul>
