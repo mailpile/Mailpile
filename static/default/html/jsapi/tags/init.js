@@ -2,6 +2,7 @@
 
 Mailpile.Tags = {};
 Mailpile.Tags.UI = {};
+Mailpile.Tags.Tooltips = {};
 
 
 Mailpile.Tags.init = function() {
@@ -11,5 +12,8 @@ Mailpile.Tags.init = function() {
 
   // Slugify
   $('#data-tag-add-slug').slugify('#data-tag-add-tag');
+
+  // Tooltips
+  Mailpile.Tags.Tooltips.CardSubtags();
 
 };
