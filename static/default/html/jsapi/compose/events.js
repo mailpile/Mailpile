@@ -16,10 +16,11 @@ $(document).on('click', '.compose-crypto-encryption', function() {
     change = 'none';
   } else {
     var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
-    if (determine == 'encrypt') {
+    if (determine.state == 'encrypt') {
       change = 'encrypt';
     } else {
-      Mailpile.UI.Modals.ComposerEncryptionHelper(mid);
+      change = determine.state;
+      Mailpile.UI.Modals.ComposerEncryptionHelper(mid, determine);
     }
   }
 

@@ -5,12 +5,18 @@ Mailpile.Composer.Crypto.LoadStates = function(mid) {
   var state = $('#compose-crypto-' + mid).val();
   var signature = 'none';
   var encryption = 'none';
+  var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
 
+  // Use signature
   if (state.match(/sign/)) {
     signature = 'sign';
   }
+
+  // Use saved state or determine
   if (state.match(/encrypt/)) {
     encryption = 'encrypt';
+  } else {
+    encryption = determine.state;
   }
 
   Mailpile.Composer.Crypto.SignatureToggle(signature, mid);
@@ -64,9 +70,10 @@ Mailpile.Composer.Crypto.DetermineSignature = function(mid) {
 /* Compose - Determine possible crypto "encryption" of a message */
 Mailpile.Composer.Crypto.DetermineEncryption = function(mid, contact) {
 
-  var status = 'none';
+  var state = 'none';
   var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
   var recipients = addresses.split(/, */);
+  var unencryptables = [];    
 
   if (contact) {
     recipients.push(contact);
@@ -81,18 +88,20 @@ Mailpile.Composer.Crypto.DetermineEncryption = function(mid, contact) {
       var check = Mailpile.Composer.Recipients.AnalyzeAddress(value);
       if (check.flags.secure) {
         count_secure++;
+      } else {
+        unencryptables.push(check);
       }
     }
   });
 
   if (count_secure === count_total && count_secure !== 0) {
-    status = 'encrypt';
+    state = 'encrypt';
   }
   else if (count_secure < count_total && count_secure > 0) {
-    status = 'cannot';
+    state = 'cannot';
   }
 
-  return status;
+  return { state: state, unencryptables: unencryptables };
 };
 
 
@@ -139,6 +148,9 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid) {
 /* Compose - Render crypto "encryption" of a message */
 Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid) {
 
+  console.log('EncryptedToggle: ' + status);
+
+
   if (status == 'encrypt') {
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-green');
     $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}');
@@ -147,8 +159,6 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid) {
     $('#compose-crypto-encryption-' + mid).removeClass('none error cannot').addClass('encrypted');
 
   } else if (status === 'cannot') {
-    console.log('SHOULD BE HERE!');
-
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-orange');
     $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}');
     $('#compose-crypto-encryption-' + mid).find('span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
@@ -193,19 +203,4 @@ Mailpile.Composer.Crypto.AttachKey = function(mid) {
   } else {
     hiddenak.val('no');
   }
-};
-
-
-Mailpile.Composer.Crypto.EncryptionHelper = function(mid) {
-  var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
-  var unencryptables = [];    
-  $.each(addresses.split(/, */), function(key, recipient) {
-    if (recipient) {
-      var check = Mailpile.Composer.Recipients.AnalyzeAddress(recipient);
-      if (!check.flags.secure) {
-        unencryptables.push(check);
-      }
-    }
-  });
-  return unencryptables;
 };

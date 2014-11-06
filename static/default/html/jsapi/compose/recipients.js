@@ -149,16 +149,16 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
   }).on('select2-selecting', function(e) {
 
     /* On select update encryption state */
-    var status = Mailpile.Composer.Crypto.DetermineEncryption(mid, e.val);
-    Mailpile.Composer.Crypto.EncryptionToggle(status);
+    var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, e.val);
+    Mailpile.Composer.Crypto.EncryptionToggle(determine.state, mid);
 
     setTimeout(function() {
       Mailpile.Composer.Tooltips.ContactDetails();
     }, 350);
 
   }).on('select2-removed', function(e) {
-      var status = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
-      Mailpile.Composer.Crypto.EncryptionToggle(status);
+    var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
+    Mailpile.Composer.Crypto.EncryptionToggle(determine.state, mid);
   });
 
   /* Check encryption state */
