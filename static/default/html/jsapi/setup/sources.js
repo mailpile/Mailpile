@@ -300,9 +300,11 @@ var SourcesView = Backbone.View.extend({
         if (!state) {
           $('#setup-source-' + source_id).addClass('disabled');
           $('#setup-source-' + source_id).find('a.setup-source-disable').removeClass('button-secondary').addClass('button-alert');
+          $('#setup-source-actions-' + source_id).find('a').addClass('disabled');
         } else {
           $('#setup-source-' + source_id).removeClass('disabled');
           $('#setup-source-' + source_id).find('a.setup-source-disable').removeClass('button-alert').addClass('button-secondary');
+          $('#setup-source-actions-' + source_id).find('a').removeClass('disabled');
         }
         $(e.target).html(new_message);
         $(e.target).data('state', state);

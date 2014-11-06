@@ -19,8 +19,8 @@
   <div class="half-top clearfix">
   <div id="setup-source-message-<%= id %>" class="left"><em>{{_("Getting Status...")}}</em></div>
     <ul id="setup-source-actions-<%= id %>" class="horizontal right setup-actions">
-      <li id="item-source-configure-<%= id %>"><a href="#sources/configure/<%= id %>"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
-      <li id="item-source-edit-<%= id %>"><a href="#sources/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+      <li id="item-source-configure-<%= id %>"><a href="#sources/configure/<%= id %>" class="<% if (!enabled) { %>disabled<% } %>"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
+      <li id="item-source-edit-<%= id %>"><a href="#sources/<%= id %>" class="<% if (!enabled) { %>disabled<% } %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
     </ul>
   </div>
   <div id="setup-item-notice-<%= id %>" class="setup-item-notice half-top hide"></div>
