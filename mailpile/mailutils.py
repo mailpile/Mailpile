@@ -1731,10 +1731,8 @@ class AddressHeaderParser(list):
 if __name__ == "__main__":
     import doctest
     import sys
-
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print
     print '%s' % (results, )
     if results.failed:
         sys.exit(1)

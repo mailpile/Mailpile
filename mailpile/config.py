@@ -2003,6 +2003,7 @@ if __name__ == "__main__":
     })
     cfg = mailpile.config.ConfigManager(rules=rules)
     session = mailpile.ui.Session(cfg)
+    session.ui = mailpile.ui.SilentInteraction(cfg)
     session.ui.block()
 
     for tries in (1, 2):

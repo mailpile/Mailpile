@@ -750,5 +750,7 @@ class DebugFileWrapper(object):
 if __name__ == "__main__":
     import doctest
     import sys
-    if doctest.testmod().failed:
+    result = doctest.testmod()
+    print '%s' % (result, )
+    if result.failed:
         sys.exit(1)

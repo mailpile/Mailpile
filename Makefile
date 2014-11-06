@@ -71,14 +71,15 @@ alltests: pytests clean docs
 	@nosetests
 
 pytests:
-	@python2 mailpile/mailutils.py
-	@python2 mailpile/config.py
-	@python2 mailpile/util.py
-	@python2 mailpile/vcard.py
-	@python2 mailpile/workers.py
-	@python2 mailpile/crypto/streamer.py
-	@python2 mailpile/mail_source/imap.py
-	@python2 mailpile/mailboxes/pop3.py
+	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py
+	@echo -n 'config           ' && python2 mailpile/config.py
+	@echo -n 'util             ' && python2 mailpile/util.py
+	@echo -n 'vcard            ' && python2 mailpile/vcard.py
+	@echo -n 'workers          ' && python2 mailpile/workers.py
+	@echo -n 'mailboxes/pop3   ' && python2 mailpile/mailboxes/pop3.py
+	@echo -n 'mail_source/imap ' && python2 mailpile/mail_source/imap.py
+	@echo 'crypto/streamer...'   && python2 mailpile/crypto/streamer.py
+	@echo
 
 clean:
 	@rm -f $(find . -name *.pyc) mailpile-tmp.py mailpile.py
