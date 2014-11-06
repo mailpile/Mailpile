@@ -24,11 +24,11 @@ $(document).on('click', '.sidebar-tag-archive', function(e) {
 
 $(document).on('click', '#button-sidebar-add', function(e) {
   e.preventDefault();
-  Mailpile.UI.Modals.AddTag({ location: 'sidebar' });
+  Mailpile.UI.Modals.TagAdd({ location: 'sidebar' });
 });
 
 
 $(document).on('click', '#button-modal-add-tag', function(e) {
   e.preventDefault();
-  Mailpile.UI.Modals.AddTagProcess($(this).data('location'));
+  Mailpile.UI.Modals.TagAddProcess($(this).data('location'));
 });

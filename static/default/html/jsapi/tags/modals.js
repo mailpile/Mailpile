@@ -1,6 +1,6 @@
 /* Modals - Tags */
 
-Mailpile.UI.Modals.AddTag = function(add_tag_data) {
+Mailpile.UI.Modals.TagAdd = function(add_tag_data) {
   var add_tag_template = _.template($('#modal-add-tag').html());
   var add_tag_html = add_tag_template(add_tag_data);
   $('#modal-full').html(add_tag_html);
@@ -10,7 +10,7 @@ Mailpile.UI.Modals.AddTag = function(add_tag_data) {
 };
 
 
-Mailpile.UI.Modals.AddTagProcess = function(location) {
+Mailpile.UI.Modals.TagAddProcess = function(location) {
   var tag_data = $('#modal-form-tag-add').serialize();
   Mailpile.API.tags_add_post(tag_data, function(result) {
 
