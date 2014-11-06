@@ -57,6 +57,10 @@ $(document).on('click', '#button-compose', function(e) {
 
 
 /* Show Settings Dropdown */
-$(document).on('mouseover', '.topbar-nav .dropdown-toggle', function() {
-  $('#settings-menu').dropdown('toggle');
+$(document).on('mouseover', '#button-settings', function() {
+  // FIXME: crap, this makes the links in the dropdown note fire... something obnoxious in Bootstrap causes it :(
+  // $('#settings-menu').dropdown('toggle');
 });
+
+
+
