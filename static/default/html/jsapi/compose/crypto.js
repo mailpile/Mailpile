@@ -197,12 +197,8 @@ Mailpile.Composer.Crypto.AttachKey = function(mid) {
 
 
 Mailpile.Composer.Crypto.EncryptionHelper = function(mid) {
-
-  // Show Recipients No Keys
-  var status = 'none';
   var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
   var unencryptables = [];    
-
   $.each(addresses.split(/, */), function(key, recipient) {
     if (recipient) {
       var check = Mailpile.Composer.Recipients.AnalyzeAddress(recipient);
@@ -211,7 +207,5 @@ Mailpile.Composer.Crypto.EncryptionHelper = function(mid) {
       }
     }
   });
-
-  // Show Modal
-  Mailpile.UI.Modals.ComposerEncryptionHelper(unencryptables);
+  return unencryptables;
 };
