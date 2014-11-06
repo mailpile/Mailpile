@@ -148,9 +148,6 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid) {
 /* Compose - Render crypto "encryption" of a message */
 Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid) {
 
-  console.log('EncryptedToggle: ' + status);
-
-
   if (status == 'encrypt') {
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-green');
     $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}');
