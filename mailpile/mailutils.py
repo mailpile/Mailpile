@@ -1028,7 +1028,14 @@ class Email(object):
                            re.sub(self.RE_HTML_BORING, ' ',
                                re.sub(self.RE_HTML_LINKS, delink,
                                    re.sub(self.RE_HTML_IMGS, deimg, html)))))
-            text = (lxml.html.fromstring(html).text_content() +
+            if html.strip() != '':
+                try:
+                    html_text = lxml.html.fromstring(html).text_content()
+                except XMLSyntaxError:
+                    html_text = _('(Invalid HTML suppressed)')
+            else:
+                html_text = ''
+            text = (html_text +
                     (links and '\n\nLinks:\n' or '') + '\n'.join(links) +
                     (imgs and '\n\nImages:\n' or '') + '\n'.join(imgs))
             return re.sub(self.RE_EXCESS_WHITESPACE, '\n\n', text).strip()
