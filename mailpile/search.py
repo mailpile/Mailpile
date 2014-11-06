@@ -594,6 +594,8 @@ class MailIndex:
                                   ) % (mailbox_idx, mailbox_fn))
                 mbox.update_toc()
         except (IOError, OSError, ValueError, NoSuchMailboxError), e:
+            if 'rescan' in session.config.sys.debug:
+                session.ui.debug(traceback.format_exc())
             return finito(-1, _('%s: Error opening: %s (%s)'
                                 ) % (mailbox_idx, mailbox_fn, e),
                           error=True)

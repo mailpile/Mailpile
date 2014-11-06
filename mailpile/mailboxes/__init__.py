@@ -15,7 +15,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import MBX_ID_LEN
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
+__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'pop3', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
@@ -59,6 +59,8 @@ def UnorderedPicklable(parent, editable=False):
     """A factory for generating unordered, picklable mailbox classes."""
 
     class UnorderedPicklableMailbox(parent):
+        UNPICKLABLE = []
+
         def __init__(self, *args, **kwargs):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
@@ -87,9 +89,9 @@ def UnorderedPicklable(parent, editable=False):
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            for dk in ('_save_to',
+            for dk in ['_save_to',
                        '_encryption_key_func', '_decryption_key_func',
-                       '_file', '_lock', 'parsed'):
+                       '_file', '_lock', 'parsed'] + self.UNPICKLABLE:
                 if dk in odict:
                     del odict[dk]
             return odict

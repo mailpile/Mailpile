@@ -1256,6 +1256,7 @@ class Rescan(Command):
                                                      config.open_mailbox,
                                                      event=self.event)
                     except ValueError:
+                        self._ignore_exception()
                         count = -1
                     if count < 0:
                         session.ui.warning(_('Failed to rescan: %s') % fpath)
