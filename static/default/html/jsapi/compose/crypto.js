@@ -196,7 +196,7 @@ Mailpile.Composer.Crypto.AttachKey = function(mid) {
 };
 
 
-Mailpile.Composer.Crypto.EncryptHelper = function(mid) {
+Mailpile.Composer.Crypto.EncryptionHelper = function(mid) {
 
   // Show Recipients No Keys
   var status = 'none';
@@ -212,11 +212,6 @@ Mailpile.Composer.Crypto.EncryptHelper = function(mid) {
     }
   });
 
-  var searching_template = _.template($('#modal-compose-cannot-encrypt').html());
-  var searching_html = searching_template({ unencryptables: unencryptables });
-  $('#modal-full').html(searching_html);
-
   // Show Modal
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
-
+  Mailpile.UI.Modals.ComposerEncryptionHelper(unencryptables);
 };

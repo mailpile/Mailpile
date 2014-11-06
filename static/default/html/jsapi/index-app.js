@@ -8,6 +8,7 @@
 {% include("jsapi/compose/autosave.js") %}
 {% include("jsapi/compose/attachments.js") %}
 {% include("jsapi/compose/recipients.js") %}
+{% include("jsapi/compose/modals.js") %}
 {% include("jsapi/compose/tooltips.js") %}
 {% include("jsapi/compose/events.js") %}
 {% include("jsapi/compose/complete.js") %}

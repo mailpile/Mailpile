@@ -189,33 +189,42 @@
 </script>
 
 
-<!-- Compose - Cannot Encrypt -->
-<script id="modal-compose-cannot-encrypt" type="text/template">
+<!-- Compose - Crypto Helper - helps find keys for recipients -->
+<script id="modal-composer-encryption-helper" type="text/template">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
-          <span class="icon-lock-open"></span>
+          <span class="icon-lock-open color-10-orange"></span>
           <span class="title">{{_("Cannot Encrypt")}}</span>
         </h4>
       </div>
       <div class="modal-body clearfix">
-        <p>{{_("You're missing encryption keys for the the following contacts you're trying to email:")}}</p>
-        <ul id="">
+        <div id="missing-keys-lookup-result">
+
+        </div>
+        <p class="paragraph-alert">{{_("You are missing encryption keys for one or more contacts")}}</p>
+        <ul>
           <% _.each(unencryptables, function(recipient, key) { %>
-          <li>
-            <div class="clearfix user">
+          <li class="clearfix">
+            <div class="user left">
               <div class="avatar"><img src="/static/img/avatar-default.png"></div>
-              <a href="/contacts/view/<%= recipient.address %>" class="name"><%= recipient.fn %></a>
+              <a href="/contacts/view/<%= recipient.address %>/" class="name"><%= recipient.fn %></a>
               <span class="address"><%= recipient.address %></span>
             </div>
-            <button data-address="<%= recipient.address %>" class="crypto-searchkey-address button-secondary button-small right"><span class="icon-key"></span> Find Encryption Keys</button>
+            <ul class="horizontal right">
+              <li><a href="<%= recipient.address %>" class="crypto-searchkey-address" data-target="#missing-keys-lookup-result"><span class="icon-search"></span> Find Encryption Keys</a></li>
+              <li><a href="<%= recipient.address %>" class="crypto-import-key"><span class="icon-key"></span> Import Key</a></li>
+            </ul>
             <hr>
           </li>
           <% }); %>
         </ul>
-        <em class="left">{{_("Or you can send this message unencrypted")}}</em> <button type="submit" class="right"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+      </div>
+      <div class="modal-footer">
+        <em class="left">{{_("Or you can send this message unencrypted")}}</em>
+        <button type="submit" class="right"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
       </div>
     </div>
   </div>

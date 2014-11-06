@@ -19,7 +19,7 @@ $(document).on('click', '.compose-crypto-encryption', function() {
     if (determine == 'encrypt') {
       change = 'encrypt';
     } else {
-      Mailpile.Composer.Crypto.EncryptHelper(mid);
+      Mailpile.Composer.Crypto.EncryptionHelper(mid);
     }
   }
 
