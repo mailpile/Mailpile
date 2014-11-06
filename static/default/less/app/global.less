@@ -192,6 +192,7 @@
 
 
 /* Text */
+/* REBAR - move to rebar */
 
   .text-detail {
     color: @gray;
@@ -205,6 +206,40 @@
 
   a.link-detail:hover {
     color: @grayDark;
+  }
+
+  a.disabled {
+     pointer-events: none;
+     cursor: default;
+  }
+
+  p.paragraph-success,
+  p.paragraph-important,
+  p.paragraph-alert,
+  p.paragraph-warning {
+    padding: (@base-padding / 2) @base-padding;
+    border-radius: @base-border-radius;
+    font-weight: bold;
+  }
+
+  p.paragraph-success {
+    background: @green;
+    color: @white;
+  }
+
+  p.paragraph-important {
+    background: @blue;
+    color: @white;
+  }
+
+  p.paragraph-alert {
+    background: @orange;
+    color: @white;
+  }
+
+  p.paragraph-warning {
+    background: @red;
+    color: @white;
   }
 
 
