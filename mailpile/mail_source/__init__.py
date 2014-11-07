@@ -526,16 +526,17 @@ class BaseMailSource(threading.Thread):
         scan_args = scan_args or {}
         count = 0
         try:
-            src = config.open_mailbox(session, mbx_key, prefer_local=False)
-            loc = config.open_mailbox(session, mbx_key, prefer_local=True)
+            with self._lock:
+                src = config.open_mailbox(session, mbx_key, prefer_local=False)
+                loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
                 return count
-
             keys = list(src.iterkeys())
             progress.update({
                 'total': len(keys),
                 'batch_size': stop_after if (stop_after > 0) else len(keys)
             })
+
             for key in keys:
                 if self._check_interrupt(clear=False):
                     return count
@@ -607,10 +608,11 @@ class BaseMailSource(threading.Thread):
                 # because we might have been aborted on an earlier run and
                 # the rescan may need to catch up. We also start with smaller
                 # batch sizes, because folks are impatient.
-                self._log_status(_('Copying mail: %s') % path)
                 self._create_local_mailbox(mbx_cfg)
                 max_copy = min(self._loop_count * 10,
                                int(1 + stop_after / (mailboxes + 1)))
+                self._log_status(_('Copying mail: %s (max=%d)'
+                                   ) % (path, max_copy))
                 count += self._copy_new_messages(mbx_key, mbx_cfg,
                                                  stop_after=max_copy,
                                                  scan_args=scan_mailbox_args)
@@ -637,7 +639,7 @@ class BaseMailSource(threading.Thread):
     def open_mailbox(self, mbx_id, fn):
         # This allows mail sources to override the default mailbox
         # opening mechanism.  Returning false respectfully declines.
-        return False
+        return None
 
     def is_mailbox(self, fn):
         return False
