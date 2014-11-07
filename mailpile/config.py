@@ -1529,15 +1529,28 @@ class ConfigManager(ConfigDict):
         mbox.save(session,
                   to=pfn, pickler=lambda o, f: self.save_pickle(o, f))
 
-    def uncache_mailbox(self, session, pfn, mbox, drop=True):
+    def uncache_mailbox(self, session, pfn, drop=True, force_save=False):
         with self._lock:
+            mboxes = [c[2] for c in self._mbox_cache if c[0] == pfn]
+            if len(mboxes) > 0:
+                # At this point, if the mailbox is not in use, there should be
+                # exactly 2 references to it: in mboxes and self._mbox_cache.
+                # However, sys.getrefcount always returns one extra for itself.
+                if sys.getrefcount(mboxes[0]) > 3:
+                    if force_save:
+                        self.save_mailbox(session, pfn, mboxes[0])
+                    return
+
+                # This may be slow, but it has to happen inside the lock
+                # otherwise we run the risk of races.
+                self.save_mailbox(session, pfn, mboxes[0])
+            else:
+                # Not found, nothing to do here
+                return
+
             if drop:
                 self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
-
-        self.save_mailbox(session, pfn, mbox)
-
-        with self._lock:
-            if not drop:
+            else:
                 keep2 = self._mbox_cache[-MAX_CACHED_MBOXES:]
                 keep1 = [c for c in self._mbox_cache[:-MAX_CACHED_MBOXES]
                          if c[0] != pfn]
@@ -1547,35 +1560,38 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
             self._mbox_cache.append((pfn, mbx_id, mbox))
-            flush = self._mbox_cache[:-MAX_CACHED_MBOXES]
-        for pfn, mbx_id, mbox in flush:
+            flush = [(p[0], p[1])
+                     for p in self._mbox_cache[:-MAX_CACHED_MBOXES]]
+        for pfn, mbx_id in flush:
             self.save_worker.add_unique_task(
                 session, 'Save mailbox %s (drop=%s)' % (mbx_id, False),
-                lambda: self.uncache_mailbox(session, pfn, mbox, drop=False))
+                lambda: self.uncache_mailbox(session, pfn, drop=False))
 
     def flush_mbox_cache(self, session, clear=True, wait=False):
-        with self._lock:
-            flush = self._mbox_cache[:]
-            if clear:
-                self._mbox_cache = []
         if wait:
             saver = self.save_worker.do
         else:
             saver = self.save_worker.add_task
-        for pfn, mbx_id, mbox in flush:
+        with self._lock:
+            flush = [(p[0], p[1]) for p in self._mbox_cache]
+        for pfn, mbx_id in flush:
             saver(session,
                   'Save mailbox %s (drop=%s)' % (mbx_id, clear),
-                  lambda: self.uncache_mailbox(session, pfn, mbox, drop=clear),
+                  lambda: self.uncache_mailbox(session, pfn,
+                                               drop=clear, force_save=True),
                   unique=True)
 
-    def open_mailbox(self, session, mailbox_id, prefer_local=True):
+    def open_mailbox(self, session, mailbox_id,
+                     prefer_local=True, from_cache=False):
         mbx_id, src, mfn, pfn = self._mailbox_info(mailbox_id,
                                                    prefer_local=prefer_local)
         with self._lock:
             mbox = dict(((p, m) for p, i, m in self._mbox_cache)
                         ).get(pfn, None)
         try:
-            if not mbox:
+            if mbox is None:
+                if from_cache:
+                    return None
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
                 mbox = self.load_pickle(pfn)
@@ -1594,17 +1610,18 @@ class ConfigManager(ConfigDict):
                 import traceback
                 traceback.print_exc()
 
-        if not mbox:
+        if mbox is None:
             if session:
                 session.ui.mark(_('%s: Opening: %s (may take a while)'
                                   ) % (mbx_id, mfn))
             editable = self.is_editable_mailbox(mbx_id)
-            if src:
+            if src is not None:
                 msrc = self.mail_sources.get(src._key)
-                mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
-            if not mbox:
+                mbox = msrc.open_mailbox(mbx_id, mfn) if msrc else None
+            if mbox is None:
                 mbox = OpenMailbox(mfn, self, create=editable)
-                mbox.editable = editable
+            mbox.editable = editable
+            mbox.is_local = prefer_local
 
         # Always set these, they can't be pickled
         mbox._decryption_key_func = lambda: self.master_key
@@ -1962,6 +1979,9 @@ class ConfigManager(ConfigDict):
                     if config.sys.debug and wait:
                         print 'Waiting for %s' % w
                     w.quit(join=wait)
+
+        # Flush the mailbox cache (queues save worker jobs)
+        config.flush_mbox_cache(config.background, clear=True)
 
         # Handle the save worker last, once all the others are
         # no longer feeding it new things to do.
