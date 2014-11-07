@@ -250,15 +250,21 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
 
 
 $(document).on('click', '.encryption-helper-find-key', function(e) {
-  e.preventDefault();
 
-  $('li[address="' + $(this).attr('href') + '"]').hide();
+  e.preventDefault();
+  var address = $(this).attr('href');
+  $('li[address="' + address + '"]').hide();
 
   Mailpile.Crypto.Find.Keys({
-    query: $(this).attr('href'),
+    query: address,
     container: '#encryption-helper-find-keys',
     message: '#encryption-helper-find-keys-message',
-    result: '#encryption-helper-find-keys-result'
+    result: '#encryption-helper-find-keys-result',
+    complete: function(status) {
+      if (status === 'none') {
+        $('li[address="' + address + '"]').show();
+      }
+    }
   });  
 
 });

@@ -51,17 +51,26 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 
   $('#search-keyservers-progress').addClass('hide');
 
+  // No Keys Found
+  // FIXME: doesn't work for 2nd and third lookups returning empty results
   if (!Mailpile.crypto_keylookup.length) {
+
     $(options.message)
       .html('<span class="icon-x"></span> No encryption keys found matching: ' + options.query)
       .removeClass('paragraph-important paragraph-success')
       .addClass('paragraph-alert');
-    $(options.result).html('');
+      var status = 'none';
+
   } else {
+
     $(options.message)
       .removeClass('paragraph-important paragraph-alert')
       .addClass('paragraph-success');
+      var status = 'success';
   }
+
+  // Callback
+  options.complete(status);
 };
 
 
