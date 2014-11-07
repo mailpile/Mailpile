@@ -56,7 +56,7 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
   if (!Mailpile.crypto_keylookup.length) {
 
     var message_template = _.template($('#template-find-keys-none').html());
-    var message_html = 'DOGS';//message_template(options);
+    var message_html = message_template(options);
 
     $(options.container).find('.message')
       .html(message_html)
