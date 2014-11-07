@@ -161,11 +161,15 @@
         </h4>
       </div>
       <div class="modal-body clearfix">
-        <p id="search-keyservers-message" class="paragraph-important">
-          <span class="icon-search"></span> {{_("Searching for encryption keys")}}
-        </p>
-        <img id="search-keyservers-progress" src="/static/css/select2-spinner.gif"/>
-        <ul id="search-keyservers-result"></ul>
+        <div id="search-keyservers">
+          <p class="message paragraph-important">
+            <span class="icon-search"></span> {{_("Searching for encryption keys for")}}: <span class="color-01-gray-mid"><%= query %></span>
+          </p>
+          <p class="loading text-center half-bottom">
+            {% include("../img/loading-ellipsis.svg") %}
+          </p>
+          <ul class="result"></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -208,10 +212,13 @@
       </div>
       <div class="modal-body clearfix">
         <div id="encryption-helper-find-keys" class="hide">
-          <p id="encryption-helper-find-keys-message" class="paragraph-important animated">
-            <span class="icon-search"></span> {{_("Searching for encryption keys")}}
+          <p class="message paragraph-important animated">
+            <span class="icon-search"></span> {{_("Searching for encryption keys for:")}}
           </p>
-          <ul id="encryption-helper-find-keys-result"></ul>
+          <p class="loading text-center">
+          {% include("../img/loading-ellipsis.svg") %}
+          </p>
+          <ul class="result"></ul>
         </div>
         <div id="encryption-helper-missing-keys">
           <p class="paragraph-alert">

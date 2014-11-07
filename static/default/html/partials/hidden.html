@@ -112,8 +112,12 @@
 
 
 <!-- Crypto - Results and templates for interacting with keyservers -->
-<script id="template-searchkey-running" type="text/template">
-  <span class="icon-search"></span> {{_("Searching for encryption keys matching: ")}} <strong><%= query %></strong>
+<script id="template-find-keys-running" type="text/template">
+  <span class="icon-search"></span> {{_("Searching for encryption keys for:")}} <span class="color-01-gray-mid"><%= query %></span>
+</script>
+
+<script id="template-find-keys-none" type="text/template">
+  <span class="icon-x"></span> {{_("No encryption keys found matching:")}} <span class="color-01-gray-mid"><%= query %></span>
 </script>
 
 
@@ -149,8 +153,8 @@
         <em><%= score_reason %></em>
       </div>
       <div class="searchkey-result-details hide">
-        <h4>Score: <%= score %></h4>
-        <p>This encryption key score is calculated from the following facts
+        <h4>{{_("Score")}}: <%= score %></h4>
+        <p>{{_("This encryption key score is calculated from the following facts")}}
         <% _.each(origins, function(item) { %>
         <%= item %><br>
         <% }); %>
