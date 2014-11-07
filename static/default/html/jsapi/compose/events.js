@@ -247,3 +247,18 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
     $('#modal-full').modal('hide');
   });
 });
+
+
+$(document).on('click', '.encryption-helper-find-key', function(e) {
+  e.preventDefault();
+
+  $('li[address="' + $(this).attr('href') + '"]').hide();
+
+  Mailpile.Crypto.Find.Keys({
+    query: $(this).attr('href'),
+    container: '#encryption-helper-find-keys',
+    message: '#encryption-helper-find-keys-message',
+    result: '#encryption-helper-find-keys-result'
+  });  
+
+});
