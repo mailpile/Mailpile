@@ -252,15 +252,16 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
 $(document).on('click', '.encryption-helper-find-key', function(e) {
 
   e.preventDefault();
+  $('#encryption-helper-find-keys').find('.loading').fadeIn();
+
   var address = $(this).attr('href');
   $('li[address="' + address + '"]').hide();
 
   Mailpile.Crypto.Find.Keys({
     query: address,
     container: '#encryption-helper-find-keys',
-    message: '#encryption-helper-find-keys-message',
-    result: '#encryption-helper-find-keys-result',
     complete: function(status) {
+      $('#encryption-helper-find-keys').find('.loading').slideUp('fast');
       if (status === 'none') {
         $('li[address="' + address + '"]').show();
       }

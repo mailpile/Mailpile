@@ -125,6 +125,11 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
 
         var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
         if (contact_data) {
+
+          if (contact_data.photo === undefined) {
+            contact_data.photo = '';
+          }
+
           var contact_template = _.template($('#tooltip-contact-details').html());
           return contact_template(contact_data);
         }

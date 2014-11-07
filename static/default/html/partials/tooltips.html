@@ -19,8 +19,8 @@
       <span class="address"><%= address %></span>
     </div>
   </div>
-  <div class="text-center hide">
   <% if (flags.secure) { %>
+  <div class="text-center">
     <% _.each(keys, function(key) { %>
     <%= key.fingerprint %>
     <% }); %>
