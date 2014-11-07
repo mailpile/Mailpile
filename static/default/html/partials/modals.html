@@ -156,11 +156,17 @@
       <div class="modal-header">
         <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
-          <span class="icon-search"></span>
-          <span class="title">{{_("Finding Encryption Keys")}}</span> <img class="progress-spinner" src="/static/css/select2-spinner.gif"/></span>
+          <span class="icon-key"></span>
+          <span class="title">{{_("Find Encryption Keys")}}</span>
         </h4>
       </div>
-      <div class="modal-body clearfix"></div>
+      <div class="modal-body clearfix">
+        <p id="search-keyservers-message" class="paragraph-important">
+          <span class="icon-search"></span> {{_("Searching for encryption keys")}}
+        </p>
+        <img id="search-keyservers-progress" src="/static/css/select2-spinner.gif"/>
+        <ul id="search-keyservers-result"></ul>
+      </div>
     </div>
   </div>
 </script>
@@ -201,30 +207,39 @@
         </h4>
       </div>
       <div class="modal-body clearfix">
-        <div id="missing-keys-lookup-result">
-
+        <div id="encryption-helper-find-keys" class="hide">
+          <p id="encryption-helper-find-keys-message" class="paragraph-important animated">
+            <span class="icon-search"></span> {{_("Searching for encryption keys")}}
+          </p>
+          <ul id="encryption-helper-find-keys-result"></ul>
         </div>
-        <p class="paragraph-alert">{{_("You are missing encryption keys for one or more contacts")}}</p>
-        <ul>
-          <% _.each(unencryptables, function(recipient, key) { %>
-          <li class="clearfix">
-            <div class="user left">
-              <div class="avatar"><img src="/static/img/avatar-default.png"></div>
-              <a href="/contacts/view/<%= recipient.address %>/" class="name"><%= recipient.fn %></a>
-              <span class="address"><%= recipient.address %></span>
-            </div>
-            <ul class="horizontal right">
-              <li><a href="<%= recipient.address %>" class="crypto-searchkey-address" data-target="#missing-keys-lookup-result"><span class="icon-search"></span> Find Encryption Keys</a></li>
-              <li><a href="<%= recipient.address %>" class="crypto-import-key"><span class="icon-key"></span> Import Key</a></li>
-            </ul>
-            <hr>
-          </li>
-          <% }); %>
-        </ul>
+        <div id="encryption-helper-missing-keys">
+          <p class="paragraph-alert">
+            <span class="icon-signature-unknown"></span> {{_("You are missing encryption keys for the following contacts")}}
+          </p>
+          <ul>
+            <% _.each(unencryptables, function(recipient, key) { %>
+            <li id="item-encryption-key-" address="<%= recipient.address %>" class="searchkey-result-item animated fadeIn">
+              <div class="clearfix">
+                <div href="/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="/static/img/avatar-default.png"></div>
+                <div class="name">
+                  <%= recipient.fn %><br>
+                  <span><%= recipient.address %></span>
+                </div>
+                <div class="right text-right">
+                  <div class="fingerprint">
+                  <a href="<%= recipient.address %>" class="encryption-helper-find-key"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <% }); %>
+          </ul>
+        </div>
       </div>
       <div class="modal-footer">
         <em class="left">{{_("Or you can send this message unencrypted")}}</em>
-        <button type="submit" class="right"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+        <button type="submit" class="right" data-mid=""><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
       </div>
     </div>
   </div>
