@@ -28,8 +28,9 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'keys:') {
     e.preventDefault();
-    var query = search_query.substring(6, 999);
-    Mailpile.UI.Modals.CryptoFindKeys(query);
+    Mailpile.UI.Modals.CryptoFindKeys({
+      query: search_query.substring(6, 999)
+    });
   }
   else {
     console.log('inside of else, just a normal query');
