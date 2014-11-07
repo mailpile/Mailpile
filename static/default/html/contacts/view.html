@@ -24,10 +24,14 @@
     </li>
   {% if result.contact.email %}
     {% for email in result.contact.email %}
-    <li class="grouped">
-      <h5>{{email.email}}</h5>
-      <a class="compose-to-email" href="mailto:{{ email.email }}"><span class="icon-compose"></span> {{_("Compose")}}</a> &nbsp;&nbsp;
-      <a class="search-by-email" href="/search/?q={{ email.email }}"><span class="icon-search"></span> {{_("Search Messages")}}</a>
+    <li class="grouped clearfix">
+      <div class="left">
+        <strong>{{email.email}}</strong>
+      </div>
+      <div class="right">
+        <a class="compose-to-email" href="mailto:{{ email.email }}"><span class="icon-compose"></span> {{_("Compose")}}</a> &nbsp;&nbsp;
+        <a class="search-by-email" href="/search/?q=from:{{ email.email }}"><span class="icon-search"></span> {{_("Search")}}</a>
+      </div>
     </li>
     {% endfor %}
   {% endif %}
