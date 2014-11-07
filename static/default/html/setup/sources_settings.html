@@ -17,7 +17,7 @@
           <select id="input-setup-source-type" tabindex="2">
             <option value="" <% if (!protocol) { %>selected<% } %>>{{_("select...")}}</option>
             <option value="local" <% if (_.indexOf(['mbox', 'maildir'], protocol) > -1) { %>selected<% } %>>{{_("On same computer as Mailpile")}}</option>
-            <option value="server" <% if (_.indexOf(['imap_ssl', 'imap', 'pop'], protocol) > -1) { %>selected<% } %>>{{_("On different computer (server)")}}</option>
+            <option value="server" <% if (_.indexOf(['imap_ssl', 'imap', 'pop3', 'pop3_ssl'], protocol) > -1) { %>selected<% } %>>{{_("On different computer (server)")}}</option>
           </select>
         </td>
       </tr>
@@ -48,7 +48,7 @@
       </select>
     </div>
 
-    <div id="setup-source-settings-server" class="<% if (_.indexOf(['imap_ssl', 'imap', 'pop'], protocol) === -1) { %>hide<% } %>">
+    <div id="setup-source-settings-server" class="<% if (_.indexOf(['imap_ssl', 'imap', 'pop3', 'pop3_ssl'], protocol) === -1) { %>hide<% } %>">
       <table class="full">
       <tr>
         <td>
@@ -70,7 +70,8 @@
           <select name="protocol" id="input-setup-source-server-protocol" class="small" tabindex="6">
             <option value="imap_ssl" <% if (protocol === 'imap_ssl') { %>selected<% } %>>IMAP (ssl)</option>
             <option value="imap" <% if (protocol === 'imap') { %>selected<% } %>>IMAP</option>
-            <option value="pop" <% if (protocol === 'pop') { %>selected<% } %>>POP3</option>
+            <option value="pop3_ssl" <% if (protocol === 'pop3_ssl') { %>selected<% } %>>POP3 (ssl)</option>
+            <option value="pop3" <% if (protocol === 'pop3') { %>selected<% } %>>POP3</option>
           </select>
         </td>
       </tr>

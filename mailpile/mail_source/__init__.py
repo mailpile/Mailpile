@@ -775,5 +775,8 @@ def MailSource(session, my_config):
     elif my_config.protocol in ('imap', 'imap_ssl'):
         from mailpile.mail_source.imap import ImapMailSource
         return ImapMailSource(session, my_config)
+    elif my_config.protocol in ('pop3', 'pop3_ssl'):
+        from mailpile.mail_source.pop3 import Pop3MailSource
+        return Pop3MailSource(session, my_config)
     raise ValueError(_('Unknown mail source protocol: %s'
                        ) % my_config.protocol)

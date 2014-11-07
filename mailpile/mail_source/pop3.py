@@ -87,7 +87,7 @@ class Pop3MailSource(BaseMailSource):
                 cev['error'] = ['auth', _('Invalid username or password')]
             except (IOError, OSError):
                 cev['error'] = ['network', _('A network error occurred')]
-        return False
+        return None
 
     def discover_mailboxes(self, paths=None):
         config = self.session.config

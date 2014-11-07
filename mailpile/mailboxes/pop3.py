@@ -14,44 +14,77 @@ from mailpile.mailboxes import UnorderedPicklable
 from mailpile.util import *
 
 
+class UnsupportedProtocolError(Exception):
+    pass
+
+
 class POP3Mailbox(Mailbox):
     """
     Basic implementation of POP3 Mailbox.
     """
     def __init__(self, host,
                  user=None, password=None, use_ssl=True, port=None,
-                 conn_cls=None):
+                 debug=False, conn_cls=None):
         """Initialize a Mailbox instance."""
-        if conn_cls:
-            self._pop3 = conn_cls(host, port or 110)
-            self.secure = use_ssl
-        elif use_ssl:
-            self._pop3 = poplib.POP3_SSL(host, port or 995)
-            self.secure = True
-        else:
-            self._pop3 = poplib.POP3(host, port or 110)
-            self.secure = False
-
         Mailbox.__init__(self, '/')
-        self._pop3.user(user)
-        self._pop3.pass_(password)
-        self._refresh()
+        self.host = host
+        self.user = user
+        self.password = password
+        self.use_ssl = use_ssl
+        self.port = port
+        self.debug = debug
+        self.conn_cls = conn_cls
+
+        self._lock = MboxRLock()
+        self._pop3 = None
+        self._connect()
+
+    def _connect(self):
+        with self._lock:
+            if self._pop3:
+                try:
+                    self._pop3.noop()
+                    return
+                except poplib.error_proto:
+                    self._pop3 = None
+
+            if self.conn_cls:
+                self._pop3 = self.conn_cls(self.host, self.port or 110)
+                self.secure = self.use_ssl
+            elif self.use_ssl:
+                self._pop3 = poplib.POP3_SSL(self.host, self.port or 995)
+                self.secure = True
+            else:
+                self._pop3 = poplib.POP3(self.host, self.port or 110)
+                self.secure = False
+            if self.debug:
+                self._pop3.set_debuglevel(self.debug)
+
+            self._keys = None
+            try:
+                self._pop3.user(self.user)
+                self._pop3.pass_(self.password)
+            except poplib.error_proto:
+                raise AccessError()
 
     def _refresh(self):
-        self._keys = None
-        self.iterkeys()
+        with self._lock:
+            self._keys = None
+            self.iterkeys()
 
     def __setitem__(self, key, message):
         """Replace the keyed message; raise KeyError if it doesn't exist."""
         raise NotImplementedError('Method must be implemented by subclass')
 
     def _get(self, key):
-        if key not in self.iterkeys():
-            raise KeyError('Invalid key: %s' % key)
+        with self._lock:
+            if key not in self.iterkeys():
+                raise KeyError('Invalid key: %s' % key)
 
-        ok, lines, octets = self._pop3.retr(key.split(':')[0])
-        if not ok.startswith('+OK'):
-            raise KeyError('Invalid key: %s' % key)
+            self._connect()
+            ok, lines, octets = self._pop3.retr(self._km[key])
+            if not ok.startswith('+OK'):
+                raise KeyError('Invalid key: %s' % key)
 
         # poplib is stupid in that it loses the linefeeds, so we need to
         # do some guesswork to bring them back to what the server provided.
@@ -85,45 +118,35 @@ class POP3Mailbox(Mailbox):
         return StringIO.StringIO(self._get(key))
 
     def get_msg_size(self, key):
-        if key not in self.iterkeys():
-            raise KeyError('Invalid key: %s' % key)
-        ok, info, octets = self._pop3.list(key.split(':', 1)[0]).split()
-        return int(octets)
+        with self._lock:
+            self._connect()
+            if key not in self.iterkeys():
+                raise KeyError('Invalid key: %s' % key)
+            ok, info, octets = self._pop3.list(self._km[key]).split()
+            return int(octets)
+
+    def stat(self):
+        with self._lock:
+            self._connect()
+            return self._pop3.stat()
 
     def iterkeys(self):
         """Return an iterator over keys."""
-        # Note: POP3 *without UIDL* provides very few guarantees, but given
-        #       the assumption that an old-school POP3 mailbox is a sequential
-        # mbox where messages don't change much, we can make each ID depend on
-        # itself (offset and size), along with the sizes of the messages before
-        # and after it in the list. This will be stable for immutable append-
-        # only mailboxes, while detecting many (but not all) changes, except
-        # for really sneaky ones where a message is replaced by another of
-        # exactly the same size, without anything else changing around it.
-        # False positives of IDs becoming invalid will be more common, but
-        # are not a serious problem. We may need stronger tests to be sure
-        # that an old ID doesn't return the wrong message.
-        if self._keys is None:
-            keys = []
-            try:
-                stat, key_list, octets = self._pop3.uidl()
-                keys = [k.replace(' ', ':') for k in key_list]
-            except poplib.error_proto:
-                stat, key_list, octets = self._pop3.list()
-                for i in range(0, len(key_list)):
-                    ctx = md5_hex(str([key_list[i]] +
-                                      key_list[max(0, i-2):i+2]))[:6]
-                    keys.append('%s:%s' % (key_list[i].split()[0], ctx))
-            self._keys = keys
-        return self._keys
+        # Note: POP3 *without UIDL* is useless.  We don't support it.
+        with self._lock:
+            if self._keys is None:
+                self._connect()
+                try:
+                    stat, key_list, octets = self._pop3.uidl()
+                except poplib.error_proto:
+                    raise UnsupportedProtocolError()
+                self._keys = [tuple(k.split(' ', 1)) for k in key_list]
+                self._km = dict([reversed(k) for k in self._keys])
+            return [k[1] for k in self._keys]
 
     def __contains__(self, key):
         """Return True if the keyed message exists, False otherwise."""
-        typ, data = self._pop3.fetch(key, '(RFC822)')
-        response = data[0]
-        if response is None:
-            return False
-        return True
+        return key in self.iterkeys()
 
     def __len__(self):
         """Return a count of messages in the mailbox."""
@@ -131,32 +154,54 @@ class POP3Mailbox(Mailbox):
 
     def flush(self):
         """Write any pending changes to the disk."""
-        raise NotImplementedError('Method must be implemented by subclass')
+        self.close()
 
     def close(self):
         """Flush and close the mailbox."""
-        self._pop3.quit()
-        self._pop3 = None
-        self._keys = None
+        try:
+            if self._pop3:
+                self._pop3.quit()
+        finally:
+            self._pop3 = None
+            self._keys = None
 
 
 class MailpileMailbox(UnorderedPicklable(POP3Mailbox)):
-    UNPICKLABLE = ['_pop3']
+    UNPICKLABLE = ['_pop3', '_debug']
 
     @classmethod
     def parse_path(cls, config, path, create=False):
-        if path[:5].lower() in ('pop:/', 'pop3:', 'pops:'):
-            path = path.split('/')
+        path = path.split('/')
+        if path and path[0].lower() in ('pop:', 'pop3:',
+                                        'pop3_ssl:', 'pop3s:'):
             proto = path[0][:-1].lower()
             userpart, server = path[2].rsplit("@", 1)
-            user, password = userpart.split(":", 1)
+            user, password = userpart.rsplit(":", 1)
             if ":" in server:
                 server, port = server.split(":", 1)
             else:
-                port = 110
+                port = 995 if ('s' in proto) else 110
+
+            # This is a hack for GMail
+            if 'recent' in path[3:]:
+                user = 'recent:' + user
+
+            if not config:
+                debug = False
+            elif 'pop3' in config.sys.debug:
+                debug = 99
+            elif 'rescan' in config.sys.debug:
+                debug = 1
+            else:
+                debug = False
+
             # WARNING: Order must match POP3Mailbox.__init__(...)
-            return (server, user, password, 's' in proto, int(port))
-        raise ValueError('Not an IMAP url: %s' % path)
+            return (server, user, password, 's' in proto, int(port), debug)
+        raise ValueError('Not a POP3 url: %s' % path)
+
+    def save(self, *args, **kwargs):
+        # Do not save state locally
+        pass
 
 
 ##[ Test code follows ]#######################################################
@@ -172,20 +217,26 @@ if __name__ == "__main__":
         >>> pm = POP3Mailbox('localhost', user='bad', conn_cls=_MockPOP3)
         Traceback (most recent call last):
            ...
-        error_proto: -ERR
+        AccessError
 
         >>> pm = POP3Mailbox('localhost', user='a', password='b',
         ...                  conn_cls=_MockPOP3)
+        >>> pm.stat()
+        (2, 123456)
+
         >>> pm.iterkeys()
-        ['1:evil', '2:good']
+        ['evil', 'good']
+
+        >>> 'evil' in pm, 'bogon' in pm
+        (True, False)
 
         >>> [msg['subject'] for msg in pm]
         ['Msg 1', 'Msg 2']
 
-        >>> pm.get_msg_size('1:evil'), pm.get_msg_size('2:good')
+        >>> pm.get_msg_size('evil'), pm.get_msg_size('good')
         (47, 51)
 
-        >>> pm.get_bytes('1:evil')
+        >>> pm.get_bytes('evil')
         'From: test@mailpile.is\\nSubject: Msg 1\\n\\nOh, hi!\\n'
 
         >>> pm['invalid-key']
@@ -200,6 +251,7 @@ if __name__ == "__main__":
         DEFAULT_RESULTS = {
             'user': lambda s, u: '+OK' if (u == 'a') else '-ERR',
             'pass_': lambda s, u: '+OK Logged in.' if (u == 'b') else '-ERR',
+            'stat': (2, 123456),
             'noop': '+OK',
             'list_': lambda s: ('+OK 2 messages:',
                                 ['1 %d' % len(s.TEST_MSG.replace('\r', '')),
@@ -247,10 +299,9 @@ if __name__ == "__main__":
         >>> pm = POP3Mailbox('localhost', user='a', password='b',
         ...                  conn_cls=_MockPOP3_Without_UIDL)
         >>> pm.iterkeys()
-        ['1:2d7fb9', '2:bfdd60']
-
-        >>> [msg['subject'] for msg in pm]
-        ['Msg 1', 'Msg 2']
+        Traceback (most recent call last):
+           ...
+        UnsupportedProtocolError
         """
         RESULTS = {'uidl': '-ERR'}
 
@@ -261,15 +312,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if len(sys.argv) > 1:
-        mbx = MailpileMailbox(*MailpileMailbox.parse_path({}, sys.argv[1]))
-        print '--[ Message 1 ]------------------------------------------'
-        print mbx._pop3.list(1)
-        print '%s bytes' % mbx.get_msg_size(mbx.iterkeys()[0])
-        print mbx._pop3.retr(1)
-        print '---------------------------------------------------------'
+        mbx = MailpileMailbox(*MailpileMailbox.parse_path(None, sys.argv[1]))
+        print 'Status is: %s' % (mbx.stat(), )
         print 'Downloading mail and listing subjects, hit CTRL-C to quit'
         for msg in mbx:
             print msg['subject']
             time.sleep(2)
+
 else:
     mailpile.mailboxes.register(10, MailpileMailbox)

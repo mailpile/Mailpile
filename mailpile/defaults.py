@@ -120,7 +120,7 @@ CONFIG_RULES = {
         'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mailbox protocol or format'),
                             ["mbox", "maildir", "macmaildir", "gmvault",
-                             "imap", "imap_ssl", "pop3"],
+                             "imap", "imap_ssl", "pop3", "pop3_ssl"],
                             ''),
         'pre_command':     (_('Shell command run before syncing'), str, ''),
         'post_command':    (_('Shell command run after syncing'), str, ''),

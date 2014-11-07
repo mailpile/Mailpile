@@ -44,7 +44,7 @@ var SourceModel = Backbone.Model.extend({
       msg: "{{_('Port')}}"
     },
     protocol: {
-      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
+      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3", "pop3_ssl"],
       required: true,
       msg: "{{_('You must pick a protocol or format')}}"
     },
