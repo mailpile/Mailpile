@@ -1,6 +1,6 @@
 /* Crypto - Events */
 
-/* Crypto - Import Key */
+/* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
   var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: $(this).data('fingerprint')});
@@ -10,7 +10,7 @@ $(document).on('click', '.crypto-key-import', function(e) {
 });
 
 
-/* Crypto - Key Use */
+/* Crypto - key use */
 $(document).on('change', '.crypto-key-policy', function() {
   
   alert('Change Key Policy to: ' + $(this).val() + ' for fingerprint: ' + $(this).data('fingerprint'));
@@ -18,9 +18,10 @@ $(document).on('change', '.crypto-key-policy', function() {
 });
 
 
+/* Crypto - looks up keys based on a given email address */
 $(document).on('click', '.crypto-searchkey-address', function(e) {
   e.preventDefault();
-
-  alert()
-
+  var address = $(this).data('address');
+  var target = $(this).data('target');
+  
 });
