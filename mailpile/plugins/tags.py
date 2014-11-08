@@ -141,10 +141,6 @@ def GetTags(cfg, tn=None, default=None, **kwargs):
         for r in results:
             tags &= set(r)
         tags = [cfg.tags[t] for t in tags]
-        if 'display' in kwargs:
-            tags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
-        else:
-            tags.sort(key=lambda k: k.slug)
         return tags
 
 
@@ -537,7 +533,7 @@ class ListTags(TagCommand):
             # List subtags...
             if recursion == 0:
                 subtags = self.session.config.get_tags(parent=tid)
-                subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+                subtags.sort(key=lambda k: k.get('slug', 'zzzz'))
             else:
                 subtags = None
 
@@ -561,6 +557,8 @@ class ListTags(TagCommand):
                                                ).run().result['tags']
 
             result.append(info)
+        result.sort(key=lambda k: (float(k.get('display_order', 0)),
+                                         k.get('slug', 'zzz')))
         return self._success(_('Listed %d tags') % len(result), {
             'search': search,
             'wanted': wanted,

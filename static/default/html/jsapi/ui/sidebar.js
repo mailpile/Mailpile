@@ -24,16 +24,20 @@ Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
 
 Mailpile.UI.Sidebar.Sortable = function() {
  $('.sidebar-sortable').sortable({
-		placeholder: "sidebar-tags-sortable",
+    placeholder: "sidebar-tags-sortable",
     distance: 13,
     scroll: false,
     opacity: 0.8,
-		stop: function(event, ui) {
+    stop: function(event, ui) {
+
+      var item  = $(ui.item);
+      var tid   = item.data('tid');
+      var index = parseInt(item.index());
 
       var get_order = function(index, base) {
-        $elem = $('.sidebar-sortable li:nth-child(' + index + ')');
-        if ($elem.length) {
-          var display_order = parseFloat($elem.data('display_order'));
+        var elem = item.parent().find('li:nth-child(' + index + ')');
+        if (elem.length > 0) {
+          var display_order = parseFloat(elem.data('display_order'));
           if (!isNaN(display_order)) {
             return display_order;
           }
@@ -41,13 +45,12 @@ Mailpile.UI.Sidebar.Sortable = function() {
         return base;
       };
 
-      var tid   = $(ui.item).data('tid');
-			var index = $(ui.item).index();
-
       // Calculate new orders
       var previous  = get_order(index, 0);
-      var next      = get_order((parseInt(index) + 2), 1000000);
-      var new_order = (parseFloat(previous) + parseFloat(next)) / 2;
+      var next      = get_order(index + 2, 1000000);
+      var new_order = (parseFloat(previous) + parseFloat(next)) / 2.0;
+
+      alert(index + ': ' + previous + ' .. ' + new_order + ' .. ' + next);
 
       // Save Tag Order
       var tag_setting = Mailpile.tag_setting(tid, 'display_order', new_order);
