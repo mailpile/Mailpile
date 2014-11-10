@@ -581,6 +581,15 @@ class SilentInteraction(UserInteraction):
         return False
 
 
+class CapturingUserInteraction(UserInteraction):
+    def __init__(self, config):
+        mailpile.ui.UserInteraction.__init__(self, config)
+        self.captured = ''
+
+    def _display_result(self, result):
+        self.captured = unicode(result)
+
+
 class RawHttpResponder:
 
     def __init__(self, request, attributes={}):

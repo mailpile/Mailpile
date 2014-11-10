@@ -2036,6 +2036,72 @@ class Output(Command):
                              result={'output': m})
 
 
+class Pipe(Command):
+    """Pipe a command to a shell command, file or e-mail"""
+    SYNOPSIS = (None, 'pipe', None,
+                "[e@mail.com|command|>filename] -- [<cmd> [args ... ]]")
+    ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = True
+
+    def command(self):
+        if '--' in self.args:
+            dashdash = self.args.index('--')
+            target = self.args[0:dashdash]
+            command, args = self.args[dashdash+1], self.args[dashdash+2:]
+        else:
+            target, command, args = [self.args[0]], self.args[1], self.args[2:]
+
+        output = ''
+        result = None
+        old_ui = self.session.ui
+        try:
+            from mailpile.ui import CapturingUserInteraction as CUI
+            self.session.ui = capture = CUI(self.session.config)
+            capture.render_mode = old_ui.render_mode
+            result = Action(self.session, command, ' '.join(args))
+            capture.display_result(result)
+            output = capture.captured
+        finally:
+            self.session.ui = old_ui
+
+        if target[0].startswith('>'):
+            t = ' '.join(target)
+            if t[0] == '>':
+                t = t[1:]
+            with open(t.strip(), 'w') as fd:
+                fd.write(output.encode('utf-8'))
+
+        elif '@' in target[0]:
+            from mailpile.plugins.compose import Compose
+            body = 'Result as %s:\n%s' % (capture.render_mode, output)
+            if capture.render_mode != 'json' and output[0] not in ('{', '['):
+                body += '\n\nResult as JSON:\n%s' % result.as_json()
+            composer = Compose(self.session, data={
+                'to': target,
+                'subject': ['Mailpile: %s %s' % (command, ' '.join(args))],
+                'body': [body]
+            })
+            return self._success('Mailing output to %s' % ', '.join(target),
+                                 result=composer.run())
+        else:
+            try:
+                self.session.ui.block()
+                MakePopenUnsafe()
+                kid = subprocess.Popen(target, shell=True, stdin=PIPE)
+                rv = kid.communicate(input=output.encode('utf-8'))
+            finally:
+                self.session.ui.unblock()
+                MakePopenSafe()
+                kid.wait()
+            if kid.returncode != 0:
+                return self._error('Error piping to %s' % (target, ),
+                                   info={'stderr': rv[1], 'stdout': rv[0]})
+
+        return self._success('Wrote %d bytes to %s'
+                             % (len(output), ' '.join(target)))
+
+
 class Quit(Command):
     """Exit Mailpile, normal shutdown"""
     SYNOPSIS = ("q", "quit", "quitquitquit", None)
@@ -2351,7 +2417,7 @@ def Action(session, opt, arg, data=None):
     if config.loaded_config:
         tag = config.get_tag(opt)
         if tag:
-            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else'', arg)
+            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
             return GetCommand('search')(session, opt, arg=a, data=data).run()
 
     # OK, give up!
@@ -2363,7 +2429,7 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Cached, Output,
+    RenderPage, Cached, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

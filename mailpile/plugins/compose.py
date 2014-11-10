@@ -364,7 +364,9 @@ class Compose(CompositionCommand):
         if update_string:
             email.update_from_string(session, update_string)
 
-        return self._edit_messages([email], ephemeral=ephemeral, new=True)
+        return self._edit_messages([email],
+                                   ephemeral=ephemeral,
+                                   new=(ephemeral or not update_string))
 
 
 class RelativeCompose(Compose):
