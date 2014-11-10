@@ -21,9 +21,9 @@
     {% if tag.get("subtags") %}
     <span class="sidebar-tag-expand" data-tid="{{tag.tid}}">
       {% if tag.tid in config.web.subtags_collapsed %}
-      <span class="icon-expand"></span>
+      <span class="icon-arrow-left"></span>
       {% else %}
-      <span class="icon-collapse"></span>
+      <span class="icon-arrow-down"></span>
       {% endif %}
     </span>
     {% endif %}
