@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+    <title>filters</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="filters" sketch:type="MSArtboardGroup" fill="#000000">
+            <path d="M8,51.5380859 L8,40 L92,40 L92,51.5380859 L63.994963,83.734375 L63.994963,96.734375 L41.1632915,96.734375 L41.1632915,83.734375 L8,51.5380859 Z M17,30 L17,37 L24,37 L24,30 L17,30 Z M32,30 L32,37 L39,37 L39,30 L32,30 Z M47,30 L47,37 L54,37 L54,30 L47,30 Z M63,30 L63,37 L70,37 L70,30 L63,30 Z M9,16 L9,23 L16,23 L16,16 L9,16 Z M24,16 L24,23 L31,23 L31,16 L24,16 Z M40,16 L40,23 L47,23 L47,16 L40,16 Z M55,16 L55,23 L62,23 L62,16 L55,16 Z M70,16 L70,23 L77,23 L77,16 L70,16 Z M78,30 L78,37 L85,37 L85,30 L78,30 Z M85,16 L85,23 L92,23 L92,16 L85,16 Z M0,3 L0,10 L7,10 L7,3 L0,3 Z M32,3 L32,10 L39,10 L39,3 L32,3 Z M63,3 L63,10 L70,10 L70,3 L63,3 Z M93,3 L93,10 L100,10 L100,3 L93,3 Z" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>
