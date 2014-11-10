@@ -1105,22 +1105,29 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None,
-                '[full|vcards|both|mailboxes|sources|<msgs>]')
+    SYNOPSIS = (None, 'rescan', 'rescan',
+                '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
     LOG_PROGRESS = True
+
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'which': '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]'
+    }
 
     def command(self, slowly=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
+        if 'which' in self.data:
+            args.extend(self.data['which'])
 
         # Pretend we're idle, to make rescan go fast fast.
         if not slowly:
             mailpile.util.LAST_USER_ACTIVITY = 0
 
-        if args and args[0].lower() == 'vcards':
+        if args and args[0].lower().startswith('vcards'):
             return self._success(_('Rescanned vcards'),
-                                 result=self._rescan_vcards(session))
+                                 result=self._rescan_vcards(session, args[0]))
         elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
                                           'editable'):
             which = args[0].lower()
@@ -1162,7 +1169,7 @@ class Rescan(Command):
             config._running['rescan'] = True
             try:
                 results = {}
-                results.update(self._rescan_vcards(session))
+                results.update(self._rescan_vcards(session, 'vcards'))
                 results.update(self._rescan_mailboxes(session))
 
                 self.event.data.update(results)
@@ -1176,23 +1183,31 @@ class Rescan(Command):
             finally:
                 del config._running['rescan']
 
-    def _rescan_vcards(self, session):
+    def _rescan_vcards(self, session, which):
         from mailpile.plugins import PluginManager
         config = session.config
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
+        which_spec = which.split(':')
+        importers = []
         try:
             session.ui.mark(_('Rescanning: %s') % 'vcards')
             for importer in PluginManager.VCARD_IMPORTERS.values():
+                if (len(which_spec) > 1 and
+                        which_spec[1] != importer.SHORT_NAME):
+                    continue
+                importers.append(importer.SHORT_NAME)
                 for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                     if cfg:
                         imp = importer(session, cfg)
                         imported += imp.import_vcards(session, config.vcards)
                     if mailpile.util.QUITTING:
-                        return {'vcards': imported, 'aborted': True}
+                        return {'vcards': imported, 'vcard_sources': importers,
+                                'aborted': True}
         except KeyboardInterrupt:
-            return {'vcards': imported, 'aborted': True}
-        return {'vcards': imported}
+            return {'vcards': imported, 'vcard_sources': importers,
+                    'aborted': True}
+        return {'vcards': imported, 'vcard_sources': importers}
 
     def _rescan_mailboxes(self, session, which='mailboxes'):
         import mailpile.mail_source
@@ -1213,23 +1228,6 @@ class Rescan(Command):
                 finally:
                     MakePopenSafe()
             msg_count = 1
-
-            if which in ('both', 'sources'):
-                ocount = msg_count - 1
-                while ocount != msg_count:
-                    ocount = msg_count
-                    sources = config.mail_sources.values()
-                    sources.sort(key=lambda k: random.randint(0, 100))
-                    for src in sources:
-                        if mailpile.util.QUITTING:
-                            ocount = msg_count
-                            break
-                        session.ui.mark(_('Rescanning: %s') % (src, ))
-                        count = src.rescan_now(session)
-                        if count > 0:
-                            msg_count += count
-                            mbox_count += 1
-                        session.ui.mark('\n')
 
             if which in ('both', 'mailboxes', 'editable'):
                 if which == 'editable':
@@ -1264,6 +1262,25 @@ class Rescan(Command):
                         msg_count += count
                         mbox_count += 1
                     session.ui.mark('\n')
+
+            if which in ('both', 'sources'):
+                ocount = msg_count - 1
+                while ocount != msg_count:
+                    ocount = msg_count
+                    sources = config.mail_sources.values()
+                    sources.sort(key=lambda k: random.randint(0, 100))
+                    for src in sources:
+                        if mailpile.util.QUITTING:
+                            ocount = msg_count
+                            break
+                        session.ui.mark(_('Rescanning: %s') % (src, ))
+                        count = src.rescan_now(session)
+                        if count > 0:
+                            msg_count += count
+                            mbox_count += 1
+                        session.ui.mark('\n')
+                    if not session.ui.interactive:
+                        break
 
             msg_count -= 1
             session.ui.mark(_('Nothing changed'))
