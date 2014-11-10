@@ -36,6 +36,10 @@
         {
             "class": "Http",
             "name": "hacks/http"
+        },
+        {
+            "class": "CheckMailbox",
+            "name": "hacks/chkmbx"
         }
     ]
 }

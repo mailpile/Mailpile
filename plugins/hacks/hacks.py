@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 from gettext import gettext as _
 from urllib import urlencode, URLopener
 
@@ -203,3 +204,100 @@ class Http(Hacks):
         except:
             self._ignore_exception()
             return self._error('%s %s' % (method, url))
+
+
+class CheckMailbox(Hacks):
+    """Sanity-check a mailbox"""
+    SYNOPSIS = (None, 'hacks/chkmbx', None, '[all|<ID>]')
+
+    def command(self):
+        session, config, idx = self.session, self.session.config, self._idx()
+        flags = [a[1:] for a in self.args if a[:1] == '-']
+
+        mbxids = [a for a in self.args if a[:1] != '-']
+        if 'all' in mbxids:
+            mbxids = config.sys.mailbox.keys()
+
+        results = {}
+        errors = {}
+        for mbx_id in mbxids:
+            result = results[mbx_id] = {
+                'messages': None,
+                'unindexed': [],
+                'duplicates': [],
+                'source_map': False
+            }
+            seen = {}
+            try:
+                session.ui.mark('%s: Opening mailbox' % mbx_id)
+                mbx = config.open_mailbox(session, mbx_id, prefer_local=True)
+                try:
+                    remote = config.open_mailbox(session, mbx_id,
+                                                 prefer_local=False)
+                except:
+                    remote = None
+
+                result['messages'] = len(mbx)
+                session.ui.mark('%s: Checking %d messages'
+                                % (mbx_id, len(mbx)))
+                for key in mbx.iterkeys():
+                    message = mbx[key]  # FIXME: We only need the header
+                    message_id = message['message-id']
+                    if message_id in seen:
+                        seen[message_id].add(key)
+                    else:
+                        seen[message_id] = set([key])
+                    enc_msgid = idx.encode_msg_id(message_id)
+                    msg_idx_pos = idx.MSGIDS.get(enc_msgid)
+                    if msg_idx_pos is None:
+                        session.ui.notify('%s: Not in index: %s %s'
+                                          % (mbx_id, key, message_id))
+                        result['unindexed'].append((key, message_id))
+                    else:
+                        msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
+
+                for msg_id, keys in seen.iteritems():
+                    if len(keys) > 1:
+                        result['duplicates'].append([msg_id] + list(keys))
+
+                if remote:
+                    if hasattr(mbx, 'source_map') and len(mbx.source_map) > 0:
+                        session.ui.mark('%s: Comparing with source' % mbx_id)
+                        result['source_map'] = len(mbx.source_map)
+                        result['source_unknown'] = []
+                        result['source_missing'] = []
+                        result['source_mismatch'] = []
+
+                        mapped = mbx.source_map.values()
+                        for k in mbx.iterkeys():
+                            if k not in mapped:
+                                result['source_unknown'].append(k)
+
+                        for sk in mbx.source_map.iteritems():
+                            source_id, key = sk
+                            try:
+                                # FIXME: Can we grab only the header?
+                                src_msg = remote[source_id]
+                                if src_msg['message-id'] != message_id:
+                                    session.ui.notify(
+                                        '%s: Source mismatch: %s %s'
+                                        % (mbx_id, source_id, key))
+                                    result['source_missing'].append(sk)
+                            except (IndexError, KeyError):
+                                session.ui.notify(
+                                    '%s: Source missing: %s %s'
+                                    % (mbx_id, source_id, key))
+                                result['source_missing'].append(sk)
+
+            except KeyboardInterrupt:
+                errors[mbx_id] = ('Interrupted', '')
+                break
+            except:
+                errors[mbx_id] = ('Failed', traceback.format_exc())
+
+        if errors:
+            return self._error('Checked %d mailboxes' % len(results),
+                               info=errors, result=results)
+        else:
+            return self._success('Checked %d mailboxes' % len(results),
+                                 result=results)
