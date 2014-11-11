@@ -10,6 +10,7 @@ var SourceModel = Backbone.Model.extend({
     port: 993,
     protocol: '',
     interval: 300,
+    secret: true,
     discovery: {
       paths: [],
       apply_tags: []

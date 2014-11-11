@@ -10,7 +10,8 @@ var SendingModel = Backbone.Model.extend({
     password: '',
     host: '',
     port: 587,
-    protocol: 'smtp'
+    protocol: 'smtp',
+    secret: true
   },
   validation: {
     name: {
