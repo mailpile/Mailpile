@@ -340,10 +340,8 @@
 }
 
 
-/* 
-   CUSTOM HACKS 
-   - This makes sidebar icons switch to dotted circle on drag
-*/
+/* Sidebar - makes icons switch to dotted circle on drag */
+
 .sidebar-tags-draggable-hover .icon-message:before,
 .sidebar-tags-draggable-hover .icon-inbox:before,
 .sidebar-tags-draggable-hover .icon-sent:before,
@@ -401,5 +399,152 @@
 .sidebar-tags-draggable-hover .icon-geopoint:before {
   content: "\e60c";
   color: @black;
+}
+
+
+/* Mimetype - icons */
+
+.icon-mime[type="application/octet-stream"]:before,
+.icon-mime[type="application/mac-binhex40"]:before,
+.icon-mime[type="application/x-shockwave-flash"]:before,
+.icon-mime[type="application/x-director"]:before,
+.icon-mime[type="application/x-x509-ca-cert"]:before,
+.icon-mime[type="application/x-director"]:before,
+.icon-mime[type="application/x-msdownload"]:before,
+.icon-mime[type="application/x-director"]:before {
+  // application
+	content: "\e648";
+}
+
+.icon-mime[type="application/x-compress"]:before,
+.icon-mime[type="application/x-compressed"]:before,
+.icon-mime[type="application/x-tar"]:before,
+.icon-mime[type="application/zip"]:before,
+.icon-mime[type="application/x-stuffit"]:before,
+.icon-mime[type="application/x-gzip"]:before,
+.icon-mime[type="application/x-gzip-compressed"]:before,
+.icon-mime[type="application/x-tar"]:before,
+.icon-mime[type="application/x-winzip"]:before,
+.icon-mime[type="application/x-zip"]:before,
+.icon-mime[type="application/x-zip-compressed"]:before {
+  // archive
+	content: "\e668";
+}
+
+.icon-mime[type="audio/midi"]:before,
+.icon-mime[type="audio/mid"]:before,
+.icon-mime[type="audio/mpeg"]:before,
+.icon-mime[type="audio/basic"]:before,
+.icon-mime[type="audio/x-aiff"]:before,
+.icon-mime[type="audio/x-pn-realaudio"]:before,
+.icon-mime[type="audio/x-pn-realaudio"]:before,
+.icon-mime[type="audio/mid"]:before,
+.icon-mime[type="audio/basic"]:before,
+.icon-mime[type="audio/x-wav"]:before,
+.icon-mime[type="audio/x-mpegurl"]:before,
+.icon-mime[type="audio/wave"]:before,
+.icon-mime[type="audio/wav"]:before {
+  // audio
+	content: "\e63a";
+}
+
+.icon-mime[type="text/x-vcalendar"]:before {
+  // calendar
+	content: "\e60a";
+}
+
+.icon-mime[type="text/x-vcard"]:before {
+  // contacts
+	content: "\e664";
+}
+
+.icon-mime[type="image/cis-cod"]:before,
+.icon-mime[type="image/ief"]:before,
+.icon-mime[type="image/pipeg"]:before,
+.icon-mime[type="image/tiff"]:before,
+.icon-mime[type="image/x-cmx"]:before,
+.icon-mime[type="image/x-cmu-raster"]:before,
+.icon-mime[type="image/x-rgb"]:before,
+.icon-mime[type="image/x-icon"]:before,
+.icon-mime[type="image/x-xbitmap"]:before,
+.icon-mime[type="image/x-xpixmap"]:before,
+.icon-mime[type="image/x-xwindowdump"]:before,
+.icon-mime[type="image/x-portable-anymap"]:before,
+.icon-mime[type="image/x-portable-graymap"]:before,
+.icon-mime[type="image/x-portable-pixmap"]:before,
+.icon-mime[type="image/x-portable-bitmap"]:before,
+.icon-mime[type="application/x-photoshop"]:before,
+.icon-mime[type="application/postscript"]:before {
+  // image
+	content: "\e627";
+}
+
+.icon-mime[type="application/pgp-signature"]:before {
+  // signature
+	content: "\e650";
+}
+
+.icon-mime[type="application/pgp-keys"]:before {
+  // keys
+	content: "\e629";
+}
+
+.icon-mime[type="application/rtf"]:before,
+.icon-mime[type="application/vnd.ms-works"]:before,
+.icon-mime[type="application/msword"]:before,
+.icon-mime[type="application/pdf"]:before,
+.icon-mime[type="application/x-download"]:before,
+.icon-mime[type="message/rfc822"]:before,
+.icon-mime[type="text/scriptlet"]:before,
+.icon-mime[type="text/plain"]:before,
+.icon-mime[type="text/iuls"]:before,
+.icon-mime[type="text/plain"]:before,
+.icon-mime[type="text/richtext"]:before,
+.icon-mime[type="text/x-setext"]:before,
+.icon-mime[type="text/x-component"]:before,
+.icon-mime[type="text/webviewhtml"]:before,
+.icon-mime[type="text/h323"]:before {
+  // document
+	content: "\e616";
+}
+
+.icon-mime[type="application/x-javascript"]:before,
+.icon-mime[type="text/html"]:before,
+.icon-mime[type="text/css"]:before,
+.icon-mime[type="text/xml"]:before,
+.icon-mime[type="text/json"]:before {
+  // code
+	content: "\e610";
+}
+
+.icon-mime[type="application/excel"]:before,
+.icon-mime[type="application/msexcel"]:before,
+.icon-mime[type="application/vnd.ms-excel"]:before,
+.icon-mime[type="application/vnd.msexcel"]:before,
+.icon-mime[type="application/csv"]:before,
+.icon-mime[type="application/x-csv"]:before,
+.icon-mime[type="text/tab-separated-values"]:before,
+.icon-mime[type="text/x-comma-separated-values"]:before,
+.icon-mime[type="text/comma-separated-values"]:before,
+.icon-mime[type="text/csv"]:before,
+.icon-mime[type="text/x-csv"]:before {
+  // spreadsheet
+	content: "\e658";
+}
+
+.icon-mime[type="application/powerpoint"]:before,
+.icon-mime[type="application/vnd.ms-powerpoint"]:before {
+  // slideshow
+	content: "\e65d";
+}
+
+.icon-mime[type="video/quicktime"]:before,
+.icon-mime[type="video/x-sgi-movie"]:before,
+.icon-mime[type="video/mpeg"]:before,
+.icon-mime[type="video/x-la-asf"]:before,
+.icon-mime[type="video/x-ms-asf"]:before,
+.icon-mime[type="video/x-msvideo"]:before {
+  // video
+	content: "\e665";
 }
 
