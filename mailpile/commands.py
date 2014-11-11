@@ -1848,7 +1848,7 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
     """Print one or more settings"""
-    SYNOPSIS = ('P', 'print', 'settings', '[-short] <var>')
+    SYNOPSIS = ('P', 'print', 'settings', '[-short|-secrets] <var>')
     ORDER = ('Config', 3)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
@@ -1856,23 +1856,28 @@ class ConfigPrint(Command):
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
         'var': 'section.variable',
-        'short': 'Set True to omit unchanged values (defaults)'
+        'short': 'Set True to omit unchanged values (defaults)',
+        'secrets': 'Set True to show passwords and other secrets'
     }
     HTTP_POST_VARS = {
         'user': 'Authenticate as user',
         'pass': 'Authenticate with password'
     }
 
-    def _maybe_all(self, list_all, data, key_types):
+    def _maybe_all(self, list_all, data, key_types, sanitize):
         if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
                 if [t for t in data.key_types(key) if t not in key_types]:
                     # Silently omit things that are considered sensitive
                     continue
-                rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
-                    rv[key] = self._maybe_all(True, rv[key], key_types)
+                    rv[key] = self._maybe_all(True, rv[key],
+                                              key_types, sanitize)
+                elif sanitize and key.lower()[:4] in ('pass', 'secr'):
+                    rv[key] = '(SUPPRESSED)'
+                else:
+                    rv[key] = data[key]
             return rv
         return data
 
@@ -1883,6 +1888,7 @@ class ConfigPrint(Command):
 
         args = list(self.args)
         list_all = not self.data.get('short', ['-short' in args])[0]
+        sanitize = not self.data.get('secrets', ['-secrets' in args])[0]
 
         # FIXME: Shouldn't we suppress critical variables as well?
         key_types = ['public', 'critical']
@@ -1905,7 +1911,8 @@ class ConfigPrint(Command):
                 continue
             try:
                 data = config.walk(key, key_types=key_types)
-                result[key] = self._maybe_all(list_all, data, key_types)
+                result[key] = self._maybe_all(list_all, data, key_types,
+                                              sanitize)
             except AccessError:
                 access_denied = True
                 invalid.append(key)
