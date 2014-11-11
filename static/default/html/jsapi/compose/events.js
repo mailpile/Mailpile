@@ -156,6 +156,8 @@ $(document).on('click', '.compose-show-details', function(e) {
       Mailpile.Composer.Recipients.AddressField('compose-bcc-' + mid);
     }
 
+    Mailpile.Composer.Tooltips.ContactDetails();
+
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
     $('#compose-to-summary-' + mid).hide();
     $(this).html('<span class="icon-eye"></span> <span class="text">' + new_message + '</span>');
@@ -257,12 +259,15 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
   var address = $(this).attr('href');
   $('li[address="' + address + '"]').hide();
 
+  $('#encryption-helper-find-keys').find('.color-01-gray-mid').html(address);
+
   Mailpile.Crypto.Find.Keys({
     query: address,
     container: '#encryption-helper-find-keys',
     complete: function(status) {
       $('#encryption-helper-find-keys').find('.loading').slideUp('fast');
       if (status === 'none') {
+        
         $('li[address="' + address + '"]').show();
       }
     }
