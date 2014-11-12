@@ -1848,7 +1848,7 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
     """Print one or more settings"""
-    SYNOPSIS = ('P', 'print', 'settings', '[-short|-secrets] <var>')
+    SYNOPSIS = ('P', 'print', 'settings', '[-short|-secrets|-flat] <var>')
     ORDER = ('Config', 3)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
@@ -1864,7 +1864,7 @@ class ConfigPrint(Command):
         'pass': 'Authenticate with password'
     }
 
-    def _maybe_all(self, list_all, data, key_types, sanitize):
+    def _maybe_all(self, list_all, data, key_types, recurse, sanitize):
         if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
@@ -1873,8 +1873,11 @@ class ConfigPrint(Command):
                     continue
                 rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
-                    rv[key] = self._maybe_all(True, rv[key],
-                                              key_types, sanitize)
+                    if recurse:
+                        rv[key] = self._maybe_all(True, rv[key], key_types,
+                                                  recurse, sanitize)
+                    else:
+                        rv[key] = '{ ... }'
                 elif sanitize and key.lower()[:4] in ('pass', 'secr'):
                     rv[key] = '(SUPPRESSED)'
             return rv
@@ -1886,6 +1889,7 @@ class ConfigPrint(Command):
         invalid = []
 
         args = list(self.args)
+        recurse = not self.data.get('flat', ['-flat' in args])[0]
         list_all = not self.data.get('short', ['-short' in args])[0]
         sanitize = not self.data.get('secrets', ['-secrets' in args])[0]
 
@@ -1911,7 +1915,7 @@ class ConfigPrint(Command):
             try:
                 data = config.walk(key, key_types=key_types)
                 result[key] = self._maybe_all(list_all, data, key_types,
-                                              sanitize)
+                                              recurse, sanitize)
             except AccessError:
                 access_denied = True
                 invalid.append(key)
