@@ -389,23 +389,46 @@
 	
 	ul.thread-message-attachments a {
 	  display: block;
-	  overflow: hidden;
-  	font-size: 14px;
-  	line-height: 14px;
-	  border: 1px solid @grayMid;
+	  border: 1px solid @gray;
+    width: 100px;
 	}
 
-	ul.thread-message-attachments a span.icon {  }
+	ul.thread-message-attachments span.icon-mime {
+    margin: @base-margin;
+    display: block;
+    color: @gray;
+    font-size: 48px;
+    line-height: 48px;
+  }
 	
 	ul.thread-message-attachments a img {
 	  height: 150px;
 	  display: block;
 	}
 
-  ul.thread-message-attachments a small {
+  ul.thread-message-attachments a span.thread-message-attachment-filename {
     display: block;
+    padding: @base-padding / 2;
+    border-top: 1px solid @gray;
+    background: @grayLight;
     font-size: 12px;
-    font-weight: normal;
+    font-weight: bold;
+    line-height: 12px;
+    color: @grayDark;
+  }
+
+
+	ul.thread-message-attachments a:hover {
+    background: @grayLight;
+	  border: 1px solid @gray;
+  }
+
+	ul.thread-message-attachments a:hover span.thread-message-attachment-filename {
+    color: @grayDark;
+  }
+
+	ul.thread-message-attachments a:hover span.icon-mime {
+    color: @grayDark;
   }
   
   
