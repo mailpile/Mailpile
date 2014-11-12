@@ -143,7 +143,8 @@ var SendingView = Backbone.View.extend({
           $('#setup-sending-check-auth')
             .removeClass('color-08-green')
             .addClass('color-12-red')
-            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}: '
+                  + result.error.error);
         }
         setTimeout(function() {
           $('#setup-sending-check-auth')
