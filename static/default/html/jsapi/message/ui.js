@@ -10,6 +10,7 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
       if (response.result) {
         $('#snippet-' + mid).replaceWith(response.result);
         Mailpile.Message.Tooltips.Crypto();
+        Mailpile.Message.Tooltips.Attachments();
       }
     },
     error: function() {
