@@ -386,29 +386,55 @@
     margin-bottom: 20px;
   	text-align: center;
   }
-	
-	ul.thread-message-attachments a {
+
+
+	a.attachment-image {
 	  display: block;
+	  height: 125px;
+	}
+
+  a.attachment-image img {
 	  border: 1px solid @gray;
-    width: 100px;
-	}
-
-	ul.thread-message-attachments span.icon-mime {
-    margin: @base-margin;
-    display: block;
-    color: @gray;
-    font-size: 48px;
-    line-height: 48px;
-  }
-	
-	ul.thread-message-attachments a img {
-	  height: 150px;
+	  height: 125px;
 	  display: block;
 	}
 
-  ul.thread-message-attachments a span.thread-message-attachment-filename {
+  a.attachment {
     display: block;
-    padding: @base-padding / 2;
+    width: 150px;
+    height: 125px;
+	  border: 1px solid @gray;
+  }
+
+  a.attachment div {
+    height: 97px;
+    display: inline-table;
+  }
+
+  a.attachment div span.icon-mime {
+    width: 60px;
+    display: table-cell;
+    vertical-align: middle;
+    color: @gray;
+    font-size: 40px;
+    line-height: 40px;
+    
+  }
+
+  a.attachment div span.attachment-extension {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+    color: @gray;
+    text-transform: uppercase;
+    font-size: 18px;
+  }
+
+  a.attachment span.attachment-filename {
+    width: 100%;
+    display: inline-block;
+    padding: (@base-padding / 2) 0;
+    box-sizing: content-box;
     border-top: 1px solid @gray;
     background: @grayLight;
     font-size: 12px;
@@ -417,20 +443,21 @@
     color: @grayDark;
   }
 
-
-	ul.thread-message-attachments a:hover {
+  a.attachment:hover {
     background: @grayLight;
 	  border: 1px solid @gray;
   }
 
-	ul.thread-message-attachments a:hover span.thread-message-attachment-filename {
+	a.attachment:hover span.attachment-filename {
     color: @grayDark;
   }
 
-	ul.thread-message-attachments a:hover span.icon-mime {
+	a.attachment:hover span.icon-mime,
+  a.attachment:hover span.attachment-extension {
     color: @grayDark;
   }
   
+
   
 /* Thread Message Actions */
 
