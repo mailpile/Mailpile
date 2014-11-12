@@ -1871,13 +1871,12 @@ class ConfigPrint(Command):
                 if [t for t in data.key_types(key) if t not in key_types]:
                     # Silently omit things that are considered sensitive
                     continue
+                rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
                     rv[key] = self._maybe_all(True, rv[key],
                                               key_types, sanitize)
                 elif sanitize and key.lower()[:4] in ('pass', 'secr'):
                     rv[key] = '(SUPPRESSED)'
-                else:
-                    rv[key] = data[key]
             return rv
         return data
 
