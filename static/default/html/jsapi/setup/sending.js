@@ -10,8 +10,7 @@ var SendingModel = Backbone.Model.extend({
     password: '',
     host: '',
     port: 587,
-    protocol: 'smtp',
-    secrets: true
+    protocol: 'smtp'
   },
   validation: {
     name: {
@@ -40,7 +39,7 @@ var SendingModel = Backbone.Model.extend({
 
 
 var SendingCollection = Backbone.Collection.extend({
-  url: '/api/0/settings/?var=routes',
+  url: '/api/0/settings/?var=routes&secrets=true',
   model: SendingModel
 });
 
@@ -101,7 +100,7 @@ var SendingView = Backbone.View.extend({
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
+    Mailpile.API.settings_get({ var: 'routes.'+id, secrets: true }, function(result) {
       var sending = result.result['routes.'+id];
       sending_data = _.extend(sending, { id: id, action: 'Edit', complete: 'sending' });
       var sending_template = _.template($('#template-setup-sending-settings').html());

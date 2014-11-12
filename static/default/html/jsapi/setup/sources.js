@@ -10,7 +10,6 @@ var SourceModel = Backbone.Model.extend({
     port: 993,
     protocol: '',
     interval: 300,
-    secrets: true,
     discovery: {
       paths: [],
       apply_tags: []
@@ -86,7 +85,7 @@ var SourceModel = Backbone.Model.extend({
 
 
 var SourcesCollection = Backbone.Collection.extend({
-  url: '/api/0/settings/?var=sources',
+  url: '/api/0/settings/?var=sources&secrets=true',
   model: SourceModel,
   can_next: false
 });
@@ -115,7 +114,7 @@ var SourcesView = Backbone.View.extend({
   },
   reload: function() {
     // Load Data & Add to Collection
-    Mailpile.API.settings_get({ var: 'sources' }, function(result) {
+    Mailpile.API.settings_get({ var: 'sources', secrets: true }, function(result) {
 
       // Redirect to Add
       if (!_.isEmpty(result.result.sources)) {
