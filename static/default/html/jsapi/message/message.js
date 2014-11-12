@@ -150,9 +150,7 @@ $(document).on('click', '.message-action-unsubscribe', function(e) {
 $(document).on('click', '.message-action-find-keys', function(e) {
   e.preventDefault();
   Mailpile.UI.Modals.CryptoFindKeys({
-    query: $(this).attr('href'),
-    message: '#search-keyservers-message',
-    result: '#search-keyservers-result'
+    query: $(this).attr('href')
   });
 });
 
