@@ -42,7 +42,7 @@ Mailpile.Message.Tooltips.Crypto = function() {
 
 
 Mailpile.Message.Tooltips.Attachments = function() {
-  $('.thread-message-attachment').qtip({
+  $('.attachment').qtip({
     content: {
       title: false,
       text: function(event, api) {
