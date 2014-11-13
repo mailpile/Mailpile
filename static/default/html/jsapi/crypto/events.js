@@ -3,9 +3,17 @@
 /* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
+  var action = $(this).data('action');
+  var fingerprint = $(this).data('fingerprint');
   var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: $(this).data('fingerprint')});
   Mailpile.API.crypto_keyimport_post(key_data, function(result) {
-    $('#modal-full').modal('hide');
+    if (result.status === 'success' && action === 'hide-modal') {
+      $('#modal-full').modal('hide');
+    }
+    else if (result.status === 'success' && action === 'hide-item') {
+      // FIXME: kludgy
+      $('#item-encryption-key-' + fingerprint).fadeOut();
+    }
   });
 });
 

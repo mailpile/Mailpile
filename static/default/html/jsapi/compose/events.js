@@ -256,19 +256,69 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
   e.preventDefault();
   $('#encryption-helper-find-keys').find('.loading').fadeIn();
 
-  var address = $(this).attr('href');
-  $('li[address="' + address + '"]').hide();
+  // Reset Model
+  Mailpile.crypto_keylookup = [];
+  
+  // Empty Previous Search
+  $('#encryption-helper-find-keys').find('ul.result').html('');
 
+  // Show Hidden Items
+  _.each($('#encryption-helper-missing-keys li.searchkey-result-item'), function(elem, key) {
+    $(elem).show();
+  });
+
+
+  // Data & Things
+  var mid = $(this).data('mid');
+  var address = $(this).attr('href');
+
+  // Show & Hide
+  $('li[address="' + address + '"]').hide();
   $('#encryption-helper-find-keys').find('.color-01-gray-mid').html(address);
 
+  // Go Get Keys
   Mailpile.Crypto.Find.Keys({
     query: address,
     container: '#encryption-helper-find-keys',
+    action: 'hide-item',
     complete: function(status) {
+
+      // Hide Loading
       $('#encryption-helper-find-keys').find('.loading').slideUp('fast');
+
+      // Show No Results
       if (status === 'none') {
-        
         $('li[address="' + address + '"]').show();
+      } else {
+        
+        // Tally Total Missing Keys
+        var count_missing = [];
+
+        // Check Items
+        _.each($('#encryption-helper-missing-keys li.searchkey-result-item'), function(elem, key) {
+          count_missing.push($(elem).css('display'));
+        });
+
+        // Show "Now Able To Encrypt" Message
+        console.log(_.indexOf(count_missing, 'list-item'));
+        if (_.indexOf(count_missing, 'list-item') == -1) {
+          console.log('yay, all have been searched & imported');
+
+          // Positive Feedback
+          $('#modal-full').find('span.icon-lock-open')
+            .removeClass('icon-lock-open color-10-orange')
+            .addClass('icon-lock-closed color-08-green')
+            .html('{{_("Yay, Can Now Encrypt")}}');
+
+          var success_template = _.template($('#template-encryption-helper-complete-message').html());
+          var success_html = success_template({ mid: mid });
+
+          $('#modal-full').find('div.modal-body').html(success_html);
+
+          // Hide Missing
+          $('#encryption-helper-missing-keys').fadeOut();
+        }
+
       }
     }
   });  

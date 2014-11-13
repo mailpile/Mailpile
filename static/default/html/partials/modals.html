@@ -213,7 +213,7 @@
       <div class="modal-body clearfix">
         <div id="encryption-helper-find-keys" class="hide">
           <p class="message paragraph-important animated">
-            <span class="icon-search"></span> {{_("Searching for encryption keys for:")}}
+            <span class="icon-search"></span> {{_("Searching for encryption keys for:")}} <span class="color-01-gray-mid"></span>
           </p>
           <p class="loading text-center">
           {% include("../img/loading-ellipsis.svg") %}
@@ -234,7 +234,16 @@
                   <span><%= recipient.address %></span>
                 </div>
                 <div class="right text-right">
-                  <a href="<%= recipient.address %>" class="encryption-helper-find-key"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
+                <ul class="none">
+                  <li class="half-bottom">
+                    <a href="<%= recipient.address %>" class="encryption-helper-find-key" data-mid="<%= mid %>"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
+                  </li>
+                  <!--
+                  <li>
+                    <a href="#" class="encryption-helper-upload-key"><span class="icon-upload"></span> {{_("Upload Encryption Key")}}</a>
+                  </li>
+                  -->
+                </ul>
                 </div>
               </div>
             </li>

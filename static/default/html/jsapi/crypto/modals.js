@@ -5,6 +5,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
 
   // Set Defaults
   options.container = '#search-keyservers';
+  options.action = 'hide-modal';
   options.complete  =  function() {
     $('#search-keyservers').find('.loading').slideUp('fast');
   };
@@ -16,7 +17,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
     if (data.result) {
     
       $(options.container).find('.message')
-        .html('<span class="icon-checkmark"></span> ' + data.message)
+        .html('<span class="icon-key"></span> ' + data.message)
         .removeClass('paragraph-important paragraph-alert')
         .addClass('paragraph-success');
       Mailpile.Crypto.Find.KeysResult(data, options);

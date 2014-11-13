@@ -167,7 +167,7 @@
           <option value="false">{{_("Don't Use This Key")}}</option>
         </select>
         <% } else { %>
-        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>">
+        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
           <span class="icon-key"></span> {{_("Import Key")}}
         </a>
         <% } %>
@@ -253,5 +253,28 @@
   <a href="<%= pgp_href %>" data-mid="<%= mid %>" download="{{_('Encryption Key from')}} <%= name %>.asc" class="message-crypto-import-key button-secondary half-bottom"><span class="icon-key"></span> {{_("Import Encryption Key")}}</a>
   <a href="#" data-mid="<%= mid %>" class="message-crypto-show-inline-key link-detail"><span class="icon-eye"></span> {{_("Show Encryption Key")}}</a>
   <div id="message-crypto-inline-key-<%= mid %>" class="message-crypto-inline-key half-top hide"><%= pgp_key %></div>
+</script>
+
+
+<script id="template-composer-attachment" type="text/template">
+  <li class="compose-attachment" aid="<%= id %>">
+    <a href="#" class="attachment" title="<%= name %>" data-size="<%= size %>">
+      <div>
+        <span class="icon-mime" type="<%= type %>"></span>
+        <span class="attachment-extension"><%= extension %></span>
+      </div>
+      <span class="attachment-filename">
+        <%= name_fixed %>
+      </span>
+    </a>
+  </li>
+</script>
+
+
+<script id="template-encryption-helper-complete-message" type="text/template">
+  <div class="text-center">
+    <p>Great job. You have successfully found encryption keys for all the contacts you are trying to send an encrypted email to. Way to be more secure ;)</p>
+    <button class="button-secondary" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('encrypt', mid);">Back To Message</button>
+  </div>
 </script>
 

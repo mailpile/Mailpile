@@ -30,7 +30,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       }
   
       // Show View
-      var item_data     = _.extend({ avatar: avatar, uid: uid, address: options.query }, key);
+      var item_data     = _.extend({ avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
       var item_template = _.template($('#template-crypto-item-encryption-key').html());
       items_html += item_template(item_data);
   
@@ -88,7 +88,7 @@ Mailpile.Crypto.Find.Keys = function(options) {
     // Render each result found
     if (data.result) {
       $(options.container).find('.message')
-        .html('<span class="icon-checkmark"></span> ' + data.message)
+        .html('<span class="icon-key"></span> ' + data.message)
         .removeClass('paragraph-success paragraph-alert')
         .addClass('paragraph-important');
       Mailpile.Crypto.Find.KeysResult(data, options);
