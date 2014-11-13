@@ -105,22 +105,29 @@
       {% for att in message.attachments %}
       <li>
       {% set type = attachment_type(att.mimetype) %}
+      {% if (att.filename) %}
+      {% set filename = att.filename %}
+      {% else %}
+      {% set filename = _("Untitled") %}
+      {% endif %}
       {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
-      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
       {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
-      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
+      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
         <div>
           <span class="icon-mime" type="{{att.mimetype}}"></span> 
-          {% set file_parts = att.filename.split(".") %}
+          {% set file_parts = filename.split(".") %}
           {% set file_parts_length = file_parts|length %}
+          {% if filename != _("Untitled") %}
           <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+          {% endif %}
         </div>
         <span class="attachment-filename">
-          {% if file_parts_length > 2 or att.filename|length > 20 %}
+          {% if file_parts_length > 2 or filename|length > 20 %}
             {{ att.filename[0:16] }}...
-          {% else %}
+          {% elif file_parts[0] %}
             {{ file_parts[0] }}
           {% endif %}
         </span>
