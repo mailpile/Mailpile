@@ -34,7 +34,6 @@ $(document).on('click', '.pile-tag-delete', function(e) {
 /* Search - Searches web for people (currently keyservers only) */
 $(document).on('click', '#btn-pile-empty-search-web', function(e) {
   e.preventDefault();
-  var query = $('#pile-empty-search-terms').html();
-  Mailpile.UI.Modals.CryptoFindKeys(query);
+  Mailpile.UI.Modals.CryptoFindKeys({query: $('#pile-empty-search-terms').html() });
 });
 
