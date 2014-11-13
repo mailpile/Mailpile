@@ -58,20 +58,39 @@
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
       <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
-        <ul id="compose-attachments-files-{{mid}}" class="horizontal">
+        <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal">
           {% if editing_strings.attachments %}
-          {% for attachment in attachments %}
+          {% for att in attachments %}
           <li class="compose-attachment">
-            <a href="#" data-mid="{{mid}}" data-aid="{{attachment.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
-            <div class="preview">
-            {% set atype = attachment_type(attachment.mimetype) %}
-            {% if atype == 'image-visible' %}
-            <img src="/message/download/preview/={{mid}}/{{attachment.aid}}/">
+
+<!--
+            <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+-->
+
+            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
+            <!-- <img src="/message/download/preview/={{mid}}/{{att.aid}}/"> -->
+            <a href="#" class="attachment-image" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
+              <img src="/message/download/preview/={{mid}}/{{att.aid}}/">
+            </a>
             {% else %}
-            <span class="icon icon-{{atype}}"></span>
+
+            <a href="#" class="attachment" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
+              <div>
+                <span class="icon-mime" type="{{att.mimetype}}"></span> 
+                {% set file_parts = att.filename.split(".") %}
+                {% set file_parts_length = file_parts|length %}
+                <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+              </div>
+              <span class="attachment-filename">
+                {% if file_parts_length > 2 or att.filename|length > 20 %}
+                  {{ att.filename[0:16] }}...
+                {% else %}
+                  {{ file_parts[0] }}
+                {% endif %}
+              </span>
+            </a>
             {% endif %}
-            </div>
-            <div class="compose-attachment-filename">{{attachment.filename}}</div>
+
           </li>
           {% endfor %}
           {% endif %}

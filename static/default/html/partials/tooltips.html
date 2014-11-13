@@ -25,7 +25,7 @@
     <%= key.fingerprint %>
     <% }); %>
   <% } else { %>
-    <a href="#" class="compose-contact-find-keys"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a>
+    <a href="#" data-address="<%= address %>" class="compose-contact-find-keys"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a>
   <% } %>
   </div>
 </script>

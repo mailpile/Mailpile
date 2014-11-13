@@ -47,15 +47,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
     multipart_params : {'mid': settings.mid},
     file_data_name : 'file-data',
   	filters : {
-  		max_file_size : '50mb',
-  		mime_types: [
-  			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
-  			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods,html,md"},
-  			{title : "Image files", extensions : "jpg,jpeg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
-  			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
-  			{title : "Zip files", extensions : "zip,rar"},
-  			{title : "Crypto files", extensions : "asc,pub,key"}
-  		]
+  		max_file_size : '50mb'
   	},
     resize: {
       width: '3600',
@@ -89,7 +81,23 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
             if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
               Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
             } else {
-              var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
+
+              var file_parts = file.name.split('.');
+              var file_parts_length = file_parts.length
+
+              if (file_parts.length > 2 || file.name.length > 20) {
+                file['name_fixed'] = file.name.substring(0, 16);
+              } else {
+                file['name_fixed'] = file_parts[0];
+              }
+
+              file['size'] = plupload.formatSize(file.size);
+              file['extension'] = file_parts[file_parts.length - 1];
+
+              console.log(file);
+
+              var attachment_template = _.template($('#template-composer-attachment').html());
+              var attachment_html = attachment_template(file);
           		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
             }
           }
