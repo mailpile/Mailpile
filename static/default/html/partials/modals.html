@@ -253,7 +253,7 @@
       </div>
       <div class="modal-footer">
         <em class="left">{{_("Or you can send this message unencrypted")}}</em>
-        <button type="submit" class="right" data-mid=""><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+        <button type="submit" class="right" data-mid="<%= mid %>" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
       </div>
     </div>
   </div>
