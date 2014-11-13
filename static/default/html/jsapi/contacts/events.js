@@ -19,3 +19,5 @@ $(document).on('click', '.show-key-details', function(e) {
   var keyid = $(this).data('keyid');
   $('#contact-key-details-' + keyid).fadeIn();
 });
+
+
