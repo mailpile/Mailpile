@@ -32,7 +32,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
-        fn = self._lookup(key)
+        fn = os.path.join(self._path, self._lookup(key))
         del self._toc[key]
         safe_remove(fn)
 
