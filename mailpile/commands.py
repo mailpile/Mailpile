@@ -1877,7 +1877,14 @@ class ConfigPrint(Command):
                         rv[key] = self._maybe_all(True, rv[key], key_types,
                                                   recurse, sanitize)
                     else:
-                        rv[key] = '{ ... }'
+                        if 'name' in rv[key]:
+                            rv[key] = '{ ..(%s).. }' % rv[key]['name']
+                        elif 'description' in rv[key]:
+                            rv[key] = '{ ..(%s).. }' % rv[key]['description']
+                        elif 'host' in rv[key]:
+                            rv[key] = '{ ..(%s).. }' % rv[key]['host']
+                        else:
+                            rv[key] = '{ ... }'
                 elif sanitize and key.lower()[:4] in ('pass', 'secr'):
                     rv[key] = '(SUPPRESSED)'
             return rv
