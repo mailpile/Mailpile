@@ -207,12 +207,16 @@ class Http(Hacks):
 
 
 class CheckMailbox(Hacks):
-    """Sanity-check a mailbox"""
-    SYNOPSIS = (None, 'hacks/chkmbx', None, '[all|<ID>]')
+    """Sanity-check and optionally fix a mailbox"""
+    SYNOPSIS = (None, 'hacks/chkmbx', None, '[-force] [-noremote] '
+                                            '[-auto|-index|-clean|-dedup] '
+                                            '[all|<ID>]')
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         flags = [a[1:] for a in self.args if a[:1] == '-']
+        if 'auto' in flags:
+            flags.extend(['clean', 'dedup', 'index'])
 
         mbxids = [a for a in self.args if a[:1] != '-']
         if 'all' in mbxids:
@@ -223,11 +227,14 @@ class CheckMailbox(Hacks):
         for mbx_id in mbxids:
             result = results[mbx_id] = {
                 'messages': None,
+                'finalized': [],
                 'unindexed': [],
                 'duplicates': [],
                 'source_map': False
             }
             seen = {}
+            msgids = {}
+            indexed = {}
             try:
                 session.ui.mark('%s: Opening mailbox' % mbx_id)
                 mbx = config.open_mailbox(session, mbx_id, prefer_local=True)
@@ -237,33 +244,64 @@ class CheckMailbox(Hacks):
                 except:
                     remote = None
 
+                def _mark_progress(what, counts):
+                    counts[0] += 1
+                    i, n = counts[0], counts[1] or 1  # Avoid divide by zero
+                    if i > max(10, (n/25)) and 0 == i % max(1, (n//397)):
+                        session.ui.mark('%s: %s: Message %d/%d (%d%%)'
+                                        % (mbx_id, what, i, n, 100 * i / n))
+
                 result['messages'] = len(mbx)
                 session.ui.mark('%s: Checking %d messages'
                                 % (mbx_id, len(mbx)))
-                for key in mbx.iterkeys():
-                    message = mbx[key]  # FIXME: We only need the header
-                    message_id = message['message-id']
-                    if message_id in seen:
-                        seen[message_id].add(key)
+                counts = [0, len(mbx)]
+                for key in list(mbx.iterkeys()):
+                    _mark_progress('Checking', counts)
+                    try:
+                        message = mbx[key]  # FIXME: We only need the header
+                    except KeyError:
+                        traceback.print_exc()
+                        session.ui.notify('%s: Not in mailbox: %s'
+                                          % (mbx_id, key))
+                        continue
+
+                    enc_msgid = idx.get_msg_id(message, 'bogus')
+                    msgids[key] = enc_msgid
+                    if enc_msgid in seen:
+                        seen[enc_msgid].add(key)
                     else:
-                        seen[message_id] = set([key])
-                    enc_msgid = idx.encode_msg_id(message_id)
+                        seen[enc_msgid] = set([key])
                     msg_idx_pos = idx.MSGIDS.get(enc_msgid)
                     if msg_idx_pos is None:
                         session.ui.notify('%s: Not in index: %s %s'
-                                          % (mbx_id, key, message_id))
-                        result['unindexed'].append((key, message_id))
+                                          % (mbx_id, key, enc_msgid))
+                        result['unindexed'].append((key, enc_msgid))
                     else:
                         msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                        for ptr in msg_info[idx.MSG_PTRS].split(','):
+                            if ptr[:MBX_ID_LEN] == mbx_id:
+                                indexed[enc_msgid] = ptr[MBX_ID_LEN:]
+
+                    if 'x-mp-internal-readonly' in message:
+                        result['finalized'].append(key)
 
                 for msg_id, keys in seen.iteritems():
                     if len(keys) > 1:
                         result['duplicates'].append([msg_id] + list(keys))
 
-                if remote:
+                if hasattr(mbx, 'source_map'):
+                    result['source_map'] = len(mbx.source_map)
+                elif mbx.is_local:
+                    try:
+                        mbx.source_map = {}
+                        result['source_map'] = 0
+                    except AttributeError:
+                        session.ui.warning('%s: Failed to add source_map'
+                                           % mbx_id)
+
+                if remote and 'noremote' not in flags:
                     if hasattr(mbx, 'source_map') and len(mbx.source_map) > 0:
                         session.ui.mark('%s: Comparing with source' % mbx_id)
-                        result['source_map'] = len(mbx.source_map)
                         result['source_unknown'] = []
                         result['source_missing'] = []
                         result['source_mismatch'] = []
@@ -273,12 +311,15 @@ class CheckMailbox(Hacks):
                             if k not in mapped:
                                 result['source_unknown'].append(k)
 
+                        counts = [0, len(mapped)]
                         for sk in mbx.source_map.iteritems():
+                            _mark_progress('Comparing', counts)
                             source_id, key = sk
                             try:
                                 # FIXME: Can we grab only the header?
                                 src_msg = remote[source_id]
-                                if src_msg['message-id'] != message_id:
+                                loc_msgid = msgids[key]
+                                if idx.get_msg_id(src_msg, 'x') != loc_msgid:
                                     session.ui.notify(
                                         '%s: Source mismatch: %s %s'
                                         % (mbx_id, source_id, key))
@@ -289,11 +330,78 @@ class CheckMailbox(Hacks):
                                     % (mbx_id, source_id, key))
                                 result['source_missing'].append(sk)
 
+                if 'index' in flags:
+                    reindex = result['unindexed'][:]
+                else:
+                    reindex = []
+
+                if 'clean' in flags or 'dedup' in flags:
+                    if mbx.is_local or mbx.editable or 'force' in flags:
+                        result['removed'] = []
+                        session.ui.mark('%s: Removing autosaved drafts'
+                                        % mbx_id)
+                        counts = [0, len(result['duplicates'])]
+                        for dups in result['duplicates'][:]:
+                            _mark_progress('Clean', counts)
+                            dlist = dups[1:]
+                            for k in dlist:
+                                if k in result['finalized']:
+                                    if indexed[msgids[k]] != k:
+                                        # Make sure this gets rescanned
+                                        reindex.append((k, msgids[k]))
+                                    dlist.remove(k)
+                                    for k in dlist:
+                                        mbx.remove(k)
+                                        result['removed'].append(k)
+                                    result['duplicates'].remove(dups)
+                                    break
+                    else:
+                        session.ui.warning('Use -force if you are sure you '
+                                           'want to modify this mailbox.')
+
+                if 'dedup' in flags:
+                    if mbx.is_local or mbx.editable or 'force' in flags:
+                        session.ui.mark('%s: Removing duplicate messages'
+                                        % mbx_id)
+                        if 'removed' not in result:
+                            result['removed'] = []
+                        counts = [0, len(result['duplicates'])]
+                        for dups in result['duplicates'][:]:
+                            _mark_progress('Dedup', counts)
+                            dlist = dups[1:]
+                            msgid = msgids[dups[1]]
+                            if msgid in indexed:
+                                # Remove all except the one that is already
+                                # in the metadata index.
+                                dlist.remove(indexed[msgid])
+                            else:
+                                 dlist = dups[1:-1]
+                            for k in dlist:
+                                mbx.remove(k)
+                                result['removed'].append(k)
+                            result['duplicates'].remove(dups)
+                    else:
+                        session.ui.warning('Use -force if you are sure you '
+                                           'want to modify this mailbox.')
+
+                if reindex:
+                    session.ui.mark('%s: Indexing unindexed messages'
+                                    % mbx_id)
+                    result['indexed'] = []
+                    counts = [0, len(reindex)]
+                    for key, message_id in reindex:
+                        _mark_progress('Index', counts)
+                        config.index.scan_one_message(
+                            session, mbx_id, mbx, key, wait=True)
+
             except KeyboardInterrupt:
+                mbx.update_toc()
                 errors[mbx_id] = ('Interrupted', '')
                 break
             except:
                 errors[mbx_id] = ('Failed', traceback.format_exc())
+
+            mbx.update_toc()
 
         if errors:
             return self._error('Checked %d mailboxes' % len(results),
