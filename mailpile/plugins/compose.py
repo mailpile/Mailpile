@@ -726,7 +726,7 @@ class Attach(CompositionCommand):
 
 class UnAttach(CompositionCommand):
     """Remove an attachment from a message"""
-    SYNOPSIS = (None, 'unattach', 'message/unattach', '<mid> <aid>')
+    SYNOPSIS = (None, 'unattach', 'message/unattach', '<mid> <atts>')
     ORDER = ('Composing', 2)
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
@@ -738,6 +738,7 @@ class UnAttach(CompositionCommand):
     def command(self, emails=None):
         session, idx = self.session, self._idx()
         args = list(self.args)
+        atts = []
 
         if '--' in args:
             atts = args[args.index('--') + 1:]
