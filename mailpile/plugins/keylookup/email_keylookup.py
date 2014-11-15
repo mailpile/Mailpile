@@ -56,7 +56,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
-            attachments = email.get_message_tree("attachments")["attachments"]
+            attachments = email.get_message_tree(want=["attachments"]
+                                                 )["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
                     key = part["part"].get_payload(None, True)

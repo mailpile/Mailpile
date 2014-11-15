@@ -704,6 +704,8 @@ class Attach(CompositionCommand):
             try:
                 email.add_attachments(session, files, filedata=filedata)
                 updated.append(email)
+            except KeyboardInterrupt:
+                raise
             except NotEditableError:
                 err(_('Read-only message: %s') % subject)
             except:
@@ -720,6 +722,68 @@ class Attach(CompositionCommand):
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
                                            expand=updated, error=errors)
+
+
+class UnAttach(CompositionCommand):
+    """Remove an attachment from a message"""
+    SYNOPSIS = (None, 'unattach', 'message/unattach', '<mid> <aid>')
+    ORDER = ('Composing', 2)
+    HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_QUERY_VARS = {}
+    HTTP_POST_VARS = {
+        'mid': 'metadata-ID',
+        'att': 'Attachment IDs or filename'
+    }
+
+    def command(self, emails=None):
+        session, idx = self.session, self._idx()
+        args = list(self.args)
+
+        if '--' in args:
+            atts = args[args.index('--') + 1:]
+            args = args[:args.index('--')]
+        elif args:
+            atts = [args.pop(-1)]
+        atts.extend(self.data.get('att', []))
+
+        if not emails:
+            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            emails = self._choose_messages(args, allow_ephemeral=False)
+        if not emails:
+            return self._error(_('No messages selected'))
+        else:
+            emails = [Email(idx, i) for i in emails]
+
+        updated = []
+        errors = []
+        def err(msg):
+            errors.append(msg)
+            session.ui.error(msg)
+
+        for email in emails:
+            subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+            try:
+                email.remove_attachments(session, *atts)
+                updated.append(email)
+            except KeyboardInterrupt:
+                raise
+            except NotEditableError:
+                err(_('Read-only message: %s') % subject)
+            except:
+                err(_('Error removing from %s') % subject)
+                self._ignore_exception()
+
+        if errors:
+            self.message = _('Removed %s from %d messages, failed %d'
+                             ) % (', '.join(atts), len(updated), len(errors))
+        else:
+            self.message = _('Removed %s from %d messages'
+                             ) % (', '.join(atts), len(updated))
+
+        session.ui.notify(self.message)
+        return self._return_search_results(self.message, updated,
+                                           expand=updated, error=errors)
+
 
 
 class Sendit(CompositionCommand):
@@ -944,8 +1008,8 @@ _plugins.register_config_variables('prefs', {
 _plugins.register_slow_periodic_job('sendmail',
                                     'prefs.empty_outbox_interval',
                                     EmptyOutbox.sendmail)
-_plugins.register_commands(Compose, Reply, Forward,  # Create
-                           Draft, Update, Attach,    # Manipulate
-                           UnThread,                 # ...
-                           Sendit, UpdateAndSendit,  # Send
-                           EmptyOutbox)              # ...
+_plugins.register_commands(Compose, Reply, Forward,           # Create
+                           Draft, Update, Attach, UnAttach,   # Manipulate
+                           UnThread,                          # ...
+                           Sendit, UpdateAndSendit,           # Send
+                           EmptyOutbox)                       # ...

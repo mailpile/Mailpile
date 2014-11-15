@@ -587,7 +587,7 @@ class Email(object):
 
         for att in tree['attachments']:
             aid = self._attachment_aid(att)
-            strings['attachments'][aid] = fn = (att['filename'] or '(unnamed)')
+            strings['attachments'][aid] = (att['filename'] or '(unnamed)')
 
         if not strings['encryption']:
             strings['encryption'] = unicode(self.config.prefs.crypto_policy)
@@ -604,17 +604,20 @@ class Email(object):
                                   ).replace('\r\n', '\n')
         return strings
 
-    def get_editing_string(self, tree=None, attachment_headers=True):
-        tree = tree or self.get_message_tree()
-        estrings = self.get_editing_strings(tree)
+    def get_editing_string(self, tree=None,
+                                 estrings=None,
+                                 attachment_headers=True):
+        if estrings is None:
+            estrings = self.get_editing_strings(tree=tree)
+
         bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
             bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+
         if attachment_headers:
-            for att in tree['attachments']:
-                aid = self._attachment_aid(att)
-                bits.append('Attachment-%s: %s' % (aid, (att['filename']
-                                                         or '(unnamed)')))
+            for aid in sorted(estrings['attachments'].keys()):
+                bits.append('Attachment-%s: %s'
+                            % (aid, estrings['attachments'][aid]))
         bits.append('')
         bits.append(estrings['body'])
         return '\n'.join(bits)
@@ -647,16 +650,6 @@ class Email(object):
         att.signature_info = SignatureInfo(parent=msg.signature_info)
         att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
-
-    def add_attachments(self, session, filenames, filedata=None):
-        if not self.is_editable():
-            raise NotEditableError(_('Message or mailbox is read-only.'))
-        msg = self.get_msg()
-        for fn in filenames:
-            att = self._make_attachment(fn, msg, filedata=filedata)
-            msg.attach(att)
-            del att['MIME-Version']
-        return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
         if not self.is_editable():
@@ -912,20 +905,18 @@ class Email(object):
             self.is_editable(quick=True)
         ]
 
-    def extract_attachment(self, session, att_id,
-                           name_fmt=None, mode='download'):
+    def _find_attachments(self, att_id, negative=False):
         msg = self.get_msg()
         count = 0
-        extracted = 0
         filename, attributes = '', {}
         for part in (msg.walk() if msg else []):
             mimetype = part.get_content_type()
             if mimetype.startswith('multipart/'):
                 continue
 
+            count += 1
             content_id = part.get('content-id', '')
             pfn = part.get_filename() or ''
-            count += 1
 
             if (('*' == att_id)
                     or ('#%s' % count == att_id)
@@ -934,51 +925,94 @@ class Email(object):
                     or (mimetype == att_id)
                     or (pfn.lower().endswith('.%s' % att_id))
                     or (pfn == att_id)):
+                if not negative:
+                    yield (count, content_id, pfn, mimetype, part)
+            elif negative:
+                yield (count, content_id, pfn, mimetype, part)
 
-                payload = part.get_payload(None, True) or ''
-                attributes = {
+    def add_attachments(self, session, filenames, filedata=None):
+        if not self.is_editable():
+            raise NotEditableError(_('Message or mailbox is read-only.'))
+        msg = self.get_msg()
+        for fn in filenames:
+            att = self._make_attachment(fn, msg, filedata=filedata)
+            msg.attach(att)
+            del att['MIME-Version']
+        return self.update_from_msg(session, msg)
+
+    def remove_attachments(self, session, *att_ids):
+        if not self.is_editable():
+            raise NotEditableError(_('Message or mailbox is read-only.'))
+
+        remove = []
+        for att_id in att_ids:
+            for count, cid, pfn, mt, part in self._find_attachments(att_id):
+                remove.append(self._attachment_aid({
                     'msg_mid': self.msg_mid(),
                     'count': count,
-                    'length': len(payload),
-                    'content-id': content_id,
+                    'content-id': cid,
                     'filename': pfn,
-                }
-                attributes['aid'] = self._attachment_aid(attributes)
-                if pfn:
-                    if '.' in pfn:
-                        pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
-                        attributes['att_ext'] = attributes['att_ext'].lower()
-                    attributes['att_name'] = pfn
-                if mimetype:
-                    attributes['mimetype'] = mimetype
+                }))
 
-                filesize = len(payload)
-                if mode.startswith('inline'):
-                    attributes['data'] = payload
-                    session.ui.notify(_('Extracted attachment %s') % att_id)
-                elif mode.startswith('preview'):
-                    attributes['thumb'] = True
-                    attributes['mimetype'] = 'image/jpeg'
-                    attributes['disposition'] = 'inline'
-                    thumb = StringIO.StringIO()
-                    if thumbnail(payload, thumb, height=250):
-                        session.ui.notify(_('Wrote preview to: %s') % filename)
-                        attributes['length'] = thumb.tell()
-                        filename, fd = session.ui.open_for_data(
-                            name_fmt=name_fmt, attributes=attributes)
-                        thumb.seek(0)
-                        fd.write(thumb.read())
-                        fd.close()
-                    else:
-                        session.ui.notify(_('Failed to generate thumbnail'))
-                        raise UrlRedirectException('/static/img/image-default.png')
-                else:
+        es = self.get_editing_strings()
+        es['headers'] = None
+        for k in remove:
+            if k in es['attachments']:
+                del es['attachments'][k]
+
+        estring = self.get_editing_string(estrings=es)
+        return self.update_from_string(session, estring)
+
+    def extract_attachment(self, session, att_id,
+                           name_fmt=None, mode='download'):
+        extracted = 0
+        for (count, content_id, pfn, mimetype, part
+                ) in self._find_attachments(att_id):
+            payload = part.get_payload(None, True) or ''
+            attributes = {
+                'msg_mid': self.msg_mid(),
+                'count': count,
+                'length': len(payload),
+                'content-id': content_id,
+                'filename': pfn,
+            }
+            attributes['aid'] = self._attachment_aid(attributes)
+            if pfn:
+                if '.' in pfn:
+                    pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
+                    attributes['att_ext'] = attributes['att_ext'].lower()
+                attributes['att_name'] = pfn
+            if mimetype:
+                attributes['mimetype'] = mimetype
+
+            filesize = len(payload)
+            if mode.startswith('inline'):
+                attributes['data'] = payload
+                session.ui.notify(_('Extracted attachment %s') % att_id)
+            elif mode.startswith('preview'):
+                attributes['thumb'] = True
+                attributes['mimetype'] = 'image/jpeg'
+                attributes['disposition'] = 'inline'
+                thumb = StringIO.StringIO()
+                if thumbnail(payload, thumb, height=250):
+                    session.ui.notify(_('Wrote preview to: %s') % filename)
+                    attributes['length'] = thumb.tell()
                     filename, fd = session.ui.open_for_data(
                         name_fmt=name_fmt, attributes=attributes)
-                    fd.write(payload)
-                    session.ui.notify(_('Wrote attachment to: %s') % filename)
+                    thumb.seek(0)
+                    fd.write(thumb.read())
                     fd.close()
-                extracted += 1
+                else:
+                    session.ui.notify(_('Failed to generate thumbnail'))
+                    raise UrlRedirectException('/static/img/image-default.png')
+            else:
+                filename, fd = session.ui.open_for_data(
+                    name_fmt=name_fmt, attributes=attributes)
+                fd.write(payload)
+                session.ui.notify(_('Wrote attachment to: %s') % filename)
+                fd.close()
+            extracted += 1
+
         if 0 == extracted:
             session.ui.notify(_('No attachments found for: %s') % att_id)
             return None, None
@@ -1046,9 +1080,14 @@ class Email(object):
 
     def get_message_tree(self, want=None):
         msg = self.get_msg()
+        want = list(want) if (want is not None) else None
         tree = {
             'id': self.get_msg_info(self.index.MSG_ID)
         }
+
+        if want is not None:
+            if 'editing_strings' in want or 'editing_string' in want:
+                want.extend(['text_parts', 'headers', 'attachments'])
 
         for p in 'text_parts', 'html_parts', 'attachments':
             if want is None or p in want:
@@ -1072,10 +1111,7 @@ class Email(object):
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
 
-        if (want is None
-                or 'headers' in want
-                or 'editing_string' in want
-                or 'editing_strings' in want):
+        if (want is None or 'headers' in want):
             tree['headers'] = {}
             for hdr in msg.keys():
                 tree['headers'][hdr] = self.index.hdr(msg, hdr)
