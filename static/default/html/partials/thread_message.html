@@ -111,7 +111,9 @@
       {% set filename = _("Untitled") %}
       {% endif %}
       {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
-      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
+        <img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/">
+      </a>
       {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
