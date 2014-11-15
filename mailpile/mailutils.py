@@ -909,7 +909,6 @@ class Email(object):
     def _find_attachments(self, att_id, negative=False):
         msg = self.get_msg()
         count = 0
-        filename, attributes = '', {}
         for part in (msg.walk() if msg else []):
             mimetype = part.get_content_type()
             if mimetype.startswith('multipart/'):
@@ -967,6 +966,7 @@ class Email(object):
     def extract_attachment(self, session, att_id,
                            name_fmt=None, mode='download'):
         extracted = 0
+        filename, attributes = '', {}
         for (count, content_id, pfn, mimetype, part
                 ) in self._find_attachments(att_id):
             payload = part.get_payload(None, True) or ''
@@ -996,13 +996,13 @@ class Email(object):
                 attributes['disposition'] = 'inline'
                 thumb = StringIO.StringIO()
                 if thumbnail(payload, thumb, height=250):
-                    session.ui.notify(_('Wrote preview to: %s') % filename)
                     attributes['length'] = thumb.tell()
                     filename, fd = session.ui.open_for_data(
                         name_fmt=name_fmt, attributes=attributes)
                     thumb.seek(0)
                     fd.write(thumb.read())
                     fd.close()
+                    session.ui.notify(_('Wrote preview to: %s') % filename)
                 else:
                     session.ui.notify(_('Failed to generate thumbnail'))
                     raise UrlRedirectException('/static/img/image-default.png')
