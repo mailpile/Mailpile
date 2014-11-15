@@ -1,6 +1,6 @@
 /* Search - Tooltips */
-$(document).ready(function() {
 
+Mailpile.Search.Tooltips.MessageTags = function() {
   $('.pile-message-tag').qtip({
     content: {
       title: false,
@@ -38,5 +38,4 @@ $(document).ready(function() {
       inactive: 700
     }
   });
-
-});
+};

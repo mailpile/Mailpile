@@ -17,7 +17,11 @@
   </form>
 </div>
 {% else %}
-  {{ mailpile('http/redirect',
-              '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
+  {{ mailpile('http/redirect', '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
 {% endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
 {% endblock %}

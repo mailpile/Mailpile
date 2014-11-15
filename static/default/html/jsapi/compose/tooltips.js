@@ -1,6 +1,6 @@
 /* Composer - Tooltips */
 
-Mailpile.Composer.Tooltips.signature = function() {
+Mailpile.Composer.Tooltips.Signature = function() {
   $('.compose-crypto-signature').qtip({
     content: {
       title: false,
@@ -41,7 +41,7 @@ Mailpile.Composer.Tooltips.signature = function() {
 };
 
 
-Mailpile.Composer.Tooltips.encryption = function() {
+Mailpile.Composer.Tooltips.Encryption = function() {
   $('.compose-crypto-encryption').qtip({
     content: {
       title: false,
@@ -105,7 +105,7 @@ Mailpile.Composer.Tooltips.encryption = function() {
 };
 
 
-Mailpile.Composer.Tooltips.contact_details = function() {
+Mailpile.Composer.Tooltips.ContactDetails = function() {
   $('.select2-search-choice').qtip({
     content: {
       title: true,
@@ -125,6 +125,11 @@ Mailpile.Composer.Tooltips.contact_details = function() {
 
         var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
         if (contact_data) {
+
+          if (contact_data.photo === undefined) {
+            contact_data.photo = '';
+          }
+
           var contact_template = _.template($('#tooltip-contact-details').html());
           return contact_template(contact_data);
         }

@@ -65,12 +65,13 @@ class TestCommands(MailPileUnittest):
 
     def test_crypto_policy_auto_set_all_action(self):
         res = self.mp.crypto_policy_auto_set_all()
-        self.assertEqual(res.as_dict()["message"], 'crypto_policy/auto_set_all')
+        self.assertEqual(res.as_dict()["message"], u'Discovered crypto policy')
         self.assertEqual(set(), res.as_dict()['result'])
 
     def test_crypto_policy_action(self):
         res = self.mp.crypto_policy("foobar")
-        self.assertEqual(res.as_dict()["message"], 'crypto_policy')
+        self.assertEqual(res.as_dict()["message"], u'Crypto policy for foobar is none')
+        self.assertEqual(res.as_dict()["result"], 'none')
 
 
 class TestCommandResult(MailPileUnittest):

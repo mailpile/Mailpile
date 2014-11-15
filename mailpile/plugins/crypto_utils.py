@@ -121,6 +121,7 @@ class GPGKeyImportFromMail(Search):
                 'crypto/gpg/importkeyfrommail', '<mid>')
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
+    COMMAND_CACHE_TTL = 0
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -203,6 +204,7 @@ class GPGUsageStatistics(Search):
                 'crypto/gpg/statistics', '<address>')
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {'address': 'E-mail address'}
+    COMMAND_CACHE_TTL = 0
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -227,13 +229,12 @@ class GPGUsageStatistics(Search):
         if addr is None:
             return self._error("Must supply an address", None)
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr])
+        session, idx = self._do_search(search=["from:%s" % addr])
         total = 0
         for messageid in session.results:
             total += 1
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr, 
-            "has:pgp"])
+        session, idx = self._do_search(search=["from:%s" % addr,  "has:pgp"])
         pgp = 0
         for messageid in session.results:
             pgp += 1
@@ -249,8 +250,6 @@ class GPGUsageStatistics(Search):
                "address": addr}
 
         return self._success("Got statistics for address", res)
-
-
 
 
 _plugins.register_commands(GPGKeySearch)

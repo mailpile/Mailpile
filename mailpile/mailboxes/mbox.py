@@ -28,6 +28,7 @@ class MailpileMailbox(mailbox.mbox):
     def __init__(self, *args, **kwargs):
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
+        self.is_local = False
         self._mtime = 0
         self._save_to = None
         self._encryption_key_func = lambda: None
@@ -40,6 +41,7 @@ class MailpileMailbox(mailbox.mbox):
     def __setstate__(self, dict):
         self.__dict__.update(dict)
         self._lock = MboxLock()
+        self.is_local = False
         with self._lock:
             self._save_to = None
             self._encryption_key_func = lambda: None
@@ -163,6 +165,9 @@ class MailpileMailbox(mailbox.mbox):
         # accessing the same mailbox and moving it around, or in case we have
         # multiple PartialFile objects in flight at once.
         return mailbox._PartialFile(self._get_fd(), start, start + length)
+
+    def get_bytes(self, toc_id):
+        return self.get_file(toc_id).read()
 
 
 mailpile.mailboxes.register(90, MailpileMailbox)

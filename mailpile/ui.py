@@ -256,12 +256,6 @@ class UserInteraction:
         elif level <= self.log_level:
             self._display_log(message, level)
 
-    def finish_command(self):
-        pass
-
-    def start_command(self):
-        pass
-
     error = lambda self, msg: self.log(self.LOG_ERROR, msg)
     notify = lambda self, msg: self.log(self.LOG_NOTIFY, msg)
     warning = lambda self, msg: self.log(self.LOG_WARNING, msg)
@@ -280,9 +274,11 @@ class UserInteraction:
                 action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
+#       print '(%s/%d) %s' % (self, len(self.time_tracking), action)
 
     def report_marks(self, quiet=False, details=False):
         t = self.times
+#       print '(%s/%d) REPORT' % (self, len(self.time_tracking))
         if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
@@ -299,6 +295,7 @@ class UserInteraction:
 
     def reset_marks(self, mark=True, quiet=False, details=False):
         """This sequence of actions is complete."""
+#       print '(%s/%d) RESET' % (self, len(self.time_tracking))
         if self.times and mark:
             self.mark()
         elapsed = self.report_marks(quiet=quiet, details=details)
@@ -307,6 +304,7 @@ class UserInteraction:
 
     def push_marks(self, subtask):
         """Start tracking a new sub-task."""
+#       print '(%s/%d) PUSH' % (self, len(self.time_tracking))
         self.time_tracking.append((subtask, []))
 
     def pop_marks(self, name=None, quiet=True):
@@ -315,6 +313,7 @@ class UserInteraction:
         if len(self.time_tracking) > 1:
             if not name or (self.time_tracking[-1][0] == name):
                 self.time_tracking.pop(-1)
+#       print '(%s/%d) POP' % (self, len(self.time_tracking))
         return elapsed
 
     # Higher level command-related methods
@@ -336,13 +335,14 @@ class UserInteraction:
         """Render command result objects to the user"""
         self._display_log('', level=self.LOG_RESULT)
         if self.render_mode == 'json':
-            return self._display_result(result.as_json())
+            return self._display_result(result.as_('json'))
         for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
             if self.render_mode.endswith(suffix):
-                if self.render_mode in (suffix, 'j' + suffix):
+                jsuffix = 'j' + suffix
+                if self.render_mode in (suffix, jsuffix):
                     template = 'as.' + suffix
                 else:
-                    template = self.render_mode.replace('.j' + suffix,
+                    template = self.render_mode.replace('.' + jsuffix,
                                                         '.' + suffix)
                 return self._display_result(
                     result.as_template(suffix, template=template))
@@ -581,6 +581,15 @@ class SilentInteraction(UserInteraction):
         return False
 
 
+class CapturingUserInteraction(UserInteraction):
+    def __init__(self, config):
+        mailpile.ui.UserInteraction.__init__(self, config)
+        self.captured = ''
+
+    def _display_result(self, result):
+        self.captured = unicode(result)
+
+
 class RawHttpResponder:
 
     def __init__(self, request, attributes={}):
@@ -620,22 +629,66 @@ class RawHttpResponder:
 
 class Session(object):
 
+    @classmethod
+    def Snapshot(cls, session, **copy_kwargs):
+        return cls(session.config).copy(session, **copy_kwargs)
+
     def __init__(self, config):
         self.config = config
+
         self.main = False
-        self.order = None
+        self.ui = UserInteraction(config)
+
         self.wait_lock = threading.Condition(UiRLock())
+        self.task_results = []
+
+        self.order = None
         self.results = []
         self.searched = []
-        self.displayed = (0, 0)
-        self.task_results = []
-        self.ui = UserInteraction(config)
+        self.displayed = None
+        self.context = None
 
     def set_interactive(self, val):
         self.ui.interactive = val
 
     interactive = property(lambda s: s.ui.interactive,
                            lambda s, v: s.set_interactive(v))
+
+    def copy(self, session, ui=False, search=True):
+        if ui:
+            self.main = session.main
+            self.ui = session.ui
+        if search:
+            self.order = session.order
+            self.results = session.results[:]
+            self.searched = session.searched[:]
+            self.displayed = session.displayed
+            self.context = session.context
+        return self
+
+    def get_context(self, update=False):
+        if update or not self.context:
+            if self.searched:
+                sid = self.config.search_history.add(self.searched,
+                                                     self.results,
+                                                     self.order)
+                self.context = 'search:%s' % sid
+        return self.context
+
+    def load_context(self, context):
+        if self.context and self.context == context:
+            return context
+        try:
+            if context.startswith('search:'):
+                s, r, o = self.config.search_history.get(self, context[7:])
+                self.searched, self.results, self.order = s, r, o
+                self.displayed = None
+                self.context = context
+                return context
+            else:
+                return False
+        except (KeyError, ValueError):
+            return False
 
     def report_task_completed(self, name, result):
         with self.wait_lock:

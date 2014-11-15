@@ -50,13 +50,11 @@
           <div class="thread-item-crypto-line left"></div>
         </div>
         {% endif %}
-
-        {% autoescape false %}
-        {% if part.type == "text" %}
-          <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
-        {% elif part.type in ("pgpsignedtext") %}
-          <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
-        {% elif part.type in ("pgptext") %}
+        {% autoescape false %}  
+        {% set part_text = part.data|nice_text|e|urlize|fix_urls(40, url_danger) %}
+        {% if part.type in ("text", "pgpsignedtext") %}
+          <div class="thread-item-text">{{ part_text }}</div>
+        {% elif part.type in ("pgptext",) %}
           {% if part.crypto.encryption.status in ("missingkey", "error") %}
           {% set crypto = show_message_encryption(part.crypto.encryption.status) %}
           <div class="thread-item-crypto-error text-center">
@@ -71,7 +69,7 @@
             {% endif %} #}
           </div>
           {% else %}
-          <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+          <div class="thread-item-text">{{ part_text }}</div>
           {% endif %}
         {% elif part.type in ("pgpbegin", "pgpend") %}
           <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
@@ -81,17 +79,17 @@
           {%- if loop.index == (loop.length - 1) and
                  message.text_parts[last_part].type in ("signature", "quote") -%}
             {% do special_text_parts.append("quote") %}
-            <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
-          {# Is this part is a quote at end of message, hide #}
+            <div class="thread-item-quote hide">{{ part_text }}</div>
+          {# If this part is a quote at end of message, hide #}
           {% elif loop.last %}
             {% do special_text_parts.append("quote") %}
-            <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+            <div class="thread-item-quote hide">{{ part_text }}</div>
           {% else %}
-            <div class="thread-item-quote">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+            <div class="thread-item-quote">{{ part_text }}</div>
           {%- endif -%}
         {% elif part.type == "signature" %}
           {% do special_text_parts.append("signature") %}
-          <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+          <div class="thread-item-signature hide">{{ part_text }}</div>
         {% else %}
           <div class="thread-item-text"><em>{{_("Unknown Text Part")}}</em></div>
         {% endif %}
@@ -107,14 +105,32 @@
       {% for att in message.attachments %}
       <li>
       {% set type = attachment_type(att.mimetype) %}
-      {% if type == "image-visible" %}
-      <a href="{{ config.sys.subdirectory }}/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      {% if (att.filename) %}
+      {% set filename = att.filename %}
+      {% else %}
+      {% set filename = _("Untitled") %}
+      {% endif %}
+      {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
+      <a href="{{ config.sys.subdirectory }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
       {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
-      <a href="{{ config.sys.subdirectory }}/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.filenmae }} @ {{ att.length|friendly_bytes }}">
-        <span class="icon-{{ type}}"></span>
-        {{ att.filename }}<small>{{ att.length|friendly_bytes }}</small>
+      <a href="{{ config.sys.subdirectory }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
+        <div>
+          <span class="icon-mime" type="{{att.mimetype}}"></span> 
+          {% set file_parts = filename.split(".") %}
+          {% set file_parts_length = file_parts|length %}
+          {% if filename != _("Untitled") %}
+          <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+          {% endif %}
+        </div>
+        <span class="attachment-filename">
+          {% if file_parts_length > 2 or filename|length > 20 %}
+            {{ att.filename[0:16] }}...
+          {% elif file_parts[0] %}
+            {{ file_parts[0] }}
+          {% endif %}
+        </span>
       </a>
       {% endif %}
       </li>
@@ -135,11 +151,9 @@
     {% endif %}
   </ul>
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
-    {# FIXME: commented out for beta freeze
     {% if show_reply %}
-    <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
+    <li class="action"><a class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
     {% endif %}
-    #}
     <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
     <li class="dropdown action">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> {{_("Move")}}</a>
@@ -161,3 +175,8 @@
   </ul>
   </div>
 </div>
+<script>
+$(document).ready(function() {
+  Mailpile.Message.AnalyzeMessageInline('{{mid}}');
+});
+</script>

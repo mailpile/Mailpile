@@ -91,6 +91,12 @@ class TestUI(MailPileUnittest):
             self.assertEquals(out[0], ('{\n'
                                        '    "mailboxes": 0, \n'
                                        '    "messages": 0, \n'
+                                       '    "vcard_sources": [\n'
+                                       '        "gravatar", \n'
+                                       '        "gpg", \n'
+                                       '        "carddav", \n'
+                                       '        "mork"\n'
+                                       '    ], \n'
                                        '    "vcards": 0\n'
                                        '}\n'))
         finally:

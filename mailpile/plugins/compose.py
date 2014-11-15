@@ -44,6 +44,7 @@ class EditableSearchResults(SearchResults):
 def AddComposeMethods(cls):
     class newcls(cls):
         WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
+        COMMAND_CACHE_TTL = 0
 
         def _create_contacts(self, emails):
             try:
@@ -158,7 +159,8 @@ class CompositionCommand(AddComposeMethods(Search)):
         'attach-pgp-pubkey': '..',
     }
 
-    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption', 'Attach-PGP-Pubkey')
+    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption',
+                      'Attach-PGP-Pubkey')
 
     def _new_msgid(self):
         msgid = (email.utils.make_msgid('mailpile')
@@ -362,7 +364,9 @@ class Compose(CompositionCommand):
         if update_string:
             email.update_from_string(session, update_string)
 
-        return self._edit_messages([email], ephemeral=ephemeral, new=True)
+        return self._edit_messages([email],
+                                   ephemeral=ephemeral,
+                                   new=(ephemeral or not update_string))
 
 
 class RelativeCompose(Compose):

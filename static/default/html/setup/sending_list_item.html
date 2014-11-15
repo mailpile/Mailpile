@@ -4,7 +4,9 @@
       <span class="name"><%= name %></span>
       <span class="text-detail"><%= host %></span>
     </div>
-    <em class="right text-detail"><% if (used_by) { %><%= used_by %><% } else { %>{{_("No")}}<% } %> {{_("Profiles")}}</em>
+    <em class="right text-detail">
+      <span class="icon-profiles"></span> <% if (used_by) { %><%= used_by %><% } else { %>{{_("No")}}<% } %> {{_("Profiles")}}
+    </em>
   </div>
   <div class="clearfix">
     <ul class="horizontal right">

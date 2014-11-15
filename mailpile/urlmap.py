@@ -111,7 +111,7 @@ class UrlMap:
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
         # FIXME: Move this somewhere smarter
-        SPECIAL_VARS = ('csrf', 'arg')
+        SPECIAL_VARS = ('csrf', 'arg', 'context')
 
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):

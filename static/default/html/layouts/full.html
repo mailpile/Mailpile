@@ -29,9 +29,9 @@
   {% endif %}
   {% endif %}
   </div>
-  <div id="content-view">
+  <div id="content-view"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
     {% block content %}{{results}}{% endblock %}
-  </div>
+  </div></div>
 </div>
 {% include("partials/hidden.html") %}
 {% include("partials/tooltips.html") %}

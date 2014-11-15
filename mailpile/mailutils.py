@@ -533,7 +533,8 @@ class Email(object):
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
-    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject', 'Encryption')
+    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
+                         'Encryption', 'Attach-PGP-Pubkey')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -543,7 +544,8 @@ class Email(object):
         'to': 4,
         'cc': 5,
         'bcc': 6,
-        'encryption': 99,
+        'encryption': 98,
+        'attach-pgp-pubkey': 99,
     }
 
     def _attachment_aid(self, att):
@@ -563,7 +565,7 @@ class Email(object):
         tree = tree or self.get_message_tree()
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
-            'encryption': '', 'attachments': {}
+            'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
         }
         header_lines = []
         body_lines = []
@@ -780,7 +782,7 @@ class Email(object):
             ClearParseCache(cache_id=self.msg_idx_pos)
 
     def get_msg_info(self, field=None, uncached=False):
-        if uncached or not self.msg_info:
+        if (uncached or not self.msg_info) and not self.ephemeral_mid:
             self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
         if field is None:
             return self.msg_info
@@ -1026,7 +1028,14 @@ class Email(object):
                            re.sub(self.RE_HTML_BORING, ' ',
                                re.sub(self.RE_HTML_LINKS, delink,
                                    re.sub(self.RE_HTML_IMGS, deimg, html)))))
-            text = (lxml.html.fromstring(html).text_content() +
+            if html.strip() != '':
+                try:
+                    html_text = lxml.html.fromstring(html).text_content()
+                except XMLSyntaxError:
+                    html_text = _('(Invalid HTML suppressed)')
+            else:
+                html_text = ''
+            text = (html_text +
                     (links and '\n\nLinks:\n' or '') + '\n'.join(links) +
                     (imgs and '\n\nImages:\n' or '') + '\n'.join(imgs))
             return re.sub(self.RE_EXCESS_WHITESPACE, '\n\n', text).strip()
@@ -1722,10 +1731,8 @@ class AddressHeaderParser(list):
 if __name__ == "__main__":
     import doctest
     import sys
-
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print
     print '%s' % (results, )
     if results.failed:
         sys.exit(1)

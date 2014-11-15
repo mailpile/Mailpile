@@ -141,10 +141,6 @@ def GetTags(cfg, tn=None, default=None, **kwargs):
         for r in results:
             tags &= set(r)
         tags = [cfg.tags[t] for t in tags]
-        if 'display' in kwargs:
-            tags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
-        else:
-            tags.sort(key=lambda k: k.slug)
         return tags
 
 
@@ -240,7 +236,8 @@ class Tag(TagCommand):
     HTTP_POST_VARS = {
         'mid': 'message-ids',
         'add': 'tags',
-        'del': 'tags'
+        'del': 'tags',
+        'context': 'search context, for tagging relative results'
     }
 
     class CommandResult(TagCommand.CommandResult):
@@ -262,12 +259,15 @@ class Tag(TagCommand):
                                          len(self.result['msg_ids']))
 
     def _get_ops_and_msgids(self, words):
+        # If we are asked to both add and remove a tag, we do neither as
+        # that is nonsense without knowing the order of the operations.
+        deling = set(self.data.get('del', []))
+        adding = set(self.data.get('add', []))
+        ops = (['-%s' % t for t in (deling-adding) if t] +
+               ['+%s' % t for t in (adding-deling) if t])
         if 'mid' in self.data:
             msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
-            ops = (['+%s' % t for t in self.data.get('add', []) if t] +
-                   ['-%s' % t for t in self.data.get('del', []) if t])
         else:
-            ops = []
             while words and words[0][0] in ('-', '+'):
                 ops.append(words.pop(0))
             msg_ids = self._choose_messages(words)
@@ -379,7 +379,7 @@ class AddTag(TagCommand):
         # Optional initial attributes of tags
         'icon': 'icon-tag',
         'label': 'display as label in search results, or not',
-        'label_color': '03-gray-dark',
+        'label_color': 'the color of the label',
         'display': 'tag display type',
         'template': 'tag template type',
         'search_terms': 'default search associated with this tag',
@@ -407,19 +407,24 @@ class AddTag(TagCommand):
                 'rules': self.session.config.tags.rules['_any'][1]
             })
 
+        # Check arguments/POST data, and make sure we have matching numbers
+        # of names and slugs for the tags we're about to create.
         slugs = self.data.get('slug', [])
         names = self.data.get('name', [])
         if slugs and len(names) != len(slugs):
             return self._error('Name/slug pairs do not match')
         elif names and not slugs:
             slugs = [Slugify(n, config.tags) for n in names]
+        # This adds CLI-style arguments to the list
         slugs.extend([Slugify(s, config.tags) for s in self.args])
         names.extend(self.args)
 
+        # Check Slug is valid
         for slug in slugs:
             if slug != Slugify(slug, config.tags):
                 return self._error('Invalid tag slug: %s' % slug)
 
+        # Check Tag is unique
         for tag in config.tags.values():
             if tag.slug in slugs:
                 return self._error('Tag already exists: %s/%s' % (tag.slug,
@@ -432,13 +437,20 @@ class AddTag(TagCommand):
                 if len(vlist) > i and vlist[i]:
                     tags[i][v] = vlist[i]
         if tags:
+            # Add Tag to config
             config.tags.extend(tags)
             if save:
                 self._reorder_all_tags()
             self.finish(save=save)
 
-        return self._success(_('Added %d tags') % len(tags),
-                             {'added': tags})
+        # Get full Tag objects of added tags to return
+        results = []
+        for tag in tags:
+            results.append(GetTagInfo(self.session.config, tag['slug']))
+
+        # Return success
+        return self._success(_('Added %d tags') % len(results),
+                             {'added': results})
 
 
 class ListTags(TagCommand):
@@ -446,6 +458,11 @@ class ListTags(TagCommand):
     SYNOPSIS = (None, 'tags', 'tags', '[<wanted>|!<wanted>] [...]')
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
+    COMMAND_CACHE_TTL = 3600
+
+    def cache_requirements(self, result):
+        return set([u'!config'] +
+                   [u'%s:in' % ti['slug'] for ti in result.result['tags']])
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -516,7 +533,7 @@ class ListTags(TagCommand):
             # List subtags...
             if recursion == 0:
                 subtags = self.session.config.get_tags(parent=tid)
-                subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+                subtags.sort(key=lambda k: k.get('slug', 'zzzz'))
             else:
                 subtags = None
 
@@ -540,6 +557,8 @@ class ListTags(TagCommand):
                                                ).run().result['tags']
 
             result.append(info)
+        result.sort(key=lambda k: (float(k.get('display_order', 0)),
+                                         k.get('slug', 'zzz')))
         return self._success(_('Listed %d tags') % len(result), {
             'search': search,
             'wanted': wanted,

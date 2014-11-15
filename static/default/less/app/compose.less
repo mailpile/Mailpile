@@ -187,7 +187,7 @@
     border-radius: 4px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
-    box-sizing: border-box;    
+    box-sizing: border-box;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 18px;
@@ -195,7 +195,7 @@
   }
 
   .compose-body textarea:focus {
-    outline: none;    
+    outline: none;
   }
 
 
@@ -211,13 +211,26 @@
     margin-bottom: 0px;
   }
 
-  ul.horizontal li.compose-attachment {
+  ul.compose-attachments li.compose-attachment {
     width: 100px;
     padding: 0;
     margin-right: 15px;
     margin-bottom: 15px;
-    border: 1px solid @grayMid;
   }
+
+  a.compose-attachment-remove {
+    float: right;
+    display: inline;
+    background: @white;
+    padding: 3px;
+    border-left: 1px solid @grayMid;
+    border-bottom: 1px solid @grayMid;
+    border-bottom-left-radius: 4px;
+    font-size: 12px;
+    line-height: 12px;
+  }
+
+/*
 
   li.compose-attachment div.preview {
     height: 100px;
@@ -239,23 +252,16 @@
     margin-bottom: 5px;
   }
 
-  a.compose-attachment-remove {
-    float: right;
-    display: inline;
-    background: @white;
-    padding: 3px;
-    border-left: 1px solid @grayMid;
-    border-bottom: 1px solid @grayMid;
-    border-bottom-left-radius: 4px;
-    font-size: 12px;
-    line-height: 12px;
-  }
-
   div.compose-attachment-filename {
     overflow: hidden;
     white-space: nowrap;
     font-size: 11px;
   }
+
+*/
+
+
+/* Attachment Browser */
 
   .attachment-browswer-unsupported {
     color: @gray;
@@ -264,6 +270,22 @@
 
   .attachment-browswer-unsupported a {
     color: @gray;
+  }
+
+  label.compose-attach-key {
+    color: @grayDark;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  label.compose-attach-key:hover,
+  label.compose-attach-key:hover span.icon-key {
+    color: @red;
+  }
+
+  label.compose-attach-key span.icon-key {
+    color: @grayDark;
+    font-weight: normal;
   }
 
 

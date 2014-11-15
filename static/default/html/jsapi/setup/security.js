@@ -14,7 +14,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': true,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': false
     },
     paranoid: {
       'encrypt_events': true,
@@ -23,7 +24,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     above: {
       'encrypt_events': false,
@@ -32,7 +34,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     concerned: {
       'encrypt_events': false,
@@ -41,7 +44,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     },
     normal: {
       'encrypt_events': false,
@@ -50,7 +54,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': false,
       'encrypt_vcards': false,
       'index_encrypted': false,
-      'obfuscate_index': true
+      'obfuscate_index': true,
+      'gpg_email_key': true
     }
   }
 });
@@ -92,7 +97,7 @@ var SecurityView = Backbone.View.extend({
   },
   showPassphrase: function(e) {
     $('#modal-full').html($('#modal-security-enter-passphrase').html());
-    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
     $('#input-setup-security-passphrase').focus();
   },
   actionSecurityLevel: function(e) {
@@ -102,7 +107,7 @@ var SecurityView = Backbone.View.extend({
     // Show Some Snark
     if (level === 'crazy') {
       $('#modal-full').html($('#modal-security-level-idiot').html());
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
       $(e.target).val('');
     }
     else if (_.indexOf(['tinfoil', 'paranoid', 'above', 'concerned', 'normal'], level) > -1) {

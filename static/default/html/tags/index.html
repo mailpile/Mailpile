@@ -4,7 +4,12 @@
 {% macro render_tag(tag) -%}
 <div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
   <div class="rectangles-inner">
-    <a class="tag-card-name left" href="{{config.sys.subdirectory}}/tags/edit.html?only={{tag.slug}}" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+      {% if tag.subtag_ids %}
+      {% set total_count = tag.stats.sum_all %}
+      {% else %}
+      {% set total_count = tag.stats.all %}
+      {% endif %}
+    <a class="tag-card-name left" href="{{ config.sys.subdirectory }}/in/{{tag.slug}}/" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
       <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
       {% if tag.name|length > 15 %}
       {{tag.name[:12]}}...
@@ -13,16 +18,11 @@
       {% endif %}
     </a>
     <input type="checkbox" class="right">
-    <div class="tag-card-details">
+    <div class="tag-card-details clearfix">
       {% if tag.subtag_ids %}
-      {% set total_count = tag.stats.sum_all %}
-      {% else %}
-      {% set total_count = tag.stats.all %}
+      <a href="#" class="tag-card-subtags link-detail" data-tid="{{tag.tid}}">{{tag.subtag_ids|length}} {{_("Subtags")}}</a>
       {% endif %}
-      <span class="tag-card-stat-count">{{total_count}}</span> {{_("Messages")}} &nbsp;
-      {% if tag.subtag_ids %}
-      <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span> {{_("Subtags")}}
-      {% endif %}
+      <a href="/tags/edit.html?only={{tag.slug}}" class="link-detail right"><span class="icon-settings"></span> Settings</a>
     </div>
   </div>
 </div>
@@ -77,4 +77,9 @@
   </div>
   {% endif %}
 </div>
+<script>
+$(document).ready(function() {
+  Mailpile.Tags.init();
+});
+</script>
 {% endblock %}

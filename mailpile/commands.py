@@ -33,7 +33,7 @@ from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-class Command:
+class Command(object):
     """Generic command object all others inherit from"""
     SYNOPSIS = (None,     # CLI shortcode, e.g. A:
                 None,     # CLI shortname, e.g. add
@@ -46,6 +46,9 @@ class Command:
     IS_HANGING_ACTIVITY = False
     IS_INTERACTIVE = False
     CONFIG_REQUIRED = True
+
+    COMMAND_CACHE_TTL = 0   # < 1 = Not cached
+    CHANGES_SESSION_CONTEXT = False
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -84,9 +87,29 @@ class Command:
             self.error_info = {}
             self.error_info.update(error_info)
             self.message = message
+            self.rendered = {}
+            self.renderers = {
+                'json': self.as_json,
+                'html': self.as_html,
+                'text': self.as_text,
+                'css': self.as_css,
+                'rss': self.as_rss,
+                'xml': self.as_xml,
+                'txt': self.as_txt,
+                'js': self.as_js
+            }
 
         def __nonzero__(self):
             return (self.result and True or False)
+
+        def as_(self, what, *args, **kwargs):
+            if args or kwargs:
+                # Args render things un-cacheable.
+                return self.renderers.get(what)(*args, **kwargs)
+
+            if what not in self.rendered:
+                self.rendered[what] = self.renderers.get(what, self.as_text)()
+            return self.rendered[what]
 
         def as_text(self):
             if isinstance(self.result, bool):
@@ -115,7 +138,9 @@ class Command:
                 'state': {
                     'command_url': UrlMap.ui_url(self.command_obj),
                     'context_url': UrlMap.context_url(self.command_obj),
-                    'query_args': self.command_obj.state_as_query_args()
+                    'query_args': self.command_obj.state_as_query_args(),
+                    'cache_id': self.command_obj.cache_id(),
+                    'context': self.command_obj.context or ''
                 },
                 'status': self.status,
                 'message': self.message,
@@ -152,27 +177,36 @@ class Command:
             return self.as_template('txt', template)
 
         def as_template(self, etype, template=None):
+            what = ''.join((etype, '/' if template else '', template or ''))
+            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
+                if self.session.ui.render_mode.endswith(e):
+                    what += ':content'
+            if what in self.rendered:
+                return self.rendered[what]
+
             tpath = self.command_obj.template_path(
                 etype, template_id=self.template_id, template=template)
 
             data = self.as_dict()
             data['title'] = self.message
-            data['render_mode'] = 'full'
 
             def render():
                 return self.session.ui.render_web(
                     self.session.config, [tpath], data)
 
-            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
-                if self.session.ui.render_mode.endswith(e):
-                    data['render_mode'] = 'content'
-                    data['result'] = render()
-                    return self.session.ui.render_json(data)
+            if what.endswith(':content'):
+                data['render_mode'] = 'content'
+                data['result'] = render()
+                self.rendered[what] = self.session.ui.render_json(data)
+            else:
+                data['render_mode'] = 'full'
+                self.rendered[what] = render()
 
-            return render()
+            return self.rendered[what]
 
     def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
+        self.context = None
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
         self.status = 'unknown'
@@ -203,6 +237,31 @@ class Command:
             args['arg'] = self._sloppy_copy(self.args)
         args.update(self._sloppy_copy(self.data))
         return args
+
+    def cache_id(self, sqa=None):
+        if self.COMMAND_CACHE_TTL < 1:
+            return ''
+        from mailpile.urlmap import UrlMap
+        args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
+        # The replace() stuff makes these usable as CSS class IDs
+        return ('%s-%s' % (UrlMap.ui_url(self), md5_hex(str(args)))
+                          ).replace('/', '-').replace('.', '-')
+
+    def cache_requirements(self, result):
+        raise NotImplementedError('Cachable commands should override this, '
+                                  'returning a set() of requirements.')
+
+    def cache_result(self, result):
+        if self.COMMAND_CACHE_TTL > 0:
+            cache_id = self.cache_id()
+            if cache_id:
+                self.session.config.command_cache.cache_result(
+                    cache_id,
+                    time.time() + self.COMMAND_CACHE_TTL,
+                    self.cache_requirements(result),
+                    self,
+                    result)
+                self.session.ui.mark(_('Cached result as %s') % cache_id)
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -248,7 +307,7 @@ class Command:
                 config.index = None
                 session.results = []
                 session.searched = []
-                session.displayed = {'start': 1, 'count': 0}
+                session.displayed = None
             idx = config.get_index(session)
             if wait_all:
                 __do_load2()
@@ -294,11 +353,17 @@ class Command:
             all_words.extend(word.split(','))
         for what in all_words:
             if what.lower() == 'these':
-                b = self.session.displayed['stats']['start'] - 1
-                c = self.session.displayed['stats']['count']
-                msg_ids |= set(self.session.results[b:b + c])
+                if self.session.displayed:
+                    b = self.session.displayed['stats']['start'] - 1
+                    c = self.session.displayed['stats']['count']
+                    msg_ids |= set(self.session.results[b:b + c])
+                else:
+                    self.session.ui.warning(_('No results to choose from!'))
             elif what.lower() == 'all':
-                msg_ids |= set(self.session.results)
+                if self.session.results:
+                    msg_ids |= set(self.session.results)
+                else:
+                    self.session.ui.warning(_('No results to choose from!'))
             elif what.startswith('='):
                 try:
                     msg_id = int(what[1:], 36)
@@ -317,13 +382,13 @@ class Command:
                 try:
                     b, e = what.split('-')
                     msg_ids |= set(self.session.results[int(b) - 1:int(e)])
-                except:
+                except (ValueError, KeyError, IndexError, TypeError):
                     self.session.ui.warning(_('What message is %s?'
                                               ) % (what, ))
             else:
                 try:
                     msg_ids.add(self.session.results[int(what) - 1])
-                except:
+                except (ValueError, KeyError, IndexError, TypeError):
                     self.session.ui.warning(_('What message is %s?'
                                               ) % (what, ))
         return msg_ids
@@ -422,6 +487,7 @@ class Command:
     def _make_command_event(self, private_data):
         return Event(source=self,
                      message=self._fmt_msg(self.LOG_STARTING),
+                     flags=Event.INCOMPLETE,
                      data={},
                      private_data=private_data)
 
@@ -430,17 +496,16 @@ class Command:
             self._update_finished_event()
             return rv
 
-        # FIXME: Remove this when stuff is up to date
-        if self.status == 'unknown':
-            self.session.ui.warning('FIXME: %s should use self._success'
-                                    ' etc. (issue #383)' % self.__class__)
-            self.status = 'success'
+        if not self.context:
+            self.context = self.session.get_context(
+                update=self.CHANGES_SESSION_CONTEXT)
 
         self.session.ui.mark(_('Generating result'))
         result = self.CommandResult(self, self.session, self.name,
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
                                     error_info=self.error_info)
+        self.cache_result(result)
 
         if not self.run_async:
             self._update_finished_event()
@@ -461,7 +526,26 @@ class Command:
         if self.name:
             self.session.ui.finish_command(self.name)
 
-    def _run_sync(self, *args, **kwargs):
+    def _run_sync(self, enable_cache, *args, **kwargs):
+        self._starting()
+        self._run_args = args
+        self._run_kwargs = kwargs
+
+        if (self.COMMAND_CACHE_TTL > 0 and
+               'http' not in self.session.config.sys.debug and
+               enable_cache):
+            cid = self.cache_id()
+            try:
+                rv = self.session.config.command_cache.get_result(cid)
+                rv.session.ui = self.session.ui
+                if self.CHANGES_SESSION_CONTEXT:
+                    self.session.copy(rv.session, ui=False)
+                self.session.ui.mark(_('Using pre-cached result object %s') % cid)
+                self._finishing(self, True, just_cleanup=True)
+                return rv
+            except:
+                pass
+
         def command(self, *args, **kwargs):
             if self.CONFIG_REQUIRED:
                 if not self.session.config.loaded_config:
@@ -469,8 +553,8 @@ class Command:
                 if mailpile.util.QUITTING:
                     return self._error(_('Shutting down'))
             return self.command(*args, **kwargs)
+
         try:
-            self._starting()
             return self._finishing(command, command(self, *args, **kwargs))
         except self.RAISES:
             self.status = 'success'
@@ -487,7 +571,7 @@ class Command:
             def streetcar():
                 try:
                     with MultiContext(self.WITH_CONTEXT):
-                        rv = self._run_sync(*args, **kwargs).as_dict()
+                        rv = self._run_sync(True, *args, **kwargs).as_dict()
                         self.event.private_data.update(rv)
                         self._update_finished_event()
                 except:
@@ -506,7 +590,7 @@ class Command:
             return result
 
         else:
-            return self._run_sync(*args, **kwargs)
+            return self._run_sync(True, *args, **kwargs)
 
     def run(self, *args, **kwargs):
         with MultiContext(self.WITH_CONTEXT):
@@ -520,8 +604,18 @@ class Command:
             else:
                 return self._run(*args, **kwargs)
 
+    def refresh(self):
+        self._create_event()
+        return self._run_sync(False, *self._run_args, **self._run_kwargs)
+
     def command(self):
         return None
+
+    def etag_data(self):
+        return []
+
+    def max_age(self):
+        return 0
 
     @classmethod
     def view(cls, result):
@@ -615,13 +709,16 @@ class SearchResults(dict):
         }
 
         # Ephemeral messages do not have URLs
-        if '-' not in msg_info[MailIndex.MSG_MID]:
+        if '-' in msg_info[MailIndex.MSG_MID]:
+            expl['flags'].update({
+                'ephemeral': True,
+                'draft': True,
+            })
+        else:
             expl['urls'] = {
                 'thread': self.urlmap.url_thread(msg_info[MailIndex.MSG_MID]),
                 'source': self.urlmap.url_source(msg_info[MailIndex.MSG_MID]),
             }
-        else:
-            expl['flags']['ephemeral'] = True
 
         # Support rich snippets
         if expl['body']['snippet'].startswith('{'):
@@ -650,7 +747,9 @@ class SearchResults(dict):
 
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
-            if self.idx.config.is_editable_message(msg_info):
+            if 'ephemeral' in expl['flags']:
+                pass
+            elif self.idx.config.is_editable_message(msg_info):
                 expl['urls']['editing'] = self.urlmap.url_edit(expl['mid'])
             else:
                 del expl['flags']['draft']
@@ -1006,22 +1105,29 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None,
-                '[full|vcards|both|mailboxes|sources|<msgs>]')
+    SYNOPSIS = (None, 'rescan', 'rescan',
+                '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
     LOG_PROGRESS = True
+
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'which': '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]'
+    }
 
     def command(self, slowly=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
+        if 'which' in self.data:
+            args.extend(self.data['which'])
 
         # Pretend we're idle, to make rescan go fast fast.
         if not slowly:
             mailpile.util.LAST_USER_ACTIVITY = 0
 
-        if args and args[0].lower() == 'vcards':
+        if args and args[0].lower().startswith('vcards'):
             return self._success(_('Rescanned vcards'),
-                                 result=self._rescan_vcards(session))
+                                 result=self._rescan_vcards(session, args[0]))
         elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
                                           'editable'):
             which = args[0].lower()
@@ -1063,7 +1169,7 @@ class Rescan(Command):
             config._running['rescan'] = True
             try:
                 results = {}
-                results.update(self._rescan_vcards(session))
+                results.update(self._rescan_vcards(session, 'vcards'))
                 results.update(self._rescan_mailboxes(session))
 
                 self.event.data.update(results)
@@ -1077,23 +1183,31 @@ class Rescan(Command):
             finally:
                 del config._running['rescan']
 
-    def _rescan_vcards(self, session):
+    def _rescan_vcards(self, session, which):
         from mailpile.plugins import PluginManager
         config = session.config
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
+        which_spec = which.split(':')
+        importers = []
         try:
             session.ui.mark(_('Rescanning: %s') % 'vcards')
             for importer in PluginManager.VCARD_IMPORTERS.values():
+                if (len(which_spec) > 1 and
+                        which_spec[1] != importer.SHORT_NAME):
+                    continue
+                importers.append(importer.SHORT_NAME)
                 for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                     if cfg:
                         imp = importer(session, cfg)
                         imported += imp.import_vcards(session, config.vcards)
                     if mailpile.util.QUITTING:
-                        return {'vcards': imported, 'aborted': True}
+                        return {'vcards': imported, 'vcard_sources': importers,
+                                'aborted': True}
         except KeyboardInterrupt:
-            return {'vcards': imported, 'aborted': True}
-        return {'vcards': imported}
+            return {'vcards': imported, 'vcard_sources': importers,
+                    'aborted': True}
+        return {'vcards': imported, 'vcard_sources': importers}
 
     def _rescan_mailboxes(self, session, which='mailboxes'):
         import mailpile.mail_source
@@ -1115,19 +1229,6 @@ class Rescan(Command):
                     MakePopenSafe()
             msg_count = 1
 
-            if which in ('both', 'sources'):
-                sources = config.mail_sources.values()
-                sources.sort(key=lambda k: random.randint(0, 100))
-                for src in sources:
-                    if mailpile.util.QUITTING:
-                        break
-                    session.ui.mark(_('Rescanning: %s') % (src, ))
-                    count = src.rescan_now(session)
-                    if count > 0:
-                        msg_count += count
-                        mbox_count += 1
-                    session.ui.mark('\n')
-
             if which in ('both', 'mailboxes', 'editable'):
                 if which == 'editable':
                     mailboxes = config.get_mailboxes(mail_sources=True)
@@ -1140,29 +1241,21 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
-                        lock = mailpile.mail_source.GLOBAL_RESCAN_LOCK
-                        locked = lock.acquire(False)
-                        if locked:
-                            session.ui.mark(_('Rescanning: %s %s')
-                                            % (fid, fpath))
-                            if which == 'editable':
-                                count = idx.scan_mailbox(session, fid, fpath,
-                                                         config.open_mailbox,
-                                                         process_new=False,
-                                                         editable=True,
-                                                         event=self.event)
-                            else:
-                                count = idx.scan_mailbox(session, fid, fpath,
-                                                         config.open_mailbox,
-                                                         event=self.event)
+                        session.ui.mark(_('Rescanning: %s %s')
+                                        % (fid, fpath))
+                        if which == 'editable':
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     process_new=False,
+                                                     editable=True,
+                                                     event=self.event)
                         else:
-                            session.ui.mark(_('Rescan already in progress'))
-                            count = 0
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     event=self.event)
                     except ValueError:
+                        self._ignore_exception()
                         count = -1
-                    finally:
-                        if locked:
-                            lock.release()
                     if count < 0:
                         session.ui.warning(_('Failed to rescan: %s') % fpath)
                     elif count > 0:
@@ -1170,12 +1263,27 @@ class Rescan(Command):
                         mbox_count += 1
                     session.ui.mark('\n')
 
+            if which in ('both', 'sources'):
+                ocount = msg_count - 1
+                while ocount != msg_count:
+                    ocount = msg_count
+                    sources = config.mail_sources.values()
+                    sources.sort(key=lambda k: random.randint(0, 100))
+                    for src in sources:
+                        if mailpile.util.QUITTING:
+                            ocount = msg_count
+                            break
+                        session.ui.mark(_('Rescanning: %s') % (src, ))
+                        count = src.rescan_now(session)
+                        if count > 0:
+                            msg_count += count
+                            mbox_count += 1
+                        session.ui.mark('\n')
+                    if not session.ui.interactive:
+                        break
+
             msg_count -= 1
-            if msg_count:
-                if not mailpile.util.QUITTING:
-                    GlobalPostingList.Optimize(session, idx, quick=True)
-            else:
-                session.ui.mark(_('Nothing changed'))
+            session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
             return {'aborted': True,
                     'messages': msg_count,
@@ -1362,9 +1470,11 @@ class ProgramStatus(Command):
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
                     'Live sessions:\n%s\n\n'
+                    'Postinglist timers:\n%s\n\n'
                     'Threads: (bg delay %.3fs, live=%s, httpd=%s)\n%s\n\n'
                     'Locks:\n%s'
                     ) % (cevents, ievents, sessions,
+                         self.result['pl_timers'],
                          self.result['delay'],
                          self.result['live'],
                          self.result['httpd'],
@@ -1392,8 +1502,6 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('mailpile.mail_source', 'GLOBAL_RESCAN_LOCK',
-             mailpile.mail_source.GLOBAL_RESCAN_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
              mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
@@ -1428,6 +1536,7 @@ class ProgramStatus(Command):
                           'userdata': v.data,
                           'userinfo': v.auth} for k, v in
                          mailpile.auth.SESSION_CACHE.iteritems()],
+            'pl_timers': mailpile.postinglist.TIMERS,
             'delay': play_nice_with_threads(sleep=False),
             'live': mailpile.util.LIVE_USER_ACTIVITIES,
             'httpd': mailpile.httpd.LIVE_HTTP_REQUESTS,
@@ -1739,7 +1848,7 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
     """Print one or more settings"""
-    SYNOPSIS = ('P', 'print', 'settings', '[-short] <var>')
+    SYNOPSIS = ('P', 'print', 'settings', '[-short|-secrets|-flat] <var>')
     ORDER = ('Config', 3)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
@@ -1747,14 +1856,15 @@ class ConfigPrint(Command):
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
         'var': 'section.variable',
-        'short': 'Set True to omit unchanged values (defaults)'
+        'short': 'Set True to omit unchanged values (defaults)',
+        'secrets': 'Set True to show passwords and other secrets'
     }
     HTTP_POST_VARS = {
         'user': 'Authenticate as user',
         'pass': 'Authenticate with password'
     }
 
-    def _maybe_all(self, list_all, data, key_types):
+    def _maybe_all(self, list_all, data, key_types, recurse, sanitize):
         if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
@@ -1763,7 +1873,13 @@ class ConfigPrint(Command):
                     continue
                 rv[key] = data[key]
                 if hasattr(rv[key], 'all_keys'):
-                    rv[key] = self._maybe_all(True, rv[key], key_types)
+                    if recurse:
+                        rv[key] = self._maybe_all(True, rv[key], key_types,
+                                                  recurse, sanitize)
+                    else:
+                        rv[key] = '{ ... }'
+                elif sanitize and key.lower()[:4] in ('pass', 'secr'):
+                    rv[key] = '(SUPPRESSED)'
             return rv
         return data
 
@@ -1773,7 +1889,9 @@ class ConfigPrint(Command):
         invalid = []
 
         args = list(self.args)
+        recurse = not self.data.get('flat', ['-flat' in args])[0]
         list_all = not self.data.get('short', ['-short' in args])[0]
+        sanitize = not self.data.get('secrets', ['-secrets' in args])[0]
 
         # FIXME: Shouldn't we suppress critical variables as well?
         key_types = ['public', 'critical']
@@ -1796,7 +1914,8 @@ class ConfigPrint(Command):
                 continue
             try:
                 data = config.walk(key, key_types=key_types)
-                result[key] = self._maybe_all(list_all, data, key_types)
+                result[key] = self._maybe_all(list_all, data, key_types,
+                                              recurse, sanitize)
             except AccessError:
                 access_denied = True
                 invalid.append(key)
@@ -1880,6 +1999,28 @@ class AddMailboxes(Command):
 
 ###############################################################################
 
+class Cached(Command):
+    """Fetch results from the command cache."""
+    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
+    ORDER = ('Internals', 7)
+    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    def run(self):
+        try:
+            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
+            rv = self.session.config.command_cache.get_result(cid)
+            self.session.copy(rv.session)
+            return rv
+        except:
+            self._starting()
+            self._ignore_exception()
+            self._error(self.FAILURE % {'name': self.name,
+                                        'args': ' '.join(self.args)})
+            return self._finishing(self, False)
+
+
 class Output(Command):
     """Choose format for command results."""
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
@@ -1890,13 +2031,85 @@ class Output(Command):
     IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
+    def etag_data(self):
+        return self.get_render_mode()
+
+    def max_age(self):
+        return 364 * 24 * 3600  # A long time!
+
     def get_render_mode(self):
-        return self.args and self.args[0] or 'text'
+        return self.args and self.args[0] or self.session.ui.render_mode
 
     def command(self):
         m = self.session.ui.render_mode = self.get_render_mode()
         return self._success(_('Set output mode to: %s') % m,
                              result={'output': m})
+
+
+class Pipe(Command):
+    """Pipe a command to a shell command, file or e-mail"""
+    SYNOPSIS = (None, 'pipe', None,
+                "[e@mail.com|command|>filename] -- [<cmd> [args ... ]]")
+    ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = True
+
+    def command(self):
+        if '--' in self.args:
+            dashdash = self.args.index('--')
+            target = self.args[0:dashdash]
+            command, args = self.args[dashdash+1], self.args[dashdash+2:]
+        else:
+            target, command, args = [self.args[0]], self.args[1], self.args[2:]
+
+        output = ''
+        result = None
+        old_ui = self.session.ui
+        try:
+            from mailpile.ui import CapturingUserInteraction as CUI
+            self.session.ui = capture = CUI(self.session.config)
+            capture.render_mode = old_ui.render_mode
+            result = Action(self.session, command, ' '.join(args))
+            capture.display_result(result)
+            output = capture.captured
+        finally:
+            self.session.ui = old_ui
+
+        if target[0].startswith('>'):
+            t = ' '.join(target)
+            if t[0] == '>':
+                t = t[1:]
+            with open(t.strip(), 'w') as fd:
+                fd.write(output.encode('utf-8'))
+
+        elif '@' in target[0]:
+            from mailpile.plugins.compose import Compose
+            body = 'Result as %s:\n%s' % (capture.render_mode, output)
+            if capture.render_mode != 'json' and output[0] not in ('{', '['):
+                body += '\n\nResult as JSON:\n%s' % result.as_json()
+            composer = Compose(self.session, data={
+                'to': target,
+                'subject': ['Mailpile: %s %s' % (command, ' '.join(args))],
+                'body': [body]
+            })
+            return self._success('Mailing output to %s' % ', '.join(target),
+                                 result=composer.run())
+        else:
+            try:
+                self.session.ui.block()
+                MakePopenUnsafe()
+                kid = subprocess.Popen(target, shell=True, stdin=PIPE)
+                rv = kid.communicate(input=output.encode('utf-8'))
+            finally:
+                self.session.ui.unblock()
+                MakePopenSafe()
+                kid.wait()
+            if kid.returncode != 0:
+                return self._error('Error piping to %s' % (target, ),
+                                   info={'stderr': rv[1], 'stdout': rv[0]})
+
+        return self._success('Wrote %d bytes to %s'
+                             % (len(output), ' '.join(target)))
 
 
 class Quit(Command):
@@ -2214,8 +2427,8 @@ def Action(session, opt, arg, data=None):
     if config.loaded_config:
         tag = config.get_tag(opt)
         if tag:
-            return GetCommand('search')(session, opt, arg=arg, data=data
-                                        ).run(search=['in:%s' % tag._key])
+            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
+            return GetCommand('search')(session, opt, arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
@@ -2226,6 +2439,7 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
+    RenderPage, Cached, Output, Pipe,
+    Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

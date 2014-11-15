@@ -27,7 +27,7 @@
       </td>
       <td class="middle">
         <% var tag = _.findWhere(tags, {tid: mailbox.primary_tag}); if (tag) { %>
-        <span class="<%= tag.icon + " color-" + tag.label_color %>"></span> <strong><%= tag.name %></strong>
+        <span class="<%= tag.icon + " color-" + tag.label_color %>"></span> <strong><%= tag.name %></strong> <a href="/tags/edit.html?only=<%= tag.slug %>" class="link-detail right">{{_("Edit Tag")}}</a>
         <% } else { %>
         <input type="text" name="mailbox.<%= key %>.primary_tag" value="<%= mailbox.primary_tag %>" class="input-full remove-bottom">
         <% } %>

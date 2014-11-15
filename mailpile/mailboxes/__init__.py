@@ -15,7 +15,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import MBX_ID_LEN
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
+__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'pop3', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
@@ -59,10 +59,13 @@ def UnorderedPicklable(parent, editable=False):
     """A factory for generating unordered, picklable mailbox classes."""
 
     class UnorderedPicklableMailbox(parent):
+        UNPICKLABLE = []
+
         def __init__(self, *args, **kwargs):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
             self.source_map = {}
+            self.is_local = False
             self._save_to = None
             self._encryption_key_func = lambda: None
             self._decryption_key_func = lambda: None
@@ -78,14 +81,17 @@ def UnorderedPicklable(parent, editable=False):
             self._decryption_key_func = lambda: None
             if not hasattr(self, 'source_map'):
                 self.source_map = {}
+            if (len(self.source_map) > 0 and
+                    not hasattr(self, 'is_local') or not self.is_local):
+                self.is_local = True
             self.update_toc()
 
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            for dk in ('_save_to',
+            for dk in ['_save_to',
                        '_encryption_key_func', '_decryption_key_func',
-                       '_file', '_lock', 'parsed'):
+                       '_file', '_lock', 'parsed'] + self.UNPICKLABLE:
                 if dk in odict:
                     del odict[dk]
             return odict
@@ -117,5 +123,8 @@ def UnorderedPicklable(parent, editable=False):
             fd = self.get_file(toc_id)
             fd.seek(0, 2)
             return fd.tell()
+
+        def get_bytes(self, toc_id):
+            return self.get_file(toc_id).read()
 
     return UnorderedPicklableMailbox

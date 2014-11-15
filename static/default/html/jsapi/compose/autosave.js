@@ -1,9 +1,9 @@
-/* Compose - Perform autosave checking & save */
-Mailpile.Composer.autosave = function(mid, form_data) {
+/* Compose - Autosave */
+
+Mailpile.Composer.Autosave = function(mid, form_data) {
 
   // Text is different, run autosave
-  // Should test against model
-  if ($('#compose-text-' + mid).val() !== Mailpile.messages_composing['compose-text-' + mid]) {
+  if ($('#compose-text-' + mid).val() !== Mailpile.Composer.Drafts[mid].body) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
@@ -19,7 +19,7 @@ Mailpile.Composer.autosave = function(mid, form_data) {
   	  success  : function(response) {
 
         // Update Message (data model)
-        Mailpile.messages_composing[mid] = $('#compose-text-' + mid).val();
+        Mailpile.Composer.Drafts[mid].body = $('#compose-text-' + mid).val();
 
         // Fadeout autosave UI msg
         setTimeout(function() {
@@ -31,6 +31,7 @@ Mailpile.Composer.autosave = function(mid, form_data) {
         $('#compose-message-autosaving-' + mid).html('<span class="icon-x"></span>' + autosave_error_msg).fadeIn();
       }
   	});
+
   }
   // Not Autosaving
   else { }
@@ -38,9 +39,9 @@ Mailpile.Composer.autosave = function(mid, form_data) {
 
 
 /* Compose Autosave - finds each compose form and performs action */
-Mailpile.Composer.autosave_timer = $.timer(function() {
+Mailpile.Composer.AutosaveTimer = $.timer(function() {
   // UNTESTED: should handle multiples in a thread
   $('.form-compose').each(function(key, form) {
-    Mailpile.Composer.autosave($(form).data('mid'), $(form).serialize());
+    Mailpile.Composer.Autosave($(form).data('mid'), $(form).serialize());
   });
 });

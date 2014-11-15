@@ -59,12 +59,7 @@ var ProfilesSettingsView = Backbone.View.extend({
       $('#modal-full').html($('#modal-gmail-auth-' + message).html());
   
       // Instantiate
-      $('#modal-full').modal({
-        backdrop: true,
-        keyboard: true,
-        show: true,
-        remote: false
-      });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
 
       // Empty Password & Add Testing Link
       setTimeout(function() {
@@ -134,20 +129,16 @@ var ProfilesSettingsView = Backbone.View.extend({
             $('#validation-route').fadeIn();
           });
         }
-        else if (result.status == 'error' && provider == 'gmail') {
-
-        $('#validation-pass').find('.check-auth')
-          .removeClass('color-08-green')
-          .addClass('color-12-red')
-          .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
-
-          ProfilesSettingsView.showGmailWarning('error');
-        }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
             .removeClass('color-08-green')
             .addClass('color-12-red')
-            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}: '
+                  + result.error.error);
+
+          if (provider == 'gmail') {
+            ProfilesSettingsView.showGmailWarning('error');
+          }
         }
       });
     }

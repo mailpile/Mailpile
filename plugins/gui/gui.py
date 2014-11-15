@@ -134,6 +134,11 @@ def _real_startup(config):
                                                  config.index.INDEX or []))
                 time.sleep(5)
 
+    except AttributeError:
+        pass
     finally:
-        if not mailpile.util.QUITTING:
-            Quit(Session(config)).run()
+        try:
+            if not mailpile.util.QUITTING:
+                Quit(Session(config)).run()
+        except:
+            pass

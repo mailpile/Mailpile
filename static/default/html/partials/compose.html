@@ -14,7 +14,7 @@
       <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
         <label class="left">{{_("Cc")}}</label>
         <label class="right">
-          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> hide</a>
+          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> {{_("hide")}}</a>
         </label>
         <input id="compose-cc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="cc" type="text" tabindex="2" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
       </div>
@@ -32,71 +32,90 @@
     </div>
     <div class="compose-options clearfix" data-mid="{{mid}}">
       <div class="compose-options-crypto">
-        <div class="compose-crypto-encryption none"
-            data-mid="{{mid}}"
-            data-crypto_none="{{_("None")}}"
-            data-crypto_encrypt="{{_("Encrypted")}}"
-            data-crypto_cannot_encrypt="{{_("Can't Encrypt")}}"
-            data-crypto_encrypt_error="{{_("Error Encrypting")}}"
-            data-crypto_title_none="{{_("This message and metadata will not be encrypted")}}"
-            data-crypto_title_encrypt="{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}"
-            data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
-            data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
+        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none" data-mid="{{mid}}">
             <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
         </div>
-        <div class="compose-crypto-signature none"
-            data-mid="{{mid}}"
-            data-crypto_signed="{{_("Signed")}}"
-            data-crypto_not_signed="{{_("Unsigned")}}"
-            data-crypto_signed_error="{{_("Signature Error")}}"
-            data-crypto_title_signed="{{_("This message will be signed with your key. Recipients who have your key will know it actually came from you :)")}}"
-            data-crypto_title_not_signed="{{_("This message will not be signed with your key. Recipients will have no way of knowing it actually came from you.")}}"
-            data-crypto_title_signed_error="{{_("Error accesing your key")}}">
+        <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none" data-mid="{{mid}}">
             <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
         </div>
       </div>
       <ul class="horizontal" data-mid="{{mid}}">
-        {% if command == "view" %}
         <li id="compose-to-summary-{{mid}}" class="compose-to-summary" data-mid="{{mid}}"></li>
         <li>
-          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
+          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if command != "view" %}hide{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
         </li>
-        {% endif %}
         <li>
           <label id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
         </li>
       </ul>
       <a class="compose-message-trash right" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
-      {# FIXME: Removed for beta freeze
       {% if command == "view" %}
-      <label class="compose-apply-quote right"><input class="compose-apply-quote" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
+      <label class="compose-apply-quote right" data-mid="{{mid}}" data-quoted_reply="{{config.web.quoted_reply}}">
+        <input id="compose-quoted-reply-{{mid}}" type="checkbox" {% if config.web.quoted_reply in ['enabled', 'unset'] %}checked{% endif %}> {{_("Quote")}}
+      </label>
       {% endif %}
-      #}
     </div>
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
       <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
-        <ul id="compose-attachments-files-{{mid}}" class="horizontal">
+        <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal">
           {% if editing_strings.attachments %}
-          {% for attachment in attachments %}
+          {% for att in attachments %}
           <li class="compose-attachment">
-            <a href="#" data-mid="{{mid}}" data-aid="{{attachment.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
-            <div class="preview">
-            {% set atype = attachment_type(attachment.mimetype) %}
-            {% if atype == 'image-visible' %}
-            <img src="{{ config.sys.subdirectory }}/message/download/preview/={{mid}}/{{attachment.aid}}/">
+
+<!--
+            <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+-->
+
+            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
+            <!-- <img src="/message/download/preview/={{mid}}/{{att.aid}}/"> -->
+            <a href="#" class="attachment-image" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
+              <img src="{{ config.sys.subdirectory }}/message/download/preview/={{mid}}/{{att.aid}}/">
+            </a>
             {% else %}
-            <span class="icon icon-{{atype}}"></span>
+
+            <a href="#" class="attachment" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
+              <div>
+                <span class="icon-mime" type="{{att.mimetype}}"></span> 
+                {% set file_parts = att.filename.split(".") %}
+                {% set file_parts_length = file_parts|length %}
+                <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+              </div>
+              <span class="attachment-filename">
+                {% if file_parts_length > 2 or att.filename|length > 20 %}
+                  {{ att.filename[0:16] }}...
+                {% else %}
+                  {{ file_parts[0] }}
+                {% endif %}
+              </span>
+            </a>
             {% endif %}
-            </div>
-            <div class="compose-attachment-filename">{{attachment.filename}}</div>
+
           </li>
           {% endfor %}
           {% endif %}
         </ul>
         <div class="clearfix"></div>
-        <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>Add Attachment</a>
-        <span class="attachment-browswer-unsupported">Unable to add attachments, <a href="">update your browser?</a></span>
+        <ul class="horizontal">
+          <li>
+            <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
+            <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
+          </li>
+          {% if config.prefs.gpg_email_key %}<li class="add-left">
+            <label class="compose-attach-key" data-mid="{{mid}}"
+                   title="{{_("Attach your public encryption key to this message")}}">
+              <input type="hidden" id="compose-hidden-attach-key-{{mid}}"
+                     name="attach-pgp-pubkey"
+                     value="{%- if editing_strings['attach-pgp-pubkey']
+                                in ('yes', 'true', true) %}yes{% else %}no
+                            {%- endif %}">
+              <input type="checkbox" id="compose-attach-key-{{mid}}"
+                     {%- if editing_strings['attach-pgp-pubkey']
+                         in ('yes', 'true', true) %} checked{% endif %}>
+              {{_("Attach Key")}}
+            </label>
+          </li>{% endif %}
+        </ul>
       </div>
     </div>
     <div class="compose-actions clearfix">
@@ -117,7 +136,6 @@
           <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
         </ul>
         -->
-  
         {% set from = editing_addresses and editing_strings.from_aids and editing_addresses[editing_strings.from_aids.0] or '' %}
         <div class="dropup">
           <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
@@ -159,7 +177,6 @@
           {% endfor %}
           </ul>
         </div>
-        <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
       </div>
       <div class="compose-buttons right" data-mid="{{mid}}">
         <button class="compose-action button-secondary" type="submit" name="save" value="save" alt="{{_("Save")}}">
@@ -176,10 +193,11 @@
         {% endif %}
       </div>
     </div>
+    <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
     <input id="compose-mid-{{mid}}" type="hidden" name="mid" value="{{mid}}">
-    <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
-    <input id="compose-signature" type="hidden" value="">
-    <input id="compose-encryption" type="hidden" value="">
+    <input id="compose-crypto-{{mid}}" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+    <input id="compose-signature-{{mid}}" type="hidden" value="">
+    <input id="compose-encryption-{{mid}}" type="hidden" value="">
   </form>
   <script>
   $(document).ready(function() {

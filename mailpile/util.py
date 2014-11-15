@@ -179,8 +179,14 @@ class MultiContext:
         return self
 
     def __exit__(self, *args, **kwargs):
+        raised = []
         for ctx in reversed(self.contexts):
-            ctx.__exit__(*args, **kwargs)
+            try:
+                ctx.__exit__(*args, **kwargs)
+            except Exception as e:
+                raised.append(e)
+        if raised:
+            raise raised[0]
 
 
 def FixupForWith(obj):
@@ -706,11 +712,12 @@ def RunTimed(timeout, func, *args, **kwargs):
     def work():
         try:
             result.append(func(*args, **kwargs))
-        except Exception as e:
-            exception.append(e)
+        except:
+            exception.append((sys.exc_type, sys.exc_value, sys.exc_traceback))
     RunTimedThread(func.__name__, work).run_timed(timeout)
     if exception:
-        raise exception[0]
+        t, v, tb = exception[0]
+        raise t, v, tb
     return result[0]
 
 
@@ -744,5 +751,7 @@ class DebugFileWrapper(object):
 if __name__ == "__main__":
     import doctest
     import sys
-    if doctest.testmod().failed:
+    result = doctest.testmod()
+    print '%s' % (result, )
+    if result.failed:
         sys.exit(1)

@@ -39,7 +39,7 @@ var SendingModel = Backbone.Model.extend({
 
 
 var SendingCollection = Backbone.Collection.extend({
-  url: '{{ config.sys.subdirectory }}/api/0/settings/?var=routes',
+  url: '{{ config.sys.subdirectory }}/api/0/settings/?var=routes&secrets=true',
   model: SendingModel
 });
 
@@ -100,7 +100,7 @@ var SendingView = Backbone.View.extend({
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
+    Mailpile.API.settings_get({ var: 'routes.'+id, secrets: true }, function(result) {
       var sending = result.result['routes.'+id];
       sending_data = _.extend(sending, { id: id, action: 'Edit', complete: 'sending' });
       var sending_template = _.template($('#template-setup-sending-settings').html());
@@ -143,7 +143,8 @@ var SendingView = Backbone.View.extend({
           $('#setup-sending-check-auth')
             .removeClass('color-08-green')
             .addClass('color-12-red')
-            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}: '
+                  + result.error.error);
         }
         setTimeout(function() {
           $('#setup-sending-check-auth')

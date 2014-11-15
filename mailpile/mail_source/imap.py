@@ -199,6 +199,8 @@ class SharedImapConn(threading.Thread):
         return rv
 
     def mailbox_info(self, k, default=None):
+        if not self._selected or not self._selected[2]:
+            return default
         return self._selected[2].get(k, default)
 
     def _update_name(self):
@@ -235,7 +237,8 @@ class SharedImapConn(threading.Thread):
             while self._conn:
                 # By default, all this does is send a NOOP every 120 seconds
                 # to keep the connection alive (or detect errors).
-                time.sleep(120)
+                for t in range(0, 120):
+                    time.sleep(1 if self._conn else 0)
                 if self._conn:
                     with self as raw_conn:
                         raw_conn.noop()
@@ -587,7 +590,7 @@ class ImapMailSource(BaseMailSource):
                                              mailbox_path=path)
             except ValueError:
                 pass
-        return False
+        return None
 
     def _has_mailbox_changed(self, mbx, state):
         src = self.session.config.open_mailbox(self.session,
@@ -635,6 +638,8 @@ class ImapMailSource(BaseMailSource):
         for path, flags in discovered:
             idx = config.sys.mailbox.append(path)
             mbx = self.take_over_mailbox(idx)
+
+        return len(discovered)
 
     def quit(self, *args, **kwargs):
         if self.conn:

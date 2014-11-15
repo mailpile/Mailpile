@@ -44,7 +44,7 @@ var SourceModel = Backbone.Model.extend({
       msg: "{{_('Port')}}"
     },
     protocol: {
-      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
+      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3", "pop3_ssl"],
       required: true,
       msg: "{{_('You must pick a protocol or format')}}"
     },
@@ -85,7 +85,7 @@ var SourceModel = Backbone.Model.extend({
 
 
 var SourcesCollection = Backbone.Collection.extend({
-  url: '{{ config.sys.subdirectory }}/api/0/settings/?var=sources',
+  url: '{{ config.sys.subdirectory }}/api/0/settings/?var=sources&secrets=true',
   model: SourceModel,
   can_next: false
 });
@@ -114,7 +114,7 @@ var SourcesView = Backbone.View.extend({
   },
   reload: function() {
     // Load Data & Add to Collection
-    Mailpile.API.settings_get({ var: 'sources' }, function(result) {
+    Mailpile.API.settings_get({ var: 'sources', secrets: true }, function(result) {
 
       // Redirect to Add
       if (!_.isEmpty(result.result.sources)) {
@@ -299,8 +299,12 @@ var SourcesView = Backbone.View.extend({
       if (result.status === 'success') {
         if (!state) {
           $('#setup-source-' + source_id).addClass('disabled');
+          $('#setup-source-' + source_id).find('a.setup-source-disable').removeClass('button-secondary').addClass('button-alert');
+          $('#setup-source-actions-' + source_id).find('a').addClass('disabled');
         } else {
           $('#setup-source-' + source_id).removeClass('disabled');
+          $('#setup-source-' + source_id).find('a.setup-source-disable').removeClass('button-alert').addClass('button-secondary');
+          $('#setup-source-actions-' + source_id).find('a').removeClass('disabled');
         }
         $(e.target).html(new_message);
         $(e.target).data('state', state);

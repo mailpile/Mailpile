@@ -186,8 +186,9 @@ class KeyLookup(Command):
         address = " ".join(self.data.get('address', self.args))
         result = lookup_crypto_keys(self.session, address, event=self.event,
                                     allowremote=allowremote)
-        return self._success(_n('Found %d key', 'Found %d keys', len(result)
-                                ) % len(result),
+        return self._success(_n('Found %d encryption key',
+                                'Found %d encryption keys', 
+                                len(result)) % len(result),
                              result=result)
 
 

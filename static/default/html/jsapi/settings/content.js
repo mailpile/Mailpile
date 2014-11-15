@@ -1,12 +1,7 @@
 /* Settings - Shows profile add modal */
 $(document).on('click', '#btn-settings-profile-add', function(e) {
   $("#modal-full").html($("#modal-settings-profile-add").html());
-  $('#modal-full').modal({
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -34,12 +29,7 @@ $(document).on('submit', '#form-settings-profile-add', function(e) {
 /* Settings - Shows route add modal */
 $(document).on('click', '#btn-settings-route-add', function(e) {
   $("#modal-full").html($("#modal-settings-route-add").html());
-  $('#modal-full').modal({
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -53,6 +43,5 @@ $(document).on('submit', '#form-settings-route-add', function(e) {
 /* Settings - Submit route edit form */
 $(document).on('submit', '.form-settings-route-edit', function() {
 
-  
 
 });

@@ -12,18 +12,21 @@
   {% set metadata = result.data.metadata.get(mid) %}
   {% set message = result.data.messages.get(mid) %}
 
-  {% if message and "editing_strings" in message %}{# Render the composer #}
+  {# Render the composer #}
+  {% if message and "editing_strings" in message %}
     {% set editing_strings = message.editing_strings %}
     {% set editing_addresses = result.data.addresses %}
     {% include("partials/compose.html") %}
     {% do loop_history.append("edit message") %}
 
-  {% elif message %}{# Render full message #}
+  {# Render full message #}
+  {% elif message %}
     {% include("partials/thread_message.html") %}{# Show: Message #}
     {% set show_reply = (mid != last_mid) %}
     {% do loop_history.append("display message") %}
 
-  {% elif metadata.flags.draft %}{# Message is a draft, show composer #}
+  {# Message is a draft, show composer #}
+  {% elif metadata.flags.draft %}
     {# FIXME: We should probably just tell the user this is a draft, make
               loading the composer a manual action UNLESS this is the last
               message in the the thread.
@@ -40,7 +43,7 @@
     {% else %}
       {{_("Could Not Render Composer")}}
     {% endif %}
-  {% else  %}{# Just render snippet view #}
+  {% else %}{# Just render snippet view #}
     <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
@@ -55,8 +58,7 @@
 {% endfor %}{# End for loop #}
 
 {% if loop_history|last not in ("edit draft", "edit message") %}
-  {# Give the user the option to reply to the last message in the thread
-     - unless we already did! #}
+  {# Give the user the option to reply to the last message in the thread unless we already did! #}
   {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
   {% if compose %}
     {% set mid = compose.message_ids.0 %}
@@ -90,7 +92,13 @@
     {% endfor %}
   </ul>
 </div>
-{% else %}{# No Result, Show Error #}
+
+<script>
+$(document).ready(function() {
+  Mailpile.Message.init();
+});
+</script>
+  {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
 {% endif  %}{# if result #}
