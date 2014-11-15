@@ -5,6 +5,7 @@ import socks
 import socket
 
 SOCKS_PORT = 33419
+CONTROL_PORT = 33418
 
 
 class Tor:
@@ -14,7 +15,8 @@ class Tor:
             cls._instance = super(Tor, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.tor_process = None
         self.original_socket = None
         self.original_getaddrinfo = None
@@ -24,6 +26,7 @@ class Tor:
         self.tor_process = stem.process.launch_tor_with_config(
             config = {
                 'SocksPort': str(SOCKS_PORT),
+                'ControlPort': str(CONTROL_PORT),
             },
             init_msg_handler = self._print_bootstrap_lines,
         )
@@ -35,11 +38,15 @@ class Tor:
         print "Stopping Tor"
         self.tor_process.kill()
 
-    def create_hidden_service(self):
-        pass
+    def create_hidden_service(self, name, port, target):
+        controller = stem.control.Controller.from_port(port=CONTROL_PORT)
+        path = os.path.join(self.config.workdir, "tor", name)
+        return controller.create_hidden_service(path, port, target)
 
-    def destroy_hidden_service(self):
-        pass
+    def destroy_hidden_service(self, name):
+        controller = stem.control.Controller.from_port(port=CONTROL_PORT)
+        path = os.path.join(self.config.workdir, "tor", name)
+        controller.remove_hidden_service(name)
 
     def start_proxying_through_tor(self):
         if self.original_socket:
