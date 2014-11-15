@@ -1,6 +1,6 @@
 /* Compose - Attachments */
 
-Mailpile.Composer.Attachments.uploader_image_preview = function(file, mid) {
+Mailpile.Composer.Attachments.UploaderImagePreview = function(file, mid) {
 
   var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo($('#compose-attachments-files-' + mid));
   var image = $(new Image()).appendTo(item);
@@ -35,7 +35,7 @@ Mailpile.Composer.Attachments.uploader_image_preview = function(file, mid) {
 };
 
 
-Mailpile.Composer.Attachments.uploader = function(settings) {
+Mailpile.Composer.Attachments.Uploader = function(settings) {
 
   var uploader = new plupload.Uploader({
   	runtimes : 'html5',
@@ -47,15 +47,7 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
     multipart_params : {'mid': settings.mid},
     file_data_name : 'file-data',
   	filters : {
-  		max_file_size : '50mb',
-  		mime_types: [
-  			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
-  			{title : "Document files", extensions : "pdf,doc,docx,xls,txt,rtf,ods"},
-  			{title : "Image files", extensions : "jpg,jpeg,gif,png,svg,psd,tiff,bmp,ai,sketch"},
-  			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
-  			{title : "Zip files", extensions : "zip,rar"},
-  			{title : "Crypto files", extensions : "asc,pub,key"}
-  		]
+  		max_file_size : '50mb'
   	},
     resize: {
       width: '3600',
@@ -80,21 +72,37 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
         // Upload files
       	plupload.each(files, function(file) {
   
-          // Show image preview
-          if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
-            Mailpile.Composer.Attachments.uploader_image_preview(file, settings.mid);
-          } else {
-            var attachment_html = '<li class="compose-attachment" aid="' + file.id + '"> <div class="compose-attachment-filename">' + file.name + '</div> ' + plupload.formatSize(file.size) + '</li>';
-        		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
-          }
-
-          // Show Warning for 10mb or larger
-          if (file.size > 10485760) {
+          // Show Warning for 50 mb or larger
+          if (file.size > 52428800) {
             start_upload = false;
-            alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 50 mb or larger');
+            alert(file.name + ' {{_("is")}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")}}');
+          } else {
+           // Show image preview
+            if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
+              Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
+            } else {
+
+              var file_parts = file.name.split('.');
+              var file_parts_length = file_parts.length
+
+              if (file_parts.length > 2 || file.name.length > 20) {
+                file['name_fixed'] = file.name.substring(0, 16);
+              } else {
+                file['name_fixed'] = file_parts[0];
+              }
+
+              file['size'] = plupload.formatSize(file.size);
+              file['extension'] = file_parts[file_parts.length - 1];
+
+              console.log(file);
+
+              var attachment_template = _.template($('#template-composer-attachment').html());
+              var attachment_html = attachment_template(file);
+          		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
+            }
           }
       	});
-  
+
         if (start_upload) {
           uploader.start();
         }
@@ -103,7 +111,7 @@ Mailpile.Composer.Attachments.uploader = function(settings) {
       	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
       },
       Error: function(up, err) {
-        Mailpile.notification({status: 'error', message: "Oops, could not upload attachment because: " + err.message });
+        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
       }

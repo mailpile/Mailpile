@@ -63,7 +63,7 @@ class Event(object):
             return cls()
 
     def __init__(self,
-                 ts=None, event_id=None, flags='C', message='',
+                 ts=None, event_id=None, flags='c', message='',
                  source=None, data=None, private_data=None):
         self._data = [
             '',

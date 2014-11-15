@@ -73,7 +73,7 @@ var SetupApp = (function ($, Backbone, global) {
 
               // Mailsource & Sources Page
               if (Backbone.history.fragment === 'sources') {
-                if (_.indexOf(['.mail_source.imap.ImapMailSource'], event.source) > -1) {
+                if (_.indexOf(['.mail_source.imap.ImapMailSource', '.mail_source.pop3.Pop3MailSource'], event.source) > -1) {
                   SourcesView.eventUnconfigured(event);
                   SourcesView.eventRemote(event);
                 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100px" height="100px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;">
+    <g>
+        <g id="flashlight">
+            <path d="M98.5,72.5C98.5,72.5 98.5,74.5 96.1506,74.5L91.0231,74.5L91.0231,26.5L96.0256,26.5C98.5,26.5 98.5,28.5 98.5,28.5M72.9479,38.9745L43.0466,38.9745L43.0466,34.0823C43.0466,34.0823 43.0466,32.0823 40.9946,32.0823L21.9639,32.0823C19.7771,32.0823 19.7771,34.0823 19.7771,34.0823L19.7771,38.9745C19.7771,38.9745 6.76343,38.9745 5.12646,38.9745C1.74143,38.9745 1.74143,41.9745 1.74143,41.9745L1.74143,59.0255C1.74143,59.0255 1.74143,62.0255 5.34399,62.0255C6.94019,62.0255 72.9479,62.0255 72.9479,62.0255L87.8323,74.5L87.8323,26.5" style="fill:black;"/>
+        </g>
+    </g>
+</svg>

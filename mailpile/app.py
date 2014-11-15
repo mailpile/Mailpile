@@ -192,8 +192,6 @@ def Main(args):
 
         if config.plugins:
             config.plugins.process_shutdown_hooks()
-        if config.loaded_config:
-            config.flush_mbox_cache(session, wait=True)
 
         config.stop_workers()
         if config.index:

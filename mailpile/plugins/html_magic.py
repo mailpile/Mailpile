@@ -33,6 +33,26 @@ class JsApi(Command):
     ORDER = ('Internals', 0)
     HTTP_CALLABLE = ('GET', )
     HTTP_AUTH_REQUIRED = 'Maybe'
+    HTTP_QUERY_VARS = {'ts': 'Cache busting timestamp'}
+
+    def max_age(self):
+        # Set a long TTL if we know which version of the config this request
+        # applies to, as changed config should avoid the outdated cache.
+        if 'ts' in self.data:
+            return 7 * 24 * 3600
+        else:
+            return 30
+
+    def etag_data(self):
+        # This summarizes the config state this page depends on, for
+        # generating an ETag which the HTTPD can use for caching.
+        config = self.session.config
+        return ([config.version,
+                 config.timestamp,
+                 # The above should be enough, the rest is belt & suspenders
+                 config.prefs.language,
+                 config.web.setup_complete] +
+                sorted(config.sys.plugins))
 
     def command(self, save=True, auto=False):
         session, config = self.session, self.session.config

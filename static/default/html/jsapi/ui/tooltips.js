@@ -1,7 +1,6 @@
-// Non-exposed functions: www, setup
-$(document).ready(function() {
+/* UI - Tooltips */
 
-
+Mailpile.UI.Tooltips.TopbarNav = function() {
   $('.topbar-nav a').qtip({
     style: {
      tip: {
@@ -25,8 +24,10 @@ $(document).ready(function() {
       delay: 350
     }
   });
+};
 
 
+Mailpile.UI.Tooltips.BulkActions = function() {
   $('.bulk-actions ul li a').qtip({
     style: {
       classes: 'qtip-tipped'
@@ -40,8 +41,10 @@ $(document).ready(function() {
 			}
     }
   });
+};
 
 
+Mailpile.UI.Tooltips.ComposeEmail = function() {
   $('.compose-to-email').qtip({
     content: {
       title: false,
@@ -64,6 +67,4 @@ $(document).ready(function() {
       delay: 450
     }
   });
-
-
-});
+};

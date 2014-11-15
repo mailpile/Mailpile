@@ -25,7 +25,7 @@ var SourcesSettingsView = Backbone.View.extend({
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
 
-    Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
+    Mailpile.API.settings_get({ var: 'sources.'+id, secrets: true }, function(result) {
 
       var source = result.result['sources.'+id];
       source = _.extend(source, {id: id, action: '{{_("Edit")}}'});

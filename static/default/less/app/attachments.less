@@ -1,0 +1,70 @@
+/* Attachments (used in both Compose & Thread) */
+
+  a.attachment-image {
+    display: block;
+    height: 125px;
+  }
+  
+  a.attachment-image img {
+    border: 1px solid @gray;
+    height: 125px;
+    display: block;
+  }
+  
+  a.attachment {
+    display: block;
+    width: 150px;
+    height: 125px;
+    border: 1px solid @gray;
+  }
+  
+  a.attachment div {
+    height: 97px;
+    display: inline-table;
+  }
+  
+  a.attachment div span.icon-mime {
+    width: 60px;
+    display: table-cell;
+    vertical-align: middle;
+    color: @gray;
+    font-size: 40px;
+    line-height: 40px;
+    
+  }
+  
+  a.attachment div span.attachment-extension {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+    color: @gray;
+    text-transform: uppercase;
+    font-size: 18px;
+  }
+  
+  a.attachment span.attachment-filename {
+    width: 100%;
+    display: inline-block;
+    padding: (@base-padding / 2) 0;
+    box-sizing: content-box;
+    border-top: 1px solid @gray;
+    background: @grayLight;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 12px;
+    color: @grayDark;
+  }
+  
+  a.attachment:hover {
+    background: @grayLight;
+    border: 1px solid @gray;
+  }
+  
+  a.attachment:hover span.attachment-filename {
+    color: @grayDark;
+  }
+  
+  a.attachment:hover span.icon-mime,
+  a.attachment:hover span.attachment-extension {
+    color: @grayDark;
+  }

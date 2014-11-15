@@ -11,4 +11,9 @@
     "display": "tag"
   } %}
   {% include("tags/form.html") %}
+<script>
+$(document).ready(function() {
+  Mailpile.Tags.init();
+});
+</script>
 {% endblock %}

@@ -159,6 +159,7 @@ class Worker(threading.Thread):
         self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
+        self.JOBS_LATER = []
         self.LOCK = threading.Condition(WorkerRLock())
         self.last_run = time.time()
         self.running = 'Idle'
@@ -167,23 +168,36 @@ class Worker(threading.Thread):
         self.important = False
 
     def __str__(self):
-        return ('%s: %s (%ds, jobs=%s)'
+        return ('%s: %s (%ds, jobs=%s, jobs_after=%s)'
                 % (threading.Thread.__str__(self),
                    self.running,
                    time.time() - self.last_run,
-                   len(self.JOBS)))
+                   len(self.JOBS), len(self.JOBS_LATER)))
 
-    def add_task(self, session, name, task, unique=False):
+    def add_task(self, session, name, task,
+                 after=None, unique=False, first=False):
         with self.LOCK:
             if unique:
                 for s, n, t in self.JOBS:
                     if n == name:
                         return
-            self.JOBS.append((session, name, task))
+            if unique and after:
+                for ts, (s, n, t) in self.JOBS_LATER:
+                    if n == name:
+                        return
+
+            snt = (session, name, task)
+            if first:
+                self.JOBS[:0] = [snt]
+            elif after:
+                self.JOBS_LATER.append((after, snt))
+            else:
+                self.JOBS.append(snt)
+
             self.LOCK.notify()
 
-    def add_unique_task(self, session, name, task):
-        return self.add_task(session, name, task, unique=True)
+    def add_unique_task(self, session, name, task, **kwargs):
+        return self.add_task(session, name, task, unique=True, **kwargs)
 
     def do(self, session, name, task, unique=False):
         if session and session.main:
@@ -226,6 +240,12 @@ class Worker(threading.Thread):
             self._play_nice_with_threads()
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
+                if len(self.JOBS) < 0:
+                    now = time.time()
+                    self.JOBS.extend(snt for ts, snt
+                                     in self.JOBS_LATER if ts <= now)
+                    self.JOBS_LATER = [(ts, snt) for ts, snt
+                                       in self.JOBS_LATER if ts > now]
             try:
                 self.last_run = time.time()
                 self.running = name

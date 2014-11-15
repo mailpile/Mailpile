@@ -74,7 +74,7 @@ class GravatarImporter(VCardImporter):
             digest = md5_hex(vcl.value.lower())
             try:
                 if mailpile.util.QUITTING:
-                    return []
+                    return None, None, None, None
                 if not img:
                     img = self._get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
                                      ) % (self.config.url,

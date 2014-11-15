@@ -108,6 +108,8 @@ class IMAPMailbox(Mailbox):
 
 
 class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
+    UNPICKLABLE = ['_mailbox']
+
     @classmethod
     def parse_path(cls, config, path, create=False):
         if path.startswith("imap://"):
@@ -122,13 +124,6 @@ class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
             # WARNING: Order must match IMAPMailbox.__init__(...)
             return (server, 993, user, password)
         raise ValueError('Not an IMAP url: %s' % path)
-
-    def __getstate__(self):
-        odict = self.__dict__.copy()
-        # Pickle can't handle file and function objects.
-        del odict['_mailbox']
-        del odict['_save_to']
-        return odict
 
     def get_msg_size(self, toc_id):
         # FIXME: We should make this less horrible.

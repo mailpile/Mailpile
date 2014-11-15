@@ -30,9 +30,12 @@ class Search(Command):
         'order': 'sort order',
         'start': 'start position',
         'end': 'end position',
-        'full': 'return all metadata'
+        'full': 'return all metadata',
+        'context': 'refine or redisplay an older search'
     }
     IS_USER_ACTIVITY = True
+    COMMAND_CACHE_TTL = 3600
+    CHANGES_SESSION_CONTEXT = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -75,24 +78,41 @@ class Search(Command):
         except (AttributeError, NameError):
             return Command.state_as_query_args(self)
 
-    def _do_search(self, search=None):
+    def _starting(self):
+        Command._starting(self)
         session, idx = self.session, self._idx()
-        session.searched = search or []
-        args = list(self.args)
+        self._search_args = args = []
 
+        self.context = self.data.get('context', [None])[0]
+        if self.context:
+            args += self.session.searched
+
+        def nq(t):
+            p = t[0] if (t and t[0] in '-+') else ''
+            t = t[len(p):]
+            if t.startswith('tag:') or t.startswith('in:'):
+                try:
+                    t = 'in:%s' % session.config.get_tag(t.split(':')[1]).slug
+                except (IndexError, KeyError, TypeError):
+                    pass
+            return p+t
+
+
+        args += [a for a in list(nq(a) for a in self.args) if a not in args]
         for q in self.data.get('q', []):
-            args.extend(q.split())
+            ext = [nq(a) for a in q.split()]
+            args.extend([a for a in ext if a not in args])
 
         # Query refinements...
         qrs = []
         for qr in self.data.get('qr', []):
-            qrs.extend(qr.split())
+            qrs.extend(nq(a) for a in qr.split())
         args.extend(qrs)
 
         for order in self.data.get('order', []):
             session.order = order
 
-        num = session.config.prefs.num_results
+        num = def_num = session.config.prefs.num_results
         d_start = int(self.data.get('start', [0])[0])
         d_end = int(self.data.get('end', [0])[0])
         if d_start and d_end:
@@ -104,48 +124,82 @@ class Search(Command):
             args[:0] = ['@%s' % (d_end - num + 1)]
 
         start = 0
-        if args and args[0].startswith('@'):
+        while args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
 
-        prefix = ''
-        for arg in args:
-            if arg.endswith(':'):
-                prefix = arg
-            elif ':' in arg or (arg and arg[0] in ('-', '+')):
-                prefix = ''
-                session.searched.append(arg.lower())
-            elif prefix and '@' in arg:
-                session.searched.append(prefix + arg.lower())
-            else:
-                words = re.findall(WORD_REGEXP, arg.lower())
-                session.searched.extend([prefix + word for word in words])
-
-        if not session.searched:
-             session.searched = ['all:mail']
-
         session.order = session.order or session.config.prefs.default_order
-        session.results = list(idx.search(session, session.searched).as_set())
-        idx.sort_results(session, session.results, session.order)
-
+        self._start = start
+        self._num = num
         self._search_state = {
-            'q': [a for a in args if not (a.startswith('@') or a in qrs)],
+            'q': [q for q in args if q not in qrs],
             'qr': qrs,
-            'start': [a for a in args if a.startswith('@')],
-            'order': [session.order]
+            'order': [session.order],
+            'start': [str(start + 1)] if start else [],
+            'end': [str(start + num)] if (num != def_num) else []
         }
-        return session, idx, start, num
+        if self.context:
+            self._search_state['context'] = [self.context]
 
-    def command(self, search=None):
-        session, idx, start, num = self._do_search(search=search)
+    def _do_search(self, search=None, process_args=False):
+        session, idx = self.session, self._idx()
+
+        if self.context is None or search or session.searched != self._search_args:
+            session.searched = search or []
+            if search is None or process_args:
+                prefix = ''
+                for arg in self._search_args:
+                    if arg.endswith(':'):
+                        prefix = arg
+                    elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                        prefix = ''
+                        session.searched.append(arg.lower())
+                    elif prefix and '@' in arg:
+                        session.searched.append(prefix + arg.lower())
+                    else:
+                        words = re.findall(WORD_REGEXP, arg.lower())
+                        session.searched.extend([prefix + word
+                                                 for word in words])
+            if not session.searched:
+                session.searched = ['all:mail']
+
+            context = session.results if self.context else None
+            session.results = list(idx.search(session, session.searched,
+                                              context=context).as_set())
+            idx.sort_results(session, session.results, session.order)
+
+        return session, idx
+
+    def cache_requirements(self, result):
+        msgs = self.session.results[self._start:self._start + self._num]
+        def fix_term(term):
+            # Terms are reversed in the search engine...
+            if term[:1] in ['-', '+']:
+                term = term[1:]
+            term = ':'.join(reversed(term.split(':', 1)))
+            return unicode(term)
+        reqs = set(['!config'] +
+                   [fix_term(t) for t in self.session.searched] +
+                   [u'%s:msg' % i for i in msgs])
+        if self.session.displayed:
+            reqs |= set(u'%s:thread' % int(tmid, 36) for tmid in
+                        self.session.displayed.get('thread_ids', []))
+            reqs |= set(u'%s:msg' % int(tmid, 36) for tmid in
+                        self.session.displayed.get('message_ids', []))
+        return reqs
+
+    def command(self):
+        session, idx = self._do_search()
         full_threads = self.data.get('full', False)
         session.displayed = SearchResults(session, idx,
-                                          start=start, num=num,
+                                          start=self._start,
+                                          num=self._num,
                                           full_threads=full_threads)
-        session.ui.mark(_('Prepared %d search results') % len(session.results))
+        session.ui.mark(_('Prepared %d search results (context=%s)'
+                          ) % (len(session.results), self.context))
         return self._success(_('Found %d results in %.3fs'
                                ) % (len(session.results),
                                     session.ui.report_marks(quiet=True)),
@@ -157,6 +211,7 @@ class Next(Search):
     SYNOPSIS = ('n', 'next', None, None)
     ORDER = ('Searching', 1)
     HTTP_CALLABLE = ()
+    COMMAND_CACHE_TTL = 0
 
     def command(self):
         session = self.session
@@ -175,6 +230,7 @@ class Previous(Search):
     SYNOPSIS = ('p', 'previous', None, None)
     ORDER = ('Searching', 2)
     HTTP_CALLABLE = ()
+    COMMAND_CACHE_TTL = 0
 
     def command(self):
         session = self.session
@@ -193,6 +249,7 @@ class Order(Search):
     SYNOPSIS = ('o', 'order', None, '<how>')
     ORDER = ('Searching', 3)
     HTTP_CALLABLE = ()
+    COMMAND_CACHE_TTL = 0
 
     def command(self):
         session, idx = self.session, self._idx()
@@ -210,6 +267,7 @@ class View(Search):
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID'
     }
+    COMMAND_CACHE_TTL = 0
 
     class RawResult(dict):
         def _decode(self):

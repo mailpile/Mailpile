@@ -36,7 +36,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _lookup(self, address):
         results = {}
         terms = ['from:%s' % address, 'has:pgpkey']
-        session, idx, _, _ = self._do_search(search=terms)
+        session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
             for key_data in self._get_keys(messageid):

@@ -12,7 +12,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.gpgi import GPG_BINARY
 from mailpile.safe_popen import Popen, PIPE
-from mailpile.util import md5_hex, CryptoLock
+from mailpile.util import md5_hex, CryptoLock, safe_remove
 from mailpile.util import sha512b64 as genkey
 
 
@@ -305,6 +305,8 @@ class ChecksummingStreamer(OutputCoprocess):
         # 2nd save (or append to existing) creates a copy
         with open(filename, mode) as out:
             self.save_copy(out)
+            if not self.saved:
+                safe_remove(self.temppath)
         self.saved = True
 
     def save_copy(self, ofd):

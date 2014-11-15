@@ -20,14 +20,14 @@
     'name': 'display_all',
     'icon': 'message',
     'url': '/search/',
-    'url_args_remove': [['qr', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
     'text': _("All"),
     'description': _("All messages")
 },{
     'name': 'unread',
     'icon': 'new',
     'url': '/search/',
-    'url_args_remove': [['qr', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
     'url_args_add': [['qr', 'is:unread']],
     'text': _("Unread"),
     'description': _("Unread messages")
@@ -35,7 +35,7 @@
     'name': 'has_attachment',
     'icon': 'attachment',
     'url': '/search/',
-    'url_args_remove': [['qr', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
     'url_args_add': [['qr', 'has:attachment']],
     'text': _("Attachments"),
     'description': _("Messages with attachments")

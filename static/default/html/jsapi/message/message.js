@@ -1,16 +1,45 @@
-/* Message - Get new messsage  */
-Mailpile.get_new_messages = function(actions) {    
-  $.ajax({
-	  url			 : Mailpile.api.search_new,
-	  type		 : 'GET',
-	  dataType : 'json',
-    success  : function(response) {
-      if (response.status == 'success') {
-        actions(response);
-      }
+/* Message */
+
+Mailpile.Message.AnalyzeMessageInline = function(mid) {
+  // Iterate through all plain-text parts of the e-mail
+  $('#message-' + mid).find('.thread-item-text').each(function(i, text_part) {
+    var content = $(text_part).html();
+
+    // Check & Extract Inline PGP Key
+    var pgp_begin = '-----BEGIN PGP PUBLIC KEY BLOCK-----';
+    var pgp_end = '-----END PGP PUBLIC KEY BLOCK-----';
+    var check_inline_pgp_key = content.split(pgp_begin);
+    if (check_inline_pgp_key.length > 1) {
+      var pgp_key = check_inline_pgp_key.slice(1).join().split(pgp_end)[0];
+      pgp_key = pgp_begin + pgp_key + pgp_end;
+
+      // Make HTML5 download href
+      var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
+
+      // Replace Text
+      var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
+      var name = Mailpile.instance.metadata[mid].from.fn;
+      var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
+      var new_content = content.replace(pgp_key, import_key_html);
+      $(text_part).html(new_content);
     }
   });
 };
+
+
+/* Message -  */
+$(document).on('click', '.message-action-reply', function() {
+  var mid = $(this).data('mid');
+  Mailpile.API.message_reply_post({mid: mid, _output: 'composer.jhtml'}, function(result) {
+
+    $('#message-' + mid).append(result.result);
+    var new_mid = $('#message-' + mid).find('.form-compose').data('mid');
+    $('#compose-details-' + new_mid).hide();
+    $('#compose-to-summary-' + new_mid).show();
+    $('#compose-show-details-' + new_mid).show();
+  });
+});
+
 
 
 /* Message - Create forward and go to composer */
@@ -105,7 +134,7 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 
   var modal_template = _.template($("#modal-contact-add").html());
   $('#modal-full').html(modal_template(modal_data));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -120,23 +149,17 @@ $(document).on('click', '.message-action-unsubscribe', function(e) {
 /* Message - Discover keys */
 $(document).on('click', '.message-action-find-keys', function(e) {
   e.preventDefault();
-  Mailpile.find_encryption_keys($(this).attr('href'));
+  Mailpile.UI.Modals.CryptoFindKeys({
+    query: $(this).attr('href')
+  });
 });
 
 
 /* Message - Import key from a message */
 $(document).on('click', '.message-action-import-key', function() {
-
-  var options = {
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  };
-
   $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
   $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
-  $('#modal-full').modal(options);
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -157,12 +180,7 @@ $(document).on('click', '.message-crypto-action', function() {
 
     $('#crypto-private-key-list').html(key_html);
 
-    $('#modal-full').modal({
-      backdrop: true,
-      keyboard: true,
-      show: true,
-      remote: false
-    });
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
   });
 });
 
@@ -183,8 +201,14 @@ $(document).on('click', '.message-crypto-investigate', function() {
     Mailpile.API.crypto_gpg_searchkey_get(missing_keys[0], function(data) {
       var modal_template = _.template($("#modal-search-keyservers").html());
       $('#modal-full').html(modal_template({ keys: '<li>Key of User #1</li>' }));
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     });
   }
+});
+
+
+$(document).on('click', '.message-crypto-show-inline-key', function() {
+  $(this).hide();
+  $('#message-crypto-inline-key-' + $(this).data('mid')).fadeIn();
 });
 

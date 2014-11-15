@@ -7,11 +7,12 @@ $(document).on('click', '#search-query', function() {
 /* Search - Special handling of certain queries */
 $(document).on('submit', '#form-search', function(e) {
   var search_query = $('#search-query').val();
-  console.log('Yo yo here');
   if (search_query.substring(0, 3) === 'in:') {
-    console.log('inside the search_query');
-    e.preventDefault();
-    window.location.href = '/in/' + search_query.substring(3, 999) + '/';
+    var more_check = search_query.substring(3, 999).split(' ');
+    if (!more_check[1]) {
+      e.preventDefault();
+      window.location.href = '/in/' + $.trim(search_query.substring(3, 999)) + '/';
+    }
   }
   else if (search_query.substring(0, 9) === 'contacts:') {
     e.preventDefault();
@@ -27,8 +28,9 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'keys:') {
     e.preventDefault();
-    var query = search_query.substring(6, 999);
-    Mailpile.find_encryption_keys(query);
+    Mailpile.UI.Modals.CryptoFindKeys({
+      query: search_query.substring(6, 999)
+    });
   }
   else {
     console.log('inside of else, just a normal query');
@@ -55,14 +57,11 @@ $(document).on('click', '#button-compose', function(e) {
 });
 
 
-/* Activities - DOM */
-$(document).ready(function() {
-  // Command Specific Mods
-  if (Mailpile.instance.state.command_url === '/contacts/') {
-    $('#search-query').val('contacts: ');
-  }
-  else if (Mailpile.instance.state.command_url === '/tags/') {
-    $('#search-query').val('tags: ');
-  }
-
+/* Show Settings Dropdown */
+$(document).on('mouseover', '#button-settings', function() {
+  // FIXME: crap, this makes the links in the dropdown note fire... something obnoxious in Bootstrap causes it :(
+  // $('#settings-menu').dropdown('toggle');
 });
+
+
+

@@ -16,19 +16,59 @@
     z-index: 10;
   }
 
-  #sidebar nav { padding: 0px; padding-bottom: 15px; margin: 0px; }
+  #sidebar-lists  {
+    padding: 0px;
+    padding-bottom: 50px;
+    margin: 0px;
+  }
+  
+  #sidebar-bottom {
+    width: 224px;
+    height: 24px;
+    position: fixed;
+    top: auto;
+    bottom: 0px;
+    left: 0px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: @grayLight;
+    border-top: 1px solid @gray;
+  }
+
+  #sidebar-bottom a {
+    display: inline-block;
+    margin: 0px 10px;
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: normal;
+    color: @grayDark;
+  }
+
+  #sidebar-bottom a:hover {
+    color: @blue;
+  }
+
 	#sidebar hr  { margin: 10px 0px;	}
 
-  #sidebar      ul    { margin: 0px 8px 0px 8px; padding: 0px; }
-  #sidebar      ul li { margin: 4px 0px; padding: 6px 8px 6px 8px; }
-  #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
-  #sidebar.snug ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
+  #sidebar      ul    { margin: 0px; padding: 0px; }
+  #sidebar      ul li { margin: 3px 0px; padding: 0px 0px; transition-duration: 0.3s; }
+  #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 3px; padding-top: 2px; padding-bottom: 2px; }
+  #sidebar.snug ul li { margin-top: 1px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
 
-  #sidebar a.sidebar-tag      {
+  #sidebar ul li.show-subtags {
+    background: @white;
+    border-top: 1px solid @grayMid;
+    border-bottom: 1px solid @grayMid;
+    padding-top: 5px;
+	  transition-duration: 0.3s;
+  }
+
+  #sidebar a.sidebar-tag {
     position: relative;
-    width: 195px;
-    height: 24px;
-    display: table;
+    width: 200px;
+    display: inline-block;
+    margin: 0px 7px;
+    padding: 6px 5px;
     vertical-align: middle;
     text-align: left;
     transition-duration: 0.2s;
@@ -42,10 +82,10 @@
   #sidebar li.is-editing,
   #sidebar li.is-editing a.sidebar-tag { cursor: move; }
 
-  #sidebar span.sidebar-icon {
+  #sidebar a.sidebar-tag span.icon {
     width: 24px;
     height: 18px;
-    display: table-cell;
+    display: inline-block;
     vertical-align: middle;
     text-align: center;
     font-weight: normal;
@@ -53,11 +93,11 @@
     line-height: 18px;
   }
 
-	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
-  #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
+	#sidebar.cozy a.sidebar-tag span.icon { font-size: 18px; line-height: 18px; }
+  #sidebar.snug a.sidebar-tag span.icon { font-size: 16px; line-height: 16px; }
 
-  #sidebar a.sidebar-tag span.sidebar-name,
-  #sidebar a.sidebar-tag span.sidebar-notification {   
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag > span.notification {
     vertical-align: middle;
     font-family: @mailpile-text-font-family;
     font-weight: normal;
@@ -65,7 +105,7 @@
     line-height: 24px;
   }
 
-  #sidebar a.sidebar-tag span.sidebar-name {
+  #sidebar a.sidebar-tag span.name {
     display: inline-block;
     max-width: 132px;
     padding-left: 5px;
@@ -73,53 +113,65 @@
     overflow-x: hidden;
 	}
 
-  #sidebar a.sidebar-tag span.sidebar-notification {
+  #sidebar a.sidebar-tag span.notification {
     letter-spacing: -.5px;
     color: @gray;
   }
 
-  #sidebar.cozy span.sidebar-name,
-  #sidebar.cozy span.sidebar-notification { font-size: 16px; line-height: 18px; }
-  #sidebar.snug span.sidebar-name,
-  #sidebar.snug span.sidebar-notification { font-size: 14px; line-height: 16px; }
+  #sidebar.cozy span.name,
+  #sidebar.cozy span.notification { font-size: 16px; line-height: 18px; }
+  #sidebar.snug span.name,
+  #sidebar.snug span.notification { font-size: 14px; line-height: 16px; }
 
-  #sidebar a.sidebar-tag.has_unread span.sidebar-name,
-  #sidebar a.sidebar-tag.has_unread span.sidebar-notification {
+  #sidebar a.sidebar-tag.has-unread span.name,
+  #sidebar a.sidebar-tag.has-unread span.notification {
     font-family: @mailpile-text-font-family-bold;
     font-weight: normal;
   }
 
-  
+ #sidebar span.sidebar-tag-expand {
+   float: right;
+   display: inline-block;
+   color: @grayMid;
+ }
+
+
 /* Sidebar - Subtags */
 
-  #sidebar ul li.sidebar-subtag { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
-  #sidebar ul li.sidebar-subtag a.sidebar-tag {
-    font-size: 16px;
-    font-family: Helvetica, Arial, sans-serif;
+  #sidebar ul.sidebar-subtags {
+    margin-bottom: 8px;
+    padding: 0px;
   }
 
-  #sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-name,
-  #sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-notification {   
+  #sidebar ul.sidebar-subtags li.sidebar-subtag {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag.has-unread span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag.has-unread span.notification {
+    font-family: @text-font-family;
+    font-weight: bold;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag span.icon {
+    font-size: 16px;
+    line-height: 16px;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag span.notification {
     vertical-align: middle;
-    font-family: @mailpile-text-font-family;
     font-weight: normal;
-    font-size: 18px;
-    line-height: 24px;    
+    font-size: 14px;
+    font-family: @text-font-family;
+    line-height: 16px;
   }
 
 
 /* Sidebar - Edit */
-
-  .button-sidebar-edit {
-    display: block;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: normal;
-    font-style: italic;
-    color: @gray !important;
-  }
 
   a.sidebar-tag span.sidebar-tag-archive {
     cursor: pointer;
@@ -139,6 +191,7 @@
     background: @orange;
   }
 
+
 /* Sidebar - Drag & Drop */
 
   .sidebar-tags-draggable {
@@ -146,23 +199,20 @@
   }
 
   .sidebar-tags-draggable-hover {
-    background: @grayLight;
-	  -webkit-transition-duration: 0.3s;
-	  -moz-transition-duration: 0.3s;
 	  transition-duration: 0.3s;	    
   }
 
-  .sidebar-tags-draggable-active {
+  .sidebar-tags-draggable-hover.show-subtags {
+
+  }
+
+  .sidebar-tags-draggable-active,
+  .sidebar-tags-draggable-active.show-subtags {
     background: @grayMid;
-	  -webkit-transition-duration: 0.3s;
-	  -moz-transition-duration: 0.3s;
 	  transition-duration: 0.3s;
   }
 
   .sidebar-tags-draggable-highlight {
-    background: green;
-	  -webkit-transition-duration: 0.3s;
-	  -moz-transition-duration: 0.3s;
 	  transition-duration: 0.3s;
   }
 
