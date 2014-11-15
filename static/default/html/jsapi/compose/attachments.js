@@ -82,6 +82,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
               Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
             } else {
 
+              // More UI friendly values
               var file_parts = file.name.split('.');
               var file_parts_length = file_parts.length
 
@@ -94,8 +95,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
               file['size'] = plupload.formatSize(file.size);
               file['extension'] = file_parts[file_parts.length - 1];
 
-              console.log(file);
-
+              // Add to UI
               var attachment_template = _.template($('#template-composer-attachment').html());
               var attachment_html = attachment_template(file);
           		$('#compose-attachments-files-' + settings.mid).append(attachment_html);
@@ -120,3 +120,18 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
 
   return uploader.init();
 };
+
+
+Mailpile.Composer.Attachments.Remove = function(mid, aid) {
+
+  // Fix me, add UI of deleting to current attachment
+
+  Mailpile.API.message_unattach_post({ mid: mid, att: aid }, function(result) {
+    if (result.status == 'success') {
+      $('#compose-attachment-' + mid + '-' + aid).remove();
+    } else {
+      Mailpile.notification(result);
+    }
+  });
+};
+

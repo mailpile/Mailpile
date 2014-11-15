@@ -61,11 +61,9 @@
         <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal">
           {% if editing_strings.attachments %}
           {% for att in attachments %}
-          <li class="compose-attachment">
+          <li id="compose-attachment-{{mid}}-{{att.aid}}" class="compose-attachment">
 
-<!--
             <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
--->
 
             {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
             <!-- <img src="/message/download/preview/={{mid}}/{{att.aid}}/"> -->
