@@ -123,10 +123,25 @@ Mailpile.API._ajax_error =  function(base_url, command, data, method, response, 
   console.log('status: ' + status + ' method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
   console.log(response);
 
+  // Show 500 Error
+  if (command !== '/0/eventlog/' && status == 'error' && response.status == 500) {
+    Mailpile.notification({
+      status: 'error',
+      message: '{{_("Oops. Mailpile failed to complete your task")}}',
+      icon: 'icon-signature-unknown'
+    });
+  }
   // Hide Connection Down
-  if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
+  else if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
     console.log('SHOW CONNECTION DOWN!!!');
     //$('body').append($('#template-connection-down').html());
+  }
+  else {
+    Mailpile.notification({
+      status: 'warning',
+      message: '{{_("Something went wrong and we are not sure what")}}',
+      icon: 'icon-signature-unknown'
+    });  
   }
 };
 
