@@ -646,7 +646,8 @@ class Email(object):
             encoders.encode_base64(att)
         att.add_header('Content-Id', MakeContentID())
         att.add_header('Content-Disposition', 'attachment',
-                       filename=os.path.basename(fn))
+                       filename=self.encoded_hdr(None, 'file',
+                                                 value=os.path.basename(fn)))
         att.signature_info = SignatureInfo(parent=msg.signature_info)
         att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
@@ -916,7 +917,7 @@ class Email(object):
 
             count += 1
             content_id = part.get('content-id', '')
-            pfn = part.get_filename() or ''
+            pfn = self.index.hdr(0, 0, value=part.get_filename() or '')
 
             if (('*' == att_id)
                     or ('#%s' % count == att_id)
@@ -1191,7 +1192,8 @@ class Email(object):
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': part.get_filename() or '',
+                    'filename': self.index.hdr(0, 0,
+                                               value=part.get_filename() or ''),
                     'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)
