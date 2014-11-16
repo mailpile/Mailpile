@@ -31,7 +31,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
   
       // Show View
       var item_data     = _.extend({ avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
-      var item_template = _.template($('#template-crypto-item-encryption-key').html());
+      var item_template = _.template($('#template-crypto-encryption-key').html());
       items_html += item_template(item_data);
   
       // Set Lookup State (data model)

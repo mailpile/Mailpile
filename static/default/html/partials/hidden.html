@@ -121,7 +121,74 @@
 </script>
 
 
-<script id="template-crypto-item-encryption-key" type="text/template">
+<script id="template-crypto-encryption-key" type="text/template">
+  <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
+    <div class="clearfix">
+      <div class="avatar"><img src="<%= avatar %>"></div>
+      <div class="name">
+        <%= uid.name %><br>
+        <span><%= uid.email %></span><br>
+        <span><%= uid.note %></span>
+      </div>
+      <div class="right">
+        <span class="icon-fingerprint"></span>
+        <div class="fingerprint">
+          <%= Mailpile.nice_fingerprint(fingerprint) %>
+        </div>
+      </div>
+    </div>
+    <div class="half-top clearfix">
+      <div class="searchkey-result-score left">
+        <% if (score_stars >= 5) { %>
+        <span class="icon-signature-verified color-08-green"></span>
+        <% } else if (score_stars < 5 && score_stars > 2) { %>
+        <span class="icon-signature-unverified color-06-blue"></span>
+        <% } else if (score_stars <= 2 && score_stars >= 0) { %>
+        <span class="icon-signature-unverified color-02-gray"></span>
+        <% } else if (score_stars < 2 && score_stars > -3) { %>
+        <span class="icon-signature-unknown color-10-orange"></span>
+        <% } else if (score_stars < -3) { %>
+        <span class="icon-signature-revoked color-12-red"></span>
+        <% } %>
+        <em><%= score_reason %></em>
+      </div>
+      <div class="searchkey-result-details hide">
+        <h4>{{_("Score")}}: <%= score %></h4>
+        <p>{{_("This encryption key score is calculated from the following facts")}}
+        <% _.each(origins, function(item) { %>
+        <%= item %><br>
+        <% }); %>
+        </p>
+      </div>
+      <div class="searchkey-result-actions right">
+        <% if (on_keychain) { %>
+        <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
+          <option value="true" selected="selected">{{_("Use This Key")}}</option>
+          <option value="false">{{_("Don't Use This Key")}}</option>
+        </select>
+        <% } else { %>
+        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Import Key")}}
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </li>
+</script>
+
+
+<script id="template-crypto-encryption-key-importing" type="text/template">
+  <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
+  <div class="text-center">
+    <h4 class="half-bottom">{{_("Importing Encryption Key")}}</h4>
+    <p class="half-bottom">{% include("../img/loading-ellipsis.svg") %}</p>
+    <em class="text-detail">This may take a few moments...</em>
+  </div>
+  </li>
+</script>
+
+
+<script id="template-crypto-encryption-key-imported" type="text/template">
   <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
     <div class="clearfix">
       <div class="avatar"><img src="<%= avatar %>"></div>
