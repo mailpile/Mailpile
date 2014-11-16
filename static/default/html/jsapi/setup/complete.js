@@ -140,7 +140,7 @@ var CompleteModel = Backbone.Model.extend({
     0: 'icon-like',
     1: 'icon-inbox',
     2: ['icon-trophy', 'icon-robot', 'icon-graph'],
-    3: ['icon-message', 'icon-tag', 'icon-compose', 'icon-search'],
+    3: ['icon-inbox', 'icon-tag', 'icon-compose', 'icon-search'],
     4: ['icon-privacy', 'icon-lock-closed', 'icon-key'],
     5: ['icon-star', 'icon-lightbulb', 'icon-new', 'icon-donate']
   }

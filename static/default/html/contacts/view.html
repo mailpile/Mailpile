@@ -137,7 +137,7 @@
       {% set thread_count = conversations.data.threads[thread_mid]|length + 1 %}
       <li class="grouped">
         <a href="/thread/={{ mid }}/">{{ nice_subject(conversation) }}&nbsp;&nbsp;
-          <span class="text-detail"><span class="icon-message"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
+          <span class="text-detail"><span class="icon-inbox"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
         </a>
       </li>
     {% endfor %}  

@@ -162,7 +162,7 @@ Mailpile.UI.Search.Draggable = function(element) {
       } else {
         drag_count = Mailpile.messages_cache.length + ' messages';
       }
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving ' + drag_count + '</div>');
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving ' + drag_count + '</div>');
     },
     start: function(event, ui) {
   

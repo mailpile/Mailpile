@@ -6,8 +6,8 @@
   "icons": [
     "icon-new",
     "icon-compose",
+    "icon-mailsource",
     "icon-inbox",
-    "icon-message",
     "icon-sent",
     "icon-outbox",
     "icon-spam",

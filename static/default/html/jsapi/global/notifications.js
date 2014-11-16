@@ -35,7 +35,7 @@ Mailpile.notification = function(result) {
     result.action = 8000
   }
   if (result.icon === undefined) {
-    result.icon = 'icon-message';
+    result.icon = 'icon-inbox';
   }
 
   // Undo & Icon

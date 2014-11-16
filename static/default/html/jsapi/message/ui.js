@@ -48,7 +48,7 @@ Mailpile.UI.Message.Draggable = function(element) {
     revert: false,
     opacity: 1,
     helper: function(event) {
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving Thread</div>');
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving Thread</div>');
     },
     start: function(event, ui) {
   

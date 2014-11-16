@@ -143,9 +143,6 @@
 .icon-image:before {
 	content: "\e627";
 }
-.icon-inbox:before {
-	content: "\e628";
-}
 .icon-key:before {
 	content: "\e629";
 }
@@ -184,9 +181,6 @@
 }
 .icon-merge:before {
 	content: "\e635";
-}
-.icon-message:before {
-	content: "\e636";
 }
 .icon-minus:before {
 	content: "\e637";
@@ -340,9 +334,18 @@
 }
 
 
-/* Sidebar - makes icons switch to dotted circle on drag */
+/* FIXME: Hack Fix */
+.icon-inbox:before {
+	content: "\e636";
+}
 
-.sidebar-tags-draggable-hover .icon-message:before,
+.icon-mailsource:before {
+	content: "\e628";
+}
+
+
+/* Sidebar - makes icons switch to dotted circle on drag */
+.sidebar-tags-draggable-hover .icon-mailsource:before,
 .sidebar-tags-draggable-hover .icon-inbox:before,
 .sidebar-tags-draggable-hover .icon-sent:before,
 .sidebar-tags-draggable-hover .icon-spam:before,
