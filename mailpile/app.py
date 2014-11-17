@@ -9,6 +9,7 @@ import mailpile.defaults
 from mailpile.commands import COMMANDS, Command, Action
 from mailpile.commands import Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager
+from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -131,6 +132,8 @@ class WaitCommand(Command):
 
 
 def Main(args):
+    DisableUnbrokeredConnections()
+
     # Bootstrap translations until we've loaded everything else
     mailpile.i18n.ActivateTranslation(None, ConfigManager, None)
     try:

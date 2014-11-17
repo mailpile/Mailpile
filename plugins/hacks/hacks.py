@@ -6,6 +6,7 @@ from urllib import urlencode, URLopener
 
 import mailpile.auth
 from mailpile.commands import Command, Help
+from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
 from mailpile.mailutils import *
 from mailpile.search import *
 from mailpile.util import *
@@ -189,10 +190,11 @@ class Http(Hacks):
         try:
             uo = URLopener()
             uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
-            if method == 'POST':
-                (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
-            else:
-                (fn, hdrs) = uo.retrieve(url)
+            with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP]):
+                if method == 'POST':
+                    (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
+                else:
+                    (fn, hdrs) = uo.retrieve(url)
             hdrs = unicode(hdrs)
             data = open(fn, 'rb').read().strip()
             if data.startswith('{') and 'application/json' in hdrs:

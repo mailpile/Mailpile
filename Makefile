@@ -73,6 +73,7 @@ alltests: pytests clean docs
 pytests:
 	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py
 	@echo -n 'config           ' && python2 mailpile/config.py
+	@echo -n 'conn_brokers     ' && python2 mailpile/conn_brokers.py
 	@echo -n 'util             ' && python2 mailpile/util.py
 	@echo -n 'vcard            ' && python2 mailpile/vcard.py
 	@echo -n 'workers          ' && python2 mailpile/workers.py

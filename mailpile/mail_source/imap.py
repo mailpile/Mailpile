@@ -52,6 +52,7 @@ try:
 except ImportError:
     import StringIO
 
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -503,7 +504,8 @@ class ImapMailSource(BaseMailSource):
 
         try:
             def mkconn():
-                return conn_cls(my_config.host, my_config.port)
+                with ConnBroker.context(need=[ConnBroker.OUTGOING_IMAP]):
+                    return conn_cls(my_config.host, my_config.port)
             conn = self.timed(mkconn)
             conn.debug = ('imaplib' in self.session.config.sys.debug
                           ) and 4 or 0
