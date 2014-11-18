@@ -536,8 +536,9 @@ class BaseMailSource(threading.Thread):
             # not grow without bounds or misrepresent things.
             gone = []
             src_keys = set(src.keys())
+            loc_keys = set(loc.keys())
             for key, val in loc.source_map.iteritems():
-                if val not in loc or key not in src_keys:
+                if (val not in loc_keys) or (key not in src_keys):
                     gone.append(key)
             for key in gone:
                 del loc.source_map[key]
@@ -545,8 +546,8 @@ class BaseMailSource(threading.Thread):
             # Figure out what actually needs to be downloaded, log it
             keys = sorted(src_keys - set(loc.source_map.keys()))
             progress.update({
-                'total': len(src.keys()),
-                'total_local': len(loc.keys()),
+                'total': len(src_keys),
+                'total_local': len(loc_keys),
                 'uncopied': len(keys),
                 'batch_size': stop_after if (stop_after > 0) else len(keys)
             })
