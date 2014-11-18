@@ -79,7 +79,7 @@ class UrlMap:
         Return an instantiated mailpile.command object or raise a UsageError.
 
         >>> urlmap._command('output', args=['html'], method=False)
-        <mailpile.commands.Output instance at 0x...>
+        <mailpile.commands.Output...>
         >>> urlmap._command('bogus')
         Traceback (most recent call last):
             ...
@@ -95,7 +95,7 @@ class UrlMap:
         BadDataError: Bad variable (evil): message/update
         >>> urlmap._command('search', args=['html'],
         ...                 query_data={'ui_': '1', 'q[]': 'foobar'})
-        <mailpile.plugins.search.Search instance at 0x...>
+        <mailpile.plugins.search.Search...>
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
@@ -183,14 +183,14 @@ class UrlMap:
         >>> path_parts = '/a/b/as.json'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
+        (['', 'a', 'b'], <mailpile.commands.Output...>)
 
         If there is no filename part, the path_parts list is unchanged
         aside from stripping off the trailing empty string if present.
         >>> path_parts = '/a/b/'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
+        (['', 'a', 'b'], <mailpile.commands.Output...>)
         >>> path_parts = '/a/b'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         Traceback (most recent call last):
@@ -348,7 +348,7 @@ class UrlMap:
         The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
+        (<...UrlRedirect...>, ('/in/inbox/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
@@ -711,15 +711,15 @@ else:
     ])
     session = mailpile.ui.Session(config)
     urlmap = UrlMap(session)
-    urlmap.print_map_markdown()
+    if '-nomap' in sys.argv:
+        # For the UrlMap._map_api_command test
+        plugin_manager.register_commands(UrlRedirect)
 
-    # For the UrlMap._map_api_command test
-    plugin_manager.register_commands(UrlRedirect)
-
-    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
-                              extraglobs={'urlmap': urlmap,
-                                          'request': None})
-    print
-    print '<!-- %s -->' % (results, )
-    if results.failed:
-        sys.exit(1)
+        results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                                  extraglobs={'urlmap': urlmap,
+                                              'request': None})
+        print '%s' % (results, )
+        if results.failed:
+            sys.exit(1)
+    else:
+        urlmap.print_map_markdown()
