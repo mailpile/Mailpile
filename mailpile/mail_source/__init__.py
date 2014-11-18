@@ -539,13 +539,16 @@ class BaseMailSource(threading.Thread):
 
             for key in keys:
                 if self._check_interrupt(clear=False):
+                    progress['interrupted'] = True
                     return count
                 play_nice_with_threads()
                 if key not in loc.source_map:
                     session.ui.mark(_('Copying message: %s') % key)
+                    progress['copying_src_id'] = key
                     data = src.get_bytes(key)
                     loc_key = loc.add_from_source(key, data)
                     self.event.data['counters']['copied_messages'] += 1
+                    del progress['copying_src_id']
                     progress['copied_messages'] += 1
                     progress['copied_bytes'] += len(data)
 
@@ -556,12 +559,16 @@ class BaseMailSource(threading.Thread):
 
                     stop_after -= 1
                     if stop_after == 0:
+                        progress['stopped'] = True
                         return count
             progress['complete'] = True
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
-            pass
+            progress['ioerror'] = True
+        except:
+            progress['raised'] = True
+            raise
         finally:
             progress['running'] = False
         return count
