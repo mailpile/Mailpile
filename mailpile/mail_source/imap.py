@@ -330,13 +330,15 @@ class SharedImapMailbox(Mailbox):
             #        adapt the chunk size here to actual network performance.
             #
             chunk_size = self.source.timeout * 1024
-            for chunk in range(0, 1 + msg_bytes // chunk_size):
+            chunks = 1 + msg_bytes // chunk_size
+            for chunk in range(0, chunks):
                 req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
                 # Note: use the raw method, not the convenient parsed version.
                 typ, data = self.source.timed(imap.uid,
                                               'FETCH', info['UID'], req,
                                               mailbox=self.path)
-                self._assert(typ == 'OK',
+                self._assert((typ == 'OK') and (chunk == chunks-1 or
+                                                len(data[0][1]) == chunk_size),
                              _('Fetching chunk %d failed') % chunk)
                 msg_data.append(data[0][1])
 
