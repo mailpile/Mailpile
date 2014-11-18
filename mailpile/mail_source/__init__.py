@@ -538,11 +538,12 @@ class BaseMailSource(threading.Thread):
             })
 
             for key in keys:
-                if self._check_interrupt(clear=False):
-                    progress['interrupted'] = True
-                    return count
-                play_nice_with_threads()
                 if key not in loc.source_map:
+                    if self._check_interrupt(clear=False):
+                        progress['interrupted'] = True
+                        return count
+                    play_nice_with_threads()
+
                     session.ui.mark(_('Copying message: %s') % key)
                     progress['copying_src_id'] = key
                     data = src.get_bytes(key)
