@@ -32,3 +32,10 @@ $(document).on('click', '#button-modal-add-tag', function(e) {
   e.preventDefault();
   Mailpile.UI.Modals.TagAddProcess($(this).data('location'));
 });
+
+
+$(document).on('click', '.hide-donate-page', function(e) {
+  Mailpile.API.settings_set_post({ 'web.donate_visibility': 'False' }, function(e) {
+    window.location.href = '/in/inbox/';
+  });
+});

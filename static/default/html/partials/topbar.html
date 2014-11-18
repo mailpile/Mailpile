@@ -34,9 +34,11 @@
           <a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ a.icon }}"></a>
         </li>
         {%- endfor -%}
+        {% if config.web.donate_visibility %}
         <li class="{% if command == "page" %} navigation-on{% endif %}">
           <a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
         </li>
+        {% endif %}
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
           <a id="button-settings" href="/setup/#" data-target="#" class="nav-icon dropdown-toggle" data-toggle="dropdown" alt="{{_("Settings")}}" aria-haspopup="true" aria-expanded="false"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="button-settings">
