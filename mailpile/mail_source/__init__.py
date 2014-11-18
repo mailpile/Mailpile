@@ -531,37 +531,40 @@ class BaseMailSource(threading.Thread):
                 loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
                 return count
-            keys = list(src.iterkeys())
+
+            keys = set(src.keys()) - set(loc.source_map.keys())
             progress.update({
-                'total': len(keys),
+                'total': len(src.keys()),
+                'total_local': len(loc.keys()),
+                'uncopied': len(keys),
                 'batch_size': stop_after if (stop_after > 0) else len(keys)
             })
 
-            for key in keys:
-                if key not in loc.source_map:
-                    if self._check_interrupt(clear=False):
-                        progress['interrupted'] = True
-                        return count
-                    play_nice_with_threads()
+            for key in sorted(keys):
+                if self._check_interrupt(clear=False):
+                    progress['interrupted'] = True
+                    return count
+                play_nice_with_threads()
 
-                    session.ui.mark(_('Copying message: %s') % key)
-                    progress['copying_src_id'] = key
-                    data = src.get_bytes(key)
-                    loc_key = loc.add_from_source(key, data)
-                    self.event.data['counters']['copied_messages'] += 1
-                    del progress['copying_src_id']
-                    progress['copied_messages'] += 1
-                    progress['copied_bytes'] += len(data)
+                session.ui.mark(_('Copying message: %s') % key)
+                progress['copying_src_id'] = key
+                data = src.get_bytes(key)
+                loc_key = loc.add_from_source(key, data)
+                self.event.data['counters']['copied_messages'] += 1
+                del progress['copying_src_id']
+                progress['copied_messages'] += 1
+                progress['copied_bytes'] += len(data)
+                progress['uncopied'] -= 1
 
-                    # This forks off a scan job to index the message
-                    config.index.scan_one_message(
-                        session, mbx_key, loc, loc_key,
-                        wait=False, msg_data=data, **scan_args)
+                # This forks off a scan job to index the message
+                config.index.scan_one_message(
+                    session, mbx_key, loc, loc_key,
+                    wait=False, msg_data=data, **scan_args)
 
-                    stop_after -= 1
-                    if stop_after == 0:
-                        progress['stopped'] = True
-                        return count
+                stop_after -= 1
+                if stop_after == 0:
+                    progress['stopped'] = True
+                    return count
             progress['complete'] = True
         except IOError:
             # These just abort the download/read, which we're going to just
