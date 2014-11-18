@@ -425,7 +425,7 @@ class MailIndex:
                 value = CleanText(msg[name], replace='_').clean
             # Note: decode_header does the wrong thing with "quoted" data.
             decoded = email.header.decode_header((value or ''
-                                                  ).replace('"', ''))
+                                                  ).encode("utf-8").replace('"', ''))
             return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
                     ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
         except email.errors.HeaderParseError:
