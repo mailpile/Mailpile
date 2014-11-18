@@ -19,15 +19,11 @@
       <span class="address"><%= address %></span>
     </div>
   </div>
-  <% if (flags.secure) { %>
-  <div class="text-center">
-    <% _.each(keys, function(key) { %>
-    <%= key.fingerprint %>
-    <% }); %>
-  <% } else { %>
-    <a href="#" data-address="<%= address %>" class="compose-contact-find-keys"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a>
-  <% } %>
-  </div>
+  <p class="half-bottom text-center">
+    <a href="#" data-address="<%= address %>" class="compose-contact-find-keys"><span class="icon-key"></span>
+    <% if (flags.secure) { %>{{_("Show Encryption Keys")}}<% } else { %>{{_("Find Encryption Keys")}}<% } %>
+    </a>
+  </p>
 </script>
 
 
@@ -36,7 +32,7 @@
     <% _.each(tag.subtag_ids, function(stid, key) { var subtag = _.findWhere(Mailpile.instance.tags, {tid: stid}); %>
     <li class="clearfix">
       <a href="/in/<%= subtag.slug %>/" style="color: <%= subtag.label_color %>" class="left"><span class="<%= subtag.icon %>"></span> <%= subtag.name %></a> 
-      <a class="right link-detail" href="/tags/edit.html?only=<%= subtag.tid %>"><span class="icon-settings"></span></a>
+      <a class="right link-detail" href="/tags/edit.html?only=<%= subtag.slug %>"><span class="icon-settings"></span></a>
     </li>
     <% }); %>
   </ul>
