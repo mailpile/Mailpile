@@ -532,7 +532,7 @@ class BaseMailSource(threading.Thread):
             if src == loc:
                 return count
 
-            keys = set(src.keys()) - set(loc.source_map.keys())
+            keys = sorted(set(src.keys()) - set(loc.source_map.keys()))
             progress.update({
                 'total': len(src.keys()),
                 'total_local': len(loc.keys()),
@@ -540,7 +540,7 @@ class BaseMailSource(threading.Thread):
                 'batch_size': stop_after if (stop_after > 0) else len(keys)
             })
 
-            for key in sorted(keys):
+            for key in reversed(keys):
                 if self._check_interrupt(clear=False):
                     progress['interrupted'] = True
                     return count
