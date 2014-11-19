@@ -232,7 +232,6 @@ def test_composition():
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 1)
     assert(mp.search('tag:sent').result['stats']['count'] == 0)
-    assert(mp.search('tag:doesnotexit').result['stats']['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
@@ -315,6 +314,9 @@ def test_composition():
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
+
+    # Test what happens when we search for a non-existant tag
+    assert(mp.search('tag:doesnotexit').result['stats']['count'] == 0)
 
 def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
