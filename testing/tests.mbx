@@ -2392,7 +2392,7 @@ Date: Fri, 10 Jan 2014 15:32:15 +0000
 From: Bjarni Runar Einarsson <bre@slinky>
 To: Bjarni Runar Einarsson <bre@slinky>
 Cc: Nobody <nobody@nowhere.com>
-Subject: Testing encryption
+Subject: Testing encryption, raw ISO-8859-1: áéíóúışæöğÁÉÍÓÚİŞÆÖĞ
 Message-ID: <20140110153215.GA12247@slinky>
 MIME-Version: 1.0
 Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";
@@ -2440,7 +2440,7 @@ Received: by slinky (Postfix, from userid 1000)
 Date: Fri, 10 Jan 2014 15:32:54 +0000
 From: Bjarni Runar Einarsson <bre@slinky>
 To: Bjarni Runar Einarsson <bre@slinky>
-Subject: Testing signatures
+Subject: Testing signatures, raw UTF-8: Ã¡Ã©Ã­Ã³ÃºÃ½Ã¾Ã¦Ã¶Ã°ÃÃ‰ÃÃ“ÃšÃÃÃ†Ã–Ã
 Message-ID: <20140110153254.GB12247@slinky>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;

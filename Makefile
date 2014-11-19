@@ -67,11 +67,12 @@ web: less js
 
 alltests: clean pytests
 	@chmod go-rwx testing/gpg-keyring
-	@python2 scripts/mailpile-test.py
+	@python2 scripts/mailpile-test.py || true
 	@nosetests
 
 pytests:
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
+	@echo -n 'search           ' && python2 mailpile/search.py
 	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py
 	@echo -n 'config           ' && python2 mailpile/config.py
 	@echo -n 'conn_brokers     ' && python2 mailpile/conn_brokers.py

@@ -82,7 +82,7 @@ class CachedSearchResultSet(SearchResultSet):
         SEARCH_RESULT_CACHE = {}
 
 
-class MailIndex:
+class MailIndex(object):
     """This is a lazily parsing object representing a mailpile index."""
 
     MSG_MID = 0
@@ -406,30 +406,80 @@ class MailIndex:
             else:
                 session.ui.warning(_('Bogus line: %s') % line)
 
-    def try_decode(self, text, charset):
-        for cs in (charset, 'iso-8859-1', 'utf-8'):
+    @classmethod
+    def try_decode(self, text, charset, replace=''):
+        # FIXME: We need better heuristics for choosing charsets, as pretty
+        #        much any 8-bit legacy charset will decode pretty much any
+        #        blob of data. At least utf-8 will raise on some things
+        #        (which is why we make it the 1st guess), but still not all.
+        for cs in (charset, 'utf-8', 'iso-8859-1'):
             if cs:
                 try:
                     return text.decode(cs)
                 except (UnicodeEncodeError, UnicodeDecodeError, LookupError):
                     pass
-        return "".join(i for i in text if ord(i) < 128)
+        return "".join((i if (ord(i) < 128) else replace) for i in text)
 
-    def hdr(self, msg, name, value=None):
-        try:
-            if value is None and msg:
-                # Security: RFC822 headers are not allowed to have (unencoded)
-                # non-ascii characters in them, so we just strip them all out
-                # before parsing.
-                # FIXME: This is "safe", but can we be smarter/gentler?
-                value = CleanText(msg[name], replace='_').clean
-            # Note: decode_header does the wrong thing with "quoted" data.
-            decoded = email.header.decode_header((value or ''
-                                                  ).replace('"', ''))
-            return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
-                    ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-        except email.errors.HeaderParseError:
-            return ''
+    @classmethod
+    def hdr(self, msg, name, value=None, charset=None):
+        """
+        This method stubbornly tries to decode header data and convert
+        to Pythonic unicode strings. The strings are guaranteed not to
+        contain tab, newline or carriage return characters.
+
+        If used with a message object, the header and the MIME charset
+        will be inferred from the message headers.
+        >>> hdr = MailIndex.hdr
+        >>> msg = email.message.Message()
+        >>> msg['content-type'] = 'text/plain; charset=utf-8'
+        >>> msg['from'] = 'G\\xc3\\xadsli R \\xc3\\x93la <f@b.is>'
+        >>> hdr(msg, 'from')
+        u'G\\xedsli R \\xd3la <f@b.is>'
+
+        The =?...?= MIME header encoding is also recognized and processed.
+
+        >>> hdr(None, None, '=?iso-8859-1?Q?G=EDsli_R_=D3la?=\\r\\n<f@b.is>')
+        u'G\\xedsli R \\xd3la <f@b.is>'
+
+        >>> hdr(None, None, '"=?utf-8?Q?G=EDsli_R?= =?iso-8859-1?Q?=D3la?="')
+        u'G\\xedsli R \\xd3la'
+
+        And finally, guesses are made with raw binary data. This process
+        could be improved, it currently only attempts utf-8 and iso-8859-1.
+
+        >>> hdr(None, None, '"G\\xedsli R \\xd3la"\\r\\t<f@b.is>')
+        u'"G\\xedsli R \\xd3la"  <f@b.is>'
+
+        >>> hdr(None, None, '"G\\xc3\\xadsli R \\xc3\\x93la"\\n <f@b.is>')
+        u'"G\\xedsli R \\xd3la"  <f@b.is>'
+        """
+        if value is None:
+            value = msg and msg[name] or ''
+            charset = charset or msg.get_content_charset() or 'utf-8'
+        else:
+            charset = charset or 'utf-8'
+
+        if not isinstance(value, unicode):
+            # Already a str! Oh shit, might be nasty binary data.
+            value = self.try_decode(value, charset, replace='?')
+
+        # At this point we know we have a unicode string. Next we try
+        # to very stubbornly decode and discover character sets.
+        if '=?' in value and '?=' in value:
+            try:
+                # decode_header wants an unquoted str (not unicode)
+                value = value.encode('utf-8').replace('"', '')
+                # decode_header gets confused by newlines
+                value = value.replace('\r', ' ').replace('\n', ' ')
+                # Decode!
+                pairs = email.header.decode_header(value)
+                value = ' '.join([self.try_decode(t, cs or charset)
+                                  for t, cs in pairs])
+            except email.errors.HeaderParseError:
+                pass
+
+        # Finally, return the unicode data, with white-space normalized
+        return value.replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
 
     def _remove_location(self, session, msg_ptr):
         msg_idx_pos = self.PTRS[msg_ptr]
@@ -1083,7 +1133,7 @@ class MailIndex:
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
-            charset = part.get_content_charset() or 'iso-8859-1'
+            charset = part.get_content_charset() or 'utf-8'
 
             def _loader(p):
                 if payload[0] is None:
@@ -1682,3 +1732,13 @@ class MailIndex:
                                ) % (count, _(how)))
 
         return True
+
+
+if __name__ == '__main__':
+    import doctest
+    import sys
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={})
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)
