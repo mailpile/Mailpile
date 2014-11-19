@@ -1658,6 +1658,7 @@ class MailIndex(object):
             return
 
         count = len(results)
+        how = how or 'flat-unsorted'
         session.ui.mark(_n('Sorting %d message by %s...',
                            'Sorting %d messages by %s...',
                            count

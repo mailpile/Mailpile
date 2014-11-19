@@ -169,7 +169,8 @@ class Search(Command):
             context = session.results if self.context else None
             session.results = list(idx.search(session, session.searched,
                                               context=context).as_set())
-            idx.sort_results(session, session.results, session.order)
+            if session.order:
+                idx.sort_results(session, session.results, session.order)
 
         return session, idx
 
