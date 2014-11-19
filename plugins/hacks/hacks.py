@@ -253,39 +253,43 @@ class CheckMailbox(Hacks):
                         session.ui.mark('%s: %s: Message %d/%d (%d%%)'
                                         % (mbx_id, what, i, n, 100 * i / n))
 
-                result['messages'] = len(mbx)
-                session.ui.mark('%s: Checking %d messages'
-                                % (mbx_id, len(mbx)))
-                counts = [0, len(mbx)]
-                for key in list(mbx.iterkeys()):
-                    _mark_progress('Checking', counts)
-                    try:
-                        message = mbx[key]  # FIXME: We only need the header
-                    except KeyError:
-                        traceback.print_exc()
-                        session.ui.notify('%s: Not in mailbox: %s'
-                                          % (mbx_id, key))
-                        continue
+                # We do the scan with the mailbox locked, just to be a bit
+                # paranoid. Not doing this was a good way to find bugs...
+                with mbx:
+                    mbx.update_toc()
+                    result['messages'] = len(mbx)
+                    session.ui.mark('%s: Checking %d messages'
+                                    % (mbx_id, len(mbx)))
+                    counts = [0, len(mbx)]
+                    for key in list(mbx.keys()):
+                        _mark_progress('Checking', counts)
+                        try:
+                            message = mbx[key]  # FIXME: only need header...
+                        except KeyError:
+                            traceback.print_exc()
+                            session.ui.notify('%s: Not found in mailbox: %s'
+                                              % (mbx_id, key))
+                            continue
 
-                    enc_msgid = idx.get_msg_id(message, 'bogus')
-                    msgids[key] = enc_msgid
-                    if enc_msgid in seen:
-                        seen[enc_msgid].add(key)
-                    else:
-                        seen[enc_msgid] = set([key])
-                    msg_idx_pos = idx.MSGIDS.get(enc_msgid)
-                    if msg_idx_pos is None:
-                        session.ui.notify('%s: Not in index: %s %s'
-                                          % (mbx_id, key, enc_msgid))
-                        result['unindexed'].append((key, enc_msgid))
-                    else:
-                        msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
-                        for ptr in msg_info[idx.MSG_PTRS].split(','):
-                            if ptr[:MBX_ID_LEN] == mbx_id:
-                                indexed[enc_msgid] = ptr[MBX_ID_LEN:]
+                        enc_msgid = idx.get_msg_id(message, 'bogus')
+                        msgids[key] = enc_msgid
+                        if enc_msgid in seen:
+                            seen[enc_msgid].add(key)
+                        else:
+                            seen[enc_msgid] = set([key])
+                        msg_idx_pos = idx.MSGIDS.get(enc_msgid)
+                        if msg_idx_pos is None:
+                            session.ui.notify('%s: Not in index: %s %s'
+                                              % (mbx_id, key, enc_msgid))
+                            result['unindexed'].append((key, enc_msgid))
+                        else:
+                            msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                            for ptr in msg_info[idx.MSG_PTRS].split(','):
+                                if ptr[:MBX_ID_LEN] == mbx_id:
+                                    indexed[enc_msgid] = ptr[MBX_ID_LEN:]
 
-                    if 'x-mp-internal-readonly' in message:
-                        result['finalized'].append(key)
+                        if 'x-mp-internal-readonly' in message:
+                            result['finalized'].append(key)
 
                 for msg_id, keys in seen.iteritems():
                     if len(keys) > 1:
