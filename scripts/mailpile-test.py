@@ -315,8 +315,6 @@ def test_composition():
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
-    # Test what happens when we search for a non-existant tag
-    assert(mp.search('tag:doesnotexit').result['stats']['count'] == 0)
 
 def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
