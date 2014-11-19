@@ -43,7 +43,6 @@ class EditableSearchResults(SearchResults):
 
 def AddComposeMethods(cls):
     class newcls(cls):
-        WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
         COMMAND_CACHE_TTL = 0
 
         def _create_contacts(self, emails):
@@ -297,15 +296,16 @@ class Draft(AddComposeMethods(View)):
 
     def _side_effects(self, emails):
         session, idx = self.session, self._idx()
-        if not emails:
-            session.ui.mark(_('No messages!'))
-        elif session.ui.edit_messages(session, emails):
-            self._tag_blank(emails, untag=True)
-            self._tag_drafts(emails)
-            self._background_save(index=True)
-            self.message = _('%d message(s) edited') % len(emails)
-        else:
-            self.message = _('%d message(s) unchanged') % len(emails)
+        with GLOBAL_EDITING_LOCK:
+            if not emails:
+                session.ui.mark(_('No messages!'))
+            elif session.ui.edit_messages(session, emails):
+                self._tag_blank(emails, untag=True)
+                self._tag_drafts(emails)
+                self._background_save(index=True)
+                self.message = _('%d message(s) edited') % len(emails)
+            else:
+                self.message = _('%d message(s) unchanged') % len(emails)
         session.ui.mark(self.message)
         return None
 
@@ -655,6 +655,7 @@ class Attach(CompositionCommand):
     """Attach a file to a message"""
     SYNOPSIS = ('a', 'attach', 'message/attach', '<messages> [<path/to/file>]')
     ORDER = ('Composing', 2)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -728,6 +729,7 @@ class UnAttach(CompositionCommand):
     """Remove an attachment from a message"""
     SYNOPSIS = (None, 'unattach', 'message/unattach', '<mid> <atts>')
     ORDER = ('Composing', 2)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -822,6 +824,12 @@ class Sendit(CompositionCommand):
             mids = self._choose_messages(args)
             emails = [Email(idx, i) for i in mids]
 
+        # First make sure the draft tags are all gone, so other edits either
+        # fail or complete while we wait for the lock.
+        with GLOBAL_EDITING_LOCK:
+            self._tag_drafts(emails, untag=True)
+            self._tag_blank(emails, untag=True)
+
         # Process one at a time so we don't eat too much memory
         sent = []
         missing_keys = []
@@ -889,8 +897,6 @@ class Sendit(CompositionCommand):
         if sent:
             self._tag_sent(sent)
             self._tag_outbox(sent, untag=True)
-            self._tag_drafts(sent, untag=True)
-            self._tag_blank(sent, untag=True)
             for email in sent:
                 email.reset_caches()
                 idx.index_email(self.session, email)
@@ -905,6 +911,7 @@ class Update(CompositionCommand):
     """Update message from a file or HTTP upload."""
     SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
     ORDER = ('Composing', 1)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
                                 Attach.HTTP_POST_VARS)
