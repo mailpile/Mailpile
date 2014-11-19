@@ -72,6 +72,7 @@ class CapabilityFailure(IOError):
     """
     This exception is raised when capability requirements can't be satisfied.
     It extends the IOError, so unaware code just thinks the network is lame.
+
     >>> try:
     ...     raise CapabilityFailure('boo')
     ... except IOError:

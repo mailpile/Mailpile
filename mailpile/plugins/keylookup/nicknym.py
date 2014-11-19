@@ -1,7 +1,8 @@
 #coding:utf-8
 
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.conn_brokers import Master as ConnBroker
+from mailpile.plugins import PluginManager
 from mailpile.plugins.search import Search
 from mailpile.mailutils import Email
 # from mailpile.crypto.state import *
@@ -65,7 +66,8 @@ class Nicknym:
         if server == None: server = self._discover_server(address)
 
         data = urllib.urlencode({"address": address})
-        r = urllib2.urlopen(server, data)
+        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):
+            r = urllib2.urlopen(server, data)
         result = r.read()
         result, signature = self._parse_result(result)
         return result, signature
