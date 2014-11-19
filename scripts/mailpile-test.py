@@ -232,6 +232,7 @@ def test_composition():
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 1)
     assert(mp.search('tag:sent').result['stats']['count'] == 0)
+    assert(mp.search('tag:doesnotexit').result['stats']['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
