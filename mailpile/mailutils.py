@@ -635,6 +635,8 @@ class Email(object):
         if filedata and fn in filedata:
             data = filedata[fn]
         else:
+            if isinstance(fn, unicode):
+                fn = fn.encode('utf-8')
             data = open(fn, 'rb').read()
         ctype, encoding = mimetypes.guess_type(fn)
         maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
@@ -645,9 +647,16 @@ class Email(object):
             att.set_payload(data)
             encoders.encode_base64(att)
         att.add_header('Content-Id', MakeContentID())
+
+        # FS paths are strings of bytes, should be represented as utf-8 for
+        # correct header encoding.
+        base_fn = os.path.basename(fn)
+        if not isinstance(base_fn, unicode):
+            base_fn = base_fn.decode('utf-8')
+
         att.add_header('Content-Disposition', 'attachment',
-                       filename=self.encoded_hdr(None, 'file',
-                                                 value=os.path.basename(fn)))
+                       filename=self.encoded_hdr(None, 'file', base_fn))
+
         att.signature_info = SignatureInfo(parent=msg.signature_info)
         att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
