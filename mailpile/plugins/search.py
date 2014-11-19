@@ -92,7 +92,9 @@ class Search(Command):
             t = t[len(p):]
             if t.startswith('tag:') or t.startswith('in:'):
                 try:
-                    t = 'in:%s' % session.config.get_tag(t.split(':')[1]).slug
+                    raw_tag = session.config.get_tag(t.split(':')[1])
+                    if raw_tag and raw_tag.hasattr(slug):
+                        t = 'in:%s' % raw_tag.slug
                 except (IndexError, KeyError, TypeError):
                     pass
             return p+t
