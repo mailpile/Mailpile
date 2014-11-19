@@ -1,6 +1,6 @@
 # Welcome to Mailpile! #
 
-[![Build Status](https://img.shields.io/travis/pagekite/Mailpile/master.svg)](https://travis-ci.org/pagekite/Mailpile)
+[![Build Status](https://img.shields.io/travis/mailpile/Mailpile/master.svg)](https://travis-ci.org/mailpile/Mailpile)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 #### What Is Coming Down The Pipe? ####
