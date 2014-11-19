@@ -271,13 +271,7 @@ class SharedImapMailbox(Mailbox):
         self._factory = None  # Unused, for Mailbox compatibility
 
     def open_imap(self):
-        imap = self.source.open(throw=IMAP_IOError, conn_cls=self.conn_cls)
-        if imap is not None:
-            with imap:
-                imap.select(self.path)
-            return imap
-        else:
-            return None
+        return self.source.open(throw=IMAP_IOError, conn_cls=self.conn_cls)
 
     def timed_imap(self, *args, **kwargs):
         return self.source.timed_imap(*args, **kwargs)
@@ -305,6 +299,11 @@ class SharedImapMailbox(Mailbox):
             ok, data = self.timed_imap(imap.store, '+FLAGS', r'\Deleted',
                                        mailbox=self.path)
             self._assert(ok, _('Failed to remove message'))
+
+    def mailbox_info(self, k, default=None):
+        with self.open_imap() as imap:
+            imap.select(self.path)
+            return imap.mailbox_info(k, default=default)
 
     def get_info(self, key):
         with self.open_imap() as imap:
@@ -606,14 +605,13 @@ class ImapMailSource(BaseMailSource):
         src = self.session.config.open_mailbox(self.session,
                                                FormatMbxId(mbx._key),
                                                prefer_local=False)
-        with src.open_imap() as imap:
-            uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
-            ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
-            uvex = '%s/%s' % (uv, ex)
-            if uvex == '0/0':
-                return True
-            return (uvex != self.event.data.get('mailbox_state',
-                                                {}).get(mbx._key))
+        uv = state['uv'] = src.mailbox_info('UIDVALIDITY', ['0'])[0]
+        ex = state['ex'] = src.mailbox_info('EXISTS', ['0'])[0]
+        uvex = '%s/%s' % (uv, ex)
+        if uvex == '0/0':
+            return True
+        return (uvex != self.event.data.get('mailbox_state',
+                                            {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
         uvex = '%s/%s' % (state['uv'], state['ex'])
