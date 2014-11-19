@@ -271,7 +271,13 @@ class SharedImapMailbox(Mailbox):
         self._factory = None  # Unused, for Mailbox compatibility
 
     def open_imap(self):
-        return self.source.open(throw=IMAP_IOError, conn_cls=self.conn_cls)
+        imap = self.source.open(throw=IMAP_IOError, conn_cls=self.conn_cls)
+        if imap is not None:
+            with imap:
+                imap.select(self.path)
+            return imap
+        else:
+            return None
 
     def timed_imap(self, *args, **kwargs):
         return self.source.timed_imap(*args, **kwargs)
@@ -604,6 +610,8 @@ class ImapMailSource(BaseMailSource):
             uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
             ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
             uvex = '%s/%s' % (uv, ex)
+            if uvex == '0/0':
+                return True
             return (uvex != self.event.data.get('mailbox_state',
                                                 {}).get(mbx._key))
 
