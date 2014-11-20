@@ -4,6 +4,7 @@
 {% include("jsapi/crypto/find.js") %}
 {% include("jsapi/crypto/import.js") %}
 {% include("jsapi/crypto/modals.js") %}
+{% include("jsapi/crypto/tooltips.js") %}
 
 /* JS - Compose */
 {% include("jsapi/compose/init.js") %}
