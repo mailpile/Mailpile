@@ -3,7 +3,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"></h4>
       </div>
       <div class="modal-body"></div>
@@ -19,7 +19,7 @@
   <form id="modal-form-tag-add" class="standard">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-tag"></span> {{_("Add Tag")}}</h4>
       </div>
       <div class="modal-body clearfix">    
@@ -42,12 +42,11 @@
   <form id="form-contact-add" class="standard">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-user"></span> {{_("Add Contact")}}</h4>
       </div>
       <div class="modal-body clearfix">
         <input type="hidden" class="contact-add-mid">
-        <fieldset class="contact-add-fields">
           <input type="hidden" name="csrf" value="">
           <label>{{_("Name")}}</label>
           <input type="text" name="name" data-type="name" class="contact-add-name" value="<%= name %>" placeholder="Chelsea Manning">
@@ -56,18 +55,17 @@
           <!-- FIXME: add support for parsing signatures
           <div class="contact-add-signature"></div>
           -->
-        </fieldset>
-      </div>
-      <div class="modal-footer">
-        <!-- FIXME: implement some method of finding encryption keys after this action
-        <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-secondary left">
-          <span class="icon-key"></span> {{_("Find Encryption Keys")}}
-        </button>
-        -->
-        <button title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary" data-action="add">
+          <!-- FIXME: implement some method of finding encryption keys after this action
+          <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-secondary left">
+            <span class="icon-key"></span> {{_("Find Encryption Keys")}}
+          </button>
+          -->
+
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add">
           <span class="icon-plus"></span> {{_("Add")}}
         </button>
       </div>
+      <!-- <div class="modal-footer"></div> -->
     </div>
   </form>
   </div>
@@ -99,7 +97,7 @@
   <form id="form-tag-picker">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
       </div>
       <div class="modal-body modal-body-light-gray">
@@ -133,7 +131,7 @@
   <div class="modal-dialog">
    <div class="modal-content">
     <div class="modal-header">
-      <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
       <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Encryption Keys")}}</h4>
     </div>
     <div class="modal-body clearfix">
@@ -154,7 +152,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
           <span class="icon-key"></span>
           <span class="title">{{_("Find Encryption Keys")}}</span>
@@ -181,7 +179,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
           <span class="icon-compose"></span>
           <span class="title">{{_("Quoted Replies")}}</span>
@@ -204,7 +202,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close button-primary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">
           <span class="icon-lock-open color-10-orange"></span>
           <span class="title">{{_("Cannot Encrypt")}}</span>
