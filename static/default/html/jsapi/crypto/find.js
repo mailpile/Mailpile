@@ -13,6 +13,9 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       var uid = _.findWhere(key.uids, {email: options.query});
       var avatar   = '/static/img/avatar-default.png';
   
+      console.log(key);
+
+
       // Try to find Avatar
       if (uid) {
         var contact  = _.findWhere(Mailpile.instance.addresses, {address: uid.email});
@@ -21,16 +24,43 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
             avatar = contact.photo;
           }
         }
-      } else {
-        var uid = {
-          name: '{{_("No Name")}}',
-          email: '{{_("No Email")}}',
-          note: ''
-        };
+      } 
+
+      
+      // Values for Featured items
+      var uid = {
+        name: '{{_("No Name")}}',
+        email: '{{_("No Email")}}',
+        note: ''
+      };
+
+      if (key.uids[0].name) {
+        uid.name = key.uids[0].name;
       }
-  
+      if (key.uids[0].email) {
+        uid.email = key.uids[0].email;
+      }
+      if (key.uids[0].note) {
+        uid.note = key.uids[0].note;
+      }
+
+
+      // Key Score
+      var score_color = 'color-01-gray-mid';
+      if (key.score_stars >= 5) {
+        score_color = 'color-08-green';
+      } else if (key.score_stars < 5 && key.score_stars > 2) {
+        score_color = 'color-06-blue';
+      } else if (key.score_stars <= 2 && key.score_stars >= 0) {
+        score_color = 'color-09-yellow';
+      } else if (key.score_stars < 2 && key.score_stars > -3) {
+        score_color = 'color-10-orange';
+      } else if (key.score_stars < -3) {
+        score_color = 'color-12-red';
+      }
+
       // Show View
-      var item_data     = _.extend({ avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
+      var item_data     = _.extend({ score_color: score_color, avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
       var item_template = _.template($('#template-crypto-encryption-key').html());
       items_html += item_template(item_data);
   
@@ -71,6 +101,9 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
       .addClass('paragraph-success');
       var status = 'success';
   }
+
+  // Tooltips
+  Mailpile.Crypto.Tooltips.KeyScore();
 
   // Callback
   options.complete(status);
