@@ -21,6 +21,8 @@ Mailpile = {
   contacts_cache:     [],
   keybindings:        [
     ["normal", "/",      function() { $("#search-query").focus(); return false; }],
+    ["normal", "a c",    function() { Mailpile.UI.Modals.ContactAdd(); }],
+    ["normal", "a t",    function() { Mailpile.UI.Modals.TagAdd(); }],
     ["normal", "c",      function() { Mailpile.activities.compose(); }],
     ["normal", "g i",    function() { Mailpile.go("/in/inbox/"); }],
     ["normal", "g d",    function() { Mailpile.go("/in/drafts/"); }],
