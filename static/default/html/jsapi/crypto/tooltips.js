@@ -2,22 +2,28 @@
 
 Mailpile.Crypto.Tooltips.KeyScore = function() {
   $('.searchkey-result-score').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        return $(this).data('score_reason') + '<small>{{_("Click For Details")}}</small>';
+      }
+    },
     style: {
       classes: 'qtip-tipped',
       tip: {
-        corner: 'top center',
-        mimic: 'top center',
+        corner: 'left middle',
+        mimic: 'left middle',
         border: 0,
         width: 10,
         height: 10
       }
     },
     position: {
-      my: 'bottom center',
-      at: 'bottom center',
+      my: 'left center',
+      at: 'right center',
 			viewport: $(window),
 			adjust: {
-				x: 5,  y: -25
+				x: 5,  y: 2
 			}
     },
     show: {
@@ -25,8 +31,8 @@ Mailpile.Crypto.Tooltips.KeyScore = function() {
       delay: 0
     },
     hide: {
-      event: true,
-      inactive: 500
+      event: 'click',
+      inactive: 2000
     }
   });
 };
