@@ -163,3 +163,24 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
     }
   });
 };
+
+Mailpile.Composer.Tooltips.AttachKey = function() {
+  $('.compose-attach-key').qtip({
+    position: {
+      my: 'bottom center',
+      at: 'bottom center',
+			viewport: $(window),
+			adjust: {
+				x: 5,  y: -25
+			}
+    },
+    show: {
+      event: 'mouseenter',
+      delay: 50
+    },
+    hide: {
+      event: true,
+      inactive: 750
+    }
+  });
+};

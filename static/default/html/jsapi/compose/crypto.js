@@ -86,6 +86,7 @@ Mailpile.Composer.Crypto.DetermineEncryption = function(mid, contact) {
     if (value) {
       count_total++;
       var check = Mailpile.Composer.Recipients.AnalyzeAddress(value);
+      console.log(check);
       if (check.flags.secure) {
         count_secure++;
       } else {
