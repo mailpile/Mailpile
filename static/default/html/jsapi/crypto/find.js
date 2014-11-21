@@ -12,9 +12,6 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       // Loop through UIDs for match to Query
       var uid = _.findWhere(key.uids, {email: options.query});
       var avatar   = '/static/img/avatar-default.png';
-  
-      console.log(key);
-
 
       // Try to find Avatar
       if (uid) {
@@ -24,26 +21,24 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
             avatar = contact.photo;
           }
         }
-      } 
+      } else {
 
-      
-      // Values for Featured items
-      var uid = {
-        name: '{{_("No Name")}}',
-        email: '{{_("No Email")}}',
-        note: ''
-      };
+        // UID Featured Item
+        var uid = {
+          name: '{{_("No Name")}}',
+          email: '{{_("No Email")}}'
+        };
 
-      if (key.uids[0].name) {
-        uid.name = key.uids[0].name;
+        if (key.uids[0].name) {
+          uid.name = key.uids[0].name;
+        }
+        if (key.uids[0].email) {
+          uid.email = key.uids[0].email;
+        }
+        if (key.uids[0].comment) {
+          uid.comment = key.uids[0].comment;
+        }
       }
-      if (key.uids[0].email) {
-        uid.email = key.uids[0].email;
-      }
-      if (key.uids[0].note) {
-        uid.note = key.uids[0].note;
-      }
-
 
       // Key Score
       var score_color = 'color-01-gray-mid';
@@ -67,13 +62,14 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       // Set Lookup State (data model)
       var key_data = {fingerprints: key.fingerprint, address: options.query, origins: key.origins };
       Mailpile.crypto_keylookup.push(key_data);
-
     }
-
  });
 
   // Show Results
   $(options.container).find('.result').append(items_html);
+
+  // Tooltips
+  Mailpile.Crypto.Tooltips.KeyScore();
 };
 
 
@@ -101,9 +97,6 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
       .addClass('paragraph-success');
       var status = 'success';
   }
-
-  // Tooltips
-  Mailpile.Crypto.Tooltips.KeyScore();
 
   // Callback
   options.complete(status);
