@@ -58,7 +58,17 @@ def _update_scores(key_id, key_info, known_keys_list):
         bits = int(key_info["keysize"])
         score = bits // 1024
         key_info['score'] += score
-        key_info['scores']['Encryption key size'] = [score, _('Encryption key is %d bits') % bits]
+
+        if bits >= 4096: 
+          key_strength = _('Encryption key is very strong')
+        elif bits >= 3072: 
+          key_strength = _('Encryption key is strong')
+        elif bits >= 2048:
+          key_strength = _('Encryption key is average')
+        else: 
+          key_strength = _('Encryption key is weak')
+
+        key_info['scores']['Encryption key strength'] = [score, key_strength]
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
