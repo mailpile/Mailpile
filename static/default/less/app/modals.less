@@ -76,7 +76,6 @@
   }
 
   .searchkey-result-item:hover {
-    cursor: pointer;
     background: @grayLight;
   }
 
@@ -89,7 +88,7 @@
   }
 
   .searchkey-result-item .name {
-    width: 150px;
+    width: 200px;
     display: inline-block;
     font-weight: bold;
     word-break: break-word;
@@ -117,10 +116,32 @@
     vertical-align: top;
   }
 
-  .searchkey-result-score {
-    width: 90px;
+  .searchkey-result-details {
+    font-size: 12px;
+    line-height: 18px;
   }
 
-  .searchkey-result-item .checkbox {
+  .searchkey-result-details table {
+    width: 100%;
+    border: 0px;
+    background: transparent; 
+  }
 
+  .searchkey-result-details table tr:hover {
+    background: transparent;
+  }
+
+  .searchkey-result-details table td {
+    width: 150px;
+    border: 0px;
+    padding: 0px 15px 0px 0px;
+    font-size: 12px;
+  }
+
+  .searchkey-result-score {
+    padding: 5px 3px 0 3px;
+  }
+
+  .searchkey-result-score:hover {
+    opacity: 0.60;
   }
