@@ -127,8 +127,7 @@
       <div class="avatar"><img src="<%= avatar %>"></div>
       <div class="name">
         <%= uid.name %><br>
-        <span><%= uid.email %></span><br>
-        <span><%= uid.note %></span>
+        <span><%= uid.email %></span>
       </div>
       <div class="right">
         <span class="icon-fingerprint"></span>
@@ -137,20 +136,41 @@
         </div>
       </div>
     </div>
+    <div class="searchkey-result-details add-top clearfix hide">
+      <div class="add-bottom add-right">
+        <strong>{{_("Contact Info")}}</strong>
+        <table>
+        <% _.each(uids, function(uid, key) { %>
+        <tr>
+          <td><%= uid.name %></td>
+          <td><%= uid.email %></td>
+          <td><%= uid.comment %></td>
+        </tr>
+        <% }) %>
+        </table>
+      </div>
+      <div class="add-bottom">
+        <strong>{{_("Score")}} (<%= score %>)</strong><br>
+        <% _.each(scores, function(item, key) { %>
+        <% if (item[1]) { %><%= item[1] %> (<%= item[0] %>)<br><% } %>
+        <% }); %>
+      </div>
+      <div class="half-bottom">
+        <strong>{{_("Details")}}</strong><br>
+        {{_("Strength")}}: <%= keysize %><br>
+        {{_("Algorithm")}}: <%= keytype_name %><br>
+        {{_("Created")}}: <%= created.split(' ')[0] %>
+      </div>
+    </div>
     <div class="half-top clearfix">
-      <div class="searchkey-result-score left" title="<%= score_reason %>" data-score_stars="<%= score_stars %>">
+      <a href="#" class="searchkey-result-score left"
+          data-fingerprint="<%= fingerprint %>"
+          data-score_reason="<%= score_reason %>"
+          data-score_stars="<%= score_stars %>">
         <% for (i = 0; i < Math.abs(score_stars); i++) { %>
         <span class="icon-star <%= score_color %>"></span>
         <% } %>
-      </div>
-      <div class="searchkey-result-details hide">
-        <h4>{{_("Score")}}: <%= score %></h4>
-        <p>{{_("This encryption key score is calculated from the following facts")}}
-        <% _.each(origins, function(item) { %>
-        <%= item %><br>
-        <% }); %>
-        </p>
-      </div>
+      </a>
       <div class="searchkey-result-actions right">
         <% if (on_keychain) { %>
         <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
@@ -208,20 +228,20 @@
 
 
 <script id="template-modal-private-key-item" type="text/template">
-<li class="grouped">
-  <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>
-  <% if (expiration_date) { %>
-  <em>Key expires: <%= expiration_date %></em>
-  <% } %>
-  <% _.each(uids, function(uid, key) { %>
-  <strong><%= uid.name %></strong><br>
-  <%= uid.email %><br><br>
-  <% }); %>
-  <%= keytype_name %> Key / <%= keysize %> bits
-  <label class="right">
-  Send Key <input type="checkbox" name="send_key" value="<%= fingerprint %>">
-  </label>
-</li>
+  <li class="grouped">
+    <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>
+    <% if (expiration_date) { %>
+    <em>Key expires: <%= expiration_date %></em>
+    <% } %>
+    <% _.each(uids, function(uid, key) { %>
+    <strong><%= uid.name %></strong><br>
+    <%= uid.email %><br><br>
+    <% }); %>
+    <%= keytype_name %> Key / <%= keysize %> bits
+    <label class="right">
+    Send Key <input type="checkbox" name="send_key" value="<%= fingerprint %>">
+    </label>
+  </li>
 </script>
 
 
