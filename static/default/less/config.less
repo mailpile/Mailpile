@@ -198,9 +198,6 @@
 		text-shadow: @text-shadow;
 
 		border: 1px solid @border-color;
-		border-top: 1px solid (@border-color + #222222);
-		border-left: 1px solid (@border-color + #222222);
-
 		border-radius: 4px;
 
     background: @background;
@@ -262,8 +259,8 @@
 	@btn-info-background: @white;
 	@btn-info-background-hover: darken(@grayLight, 5%);
   @btn-info-background-active: darken(@grayLight, 5%);
-	@btn-info-border-color: darken(@gray, 5%);
-	@btn-info-border-color-hover: darken(@gray, 10%);
+	@btn-info-border-color: @grayMid;
+	@btn-info-border-color-hover: @gray;
   @btn-info-border-color-active: darken(@gray, 10%);
 
 
