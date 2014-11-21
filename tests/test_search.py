@@ -45,3 +45,6 @@ def test_generator():
     # Not found
     yield checkSearch(['subject:Moderation', 'kde-isl'], 0)
     yield checkSearch(['has:crypto'], 3)
+
+    # Test that we do not crash when searching for a non-existant tag.
+    yield checkSearch(['in:doesnotexist'], 0)

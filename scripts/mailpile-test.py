@@ -315,6 +315,7 @@ def test_composition():
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
+
 def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
     new_mid = mp.message_compose().result['thread_ids'][0]
