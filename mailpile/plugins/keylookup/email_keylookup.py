@@ -82,7 +82,9 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         now = time.time()
         for m in ak.packets():
             try:
+                print m
                 if isinstance(m, pgpdump.packet.PublicKeyPacket):
+                    # FIXME m.datetime throws nasty error fails hard
                     size = str(int(1.024 *
                                    round(len('%x' % m.modulus) / 0.256)))
                     validity = ('e'
@@ -90,7 +92,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                                 else '')
                     results.append({
                         "fingerprint": m.fingerprint,
-                        "created": m.datetime,
+                        "created": "1970-01-01 00:00:00",
                         "validity": validity,
                         "keytype_name": (m.pub_algorithm or '').split()[0],
                         "keysize": size,
