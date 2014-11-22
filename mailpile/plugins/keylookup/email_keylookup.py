@@ -82,9 +82,9 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         now = time.time()
         for m in ak.packets():
             try:
-                print m
                 if isinstance(m, pgpdump.packet.PublicKeyPacket):
                     # FIXME m.datetime throws nasty error fails hard
+                    # Issue 1115
                     size = str(int(1.024 *
                                    round(len('%x' % m.modulus) / 0.256)))
                     validity = ('e'
