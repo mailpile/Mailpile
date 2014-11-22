@@ -137,7 +137,8 @@
       </div>
     </div>
     <div class="searchkey-result-details add-top clearfix hide">
-      <div class="add-bottom add-right">
+      <% if (uids) { %>
+      <div class="add-bottom">
         <strong>{{_("Contact Info")}}</strong>
         <table>
         <% _.each(uids, function(uid, key) { %>
@@ -149,10 +150,11 @@
         <% }) %>
         </table>
       </div>
+      <% } %>
       <div class="add-bottom">
-        <strong>{{_("Score")}} (<%= score %>)</strong><br>
+        <strong>{{_("Score")}} <% if (score > 0) { %>+<% } %><%= score %></strong><br>
         <% _.each(scores, function(item, key) { %>
-        <% if (item[1]) { %><%= item[1] %> (<%= item[0] %>)<br><% } %>
+        <% if (item[1]) { %><%= item[1] %> <% if (item[0] > 0) { %>+<% } %><%= item[0] %><br><% } %>
         <% }); %>
       </div>
       <div class="half-bottom">
