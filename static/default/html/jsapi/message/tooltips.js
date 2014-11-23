@@ -42,10 +42,11 @@ Mailpile.Message.Tooltips.Crypto = function() {
 
 
 Mailpile.Message.Tooltips.Attachments = function() {
-  $('.attachment').qtip({
+  $('a.attachment, a.attachment-image').qtip({
     content: {
       title: false,
       text: function(event, api) {
+        console.log($(this));
         var html = '';
           html += $(this).attr('title')
           html += '<small>{{_("Download")}} ' + $(this).data('size') + '</small>';
