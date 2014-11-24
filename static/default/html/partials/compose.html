@@ -58,22 +58,23 @@
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
       <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
-        <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal">
+        <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal clearfix">
           {% if editing_strings.attachments %}
           {% for att in attachments %}
-          <li id="compose-attachment-{{mid}}-{{att.aid}}" class="compose-attachment">
-
-            <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
-
-            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png"] %}
-            <!-- <img src="/message/download/preview/={{mid}}/{{att.aid}}/"> -->
-            <a href="#" class="attachment-image" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
-              <img src="/message/download/preview/={{mid}}/{{att.aid}}/">
-            </a>
+          <li id="compose-attachment-{{mid}}-{{att.aid}}" class="left">
+            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
+            <div class="attachment-image">
+              <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                <span class="icon-circle-x"></span>
+              </a>
+              <div class="preview" style="background: url('/message/download/preview/={{mid}}/{{att.aid}}/') no-repeat;"></div>
+            </div>
             {% else %}
-
-            <a href="#" class="attachment" title="{{att.filename}}" data-size="{{att.length|friendly_bytes}}">
-              <div>
+            <div class="attachment">
+              <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                <span class="icon-circle-x"></span>
+              </a>
+              <div class="preview">
                 <span class="icon-mime" type="{{att.mimetype}}"></span> 
                 {% set file_parts = att.filename.split(".") %}
                 {% set file_parts_length = file_parts|length %}
@@ -86,7 +87,7 @@
                   {{ file_parts[0] }}
                 {% endif %}
               </span>
-            </a>
+            </div>
             {% endif %}
 
           </li>

@@ -211,9 +211,7 @@
     margin-bottom: 0px;
   }
 
-  ul.compose-attachments li.compose-attachment {
-    width: 100px;
-    padding: 0;
+  ul.compose-attachments li {
     margin-right: 15px;
     margin-bottom: 15px;
   }
@@ -221,48 +219,20 @@
   a.compose-attachment-remove {
     float: right;
     display: inline;
-    background: @white;
-    padding: 5px;
-    border-left: 1px solid @grayMid;
-    border-bottom: 1px solid @grayMid;
-    font-size: 12px;
-    line-height: 12px;
+    position: relative;
+    top: 5px;
+    right: 5px;
+    padding: 4px;
+    color: @gray;
+    font-size: 14px;
+    line-height: 14px;
+    border-radius: 5px;
   }
 
   a.compose-attachment-remove:hover {
-    background: @grayDark;
+    background: @red;
     color: @white;
   }
-
-/*
-
-  li.compose-attachment div.preview {
-    height: 100px;
-    display: table-cell;
-    overflow: hidden;
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  li.compose-attachment div.preview span.icon {
-    margin: auto;
-    font-size: 60px;
-    line-height: 60px;
-    color: @gray;
-  }
-
-  li.compose-attachment img {
-    height: 100px;
-    margin-bottom: 5px;
-  }
-
-  div.compose-attachment-filename {
-    overflow: hidden;
-    white-space: nowrap;
-    font-size: 11px;
-  }
-
-*/
 
 
 /* Attachment Browser */

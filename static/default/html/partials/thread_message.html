@@ -103,7 +103,7 @@
   <div class="thread-message-attachments">
     <ul class="thread-message-attachments horizontal clearfix">
       {% for att in message.attachments %}
-      <li>
+      <li class="left">
       {% set type = attachment_type(att.mimetype) %}
       {% if (att.filename) %}
       {% set filename = att.filename %}
@@ -112,13 +112,13 @@
       {% endif %}
       {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
       <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
-        <img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/">
+        <div class="preview" style="background: url('/message/download/preview/={{ mid }}/part:{{ att.count }}/') no-repeat;"></div>
       </a>
       {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
       <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
-        <div>
+        <div class="preview">
           <span class="icon-mime" type="{{att.mimetype}}"></span> 
           {% set file_parts = filename.split(".") %}
           {% set file_parts_length = file_parts|length %}
