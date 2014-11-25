@@ -1715,7 +1715,7 @@ class ConfigManager(ConfigDict):
         """Get the gettext translation object, no matter where our CWD is"""
         # NOTE: MO files are loaded from the directory where the
         #       scripts reside in
-        return os.path.join(os.path.dirname(__file__), "..", "locale")
+        return os.path.join(os.path.dirname(__file__), "locales")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """

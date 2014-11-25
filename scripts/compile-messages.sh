@@ -1,7 +1,6 @@
 #!/bin/bash
-
-for L in $(find locale/* -type d        \
-                | grep -v "LC_MESSAGES" \
-                | sed 's:locale/::'); do
-        msgfmt locale/$L/LC_MESSAGES/mailpile.po -o locale/$L/LC_MESSAGES/mailpile.mo
+set -e
+cd "$(dirname $0)"/..
+for L in $(find mailpile/locales -type d |grep "LC_MESSAGES"); do
+    msgfmt $L/mailpile.po -o $L/mailpile.mo
 done;

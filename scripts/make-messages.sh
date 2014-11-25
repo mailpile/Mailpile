@@ -1,15 +1,13 @@
 #!/bin/bash
 set -x
 set -e
+cd "$(dirname $0)"/..
 
-#    --omit-header \
 pybabel extract --project=mailpile \
     -F babel.cfg \
-    -o locale/mailpile.pot \
+    -o mailpile/locales/mailpile.pot \
     .
 
-for L in $(find locale/* -type d	\
-		| grep -v "LC_MESSAGES"	\
-		| sed 's:locale/::'); do
-	msgmerge -U locale/$L/LC_MESSAGES/mailpile.po locale/mailpile.pot
-done;
+for L in $(find mailpile/locales -type d |grep "LC_MESSAGES"); do
+    msgmerge -U $L/mailpile.po mailpile/locales/mailpile.pot
+done

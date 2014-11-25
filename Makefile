@@ -86,6 +86,7 @@ pytests:
 
 clean:
 	@rm -f `find . -name \\*.pyc` mailpile-tmp.py mailpile.py
+	@rm -f `find . -name \\*.mo`
 	@rm -f .appver MANIFEST setup.cfg .SELF .*deps
 	@rm -f scripts/less-compiler.mk
 	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ testing/tmp/
