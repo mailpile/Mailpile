@@ -1,7 +1,7 @@
 import unittest
 import mailpile
 
-from tests import MailPileUnittest
+from mailpile.tests import MailPileUnittest
 
 class TestVCard(MailPileUnittest):
 

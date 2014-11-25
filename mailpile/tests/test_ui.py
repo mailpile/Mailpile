@@ -2,7 +2,7 @@ import unittest
 import mailpile
 from mailpile.ui import UserInteraction
 
-from tests import capture, MailPileUnittest
+from mailpile.tests import capture, MailPileUnittest
 
 
 class TestUI(MailPileUnittest):

@@ -22,7 +22,7 @@ MP = None
 
 
 def get_mailpile_root():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 TAGS = {
     'New': {
@@ -74,15 +74,16 @@ def get_shared_mailpile():
     sys.stderr.write('Preparing shared Mailpile test environment, '
                      'please wait. 8-)\n')
 
-    # force usage of test keyring whenever the test mailpile instance is used
-    os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'),
-             stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
-    global GNUPG_HOMEDIR
-    GNUPG_HOMEDIR = os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring')
+    rootdir = get_mailpile_root()
+    datadir = os.path.join(rootdir, 'mailpile', 'tests', 'data')
+    gpgdir = os.path.join(datadir, 'gpg-keyring')
+    tmpdir = os.path.join(datadir, 'tmp')
+    test_data = os.path.join(datadir, 'Maildir')
 
-    workdir = get_mailpile_root()
-    tmpdir = os.path.join(workdir, 'testing', 'tmp')
-    test_data = os.path.join(workdir, 'testing', 'Maildir')
+    # force usage of test keyring whenever the test mailpile instance is used
+    os.chmod(gpgdir, stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
+    global GNUPG_HOMEDIR
+    GNUPG_HOMEDIR = gpgdir
 
     if os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)

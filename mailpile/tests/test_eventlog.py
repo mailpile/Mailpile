@@ -7,13 +7,13 @@ import threading
 import time
 
 from nose.tools import raises
-from tests import MailPileUnittest
+from mailpile.tests import MailPileUnittest
 
 
 EVENT_ID_RE = re.compile("[a-f0-9]{8}\.[a-f0-9]{5}\.[a-f0-9]+")
 
-mailpile_root = os.path.join(os.path.dirname(__file__), "..")
-mailpile_tmp  = os.path.join(mailpile_root, "testing/tmp")
+mailpile_root = os.path.join(os.path.dirname(__file__), "..", "..")
+mailpile_tmp  = os.path.join(mailpile_root, "mailpile", "tests", "data", "tmp")
 
 class TestEventlog(MailPileUnittest):
 

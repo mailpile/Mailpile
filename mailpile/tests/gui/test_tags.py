@@ -3,7 +3,7 @@ try:
 except ImportError:
     pass
 
-from tests.gui import MailpileSeleniumTest
+from mailpile.tests.gui import MailpileSeleniumTest
 
 
 class TagGuiTest(MailpileSeleniumTest):

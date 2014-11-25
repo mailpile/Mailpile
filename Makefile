@@ -66,7 +66,7 @@ web: less js
 	@true
 
 alltests: clean pytests
-	@chmod go-rwx testing/gpg-keyring
+	@chmod go-rwx mailpile/tests/data/gpg-keyring
 	@python2 scripts/mailpile-test.py || true
 	@nosetests
 
@@ -85,11 +85,19 @@ pytests:
 	@echo
 
 clean:
-	@rm -f `find . -name \\*.pyc` mailpile-tmp.py mailpile.py
-	@rm -f `find . -name \\*.mo`
-	@rm -f .appver MANIFEST setup.cfg .SELF .*deps
-	@rm -f scripts/less-compiler.mk
-	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ testing/tmp/
+	@rm -f `find . -name \\*.pyc` \
+	       `find . -name \\*.mo` \
+               mailpile-tmp.py mailpile.py \
+	       .appver MANIFEST setup.cfg .SELF .*deps \
+	       scripts/less-compiler.mk
+	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ \
+               mailpile/tests/data/tmp/ testing/tmp/
+
+sdist: clean
+	@python setup.py sdist
+
+bdist: compilemessages
+	@python setup.py bdist
 
 virtualenv:
 	virtualenv -p python2 mp-virtualenv

@@ -1,9 +1,10 @@
 import unittest
-import mailpile
+import os
 from mock import patch
-from mailpile.commands import Action as action
 
-from tests import MailPileUnittest
+import mailpile
+from mailpile.commands import Action as action
+from mailpile.tests import MailPileUnittest
 
 
 class TestCommands(MailPileUnittest):
@@ -31,11 +32,11 @@ class TestCommands(MailPileUnittest):
         self.assertEqual(results.result['stats']['count'], 3)
 
     def test_add(self):
-        res = self.mp.add("tests")
+        res = self.mp.add("scripts")
         self.assertEqual(res.as_dict()["result"], True)
 
     def test_add_mailbox_already_in_pile(self):
-        res = self.mp.add("tests")
+        res = self.mp.add("scripts")
         self.assertEqual(res.as_dict()["result"], True)
 
     def test_add_mailbox_no_such_directory(self):
@@ -146,7 +147,7 @@ class TestGPG(MailPileUnittest):
 
     def test_key_import(self):
         res = action(self.mp._session, "crypto/gpg/importkey",
-                                       'testing/pub.key')
+                     os.path.join('mailpile', 'tests', 'data', 'pub.key'))
         self.assertEqual(res.result["results"]["count"], 1)
 
     def test_nicknym_get_key(self):

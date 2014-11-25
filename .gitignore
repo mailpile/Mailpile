@@ -18,8 +18,8 @@ static/default/plugins/
 *.swo
 .vagrant
 .coverage
-testing/tmp
-testing/gpg-keyring/random_seed
+mailpile/tests/data/tmp
+mailpile/tests/data/gpg-keyring/random_seed
 ghostdriver.log
 cover/
 bower_components/

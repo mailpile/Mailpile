@@ -1,4 +1,4 @@
-from tests.gui import MailpileSeleniumTest
+from mailpile.tests.gui import MailpileSeleniumTest
 
 
 class ContactsGuiTest(MailpileSeleniumTest):

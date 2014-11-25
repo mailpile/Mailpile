@@ -1,7 +1,7 @@
 import shutil
 import os
 from os import path
-from tests import MailPileUnittest
+from mailpile.tests import MailPileUnittest
 import json
 
 

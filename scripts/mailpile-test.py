@@ -14,7 +14,7 @@ import traceback
 
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
-mailpile_test = os.path.join(mailpile_root, 'testing')
+mailpile_test = os.path.join(mailpile_root, 'mailpile', 'tests', 'data')
 mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
 mailpile_gpgh = os.path.join(mailpile_test, 'gpg-keyring')

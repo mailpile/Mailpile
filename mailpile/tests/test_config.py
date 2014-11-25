@@ -3,7 +3,7 @@ import os
 import mailpile
 
 from nose.tools import raises
-from tests import MailPileUnittest
+from mailpile.tests import MailPileUnittest
 
 class TestConfig(MailPileUnittest):
 

@@ -1,5 +1,5 @@
 from mailpile.vcard import MailpileVCard, VCardLine
-from tests import MailPileUnittest
+from mailpile.tests import MailPileUnittest
 
 VCARD_CRYPTO_POLICY = 'X-MAILPILE-CRYPTO-POLICY'
 

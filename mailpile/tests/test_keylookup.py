@@ -1,8 +1,8 @@
 from mock import patch
-from tests import MailPileUnittest
 import datetime
 
-from tests import get_shared_mailpile
+from mailpile.tests import MailPileUnittest
+from mailpile.tests import get_shared_mailpile
 
 from mailpile.plugins.keylookup import lookup_crypto_keys, KeyserverLookupHandler
 from mailpile.plugins.keylookup.email_keylookup import *

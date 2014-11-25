@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 from mailpile.httpd import HttpWorker
-from tests import MailPileUnittest, get_shared_mailpile
+from mailpile.tests import MailPileUnittest, get_shared_mailpile
 
 from mailpile.safe_popen import MakePopenUnsafe
 

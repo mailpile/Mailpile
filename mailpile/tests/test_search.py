@@ -1,7 +1,7 @@
 import unittest
 from nose.tools import assert_equal, assert_less
 
-from tests import get_shared_mailpile
+from mailpile.tests import get_shared_mailpile
 
 
 def checkSearch(query, expected_count=1):
