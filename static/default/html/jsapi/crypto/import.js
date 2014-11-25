@@ -5,7 +5,7 @@ Mailpile.Crypto.Import.Key = function(action, fingerprint) {
 
   // Show Processing UI feedback
   var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
-  var importing_html = importing_template({ action: action, fingerprint: fingerprint });
+  var importing_html     = importing_template({ action: action, fingerprint: fingerprint });
   $('#item-encryption-key-' + fingerprint).replaceWith(importing_html);
 
   // Lookup

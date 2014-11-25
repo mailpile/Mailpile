@@ -5,7 +5,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
 
   // Set Defaults
   options.container = '#search-keyservers';
-  options.action = 'hide-modal';
+  options.action    = 'hide-modal';
   options.complete  =  function() {
     $('#search-keyservers').find('.loading').slideUp('fast');
   };

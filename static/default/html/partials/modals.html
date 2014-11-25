@@ -236,11 +236,6 @@
                   <li class="half-bottom">
                     <a href="<%= recipient.address %>" class="encryption-helper-find-key" data-mid="<%= mid %>"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
                   </li>
-                  <!--
-                  <li>
-                    <a href="#" class="encryption-helper-upload-key"><span class="icon-upload"></span> {{_("Upload Encryption Key")}}</a>
-                  </li>
-                  -->
                 </ul>
                 </div>
               </div>
@@ -250,8 +245,9 @@
         </div>
       </div>
       <div class="modal-footer">
-        <em class="left">{{_("Or you can send this message unencrypted")}}</em>
-        <button type="submit" class="right" data-mid="<%= mid %>" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+        <button class="encryption-helper-unencrypted left button-info" data-mid="<%= mid %>" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+
+        <button class="encryption-helper-upload-key button-secondary right"><span class="icon-lock-closed"></span> {{_("Send Encrypted")}}</button>
       </div>
     </div>
   </div>
