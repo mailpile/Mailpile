@@ -1,7 +1,7 @@
 # Recipes for stuff
 export PYTHONPATH := .
 
-all:	alltests docs dev web compilemessages
+all:	alltests docs web compilemessages
 
 dev:
 	@echo export PYTHONPATH=`pwd`
@@ -30,20 +30,24 @@ arch-dev:
 	rm -rf $$TMPDIR
 	sudo pip2 install 'selenium>=2.40.0'
 	which lessc >/dev/null || sudo gem install therubyracer less
+	which bower >/dev/null || sudo npm install -g bower
+	which uglify >/dev/null || sudo npm install -g uglify
 
 fedora-dev:
 	sudo yum install python-imaging python-lxml python-jinja2 python-pep8 \
 	                     ruby-devel python-yui python-nose spambayes \
-	                     phantomjs python-pip python-mock python-pexpect
+	                     phantomjs python-pip python-mock npm
 	sudo yum install rubygems; \
 	sudo yum install python-pgpdump || pip install pgpdump
 	sudo pip install 'selenium>=2.40.0'
 	which lessc >/dev/null || sudo gem install therubyracer less
+	which bower >/dev/null || sudo npm install -g bower
+	which uglify >/dev/null || sudo npm install -g uglify
 
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     ruby-dev yui-compressor python-nose spambayes \
-	                     phantomjs python-pip python-mock python-pexpect
+	                     phantomjs python-pip python-mock npm
 	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
 		sudo apt-get install rubygems-integration;\
 	else \
@@ -52,6 +56,8 @@ debian-dev:
 	sudo apt-get install python-pgpdump || pip install pgpdump
 	sudo pip install 'selenium>=2.40.0'
 	which lessc >/dev/null || sudo gem install therubyracer less
+	which bower >/dev/null || sudo npm install -g bower
+	which uglify >/dev/null || sudo npm install -g uglify
 
 docs:
 	@test -d doc || \
@@ -89,14 +95,21 @@ clean:
 	       `find . -name \\*.mo` \
                mailpile-tmp.py mailpile.py \
 	       .appver MANIFEST setup.cfg .SELF .*deps \
-	       scripts/less-compiler.mk
-	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ \
+	       scripts/less-compiler.mk ghostdriver.log
+	@rm -rf *.egg-info build/ mp-virtualenv/ \
                mailpile/tests/data/tmp/ testing/tmp/
+
+mrproper: clean
+	@rm -rf dist/ bower_components/
 
 sdist: clean
 	@python setup.py sdist
 
-bdist: compilemessages
+#bdist-prep: compilemessages web -- FIXME: Make building web assets work!
+bdist-prep: compilemessages
+	@true
+
+bdist:
 	@python setup.py bdist
 
 virtualenv:
@@ -104,8 +117,17 @@ virtualenv:
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
 js:
-	@cat static/default/js/mailpile.js > static/default/js/mailpile-min.js
-	@cat `find static/default/js/app/ -name "*.js"` >> static/default/js/mailpile-min.js
+	bower install
+	# Warning: Horrible hack to extract rules from Gruntfile.js
+	cat `cat Gruntfile.js \
+                |sed -e '1,/concat:/d ' \
+                |sed -e '1,/src:/d' -e '/dest:/,$$d' \
+                |grep / \
+                |sed -e "s/[',]/ /g"` \
+          >> mailpile/www/default/js/mailpile-min.js.tmp
+	uglify -s mailpile/www/default/js/mailpile-min.js.tmp \
+                  mailpile/www/default/js/mailpile-min.js
+	@rm -f mailpile/www/default/js/mailpile-min.js.tmp
 
 less: less-compiler
 	@make -s -f scripts/less-compiler.mk
@@ -119,7 +141,7 @@ less-loop: less-compiler
 
 less-compiler:
 	@cp scripts/less-compiler.in scripts/less-compiler.mk
-	@find static/default/less/ -name '*.less' \
+	@find mailpile/www/default/less/ -name '*.less' \
                 |perl -npe s'/^/\t/' \
 		|perl -npe 's/$$/\\/' \
                 >>scripts/less-compiler.mk
