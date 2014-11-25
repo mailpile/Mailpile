@@ -982,7 +982,7 @@ class SearchResults(dict):
                              end=stats['start'] - 1)
 
     def as_text(self):
-        from mailpile.jinjaextensions import MailpileCommand as JE
+        from mailpile.www.jinjaextensions import MailpileCommand as JE
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
 

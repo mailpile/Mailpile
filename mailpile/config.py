@@ -1155,7 +1155,7 @@ class ConfigManager(ConfigDict):
             trim_blocks=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
                         'jinja2.ext.do', 'jinja2.ext.autoescape',
-                        'mailpile.jinjaextensions.MailpileCommand']
+                        'mailpile.www.jinjaextensions.MailpileCommand']
         )
 
         self._magic = True  # Enable the getattr/getitem magic
