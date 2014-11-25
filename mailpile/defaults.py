@@ -51,7 +51,7 @@ CONFIG_RULES = {
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
             'html_theme': [_('Default theme'),
-                           'dir', os.path.join('static', 'default')],
+                           'dir', os.path.join('mailpile', 'www', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],

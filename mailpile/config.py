@@ -1723,7 +1723,7 @@ class ConfigManager(ConfigDict):
         data, optionally creating the directory if it is missing.
 
         >>> p = cfg.data_directory('html_theme', mode='r', mkdir=False)
-        >>> p == os.path.abspath('static/default')
+        >>> p == os.path.abspath('mailpile/www/default')
         True
         """
         with self._lock:
