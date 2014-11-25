@@ -123,16 +123,23 @@
           {% set file_parts = filename.split(".") %}
           {% set file_parts_length = file_parts|length %}
           {% if filename != _("Untitled") %}
-          <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+          <span class="extension">
+            {{ file_parts[file_parts_length - 1] }}
+          </span>
           {% endif %}
         </div>
-        <span class="attachment-filename">
+        <div class="filename">
+          {% if att.crypto.encryption.status == "decrypted" %}
+          <span class="icon-lock-closed crypto-encrypted"></span>
+          {% elif att.crypto.encryption.status == "encrypted" %}
+          <span class="icon-lock-closed crypto-error"></span>
+          {% endif %}
           {% if file_parts_length > 2 or filename|length > 20 %}
-            {{ att.filename[0:16] }}...
+            {{ att.filename[0:15] }}...
           {% elif file_parts[0] %}
             {{ file_parts[0] }}
           {% endif %}
-        </span>
+        </div>
       </a>
       {% endif %}
       </li>

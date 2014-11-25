@@ -56,18 +56,19 @@
     line-height: 40px;
   }
   
-  .attachment div.preview span.attachment-extension {
+  .attachment div.preview span.extension {
     display: table-cell;
     vertical-align: middle;
-    text-align: left;
+    text-align: center;
     color: @gray;
     text-transform: uppercase;
     font-size: 18px;
     font-weight: bold;
   }
-  
-  .attachment span.attachment-filename {
+
+  .attachment div.filename {
     width: 100%;
+    height: 12px;
     display: block;
     padding: (@base-padding / 2) 0;
     box-sizing: content-box;
@@ -78,17 +79,17 @@
     line-height: 12px;
     color: @grayDark;
   }
-  
+
   .attachment:hover {
     background: @grayLight;
     border: 1px solid @gray;
   }
-  
-  .attachment:hover span.attachment-filename {
+
+  .attachment:hover div.filename {
     color: @grayDark;
   }
   
   .attachment:hover span.icon-mime,
-  .attachment:hover span.attachment-extension {
+  .attachment:hover span.extension {
     color: @grayDark;
   }

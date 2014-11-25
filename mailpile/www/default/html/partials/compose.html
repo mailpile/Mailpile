@@ -78,15 +78,15 @@
                 <span class="icon-mime" type="{{att.mimetype}}"></span> 
                 {% set file_parts = att.filename.split(".") %}
                 {% set file_parts_length = file_parts|length %}
-                <span class="attachment-extension">{{ file_parts[file_parts_length - 1] }}</span>
+                <span class="extension">{{ file_parts[file_parts_length - 1] }}</span>
               </div>
-              <span class="attachment-filename">
+              <div class="filename">
                 {% if file_parts_length > 2 or att.filename|length > 20 %}
                   {{ att.filename[0:16] }}...
                 {% else %}
                   {{ file_parts[0] }}
                 {% endif %}
-              </span>
+              </div>
             </div>
             {% endif %}
 
