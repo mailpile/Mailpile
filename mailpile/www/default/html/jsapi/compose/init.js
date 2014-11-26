@@ -20,6 +20,14 @@ Mailpile.Composer.init = function(mid) {
   // Initialize select2
   Mailpile.Composer.Recipients.AddressField('compose-to-' + mid);
 
+  if ($('#compose-cc-' + mid).val()) {
+    Mailpile.Composer.Recipients.AddressField('compose-cc-' + mid);
+  }
+
+  if ($('#compose-bcc-' + mid).val()) {
+    Mailpile.Composer.Recipients.AddressField('compose-bcc-' + mid);
+  }
+
   // Save Text Composing Objects (move to data model)
   Mailpile.Composer.Drafts[mid] = Mailpile.Composer.Model;
 
