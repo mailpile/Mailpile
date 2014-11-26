@@ -178,18 +178,12 @@
         </div>
       </div>
       <div class="compose-buttons right" data-mid="{{mid}}">
-        <button class="compose-action button-secondary" type="submit" name="save" value="save" alt="{{_("Save")}}">
-          <span class="icon-compose"></span>{{_("Save")}}
+        <button class="compose-action button-primary" type="submit" name="save" value="save" alt="{{_("Save")}}">
+          <span class="icon-compose"></span> {{_("Save")}}
         </button>
-        {% if command == "view" %}
-        <button class="compose-action button-primary" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
-          <span class="icon-reply"></span> {{_("Reply")}}
-        </button>
-        {% else %}
-        <button class="compose-action button-primary" type="submit" name="send" value="send" alt="{{_("Send")}}">
+        <button class="compose-action button-secondary" type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}" alt="{{_("Send")}}">
           <span class="icon-sent"></span> {{_("Send")}}
-        </button>
-        {% endif %}
+        </button>        
       </div>
     </div>
     <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
