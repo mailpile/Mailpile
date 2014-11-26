@@ -2,7 +2,6 @@
 from datetime import date
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
-from babel.messages import frontend as babel
 import datetime
 import os
 import re
