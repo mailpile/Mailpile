@@ -30,11 +30,13 @@
     "jquery-slugify": "~1.0.3",
     "jquery-timer": "*",
     "jquery.ui": "~1.10.4",
+    "less-elements": "master",
     "listjs": "~1.1.0",
     "mousetrap": "~1.4.6",
     "purl": "~2.3.1",
     "qtip2": "~2.2.0",
     "rebar": "~0.3.0",
-    "select2": "~3.4.5"
+    "select2": "~3.4.5",
+    "typeahead.js": "~0.10.5"
   }
 }
