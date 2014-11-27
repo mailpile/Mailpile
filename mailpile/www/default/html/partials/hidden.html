@@ -280,17 +280,32 @@
 </script>
 
 
+<script id="template-composer-attachment-image" type="text/template">
+  <li id="compose-attachment-<%= mid %>-<%= aid %>" class="left hide">
+    <div class="attachment-image">
+      <a href="#" data-mid="<%= mid %>" data-aid="<%= aid %>" class="compose-attachment-remove">
+        <span class="icon-circle-x"></span>
+      </a>
+      <div class="preview" style="background-image: url(<%= attachment_data %>);"></div>
+    </div>
+  </li>
+</script>
+
+
 <script id="template-composer-attachment" type="text/template">
-  <li class="compose-attachment" aid="<%= id %>">
-    <a href="#" class="attachment" title="<%= name %>" data-size="<%= size %>">
-      <div>
+  <li id="compose-attachment-<%= mid %>-<%= aid %>" class="left hide">
+    <div class="attachment">
+      <a href="#" data-mid="<%= mid %>" data-aid="<%= aid %>" class="compose-attachment-remove">
+        <span class="icon-circle-x"></span>
+      </a>
+      <div class="preview">
         <span class="icon-mime" type="<%= type %>"></span>
-        <span class="attachment-extension"><%= extension %></span>
+        <span class="extension"><%= extension %></span>
       </div>
-      <span class="attachment-filename">
+      <div class="filename">
         <%= name_fixed %>
-      </span>
-    </a>
+      </div>
+    </div>
   </li>
 </script>
 
