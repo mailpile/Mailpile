@@ -64,7 +64,13 @@ def Interact(session):
                                        weight=session.ui.term.BOLD)
         while not mailpile.util.QUITTING:
             session.ui.block()
-            opt = raw_input(prompt).decode('utf-8').strip()
+            try:
+                opt = raw_input(prompt).decode('utf-8').strip()
+            except KeyboardInterrupt:
+                session.ui.unblock()
+                session.ui.notify(_('Interrupted. '
+                                    'Press CTRL-D or type `quit` to quit.'))
+                continue
             session.ui.term.check_max_width()
             session.ui.unblock()
             if opt:
