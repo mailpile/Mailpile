@@ -1,9 +1,6 @@
 /* Compose - Attachments */
 
-Mailpile.Composer.Attachments.UploaderImagePreview = function(file, mid) {
-
-  var item = $('<li class="compose-attachment"><a href="#" data-mid="XXX" data-aid="XXX" class="compose-attachment-remove"><span class="icon-circle-x"></span></a></li>').prependTo($('#compose-attachments-files-' + mid));
-  var image = $(new Image()).appendTo(item);
+Mailpile.Composer.Attachments.UploaderImagePreview = function(file) {
 
   // Create an instance of the mOxie Image object. This
   // utility object provides several means of reading in
@@ -15,21 +12,20 @@ Mailpile.Composer.Attachments.UploaderImagePreview = function(file, mid) {
   // command as load() does not execute async.
   preloader.onload = function() {
 
-      // This will scale the image (in memory) before it
-      // tries to render it. This just reduces the amount
-      // of Base64 data that needs to be rendered.
-      preloader.downsize(100, 100);
+    // Scale the image (in memory) before rendering it
+    preloader.downsize(150, 125);
 
-      // Now that the image is preloaded, grab the Base64
-      // encoded data URL. This will show the image
-      // without making an Network request using the
-      // client-side file binary.
-      image.prop("src", preloader.getAsDataURL());
+    // Grab preloaded the Base64 encoded image data
+    file['attachment_data'] = preloader.getAsDataURL();
+
+    var attachment_image_template = _.template($('#template-composer-attachment-image').html());
+    var attachment_image_html = attachment_image_template(file);
+
+    // Append template to view
+    $('#compose-attachments-files-' + file.mid).append(attachment_image_html);
   };
 
-  // Calling the .getSource() on the file will return an
-  // instance of mOxie.File, which is a unified file
-  // wrapper that can be used across the various runtime
+  // Calling the .getSource() returns instance of mOxie.File
   // Wiki: https://github.com/moxiecode/plupload/wiki/File
   preloader.load(file.getSource());
 };
@@ -72,14 +68,18 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
         // Upload files
       	plupload.each(files, function(file) {
   
+          // Values for templates
+          file['mid'] = settings.mid;
+          file['aid'] = file.id;
+
           // Show Warning for 50 mb or larger
           if (file.size > 52428800) {
             start_upload = false;
             alert(file.name + ' {{_("is")}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")}}');
           } else {
            // Show image preview
-            if (_.indexOf(['image/jpg', 'image/jpeg', 'image/gif', 'image/png'], file.type) > -1) {
-              Mailpile.Composer.Attachments.UploaderImagePreview(file, settings.mid);
+            if (_.indexOf(['image/bmp', 'image/gif', 'image/jpeg', 'image/pjpeg', 'image/svg+xml', 'image/x-png', 'image/png', 'application/vnd.google-apps.photo'], file.type) > -1) {
+              Mailpile.Composer.Attachments.UploaderImagePreview(file);
             } else {
 
               // More UI friendly values
@@ -103,6 +103,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           }
       	});
 
+        // Start
         if (start_upload) {
           uploader.start();
         }
