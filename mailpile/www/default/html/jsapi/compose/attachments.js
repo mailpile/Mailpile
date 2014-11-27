@@ -124,12 +124,11 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
 
 
 Mailpile.Composer.Attachments.Remove = function(mid, aid) {
-
-  // Fix me, add UI of deleting to current attachment
-
   Mailpile.API.message_unattach_post({ mid: mid, att: aid }, function(result) {
     if (result.status == 'success') {
-      $('#compose-attachment-' + mid + '-' + aid).remove();
+      $('#compose-attachment-' + mid + '-' + aid).fadeOut(function() {
+        $(this).remove();
+      });
     } else {
       Mailpile.notification(result);
     }
