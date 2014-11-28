@@ -63,7 +63,7 @@ class CommandCache(object):
         self.dirty |= set(requirements)
         self.debug('Marked dirty: %s' % requirements)
 
-    def refresh(self, extend=60, event_log=None):
+    def refresh(self, extend=60, runtime=4, event_log=None):
         now = time.time()
         with self.lock:
             expired = set([f for f in self.cache if self.cache[f][0] < now])
@@ -78,11 +78,16 @@ class CommandCache(object):
             try:
                 exp, req, co, ro = self.cache[fprint]
                 if req & dirty:
-                    ro = co.refresh()
-                    with self.lock:
-                        self.cache[fprint] = [exp + extend, req, co, ro]
-                    refreshed.append(fprint)
-                    play_nice_with_threads()
+                    if time.time() < now + runtime:
+                        ro = co.refresh()
+                        with self.lock:
+                            self.cache[fprint] = [exp + extend, req, co, ro]
+                        refreshed.append(fprint)
+                        play_nice_with_threads()
+                    else:
+                        # Out of time, just evict things.
+                        with self.lock:
+                            del self.cache[fprint]
             except (ValueError, IndexError, TypeError):
                 # Broken stuff just gets evicted
                 with self.lock:
