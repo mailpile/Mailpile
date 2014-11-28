@@ -253,15 +253,18 @@ class Command(object):
 
     def cache_result(self, result):
         if self.COMMAND_CACHE_TTL > 0:
-            cache_id = self.cache_id()
-            if cache_id:
-                self.session.config.command_cache.cache_result(
-                    cache_id,
-                    time.time() + self.COMMAND_CACHE_TTL,
-                    self.cache_requirements(result),
-                    self,
-                    result)
-                self.session.ui.mark(_('Cached result as %s') % cache_id)
+            try:
+                cache_id = self.cache_id()
+                if cache_id:
+                    self.session.config.command_cache.cache_result(
+                        cache_id,
+                        time.time() + self.COMMAND_CACHE_TTL,
+                        self.cache_requirements(result),
+                        self,
+                        result)
+                    self.session.ui.mark(_('Cached result as %s') % cache_id)
+            except (ValueError, KeyError, TypeError, AttributeError):
+                self._ignore_exception()
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -491,7 +494,7 @@ class Command(object):
                      data={},
                      private_data=private_data)
 
-    def _finishing(self, command, rv, just_cleanup=False):
+    def _finishing(self, rv, just_cleanup=False):
         if just_cleanup:
             self._update_finished_event()
             return rv
@@ -502,7 +505,7 @@ class Command(object):
 
         self.session.ui.mark(_('Generating result'))
         result = self.CommandResult(self, self.session, self.name,
-                                    command.__doc__ or self.__doc__,
+                                    self.__doc__,
                                     rv, self.status, self.message,
                                     error_info=self.error_info)
         self.cache_result(result)
@@ -527,44 +530,44 @@ class Command(object):
             self.session.ui.finish_command(self.name)
 
     def _run_sync(self, enable_cache, *args, **kwargs):
-        self._starting()
-        self._run_args = args
-        self._run_kwargs = kwargs
-
-        if (self.COMMAND_CACHE_TTL > 0 and
-               'http' not in self.session.config.sys.debug and
-               enable_cache):
-            cid = self.cache_id()
-            try:
-                rv = self.session.config.command_cache.get_result(cid)
-                rv.session.ui = self.session.ui
-                if self.CHANGES_SESSION_CONTEXT:
-                    self.session.copy(rv.session, ui=False)
-                self.session.ui.mark(_('Using pre-cached result object %s') % cid)
-                self._finishing(self, True, just_cleanup=True)
-                return rv
-            except:
-                pass
-
-        def command(self, *args, **kwargs):
-            if self.CONFIG_REQUIRED:
-                if not self.session.config.loaded_config:
-                    return self._error(_('Please log in'))
-                if mailpile.util.QUITTING:
-                    return self._error(_('Shutting down'))
-            return self.command(*args, **kwargs)
-
         try:
-            return self._finishing(command, command(self, *args, **kwargs))
+            self._starting()
+            self._run_args = args
+            self._run_kwargs = kwargs
+
+            if (self.COMMAND_CACHE_TTL > 0 and
+                   'http' not in self.session.config.sys.debug and
+                   enable_cache):
+                cid = self.cache_id()
+                try:
+                    rv = self.session.config.command_cache.get_result(cid)
+                    rv.session.ui = self.session.ui
+                    if self.CHANGES_SESSION_CONTEXT:
+                        self.session.copy(rv.session, ui=False)
+                    self.session.ui.mark(_('Using pre-cached result object %s') % cid)
+                    self._finishing(True, just_cleanup=True)
+                    return rv
+                except:
+                    pass
+
+            def command(self, *args, **kwargs):
+                if self.CONFIG_REQUIRED:
+                    if not self.session.config.loaded_config:
+                        return self._error(_('Please log in'))
+                    if mailpile.util.QUITTING:
+                        return self._error(_('Shutting down'))
+                return self.command(*args, **kwargs)
+
+            return self._finishing(command(self, *args, **kwargs))
         except self.RAISES:
             self.status = 'success'
-            self._finishing(command, True, just_cleanup=True)
+            self._finishing(True, just_cleanup=True)
             raise
         except:
             self._ignore_exception()
             self._error(self.FAILURE % {'name': self.name,
                                         'args': ' '.join(self.args)})
-            return self._finishing(command, False)
+            return self._finishing(False)
 
     def _run(self, *args, **kwargs):
         if self.run_async:
@@ -2025,7 +2028,7 @@ class Cached(Command):
             self._ignore_exception()
             self._error(self.FAILURE % {'name': self.name,
                                         'args': ' '.join(self.args)})
-            return self._finishing(self, False)
+            return self._finishing(False)
 
 
 class Output(Command):
@@ -2341,9 +2344,9 @@ class Help(Command):
     def _starting(self):
         pass
 
-    def _finishing(self, command, rv, *args, **kwargs):
+    def _finishing(self, rv, *args, **kwargs):
         return self.CommandResult(self, self.session, self.name,
-                                  command.__doc__ or self.__doc__, rv,
+                                  self.__doc__, rv,
                                   self.status, self.message)
 
 
