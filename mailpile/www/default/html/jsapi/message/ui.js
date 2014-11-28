@@ -31,14 +31,6 @@ Mailpile.UI.Message.ScrollToMessage = function() {
 };
 
 
-/* Thread - iframe styling */
-Mailpile.thread_html_iframe = function(element) {
-  var new_iframe_height = $(element).contents().height();
-  $('.thread-item-html').height(new_iframe_height);
-  $(element).contents().find('body div').addClass('thread-item-html-text');
-};
-
-
 Mailpile.UI.Message.Draggable = function(element) {
   $(element).draggable({
     containment: 'body',
