@@ -1245,6 +1245,10 @@ class ConfigManager(ConfigDict):
         self._mkworkdir(session)
         self.index = None
         self.loaded_config = False
+
+        # Set the homedir default
+        self.rules['homedir'][2] = self.workdir
+        self._rules_source['homedir'][2] = self.workdir
         self.reset(rules=False, data=True)
 
         filename = filename or self.conffile

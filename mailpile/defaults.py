@@ -27,6 +27,7 @@ DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), False, APPVER],
+    'homedir': [_('Location of Mailpile data'), False, '(unset)'],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {

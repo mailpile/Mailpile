@@ -88,11 +88,13 @@
   <p>{{_("It is very important to make a backup of your Mailpile master key and the passphrase which unlocks your encryption keys.")}}</p>
   <p>{{_("If either of those things gets lost, most or even all of your Mailpile will be unrecoverable.")}}</p>
 
-  <ol>
+  <ol style='list-style-type: decimal; margin-left: 2em;'>
     <li>{{_("Enter your PGP passphrase to confirm your identity")}}</li>
     <li>{{_("Print out the page that appears")}}</li>
     <li><b>{{_("Keep it secret, keep it safe!")}}</b></li>
   </ol>
+
+  <p></p>
 
   <form method="POST" style='text-align: center; display: inline-block;'>
     <input type="hidden" name="var" value="master_key">
@@ -104,8 +106,9 @@
 
   <div class='fine-print'>
     <h3>Notes:</h3>
-    <ol>
+    <ol style='list-style-type: decimal; margin-left: 2em;'>
       <li>{{_("It is also important to make a backup of the Mailpile data itself.")}}</li>
+      <li>{{_("Your Mailpile data is here:")}} <b>{{ config.homedir }}</b></li>
       <li>{{_("The master key is used to decrypt the settings and contents of your mail.")}}</li>
       <li>{{_("The PGP passphrase is used to unlock your public encryption key and verify your identity.")}}</li>
 {% if result.master_key and result._auth_pass %}

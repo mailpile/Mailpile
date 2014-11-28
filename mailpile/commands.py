@@ -1917,7 +1917,7 @@ class ConfigPrint(Command):
                 result['_auth_pass'] = password
 
         for key in (args + self.data.get('var', [])):
-            if key in ('-short', ):
+            if key in ('-short', '-flat', '-secrets'):
                 continue
             try:
                 data = config.walk(key, key_types=key_types)
