@@ -915,6 +915,9 @@ class SetupTestRoute(SetupProfiles):
         fromaddr = route.get('username', '')
         if '@' not in fromaddr:
             fromaddr = self.session.config.get_profile()['email']
+        if not fromaddr or '@' not in fromaddr:
+            fromaddr = '%s@%s' % (route.get('username', 'test'),
+                                  route.get('host', 'example.com'))
         assert(fromaddr)
 
         error_info = {'error': _('Unknown error')}
