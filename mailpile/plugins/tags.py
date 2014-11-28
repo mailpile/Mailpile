@@ -461,8 +461,11 @@ class ListTags(TagCommand):
     COMMAND_CACHE_TTL = 3600
 
     def cache_requirements(self, result):
-        return set([u'!config'] +
-                   [u'%s:in' % ti['slug'] for ti in result.result['tags']])
+        if result:
+            return set([u'!config'] +
+                       [u'%s:in' % ti['slug'] for ti in result.result['tags']])
+        else:
+            return set([u'!config'])
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
