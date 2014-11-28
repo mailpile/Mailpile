@@ -51,3 +51,18 @@ $(document).on('click', '.thread-message-actions-quote', function() {
 $(document).on('click', '.dropdown-toggle', function() {
   $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
 });
+
+
+$(document).on('click', '.thread-message-toggle-html', function(e) {
+  var state = $(this).data('state');
+  var mid = $(this).data('mid');
+  if (state === 'plain') {
+    $(this).data('state', 'html');
+    $(this).html('{{_("Plain Text")}}');
+    Mailpile.Message.ShowHTML(mid);
+  } else {
+    $(this).data('state', 'plain');
+    $(this).html('HTML');
+    Mailpile.Message.ShowPlain(mid);
+  }
+});

@@ -27,6 +27,40 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
 };
 
 
+Mailpile.Message.ShowHTML = function(mid) {
+
+  // HTML Parts Exist
+  if (Mailpile.instance.messages[mid].html_parts) {
+
+    // Inject iframe
+    $('#message-' + mid).find('.thread-item-text').hide();
+    $('#message-' + mid).find('.thread-message-body').append('<iframe id="thread-message-iframe-' + mid + '" class="thread-item-html" sandbox="allow-same-origin allow-scripts allow-popups allow-top-navigation" seamless target="_blank" srcdoc=""></iframe>');
+
+    // Add html parts
+    var html_parts = '';
+    _.each(Mailpile.instance.messages[mid].html_parts, function(part, key) {
+      html_parts += part.data;
+    });
+    $('#thread-message-iframe-' + mid).attr('srcdoc', html_parts);
+
+    // Resize & Style
+    setTimeout(function() {
+      var iframe_height = $('#thread-message-iframe-' + mid).contents().height();
+      $('#thread-message-iframe-' + mid).height(iframe_height);
+      $('#thread-message-iframe-' + mid).contents().find('body').addClass('thread-item-html-text');
+    }, 100);
+  } else {
+    $('#message-' + mid).find('.thread-message-body').append('<em>Message does not have any HTML parts</em>');
+  }
+};
+
+
+Mailpile.Message.ShowPlain = function(mid) {
+  $('#thread-message-iframe-' + mid).remove();
+  $('#message-' + mid).find('.thread-item-text').show();
+};
+
+
 /* Message -  */
 $(document).on('click', '.message-action-reply', function() {
   var mid = $(this).data('mid');
