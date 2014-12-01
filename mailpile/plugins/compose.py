@@ -751,7 +751,8 @@ class UnAttach(CompositionCommand):
 
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
-            emails = self._choose_messages(args, allow_ephemeral=False)
+            emails = [self._actualize_ephemeral(i) for i in
+                      self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
             return self._error(_('No messages selected'))
         else:
@@ -821,8 +822,8 @@ class Sendit(CompositionCommand):
 
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
-            mids = self._choose_messages(args)
-            emails = [Email(idx, i) for i in mids]
+            emails = [self._actualize_ephemeral(i) for i in
+                      self._choose_messages(args, allow_ephemeral=True)]
 
         # First make sure the draft tags are all gone, so other edits either
         # fail or complete while we wait for the lock.
@@ -963,7 +964,8 @@ class UnThread(CompositionCommand):
         args = list(self.args)
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
-        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
+        emails = [self._actualize_ephemeral(i) for i in
+                  self._choose_messages(args, allow_ephemeral=True)]
 
         if emails:
             for email in emails:
