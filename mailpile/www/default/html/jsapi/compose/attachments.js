@@ -153,9 +153,10 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
         if (response.status == 200) {
 
           var response_json = $.parseJSON(response.response);
+          var new_mid = response_json.result.message_ids[0];
 
           //console.log(file);
-          Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[settings.mid].attachments, settings.mid, file);
+          Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, new_mid, file);
 
         } else {
           Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed status")}}: ' + response.status });
@@ -178,6 +179,7 @@ Mailpile.Composer.Attachments.Remove = function(mid, aid) {
     if (result.status == 'success') {
       $('#compose-attachment-' + mid + '-' + aid).fadeOut(function() {
         $(this).remove();
+        Mailpile.Composer.Attachments.UpdatePreviews(result.result.data.messages[mid].attachments, mid, false);
       });
     } else {
       Mailpile.notification(result);
