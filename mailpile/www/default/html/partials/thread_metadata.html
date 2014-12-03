@@ -76,7 +76,7 @@
   {% endif %}
   {% if metadata.bcc_aids %}
   <ul class="clearfix">
-    <li>{{_("Bcc:")}}:</li>
+    <li>{{_("Bcc")}}:</li>
     {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
     <li class="thread-item-metadata-contact">
       <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
@@ -85,6 +85,10 @@
     {% endfor %}
   </ul>
   {% endif %}
+  <ul>
+    <li>{{_("Subject")}}:</li>
+    <li>{{metadata.subject}}</li>
+  </ul>
   <ul class="clearfix">
     <li>{{_("View:")}}</li>
     <li><a href="#" class="thread-message-toggle-html" data-mid="{{mid}}" data-state="plain">{{_("HTML")}}</a></li>
