@@ -79,11 +79,13 @@
             <input type="text" name="port" value="<%= port %>" placeholder="993" id="setup-source-settings-port" class="tiny" tabindex="7">
           </div>
           <div class="left">
-            <label>{{_("Download mail or leave on server")}}</label>
-            <select name="discovery.local_copy" id="input-setup-source-server-local_copy" class="small" tabindex="8">
-              <option value="true" <% if (discovery['local_copy'] === true) { %>selected<% } %>>{{_("Download")}}</option>
-              <option value="false" <% if (discovery['local_copy'] === false) { %>selected<% }%>>{{_("Do Not Download")}}</option>
+            <label>{{_("Downloading")}}</label>
+            <select name="discovery.local_copy" id="input-setup-source-server-local_copy" class="medium remove-bottom" tabindex="8">
+              <option value="true" <% if (discovery['local_copy'] === true) { %>selected<% } %>>{{_("Download & leave on server")}}</option>
+              <option value="delete" disabled="disabled">{{_("Download & delete from server")}}</option>
+              <option value="false" <% if (discovery['local_copy'] === false) { %>selected<% }%>>{{_("Do not download (index only)")}}</option>
             </select>
+            <span class="text-detail">*delete mail not yet supported</span>
           </div>
         </div>
       </div>
