@@ -66,10 +66,10 @@
           <div class="left">
             <label>{{_("Protocol")}}</label>
             <select name="protocol" id="input-setup-source-server-protocol" class="small" tabindex="6">
-              <option value="imap_ssl" <% if (protocol === 'imap_ssl') { %>selected<% } %>>IMAP (ssl)</option>
-              <option value="imap" <% if (protocol === 'imap') { %>selected<% } %>>IMAP</option>
-              <option value="pop3_ssl" <% if (protocol === 'pop3_ssl') { %>selected<% } %>>POP3 (ssl)</option>
-              <option value="pop3" <% if (protocol === 'pop3') { %>selected<% } %>>POP3</option>
+              <option value="imap_ssl" data-port="993" <% if (protocol === 'imap_ssl') { %>selected<% } %>>IMAP (ssl)</option>
+              <option value="imap" data-port="143" <% if (protocol === 'imap') { %>selected<% } %>>IMAP</option>
+              <option value="pop3_ssl" data-port="995" <% if (protocol === 'pop3_ssl') { %>selected<% } %>>POP3 (ssl)</option>
+              <option value="pop3" data-port="110" <% if (protocol === 'pop3') { %>selected<% } %>>POP3</option>
             </select>
           </div>
         </div>

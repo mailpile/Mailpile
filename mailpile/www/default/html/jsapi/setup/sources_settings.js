@@ -12,6 +12,7 @@ var SourcesSettingsView = Backbone.View.extend({
     "change #input-setup-source_sync"    : "actionSyncSelected",
     "click .source-mailbox-policy"       : "actionMailboxToggle",
     "keyup #input-setup-source-username" : "actionCheckEmailMagic",
+    "change #input-setup-source-server-protocol": "actionChangePort",
     "click #btn-setup-source-save"       : "processSource"
   },
   show: function() {
@@ -73,6 +74,10 @@ var SourcesSettingsView = Backbone.View.extend({
         ProfilesSettingsView.showGmailWarning('warning');
       }
     }
+  },
+  actionChangePort: function(e) {
+    var port = $(e.target).find('option:selected').data('port');
+    $('#setup-source-settings-port').val(port);
   },
   processSource: function(e) {
     e.preventDefault();
