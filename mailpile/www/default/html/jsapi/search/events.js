@@ -1,9 +1,12 @@
 /* Search - select item via clicking */
 $(document).on('click', '#pile-results tr.result', function(e) {
-  console.log()
-	if (e.target.href === undefined &&
-      $(this).data('state') !== 'selected' &&
-      $(e.target).hasClass('pile-message-tag-name') == false) {
+  if ($(e.target).attr('type') === 'checkbox') {
+    $(e.target).blur();
+		Mailpile.pile_action_select($(this));
+  }
+	else if (e.target.href === undefined &&
+    $(this).data('state') !== 'selected' &&
+    $(e.target).hasClass('pile-message-tag-name') == false) {
 		Mailpile.pile_action_select($(this));		
 	}
 });
@@ -11,9 +14,13 @@ $(document).on('click', '#pile-results tr.result', function(e) {
 
 /* Search - unselect search item via clicking */
 $(document).on('click', '#pile-results tr.result-on', function(e) {
-	if (e.target.href === undefined &&
-      $(this).data('state') === 'selected' && 
-      $(e.target).hasClass('pile-message-tag-name') == false) {
+  if ($(e.target).attr('type') === 'checkbox') {
+    $(e.target).val('').attr('checked', false).blur();
+		Mailpile.pile_action_unselect($(this));
+  }
+	else if (e.target.href === undefined &&
+    $(this).data('state') === 'selected' && 
+    $(e.target).hasClass('pile-message-tag-name') == false) {
 		Mailpile.pile_action_unselect($(this));
 	}
 });
