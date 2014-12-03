@@ -31,3 +31,10 @@ _.extend(Backbone.Validation.callbacks, {
     $('#validation-' + attr).find('[' + selector + '=' + attr +']').addClass('validation-error');
   }
 });
+
+
+/* Topbar - Create New Blank Message (hack) */
+$(document).on('click', '#button-compose', function(e) {
+	e.preventDefault();
+  Mailpile.activities.compose();
+});
