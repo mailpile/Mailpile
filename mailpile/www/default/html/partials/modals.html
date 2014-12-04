@@ -252,3 +252,27 @@
     </div>
   </div>
 </script>
+
+
+<!-- Crypto - Modal to import key -->
+<script id="modal-import-keys" type="text/template">
+  <div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Upload Encryption Key")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <form id="form-crypto-upload-key" class="standard half-bottom">
+        <fieldset>
+          <label>{{_("Select file on your computer that is an encryption key")}} (.asc .key .pub)</label>
+          <input type="file" name="key_data">
+        </fieldset>
+        <button class="button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+          <span class="icon-upload"></span> {{_("Upload")}}
+        </button>
+      </form>
+    </div>
+  </div>
+  </div>
+</script>

@@ -43,3 +43,9 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
   $('#modal-full').modal(Mailpile.UI.ModalOptions);
 };
 
+
+Mailpile.UI.Modals.CryptoImportKeys = function(options) {
+  var modal_template = _.template($('#modal-import-keys').html());
+  $('#modal-full').html(modal_template(options));
+  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+};
