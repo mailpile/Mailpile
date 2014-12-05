@@ -1,5 +1,16 @@
 /* Crypto - Events */
 
+$(document).on('click', '.btn-crypto-search-key', function(e) {
+  e.preventDefault();
+  Mailpile.UI.Modals.CryptoFindKeys({query: ''});
+});
+
+
+$(document).on('click', '.btn-crypto-upload-key', function(e) {
+  e.preventDefault();
+  Mailpile.UI.Modals.CryptoUploadKey({});
+});
+
 
 /* Crypto - show / hide details */
 $(document).on('click', '.searchkey-result-score', function(e) {
@@ -31,6 +42,6 @@ $(document).on('change', '.crypto-key-policy', function() {
 $(document).on('click', '.crypto-searchkey-address', function(e) {
   e.preventDefault();
   var address = $(this).data('address');
-  var target = $(this).data('target');
-  
+  var target = $(this).data('target');  
 });
+

@@ -282,6 +282,7 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
 {% include("jsapi/global/eventlog.js") %}
 {% include("jsapi/global/activities.js") %}
 {% include("jsapi/global/global.js") %}
+{% include("jsapi/global/helpers.js") %}
 {% include("jsapi/global/keybindings.js") %}
 {% include("jsapi/global/notifications.js") %}
 

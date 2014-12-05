@@ -3,6 +3,10 @@
 /* Modals - Crypto - try to find keys locally & remotely */
 Mailpile.UI.Modals.CryptoFindKeys = function(options) {
 
+  if (!options) {
+    var options = {query: ''};
+  }
+
   // Set Defaults
   options.container = '#search-keyservers';
   options.action    = 'hide-modal';
@@ -44,8 +48,8 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
 };
 
 
-Mailpile.UI.Modals.CryptoImportKeys = function(options) {
-  var modal_template = _.template($('#modal-import-keys').html());
+Mailpile.UI.Modals.CryptoUploadKey = function(options) {
+  var modal_template = _.template($('#modal-upload-key').html());
   $('#modal-full').html(modal_template(options));
   $('#modal-full').modal(Mailpile.UI.ModalOptions);
 };
