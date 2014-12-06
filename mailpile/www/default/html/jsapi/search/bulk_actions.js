@@ -150,11 +150,16 @@ Mailpile.bulk_action_selection_down = function() {
 
 
 Mailpile.open_selected_thread = function() {
-  if (this['messages_cache'].length == 1) {
+  if (Mailpile.messages_cache.length === 1) {
     $("#pile-results input[type=checkbox]:checked").each(function() {
       window.location.href = $(this).parent().parent()
                                     .children(".subject")
                                     .children("a").attr("href");
     });
+  }
+  else if (Mailpile.search_target !== 'none') {
+    var target = this['search_target'];
+    var mid = $('#pile-results tr').eq(target).data('mid');
+    window.location.href = Mailpile.urls.message_sent + mid + '/';
   }
 };
