@@ -19,7 +19,7 @@
   <script src="/static/js/libraries.min.js"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
   <script src="/api/0/jsapi/as.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
-  {% if state.command_url in ("/message/draft/", "/message/") %}
+  {% if state.command_url in ("/message/draft/", "/message/", "/contacts/") %}
   <script src="/static/js/plupload.full.min.js"></script>
   {% endif %}
 

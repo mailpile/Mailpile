@@ -195,7 +195,11 @@
   <div class="text-center">
     <h4 class="half-bottom">{{_("Importing Encryption Key")}}</h4>
     <p class="half-bottom">{% include("../img/loading-ellipsis.svg") %}</p>
+    <% if (file) { %>
+    <em class="text-detail">Uploading <%= file.name %> (<%= plupload.formatSize(file.size) %>)</em>
+    <% } else { %>
     <em class="text-detail">This may take a few moments...</em>
+    <% } %>
   </div>
   </li>
 </script>

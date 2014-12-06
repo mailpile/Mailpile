@@ -262,15 +262,16 @@
       <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
       <h4 class="modal-title"><span class="icon-key"></span> {{_("Upload Encryption Key")}}</h4>
     </div>
-    <div class="modal-body clearfix">
-      <form id="form-crypto-upload-key" class="standard half-bottom">
+    <div id="upload-key-container" class="modal-body clearfix">
+      <ul id="upload-key-list"></ul>
+      <form id="form-upload-key" class="standard add-bottom">
         <fieldset>
-          <label>{{_("Select file on your computer that is an encryption key")}} (.asc .key .pub)</label>
-          <input type="file" name="key_data">
+          <label>{{_("Select or drag encryption key file from your computer")}} (.asc .key .pub)</label>
+          <button id="upload-key-pick" class="hide button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+            <span class="icon-upload"></span> {{_("Select Encryption Key")}}
+          </button>
+          <span id="upload-key-browswer-unsupported">{{_("Unable to create uploader")}}, <a href="">{{_("update your browser")}}</a></span>
         </fieldset>
-        <button class="button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
-          <span class="icon-upload"></span> {{_("Upload")}}
-        </button>
       </form>
     </div>
   </div>

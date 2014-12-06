@@ -52,4 +52,7 @@ Mailpile.UI.Modals.CryptoUploadKey = function(options) {
   var modal_template = _.template($('#modal-upload-key').html());
   $('#modal-full').html(modal_template(options));
   $('#modal-full').modal(Mailpile.UI.ModalOptions);
+
+  // Uploader
+  Mailpile.Crypto.Import.Uploader();
 };
