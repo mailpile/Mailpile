@@ -321,3 +321,17 @@
   </div>
 </script>
 
+
+<script id="template-contact-list-item" type="text/template">
+  <div class="rectangles-outer" id="contact-card-<%= email %>">
+    <div class="rectangles-inner">
+      <a class="contact-card-avatar left" href="/contacts/view/<%= email %>/">
+        <img src="/static/img/avatar-default.png">
+      </a>
+      <a class="contact-card-name" href="/contacts/view/<%= email %>/">
+        <%= fn %>
+      </a>
+      <input type="checkbox" class="contact-card-checkbox right">
+    </div>
+  </div>
+</script>
