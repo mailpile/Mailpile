@@ -41,7 +41,10 @@
     </ul>
   </div>
   <div class="thread-item-details">
-    <a class="datetime" href="{{ metadata.urls.thread }}">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</a>
+    <a class="datetime" href="{{ metadata.urls.thread }}">
+      {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}<span class="icon-new"></span>{% endif %}{% endfor %}
+      {{ metadata.timestamp|friendly_datetime }} {{ metadata.timestamp|friendly_time }}
+    </a>
     {% set signature = show_message_signature(metadata.crypto.signature) %}
     {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
     <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
