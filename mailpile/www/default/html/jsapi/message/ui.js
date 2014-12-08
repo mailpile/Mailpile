@@ -8,7 +8,7 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
     dataType : 'json',
     success  : function(response) {
       if (response.result) {
-        $('#snippet-' + mid).replaceWith(response.result);
+        $('#message-' + mid).replaceWith(response.result);
         Mailpile.Message.Tooltips.Crypto();
         Mailpile.Message.Tooltips.Attachments();
       }
@@ -22,11 +22,22 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
 
 
 Mailpile.UI.Message.ScrollToMessage = function() {
-  var thread_id = _.keys(Mailpile.instance.messages)[0];
-  var msg_top_pos = $('#message-' + thread_id).position().top + 1;
+
   $('#content-view').scrollTop(msg_top_pos - 150);
+  var check_new = $('#content-view').find('div.new');
+
+  if (check_new.length) {
+    var unread_thread_id = $(check_new[0]).data('mid');
+    var msg_top_pos = $('#message-' + unread_thread_id).position().top + 1;
+  } 
+  else {
+    var thread_id = _.keys(Mailpile.instance.messages)[0];
+    var msg_top_pos = $('#message-' + thread_id).position().top + 1;
+  }
+
+  // Scroll To
   setTimeout(function(){
-    $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
+    $('#content-view').animate({ scrollTop: msg_top_pos }, 450);
   }, 50);
 };
 

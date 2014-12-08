@@ -46,7 +46,7 @@
       {{_("Could Not Render Composer")}}
     {% endif %}
   {% else %}{# Just render snippet view #}
-    <div id="snippet-{{ mid }}" class="thread-snippet {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{ mid }}">
+    <div id="message-{{ mid }}" class="thread-snippet {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
       {% if metadata.crypto.encryption in ("missingkey", "error", "mixed-missingkey", "mixed-error") %}
