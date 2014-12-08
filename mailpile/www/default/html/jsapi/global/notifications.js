@@ -55,7 +55,7 @@ Mailpile.notification = function(result) {
 
   // Show Notification
   var notification_template = _.template($('#template-notification-bubble').html());
-  $('#notification-bubbles').append(notification_template(result));
+  $('#notification-bubbles').prepend(notification_template(result));
   setTimeout(function() {
     $('#event-' + result.event_id).fadeIn('fast');
   }, 250);
