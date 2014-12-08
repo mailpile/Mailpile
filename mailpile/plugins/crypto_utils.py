@@ -60,8 +60,11 @@ class GPGKeyImport(Command):
     SYNOPSIS = (None, 'crypto/gpg/importkey', 'crypto/gpg/importkey',
                 '<key_file>')
     HTTP_CALLABLE = ('POST', )
-    HTTP_QUERY_VARS = {'key_data': 'Contents of public key to be imported',
-                       'key_file': 'Location of file containing the public key'}
+    HTTP_QUERY_VARS = {
+        'key_data': 'Contents of public key to be imported',
+        'key_file': 'Location of file containing the public key',
+        'name': '(ignored)'
+    }
 
     def command(self):
         key_data = ""
