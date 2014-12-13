@@ -6,7 +6,7 @@ Mailpile.activities.compose = function(address) {
   }
 	Mailpile.API.message_compose_post(compose_data, function(response) {
     if (response.status === 'success') {
-      window.location.href = Mailpile.urls.message_draft + response.result.created[0] + '/';
+      window.location.href = Mailpile.urls.message_draft + response.result.message_ids[0] + '/';
     } else {
       Mailpile.notification(response);
     }
