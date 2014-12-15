@@ -127,26 +127,38 @@ Mailpile.API._ajax_error =  function(base_url, command, data, method, response, 
   console.log('status: ' + status + ' method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
   console.log(response);
 
-  // Show 500 Error
+  // General 500 internal errors.
+  // FIXME: Make this more helpful for any errors we actually expect.
   if (command !== '/0/eventlog/' && status == 'error' && response.status == 500) {
     Mailpile.notification({
       status: 'error',
-      message: '{{_("Oops. Mailpile failed to complete your task")}}',
+      message: '{{_("Oops. Mailpile failed to complete your task.")}}',
       icon: 'icon-signature-unknown'
     });
+    return;
   }
-  // Hide Connection Down
-  else if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
-    console.log('SHOW CONNECTION DOWN!!!');
-    //$('body').append($('#template-connection-down').html());
+
+  // Handle the long-polling eventlog stuff differently
+  if (command == '/0/eventlog/' && status == 'error') {
+    if (response.status == 404) {
+      console.log('FIXME: SHOW CONNECTION DOWN!!!');
+      //$('body').append($('#template-connection-down').html());
+      return;
+    }
+    else if (status == 'error' && response.status == 0) {
+      console.log('Request aborted by browser.');
+      return;
+    }
   }
-  else {
-    Mailpile.notification({
-      status: 'warning',
-      message: '{{_("Something went wrong and we are not sure what")}}',
-      icon: 'icon-signature-unknown'
-    });  
-  }
+
+  // Any other error state generates this annoying popup
+  Mailpile.notification({
+    status: 'warning',
+    message: ('{{_("Something went wrong and we are not sure what")}}' +
+              ' (response.status=' + response.status +
+              ' status=' + status + ')'),
+    icon: 'icon-signature-unknown'
+  });
 };
 
 
