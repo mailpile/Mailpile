@@ -5,7 +5,7 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
-from mailpile.ui import Session
+from mailpile.ui import Session, BackgroundInteraction
 
 
 class CommandCache(object):
@@ -41,7 +41,8 @@ class CommandCache(object):
         with self.lock:
             # Make a snapshot of the session, as it provides context
             snapshot = Session.Snapshot(cmd_obj.session, ui=False)
-            snapshot.ui = cmd_obj.session.ui
+            snapshot.ui = BackgroundInteraction(cmd_obj.session.config,
+                                                log_parent=cmd_obj.session.ui)
             cmd_obj.session = result_obj.session = snapshot
 
             # Note: We cache this even if the requirements are "dirty",

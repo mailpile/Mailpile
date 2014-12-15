@@ -443,8 +443,7 @@ class Command(object):
         self.event.data['elapsed'] = int(1000 * (time.time()-self._start_time))
 
         if (log or self.LOG_PROGRESS) and not self.LOG_NOTHING:
-            ui = str(self.session.ui.__class__).replace('mailpile.', '.')
-            self.event.data['ui'] = ui
+            self.event.data['ui'] = str(self.session.ui.__class__.__name__)
             self.event.data['output'] = self.session.ui.render_mode
             if self.session.config.event_log:
                 self.session.config.event_log.log_event(self.event)

@@ -63,23 +63,26 @@ def Interact(session):
                                        color=session.ui.term.BLACK,
                                        weight=session.ui.term.BOLD)
         while not mailpile.util.QUITTING:
-            session.ui.block()
             try:
-                opt = raw_input(prompt).decode('utf-8').strip()
+                with session.ui.term:
+                    session.ui.block()
+                    opt = raw_input(prompt).decode('utf-8').strip()
             except KeyboardInterrupt:
-                session.ui.unblock()
+                session.ui.unblock(force=True)
                 session.ui.notify(_('Interrupted. '
                                     'Press CTRL-D or type `quit` to quit.'))
                 continue
             session.ui.term.check_max_width()
-            session.ui.unblock()
+            session.ui.unblock(force=True)
             if opt:
                 if ' ' in opt:
                     opt, arg = opt.split(' ', 1)
                 else:
                     arg = ''
                 try:
-                    session.ui.display_result(Action(session, opt, arg))
+                    result = Action(session, opt, arg)
+                    session.ui.block()
+                    session.ui.display_result(result)
                 except UsageError, e:
                     session.error(unicode(e))
                 except UrlRedirectException, e:
@@ -87,7 +90,7 @@ def Interact(session):
     except EOFError:
         print
     finally:
-        session.ui.unblock()
+        session.ui.unblock(force=True)
 
     try:
         if session.config.sys.history_length > 0:

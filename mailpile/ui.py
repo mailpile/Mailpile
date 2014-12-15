@@ -61,6 +61,15 @@ class NoColors:
     RESET = ''
     LINE_BELOW = ''
 
+    def __init__(self):
+        self.lock = UiRLock()
+
+    def __enter__(self, *args, **kwargs):
+        return self.lock.__enter__()
+
+    def __exit__(self, *args, **kwargs):
+        return self.lock.__exit__(*args, **kwargs)
+
     def max_width(self):
         return 79
 
@@ -79,7 +88,8 @@ class NoColors:
         pass
 
     def write(self, data):
-        sys.stderr.write(data)
+        with self:
+            sys.stderr.write(data)
 
     def check_max_width(self):
         pass
@@ -106,6 +116,7 @@ class ANSIColors(NoColors):
     CLEAR_LINE = "\x1B[2K"
 
     def __init__(self):
+        NoColors.__init__(self)
         self.check_max_width()
 
     def replace_line(self, text, chars=None):
@@ -169,7 +180,7 @@ class UserInteraction:
     def __init__(self, config, log_parent=None, log_prefix=None):
         self.log_parent = log_parent
         self.log_buffer = []
-        self.log_buffering = False
+        self.log_buffering = 0
         self.log_level = self.LOG_ALL
         self.log_prefix = log_prefix or self.LOG_PREFIX
         self.interactive = False
@@ -214,7 +225,7 @@ class UserInteraction:
     def _display_log(self, text, level=LOG_URGENT):
         if not text.startswith(self.log_prefix):
             text = '%slog(%s): %s' % (self.log_prefix, level, text)
-        if self.log_parent:
+        if self.log_parent is not None:
             self.log_parent.log(level, text)
         else:
             self.term.write(self._fmt_log(text, level=level))
@@ -223,7 +234,7 @@ class UserInteraction:
         if text and 'log' in self.config.sys.debug:
             if not text.startswith(self.log_prefix):
                 text = '%slog(%s): %s' % (self.log_prefix, level, text)
-            if self.log_parent:
+            if self.log_parent is not None:
                 return self.log_parent.log(level, text)
             else:
                 self.term.write(self._fmt_log(text, level=level))
@@ -241,12 +252,17 @@ class UserInteraction:
             pass
 
     def block(self):
-        self._display_log('')
-        self.log_buffering = True
+        with self.term:
+            self._display_log('')
+            self.log_buffering += 1
 
-    def unblock(self):
-        self.log_buffering = False
-        self.flush_log()
+    def unblock(self, force=False):
+        with self.term:
+            if self.log_buffering <= 1 or force:
+                self.log_buffering = 0
+                self.flush_log()
+            else:
+                self.log_buffering -= 1
 
     def log(self, level, message):
         if self.log_buffering:
@@ -274,11 +290,9 @@ class UserInteraction:
                 action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
-#       print '(%s/%d) %s' % (self, len(self.time_tracking), action)
 
     def report_marks(self, quiet=False, details=False):
         t = self.times
-#       print '(%s/%d) REPORT' % (self, len(self.time_tracking))
         if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
@@ -295,7 +309,6 @@ class UserInteraction:
 
     def reset_marks(self, mark=True, quiet=False, details=False):
         """This sequence of actions is complete."""
-#       print '(%s/%d) RESET' % (self, len(self.time_tracking))
         if self.times and mark:
             self.mark()
         elapsed = self.report_marks(quiet=quiet, details=details)
@@ -304,7 +317,6 @@ class UserInteraction:
 
     def push_marks(self, subtask):
         """Start tracking a new sub-task."""
-#       print '(%s/%d) PUSH' % (self, len(self.time_tracking))
         self.time_tracking.append((subtask, []))
 
     def pop_marks(self, name=None, quiet=True):
@@ -313,13 +325,13 @@ class UserInteraction:
         if len(self.time_tracking) > 1:
             if not name or (self.time_tracking[-1][0] == name):
                 self.time_tracking.pop(-1)
-#       print '(%s/%d) POP' % (self, len(self.time_tracking))
         return elapsed
 
     # Higher level command-related methods
     def _display_result(self, result):
-        sys.stdout.write(unicode(result).encode('utf-8').rstrip())
-        sys.stdout.write('\n')
+        with self.term:
+            sys.stdout.write(unicode(result).encode('utf-8').rstrip())
+            sys.stdout.write('\n')
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
@@ -333,7 +345,6 @@ class UserInteraction:
 
     def display_result(self, result):
         """Render command result objects to the user"""
-        self._display_log('', level=self.LOG_RESULT)
         if self.render_mode == 'json':
             return self._display_result(result.as_('json'))
         for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
@@ -462,17 +473,21 @@ class UserInteraction:
 
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
-        self.block()
 
         tf = tempfile.NamedTemporaryFile()
         tf.write(edit_this.encode('utf-8'))
         tf.flush()
-        os.system('%s %s' % (os.getenv('VISUAL', default='vi'), tf.name))
+        with self.term:
+            try:
+                self.block()
+                os.system('%s %s' % (os.getenv('VISUAL', default='vi'),
+                                     tf.name))
+            finally:
+                self.unblock()
         tf.seek(0, 0)
         edited = tf.read().decode('utf-8')
         tf.close()
 
-        self.unblock()
         if edited == edit_this:
             return False
 
@@ -486,11 +501,12 @@ class UserInteraction:
     def get_password(self, prompt):
         if not self.interactive:
             return ''
-        try:
-            self.block()
-            return getpass.getpass(prompt.encode('utf-8')).decode('utf-8')
-        finally:
-            self.unblock()
+        with self.term:
+            try:
+                self.block()
+                return getpass.getpass(prompt.encode('utf-8')).decode('utf-8')
+            finally:
+                self.unblock()
 
 
 class HttpUserInteraction(UserInteraction):
@@ -656,7 +672,7 @@ class Session(object):
                            lambda s, v: s.set_interactive(v))
 
     def copy(self, session, ui=False, search=True):
-        if ui:
+        if ui is True:
             self.main = session.main
             self.ui = session.ui
         if search:
