@@ -58,6 +58,7 @@ class NoColors:
     MAGENTA = ''
     CYAN = ''
     FORMAT = "%s%s"
+    FORMAT_READLINE = "%s%s"
     RESET = ''
     LINE_BELOW = ''
 
@@ -73,8 +74,9 @@ class NoColors:
     def max_width(self):
         return 79
 
-    def color(self, text, color='', weight=''):
-        return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
+    def color(self, text, color='', weight='', readline=False):
+        return '%s%s%s' % ((self.FORMAT_READLINE if readline else self.FORMAT)
+                           % (color, weight), text, self.RESET)
 
     def replace_line(self, text, chars=None):
         pad = ' ' * max(0, min(self.max_width(),
@@ -108,6 +110,7 @@ class ANSIColors(NoColors):
     CYAN = '36'
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
+    FORMAT_READLINE = "\001\x1B[%s%sm\002"
 
     CURSOR_UP = "\x1B[1A"
     CURSOR_DN = "\x1B[1B"

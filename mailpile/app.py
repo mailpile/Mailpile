@@ -61,7 +61,8 @@ def Interact(session):
     try:
         prompt = session.ui.term.color('mailpile> ',
                                        color=session.ui.term.BLACK,
-                                       weight=session.ui.term.BOLD)
+                                       weight=session.ui.term.BOLD,
+                                       readline=True)
         while not mailpile.util.QUITTING:
             try:
                 with session.ui.term:
