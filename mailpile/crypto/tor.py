@@ -1,10 +1,13 @@
-import stem.process
-import stem.control
-# Version check for STEM >= 1.3
-assert(int(stem.__version__[0]) > 1 or (int(stem.__version__[0]) == 1 and int(stem.__version__[2]) >= 3))
-
 import socks
 import socket
+
+import stem.process
+import stem.control
+
+# Version check for STEM >= 1.3
+assert(int(stem.__version__[0]) > 1 or
+       (int(stem.__version__[0]) == 1 and int(stem.__version__[2]) >= 3))
+
 
 SOCKS_PORT = 33419
 CONTROL_PORT = 33418
@@ -34,6 +37,7 @@ class Tor:
         )
 
     def _print_bootstrap_lines(self, line):
+        print '%s' % line
         pass
 
     def _create_path(self, name):

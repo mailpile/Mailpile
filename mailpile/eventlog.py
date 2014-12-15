@@ -35,7 +35,10 @@ def _ClassName(obj):
     elif hasattr(obj, '__classname__'):
         return str(obj.__classname__).replace('mailpile.', '.')
     else:
-        return str(obj.__class__).replace('mailpile.', '.')
+        module = str(obj.__class__.__module__)
+        if module.startswith('mailpile.'):
+            module = module[len('mailpile'):]
+        return '%s.%s' % (module, str(obj.__class__.__name__))
 
 
 class Event(object):

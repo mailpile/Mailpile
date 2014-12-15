@@ -100,7 +100,7 @@ class Authenticate(Command):
 
     @classmethod
     def RedirectBack(cls, url, data):
-        qs = [(k, v) for k, vl in data.iteritems() for v in vl
+        qs = [(k, v.encode('utf-8')) for k, vl in data.iteritems() for v in vl
               if k not in ['_method', '_path'] + cls.HTTP_POST_VARS.keys()]
         qs = urlencode(qs)
         url = ''.join([url, '?%s' % qs if qs else ''])

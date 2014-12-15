@@ -910,7 +910,7 @@ class Sendit(CompositionCommand):
 
 class Update(CompositionCommand):
     """Update message from a file or HTTP upload."""
-    SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
+    SYNOPSIS = (None, 'update', 'message/update', '<messages> <<filename>')
     ORDER = ('Composing', 1)
     WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')

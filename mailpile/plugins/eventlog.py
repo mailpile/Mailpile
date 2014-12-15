@@ -139,8 +139,8 @@ class Cancel(Command):
 
 
 class Undo(Command):
-    """Undo an event"""
-    SYNOPSIS = (None, 'eventlog/undo', 'eventlog/undo', '<eventID>')
+    """Undo either the last action or one specified by Event ID"""
+    SYNOPSIS = ('u', 'undo', 'eventlog/undo', '[<Event ID>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
@@ -149,15 +149,20 @@ class Undo(Command):
     IS_USER_ACTIVITY = False
 
     def command(self):
-        event_id = self.data.get('event_id', [None])[0] or self.args[0]
+        event_id = (self.data.get('event_id', [None])[0]
+                    or (self.args and self.args[0])
+                    or (self.session.last_event_id))
+        if not event_id:
+            return self._error(_('Need an event ID!'))
         event = self.session.config.event_log.get(event_id)
         if event:
             try:
                 return event.source_class.Undo(self, event)
             except (NameError, AttributeError):
-                return self._error(_('Event is not undoable'))
+                self._ignore_exception()
+                return self._error(_('Event %s is not undoable') % event_id)
         else:
-            return self._error(_('Event not found'))
+            return self._error(_('Event %s not found') % event_id)
 
 
 _plugins.register_commands(Events, Cancel, Undo)

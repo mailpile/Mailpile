@@ -512,6 +512,7 @@ class Command(object):
 
         if not self.run_async:
             self._update_finished_event()
+        self.session.last_event_id = self.event.event_id
         return result
 
     def _update_finished_event(self):

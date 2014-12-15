@@ -645,6 +645,7 @@ class Session(object):
         self.order = None
         self.results = []
         self.searched = []
+        self.last_event_id = None
         self.displayed = None
         self.context = None
 
