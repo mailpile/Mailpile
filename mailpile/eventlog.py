@@ -135,6 +135,19 @@ class Event(object):
                 data['private_data'] = self.private_data
             return data
 
+    def as_text(self, private=True, compact=False):
+        try:
+            return self.source_class.EventAsText(self, private=private,
+                                                       compact=True)
+        except (AttributeError, NameError):
+            if compact:
+                return '%s=%s:%s %s' % (self.event_id,
+                                        self.source.split('.')[-1],
+                                        self.flags, self.message)
+            else:
+                return json.dumps(self.as_dict(private=private),
+                                  default=json_helper)
+
     def as_json(self, private=True):
         try:
             return self.source_class.EventAsJson(self, private=private)
@@ -173,6 +186,7 @@ class EventLog(object):
         self._events = {}
 
         # Internals...
+        self._watching_uis = []
         self._waiter = threading.Condition(EventRLock())
         self._lock = EventLock()
         self._log_fd = None
@@ -334,6 +348,8 @@ class EventLog(object):
             self._logged += 1
             self._maybe_rotate_log()
             self._notify_waiters()
+            for ui in self._watching_uis:
+                ui.notify(event.as_text(compact=True))
         return event
 
     def log(self, *args, **kwargs):
@@ -355,6 +371,19 @@ class EventLog(object):
         for event_id in self._events.keys():
             if Event.COMPLETE in self._events[event_id].flags:
                 del self._events[event_id]
+
+    def ui_watch(self, ui):
+        if ui not in self._watching_uis:
+            self._watching_uis.append(ui)
+            return True
+        else:
+            return False
+
+    def ui_unwatch(self, ui):
+        try:
+            self._watching_uis.remove(ui)
+        except ValueError:
+            pass
 
     def load(self):
         with self._lock:

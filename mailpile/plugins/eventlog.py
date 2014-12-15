@@ -1,5 +1,6 @@
 import time
 
+import mailpile.util
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -165,4 +166,26 @@ class Undo(Command):
             return self._error(_('Event %s not found') % event_id)
 
 
-_plugins.register_commands(Events, Cancel, Undo)
+class Watch(Command):
+    """Watch the events fly by"""
+    SYNOPSIS = (None, 'eventlog/watch', None, None)
+    ORDER = ('Internals', 9)
+    IS_USER_ACTIVITY = False
+
+    def command(self):
+        self.session.ui.notify(
+            _('Watching logs: Press CTRL-C to return to the CLI'))
+        unregister = self.session.config.event_log.ui_watch(self.session.ui)
+        try:
+            self.session.ui.unblock(force=True)
+            while not mailpile.util.QUITTING:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            if unregister:
+                self.session.config.event_log.ui_unwatch(self.session.ui)
+        return self._success(_('That was fun!'))
+
+
+_plugins.register_commands(Events, Cancel, Undo, Watch)

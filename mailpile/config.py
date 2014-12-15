@@ -1320,6 +1320,10 @@ class ConfigManager(ConfigDict):
                                                       mode='rw', mkdir=True),
                                   dec_key_func, enc_key_func
                                   ).load()
+        if 'log' in self.sys.debug:
+            self.event_log.ui_watch(session.ui)
+        else:
+            self.event_log.ui_unwatch(session.ui)
 
         # Load Search History
         self.search_history = SearchHistory.Load(self,
@@ -1358,7 +1362,7 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
-    def _unlocked_save(self):
+    def _unlocked_save(self, session=None):
         if not self.loaded_config:
             return
 
@@ -1372,6 +1376,12 @@ class ConfigManager(ConfigDict):
         # FIXME: The master key is actually prefs.obfuscate.index still...
         if not self.master_key:
             self.master_key = self.prefs.obfuscate_index
+
+        if session:
+            if 'log' in self.sys.debug:
+                self.event_log.ui_watch(session.ui)
+            else:
+                self.event_log.ui_unwatch(session.ui)
 
         # We keep the master key in a file of its own and never delete
         # or overwrite master keys.

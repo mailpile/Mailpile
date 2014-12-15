@@ -337,7 +337,7 @@ class Command(object):
         session, cfg = self.session, self.session.config
         aut = cfg.save_worker.add_unique_task
         if everything or config:
-            aut(session, 'Save config', cfg.save)
+            aut(session, 'Save config', lambda: cfg.save(session))
         if cfg.index:
             cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:
@@ -1441,16 +1441,14 @@ class ProgramStatus(Command):
             ievents = self.result.get('ievents')
             cevents = self.result.get('cevents')
             if cevents:
-                cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
+                cevents = '\n'.join(['  %s' % (e.as_text(compact=True),)
                                      for e in cevents])
             else:
                 cevents = '  ' + _('Nothing Found')
 
             ievents = self.result.get('ievents')
             if ievents:
-                ievents = '\n'.join([' %s:%s %s' % (e.event_id,
-                                                    e.flags,
-                                                    e.message)
+                ievents = '\n'.join([' %s' % (e.as_text(compact=True),)
                                      for e in ievents])
             else:
                 ievents = '  ' + _('Nothing Found')
