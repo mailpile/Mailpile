@@ -14,6 +14,7 @@ import sys
 import traceback
 import threading
 import time
+import unicodedata
 import webbrowser
 
 import mailpile.util
@@ -984,6 +985,19 @@ class SearchResults(dict):
         return SearchResults(self.session, self.idx,
                              end=stats['start'] - 1)
 
+    def _fix_width(self, text, width):
+        chars = []
+        for c in unicode(text):
+            cwidth = 2 if (unicodedata.east_asian_width(c) in 'WF') else 1
+            if cwidth <= width:
+                chars.append(c)
+                width -= cwidth
+            else:
+                break
+        if width:
+            chars += [' ' * width]
+        return ''.join(chars)
+
     def as_text(self):
         from mailpile.www.jinjaextensions import MailpileCommand as JE
         clen = max(3, len('%d' % len(self.session.results)))
@@ -1056,11 +1070,13 @@ class SearchResults(dict):
 
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
                              JE._nice_subject(m))
+            subject_width = max(1, s_width - (clen + len(msg_meta)))
+            subject = self._fix_width(subject, subject_width)
+            from_info = self._fix_width(from_info, f_width)
 
-            sfmt = '%%-%d.%ds%%s' % (max(1, s_width - (clen + len(msg_meta))),
-                                     max(1, s_width - (clen + len(msg_meta))))
-            ffmt = ' %%-%d.%ds %%s' % (f_width, f_width)
-            tfmt = cfmt + ffmt + sfmt
+            #sfmt = '%%s%%s' % (subject_width, subject_width)
+            #ffmt = ' %%s%%s' % (f_width, f_width)
+            tfmt = cfmt + ' %s%s%s%s'
             text.append(tfmt % (count, from_info, tag_new and '*' or ' ',
                                 subject, msg_meta))
 
