@@ -23,7 +23,7 @@
 
 
 <script id="template-helper-what-is-encryption-key" type="text/template">
-  <p>Encryption keys are what is used to encrypt messages. Mailpile uses the encryption standard <a href="https://en.wikipedia.org/wiki/Pretty_Good_Privacy#OpenPGP" target="_blank">OpenPGP</a>. In order to encrypt messages, you need encryption keys for both you (the sender) and the recipients you are messaging. Mailpile creates or imports any encryption keys already on your computer. Here's an example of the encryption key that belongs to the company that made Mailpile.</p>
+  <p>Encryption keys are used to encrypt messages. Mailpile uses the encryption standard <a href="https://en.wikipedia.org/wiki/Pretty_Good_Privacy#OpenPGP" target="_blank">OpenPGP</a>. In order to encrypt a message, you need encryption keys for all the recipients you are messaging. Here's an example of the encryption key that belongs to the company that made Mailpile.</p>
   <h5><span class="icon-key"></span> Mailpile Team's Key</h5>
   <ul>
     <li id="item-encryption-key-4161CD18CCA11A0B1F4C3EA0AAD965A4707775F9" class="searchkey-result-item animated fadeIn">
@@ -81,10 +81,10 @@
       </div>
     </li>
   </ul>
-  <h5>How To Find Encryption Keys</h5>
-  <p>There are multiple ways to import encryption keys into your Mailpile. You can search your messages and internet for encryption keys.</p>
-  <p><a href="#" class="btn-helper-action button-primary" data-action="CryptoFindKeys"><span class="icon-search"></span> Search for Encryption Key</a></p>
-  <p>You can also import a encryption key from a file on your computer. Usually, encryption keys end in one of the following file extensions <strong>.asc .key .pub</strong>
+  <p>There are multiple ways to find and import encryption keys into your Mailpile. Most commonly, you can search your messages and the internet for encryption keys.</p>
+  <p><a href="#" class="btn-helper-action" data-action="CryptoFindKeys"><span class="icon-search"></span> Search for Encryption Keys</a></p>
+  <p>You can also import encryption keys from a file on your computer. Usually, encryption keys have the following file extensions <strong>.asc .key .pub</strong>
   </p>
-  <p><a href="#" class="btn-helper-action button-primary" data-action="CryptoUploadKey"><span class="icon-upload"></span> Upload Encryption Key</a></p>
+  <p><a href="#" class="btn-helper-action" data-action="CryptoUploadKey"><span class="icon-upload"></span> Upload Encryption Keys</a></p>
+  <p class="remove-bottom"><em class="text-detail">Note: Mailpile created you a new encryption key or imported existing keys already on your computer. <a href="/setup/crypto/">View your encryption keys.</a></em></p>
 </script>
