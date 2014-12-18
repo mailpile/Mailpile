@@ -62,7 +62,7 @@
           {% if editing_strings.attachments %}
           {% for att in attachments %}
           <li id="compose-attachment-{{mid}}-{{att.aid}}" class="left">
-            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
+            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
             <div class="attachment-image">
               <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
                 <span class="icon-circle-x"></span>

@@ -53,6 +53,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
 
       attachment['previewable'] = _.indexOf(['image/bmp', 
                                       'image/gif',
+                                      'image/jpg',
                                       'image/jpeg',
                                       'image/pjpeg',
                                       'image/x-png',
