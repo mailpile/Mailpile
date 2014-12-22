@@ -5,9 +5,9 @@
   {% include("partials/tools_contacts.html") %}
 </div>
 <div id="content-view">
+  {% if result.contacts %}
   <div id="contacts-list" class="container rectangles-container center">
     <div class="clearfix"></div>
-    {% if result.contacts %}
     {% for contact in result.contacts %}
     {% if contact.email %}
     <div class="rectangles-outer" id="contact-card-{{contact.email.0.email}}">
@@ -33,8 +33,14 @@
     {{_("No Contact Info")}}
     {% endif %}
     {% endfor %}
-  {% endif %}
   </div>
+  {% else %}
+  <div class="add-top text-center">
+    <h3>{{_("No Contacts Found")}} :)</h3>
+    <p>{{_("Don't worry, it's ok. Mailpile will start to automatically create contacts whenever you send or reply to messages.")}}</p>
+    <!-- <button><span class="icon-upload"></span> Import Contacts</button> -->
+  </div>
+  {% endif %}
 </div>
 
 <div id="pile-bottom">
