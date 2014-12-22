@@ -55,13 +55,16 @@
     "icon-lock-closed",
     "icon-key",
     "icon-map",
+    "icon-geopoint",
     "icon-animals",
     "icon-clock",
     "icon-columns",
     "icon-flashlight",
     "icon-food",
     "icon-help",
-    "icon-purchases"
+    "icon-purchases",
+    "icon-upload",
+    "icon-download"
   ],
   "colors": {
     "01-gray-mid": "#cccccc",
