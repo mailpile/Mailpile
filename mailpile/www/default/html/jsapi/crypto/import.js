@@ -54,9 +54,9 @@ Mailpile.Crypto.Import.Uploader = function() {
   	container: 'upload-key-container', // ... or DOM Element itself
     drop_element: 'upload-key-container',
   	url : '/api/0/crypto/gpg/importkey/',
-    multipart : true,
-    multipart_params : {'key_data': 'upload'},
-    file_data_name : 'key_file',
+//    multipart : true,
+//    multipart_params : {'key_file': 'upload'},
+    file_data_name : 'key_data',
   	filters : {
   		max_file_size : '5mb'
   	},

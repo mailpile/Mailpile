@@ -14,7 +14,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
     $('#search-keyservers').find('.loading').slideUp('fast');
   };
 
-  // Async call
+  /* Async call
   Mailpile.API.async_crypto_keylookup_get({"address": options.query }, function(data, ev) {
 
     // Render each result found
@@ -40,11 +40,16 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
       Mailpile.Crypto.Find.KeysDone(options);
     }
   });
+  */
 
   // Show Modal
   var modal_template = _.template($('#modal-search-keyservers').html());
   $('#modal-full').html(modal_template(options));
   $('#modal-full').modal(Mailpile.UI.ModalOptions);
+
+  if (!options.query) {
+    $('#form-search-keyservers').removeClass('hide').addClass('fadeIn');
+  }
 };
 
 

@@ -6,7 +6,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
   var items_html = '';
 
   _.each(data.result, function(key) {
-console.log(key);
+
     if (!$('#item-encryption-key-' + key.fingerprint).length) {
 
       // Loop through UIDs for match to Query
@@ -103,6 +103,13 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 };
 
 
+/**
+ * Performs a lookup for encryption keys and renders UI elements
+ * @param {string} options.container - container element of all UI elements
+ * @param {string} options.action -  
+ * @param {string} options.query - the term to lookup
+ * @param {function} options.complete 
+ */
 Mailpile.Crypto.Find.Keys = function(options) {
 
   if ($(options.container).hasClass('hide')) {
@@ -130,5 +137,4 @@ Mailpile.Crypto.Find.Keys = function(options) {
       Mailpile.Crypto.Find.KeysDone(options);
     }
   });
-
 };
