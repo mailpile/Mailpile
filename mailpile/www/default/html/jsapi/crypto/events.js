@@ -23,6 +23,34 @@ $(document).on('click', '.searchkey-result-score', function(e) {
 });
 
 
+$(document).on('submit', '#form-search-keyservers', function(e) {
+  e.preventDefault();
+  
+  // Hide Form
+  $('#form-search-keyservers').removeClass('fadeIn').addClass('hide');
+
+  // Query
+  var query = $(this).find('input[type=text]').val();
+  Mailpile.Crypto.Find.Keys({
+    container: '#search-keyservers',
+    action: 'hide-modal',
+    query: query,
+    complete: function() {
+      $('#search-keyservers-again').removeClass('hide').addClass('fadeIn');      
+    }
+  });
+});
+
+
+$(document).on('click', '#btn-search-keyservers-again', function(e) {
+  e.preventDefault();
+  $('#search-keyservers-again').removeClass('fadeIn').addClass('hide');
+  $('#search-keyservers').fadeOut().find('ul.result').html('');
+  $('#form-search-keyservers').removeClass('hide').addClass('fadeIn')
+    .find('input[type=text]').val('');
+});
+
+
 /* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
