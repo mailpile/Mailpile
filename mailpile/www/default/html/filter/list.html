@@ -3,6 +3,7 @@
 {% block content %}
 <div id="filters-list" class="content-normal clearfix">
   {% set tags = mailpile("tags", "display=*", "mode=flat").result.tags %}
+  {% if result %}
   <ul class="items">
     {% for filter in result %}
     {% set tag_groups = make_filter_groups(filter.tags) %}
@@ -25,7 +26,6 @@
       <em>Search Terms:</em><br>
       <span class="icon-search"></span> <strong>{{ filter.terms }}</strong><br>
       <label><input type="checkbox"> Autotag</label>
-
       <ul class="horizontal right">
         <li><a href=""><span class="icon-settings"></span> {{_("Edit")}}</a></li>
         <li><a href=""><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
@@ -33,6 +33,10 @@
     </li>
     {% endfor %}
   </ul>
-
+  {% else %}
+  <h3>{{_("No Filters Exist")}} :)</h3>
+  <p>{{_("Filters are clever rules that automatically apply tags, sort and otherwise handle your messages.")}}</p>
+  <p>Current filters are only supported in the CLI (command line interface). You can <a href="/help/filters/command-line-interface/">read the documentation</a>.</p>
+  {% endif %}
 </div>
 {% endblock %}
