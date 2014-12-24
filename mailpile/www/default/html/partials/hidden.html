@@ -120,6 +120,9 @@
   <span class="icon-x"></span> {{_("No encryption keys found matching:")}} <span class="color-01-gray-mid"><%= query %></span>
 </script>
 
+<script id="template-find-keys-error" type="text/template">
+  <span class="icon-signature-unknown"></span> {{_("Make sure your internet connection is working")}}
+</script>
 
 <script id="template-crypto-encryption-key" type="text/template">
   <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
