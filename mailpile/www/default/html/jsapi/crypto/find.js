@@ -84,6 +84,7 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
     var message_template = _.template($('#template-find-keys-none').html());
     var message_html     = message_template(options);
 
+    // Update UI
     $(options.container).find('.message')
       .html(message_html)
       .removeClass('paragraph-important paragraph-success')
@@ -92,6 +93,7 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 
   } else {
 
+    // Update UI
     $(options.container).find('.message')
       .removeClass('paragraph-important paragraph-alert')
       .addClass('paragraph-success');
@@ -105,19 +107,23 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 
 Mailpile.Crypto.Find.KeysError = function(options) {
 
-  console.log('NOPE!!!');
-
-  $(options.container).find('.loading').fadeOut();
-
+  // Get Message
   var message_template = _.template($('#template-find-keys-error').html());
   var message_html     = message_template(options);
 
-  $(options.container).find('.message')
-    .html(message_html)
-    .removeClass('paragraph-important paragraph-success paragraph-alert')
-    .addClass('paragraph-warning');
-    var status = 'none';
+  // Update UI
+  $(options.container).find('.loading')
+    .fadeOut();
 
+  setTimeout(function() {
+    $(options.container).find('.message')
+      .html(message_html)
+      .removeClass('paragraph-success paragraph-important paragraph-alert')
+      .addClass('paragraph-warning');
+
+    // Callback
+    options.complete('none');
+  }, 250);
 };
 
 
@@ -138,11 +144,15 @@ Mailpile.Crypto.Find.Keys = function(options) {
 
     // Render each result found
     if (data.result) {
+
       $(options.container).find('.message')
         .html('<span class="icon-key"></span> ' + data.message)
         .removeClass('paragraph-success paragraph-alert')
         .addClass('paragraph-important');
+
+      // Show Result
       Mailpile.Crypto.Find.KeysResult(data, options);
+
     } else {
       // Show Error (connection down, etc...)
       Mailpile.Crypto.Find.KeysError(options);
@@ -150,9 +160,11 @@ Mailpile.Crypto.Find.Keys = function(options) {
 
     // Running Search
     if (data.runningsearch) {
+
       var searching_template = _.template($('#template-find-keys-running').html());
       var searching_html     = searching_template(options);
       $(options.container).find('.message').html(searching_html);
+
     } else {
       Mailpile.Crypto.Find.KeysDone(options);
       console.log('sup doodoo brains');

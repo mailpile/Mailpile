@@ -20,6 +20,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
     Mailpile.Crypto.Find.Keys(options);
   } else {
     $('#form-search-keyservers').removeClass('hide').addClass('fadeIn');
+    $('#form-search-keyservers').find('input[name=query]').focus();
   }
 };
 
