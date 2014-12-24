@@ -22,18 +22,20 @@
         </h4>
       </div>
       <div class="modal-body clearfix">
-        <p>Check your <a href="https://www.google.com/settings/security" target="_blank">Google Security Settings</a> before entering your password, otherwise you might not be able to connect your Mailpile.</p>
+        <p>{{_("Check your")}} <a href="https://www.google.com/settings/security" target="_blank">{{_("Google Security Settings")}}</a> {{_("before entering your password, otherwise you might not be able to connect your Mailpile.")}}</p>
         <p><a href="https://www.google.com/settings/security" target="_blank">
           <img class="img-border" src="/static/img/help/google-security-tab.png">
         </a></p>
-        <p>Make sure one of the following conditions is met:</p>
-        <ul class="circle">
-          <li>Enable access for "Less secure apps" (non Google apps)</li> 
-          <li>Generate a Google 2-Step "App Password"</li>
-        </ul>
+        <p>{{_("Make sure you have enabled at least one of the following Google settings")}}:</p>
         <p>
-          <a href="/page/gmail-2-step-verification/" class="button-secondary" target="_blank">
-            <span class="icon-help"></span> Help: Gmail's 2-Step App Passwords
+          <!-- FIXME: Add helper JS events to show in modal <a class="btn-helper-action" data-action="CryptoFindKeys"> -->
+          <a href="/page/gmail-access-non-google-accounts/" target="_blank">
+            <span class="icon-help"></span> {{_("Enable Access for Non-Google Apps")}}
+          </a>
+        </p>
+        <p>
+          <a href="/page/gmail-2-step-verification/" class="helper" target="_blank">
+            <span class="icon-help"></span> {{_("Gmail's 2-Step App Passwords")}}
           </a>
         </p>
       </div>
