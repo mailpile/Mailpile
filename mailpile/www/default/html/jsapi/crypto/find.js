@@ -103,6 +103,24 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 };
 
 
+Mailpile.Crypto.Find.KeysError = function(options) {
+
+  console.log('NOPE!!!');
+
+  $(options.container).find('.loading').fadeOut();
+
+  var message_template = _.template($('#template-find-keys-error').html());
+  var message_html     = message_template(options);
+
+  $(options.container).find('.message')
+    .html(message_html)
+    .removeClass('paragraph-important paragraph-success paragraph-alert')
+    .addClass('paragraph-warning');
+    var status = 'none';
+
+};
+
+
 /**
  * Performs a lookup for encryption keys and renders UI elements
  * @param {string} options.container - container element of all UI elements
@@ -125,6 +143,9 @@ Mailpile.Crypto.Find.Keys = function(options) {
         .removeClass('paragraph-success paragraph-alert')
         .addClass('paragraph-important');
       Mailpile.Crypto.Find.KeysResult(data, options);
+    } else {
+      // Show Error (connection down, etc...)
+      Mailpile.Crypto.Find.KeysError(options);
     }
 
     // Running Search
@@ -132,9 +153,9 @@ Mailpile.Crypto.Find.Keys = function(options) {
       var searching_template = _.template($('#template-find-keys-running').html());
       var searching_html     = searching_template(options);
       $(options.container).find('.message').html(searching_html);
-    }
-    else {
+    } else {
       Mailpile.Crypto.Find.KeysDone(options);
+      console.log('sup doodoo brains');
     }
   });
 };
