@@ -2,7 +2,9 @@
 
 $(document).on('click', '.btn-crypto-search-key', function(e) {
   e.preventDefault();
-  Mailpile.UI.Modals.CryptoFindKeys({query: ''});
+  Mailpile.UI.Modals.CryptoFindKeys({
+    query: ''
+  });
 });
 
 

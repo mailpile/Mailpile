@@ -40,7 +40,7 @@ $(document).on('click', '.checkbox-item-picker', function(e) {
 
 /* Compose - Create a new email to an address */
 $(document).on('click', 'a', function(e) {
-  if ($(this).attr('href').startsWith('mailto:')) {
+  if ($(this).attr('href') && $(this).attr('href').startsWith('mailto:')) {
     e.preventDefault();
     Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
   }
