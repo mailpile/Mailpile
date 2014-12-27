@@ -12,6 +12,7 @@ if (!window.console) window.console = {
 
 Mailpile = {
   instance:           {},
+  select_between:     false,
   search_target:      'none',
   search_cache:       [],
   messages_cache:     [],
@@ -54,7 +55,6 @@ Mailpile = {
     ["normal", ["down"], function() { Mailpile.keybinding_target('down'); }],
     ["normal", "left",   function() { if ($('#pile-previous').length) { Mailpile.go($('#pile-previous').attr('href'));} }],
     ["normal", "right",  function() { if ($('#pile-next').length) { Mailpile.go($('#pile-next').attr('href'));} }],
-    ["normal", "shift",  function() { Mailpile.keybinding_shift_router(); }],
     ["global", "esc",    function() {
       $('input[type=text]').blur();
       $('textarea').blur();

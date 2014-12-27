@@ -6,6 +6,11 @@ Mailpile.focus_search = function() {
 /* Search - Action Select */
 Mailpile.pile_action_select = function(item) {
 
+    if (Mailpile.select_between && Mailpile.messages_cache.length > 0) {
+      // FIXME: should do a shift update
+      console.log('should do a shift select multiple items');
+    }
+
     // Add To Data Model
     Mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 

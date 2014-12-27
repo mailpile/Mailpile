@@ -55,11 +55,13 @@ Mailpile.keybinding_target =  function(direction) {
    a previous selected point + new target OR two select items */
 Mailpile.keybinding_shift_router = function() {
 
-  if (this.instance.state.command_url === '/search/') {
-    console.log('Shift Search: check for selected items');
+  if (!this.select_between) {
+    this.select_between = true;
+    console.log('Shift: make true');
   }
-  else if (this.instance.state.command_url === '/search/') {
-    console.log('Shift Search: check for selected items');
+  else {
+    this.select_between = false;
+    console.log('Shift: make false');
   }
 
 };

@@ -41,6 +41,14 @@ Mailpile.render = function() {
   }
 
   // Mousetrap Keybindings
+  Mousetrap.bind('shift', function() { 
+    Mailpile.select_between = true;
+  }, 'keydown');
+
+  Mousetrap.bind('shift', function() { 
+    Mailpile.select_between = false;
+  }, 'keyup');
+
 	for (item in Mailpile.keybindings) {
 	  var keybinding = Mailpile.keybindings[item];
 		if (keybinding[0] == "global") {
@@ -49,6 +57,7 @@ Mailpile.render = function() {
       Mousetrap.bind(keybinding[1], keybinding[2]);
 		}
 	}
+
 };
 
 
