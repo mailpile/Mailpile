@@ -68,7 +68,15 @@ $(document).on('click', '.bulk-action-trash', function(result) {
 
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
-  Mailpile.API.tag_post({ add: 'spam', del: 'new', mid: Mailpile.messages_cache}, function(result) {
+
+  var tag_data = { add: 'spam', del: 'new', mid: Mailpile.messages_cache};
+
+  if ($(this).data('action') === 'remove') {
+    tag_data.add = '';
+    tag_data.del = 'spam';
+  }
+
+  Mailpile.API.tag_post(tag_data, function(result) {
 
     // Notifications
     Mailpile.notification(result);

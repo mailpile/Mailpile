@@ -8,14 +8,34 @@
       </ul>
     </li>
 ') -%}
-{%- set hard_coded_selection_actions = safe('
-    <li class="hide"><a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '"><span class="icon icon-tag"></span></a></li>
-    <li class="hide"><a class="bulk-action-archive" href="#" title="' + _("Archive Selection") + '"><span class="icon icon-archive"></span></a></li>
-    <li class="hide"><a class="bulk-action-unread" href="#" title="' + _("Unread") + '"><span class="icon icon-notifications"></span></a></li>
-    <li class="hide"><a class="bulk-action-read" href="#" title="' + _("Read") + '"><span class="icon icon-checkmark"></span></a></li>
-    <li class="hide"><a class="bulk-action-spam" href="#" title="' + _("Move to Spam") + '"><span class="icon-spam"></span></a></li>
-    <li class="hide"><a class="bulk-action-trash" href="#" title="' + _("Delete Messages") + '"><span class="icon icon-trash"></span></a></li>
-') -%}
+
+{% if "in:inbox" in result.search_terms %}
+{%- set search_actions_1 = '
+  <li class="hide"><a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '"><span class="icon icon-tag"></span></a></li>
+  <li class="hide"><a class="bulk-action-archive" href="#" title="' + _("Archive Selection") + '"><span class="icon icon-archive"></span></a></li>' -%}
+{% else %}
+{%- set search_actions_1 = '
+  <li class="hide"><a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '"><span class="icon icon-tag"></span></a></li>
+' -%}
+{% endif %}
+{%- set search_actions_2 = '
+  <li class="hide"><a class="bulk-action-unread" href="#" title="' + _("Unread") + '"><span class="icon icon-notifications"></span></a></li>
+  <li class="hide"><a class="bulk-action-read" href="#" title="' + _("Read") + '"><span class="icon icon-checkmark"></span></a></li>
+' -%}
+{% if "in:spam" in result.search_terms %}
+{%- set search_actions_3 = '
+  <li class="hide"><a class="bulk-action-spam" data-action="remove" href="#" title="' + _("Mark as Not Spam") + '"><span class="icon-circle-x"></span></a></li>
+' -%}
+{% else %}
+{%- set search_actions_3 = '
+  <li class="hide"><a class="bulk-action-spam" href="#" title="' + _("Move to Spam") + '"><span class="icon-spam"></span></a></li>
+' -%}
+{% endif %}
+{%- set search_actions_4 = '
+  <li class="hide"><a class="bulk-action-trash" href="#" title="' + _("Delete Messages") + '"><span class="icon icon-trash"></span></a></li>
+' -%}
+{%- set hard_coded_selection_actions = safe(search_actions_1 + search_actions_2 + search_actions_3 + search_actions_4) -%}
+
 {%- set display_refiners = [{
     'name': 'display_all',
     'icon': 'inbox',
