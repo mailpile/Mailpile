@@ -118,14 +118,21 @@ class MailpileCommand(Extension):
         e.globals['show_nagification'] = s._show_nagification
         e.filters['show_nagification'] = s._show_nagification
 
+    def _debug(self, msg):
+        if 'jinja' in self.env.session.config.sys.debug:
+            sys.stderr.write('jinja: ')
+            sys.stderr.write(msg)
+            sys.stderr.write('\n')
+            sys.stderr.flush()
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
-        if 'jinja' in self.env.session.config.sys.debug:
-            sys.stderr.write('mailpile(%s, %s, %s) -> %s' % (
-                command, args, kwargs, rv))
+        self._debug('mailpile(%s, %s, %s) -> %s'
+                    % (command, args, kwargs, rv))
         return rv
 
     def _command_render(self, how, command, *args, **kwargs):
+        self._debug('mailpile_render(%s, %s, ...)' % (how, command))
         old_ui, config = self.env.session.ui, self.env.session.config
         try:
             ui = self.env.session.ui = HttpUserInteraction(None, config,
@@ -140,14 +147,17 @@ class MailpileCommand(Extension):
             self.env.session.ui = old_ui
 
     def _use_data_view(self, view_name, result):
+        self._debug('use_data_view(%s, ...)' % (view_name))
         dv = UrlMap(self.env.session).map(None, 'GET', view_name, {}, {})[-1]
         return dv.view(result)
 
     def _get_ui_elements(self, ui_type, state, context=None):
+        self._debug('get_ui_element(%s, %s, ...)' % (ui_type, state))
         ctx = context or state.get('context_url', '')
         return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
     def _add_state_query_string(self, url, state, elem=None):
+        self._debug('add_state_query_string(%s, %s, ...)' % (url, state))
         if not url:
             url = state.get('command_url', '')
         if '#' in url:
@@ -176,6 +186,7 @@ class MailpileCommand(Extension):
             return url + frag
 
     def _ui_elements_setup(self, classfmt, elements):
+        self._debug('ui_elements_setup(%s, %s)' % (classfmt, elements))
         setups = []
         for elem in elements:
             if elem.get('javascript_setup'):
@@ -216,6 +227,7 @@ class MailpileCommand(Extension):
                     return ""
 
     def _has_label_tags(self, tags, tag_tids):
+        self._debug('has_label_tags(..., %s, ...)' % (tag_tids,))
         count = 0
         for tid in tag_tids:
             if tags[tid]["label"] and not tags[tid]["searched"]:
@@ -469,6 +481,7 @@ class MailpileCommand(Extension):
 
     @classmethod
     def _contact_name(self, person):
+        self._debug('contact_name(%s)' % (person,))
         name = person['fn']
         if (not name or '@' in name) and person.get('email'):
             vcard = self.env.session.config.vcards.get_vcard(person['email'])
@@ -571,7 +584,6 @@ class MailpileCommand(Extension):
 
     @classmethod
     def _nice_subject(self, metadata):
-        #if metadata['subject'] != _("Encrypted Email"):
         if metadata['subject']:
             output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
         else:
@@ -740,6 +752,7 @@ class MailpileCommand(Extension):
         return attachment
 
     def _theme_settings(self):
+        self._debug('theme_settings()')
         path, handle, mime = self.env.session.config.open_file('html_theme', 'theme.json')
         return json.load(handle)
 

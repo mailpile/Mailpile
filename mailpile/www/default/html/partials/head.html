@@ -17,14 +17,14 @@
   <!-- JS Global Libraries -->
   <script src="/static/js/jquery.min.js"></script>
   <script src="/static/js/libraries.min.js"></script>
-  {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
+{% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
   <script src="/api/0/jsapi/as.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
   {% if state.command_url in ("/message/draft/", "/message/", "/contacts/") %}
   <script src="/static/js/plupload.full.min.js"></script>
   {% endif %}
 
   <!-- JS - App Specific -->
-  {% if state.command_url not in ("/setup/crypto/") %}
+  {% if state.command_url not in ("/setup/crypto/",) %}
   <script>
   {% if result.data and result.data.addresses %}
     {% set addresses_json = result.data.addresses|json %}
@@ -79,4 +79,4 @@
   </script>
   <script src="/api/0/jsapi/app.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
   {% endif %}
-  {% endif %}
+{% endif %}

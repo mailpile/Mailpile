@@ -1746,19 +1746,18 @@ class ConfigManager(ConfigDict):
         >>> p == os.path.abspath('mailpile/www/default')
         True
         """
-        with self._lock:
-            # This should raise a KeyError if the ftype is unrecognized
-            bpath = self.sys.path.get(ftype)
-            if not bpath.startswith('/'):
-                cpath = os.path.join(self.workdir, bpath)
-                if os.path.exists(cpath) or 'w' in mode:
-                    bpath = cpath
-                    if mkdir and not os.path.exists(cpath):
-                        os.mkdir(cpath)
-                else:
-                    bpath = os.path.join(os.path.dirname(__file__),
-                                         '..', bpath)
-            return os.path.abspath(bpath)
+        # This should raise a KeyError if the ftype is unrecognized
+        bpath = self.sys.path.get(ftype)
+        if not bpath.startswith('/'):
+            cpath = os.path.join(self.workdir, bpath)
+            if os.path.exists(cpath) or 'w' in mode:
+                bpath = cpath
+                if mkdir and not os.path.exists(cpath):
+                    os.mkdir(cpath)
+            else:
+                bpath = os.path.join(os.path.dirname(__file__),
+                                     '..', bpath)
+        return os.path.abspath(bpath)
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
         # The theme gets precedence
@@ -1794,11 +1793,10 @@ class ConfigManager(ConfigDict):
         return path
 
     def tempfile_dir(self):
-        with self._lock:
-            d = os.path.join(self.workdir, 'tmp')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            return d
+        d = os.path.join(self.workdir, 'tmp')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return d
 
     def clean_tempfile_dir(self):
         try:
@@ -1813,14 +1811,13 @@ class ConfigManager(ConfigDict):
             pass
 
     def postinglist_dir(self, prefix):
-        with self._lock:
-            d = os.path.join(self.workdir, 'search')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            d = os.path.join(d, prefix and prefix[0] or '_')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            return d
+        d = os.path.join(self.workdir, 'search')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        d = os.path.join(d, prefix and prefix[0] or '_')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return d
 
     def get_index(self, session):
         # Note: This is a long-running lock, but having two sets of the
