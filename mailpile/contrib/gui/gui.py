@@ -104,6 +104,7 @@ def _real_startup(config):
         # work and go silently dead...
         return
 
+    quitting = False
     try:
         # ...however, getting this far means if the indicator dies, then
         # the user tried to quit the app, so we should cooperate and die
@@ -120,25 +121,28 @@ def _real_startup(config):
         # FIXME: We should do more with the indicator... this is a bit lame.
         while True:
             if mailpile.util.QUITTING:
+                quitting = True
                 indicator('set_status_shutdown')
                 indicator('set_menu_sensitive', item='open', sensitive=False)
                 indicator('set_menu_sensitive', item='quit', sensitive=False)
                 indicator('set_menu_label',
                     item='status',
                     label=_('Shutting down...'))
-                time.sleep(300)
+                l = threading.Lock()
+                l.acquire()
+                l.acquire()  # Deadlock, until app quits
             else:
                 indicator('set_menu_label',
                     item='status',
                     label=_('%d messages') % len(config.index and
                                                  config.index.INDEX or []))
-                time.sleep(5)
+                time.sleep(1)
 
     except AttributeError:
         pass
     finally:
         try:
-            if not mailpile.util.QUITTING:
+            if not quitting:
                 Quit(Session(config)).run()
         except:
             pass
