@@ -1819,10 +1819,21 @@ class ConfigManager(ConfigDict):
             os.mkdir(d)
         return d
 
+    def interruptable_wait_for_lock(self):
+        # This construct allows the user to CTRL-C out of things.
+        delay = 0.01
+        while self._lock.acquire(False) == False:
+            if mailpile.util.QUITTING:
+                raise KeyboardInterrupt('Quitting')
+            time.sleep(delay)
+            delay = min(1, delay*2)
+        self._lock.release()
+        return self._lock
+
     def get_index(self, session):
         # Note: This is a long-running lock, but having two sets of the
         # index would really suck and this should only ever happen once.
-        with self._lock:
+        with self.interruptable_wait_for_lock():
             if self.index:
                 return self.index
             idx = MailIndex(self)

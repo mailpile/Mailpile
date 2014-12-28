@@ -307,20 +307,21 @@ class Command(object):
                 session.ui.report_marks(quiet=quiet)
 
         def __do_load1():
-            if reset:
-                config.index = None
-                session.results = []
-                session.searched = []
-                session.displayed = None
-            idx = config.get_index(session)
-            if wait_all:
-                __do_load2()
-            if not wait:
-                session.ui.report_marks(quiet=quiet)
-            return idx
+            with config.interruptable_wait_for_lock():
+                if reset:
+                    config.index = None
+                    session.results = []
+                    session.searched = []
+                    session.displayed = None
+                idx = config.get_index(session)
+                if wait_all:
+                    __do_load2()
+                if not wait:
+                    session.ui.report_marks(quiet=quiet)
+                return idx
 
         if wait:
-            rv = config.save_worker.do(session, 'Load', __do_load1)
+            rv = __do_load1()
             session.ui.reset_marks(quiet=quiet)
         else:
             config.save_worker.add_task(session, 'Load', __do_load1)
