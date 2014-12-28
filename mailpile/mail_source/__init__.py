@@ -729,7 +729,7 @@ class BaseMailSource(threading.Thread):
                 self.session = _original_session
             self._update_unknown_state()
         self._save_state()
-        self.event.flags = Event.COMPLETE
+#       self.event.flags = Event.COMPLETE
         self._log_status(_('Shut down'))
 
     def _log_conn_errors(self):
