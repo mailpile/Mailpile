@@ -106,16 +106,16 @@ def ActivateTranslation(session, config, language):
             trans = translation("mailpile", config.getLocaleDirectory(),
                                 [language], codeset="utf-8")
         except IOError:
-            if session:
-                session.ui.warning(('Failed to load language %s'
-                                    ) % language)
+            if session and language != 'en':
+                session.ui.debug('Failed to load language %s' % language)
+
     if not trans:
         trans = translation("mailpile", config.getLocaleDirectory(),
                             codeset='utf-8', fallback=True)
 
-        if session and isinstance(trans, NullTranslations):
-            session.ui.warning('Failed to configure i18n. '
-                               'Using fallback.')
+        if session and language != 'en' and isinstance(trans, NullTranslations):
+            session.ui.debug('Failed to configure i18n. '
+                             'Using fallback.')
 
     if trans:
         with RECENTLY_TRANSLATED_LOCK:
@@ -127,7 +127,7 @@ def ActivateTranslation(session, config, language):
             config.jinja_env.install_gettext_translations(trans,
                                                           newstyle=True)
 
-        if session and language:
+        if session and language and not isinstance(trans, NullTranslations):
             session.ui.debug(gettext('Loaded language %s') % language)
 
     return trans
