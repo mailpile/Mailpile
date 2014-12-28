@@ -373,6 +373,8 @@ class EventLog(object):
                 del self._events[event_id]
 
     def ui_watch(self, ui):
+        while ui.log_parent is not None:
+            ui = ui.log_parent
         if ui not in self._watching_uis:
             self._watching_uis.append(ui)
             return True
@@ -380,6 +382,8 @@ class EventLog(object):
             return False
 
     def ui_unwatch(self, ui):
+        while ui.log_parent is not None:
+            ui = ui.log_parent
         try:
             self._watching_uis.remove(ui)
         except ValueError:
