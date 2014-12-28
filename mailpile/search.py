@@ -235,6 +235,10 @@ class MailIndex(object):
                             pos = int(words[self.MSG_MID], 36)
                             self.set_msg_at_idx_pos(pos, words,
                                                     original_line=line)
+                            if session and len(self.INDEX) % 107 == 100:
+                                session.ui.mark(
+                                    _('Loading metadata index...') +
+                                    ' %s' % len(self.INDEX))
                         except ValueError:
                             bogus = True
 

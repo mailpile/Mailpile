@@ -669,7 +669,9 @@ class BaseMailSource(threading.Thread):
         return False
 
     def run(self):
-        self.alive = True
+        with self.session.config.index_check:
+            self.alive = True
+
         self._load_state()
         self.event.flags = Event.RUNNING
         _original_session = self.session

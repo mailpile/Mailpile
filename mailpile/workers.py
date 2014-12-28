@@ -90,8 +90,9 @@ class Cron(threading.Thread):
         Thread main function for a Cron instance.
 
         """
-        self.ALIVE = True
         # Main thread loop
+        with self.session.config.index_check:
+            self.ALIVE = True
         while self.ALIVE and not mailpile.util.QUITTING:
             tasksToBeExecuted = []  # Contains tuples (name, func)
             now = time.time()

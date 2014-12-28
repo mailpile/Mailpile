@@ -1072,6 +1072,9 @@ class MailpileJinjaLoader(BaseLoader):
         return source, path, unchanged
 
 
+GLOBAL_INDEX_CHECK = ConfigLock()
+GLOBAL_INDEX_CHECK.acquire()
+
 class ConfigManager(ConfigDict):
     """
     This class manages the live global mailpile configuration. This includes
@@ -1135,6 +1138,7 @@ class ConfigManager(ConfigDict):
 
         self.event_log = None
         self.index = None
+        self.index_check = GLOBAL_INDEX_CHECK
         self.vcards = {}
         self.search_history = SearchHistory()
         self._mbox_cache = []
@@ -1243,7 +1247,9 @@ class ConfigManager(ConfigDict):
 
     def _unlocked_load(self, session, filename=None, public=False):
         self._mkworkdir(session)
-        self.index = None
+        if self.index:
+            self.index_check.acquire()
+            self.index = None
         self.loaded_config = False
 
         # Set the homedir default
@@ -1825,6 +1831,7 @@ class ConfigManager(ConfigDict):
             idx = MailIndex(self)
             idx.load(session)
             self.index = idx
+            self.index_check.release()
             return idx
 
     def get_tor_socket(self):
@@ -1861,7 +1868,7 @@ class ConfigManager(ConfigDict):
         def start_httpd(sspec=None):
             sspec = sspec or (config.sys.http_host, config.sys.http_port)
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                config.http_worker = HttpWorker(session, sspec)
+                config.http_worker = HttpWorker(config.background, sspec)
                 config.http_worker.start()
 
         # We may start the HTTPD without the loaded config...
@@ -1887,19 +1894,20 @@ class ConfigManager(ConfigDict):
                         pass
 
             if config.slow_worker == config.dumb_worker:
-                config.slow_worker = Worker('Slow worker', session)
+                config.slow_worker = Worker('Slow worker', config.background)
                 config.slow_worker.start()
             if config.scan_worker == config.dumb_worker:
-                config.scan_worker = Worker('Scan worker', session)
+                config.scan_worker = Worker('Scan worker', config.background)
                 config.scan_worker.start()
             if config.async_worker == config.dumb_worker:
-                config.async_worker = Worker('Async worker', session)
+                config.async_worker = Worker('Async worker', config.background)
                 config.async_worker.start()
             if config.save_worker == config.dumb_worker:
-                config.save_worker = ImportantWorker('Save worker', session)
+                config.save_worker = ImportantWorker('Save worker',
+                                                     config.background)
                 config.save_worker.start()
             if not config.cron_worker:
-                config.cron_worker = Cron('Cron worker', session)
+                config.cron_worker = Cron('Cron worker', config.background)
                 config.cron_worker.start()
             if not config.http_worker:
                 start_httpd(httpd_spec)
@@ -1973,6 +1981,11 @@ class ConfigManager(ConfigDict):
                 config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
+        try:
+            self.index_check.release()
+        except:
+            pass
+
         with config._lock:
             worker_list = (config.mail_sources.values() +
                            config.other_workers +
