@@ -713,7 +713,8 @@ def RunTimed(timeout, func, *args, **kwargs):
         try:
             result.append(func(*args, **kwargs))
         except:
-            exception.append((sys.exc_type, sys.exc_value, sys.exc_traceback))
+            et, ev, etb = sys.exc_info()
+            exception.append((et, ev, etb))
     RunTimedThread(func.__name__, work).run_timed(timeout)
     if exception:
         t, v, tb = exception[0]

@@ -348,7 +348,7 @@ class MasterBroker(BaseConnectionBroker):
                 if conn:
                     return conn
             except (IOError, NotImplementedError) as e:
-                et, v, t = (sys.exc_type, sys.exc_value, sys.exc_traceback)
+                et, v, t = sys.exc_info()
         if et is not None:
             raise et, v, t
         raise CapabilityFailure('No broker found')
