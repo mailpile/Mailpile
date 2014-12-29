@@ -22,7 +22,7 @@ from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
-from mailpile.ui import Session
+from mailpile.ui import Session, SilentInteraction
 from mailpile.util import *
 
 
@@ -961,7 +961,10 @@ class Setup(TestableWebbable):
 
     @classmethod
     def _check_profiles(self, config):
-        data = ListProfiles(Session(config)).run().result
+        session = Session(config)
+        session.ui = SilentInteraction(config)
+        session.ui.block()
+        data = ListProfiles(session).run().result
         okay = routes = bad = 0
         for rid, ofs in data["rids"].iteritems():
             profile = data["profiles"][ofs]
