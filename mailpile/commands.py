@@ -1229,6 +1229,57 @@ class Rescan(Command):
                     'aborted': True}
         return {'vcards': imported, 'vcard_sources': importers}
 
+    def _run_rescan_command(self, session, timeout=120):
+        pre_command = session.config.prefs.rescan_command
+        if pre_command and not mailpile.util.QUITTING:
+            session.ui.mark(_('Running: %s') % pre_command)
+            if not ('|' in pre_command or
+                    '&' in pre_command or
+                    ';' in pre_command):
+                pre_command = pre_command.split()
+            cmd = subprocess.Popen(pre_command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=not isinstance(pre_command, list))
+            countdown = [timeout]
+            def eat(fmt, fd):
+                for line in fd:
+                    session.ui.notify(fmt % line.strip())
+                    countdown[0] = timeout
+            for t in [
+                threading.Thread(target=eat, args=['E: %s', cmd.stderr]),
+                threading.Thread(target=eat, args=['O: %s', cmd.stdout])
+            ]:
+                t.daemon = True
+                t.start()
+            try:
+                while countdown[0] > 0:
+                    countdown[0] -= 1
+                    if cmd.poll() is not None:
+                        rv = cmd.wait()
+                        if rv != 0:
+                            session.ui.notify(_('Rescan command returned %d')
+                                              % rv)
+                        return
+                    elif mailpile.util.QUITTING:
+                        return
+                    time.sleep(1)
+            finally:
+                if cmd.poll() is None:
+                    session.ui.notify(_('Aborting rescan command'))
+                    cmd.terminate()
+                    time.sleep(0.2)
+                    if cmd.poll() is None:
+                        cmd.kill()
+# NOTE: For some reason we were using the un-safe Popen before, not sure
+#       if that matters. Leaving this commented out for now for reference.
+#
+#            try:
+#                MakePopenUnsafe()
+#                subprocess.check_call(pre_command, shell=True)
+#            finally:
+#                MakePopenSafe()
+
     def _rescan_mailboxes(self, session, which='mailboxes'):
         import mailpile.mail_source
         config = session.config
@@ -1239,16 +1290,9 @@ class Rescan(Command):
         try:
             session.ui.mark(_('Rescanning: %s') % which)
 
-            pre_command = config.prefs.rescan_command
-            if pre_command and not mailpile.util.QUITTING:
-                session.ui.mark(_('Running: %s') % pre_command)
-                try:
-                    MakePopenUnsafe()
-                    subprocess.check_call(pre_command, shell=True)
-                finally:
-                    MakePopenSafe()
-            msg_count = 1
+            self._run_rescan_command(session)
 
+            msg_count = 1
             if which in ('both', 'mailboxes', 'editable'):
                 if which == 'editable':
                     mailboxes = config.get_mailboxes(mail_sources=True)
