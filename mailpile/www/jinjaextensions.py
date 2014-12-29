@@ -479,7 +479,6 @@ class MailpileCommand(Extension):
             url = "/#add-contact"
         return url
 
-    @classmethod
     def _contact_name(self, person):
         self._debug('contact_name(%s)' % (person,))
         name = person['fn']
@@ -513,7 +512,6 @@ class MailpileCommand(Extension):
                           "  Are you sure you want to continue?\\n") +
                         '");\'')
 
-    @classmethod
     def _fix_urls(self, text, truncate=45, danger=False):
         def http_fixer(m):
             url = m.group(3)
@@ -570,6 +568,7 @@ class MailpileCommand(Extension):
         json = json.replace('&', '\\x26')
         return json
 
+    @classmethod
     def _nice_text(self, text):
         trimmed = ''
         previous = 'not'
@@ -588,14 +587,15 @@ class MailpileCommand(Extension):
             output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
         else:
             output = '(' + _("No Subject") + ')'
-
         return output
 
+    @classmethod
     def _nice_name(self, name, truncate=100):
         if len(name) > truncate:
             name = name[:truncate-3] + '...'
         return name
 
+    @classmethod
     def _recipient_summary(self, editing_strings, addresses, truncate):
         summary_list = []
         recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
@@ -609,6 +609,7 @@ class MailpileCommand(Extension):
             summary = summary[:truncate] + '... ' + others
         return summary
 
+    @classmethod
     def _attachment_type(self, mime):
         if mime in [
             "application/octet-stream",
