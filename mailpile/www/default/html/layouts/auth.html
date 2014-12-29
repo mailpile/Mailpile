@@ -10,7 +10,7 @@
 </head>
 <body>
   {% block content %}{{results}}{% endblock %}
-{% if state.command_url in ("/setup/",) %}
+{% if state.command_url in ("/setup/") %}
 <script>
 $(document).ready(function() {
   Mailpile.instance = {};
