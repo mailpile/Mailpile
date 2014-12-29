@@ -73,8 +73,8 @@ web: less js
 
 alltests: clean pytests
 	@chmod go-rwx mailpile/tests/data/gpg-keyring
-	@python2 scripts/mailpile-test.py || true
-	@nosetests
+	@DISPLAY= python2 scripts/mailpile-test.py || true
+	@DISPLAY= nosetests
 
 pytests:
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
