@@ -106,14 +106,15 @@ def ActivateTranslation(session, config, language):
             trans = translation("mailpile", config.getLocaleDirectory(),
                                 [language], codeset="utf-8")
         except IOError:
-            if session and language != 'en':
+            if session and language[:2] != 'en':
                 session.ui.debug('Failed to load language %s' % language)
 
     if not trans:
         trans = translation("mailpile", config.getLocaleDirectory(),
                             codeset='utf-8', fallback=True)
 
-        if session and language != 'en' and isinstance(trans, NullTranslations):
+        if (session and language[:2] != 'en'
+                and isinstance(trans, NullTranslations)):
             session.ui.debug('Failed to configure i18n. '
                              'Using fallback.')
 
