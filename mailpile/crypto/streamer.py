@@ -4,6 +4,7 @@ import random
 import sys
 import re
 import threading
+import time
 import traceback
 from datetime import datetime
 from tempfile import NamedTemporaryFile
@@ -21,9 +22,13 @@ MD5_SUM_FORMAT = 'md5sum: %s'
 MD5_SUM_PLACEHOLDER = MD5_SUM_FORMAT % ('0' * LEN_MD5)
 MD5_SUM_RE = re.compile('(?m)^' + MD5_SUM_FORMAT % (r'[^\n]+',))
 
-OPENSSL_COMMAND = "openssl"
 if sys.platform.startswith("win"):
     OPENSSL_COMMAND = 'OpenSSL\\bin\\openssl.exe'
+    FILTER_MD5 = True
+else:
+    OPENSSL_COMMAND = "openssl"
+    FILTER_MD5 = False
+
 
 class IOFilter(threading.Thread):
     """
@@ -178,6 +183,7 @@ class IOCoprocess(object):
                 # and the following calls may hang. So kill kill kill.
                 if self._reading:
                     proc.terminate()
+                    time.sleep(0.1)
                     if proc.poll() is None:
                         proc.kill()
                 self.stderr = proc.stderr.read()
@@ -234,15 +240,20 @@ class ChecksummingStreamer(OutputCoprocess):
     This checksums and streams data a named temporary file on disk, which
     can then be read back or linked to a final location.
     """
-    def __init__(self, dir=None, name=None, long_running=False):
+    def __init__(self, dir=None, name=None, long_running=False,
+                       use_filter=FILTER_MD5):
         self.tempfile, self.temppath = self._mk_tempfile_and_path(dir)
         self.name = name
 
         self.outer_md5sum = None
-        self.outer_md5 = hashlib.md5()
-        self.md5filter = IOFilter(self.tempfile, self._md5_callback,
-                                  name='%s/md5' % (self.name or 'css'))
-        self.fd = self.md5filter.writer()
+        if use_filter:
+            self.outer_md5 = hashlib.md5()
+            self.md5filter = IOFilter(self.tempfile, self._md5_callback,
+                                      name='%s/md5' % (self.name or 'css'))
+            self.fd = self.md5filter.writer()
+        else:
+            self.outer_md5 = None
+            self.fd = self.tempfile
 
         self.saved = False
         self.finished = False
@@ -254,8 +265,9 @@ class ChecksummingStreamer(OutputCoprocess):
         except:
             try:
                 self.fd.close()
-                self.md5filter.close()
-                self.tempfile.close()
+                if self.outer_md5 is not None:
+                    self.md5filter.close()
+                    self.tempfile.close()
                 safe_remove(self.temppath)
             except (IOError, OSError):
                 pass
@@ -274,10 +286,19 @@ class ChecksummingStreamer(OutputCoprocess):
             return
         # Stop sending output to our coprocess, wait for it to finish
         OutputCoprocess.close(self)
+
         # Write postamble (the md5filter), close that too
+        self.tempfile.seek(0, 2)
         self._write_postamble()
-        self.fd.close()
-        self.md5filter.close()
+
+        if self.outer_md5 is None:
+            # If we weren't doing the MD5 on the fly, do it now.
+            self.calculate_outer_md5sum()
+        else:
+            # Otherwise, close our coprocess to trigger the calculation
+            self.fd.close()
+            self.md5filter.close()
+
         # Reset our tempfile to the beginning for reading
         self.tempfile.seek(0, 0)
 
@@ -308,6 +329,17 @@ class ChecksummingStreamer(OutputCoprocess):
             if not self.saved:
                 safe_remove(self.temppath)
         self.saved = True
+
+    def calculate_outer_md5sum(self):
+        self.tempfile.seek(0, 0)
+        data = self.tempfile.read(4096)
+        outer_md5 = hashlib.md5()
+        while data != '':
+            # We calculate the MD5 sum as if the data used the CRLF linefeed
+            # convention, whether it's actually using that or not.
+            outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
+            data = self.tempfile.read(4096)
+        self.outer_md5sum = outer_md5.hexdigest()
 
     def save_copy(self, ofd):
         self.tempfile.seek(0, 0)
@@ -351,14 +383,15 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
 
     def __init__(self, key,
                  dir=None, cipher=None, name=None, header_data=None,
-                 long_running=False):
+                 long_running=False, use_filter=FILTER_MD5):
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._nonce_and_mutated_key(key)
         self.header_data = (header_data if header_data is not None
                             else self.EXTRA_DATA)
 
         ChecksummingStreamer.__init__(self, dir=dir, name=name,
-                                      long_running=long_running)
+                                      long_running=long_running,
+                                      use_filter=use_filter)
 
         self.inner_md5sum = None
         self.inner_md5 = hashlib.md5()
@@ -794,29 +827,32 @@ if __name__ == "__main__":
      assert(fdcheck('Decrypting test, md5 verification'))
 
      for delim in (True, False):
-         print 'Encryption test, delim=%s' % delim
+         for filter_md5 in (True, False):
+             print ('Encryption test, delim=%s, filter_md5=%s'
+                    ) % (delim, filter_md5)
 
-         data = 'Hello world! This is great!\nHooray, lalalalla!\n'
-         with EncryptingStreamer('test key', dir='/tmp',
-                                 delimited=delim) as es:
-             es.write(data)
-             es.finish()
-             fn = '/tmp/%s.aes' % es.outer_md5sum
-             with open(fn, 'wb') as fd:
-                 fd.write('junk')  # Make sure overwriting works
-             es.save(fn)
-         assert(fdcheck('Encrypted data, delimited=%s' % delim))
+             data = 'Hello world! This is great!\nHooray, lalalalla!\n'
+             with EncryptingStreamer('test key', dir='/tmp',
+                                     delimited=delim,
+                                     use_filter=filter_md5) as es:
+                 es.write(data)
+                 es.finish()
+                 fn = '/tmp/%s.aes' % es.outer_md5sum
+                 with open(fn, 'wb') as fd:
+                     fd.write('junk')  # Make sure overwriting works
+                 es.save(fn)
+             assert(fdcheck('Encrypted data, delimited=%s' % delim))
 
-         print 'Decryption test, delim=%s' % delim
-         with open(fn, 'rb') as bfd:
-             with DecryptingStreamer(bfd,
-                                     mep_key='test key',
-                                     md5sum=es.outer_md5sum) as ds:
-                 new_data = ds.read()
-                 assert(ds.close() == 0)
-                 assert(data == new_data)
-                 assert(ds.verify(testing=True))
-         assert(fdcheck('Decrypting test, delimited=%s' % delim))
+             print 'Decryption test, delim=%s' % delim
+             with open(fn, 'rb') as bfd:
+                 with DecryptingStreamer(bfd,
+                                         mep_key='test key',
+                                         md5sum=es.outer_md5sum) as ds:
+                     new_data = ds.read()
+                     assert(ds.close() == 0)
+                     assert(data == new_data)
+                     assert(ds.verify(testing=True))
+             assert(fdcheck('Decrypting test, delimited=%s' % delim))
 
          # Cleanup
          os.unlink(fn)
