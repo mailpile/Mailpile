@@ -1961,6 +1961,7 @@ class ConfigManager(ConfigDict):
                     config.background, 'gpl_optimize',
                     lambda: GlobalPostingList.Optimize(config.background,
                                                        config.index,
+                                                       lazy=True,
                                                        ratio=0.25, runtime=15))
             config.cron_worker.add_task('gpl_optimize', 29, optimizer)
 

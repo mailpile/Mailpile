@@ -582,7 +582,7 @@ class GlobalPostingList(OldPostingList):
         starttime = time.time()
         count = 0
         global GLOBAL_GPL
-        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 10240)):
+        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 5*1024)):
             # Processing keys in order is more efficient, as it lets things
             # accumulate in the PLC_CACHE.
             keys = sorted(GLOBAL_GPL.keys())
