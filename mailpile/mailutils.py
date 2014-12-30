@@ -1326,9 +1326,6 @@ class Email(object):
 
         stripped = line.rstrip()
 
-        if self.BARE_QUOTE_STARTS.match(stripped):
-            return 'barequote', 'quote'
-
         if stripped == GnuPG.ARMOR_BEGIN_SIGNED:
             return 'pgpbeginsigned', 'pgpbeginsigned'
         if block == 'pgpbeginsigned':
@@ -1359,6 +1356,9 @@ class Email(object):
                 return 'pgpend', 'pgpend'
             else:
                 return 'pgptext', 'pgptext'
+
+        if self.BARE_QUOTE_STARTS.match(stripped):
+            return 'barequote', 'quote'
 
         if block == 'quote':
             if stripped == '':
