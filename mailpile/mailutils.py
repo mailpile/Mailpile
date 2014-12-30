@@ -1307,17 +1307,25 @@ class Email(object):
             clines.append(line)
         return parse
 
+    BARE_QUOTE_STARTS = re.compile('(?i)^-+\s*Original Message.*-+$')
+
     def parse_line_type(self, line, block):
         # FIXME: Detect forwarded messages, ...
 
-        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n',
-                                                   '- --\n', '- --\r\n'):
+        if (block in ('body', 'quote', 'barequote')
+                and line in ('-- \n', '-- \r\n', '- --\n', '- --\r\n')):
             return 'signature', 'signature'
 
         if block == 'signature':
-            return 'signature', 'signature'
+            return block, block
+
+        if block == 'barequote':
+            return 'barequote', 'quote'
 
         stripped = line.rstrip()
+
+        if self.BARE_QUOTE_STARTS.match(stripped):
+            return 'barequote', 'quote'
 
         if stripped == GnuPG.ARMOR_BEGIN_SIGNED:
             return 'pgpbeginsigned', 'pgpbeginsigned'
