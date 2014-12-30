@@ -76,6 +76,7 @@ class BaseMailSource(threading.Thread):
                     flags=Event.RUNNING,
                     message=_('Starting up'),
                     data={'id': my_config._key})
+            self.event.data['name'] = my_config.name or _('Mail Source')
             if 'counters' not in self.event.data:
                 self.event.data['counters'] = {}
             for c in ('copied_messages',

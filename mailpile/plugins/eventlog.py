@@ -90,7 +90,7 @@ class Events(Command):
             time.sleep(self.GATHER_TIME)
 
         events = []
-        while not waiting or expire > time.time():
+        while not waiting or (expire + self.GATHER_TIME) > time.time():
             if incomplete:
                 events = list(config.event_log.incomplete(**filters))
             else:

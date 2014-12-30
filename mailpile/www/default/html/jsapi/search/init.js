@@ -30,11 +30,12 @@ Mailpile.Search.init = function() {
 
   /* STUFF Smari added for notifications
   $("#pile-newmessages-notification").click(Mailpile.update_search);
+  */
 
-  EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
-
-    if (ev.flags.indexOf("R") != -1) {
-      console.log("Started rescanning...");
+  EventLog.subscribe(".mail_source", function(ev) {
+    // bre: re-enabling this just for fun and to test the event subscription
+    //      code. This is broken in that it fails for non-English languages.
+    if (ev.message.indexOf("Rescanning:") != -1) {
       $("#logo-bluemail").fadeOut(2000);
       $("#logo-redmail").hide(2000);
       $("#logo-greenmail").hide(3000);
@@ -42,7 +43,9 @@ Mailpile.Search.init = function() {
       $("#logo-greenmail").fadeIn(4000);
       $("#logo-redmail").fadeIn(6000);
     }
+    $('.status-in-title').attr('title', ev.data.name + ': ' + ev.message);
 
+/*
     if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
       $("#pile-newmessages-notification").slideDown("slow");
 
@@ -54,7 +57,6 @@ Mailpile.Search.init = function() {
         )
       }
     }
+*/
   });
-  */
-
 };

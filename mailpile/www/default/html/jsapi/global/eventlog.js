@@ -41,8 +41,21 @@ EventLog.request = function(conditions, callback) {
 
 
 EventLog.poll = function() {
-  // Request everything new
-  EventLog.request({since: EventLog.last_ts, wait: 20});
+  // Request news about updates to the mail sources and command cache
+  var source_re = '~(.mail_source|.command_cache';
+
+  // ... and any other things we consider exciting
+  for (id in EventLog.eventbindings) {
+     binding = EventLog.eventbindings[id][0];
+     source_re += '|' + binding.source;
+  }
+  source_re += ')';
+
+  EventLog.request({
+    source: source_re,
+    since: EventLog.last_ts,
+    wait: 30
+  });
 };
 
 
@@ -53,7 +66,7 @@ EventLog.process_result = function(result, textstatus) {
     for (id in EventLog.eventbindings) {
       binding = EventLog.eventbindings[id][0];
       callback = EventLog.eventbindings[id][1];
-      if ((!binding.source || ev.source.match(new RegExp("^" + binding.source + "$")))
+      if ((!binding.source || ev.source.match(new RegExp(binding.source)))
           && (!binding.event_id || ev.event_id == binding.event_id)
           && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))) {
         callback(ev);

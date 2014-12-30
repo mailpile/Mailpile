@@ -600,8 +600,9 @@ class MailIndex(object):
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
     def _get_scan_progress(self, mailbox_idx, event=None, reset=False):
-        if event and 'rescans' not in event.data:
-            event.data['rescans'] = []
+        if event:
+            if 'rescans' not in event.data:
+                event.data['rescans'] = []
             if reset:
                 event.data['rescan'] = {}
             progress = event.data['rescan']
