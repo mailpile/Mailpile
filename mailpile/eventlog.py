@@ -29,11 +29,13 @@ def NewEventId():
         return '%8.8x.%5.5x.%x' % (time.time(), EVENT_COUNTER, os.getpid())
 
 
-def _ClassName(obj):
+def _ClassName(obj, ignore_regexps=False):
     if isinstance(obj, (str, unicode)):
         return str(obj).replace('mailpile.', '.')
     elif hasattr(obj, '__classname__'):
         return str(obj.__classname__).replace('mailpile.', '.')
+    elif ignore_regexps and 'SRE_Pattern' in str(obj.__class__):
+        return obj
     else:
         module = str(obj.__class__.__module__)
         if module.startswith('mailpile.'):
@@ -272,22 +274,28 @@ class EventLog(object):
                     self._events[event.event_id] = event
 
     def _match(self, event, filters):
+        def compare(val, rule):
+            if isinstance(rule, (str, unicode)):
+                return unicode(val) == unicode(rule)
+            else:
+                return rule.match(unicode(val)) is not None
         for kw, rule in filters.iteritems():
             if kw.endswith('!'):
                 truth, okw, kw = False, kw, kw[:-1]
             else:
                 truth, okw = True, kw
             if kw == 'source':
-                if truth != (event.source == _ClassName(rule)):
+                if truth != compare(event.source,
+                                    _ClassName(rule, ignore_regexps=True)):
                     return False
             elif kw == 'flag':
                 if truth != (rule in event.flags):
                     return False
             elif kw == 'flags':
-                if truth != (event.flags == rule):
+                if truth != compare(event.flags, rule):
                     return False
             elif kw == 'event_id':
-                if truth != (event.event_id == rule):
+                if truth != compare(event.event_id, rule):
                     return False
             elif kw == 'since':
                 when = float(rule)
@@ -296,10 +304,10 @@ class EventLog(object):
                 if truth != (event.ts > when):
                     return False
             elif kw.startswith('data_'):
-                if truth != (str(event.data.get(kw[5:])) == str(rule)):
+                if truth != compare(event.data.get(kw[5:]), rule):
                     return False
             elif kw.startswith('private_data_'):
-                if truth != (str(event.data.get(kw[13:])) == str(rule)):
+                if truth != compare(event.data.get(kw[13:]), rule):
                     return False
             else:
                 # Unknown keywords match nothing...

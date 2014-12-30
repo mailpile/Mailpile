@@ -14,7 +14,8 @@ _plugins = PluginManager(builtin=__file__)
 class Events(Command):
     """Display events from the event log"""
     SYNOPSIS = (None, 'eventlog', 'eventlog',
-                '[incomplete] [wait] [<count>] [<field>=<val> ...]')
+                '[incomplete] [wait] [<count>] '
+                '[<field>=<val> <f>!=<v> <f>=~<re> ...]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
@@ -56,7 +57,7 @@ class Events(Command):
                 waiting = self.DEFAULT_WAIT_TIME
             elif '=' in arg:
                 field, value = arg.split('=', 1)
-                filters[str(field)] = str(value)
+                filters[unicode(field)] = unicode(value)
             else:
                 try:
                     limit = int(arg)
@@ -66,7 +67,7 @@ class Events(Command):
         # Handle args from the web
         def fset(arg, val):
             if val.startswith('!'):
-                filters[arg+'!'] = val[1:]
+                filters[arg] = val[1:]
             else:
                 filters[arg] = val
         for arg in self.data:
@@ -76,6 +77,11 @@ class Events(Command):
                 for data in self.data[arg]:
                     var, val = data.split(':', 1)
                     fset('%s_%s' % (arg, var), val)
+
+        # Compile regular expression matches
+        for arg in filters:
+            if filters[arg][:1] == '~':
+                filters[arg] = re.compile(filters[arg][1:])
 
         expire = time.time() + waiting - self.GATHER_TIME
         if waiting:
