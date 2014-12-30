@@ -143,12 +143,13 @@ class BaseMailSource(threading.Thread):
         """Iterates through all the mailboxes and scans if necessary."""
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
-        self._last_rescan_completed = True
+        self._last_rescan_completed = False
         self._last_rescan_failed = False
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
         errors = rescanned = 0
 
+        all_completed = True
         ostate = self._state
         for mbx_cfg in self._sorted_mailboxes():
             try:
@@ -168,7 +169,7 @@ class BaseMailSource(threading.Thread):
 
                     self._state = 'Waiting... (rescan)'
                     if self._check_interrupt(clear=False):
-                        self._last_rescan_completed = False
+                        all_completed = False
                         break
                     count = self.rescan_mailbox(mbx_key, mbx_cfg, path,
                                                 stop_after=batch)
@@ -184,24 +185,23 @@ class BaseMailSource(threading.Thread):
                             rescanned += 1
 
                         # If there was a copy, check if it completed
-                        if not self.event.data.get('copying',
-                                                   {'complete': True}
-                                                   ).get('complete'):
+                        cstate = self.event.data.get('copying') or {}
+                        if not cstate.get('complete', True):
                             complete = False
+
                         # If there was a rescan, check if it completed
-                        if not self.event.data.get('rescan',
-                                                   {'complete': True}
-                                                   ).get('complete'):
+                        rstate = self.event.data.get('rescan') or {}
+                        if not rstate.get('complete', True):
                             complete = False
 
                         # OK, everything looks complete, mark it!
                         if complete:
                             self._mark_mailbox_rescanned(mbx_cfg, state)
                         else:
-                            self._last_rescan_completed = False
+                            all_completed = False
                     else:
                         self._last_rescan_failed = True
-                        self._last_rescan_completed = False
+                        all_completed = False
                         errors += 1
             except (NoSuchMailboxError, IOError, OSError):
                 self._last_rescan_failed = True
@@ -211,6 +211,7 @@ class BaseMailSource(threading.Thread):
                 self._log_status(_('Internal error'))
                 raise
 
+        self._last_rescan_completed = all_completed
         self._state = 'Waiting... (disco)'
         discovered = 0
         if not self._check_interrupt():
