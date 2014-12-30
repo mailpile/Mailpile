@@ -1308,6 +1308,8 @@ class Email(object):
         return parse
 
     BARE_QUOTE_STARTS = re.compile('(?i)^-+\s*Original Message.*-+$')
+    GIT_DIFF_STARTS = re.compile('^diff --git a/.*b/')
+    GIT_DIFF_LINE = re.compile('^([ +@-]|index |$)')
 
     def parse_line_type(self, line, block):
         # FIXME: Detect forwarded messages, ...
@@ -1363,6 +1365,13 @@ class Email(object):
                 return 'quote', 'quote'
         if line.startswith('>'):
             return 'quote', 'quote'
+
+        if self.GIT_DIFF_STARTS.match(stripped):
+            return 'gitdiff', 'quote'
+
+        if block == 'gitdiff':
+            if self.GIT_DIFF_LINE.match(stripped):
+                return 'gitdiff', 'quote'
 
         return 'body', 'text'
 
