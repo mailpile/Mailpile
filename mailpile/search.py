@@ -10,6 +10,7 @@ from urllib import quote, unquote
 
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.records import EncryptedRecordStore
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.i18n import gettext as _
@@ -211,6 +212,11 @@ class MailIndex(object):
         self.EMAIL_IDS = {}
         CachedSearchResultSet.DropCaches()
         bogus_lines = []
+
+        self.INDEX = EncryptedRecordStore(self.config.mailindex_records(),
+                                          self.config.master_key,
+                                          m90_bytes=512, max_bytes=8000,
+                                          overwrite=False)
 
         def process_lines(lines):
             for line in lines:
@@ -1453,7 +1459,7 @@ class MailIndex(object):
         try:
             rv = self.CACHE.get(msg_idx)
             if rv is None:
-                if len(self.CACHE) > 20000:
+                if len(self.CACHE) > 1000:
                     self.CACHE = {}
                 rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
             if len(rv) != self.MSG_FIELDS_V2:
@@ -1468,8 +1474,10 @@ class MailIndex(object):
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info, original_line=None):
         with self._lock:
-            while len(self.INDEX) <= msg_idx:
-                self.INDEX.append('')
+            if isinstance(self.INDEX, list):
+                while len(self.INDEX) <= msg_idx:
+                     self.INDEX.append('')
+            while len(self.INDEX_THR) <= msg_idx:
                 self.INDEX_THR.append(-1)
                 for order in self.INDEX_SORT:
                     self.INDEX_SORT[order].append(0)
