@@ -213,9 +213,9 @@ class MailIndex(object):
         CachedSearchResultSet.DropCaches()
         bogus_lines = []
 
-        self.INDEX = EncryptedRecordStore(self.config.mailindex_records(),
-                                          self.config.master_key,
-                                          max_bytes=450, overwrite=False)
+        self.INDEX = EncryptedBlobStore(self.config.mailindex_records(),
+                                        self.config.master_key,
+                                        max_bytes=450, overwrite=False)
 
         def process_lines(lines):
             for line in lines:
