@@ -215,8 +215,7 @@ class MailIndex(object):
 
         self.INDEX = EncryptedRecordStore(self.config.mailindex_records(),
                                           self.config.master_key,
-                                          m90_bytes=512, max_bytes=8000,
-                                          overwrite=False)
+                                          max_bytes=450, overwrite=False)
 
         def process_lines(lines):
             for line in lines:

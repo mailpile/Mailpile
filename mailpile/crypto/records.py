@@ -1,10 +1,10 @@
-from Crypto.Cipher import AES
-from Crypto.Random.random import getrandbits
 import hashlib
 import os
 import struct
 import time
 import threading
+
+from aes_utils import getrandbits, aes_cbc_encrypt, aes_cbc_decrypt
 
 
 class EncryptedRecordShard(object):
@@ -126,7 +126,6 @@ class EncryptedRecordShard(object):
         assert(len(data) < self._MAX_DATA_SIZE)
 
         iv = self._iv(pos)
-        aes = AES.new(self._aes_key, mode=AES.MODE_CBC, IV=iv)
 
         # We're using MD5 as a checksum here to detect corruption.
         cks = hashlib.md5(data).hexdigest()
@@ -134,8 +133,8 @@ class EncryptedRecordShard(object):
         # We use the checksum as padding, where we are guaranteed by the
         # assertion above to have room for at least 6 nybbles of the MD5.
         record = (data + ':' + cks + self._ZERO_RECORD)[:self._RECORD_SIZE]
-        encrypted = (iv + aes.encrypt(record)).encode('base64')
-        encrypted = encrypted.replace('\n', '')
+        encrypted = (iv + aes_cbc_encrypt(self._aes_key, iv, record)
+                     ).encode('base64').replace('\n', '')
 
         with self._lock:
             self._fd.seek(self._header_skip + pos * self._RECORD_BYTES)
@@ -150,8 +149,8 @@ class EncryptedRecordShard(object):
             encrypted = self._fd.read(self._RECORD_BYTES).decode('base64')
         iv, encrypted = encrypted[:16], encrypted[16:]
 
-        aes = AES.new(self._aes_key, mode=AES.MODE_CBC, IV=iv)
-        plaintext, checksum = aes.decrypt(encrypted).rsplit(':', 1)
+        plaintext, checksum = aes_cbc_decrypt(self._aes_key, iv, encrypted
+                                              ).rsplit(':', 1)
 
         checksum = bytes(checksum.replace('\0', ''))
         assert(len(checksum) >= 6)
@@ -174,16 +173,16 @@ class EncryptedRecordShard(object):
 
 class EncryptedRecordStore(object):
   
-    _BIG_POINTER = '\0\0ERS-PTR:'
+    _BIG_POINTER = '\0B->'
 
     def __init__(self, base_fn, key,
-                 m90_bytes=400, max_bytes=8000, shard_size=50000,
+                 max_bytes=400, shard_size=50000, big_ratio=10,
                  overwrite=False):
         self._base_fn = base_fn
         self._key = key
-        self._m90_bytes = m90_bytes
-        self._max_bytes = max_bytes
-        self._shard_size = shard_size
+        self._max_bytes = max(max_bytes, 50)
+        self._shard_size = max(int(shard_size), 1024)
+        self._big_ratio = float(big_ratio)
         self._overwrite = overwrite
 
         self._shards = []
@@ -192,12 +191,20 @@ class EncryptedRecordStore(object):
             self._load_next_shard()
 
         self._big_map = {}
-        self._big_shard = EncryptedRecordShard('%s-big' % self._base_fn,
-                                               self._key,
-                                               max_bytes=self._max_bytes,
-                                               overwrite=self._overwrite)
+        self._big_shard = None
 
     s0 = property(lambda self: self._shards[0])
+
+    def _big(self):
+        if self._big_shard is None:
+            self._big_shard = EncryptedRecordStore(
+                '%s-b' % self._base_fn,
+                self._key,
+                max_bytes=self._max_bytes * self._big_ratio,
+                shard_size=self._shard_size / self._big_ratio,
+                big_ratio=self._big_ratio,
+                overwrite=self._overwrite)
+        return self._big_shard
 
     def _next_shardname(self):
         return '%s-%s' % (self._base_fn, len(self._shards) + 1)
@@ -205,15 +212,15 @@ class EncryptedRecordStore(object):
     def _load_next_shard(self):
         self._shards.append(EncryptedRecordShard(self._next_shardname(),
                                                  self._key,
-                                                 max_bytes=self._m90_bytes,
+                                                 max_bytes=self._max_bytes,
                                                  overwrite=self._overwrite))
 
     def __getitem__(self, pos):
         shard, pos = pos // self._shard_size, pos % self._shard_size
         value = self._shards[shard][pos]
         if value.startswith(self._BIG_POINTER):
-            self._big_map[pos] = int(data[len(self._BIG_POINTER):])
-            return self._big_shard[self._big_map[pos]]
+            self._big_map[pos] = int(data[len(self._BIG_POINTER):], 16)
+            return self._big()[self._big_map[pos]]
         else:
             return value
 
@@ -222,10 +229,10 @@ class EncryptedRecordStore(object):
         while shard >= len(self._shards):
             self._load_next_shard()
         if len(data) >= self.s0._MAX_DATA_SIZE:
-            bpos = self._big_map.get(pos, len(self._big_shard))
-            self._big_shard[bpos] = data
+            bpos = self._big_map.get(pos, len(self._big()))
+            self._big()[bpos] = data
             self._big_map[pos] = bpos
-            data = '%s%d' % (len(self._BIG_POINTER), bpos)
+            data = '%s%x' % (len(self._BIG_POINTER), bpos)
         self._shards[shard][pos] = data
 
     def __len__(self):
@@ -235,6 +242,8 @@ class EncryptedRecordStore(object):
     def close(self):
         for s in self._shards:
             s.close()
+        if self._big_shard is not None:
+            self._big_shard.close()
 
 
 if __name__ == '__main__':
@@ -249,14 +258,18 @@ if __name__ == '__main__':
             assert(er[l] == 'bjarni %s' % l)
         assert(len(er) == 20)
 
-    er = EncryptedRecordStore('test.aes', 'this is my secret key', 740)
+    er = EncryptedRecordStore('test.aes', 'this is my secret key', 740,
+                              big_ratio=4, overwrite=True)
     t0 = time.time()
     count = 100 * 1024 + 4321
     for l in range(0, count):
-        er[l % 1024 ] = ('bjarni is a happy camper with plenty of stuff '
-                         'we must pad this with gibberish and make it '
-                         'a fair bit longer, so it makes a good test '
-                         'to say about this and that and the other')
+        data = ('bjarni is a happy camper with plenty of stuff '
+                'we must pad this with gibberish and make it '
+                'a fair bit longer, so it makes a good test '
+                'to say about this and that and the other')
+        if (l % 1024) == 5:
+            data = data * 74
+        er[l % 1024 ] = data
     done = time.time()
     print ('100k record writes in %.2f (%.8f s/op)'
            % (done - t0, (done - t0) / count))
