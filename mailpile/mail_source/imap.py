@@ -630,26 +630,31 @@ class ImapMailSource(BaseMailSource):
     def discover_mailboxes(self, unused_paths=None):
         config = self.session.config
         existing = self._existing_mailboxes()
-        discovered = []
         with self.open() as raw_conn:
-            try:
-                ok, data = self.timed_imap(raw_conn.list, '', '%')
-                while ok and len(data) >= 3:
-                    (flags, sep, path), data[:3] = data[:3], []
-                    if '[Gmail]' in path:
-                        # FIXME: Temp hack to ignore the [Gmail] thing
-                        continue
-                    path = self._fmt_path(path)
-                    if path not in existing:
-                        discovered.append((path, flags))
-            except self.CONN_ERRORS:
-                pass
-
-        for path, flags in discovered:
+            mailboxes = self._walk_mailbox_path(raw_conn, '')
+        discovered = [mbx for mbx in mailboxes if mbx not in existing]
+        for path in discovered:
             idx = config.sys.mailbox.append(path)
             mbx = self.take_over_mailbox(idx)
-
         return len(discovered)
+
+    def _walk_mailbox_path(self, conn, prefix):
+        mboxes = []
+        try:
+            ok, data = self.timed_imap(conn.list, prefix, '%')
+            while ok and len(data) >= 3:
+                (flags, sep, path), data[:3] = data[:3], []
+                if '[Gmail]' in path:
+                    # FIXME: Temp hack to ignore the [Gmail] thing
+                    continue
+                mboxes.append(self._fmt_path(path))
+                if '\\HasChildren' in flags:
+                    mbx_subtree = self._walk_mailbox_path(conn, '%s.' % (path))
+                    mboxes.extend(mbx_subtree)
+        except self.CONN_ERRORS:
+            pass
+        finally:
+            return mboxes
 
     def quit(self, *args, **kwargs):
         if self.conn:
