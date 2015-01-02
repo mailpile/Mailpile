@@ -452,7 +452,7 @@ class BaseMailSource(threading.Thread):
         path = path.replace('/.', '/')
         parts = ('/' in path) and path.split('/') or path.split('\\')
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
-        tagname = parts.pop(-1).split('.')[0]
+        tagname = parts.pop(-1).split('.')[-1]
 #       if self.my_config.name:
 #           tagname = '%s/%s' % (self.my_config.name, tagname)
         return CleanText(tagname.replace('_', ' '),
