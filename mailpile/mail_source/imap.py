@@ -639,17 +639,18 @@ class ImapMailSource(BaseMailSource):
         return len(discovered)
 
     def _walk_mailbox_path(self, conn, prefix):
+        """
+        Walks the IMAP path recursively and returns a list of all found
+        mailboxes.
+        """
         mboxes = []
         try:
             ok, data = self.timed_imap(conn.list, prefix, '%')
             while ok and len(data) >= 3:
                 (flags, sep, path), data[:3] = data[:3], []
-                if '[Gmail]' in path:
-                    # FIXME: Temp hack to ignore the [Gmail] thing
-                    continue
                 mboxes.append(self._fmt_path(path))
                 if '\\HasChildren' in flags:
-                    mbx_subtree = self._walk_mailbox_path(conn, '%s.' % (path))
+                    mbx_subtree = self._walk_mailbox_path(conn, '%s%s' % (path, sep))
                     mboxes.extend(mbx_subtree)
         except self.CONN_ERRORS:
             pass
