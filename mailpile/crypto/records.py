@@ -1,12 +1,12 @@
 """
 Record-based AES encrypted data storage
 
-This is a collection of modules designed to allow for easy Pythonic
-use of encrypted data stores.
+This is a collection of modules designed to allow for easy Pythonic use
+of encrypted data stores.
 
 The basics are provided by EncryptedRecordStore, which defines the
-on-disk storage format (largely compatible with RFC2822) and takes
-care of the encryption and decryption of records.
+on-disk storage format (largely compatible with RFC2822) and takes care
+of the encryption and decryption of records.
 
 The EncryptedBlobStore provides a subset of Pythonic list semantics,
 extending EncryptedRecordStore to allow for arbitrarily sized elements
@@ -14,8 +14,8 @@ and splitting the storage accross multiple files to play nice with
 backups, network-based storage and other environments where huge files
 might be a problem.
 
-The EncryptedDict provides a subset of Pythonic dict semantics, using
-a mixture of the above two classes.
+The EncryptedDict provides a subset of Pythonic dict semantics, using a
+mixture of the above two classes.
 
 Notes:
 
@@ -28,9 +28,65 @@ Notes:
    hashing is not predictable to an attacker. Again, low entropy keys
    should be avoided.
 4. No provisions are made to make it possible to change keys.
-5. No buffering or caching of any kind is done, we rely on the OS
-   filesystem cache (or hardware) to make things performant.
+5. No buffering or caching of any kind is done.
 6. Deleting entries is NOT supported anywhere. Overwriting works.
+
+Performance thoughts:
+
+The key to performance of these algorithms will ultimately depend on how
+well the OS caches data. In general we can help with that by encouraging
+hot spots, trying to cluster frequently used values together. The other
+way we can help is to minimize wasted space within the records
+themselves, so the OS doesn't waste RAM caching junk.
+
+For the metadata index, we expect hot spot clustering to focus around
+recently received mail. The default sorts are by date and most of the
+time users are reading or organizing recently received mail. So the OS
+should have a relatively easy time effectively caching records for
+current metadata.
+
+The case for posting lists, which naturally live in an EncryptedDict is
+different but also promising. In general, the keyword index will grow
+linearly with the number of index messages; in particular each message
+ID is unique and will generate one or more new keywords in the index.
+Thus the keyword index will have a very long tail of rarely used, small
+entries. The expected performance of such entries (reads and writes) is
+dominated by the disk seeks times. For these entries, we can save at
+least one disk seek by storing the values along with the keys, but that
+is about all we can do.
+
+Conversely, some keywords will have a very high frequency; for example
+virtually all English language messages will contain the word "the".
+These common keywords will become hot spots during the indexing process,
+so causing them to cluster together will again let us play nice with the
+operating system caches. A basic strategy for this is to allow larger
+entries to bump smaller ones from the front of each hash bucket to later
+stages, as entry size correlates with keyword popularity. Another
+optimization which is out of scope for this module, is they should
+compress well as they will contain long sequential runs of message IDs.
+
+From a frequency point of view, the middle-of-the-road keywords barely
+matter; 94% of all keywords match fewer than 5 messages, about 0.16%
+match over 1000 messages. On average about 17 keywords are generated
+per message.
+
+Detailed search keyword stats:
+
+  emails  keywords   __________ratios__________
+       2   4551468    88.21%  100.00%   88.21%
+       4    290686     5.63%   11.79%   93.84%
+       8    150924     2.92%    6.16%   96.77%
+      16     74239     1.44%    3.23%   98.21%
+      32     38341     0.74%    1.79%   98.95%
+      64     20552     0.40%    1.05%   99.35%
+     128     13178     0.26%    0.65%   99.60%
+     256      7731     0.15%    0.40%   99.75%
+     512      4640     0.09%    0.25%   99.84%
+    1024      2793     0.05%    0.16%   99.90%
+    2048      2141     0.04%    0.10%   99.94%
+   >2048      3084     0.06%    0.06%  100.00%
+          (sample size: ~300k emails)
+
 """
 import hashlib
 import os
@@ -347,7 +403,6 @@ class EncryptedDict(object):
 
     TODO:
         - Grow the dict by adding keysets
-        - Large values using a BlobStore
         - Migrating "exciting" keys to the primary keyset
     """
 
