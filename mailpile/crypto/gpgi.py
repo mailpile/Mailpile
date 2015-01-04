@@ -1100,7 +1100,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
     ]
     VARIABLES = {
         'keytype': '1',
-        'bits': '1024',  # FIXME: '4096',
+        'bits': '4096',
         'name': 'Mailpile Generated Key',
         'email': '',
         'comment': 'www.mailpile.is',
