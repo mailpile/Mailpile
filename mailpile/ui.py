@@ -431,16 +431,20 @@ class UserInteraction:
         if 'http' in cfg.sys.debug:
             emsg += "<p>%(details)s</p>"
             if 'traceback' in error_info:
-                emsg += "<p><b>TRACEBACK:</b></p><pre>%(traceback)s</pre>"
+                emsg += "<h3>TRACEBACK:</h3><pre>%(traceback)s</pre>"
             if 'source' in error_info:
-                emsg += "<p><b>SOURCE:</b></p><xmp>%(source)s</xmp>"
+                emsg += "<h3>SOURCE:</h3><xmp>%(source)s</xmp>"
             if 'data' in error_info:
-                emsg += "<p><b>DATA:</b> %(data)s</p>"
+                emsg += "<h3>DATA:</h3><pre>%(data)s</pre>"
             if 'config' in error_info.get('data'):
                 del error_info['data']['config']
         ei = {}
-        for kw in ('details', 'traceback', 'source', 'data'):
-            ei = escape_html(error_info.get(kw, ''))
+        for kw in ('error', 'details', 'traceback', 'source', 'data'):
+            value = error_info.get(kw, '')
+            if isinstance(value, dict):
+                ei[kw] = escape_html('%.8196s' % self.render_json(value))
+            else:
+                ei[kw] = escape_html('%.2048s' % value).replace('\n', '<br>')
         return emsg % ei
 
     def render_web(self, cfg, tpl_names, data):
@@ -471,15 +475,15 @@ class UserInteraction:
             tpl_esc_names = [escape_html(tn) for tn in tpl_names]
             return self._render_error(cfg, {
                 'error': _('Template not found'),
-                'details': 'In %s: %s' % (e.name, e.message),
+                'details': 'In %s:\n%s' % (e.name, e.message),
                 'data': alldata
             })
         except (TemplateError, TemplateSyntaxError,
                 TemplateAssertionError,), e:
             return self._render_error(cfg, {
                 'error': _('Template error'),
-                'details': ('%s in %s (%s) on line %s'
-                            % (e.message, e.name, e.filename, e.lineno)),
+                'details': ('In %s (%s), line %s:\n%s'
+                            % (e.name, e.filename, e.lineno, e.message)),
                 'source': e.source,
                 'traceback': traceback.format_exc(),
                 'data': alldata
