@@ -411,11 +411,13 @@ class EncryptedDict(object):
     _UNUSED = '\0U'
 
     def __init__(self, base_fn, key,
-                 key_bytes=50, data_bytes=400, shard_size=100000, big_ratio=5,
+                 key_bytes=50, data_bytes=400, big_ratio=5,
+                 shard_size=100000, min_shards=1, shard_ratio=2.0,
                  overwrite=False):
         self._base_fn = base_fn
         self._key = key
         self._key_bytes = key_bytes
+        self._shard_ratio = shard_ratio  # Growth ratio when expanding
         self._data_bytes = data_bytes
         self._shard_size = max(int(shard_size), 1024)
         self._big_ratio = float(big_ratio)
@@ -423,9 +425,13 @@ class EncryptedDict(object):
 
         self._lock = threading.RLock()
 
+        self.writes = []
+        self.reads = []
         self._keys = []
-        while os.path.exists(self._next_keyfile()[0]) or not self._keys:
+        while (os.path.exists(self._next_keyfile()[0]) or
+                len(self._keys) < min_shards):
             self._load_next_keys()
+        self.reset_counters()
 
         self._values = EncryptedBlobStore(self._base_fn, self._key,
                                           max_bytes=data_bytes,
@@ -433,8 +439,15 @@ class EncryptedDict(object):
                                           big_ratio=big_ratio,
                                           overwrite=overwrite)
 
+    def reset_counters(self):
+        self.writes = [0 for keyset in self._keys]
+        self.reads = [0 for keyset in self._keys]
+
     def _keyfile_size(self, kfi):
-        return self._shard_size * (2**kfi)
+        return int(self._shard_size * (self._shard_ratio**kfi))
+
+    def _keyfile_bytes(self, kfi):
+        return self._key_bytes
 
     def _next_keyfile(self):
         pos = len(self._keys)
@@ -443,13 +456,17 @@ class EncryptedDict(object):
     def _load_next_keys(self):
         with self._lock:
             kf, kfi = self._next_keyfile()
+            kb = self._keyfile_bytes(kfi)
             ow = self._overwrite or not os.path.exists(kf)
             self._keys.append(EncryptedRecordStore(kf, self._key,
-                                                   max_bytes=self._key_bytes,
+                                                   max_bytes=kb,
                                                    overwrite=ow))
+            self.writes.append(0)
+            self.reads.append(0)
             if ow:
                 for i in range(0, self._keyfile_size(kfi)):
                     self._keys[kfi][i] = self._UNUSED
+            return kfi, self._keys[kfi]
 
     def _offset_and_digest(self, key):
         digest = hashlib.sha256(self._key)
@@ -473,31 +490,47 @@ class EncryptedDict(object):
         if want is None:
             # Search for the unused marker, as well as the digest...
             want = [self._UNUSED]
-        for keyset in self._keys:
+        for kfi, keyset in enumerate(self._keys):
             records = self.load_records(keyset, self._BUCKET_SIZE, pos,
                                         want=want+[digest])
             if records[-1][1].startswith(digest):
+                self.reads[kfi] += 1
                 return (keyset, records[-1])
             elif records[-1][1] == self._UNUSED:
                 # ...finding an unused marker means we can give up.
                 break
         raise KeyError(key)
 
+    def _try_save(self, keyset, pos, digest, value):
+        records = self.load_records(keyset, self._BUCKET_SIZE, pos,
+                                    want=[self._UNUSED, digest])
+        if (records[-1][1] == self._UNUSED or
+                records[-1][1].startswith(digest)):
+            rpos, rdata = records[-1]
+            record_data = digest + '=' + value
+            if len(record_data) > keyset._MAX_DATA_SIZE:
+                keyset[rpos] = '%s->%x' % (digest, self._values.append(value))
+            else:
+                keyset[rpos] = record_data
+            return rpos
+        else:
+            return None
+
     def save_record(self, key, value):
         pos, digest = self._offset_and_digest(key)
-        for keyset in self._keys:
-            records = self.load_records(keyset, self._BUCKET_SIZE, pos,
-                                        want=[self._UNUSED, digest])
-            if (records[-1][1] == self._UNUSED or
-                    records[-1][1].startswith(digest)):
-                rpos, rdata = records[-1]
-                record_data = digest + '=' + value
-                if len(record_data) > keyset._MAX_DATA_SIZE:
-                    keyset[rpos] = '%s->%x' % (digest,
-                                               self._values.append(value))
-                else:
-                    keyset[rpos] = record_data
+        for kfi, keyset in enumerate(self._keys):
+            rpos = self._try_save(keyset, pos, digest, value)
+            if rpos is not None:
+                self.writes[kfi] += 1
                 return keyset, rpos
+
+        # If we get this far, then we need to grow...
+        kfi, keyset = self._load_next_keys()
+        rpos = self._try_save(keyset, pos, digest, value)
+        if rpos is not None:
+            self.writes[kfi] += 1
+            return keyset, rpos
+
         raise KeyError(key)
 
     def __setitem__(self, key, value):
@@ -560,3 +593,24 @@ if __name__ == '__main__':
     print ('10k record reads in %.2f (%.8f s/op)'
            % (done - t0, (done - t0) / count))
     er.close()
+
+    print 'Creating EncryptedDict...'
+    ed = EncryptedDict('/tmp/test.aes', 'another secret key',
+                       shard_size=(2*count), min_shards=2,
+                       shard_ratio=2, overwrite=True)
+
+    t0 = time.time()
+    for i in range(0, count):
+        ed[str(i)] = str(i)
+    done = time.time()
+    print ('10k dict writes in %.2f (%.8f s/op): %s'
+           % (done - t0, (done - t0) / count, ed.writes))
+
+    t0 = time.time()
+    ed.reset_counters()
+    for i in range(0, count):
+        assert(ed[str(i)] == str(i))
+    done = time.time()
+    print ('10k dict reads in %.2f (%.8f s/op): %s'
+           % (done - t0, (done - t0) / count, ed.reads))
+
