@@ -426,43 +426,64 @@ class UserInteraction:
                 pass
         return None
 
+    def _render_error(self, cfg, error_info):
+        emsg = "<h1>%(error)s</h1>"
+        if 'http' in cfg.sys.debug:
+            emsg += "<p>%(details)s</p>"
+            if 'traceback' in error_info:
+                emsg += "<p><b>TRACEBACK:</b></p><pre>%(traceback)s</pre>"
+            if 'source' in error_info:
+                emsg += "<p><b>SOURCE:</b></p><xmp>%(source)s</xmp>"
+            if 'data' in error_info:
+                emsg += "<p><b>DATA:</b> %(data)s</p>"
+            if 'config' in error_info.get('data'):
+                del error_info['data']['config']
+        ei = {}
+        for kw in ('details', 'traceback', 'source', 'data'):
+            ei = escape_html(error_info.get(kw, ''))
+        return emsg % ei
+
     def render_web(self, cfg, tpl_names, data):
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
-        alldata["config"] = cfg
+        alldata['config'] = cfg
         alldata.update(data)
         try:
             template = self._web_template(cfg, tpl_names)
             if template:
                 return template.render(alldata)
             else:
-                emsg = _("<h1>Template not found</h1>\n<p>%s</p><p>"
-                         "<b>DATA:</b> %s</p>")
                 tpl_esc_names = [escape_html(tn) for tn in tpl_names]
-                return emsg % (' or '.join(tpl_esc_names),
-                               escape_html('%s' % alldata))
+                return self._render_error(cfg, {
+                    'error': _('Template not found'),
+                    'details': ' or '.join(tpl_esc_names),
+                    'data': alldata
+                })
         except (UndefinedError, ):
-            emsg = _("<h1>Template error</h1>\n"
-                     "<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>")
-            return emsg % (escape_html(traceback.format_exc()),
-                           ' or '.join([escape_html(tn) for tn in tpl_names]),
-                           escape_html('%.4096s' % alldata))
+            tpl_esc_names = [escape_html(tn) for tn in tpl_names]
+            return self._render_error(cfg, {
+                'error': _('Template error'),
+                'details': ' or '.join(tpl_esc_names),
+                'traceback': traceback.format_exc(),
+                'data': alldata
+            })
         except (TemplateNotFound, TemplatesNotFound), e:
-            emsg = _("<h1>Template not found in %s</h1>\n"
-                     "<b>%s</b><br/>"
-                     "<div><hr><p><b>DATA:</b> %s</p></div>")
-            return emsg % tuple([escape_html(unicode(v))
-                                 for v in (e.name, e.message,
-                                           '%.4096s' % alldata)])
+            tpl_esc_names = [escape_html(tn) for tn in tpl_names]
+            return self._render_error(cfg, {
+                'error': _('Template not found'),
+                'details': 'In %s: %s' % (e.name, e.message),
+                'data': alldata
+            })
         except (TemplateError, TemplateSyntaxError,
                 TemplateAssertionError,), e:
-            emsg = _("<h1>Template error in %s</h1>\n"
-                     "Parsing template %s: <b>%s</b> on line %s<br/>"
-                     "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
-            return emsg % tuple([escape_html(unicode(v))
-                                 for v in (e.name, e.filename, e.message,
-                                           e.lineno, e.source,
-                                           '%.4096s' % alldata)])
+            return self._render_error(cfg, {
+                'error': _('Template error'),
+                'details': ('%s in %s (%s) on line %s'
+                            % (e.message, e.name, e.filename, e.lineno)),
+                'source': e.source,
+                'traceback': traceback.format_exc(),
+                'data': alldata
+            })
 
     def edit_messages(self, session, emails):
         if not self.interactive:
