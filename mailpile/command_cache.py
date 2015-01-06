@@ -56,12 +56,17 @@ class CommandCache(object):
         max_a = time.time() - self._lag
         with self.lock:
             exp, req, ss, co, result_obj, a = match = self.cache[fprint]
-        if (a >= max_a) or (dirty_check and req & self.dirty_set(after=a)):
+        recent = (a >= max_a)
+        dirty = (dirty_check and req & self.dirty_set(after=a))
+        if recent or dirty:
             # If item is too new, or requirements are dirty, pretend this
             # item does not exist.
+            self.debug('Suppressing cache result %s, recent=%s dirty=%s'
+                       % (fprint, recent, dirty))
             raise KeyError(fprint)
         match[0] = min(match[0] + extend, time.time() + 5 * extend)
         co.session = result_obj.session = ss
+        self.debug('Returning cached result for %s' % fprint)
         return result_obj
 
     def dirty_set(self, after=0):
@@ -116,6 +121,7 @@ class CommandCache(object):
                 # Broken stuff just gets evicted
                 with self.lock:
                     if fprint in self.cache:
+                        self.debug('Evicted: %s' % fprint)
                         del self.cache[fprint]
 
         if refreshed and event_log:
