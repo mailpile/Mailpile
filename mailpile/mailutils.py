@@ -476,6 +476,8 @@ class Email(object):
                 att = copy.deepcopy(att)
                 att.signature_info = SignatureInfo(parent=msi)
                 att.encryption_info = EncryptionInfo(parent=mei)
+                if att.get('content-id') is None:
+                    att.add_header('Content-Id', MakeContentID())
                 msg.attach(att)
                 del att['MIME-Version']
 
