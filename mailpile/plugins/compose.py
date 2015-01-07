@@ -755,8 +755,6 @@ class UnAttach(CompositionCommand):
                       self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
             return self._error(_('No messages selected'))
-        else:
-            emails = [Email(idx, i) for i in emails]
 
         updated = []
         errors = []
