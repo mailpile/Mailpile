@@ -283,7 +283,6 @@ class EncryptedRecordStore(_SimpleList):
         if (len(checksum) < 6):
             raise ValueError('Checksum too short')
         if not hashlib.md5(plaintext).hexdigest().startswith(checksum):
-            print 'bad data: %s' % plaintext
             raise ValueError('Checksum mismatch')
 
         return plaintext
@@ -406,8 +405,8 @@ class EncryptedDict(object):
         - Migrating "exciting" keys to the primary keyset
     """
 
-    _BUCKET_SIZE = 5
-    _DIGEST_SIZE = 16  # 128 bit hashes
+    DEFAULT_BUCKET_SIZE = 5
+    DEFAULT_DIGEST_SIZE = 16  # 128 bit hashes
     _UNUSED = '\0U'
 
     MIN_KEY_BYTES = (48 - 16 - 7 - 1)  # Magic number, smallest possible
@@ -418,6 +417,8 @@ class EncryptedDict(object):
                  data_bytes=408,  # 9 base64 lines per record
                  big_ratio=5,
                  shard_size=100000, min_shards=1, shard_ratio=2.0,
+                 bucket_size=None,
+                 digest_size=None,
                  overwrite=False):
         self._base_fn = base_fn
         self._key = key
@@ -426,6 +427,8 @@ class EncryptedDict(object):
         self._data_bytes = data_bytes
         self._shard_size = max(int(shard_size), 1024)
         self._big_ratio = float(big_ratio)
+        self._bucket_size = bucket_size or self.DEFAULT_BUCKET_SIZE
+        self._digest_size = digest_size or self.DEFAULT_DIGEST_SIZE
         self._overwrite = overwrite
 
         self._lock = threading.RLock()
@@ -439,11 +442,14 @@ class EncryptedDict(object):
             self._load_next_keys()
         self.reset_counters()
 
-        self._values = EncryptedBlobStore(self._base_fn, self._key,
-                                          max_bytes=data_bytes,
-                                          shard_size=shard_size,
-                                          big_ratio=big_ratio,
-                                          overwrite=overwrite)
+        if big_ratio > 0:
+            self._values = EncryptedBlobStore(self._base_fn, self._key,
+                                              max_bytes=data_bytes,
+                                              shard_size=shard_size,
+                                              big_ratio=big_ratio,
+                                              overwrite=overwrite)
+        else:
+            self._values = None
 
     def reset_counters(self):
         with self._lock:
@@ -476,11 +482,17 @@ class EncryptedDict(object):
                     self._keys[kfi][i] = self._UNUSED
             return kfi, self._keys[kfi]
 
-    def _offset_and_digest(self, key):
+    def _digest(self, key):
         digest = hashlib.sha256(self._key)
         digest.update(key)
-        digest = digest.digest()[:self._DIGEST_SIZE]
-        return struct.unpack('<L', digest[:4])[0], digest
+        return digest.digest()[:self._digest_size]
+
+    def _offset(self, digest):
+        return struct.unpack('<L', digest[:4])[0]
+
+    def _offset_and_digest(self, key):
+        digest = self._digest(key)
+        return self._offset(digest), digest
 
     def load_records(self, kfi, keyset, count, pos, want=[], skip=None):
         values = []
@@ -501,13 +513,16 @@ class EncryptedDict(object):
                 self.load_factor[kfi] = (self.load_factor[kfi] * 9 +
                                          len(values)) / 10
 
-    def load_record(self, key, want=None, skip=None):
-        pos, digest = self._offset_and_digest(key)
+    def load_record(self, key, **kwargs):
+        return self.load_digest_record(self._digest(key), **kwargs)
+
+    def load_digest_record(self, digest, want=None, skip=None):
+        pos = self._offset(digest)
         if want is None:
             # Search for the unused marker, as well as the digest...
             want = [self._UNUSED]
         for kfi, keyset in enumerate(self._keys):
-            records = self.load_records(kfi, keyset, self._BUCKET_SIZE, pos,
+            records = self.load_records(kfi, keyset, self._bucket_size, pos,
                                         want=want+[digest], skip=skip)
             if records[-1][1].startswith(digest):
                 self.reads[kfi] += 1
@@ -515,145 +530,96 @@ class EncryptedDict(object):
             elif records[-1][1] == self._UNUSED:
                 # ...finding an unused marker means we can give up.
                 break
-        raise KeyError(key)
+        raise KeyError('Not found')
 
-    def _try_save(self, kfi, keyset, pos, digest, value, skip=None):
-        records = self.load_records(kfi, keyset, self._BUCKET_SIZE, pos,
+    def _try_save(self, kfi, keyset, pos, digest, value,
+                  skip=None, on_fail=None):
+        records = self.load_records(kfi, keyset, self._bucket_size, pos,
                                     want=[self._UNUSED, digest], skip=skip)
         if (records[-1][1] == self._UNUSED or
                 records[-1][1].startswith(digest)):
             rpos, rdata = records[-1]
             record_data = ''.join([digest, '=', value])
             if len(record_data) > keyset._MAX_DATA_SIZE:
-                # FIXME: Binary encode the position and length
-                keyset[rpos] = ''.join([digest,
-                                        struct.pack('<cII', '!',
-                                                    self._values.append(value),
-                                                    len(value))])
+                if self._values is None:
+                    if on_fail is not None:
+                        return on_fail(self, kfi, keyset, pos, digest, value,
+                                       records)
+                    raise ValueError('Data too big for record')
+                rdata = keyset[rpos]
+                if rdata.startswith(digest+'>'):
+                    vpos = rdata[self._digest_size + 1:]
+                    vpos = struct.unpack('<II', vpos)[0]
+                    self._values[vpos] = value
+                    keyset[rpos] = ''.join([
+                        digest, struct.pack('<cII', '>', vpos, len(value))])
+                else:
+                    keyset[rpos] = ''.join([
+                        digest, struct.pack('<cII', '>',
+                                            self._values.append(value),
+                                            len(value))])
             else:
                 keyset[rpos] = record_data
             return rpos
+        elif on_fail is not None:
+            return on_fail(self, kfi, keyset, pos, digest, value, records)
         else:
             return None
 
-    def save_record(self, key, value, skip=None):
-        pos, digest = self._offset_and_digest(key)
+    def save_digest_record(self, digest, value, skip=None, on_fail=None):
+        pos = self._offset(digest)
         for kfi, keyset in enumerate(self._keys):
-            rpos = self._try_save(kfi, keyset, pos, digest, value, skip=skip)
+            rpos = self._try_save(kfi, keyset, pos, digest, value,
+                                  skip=skip, on_fail=on_fail)
             if rpos is not None:
                 self.writes[kfi] += 1
                 return keyset, rpos
 
         # If we get this far, then we need to grow...
-        kfi, keyset = self._load_next_keys()
-        rpos = self._try_save(kfi, keyset, pos, digest, value)
-        if rpos is not None:
-            self.writes[kfi] += 1
-            return keyset, rpos
+        if self._shard_ratio > 0:
+            kfi, keyset = self._load_next_keys()
+            rpos = self._try_save(kfi, keyset, pos, digest, value,
+                                  skip=skip, on_fail=on_faile)
+            if rpos is not None:
+                self.writes[kfi] += 1
+                return keyset, rpos
 
-        raise KeyError(key)
+        raise KeyError('Save failed')
+
+    def save_record(self, key, value, skip=None, on_fail=None):
+        return self.save_digest_record(self._digest(key), value,
+                                       skip=skip, on_fail=on_fail)
 
     def __setitem__(self, key, value):
         self.save_record(key, value)
 
-    def __getitem__(self, key):
-        keyset, (rpos, rdata) = self.load_record(key)
-        if rdata[self._DIGEST_SIZE] == '=':
-            return rdata[self._DIGEST_SIZE + 1:]
-        elif rdata[self._DIGEST_SIZE] == '>':
-            pos, dlen = struct.unpack('<II', rdata[self._DIGEST_SIZE + 1:])
+    def rdata_digest(self, rdata):
+        return rdata[:self._digest_size]
+
+    def rdata_value(self, rdata):
+        if rdata[self._digest_size] == '=':
+            return rdata[self._digest_size + 1:]
+        elif rdata[self._digest_size] == '>':
+            pos, dlen = struct.unpack('<II', rdata[self._digest_size + 1:])
             return self._values[pos]
         else:
-            raise KeyError(key)
+            raise KeyError('Not found')
+
+    def __getitem__(self, key):
+        keyset, (rpos, rdata) = self.load_record(key)
+        return self.rdata_value(rdata)
+
+    def get(self, key, default=None, **kwargs):
+        try:
+            return self.__getitem__(key, **kwargs)
+        except KeyError:
+            return default
 
     def close(self):
         with self._lock:
             for s in self._keys:
                 s.close()
             self._keys = []
-
-
-class EncryptedPostingListDict(EncryptedDict):
-    """
-    This is an EncryptedDict which configures itself for "optimal" use
-    with Mailpile PostingList data.
-    """
-    _DIGEST_SIZE = 12  # Let 96 hash bits suffice. This buys us space
-                       # for a third "hit" in the shards with the smallest
-                       # key size, w/o needing to use the BlobStore.
-
-    _BUCKET_SIZE = 3   # Our values are large and we expect to fill our
-                       # hash tables over time, so use smaller buckets.
-
-    # These numbers are based on analysis of the keyword data from
-    # Bjarni's 300k Mailpile.
-    KEYWORDS_PER_MSG = 17      # Average unique keywords per message
-    UP_TO_THREE_RATIO = 0.945  # How many fit in the minimal record size?
-    HOT_SPOT_RATIO = 0.0006    # How many are seen in >= .1% of all mail?
-    #
-    # Full stats:
-    #    3      4876082      94.50%  100.00%   94.50%
-    #    9       177887       3.45%    5.50%   97.95%
-    #   27        60255       1.17%    2.05%   99.11%
-    #   81        24441       0.47%    0.89%   99.59%
-    #  243        11089       0.21%    0.41%   99.80%
-    #  729         5041       0.10%    0.20%   99.90%
-    # 2187         2942       0.06%    0.10%   99.96%
-    # 6561         2040       0.04%    0.04%  100.00%  ~.1% of all mail 
-
-    def __init__(self, base_fn, key,
-                 min_msgs=10000, max_msgs=1000000, cache_bytes=50*1024*1024,
-                 overwrite=False):
-
-        # How many hot-spots will we have at the max message size?
-        self.hot_spot_count = (self.KEYWORDS_PER_MSG *
-                               self.HOT_SPOT_RATIO *
-                               max_msgs)
-
-        # OK, these values are now known
-        self._cache_bytes = 0.75 * cache_bytes  # Warranted pessimism?
-        self._shard_size = self.hot_spot_count
-        self._shard_ratio = 2.0
-
-        # Balancing:
-        #     1. Cache as much in the key store as possible...
-        # vs.
-        #     2. Common FS block sizes.
-        #
-        # We subtract 72 to round key sizes down, not up.
-        # The 3/4 comes from the overhead of Base64 encoding the data.
-        #
-        self.hot_spot_key_size = int(0.75 * min(self._cache_bytes /
-                                                   self.hot_spot_count,
-                                                4096 / self._BUCKET_SIZE)
-                                     ) - 72
-
-        # Assuming we use a bitmap, how big will a hot-spot get?
-        self.hot_spot_value_size = max_msgs / 8
-
-        # Roughly how many shards should we pre-create?
-        min_shards = 2
-        while (2 * self.KEYWORDS_PER_MSG * min_msgs >
-                sum([self._keyfile_size(i) for i in range(0, min_shards)])):
-            min_shards += 1
-
-        EncryptedDict.__init__(self, base_fn, key,
-                               key_bytes=self.hot_spot_key_size,
-                               shard_size=self._keyfile_size(0),
-                               shard_ratio=self._shard_ratio,
-                               min_shards=min_shards,
-                               data_bytes=(self.hot_spot_value_size / 2),
-                               big_ratio=2,
-                               overwrite=overwrite)
-
-    def _keyfile_bytes(self, kfi):
-        # FIXME: This following is a bit shitty, we should approximate based
-        #        on the UP_TO_THREE_RATIO.
-        return max(self.MIN_KEY_BYTES, self.hot_spot_key_size / (2 ** kfi))
-
-    def _keyfile_size(self, kfi):
-        return max(int(self._cache_bytes / (1.33 * self._keyfile_bytes(kfi))),
-                   int(self._shard_size * (self._shard_ratio**kfi)))
 
 
 if __name__ == '__main__':
@@ -700,8 +666,8 @@ if __name__ == '__main__':
     er.close()
 
     print 'Creating EncryptedDict...'
-    ed = EncryptedPostingListDict('/tmp/test.aes', 'another secret key',
-                                  min_msgs=count, overwrite=True)
+    ed = EncryptedDict('/tmp/test.aes', 'another secret key',
+                       shard_size=(count * 2), min_shards=2, overwrite=True)
 
     # Create a set of items to write to the Dict
     items = list(range(0, count))
@@ -726,11 +692,13 @@ if __name__ == '__main__':
     for i in items[:count]:
         try:
             if isinstance(i, int) and (i % 1024) == 5:
-                assert(ed[str(i)] == data + str(i))
+                assert(ed.get(str(i)) == data + str(i))
             else:
                 assert(ed[str(i)] == str(i))
         except KeyError:
             pass
+        except AssertionError:
+            print 'FAILED, GOT: %s => %s' % (i, ed.get(str(i)))
     done = time.time()
     print ('10k dict reads in %.2f (%.8f s/op)\n -- reads=%s lf=%s'
            % (done - t0, (done - t0) / count, ed.reads, ed.load_factor))
