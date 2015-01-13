@@ -1123,6 +1123,7 @@ class ConfigManager(ConfigDict):
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
         self._master_key_ondisk = None
+        self._master_key_recipient = None
 
         self.plugins = None
         self.background = None
@@ -1267,6 +1268,7 @@ class ConfigManager(ConfigDict):
                                             self, newlines=True)
                 self.master_key = ''.join(keydata)
                 self._master_key_ondisk = self.master_key
+                self._master_key_recipient = self.prefs.gpg_recipient
 
             if os.path.exists(filename):
                 with open(filename, 'rb') as fd:
@@ -1391,7 +1393,8 @@ class ConfigManager(ConfigDict):
 
         # We keep the master key in a file of its own and never delete
         # or overwrite master keys.
-        if self._master_key_ondisk != self.master_key:
+        if (self._master_key_ondisk != self.master_key or
+               self._master_key_recipient != self.prefs.gpg_recipient):
             if os.path.exists(keyfile):
                 os.rename(keyfile, keyfile + ('.%x' % time.time()))
         if not os.path.exists(keyfile):
@@ -1403,6 +1406,7 @@ class ConfigManager(ConfigDict):
                     with open(keyfile, 'wb') as fd:
                         fd.write(encrypted_key)
                     self._master_key_ondisk = self.master_key
+                    self._master_key_recipient = self.prefs.gpg_recipient
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
