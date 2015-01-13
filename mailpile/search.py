@@ -20,7 +20,7 @@ from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
-from mailpile.postinglist import GlobalPostingList
+from mailpile.postinglist import EncryptedPostingLists
 from mailpile.ui import *
 from mailpile.util import *
 from mailpile.vfs import vfs, FilePath
@@ -119,6 +119,7 @@ class MailIndex(object):
 
     def __init__(self, config):
         self.config = config
+        self.timers = {}
         self.interrupt = None
         self.INDEX = []
         self.INDEX_SORT = {}
@@ -131,6 +132,7 @@ class MailIndex(object):
         self.CACHE = {}
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
+        self._keywords = {}
         self._scanned = {}
         self._saved_changes = 0
         self._lock = SearchRLock()
@@ -213,6 +215,11 @@ class MailIndex(object):
         CachedSearchResultSet.DropCaches()
         bogus_lines = []
 
+        session.ui.mark(_('Creating search keyword storage...'))
+        self._keywords = EncryptedPostingLists(
+            self.config.postinglists_prefix(), self.config.master_key)
+
+        session.ui.mark(_('Creating metadata index storage...'))
         self.INDEX = EncryptedBlobStore(self.config.mailindex_records(),
                                         self.config.master_key,
                                         max_bytes=450, overwrite=False)
@@ -296,9 +303,6 @@ class MailIndex(object):
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
                                      ) % self.config.mailindex_file())
-
-        session.ui.mark(_('Loading global posting list...'))
-        GlobalPostingList(session, '')
 
         if bogus_lines:
             bogus_file = (self.config.mailindex_file() +
@@ -1439,16 +1443,17 @@ class MailIndex(object):
         if 'keywords' in self.config.sys.debug:
             print 'KEYWORDS: %s' % keywords
 
+        session.ui.mark(_('Recording %d keywords for messaage %s')
+                        % (len(keywords), msg_mid))
+        msg_idx_pos = int(msg_mid, 36)
         for word in keywords:
             if (word.startswith('__') or
                     # Tags are now handled outside the posting lists
                     word.endswith(':tag') or word.endswith(':in')):
                 continue
             try:
-                GlobalPostingList.Append(session, word, [msg_mid],
-                                         compact=compact)
-            except UnicodeDecodeError:
-                # FIXME: we just ignore garbage
+                self._keywords[word.encode('utf-8')] = msg_idx_pos
+            except UnicodeEncodeError:
                 pass
 
         self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
@@ -1473,13 +1478,10 @@ class MailIndex(object):
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info, original_line=None):
         with self._lock:
-            if isinstance(self.INDEX, list):
-                while len(self.INDEX) <= msg_idx:
-                     self.INDEX.append('')
             while len(self.INDEX_THR) <= msg_idx:
-                self.INDEX_THR.append(-1)
                 for order in self.INDEX_SORT:
                     self.INDEX_SORT[order].append(0)
+                self.INDEX_THR.append(-1)
 
         msg_thr_mid = msg_info[self.MSG_THREAD_MID]
         self.INDEX[msg_idx] = original_line or self.m2l(msg_info)
@@ -1694,8 +1696,10 @@ class MailIndex(object):
 
                 else:
                     session.ui.mark(_('Searching for %s') % term)
-                    return [int(h, 36) for h
-                            in GlobalPostingList(session, term).hits()]
+                    try:
+                        return self._keywords.get(term.encode('utf-8'), set())
+                    except UnicodeEncodeError:
+                        return set()
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:

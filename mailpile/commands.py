@@ -28,7 +28,6 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import AddressHeaderParser, ClearParseCache
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
-from mailpile.postinglist import GlobalPostingList
 from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
 from mailpile.search import MailIndex
 from mailpile.util import *
@@ -1395,8 +1394,6 @@ class Optimize(Command):
             if not slowly:
                 mailpile.util.LAST_USER_ACTIVITY = 0
             self._idx().save(self.session)
-            GlobalPostingList.Optimize(self.session, self._idx(),
-                                       force=('harder' in self.args))
             return self._success(_('Optimized search engine'))
         except KeyboardInterrupt:
             return self._error(_('Aborted'))
@@ -1575,11 +1572,9 @@ class ProgramStatus(Command):
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
                     'Live sessions:\n%s\n\n'
-                    'Postinglist timers:\n%s\n\n'
                     'Threads: (bg delay %.3fs, live=%s, httpd=%s)\n%s\n\n'
                     'Locks:\n%s'
                     ) % (cevents, ievents, sessions,
-                         self.result['pl_timers'],
                          self.result['delay'],
                          self.result['live'],
                          self.result['httpd'],
@@ -1607,16 +1602,10 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
-             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
-             mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
             ('mailpile.plugins.compose', 'GLOBAL_EDITING_LOCK',
-             mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
+             mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
             ('mailpile.plugins.contacts', 'GLOBAL_VCARD_LOCK',
-             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
-            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
+             mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
         ])
 
         threads = threading.enumerate()
@@ -1641,7 +1630,6 @@ class ProgramStatus(Command):
                           'userdata': v.data,
                           'userinfo': v.auth} for k, v in
                          mailpile.auth.SESSION_CACHE.iteritems()],
-            'pl_timers': mailpile.postinglist.TIMERS,
             'delay': play_nice_with_threads(sleep=False),
             'live': mailpile.util.LIVE_USER_ACTIVITIES,
             'httpd': mailpile.httpd.LIVE_HTTP_REQUESTS,

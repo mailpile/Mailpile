@@ -2055,6 +2055,12 @@ class ConfigManager(ConfigDict):
         except (OSError, IOError):
             pass
 
+    def postinglists_prefix(self):
+        d = os.path.join(self.workdir, 'search')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return os.path.join(d, 'keywords')
+
     def postinglist_dir(self, prefix):
         d = os.path.join(self.workdir, 'search')
         if not os.path.exists(d):
@@ -2208,16 +2214,6 @@ class ConfigManager(ConfigDict):
             config.cron_worker.add_task('refresh_command_cache', 5,
                                         refresh_command_cache)
 
-            from mailpile.postinglist import GlobalPostingList
-            def optimizer():
-                config.scan_worker.add_unique_task(
-                    config.background, 'gpl_optimize',
-                    lambda: GlobalPostingList.Optimize(config.background,
-                                                       config.index,
-                                                       lazy=True,
-                                                       ratio=0.25, runtime=15))
-            config.cron_worker.add_task('gpl_optimize', 29, optimizer)
-
             # Schedule plugin jobs
             from mailpile.plugins import PluginManager
 
@@ -2280,8 +2276,6 @@ class ConfigManager(ConfigDict):
         if config.sys.debug:
             print 'Waiting for %s' % save_worker
 
-        from mailpile.postinglist import PLC_CACHE_FlushAndClean
-        PLC_CACHE_FlushAndClean(config.background, keep=0)
         config.search_history.save(config)
         save_worker.quit(join=True)
 

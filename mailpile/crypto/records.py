@@ -475,6 +475,7 @@ class EncryptedDict(object):
             self._keys.append(EncryptedRecordStore(kf, self._key,
                                                    max_bytes=kb,
                                                    overwrite=ow))
+            self.load_factor.append(0)
             self.writes.append(0)
             self.reads.append(0)
             if ow:
@@ -494,13 +495,10 @@ class EncryptedDict(object):
         digest = self._digest(key)
         return self._offset(digest), digest
 
-    def load_records(self, kfi, keyset, count, pos, want=[], skip=None):
+    def load_records(self, kfi, keyset, count, pos, want=[]):
         values = []
-        skip = [p for i, p in (skip or []) if i == kfi]
         try:
             for inc in range(0, count):
-                if inc in skip:
-                    continue
                 rpos = (pos + inc) % len(keyset)
                 rval = keyset[rpos]
                 values.append((rpos, rval))
@@ -516,14 +514,14 @@ class EncryptedDict(object):
     def load_record(self, key, **kwargs):
         return self.load_digest_record(self._digest(key), **kwargs)
 
-    def load_digest_record(self, digest, want=None, skip=None):
+    def load_digest_record(self, digest, want=None):
         pos = self._offset(digest)
         if want is None:
             # Search for the unused marker, as well as the digest...
             want = [self._UNUSED]
         for kfi, keyset in enumerate(self._keys):
             records = self.load_records(kfi, keyset, self._bucket_size, pos,
-                                        want=want+[digest], skip=skip)
+                                        want=want+[digest])
             if records[-1][1].startswith(digest):
                 self.reads[kfi] += 1
                 return (keyset, records[-1])
@@ -532,10 +530,9 @@ class EncryptedDict(object):
                 break
         raise KeyError('Not found')
 
-    def _try_save(self, kfi, keyset, pos, digest, value,
-                  skip=None, on_fail=None):
+    def _try_save(self, kfi, keyset, pos, digest, value, on_fail=None):
         records = self.load_records(kfi, keyset, self._bucket_size, pos,
-                                    want=[self._UNUSED, digest], skip=skip)
+                                    want=[self._UNUSED, digest])
         if (records[-1][1] == self._UNUSED or
                 records[-1][1].startswith(digest)):
             rpos, rdata = records[-1]
@@ -566,11 +563,11 @@ class EncryptedDict(object):
         else:
             return None
 
-    def save_digest_record(self, digest, value, skip=None, on_fail=None):
+    def save_digest_record(self, digest, value, on_fail=None):
         pos = self._offset(digest)
         for kfi, keyset in enumerate(self._keys):
             rpos = self._try_save(kfi, keyset, pos, digest, value,
-                                  skip=skip, on_fail=on_fail)
+                                  on_fail=on_fail)
             if rpos is not None:
                 self.writes[kfi] += 1
                 return keyset, rpos
@@ -579,16 +576,16 @@ class EncryptedDict(object):
         if self._shard_ratio > 0:
             kfi, keyset = self._load_next_keys()
             rpos = self._try_save(kfi, keyset, pos, digest, value,
-                                  skip=skip, on_fail=on_faile)
+                                  on_fail=on_faile)
             if rpos is not None:
                 self.writes[kfi] += 1
                 return keyset, rpos
 
         raise KeyError('Save failed')
 
-    def save_record(self, key, value, skip=None, on_fail=None):
+    def save_record(self, key, value, on_fail=None):
         return self.save_digest_record(self._digest(key), value,
-                                       skip=skip, on_fail=on_fail)
+                                       on_fail=on_fail)
 
     def __setitem__(self, key, value):
         self.save_record(key, value)
