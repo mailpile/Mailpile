@@ -10,6 +10,7 @@ from urllib import quote, unquote
 
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -1570,13 +1571,27 @@ class MailIndex(object):
             term = term.lower()
 
             if ':' in term:
-                if term.startswith('body:'):
+                if term.startswith('in:'):
+                    rt.extend(self.search_tag(session, term, hits,
+                                              recursion=recursion))
+                elif term.startswith('body:'):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
                     rt.extend(range(0, len(self.INDEX)))
-                elif term.startswith('in:'):
-                    rt.extend(self.search_tag(session, term, hits,
-                                              recursion=recursion))
+                elif term == 'is:encrypted':
+                    for status in EncryptionInfo.STATUSES:
+                        if status in CryptoInfo.STATUSES:
+                            continue
+                        rt.extend(self.search_tag(session,
+                                                  'in:mp_enc-%s' % status,
+                                                  hits, recursion=recursion))
+                elif term == 'is:signed':
+                    for status in SignatureInfo.STATUSES:
+                        if status in CryptoInfo.STATUSES:
+                            continue
+                        rt.extend(self.search_tag(session,
+                                                  'in:mp_sig-%s' % status,
+                                                  hits, recursion=recursion))
                 else:
                     t = term.split(':', 1)
                     fnc = _plugins.get_search_term(t[0])
