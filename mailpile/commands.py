@@ -10,6 +10,7 @@ import random
 import re
 import shlex
 import socket
+import subprocess
 import sys
 import traceback
 import threading
@@ -1615,6 +1616,29 @@ class ProgramStatus(Command):
                              result=result)
 
 
+class GpgCommand(Command):
+    """Interact with GPG directly"""
+    SYNOPSIS = (None, 'gpg', None, "<GPG arguments ...>")
+    ORDER = ('Internals', 4)
+    IS_USER_ACTIVITY = True
+
+    def command(self, args=None):
+        args = list((args is None) and self.args or args or [])
+
+        # FIXME: For this to work anywhere but in a terminal, we'll need
+        #        to somehow pipe input to/from GPG in a more sane way.
+
+        from mailpile.crypto.gpgi import GPG_BINARY
+        with self.session.ui.term:
+            try:
+                self.session.ui.block()
+                subprocess.Popen([GPG_BINARY] + args).wait()
+            except:
+                self.session.ui.unblock()
+
+        return self._success(_("That was fun!"))
+
+
 class ListDir(Command):
     """Display working directory listing"""
     SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
@@ -2506,7 +2530,7 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
-    ListDir, ChangeDir, CatFile,
+    GpgCommand, ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Cached, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
