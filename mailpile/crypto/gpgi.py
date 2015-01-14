@@ -591,7 +591,23 @@ class GnuPG:
                             "--list-secret-keys", "p",
                             "--list-secret-keys", "t",
                             "--list-secret-keys", "k"])
-        return self.parse_keylist(retvals[1]["stdout"])
+        secret_keys = self.parse_keylist(retvals[1]["stdout"])
+
+        # Another unfortunate thing GPG does, is it hides the disabled
+        # state when listing secret keys; it seems internally only the
+        # public key is disabled. This makes it hard for us to reason about
+        # which keys can actually be used, so we compensate...
+        list_keys = ["--fingerprint"]
+        for fprint in secret_keys:
+            list_keys += ["--list-keys", fprint]
+        retvals = self.run(list_keys)
+        public_keys = self.parse_keylist(retvals[1]["stdout"])
+        for fprint, info in public_keys.iteritems():
+            if fprint in secret_keys:
+                for k in ("disabled", ):  # FIXME: Copy more?
+                    secret_keys[fprint][k] = info[k]
+
+        return secret_keys
 
     def import_keys(self, key_data=None):
         """
