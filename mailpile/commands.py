@@ -1632,7 +1632,7 @@ class GpgCommand(Command):
         with self.session.ui.term:
             try:
                 self.session.ui.block()
-                subprocess.Popen([GPG_BINARY] + args).wait()
+                os.system(' '.join([GPG_BINARY] + args))
             except:
                 self.session.ui.unblock()
 
