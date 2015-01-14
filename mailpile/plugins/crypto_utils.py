@@ -367,25 +367,32 @@ class GPGCheckKeys(Search):
 
         profiles = config.vcards.find_vcards([], kinds=['profile'])
         for vc in profiles:
-            if all_keys:
-                vcls = vc.get_all('key')
-            else:
-                vcls = [vc.get('key')]
+            p_info = {
+                'profile': vc.get('x-mailpile-rid').value,
+                'email': vc.email,
+                'fn': vc.fn
+            }
+            try:
+                if all_keys:
+                    vcls = [k.value for k in vc.get_all('key') if k.value]
+                else:
+                    vcls = [vc.get('key').value]
+            except (IndexError, AttributeError):
+                vcls = []
             for key in vcls:
-                fprint = key.value.split(',')[-1]
+                fprint = key.split(',')[-1]
                 if fprint and fprint in bad_keys:
-                    p_info = {
-                        'key': fprint,
-                        'profile': vc.get('x-mailpile-rid').value,
-                        'email': vc.email,
-                        'fn': vc.fn
-                    }
-                    details['description'] = _('%(key)s: Bad key in profile'
-                                               ' %(fn)s <%(email)s>'
-                                               ' (%(profile)s)'
-                                               ) % p_info
+                    p_info['key'] = fprint
+                    p_info['description'] = _('%(key)s: Bad key in profile'
+                                              ' %(fn)s <%(email)s>'
+                                              ' (%(profile)s)') % p_info
                     details.append(p_info)
                     serious += 1
+            if not vcls:
+                p_info['description'] = _('No key for %(fn)s <%(email)s>'
+                                          ' (%(profile)s)') % p_info
+                details.append(p_info)
+                serious += 1
 
         if len(good_keys) == 0:
             fixes[:0] = [[
