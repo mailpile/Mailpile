@@ -38,6 +38,8 @@ class GnuPGImporter(VCardImporter):
         results = []
         vcards = {}
         for key_id, key in keys.iteritems():
+            if key.get("disabled"):
+                continue
             vcls = [VCardLine(name='KEY', value=self.VCL_KEY_FMT % key_id)]
             card = None
             emails = []
