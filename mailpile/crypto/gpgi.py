@@ -258,7 +258,7 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
-        # FIXME: Do something more to this
+        # FIXME: should set revocation_date (checked in existing code)
         print line
 
     def parse_unknown(self, line):

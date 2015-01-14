@@ -265,11 +265,14 @@ class SetupMagic(Command):
             accepted_keys = []
             if gnupg.is_available():
                 keys = gnupg.list_secret_keys()
+                today = date.today().strftime("%Y-%m-%d")
                 for key, details in keys.iteritems():
-                    # Ignore revoked/expired keys.
-                    if ("revocation-date" in details and
-                        details["revocation-date"] <=
-                            date.today().strftime("%Y-%m-%d")):
+                    # Ignore revoked/expired/disabled keys.
+                    revoked = details.get('revocation_date')
+                    expired = details.get('expiration_date')
+                    if (details.get('disabled') or
+                            (revoked and revoked <= today)
+                            (expired and expired <= today)):
                         continue
 
                     accepted_keys.append(key)
@@ -529,10 +532,12 @@ class SetupCrypto(TestableWebbable):
         today = date.today().strftime("%Y-%m-%d")
         keylist = {}
         for key, details in self._gnupg().list_secret_keys().iteritems():
-            # Ignore revoked keys
-            if ("revocation-date" in details and
-                    details["revocation-date"] <= today):
-                # FIXME: Does this check expiry as well?
+            # Ignore revoked/expired/disabled keys.
+            revoked = details.get('revocation_date')
+            expired = details.get('expiration_date')
+            if (details.get('disabled') or
+                    (revoked and revoked <= today)
+                    (expired and expired <= today)):
                 continue
 
             # Ignore keys that cannot both encrypt and sign
@@ -773,7 +778,7 @@ class SetupProfiles(SetupCrypto):
     def discover_new_email_addresses(self, profiles):
         addresses = {}
         existing = set([p['email'] for p in profiles.values()])
-        for key, info in self._gnupg().list_secret_keys().iteritems():
+        for key, info in self.list_secret_keys():
             for uid in info['uids']:
                 email = uid.get('email')
                 note = uid.get('comment')
