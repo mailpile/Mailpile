@@ -92,7 +92,7 @@ class CommandCache(object):
 
             # Expire things from the dirty set
             self.dirty = [(ts, req) for ts, req in self.dirty
-                          if ts < (now - self._dirty_ttl)]
+                          if ts >= (now - self._dirty_ttl)]
 
             # Decide which fingerprints to look at this time around
             fingerprints = list(self.cache.keys())
