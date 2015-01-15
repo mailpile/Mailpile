@@ -20,6 +20,7 @@ class Events(Command):
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'wait': 'seconds to wait for new data',
+        'gather': 'gather time (minimum wait), seconds',
         'incomplete': 'incomplete events only?',
         # Filtering by event attributes
         'event_id': 'an event ID',
@@ -47,6 +48,7 @@ class Events(Command):
         incomplete = (self.data.get('incomplete', ['no']
                                     )[0].lower() not in self._FALSE)
         waiting = int(self.data.get('wait', [0])[0])
+        gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
 
         limit = 0
         filters = {}
@@ -67,7 +69,7 @@ class Events(Command):
         # Handle args from the web
         def fset(arg, val):
             if val.startswith('!'):
-                filters[arg] = val[1:]
+                filters[arg+'!'] = val[1:]
             else:
                 filters[arg] = val
         for arg in self.data:
@@ -83,14 +85,17 @@ class Events(Command):
             if filters[arg][:1] == '~':
                 filters[arg] = re.compile(filters[arg][1:])
 
-        expire = time.time() + waiting - self.GATHER_TIME
+        now = time.time()
+        expire = now + waiting - gather
         if waiting:
             if 'since' not in filters:
-                filters['since'] = time.time()
-            time.sleep(self.GATHER_TIME)
+                filters['since'] = now
+            if float(filters['since']) < 0:
+                filters['since'] = float(filters['since']) + now
+            time.sleep(gather)
 
         events = []
-        while not waiting or (expire + self.GATHER_TIME) > time.time():
+        while not waiting or (expire + gather) > time.time():
             if incomplete:
                 events = list(config.event_log.incomplete(**filters))
             else:
@@ -99,7 +104,7 @@ class Events(Command):
                 break
             else:
                 config.event_log.wait(expire - time.time())
-                time.sleep(self.GATHER_TIME)
+                time.sleep(gather)
 
         if limit:
             if 'since' in filters:

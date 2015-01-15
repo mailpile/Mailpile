@@ -41,19 +41,27 @@ EventLog.request = function(conditions, callback) {
 
 
 EventLog.poll = function() {
+  // BRE: disabled the filtering for now, as the eventlog filter language
+  //      is not flexible enough to watch for all the different events
+  //      we need in one call. It also has the issue that if subscriptions
+  //      change then we need the ability to immediately terminate the
+  //      outstanding request and fire off a new one. So for now we just
+  //      use the firehose, but increase the gather time to 2 seconds.
+  //
   // Request news about updates to the mail sources and command cache
-  var source_re = '~(.mail_source|.command_cache';
-
+  //var source_re = '~(.mail_source|.command_cache';
+  //
   // ... and any other things we consider exciting
-  for (id in EventLog.eventbindings) {
-     binding = EventLog.eventbindings[id][0];
-     source_re += '|' + binding.source;
-  }
-  source_re += ')';
+  //for (id in EventLog.eventbindings) {
+  //   binding = EventLog.eventbindings[id][0];
+  //   source_re += '|' + binding.source;
+  //}
+  //source_re += ')';
 
   EventLog.request({
-    source: source_re,
+  //source: source_re,
     since: EventLog.last_ts,
+    gather: 2,
     wait: 30
   });
 };
