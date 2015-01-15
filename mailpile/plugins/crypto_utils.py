@@ -290,7 +290,11 @@ class GPGCheckKeys(Search):
         all_keys = '--all-keys' in args
         quiet = '--quiet' in args
 
-        today = datetime.date.today().strftime("%Y-%m-%d")
+        date = datetime.date.today()
+        today = date.strftime("%Y-%m-%d")
+        date += datetime.timedelta(days=14)
+        fortnight = date.strftime("%Y-%m-%d")
+
         serious = 0
         details = []
         fixes = []
@@ -306,12 +310,12 @@ class GPGCheckKeys(Search):
                 'keysize': int(info.get('keysize', 0)),
             }
             is_serious = True
+            exp = info.get('expiration_date')
             if info["disabled"]:
                 k_info['description'] = _('%s: --- Disabled.') % fprint
                 is_serious = False
             elif (not info['capabilities_map'].get('encrypt') or
                     not info['capabilities_map'].get('sign')):
-                exp = info.get('expiration_date')
                 rev = info.get('revocation_date')
                 if rev and rev <= today:
                     k_info['description'] = _('%s: Bad: key was revoked'
@@ -323,6 +327,9 @@ class GPGCheckKeys(Search):
                 else:
                     k_info['description'] = _('%s: Bad: key is useless'
                                               ) % fprint
+            elif exp and exp <= fortnight:
+                k_info['description'] = _('%s: Bad: expires on %s'
+                                          ) % (fprint, info['expiration_date'])
             elif k_info['keysize'] < 2048:
                 k_info['description'] = _('%s: Bad: too small (%d bits)'
                                           ) % (fprint, k_info['keysize'])

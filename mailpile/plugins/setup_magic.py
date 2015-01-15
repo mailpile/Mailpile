@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from datetime import date
+import datetime
 from urllib import urlencode
 
 import mailpile.auth
@@ -265,14 +265,15 @@ class SetupMagic(Command):
             accepted_keys = []
             if gnupg.is_available():
                 keys = gnupg.list_secret_keys()
-                today = date.today().strftime("%Y-%m-%d")
+                cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                          ).strftime("%Y-%m-%d")
                 for key, details in keys.iteritems():
                     # Ignore revoked/expired/disabled keys.
                     revoked = details.get('revocation_date')
                     expired = details.get('expiration_date')
                     if (details.get('disabled') or
-                            (revoked and revoked <= today)
-                            (expired and expired <= today)):
+                            (revoked and revoked <= cutoff) or
+                            (expired and expired <= cutoff)):
                         continue
 
                     accepted_keys.append(key)
@@ -299,8 +300,8 @@ class SetupMagic(Command):
                         session.config.prefs.crypto_policy = 'openpgp-sign'
 
                 if len(accepted_keys) == 0:
-                    # FIXME: Start background process generating a key once a user
-                    #        has supplied a name and e-mail address.
+                    # FIXME: Start background process generating a key once a
+                    #        user has supplied a name and e-mail address.
                     pass
 
             else:
@@ -529,15 +530,16 @@ class SetupCrypto(TestableWebbable):
     TEST_DATA = {}
 
     def list_secret_keys(self):
-        today = date.today().strftime("%Y-%m-%d")
+        cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                  ).strftime("%Y-%m-%d")
         keylist = {}
         for key, details in self._gnupg().list_secret_keys().iteritems():
-            # Ignore revoked/expired/disabled keys.
+            # Ignore (soon to be) revoked/expired/disabled keys.
             revoked = details.get('revocation_date')
             expired = details.get('expiration_date')
             if (details.get('disabled') or
-                    (revoked and revoked <= today)
-                    (expired and expired <= today)):
+                    (revoked and revoked <= cutoff) or
+                    (expired and expired <= cutoff)):
                 continue
 
             # Ignore keys that cannot both encrypt and sign
@@ -778,7 +780,7 @@ class SetupProfiles(SetupCrypto):
     def discover_new_email_addresses(self, profiles):
         addresses = {}
         existing = set([p['email'] for p in profiles.values()])
-        for key, info in self.list_secret_keys():
+        for key, info in self.list_secret_keys().iteritems():
             for uid in info['uids']:
                 email = uid.get('email')
                 note = uid.get('comment')
