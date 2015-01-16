@@ -47,7 +47,7 @@ PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                           ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
 
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'http', 'https', 'i', 'in', 'is', 'it',
+                'has', 'i', 'in', 'is', 'it',
                 'mailto', 'me',
                 'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
 
