@@ -1578,14 +1578,15 @@ class MailIndex(object):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
                     rt.extend(range(0, len(self.INDEX)))
-                elif term in ('to:me', 'cc:me'):
+                elif term in ('to:me', 'cc:me', 'from:me'):
                     vcards = self.config.vcards
                     emails = []
                     for vc in vcards.find_vcards([], kinds=['profile']):
                         emails += [vcl.value for vcl in vc.get_all('email')]
                     for email in set(emails):
                         if email:
-                            rt.extend(hits('%s:%s' % (email, term[:2])))
+                            rt.extend(hits('%s:%s' % (email,
+                                                      term.split(':')[0])))
                 elif term == 'is:encrypted':
                     for status in EncryptionInfo.STATUSES:
                         if status in CryptoInfo.STATUSES:
