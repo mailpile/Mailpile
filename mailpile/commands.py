@@ -2300,7 +2300,8 @@ class Help(Command):
                 text.append(_('The Web interface address is: %s'
                               ) % self.result['http_url'])
             else:
-                text.append(_('The Web interface is disabled.'))
+                text.append(_('The Web interface is disabled,'
+                              ' type `www` to turn it on.'))
 
             text.append('')
             b = '   * '
