@@ -1390,7 +1390,8 @@ class BrowseOrLaunch(Command):
 
     @classmethod
     def Browse(cls, sspec):
-        http_url = 'http://%s:%s/' % sspec
+        http_url = ('http://%s:%s/' % sspec
+                    ).replace('/0.0.0.0:', '/localhost:')
         try:
             MakePopenUnsafe()
             webbrowser.open(http_url)
@@ -1425,19 +1426,32 @@ class RunWWW(Command):
 
     def command(self):
         config = self.session.config
+        ospec = (config.sys.http_host, config.sys.http_port)
 
         if self.args:
             sspec = self.args[0].split(':', 1)
             sspec[1] = int(sspec[1])
         else:
-            sspec = (config.sys.http_host, config.sys.http_port)
+            sspec = ospec
+
+        if self.session.config.http_worker:
+            self.session.config.http_worker.quit(join=True)
+            self.session.config.http_worker = None
 
         self.session.config.prepare_workers(self.session,
                                             httpd_spec=tuple(sspec),
                                             daemons=True)
         if config.http_worker:
-            http_url = 'http://%s:%s/' % config.http_worker.httpd.sspec
-            return self._success(_('Started the web server on %s') % http_url)
+            sspec = config.http_worker.httpd.sspec
+            http_url = 'http://%s:%s/' % sspec
+            if sspec != ospec:
+                (config.sys.http_host, config.sys.http_port) = ospec
+                self._background_save(config=True)
+                return self._success(_('Moved the web server to %s'
+                                       ) % http_url)
+            else:
+                return self._success(_('Started the web server on %s'
+                                       ) % http_url)
         else:
             return self._error(_('Failed to started the web server'))
 
