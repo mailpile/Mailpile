@@ -317,7 +317,7 @@ class SharedImapMailbox(Mailbox):
                                        '(RFC822.SIZE FLAGS)',
                                        mailbox=self.path)
             if not ok:
-                raise KeyError
+                raise KeyError(key)
             self._assert(str(uidv) in imap.mailbox_info('UIDVALIDITY', ['0']),
                          _('Mailbox is out of sync'))
             info = dict(zip(*[iter(data[1])]*2))
@@ -327,6 +327,9 @@ class SharedImapMailbox(Mailbox):
 
     def get(self, key):
         info = self.get_info(key)
+        if 'RFC822.SIZE' not in info:
+            raise KeyError(key)
+
         msg_bytes = int(info['RFC822.SIZE'])
         with self.open_imap() as imap:
             msg_data = []

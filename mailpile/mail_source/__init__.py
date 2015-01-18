@@ -567,6 +567,7 @@ class BaseMailSource(threading.Thread):
             })
 
             # Go download!
+            key_errors = []
             for key in reversed(keys):
                 if self._check_interrupt(log=False, clear=False):
                     progress['interrupted'] = True
@@ -575,7 +576,15 @@ class BaseMailSource(threading.Thread):
 
                 session.ui.mark(_('Copying message: %s') % key)
                 progress['copying_src_id'] = key
-                data = src.get_bytes(key)
+                try:
+                    data = src.get_bytes(key)
+                except KeyError:
+                    progress['key_errors'] = key_errors
+                    key_errors.append(key)
+                    # Ignore, in case this is a problem with just this
+                    # individual message...
+                    continue
+
                 loc_key = loc.add_from_source(key, data)
                 self.event.data['counters']['copied_messages'] += 1
                 del progress['copying_src_id']
