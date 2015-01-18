@@ -160,7 +160,7 @@
       </div>
       <div class="modal-body clearfix">
         <form id="form-search-keyservers" class="standard hide animated">
-          <label>{{_("Enter a name or email address")}}</label>
+          <label>{{_("Enter Name or Email Address")}} </label>
           <input type="text" name="query" value="" placeholder="name@email.org" tabindex="2">
           <button type="submit" class="button-primary"><span class="icon-search"></span> {{_("Search")}}</button>
         </form>
@@ -273,11 +273,14 @@
       <h4 class="modal-title"><span class="icon-key"></span> {{_("Upload Encryption Key")}}</h4>
     </div>
     <div id="upload-key-container" class="modal-body clearfix">
-      <ul id="upload-key-list"></ul>
+      <p class="message paragraph-alert animated hide">
+        <span class="icon-signature-unknown"></span> {{_("Something went wrong uploading encryption key. Try again?")}}
+      </p>
+      <ul id="upload-key-list" class="hide"></ul>
       <form id="form-upload-key" class="standard add-bottom">
         <fieldset>
-          <label>{{_("Select or drag encryption key file from your computer")}} (.asc .key .pub)</label>
-          <a id="upload-key-pick" class="hide button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+          <label>{{_("Select or Drag Encryption Key")}} <span class="icon-signature-unverified" title="{{_("A file located on your computer usually ending in: .asc .key .pub")}}"></span></label>
+          <a id="upload-key-pick" class="hide half-top button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
             <span class="icon-upload"></span> {{_("Select Encryption Key")}}
           </a>
           <span id="upload-key-browswer-unsupported">{{_("Unable to create uploader")}}, <a href="">{{_("update your browser")}}</a></span>

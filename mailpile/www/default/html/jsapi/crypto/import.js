@@ -1,36 +1,46 @@
 /* Crypto - Import */
 
 
-Mailpile.Crypto.Import.Key = function(action, fingerprint) {
+Mailpile.Crypto.Import.Key = function(import_data) {
+
+  console.log('here');
+  console.log(import_data);
+  // Set Null
+  if (import_data.file === undefined) {
+    import_data.file = false;
+  }
 
   // Show Processing UI feedback
   var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
-  var importing_html     = importing_template({ action: action, fingerprint: fingerprint });
-  $('#item-encryption-key-' + fingerprint).replaceWith(importing_html);
+  var importing_html     = importing_template(import_data);
+  $('#item-encryption-key-' + import_data.fingerprint).replaceWith(importing_html);
 
   // Lookup
-  var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: fingerprint});
+  var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: import_data.fingerprint});
 
   Mailpile.API.crypto_keyimport_post(key_data, function(result) {
 
     if (result.status === 'success') {
 
       for (var key in result.result) {
-        if (result.result[key].fingerprint === fingerprint) {
+        if (result.result[key].fingerprint === import_data.fingerprint) {
           var key_result = result.result[key];
+
+          console.log(key_result);
 
           // FIXME: kludgy
           key_result['avatar'] = '/static/img/avatar-default.png';
           key_result['uid'] = key_result.uids[0];
           key_result['action'] = 'hide-modal';
           key_result['on_keychain'] = true;
+          key_result['score_color'] = Mailpile.UI.Crypto.ScoreColor(6);
         }
       }
 
       var key_template = _.template($('#template-crypto-encryption-key').html());
       var key_html = key_template(key_result);
 
-      $('#item-encryption-key-' + fingerprint).replaceWith(key_html);
+      $('#item-encryption-key-' + import_data.fingerprint).replaceWith(key_html);
     }
 /*
     if (result.status === 'success' && action === 'hide-modal') {
@@ -38,7 +48,7 @@ Mailpile.Crypto.Import.Key = function(action, fingerprint) {
     }
     else if (result.status === 'success' && action === 'hide-item') {
       // FIXME: kludgy
-      $('#item-encryption-key-' + fingerprint).fadeOut();
+      $('#item-encryption-key-' + import_data.fingerprint).fadeOut();
     }
 */
   });
@@ -68,6 +78,10 @@ Mailpile.Crypto.Import.Uploader = function() {
       },
       FilesAdded: function(up, files) {
   
+        // Hide Message (in case)
+        $('#upload-key-container').find('p.message').fadeOut();
+        $('#form-upload-key').addClass('hide');
+
         // Loop through added files
       	plupload.each(files, function(file) {
   
@@ -78,33 +92,48 @@ Mailpile.Crypto.Import.Uploader = function() {
           } else {
 
             var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
-            var importing_html = importing_template({fingerprint: '!UPLOADING', file: file });            
-            $('#upload-key-list').html(importing_html);
+            var importing_html = importing_template({fingerprint: 'UPLOADING', file: file });            
+            $('#upload-key-list').removeClass('hide').html(importing_html);
             $('#form-upload-key').addClass('hide');
 
-            // Start
-            uploader.start();
+            // Start (with slight delay)
+            setTimeout(function() {
+              uploader.start();
+            }, 500);
           }
       	});
       },
       UploadProgress: function(up, file) {
-      	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
+      	$('#item-encryption-key-UPLOADING').find('em.text-detail').html('Uploading ' + file.name + ' ' + file.percent + '% complete');
       },
       FileUploaded: function(up, file, response) {
 
         console.log(response);
+        // Delay UI feedback (for local installs)
+        setTimeout(function() {
 
-        if (response.status == 200) {
+          if (response.status === 200) {
+  
+            var response_data = $.parseJSON(response.response);
+  
+            if (response_data.status === 'succss') {
+  
+              // Display UI
+              $('#upload-key-list').find('#item-encryption-key-UPLOADING');
+  
+            } else {
+  
+              $('#upload-key-container').find('p.message').fadeIn();
+              $('#item-encryption-key-UPLOADING').fadeOut().remove();
+              $('#form-upload-key').fadeIn().removeClass('hide');            
+            }
+  
+          } else {
+            Mailpile.notification({status: 'error', message: '{{_("Encryption key upload failed status")}}: ' + response.status });
+          }
 
-          var response_json = $.parseJSON(response.response);
+        }, 1000);
 
-          // Display UI
-          $('#upload-key-list').find('#item-encryption-key-!UPLOADING');
-
-
-        } else {
-          Mailpile.notification({status: 'error', message: '{{_("Encryption key upload failed status")}}: ' + response.status });
-        }
       },
       Error: function(up, err) {
         Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key because")}}: ' + err.message });
