@@ -25,3 +25,4 @@ dist/
 cover/
 bower_components/
 node_modules/
+testing/
