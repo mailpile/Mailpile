@@ -537,7 +537,7 @@ class SimpleVCard(object):
                                               and l.value == ol.value)]
                 for l in match:
                     lines.remove(l)
-                if not match:
+                if not match and ol.name not in self.UNREMOVABLE:
                     # FIXME: Actually, we should JUST remove our pid and if
                     #        no pids are left, remove the line itself.
                     self.remove(ol.line_id)
