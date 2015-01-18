@@ -79,10 +79,20 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         #rsplit removes port
         return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
 
+    def _load_cookies(self):
+        """Robustified cookie parser that silently drops invalid cookies."""
+        cookies = Cookie.SimpleCookie()
+        for fragment in self.headers.get('cookie', '').split('; '):
+            if fragment:
+                try:
+                    cookies.load(fragment)
+                except Cookie.CookieError:
+                    pass
+        return cookies
+
     def http_session(self):
         """Fetch the session ID from a cookie, or assign a new one"""
-        cookies = Cookie.SimpleCookie(self.headers.get('cookie'))
-        session_id = cookies.get(self.server.session_cookie)
+        session_id = self._load_cookies().get(self.server.session_cookie)
         if session_id:
             session_id = session_id.value
         else:
