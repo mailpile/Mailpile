@@ -41,18 +41,8 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       }
 
       // Key Score
-      var score_color = 'color-01-gray-mid';
-      if (key.score_stars >= 5) {
-        score_color = 'color-08-green';
-      } else if (key.score_stars < 5 && key.score_stars > 2) {
-        score_color = 'color-06-blue';
-      } else if (key.score_stars <= 2 && key.score_stars >= 0) {
-        score_color = 'color-09-yellow';
-      } else if (key.score_stars < 2 && key.score_stars > -3) {
-        score_color = 'color-10-orange';
-      } else if (key.score_stars < -3) {
-        score_color = 'color-12-red';
-      }
+      var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_color);
+
 
       // Show View
       var item_data     = _.extend({ score_color: score_color, avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
@@ -167,7 +157,6 @@ Mailpile.Crypto.Find.Keys = function(options) {
 
     } else {
       Mailpile.Crypto.Find.KeysDone(options);
-      console.log('sup doodoo brains');
     }
   });
 };

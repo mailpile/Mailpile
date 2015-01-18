@@ -56,7 +56,7 @@ $(document).on('click', '#btn-search-keyservers-again', function(e) {
 /* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
-  Mailpile.Crypto.Import.Key($(this).data('action'), $(this).data('fingerprint'));
+  Mailpile.Crypto.Import.Key({ action: $(this).data('action'), fingerprint: $(this).data('fingerprint')});
 });
 
 
