@@ -1763,7 +1763,7 @@ class ConfigSet(Command):
     SYNOPSIS = ('S', 'set', 'settings/set', '<section.variable> <value>')
     ORDER = ('Config', 1)
     CONFIG_REQUIRED = False
-    IS_USER_ACTIVITY = True
+    IS_USER_ACTIVITY = False
 
     SPLIT_ARG = False
 
