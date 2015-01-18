@@ -431,6 +431,7 @@ class ImapMailSource(BaseMailSource):
         self.timeout = self.TIMEOUT_INITIAL
         self.watching = -1
         self.capabilities = set()
+        self.flag_cache = {}
         self.conn = None
         self.conn_id = ''
 
@@ -645,18 +646,28 @@ class ImapMailSource(BaseMailSource):
         mailboxes.
         """
         mboxes = []
+        subtrees = []
         try:
             ok, data = self.timed_imap(conn.list, prefix, '%')
             while ok and len(data) >= 3:
                 (flags, sep, path), data[:3] = data[:3], []
-                mboxes.append(self._fmt_path(path))
-                if '\\HasChildren' in flags:
-                    mbx_subtree = self._walk_mailbox_path(conn, '%s%s' % (path, sep))
-                    mboxes.extend(mbx_subtree)
+                flags = [f.lower() for f in flags]
+                if '\\noselect' not in flags:
+                    # We cache the flags for this mailbox, they may tell
+                    # use useful things about what kind of mailbox it is.
+                    self.flag_cache[self._fmt_path(path)] = flags
+                    mboxes.append(self._fmt_path(path))
+                if '\\haschildren' in flags:
+                    subtrees.append('%s%s' % (path, sep))
+                if len(mboxes) > self.MAX_MAILBOXES:
+                    break
+            for path in subtrees:
+                if len(mboxes) < self.MAX_MAILBOXES:
+                    mboxes.extend(self._walk_mailbox_path(conn, path))
         except self.CONN_ERRORS:
             pass
         finally:
-            return mboxes
+            return mboxes[:self.MAX_MAILBOXES]
 
     def quit(self, *args, **kwargs):
         if self.conn:
