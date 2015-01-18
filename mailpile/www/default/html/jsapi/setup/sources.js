@@ -211,39 +211,27 @@ var SourcesView = Backbone.View.extend({
   },
   eventProcessing: function(event) {
 
-    var message = '{{_("No new messages")}}';
+    // By default, we just show the overall mail source state
+    var message = event.message;
 
-    // Is Copying
-    if (event.data.copying) {
-      if (event.data.copying && event.data.copying.total) {
-
-        // Mailbox
-        var name = '{{_("mailbox")}}';
-        var source = SourcesCollection.get(event.data.id);
-        if (source) {
-          var name = source.attributes.mailbox[event.data.copying.mailbox_id].name;
-        }
-
-        message = '{{_("Downloaded")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("from")}} ' + name;
-      } else if (event.data.copying && event.data.copying.running) {
-        message = '{{_("Found messages to download")}}';
-      } else if (event.data.copying && event.data.copying.complete) {
-        message = '{{_("Mailbox up to date")}}';
-      } else {
-        message = '{{_("Copying new messages")}}';
+    // Copying progress gets reported specifically
+    if (event.data.copying && event.data.copying.running) {
+      if (event.data.copying.total) {
+        progress = event.data.copying.total - event.data.copying.uncopied;
+        // We append the progress indicator to the default message,
+        // so whatever it is telling us does not get lost.
+        message += (' ({{_("Copied:")}} ' + progress +
+                    ' / ' + event.data.copying.total + ')');
       }
     }
-    // Is Recanning
-    else if (event.data.rescan) {
-      if (event.data.rescan.running) {
-        message = '{{_("Rescanning mailboxes")}}';
-      }
-      else if (event.data.rescan.added) {
-        message = event.data.rescan.added + ' {{_("Messages imported")}}';
+
+    // Recanning is also interesting!
+    if (event.data.rescan && event.data.rescan.running) {
+      if (event.data.rescan.added) {
+        message += (' ({{_("New mail:")}} ' + event.data.rescan.added +
+                    ' / ' + event.data.rescan.total + ')');
       } else if (event.data.rescan.total) {
-        message = event.data.rescan.total + ' {{_("Messages")}}';
-      } else {
-        message = '{{_("Done scanning mailboxes")}}';
+        message += ' ({{_("In mailbox:")}} ' + event.data.rescan.total + ')';
       }
     }
 

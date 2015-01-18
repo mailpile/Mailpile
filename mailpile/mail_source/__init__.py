@@ -1,3 +1,4 @@
+import datetime
 import os
 import random
 import re
@@ -123,11 +124,14 @@ class BaseMailSource(threading.Thread):
         else:
             return mbx.path
 
-    def _check_interrupt(self, clear=True):
-        if mailpile.util.QUITTING or self._interrupt:
-            if clear:
+    def _check_interrupt(self, log=True, clear=True):
+        if (mailpile.util.QUITTING or
+                self._interrupt or
+                not self.my_config.enabled):
+            if log:
                 self._log_status(_('Interrupted: %s')
-                                 % (self._interrupt or _('Quitting')))
+                                 % (self._interrupt or _('Shutting down')))
+            if clear:
                 self._interrupt = None
             return True
         else:
@@ -221,10 +225,13 @@ class BaseMailSource(threading.Thread):
         status = []
         if discovered > 0:
             status.append(_('Discovered %d mailboxes') % discovered)
-        if discovered < 1 or rescanned > 0:
+        if rescanned > 0:
             status.append(_('Rescanned %d mailboxes') % rescanned)
         if errors:
             status.append(_('Failed to rescan %d') % errors)
+        if not status:
+            status.append(_('No new mail, no new mailboxes at %s'
+                            ) % datetime.datetime.today().strftime('%H:%M'))
 
         self._log_status(', '.join(status))
         self._last_rescan_count = rescanned
@@ -556,7 +563,7 @@ class BaseMailSource(threading.Thread):
 
             # Go download!
             for key in reversed(keys):
-                if self._check_interrupt(clear=False):
+                if self._check_interrupt(log=False, clear=False):
                     progress['interrupted'] = True
                     return count
                 play_nice_with_threads()
@@ -637,16 +644,23 @@ class BaseMailSource(threading.Thread):
                 self._create_local_mailbox(mbx_cfg)
                 max_copy = min(self._loop_count * 10,
                                int(1 + stop_after / (mailboxes + 1)))
-                self._log_status(_('Copying mail: %s (max=%d)'
-                                   ) % (path, max_copy))
+                self._log_status(_('Copying up to %d e-mails from %s'
+                                   ) % (max_copy, self._mailbox_name(path)))
                 count += self._copy_new_messages(mbx_key, mbx_cfg,
                                                  stop_after=max_copy,
                                                  scan_args=scan_mailbox_args)
+
+            if self._check_interrupt(clear=False):
+                if 'rescan' in self.event.data:
+                    self.event.data['rescan']['running'] = False
+                return count
+
+            self._log_status(_('Rescanning %s') % self._mailbox_name(path))
+            if count:
                 # Wait for background message scans to complete...
                 config.scan_worker.do(session, 'Wait', lambda: 1)
 
             play_nice_with_threads()
-            self._log_status(_('Rescanning: %s') % path)
             if 'rescans' in self.event.data:
                 self.event.data['rescans'][:-mailboxes] = []
 
