@@ -453,20 +453,20 @@ class BaseMailSource(threading.Thread):
             self._save_config()
 
     BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
+    TAGNAME_STRIP_RE = re.compile('[{}\\[\\]]')
 
     def _path_to_tagname(self, path):  # -> tag name
         """This converts a path to a tag name."""
-        path = path.replace('/.', '/')
+        path = self._mailbox_name(path).replace('/.', '/')
         parts = ('/' in path) and path.split('/') or path.split('\\')
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
-        tagname = parts.pop(-1).split('.')[-1]
-#       if self.my_config.name:
-#           tagname = '%s/%s' % (self.my_config.name, tagname)
-        return CleanText(tagname.replace('_', ' '),
-                         banned=CleanText.NONALNUM + '{}[]').clean
+        tagname = parts.pop(-1).split('.')[0]
+        return re.sub(self.TAGNAME_STRIP_RE, '', tagname.replace('_', ' '))
 
     def _unique_tag_name(self, tagname):  # -> unused tag name
-        """This makes sure a tagname really is unused"""
+        """Make sure a tagname really is unused, unless we have a parent"""
+        if self.my_config.discovery.parent_tag:
+            return tagname
         tagnameN, count = tagname, 2
         while self.session.config.get_tags(tagnameN):
             tagnameN = '%s (%s)' % (tagname, count)
@@ -502,7 +502,12 @@ class BaseMailSource(threading.Thread):
             AddTag(self.session, arg=[bogus_name]).run(save=False)
             tags = self.session.config.get_tags(bogus_name)
             if tags:
-                tags[0].slug = Slugify(tag_name, self.session.config.tags)
+                if self.my_config.name:
+                    tags[0].slug = Slugify('/'.join([self.my_config.name,
+                                                     tag_name]),
+                                           self.session.config.tags)
+                else:
+                    tags[0].slug = Slugify(tag_name, self.session.config.tags)
                 tags[0].name = tag_name
                 tags[0].label = label
                 if icon:

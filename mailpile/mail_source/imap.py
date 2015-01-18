@@ -57,6 +57,7 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
+from mailpile.mail_source.imap_utf7 import decode as utf7_decode
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 
@@ -622,7 +623,7 @@ class ImapMailSource(BaseMailSource):
 
     def _mailbox_name(self, path):
         # len('src:/') = 5
-        return path[(5 + len(self.my_config._key)):]
+        return utf7_decode(str(path[(5 + len(self.my_config._key)):]))
 
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
