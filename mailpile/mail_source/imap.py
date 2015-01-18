@@ -629,12 +629,16 @@ class ImapMailSource(BaseMailSource):
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
-    def discover_mailboxes(self, unused_paths=None):
+    def discover_mailboxes(self, paths=None):
         config = self.session.config
+        paths = (paths or self.my_config.discovery.paths)[:]
         existing = self._existing_mailboxes()
+        mailboxes = []
         with self.open() as raw_conn:
-            mailboxes = self._walk_mailbox_path(raw_conn, '')
-        discovered = [mbx for mbx in mailboxes if mbx not in existing]
+            for p in paths:
+                mailboxes += self._walk_mailbox_path(raw_conn, str(p))
+        discovered = [mbx for mbx in mailboxes if mbx not in existing
+                      ][:self.MAX_MAILBOXES - len(existing)]
         for path in discovered:
             idx = config.sys.mailbox.append(path)
             mbx = self.take_over_mailbox(idx)
