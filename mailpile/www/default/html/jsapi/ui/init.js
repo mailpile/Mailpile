@@ -4,6 +4,7 @@ Mailpile.UI = {
   ModalOptions: { backdrop: true, keyboard: true, show: true, remote: false }
 };
 
+Mailpile.UI.Crypto   = {};
 Mailpile.UI.Sidebar  = {};
 Mailpile.UI.Modals   = {};
 Mailpile.UI.Tooltips = {};
