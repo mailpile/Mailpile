@@ -43,7 +43,7 @@ import os
 import re
 import socket
 import traceback
-from imaplib import IMAP4, IMAP4_SSL
+from imaplib import IMAP4, IMAP4_SSL, CRLF
 from mailbox import Mailbox, Message
 from urllib import quote, unquote
 
@@ -135,6 +135,7 @@ class SharedImapConn(threading.Thread):
         self._conn = conn
         self._idle_mailbox = idle_mailbox
         self._idle_callback = idle_callback
+        self._can_idle = False
         self._idling = False
         self._selected = None
 
@@ -217,17 +218,44 @@ class SharedImapConn(threading.Thread):
             raise IOError('I am dead')
         self._stop_idling()
         self._lock.acquire()
+        self._stop_idling()
         return self
 
     def __exit__(self, type, value, traceback):
-        self._lock.release()
         self._start_idling()
+        self._lock.release()
 
     def _start_idling(self):
-        pass  # FIXME
+        self._can_idle = True
 
     def _stop_idling(self):
-        pass  # FIXME
+        self._can_idle = False
+
+    def _imap_idle(self):
+        self._can_idle = True
+        self.select(self._idle_mailbox)
+        logger = (self._conn._mesg if (self._conn.debug >= 1)
+                  else self._conn._log)
+        def send_line(data):
+            logger('> %s' % data)
+            self._conn.send('%s%s' % (data, CRLF))
+        def get_line():
+            data = self._conn._get_line().rstrip()
+            logger('< %s' % data)
+            return data
+        try:
+            send_line('%s IDLE' % self._conn._new_tag())
+            while self._can_idle and not get_line().startswith('+ '):
+                pass
+            # FIXME: We should set up a loop here which uses select()
+            #        to watch for activity, with a timeout that lets
+            #        us also watch for _can_idle going False.
+            #        If we see any EXISTS messages, then we invoke the
+            #        callback, but stay IDLE until told otherwise.
+            send_line('DONE')
+            # Note: We let the IDLE response drop on the floor, don't care.
+        except (socket.error, OSError), val:
+            raise self._conn.abort('socket error: %s' % val)
 
     def quit(self):
         self._conn = None
@@ -236,11 +264,22 @@ class SharedImapConn(threading.Thread):
     def run(self):
         # FIXME: Do IDLE stuff if requested.
         try:
+            idle_counter = 0
             while self._conn:
                 # By default, all this does is send a NOOP every 120 seconds
                 # to keep the connection alive (or detect errors).
                 for t in range(0, 120):
                     time.sleep(1 if self._conn else 0)
+                    if self._can_idle and self._idle_mailbox:
+                        idle_counter += 1
+                        # Unless we've been in "can idle" state for 10
+                        # seconds, then we switch to IDLE.
+                        if idle_counter == 5:
+                            with self as raw_conn:
+                                self._imap_idle()
+                    else:
+                        idle_counter = 0
+
                 if self._conn:
                     with self as raw_conn:
                         raw_conn.noop()
@@ -248,8 +287,7 @@ class SharedImapConn(threading.Thread):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
         finally:
-            self._conn = None
-            self._update_name()
+            self.quit()
 
 
 class SharedImapMailbox(Mailbox):

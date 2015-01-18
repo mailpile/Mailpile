@@ -27,7 +27,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 250     # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 500     # Index at most this many new e-mails at once
     MAX_MAILBOXES = 100         # Max number of mailboxes we add
     MAX_PATHS = 5000            # Abort if asked to scan too many directories
 
@@ -226,9 +226,9 @@ class BaseMailSource(threading.Thread):
         if discovered > 0:
             status.append(_('Discovered %d mailboxes') % discovered)
         if rescanned > 0:
-            status.append(_('Rescanned %d mailboxes') % rescanned)
+            status.append(_('Processed %d mailboxes') % rescanned)
         if errors:
-            status.append(_('Failed to rescan %d') % errors)
+            status.append(_('Failed to process %d') % errors)
         if not status:
             status.append(_('No new mail, no new mailboxes at %s'
                             ) % datetime.datetime.today().strftime('%H:%M'))
@@ -621,7 +621,8 @@ class BaseMailSource(threading.Thread):
                 return -1
             self._rescanning = True
 
-        mailboxes = len(self.my_config.mailbox)
+        mailboxes = min(1, len([m for m in self.my_config.mailbox.values()
+                                if m.policy not in ('ignore', 'unknown')]))
         try:
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
@@ -656,8 +657,9 @@ class BaseMailSource(threading.Thread):
                 # the rescan may need to catch up. We also start with smaller
                 # batch sizes, because folks are impatient.
                 self._create_local_mailbox(mbx_cfg)
-                max_copy = min(self._loop_count * 10,
-                               int(1 + stop_after / (mailboxes + 1)))
+                max_copy = max(1, int((0.8 - (0.7 / max(1, (self._loop_count /
+                                                            float(mailboxes))))
+                                       ) * stop_after))
                 self._log_status(_('Copying up to %d e-mails from %s'
                                    ) % (max_copy, self._mailbox_name(path)))
                 count += self._copy_new_messages(mbx_key, mbx_cfg,
@@ -669,10 +671,10 @@ class BaseMailSource(threading.Thread):
                     self.event.data['rescan']['running'] = False
                 return count
 
-            self._log_status(_('Rescanning %s') % self._mailbox_name(path))
-            if count:
-                # Wait for background message scans to complete...
-                config.scan_worker.do(session, 'Wait', lambda: 1)
+            self._log_status(_('Updating search engine for %s'
+                               ) % self._mailbox_name(path))
+            # Wait for background message scans to complete...
+            config.scan_worker.do(session, 'Wait', lambda: 1)
 
             play_nice_with_threads()
             if 'rescans' in self.event.data:
@@ -760,9 +762,9 @@ class BaseMailSource(threading.Thread):
                         pass
                 self.session = _original_session
             self._update_unknown_state()
-        self._save_state()
-#       self.event.flags = Event.COMPLETE
+        self.close()
         self._log_status(_('Shut down'))
+        self._save_state()
 
     def _log_conn_errors(self):
         if 'connection' in self.event.data:
