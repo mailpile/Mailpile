@@ -194,6 +194,7 @@ class GnuPGRecordParser:
             "authenticate": "A" in line["capabilities"],
         }
         line["disabled"] = "D" in line["capabilities"]
+	line["revoked"] = "r" in line["validity"]
         line["private_key"] = False
         line["subkeys"] = []
         line["uids"] = []
@@ -604,7 +605,7 @@ class GnuPG:
         public_keys = self.parse_keylist(retvals[1]["stdout"])
         for fprint, info in public_keys.iteritems():
             if fprint in secret_keys:
-                for k in ("disabled", ):  # FIXME: Copy more?
+                for k in ("disabled", "revoked"):  # FIXME: Copy more?
                     secret_keys[fprint][k] = info[k]
 
         return secret_keys

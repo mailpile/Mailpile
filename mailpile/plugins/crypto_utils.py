@@ -263,6 +263,8 @@ class GPGCheckKeys(Search):
     HTTP_CALLABLE = ('GET', )
     COMMAND_CACHE_TTL = 0
 
+    MIN_KEYSIZE = 2048
+
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
             Command.CommandResult.__init__(self, *args, **kwargs)
@@ -316,10 +318,10 @@ class GPGCheckKeys(Search):
                 is_serious = False
             elif (not info['capabilities_map'].get('encrypt') or
                     not info['capabilities_map'].get('sign')):
-                rev = info.get('revocation_date')
-                if rev and rev <= today:
-                    k_info['description'] = _('%s: Bad: key was revoked'
+                if info.get("revoked"):
+                    k_info['description'] = _('%s: --- Revoked.'
                                               ) % fprint
+                    is_serious = False
                 elif exp and exp <= today:
                     k_info['description'] = _('%s: Bad: expired on %s'
                                               ) % (fprint,
@@ -330,7 +332,7 @@ class GPGCheckKeys(Search):
             elif exp and exp <= fortnight:
                 k_info['description'] = _('%s: Bad: expires on %s'
                                           ) % (fprint, info['expiration_date'])
-            elif k_info['keysize'] < 2048:
+            elif k_info['keysize'] < self.MIN_KEYSIZE:
                 k_info['description'] = _('%s: Bad: too small (%d bits)'
                                           ) % (fprint, k_info['keysize'])
             else:
