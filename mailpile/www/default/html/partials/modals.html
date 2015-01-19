@@ -1,0 +1,292 @@
+<!-- Modal -->
+<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Tag Add -->
+<script id="modal-add-tag" type="text/template">
+  <div class="modal-dialog">
+  <form id="modal-form-tag-add" class="standard">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-tag"></span> {{_("Add Tag")}}</h4>
+      </div>
+      <div class="modal-body clearfix">    
+        <label>{{_("Name")}}</label>
+        <input type="text" name="name" value="" placeholder="{{_("Friends & Family")}}" class="input-medium">
+        <button id="button-modal-add-tag" title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add" data-location="<%= location %>">
+          <span class="icon-plus"></span> {{_("Add")}}
+        </button>
+      </div>
+      <!-- <div class="modal-footer"></div> -->
+    </div>
+  </form>
+  </div>
+</script>
+
+
+<!-- Contact Add -->
+<script id="modal-contact-add" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-contact-add" class="standard">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-user"></span> {{_("Add Contact")}}</h4>
+      </div>
+      <div class="modal-body clearfix">
+        <input type="hidden" class="contact-add-mid">
+          <input type="hidden" name="csrf" value="">
+          <label>{{_("Name")}}</label>
+          <input type="text" name="name" data-type="name" class="contact-add-name" value="<%= name %>" placeholder="Chelsea Manning">
+          <label>{{_("E-mail")}}</label>
+          <input type="text" name="email" data-type="email" class="contact-add-email" value="<%= address %>" placeholder="chelsea@manning.com">
+          <!-- FIXME: add support for parsing signatures
+          <div class="contact-add-signature"></div>
+          -->
+          <!-- FIXME: implement some method of finding encryption keys after this action
+          <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-secondary left">
+            <span class="icon-key"></span> {{_("Find Encryption Keys")}}
+          </button>
+          -->
+
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add">
+          <span class="icon-plus"></span> {{_("Add")}}
+        </button>
+      </div>
+      <!-- <div class="modal-footer"></div> -->
+    </div>
+  </form>
+  </div>
+</script>
+
+
+  <!-- Modal - Tag Picker -->
+<script id="template-modal-tag-picker-item" type="text/template">
+  <tr class="modal-tag-picker-item <%= display %>" data-tid="<%= tid %>">
+    <td class="tag text-left color-<%= label_color %>">
+      <% if (parent) { var parent = _.findWhere(Mailpile.instance.tags, { tid: parent}); %>
+      <span class="<%= parent.icon %>"></span> <span class="text"><%= parent.name %></span> &nbsp;&gt;&nbsp;
+      <% } %>
+      <span class="<%= icon %>"></span> <span class="text"><%= name %></span>
+    </td>
+    <td class="selection text-right" id="tag-selected-<%= tid %>">
+      <% if (selected[tid]) { %><%= selected[tid] %> {{_("Messages")}}<% } %>
+    </td>
+    <td class="checkbox text-center">
+      <input class="tag-picker-checkbox" type="checkbox" name="tid" value="<%= tid %>" <% if (_.indexOf(Mailpile.tags_cache, tid) > -1) { %>checked<% } %>>
+    </td>
+  </tr>
+</script>
+
+
+<!-- Modal - Bulk Action Tag Picker -->
+<script id="modal-tag-picker" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-tag-picker">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
+      </div>
+      <div class="modal-body modal-body-light-gray">
+        <table class="modal-tag-picker-items">
+        <%= priority %>
+        <!--
+        <tr class="modal-tag-picker-header" data-display="tag">
+          <td colspan="2">{{_("Tags")}}</td>
+          <td class="text-center"><a class="modal-tag-picker-expand">&middot;&middot;&middot;&middot;</a></td>
+        </tr> -->
+        <%= tags %>
+        <%= archive %>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="left button-warning" title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">
+          <span class="icon-minus"></span> {{_("Remove")}}
+        </button>
+        <button class="button-primary" title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">
+          <span class="icon-plus"></span> {{_("Apply")}}
+        </button>
+      </div>
+    </div>
+  </form>
+  </div>
+</script>
+
+
+<!-- Crypto - Modal with instructions to send public key to recipient -->
+<script id="modal-send-public-key" type="text/template">
+  <div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Encryption Keys")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <ul id="crypto-private-key-list" class="items grouped"></ul>
+    </div>
+    <div class="modal-footer">
+      <button class="button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+        <span class="icon-sent"></span> {{_("Send Selected Keys")}}
+      </button>
+    </div>
+  </div>
+  </div>
+</script>
+
+
+<!-- Crypto - Modal with processing & results from searching keyservers -->
+<script id="modal-search-keyservers" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-key"></span>
+          <span class="title">{{_("Find Encryption Keys")}}</span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix">
+        <form id="form-search-keyservers" class="standard hide animated">
+          <label>{{_("Enter Name or Email Address")}} </label>
+          <input type="text" name="query" value="" placeholder="name@email.org" tabindex="2">
+          <button type="submit" class="button-primary"><span class="icon-search"></span> {{_("Search")}}</button>
+        </form>
+        <div id="search-keyservers-again" class="hide">
+          <p class="message paragraph-important">
+            <span class="icon-search"></span> {{_("Want to search for something else")}} <a href="#" id="btn-search-keyservers-again">{{_("click here")}}</a>
+          </p>
+        </div>
+        <div id="search-keyservers" class="hide">
+          <p class="message paragraph-important">
+            <span class="icon-search"></span> {{_("Searching for encryption keys for")}}: <span class="color-01-gray-mid"><%= query %></span>
+          </p>
+          <p class="loading text-center half-bottom">
+            {% include("../img/loading-ellipsis.svg") %}
+          </p>
+          <ul class="result"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+
+<!-- Compose - Quoted Reply -->
+<script id="modal-compose-quoted-reply" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-compose"></span>
+          <span class="title">{{_("Quoted Replies")}}</span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix">
+        <form id="form-compose-quoted-reply" class="standard">
+          <p>{{_("Would you like to disable quoted replies in all the messages you compose?")}}</p>
+          <label class="add-bottom"><input type="checkbox" name="web.quoted_reply" checked="checked"> {{_("Disable Quoted Replies")}}</label>
+          <button type="submit"><span class="icon-checkmark"></span> {{_("Save")}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</script>
+
+
+<!-- Compose - Crypto Helper - helps find keys for recipients -->
+<script id="modal-composer-encryption-helper" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-lock-open color-10-orange"></span>
+          <span class="title">{{_("Cannot Encrypt")}}</span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix">
+        <div id="encryption-helper-find-keys" class="hide">
+          <p class="message paragraph-important animated">
+            <span class="icon-search"></span> {{_("Searching for encryption keys for:")}} <span class="color-01-gray-mid"></span>
+          </p>
+          <p class="loading text-center">
+          {% include("../img/loading-ellipsis.svg") %}
+          </p>
+          <ul class="result"></ul>
+        </div>
+        <div id="encryption-helper-missing-keys">
+          <p class="paragraph-alert">
+            <span class="icon-signature-unknown"></span> {{_("You are missing encryption keys for the following contacts")}}
+          </p>
+          <ul>
+            <% _.each(unencryptables, function(recipient, key) { %>
+            <li id="item-encryption-key-" address="<%= recipient.address %>" class="searchkey-result-item animated fadeIn">
+              <div class="clearfix">
+                <div href="/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="/static/img/avatar-default.png"></div>
+                <div class="name">
+                  <%= recipient.fn %><br>
+                  <span><%= recipient.address %></span>
+                </div>
+                <div class="right text-right">
+                <ul class="none">
+                  <li class="half-bottom">
+                    <a href="<%= recipient.address %>" class="encryption-helper-find-key" data-mid="<%= mid %>"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
+                  </li>
+                </ul>
+                </div>
+              </div>
+            </li>
+            <% }); %>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="encryption-helper-unencrypted left button-info" data-mid="<%= mid %>" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+
+        <button class="encryption-helper-upload-key button-secondary right"><span class="icon-lock-closed"></span> {{_("Send Encrypted")}}</button>
+      </div>
+    </div>
+  </div>
+</script>
+
+
+<!-- Crypto - Modal to import key -->
+<script id="modal-upload-key" type="text/template">
+  <div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Upload Encryption Key")}}</h4>
+    </div>
+    <div id="upload-key-container" class="modal-body clearfix">
+      <p class="message paragraph-alert animated hide">
+        <span class="icon-signature-unknown"></span> {{_("Something went wrong uploading encryption key. Try again?")}}
+      </p>
+      <ul id="upload-key-list" class="hide"></ul>
+      <form id="form-upload-key" class="standard add-bottom">
+        <fieldset>
+          <label>{{_("Select or Drag Encryption Key")}} <span class="icon-signature-unverified" title="{{_("A file located on your computer usually ending in: .asc .key .pub")}}"></span></label>
+          <a id="upload-key-pick" class="hide half-top button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+            <span class="icon-upload"></span> {{_("Select Encryption Key")}}
+          </a>
+          <span id="upload-key-browswer-unsupported">{{_("Unable to create uploader")}}, <a href="">{{_("update your browser")}}</a></span>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+  </div>
+</script>

@@ -1,0 +1,62 @@
+{% extends "layouts/" + render_mode + "-wide.html" %}
+{% block title %}{{_("Contacts")}}{% endblock %}
+{% block content %}
+<div id="content-tools">
+  {% include("partials/tools_contacts.html") %}
+</div>
+<div id="content-view">
+  {% if result.contacts %}
+  <div id="contacts-list" class="container rectangles-container center">
+    <div class="clearfix"></div>
+    {% for contact in result.contacts %}
+    {% if contact.email %}
+    <div class="rectangles-outer" id="contact-card-{{contact.email.0.email}}">
+      <div class="rectangles-inner">
+        <a class="contact-card-avatar left" href="/contacts/view/{{ contact.email.0.email }}/">
+          {% if contact.photo %}
+          <img src="{{contact.photo.0.photo}}">
+          {% elif contact.email %}
+          <img src="/static/img/avatar-default.png">
+          {% endif %}
+        </a>
+        <a class="contact-card-name" href="/contacts/view/{{ contact.email.0.email }}/">
+          {% if contact.fn|length > 24 %}
+          {{contact.fn[:24]}}
+          {% else %}
+          {{contact.fn}}
+          {% endif %}
+        </a>
+        <input type="checkbox" class="contact-card-checkbox right">
+      </div>
+    </div>
+    {% else %}
+    {{_("No Contact Info")}}
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="add-top text-center">
+    <h3>{{_("No Contacts Found")}} :)</h3>
+    <p>{{_("Don't worry, it's ok. Mailpile will start to automatically create contacts whenever you send or reply to messages.")}}</p>
+    <!-- <button><span class="icon-upload"></span> Import Contacts</button> -->
+  </div>
+  {% endif %}
+</div>
+
+<div id="pile-bottom">
+  {% if result.offset > 0 %}
+  <a href="/contacts/?offset={{result.offset-result.count}}&count={{result.count}}" class="button-primary">{{_("Previous")}}</a>
+  {% endif %}
+  {% if result.offset + result.count < result.total %}
+  <a href="/contacts/?offset={{result.offset+result.count}}&count={{result.count}}" class="button-primary">{{_("Next")}}</a>
+  {% endif %}
+  <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Contacts")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5>
+</div>
+
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
+{% endblock %}
+

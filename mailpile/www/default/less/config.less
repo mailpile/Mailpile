@@ -1,0 +1,455 @@
+/* Mailpile v0.1.0
+ * config.less
+ */
+  
+/* Mailpile */
+
+  @mailpile-text-font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-semibold: Mailpile-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-bold: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+
+/* Colors */
+
+	@white: #FFFFFF;
+	@black: #333333;
+
+	@grayLight: #F6F6F6;
+	@grayMid: #CCCCCC;
+	@gray: #B3B3B3;
+	@grayDark: #4D4D4D;
+
+	@blueLight: #85B2E8;
+	@blue: #337FB2;
+	@greenLight: #A3CE73;
+	@green: #4B9441;
+
+	@yellow: #E9DB2F;
+	@orange: #FBB03B;
+	@orangeRed: #F15A24;
+	@red: #BE1C21;
+
+	@brown: #7D4837;
+	@brownLight: #90746C;
+  @pink: #F08DCA;
+  @purple: #6A27A4;
+
+  @colorSelect: lighten(@yellow, 35%);
+  @colorSelectHover: lighten(@yellow, 30%);
+  @colorNew: lighten(@blueLight, 23%); 
+  @colorExpand: lighten(@blueLight, 18%);
+
+
+/* Body */
+
+	@body-background-color: #ffffff;
+	@body-background-image: ~'';
+	@body-background-repeat: ~'';
+	@body-background-position: ~'';
+
+
+/* Container */
+	
+	@container-desktop-max-width: 100%;
+	@container-desktop-width: 1025px;
+	@container-tablet-width: 768px;
+	@container-mobile-width: 420px;
+
+
+/* Margins, Paddings, and Spacings */
+
+	@base-line-height: 20px;
+	@base-margin: 20px;
+	@base-margin-bottom: @base-margin * 1.5;
+	@base-padding: 15px;
+	@base-border-radius: 3px;
+
+
+/* Text */
+
+	@text-font-size: 14px;
+	@text-font-weight: normal;
+	@text-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-italic: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-semibold: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-bold: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-line-height: 24px;
+	@text-color: #333333;
+	@text-color-light: #999999;
+
+	@em-font-style: italic;
+
+	@strong-font-family: @text-font-family-bold;
+	@strong-font-weight: bold;
+	@strong-color: inherit;
+
+	@text-shadow-on-light: 1px 1px 1px #;
+	@text-shadow-on-dark: 0 -1px 0 rgba(0, 0, 0, 0.4);
+
+	@pre-margin-bottom: 20px;
+	@pre-background: @grayLight;
+  @pre-color: @black;
+  @pre-padding: 4px 8px;
+  @pre-border: 1px solid @gray;
+  @pre-border-radius: 3px;
+  @pre-font-family: 'Courier';
+  @pre-font-size: 14px;
+  @pre-font-weight: bold;
+
+
+/* Links */
+
+	@link-font-size: 14px;
+	@link-font-wieght: bold;
+	@link-color: @grayDark;
+	@link-color-hover: @blue;
+	@link-decoration: none;
+	@link-decoration-hover: none;
+
+
+/* Headings */
+
+	@headings-color: #333333;
+	@headings-font-family: @mailpile-text-font-family-bold;
+	@headings-font-weight: normal;	
+	@headings-letter-spacing: 0px;
+	@headings-size-h1: 36px;
+	@headings-size-h2: 30px;
+	@headings-size-h3: 24px;
+	@headings-size-h4: 21px;
+	@headings-size-h5: 18px;
+	@headings-size-h6: 14px;
+	@headings-line-height: 1px;
+	@headings-margin-bottom: 0px;
+
+
+/* Navigation */
+
+	@navigation-background: #222222;
+	@navigation-text: #EEEEEE;
+	@navigation-text-hover: #AAAAAA;
+	@navigation-text-dark: #818181;
+	@navigation-elements: #AAAAAA;
+	@navigation-shadows: #EEEEEE;
+	
+	@navigation-sub-background: #d9d9d9;
+	@navigation-sub-text: #EEEEEE;
+	@navigation-sub-text-hover: #AAAAAA;
+	@navigation-sub-text-dark: #818181;
+	@navigation-sub-elements: #AAAAAA;
+	@navigation-sub-shadows: #EEEEEE;
+
+
+/* Lists */
+
+  @list-margin: 0 0 20px 0;
+	@list-padding: 0px;
+  @list-font-size: @text-font-size;
+  @list-line-height: @text-font-size;
+	@list-item-margin: 5px;
+	@list-item-padding: 5px;
+
+	@list-unordered-type: none outside;
+	@list-ordered-type: none outside;
+
+  @list-item-horizontal-margin: 0px;
+  
+
+/* Separators */
+
+	@blockquote-font-size: 18px;
+	@blockquote-font-style: italic;
+	@blockquote-line-height: 24px;
+	@blockquote-color: #666666;
+	
+	@hr-border-type: solid;
+	@hr-border-color: @gray;
+	@hr-border-width: 1px;
+	@hr-border-margin: 35px 0;
+
+
+/* Buttons */
+
+	.button-global(@font-family, @font-size, @font-weight, @margin, @padding) {
+
+		// Font
+		font-family: @font-family !important;
+		font-size: @font-size !important;
+		font-weight: @font-weight !important;
+		line-height: inherit;
+		text-decoration: none;
+
+		// Display
+    margin: @margin;
+		padding: @padding;
+		display: inline-block;
+		cursor: pointer;
+		box-sizing: border-box;
+
+		// Select
+    user-select:none;
+
+    // Animate
+    transition-duration: 0.2s;
+	}
+
+	.button-colors(@color, @text-shadow, @border-color, @background) {
+
+		color: @color !important;
+		text-shadow: @text-shadow;
+
+		border: 1px solid @border-color;
+		border-radius: 4px;
+
+    background: @background;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0px 0px rgba(0, 0, 0, 0.2);
+  }
+  
+  .button-colors-hover(@border-color, @background) {
+    border-color: @border-color;
+    background-color: @background;
+	}
+
+  .button-colors-active(@border-color, @background) {
+    border-color: @border-color;
+    background-color: @background;
+    box-shadow: inset 0 .17em .1em rgba(0, 0, 0, 0.3);
+  }
+
+  @btn-color: @white;
+  @btn-font-family: @mailpile-text-font-family-semibold;
+  @btn-font-size: 16px;
+  @btn-font-weight: 300;
+  @btn-margin: 0px;
+  @btn-padding: 5px 15px;
+
+  @btn-small-font-size: 12px;
+  @btn-small-font-weight: bold;
+  @btn-small-margin: @btn-margin;
+  @btn-small-padding: 5px 8px;
+
+
+/* Button - Primary */
+
+	@btn-primary-color: @white;
+	@btn-primary-text-shadow: @text-shadow-on-dark;
+	@btn-primary-background: @blue;
+	@btn-primary-background-hover: darken(@blue, 5%);
+  @btn-primary-background-active: darken(@blue, 5%);
+	@btn-primary-border-color: darken(@blue, 10%);
+	@btn-primary-border-color-hover: darken(@blue, 15%);
+  @btn-primary-border-color-active: darken(@blue, 15%);
+
+
+/* Button - Secondary */
+
+	@btn-secondary-color: @white;
+	@btn-secondary-text-shadow: @text-shadow-on-dark;
+	@btn-secondary-background: @green;
+	@btn-secondary-background-hover: darken(@green, 5%);
+  @btn-secondary-background-active: darken(@green, 5%);
+	@btn-secondary-border-color: darken(@green, 10%);
+	@btn-secondary-border-color-hover: darken(@green, 10%);
+  @btn-secondary-border-color-active: darken(@green, 10%);
+
+
+/* Button - Info */
+
+	@btn-info-color: @black;
+	@btn-info-text-shadow: 0px 0px 0px;
+	@btn-info-background: @white;
+	@btn-info-background-hover: darken(@grayLight, 5%);
+  @btn-info-background-active: darken(@grayLight, 5%);
+	@btn-info-border-color: @grayMid;
+	@btn-info-border-color-hover: @gray;
+  @btn-info-border-color-active: darken(@gray, 10%);
+
+
+/* Button - Alert */
+
+	@btn-alert-color: @white;
+	@btn-alert-text-shadow: @text-shadow-on-dark;
+	@btn-alert-background: @orange;
+	@btn-alert-background-hover: darken(@orange, 8%);
+	@btn-alert-background-active: darken(@orange, 5%);
+	@btn-alert-border-color: darken(@orange, 10%);
+	@btn-alert-border-color-hover: darken(@orange, 15%);
+	@btn-alert-border-color-active: darken(@orange, 12%);
+
+
+/* Button - Warning */
+
+	@btn-warning-color: @white;
+	@btn-warning-text-shadow: @text-shadow-on-dark;
+  @btn-warning-background: @red;
+	@btn-warning-background-hover: darken(@red, 7%);
+  @btn-warning-background-active: darken(@red, 5%);
+  @btn-warning-border-color: darken(@red, 10%);
+	@btn-warning-border-color-hover: darken(@red, 10%);
+  @btn-warning-border-color-active: darken(@red, 8%);
+
+
+/* Forms */
+
+	@form-background: #FFFFFF;
+	@form-color: #666666;
+	@form-color-focus: #333333;
+	@form-font-size: 16px;
+	@form-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+	@form-border-size: 1px;
+	@form-border-color: @gray;
+	@form-border-radius: @base-border-radius;
+	@form-border-color-focus: @grayDark;
+
+  @form-label-margin: 0 0 5px 0;
+  @form-label-font-size: @form-font-size;
+  @form-label-font-style: italic;
+  @form-label-font-weight: normal;
+	@form-label-color: @grayDark;
+
+  @form-input-width: 210px;
+  @form-input-margin-bottom: @base-margin;
+  @form-input-padding: 10px 12px;
+  @form-input-focus: rgba(0, 0, 0,.4);
+
+  @form-textarea-height: 60px;
+
+	@form-select-color: @grayDark;
+  @form-select-padding: 15px 20px;
+
+  @form-tiny: 75px;
+  @form-small: 135px;
+  @form-medium: 350px;
+  @form-large: 500px;
+  @form-full: 100%;
+
+
+/* Validation */
+
+  @validation-border: 1px solid;
+  @validation-font-style: italic;
+  @validation-success-color: @green;
+  @validation-warning-color: @orange;
+  @validation-error-color: @red;
+
+
+/* Tables */
+
+  @table-background-color: @white;
+  @table-hover-background-color: #F5F6DB;
+  @table-zebra-odd-background-color: #F9F9F9;
+  @table-zebra-even-background-color: #FEFEFE;
+
+  @table-th-padding: 5px 10px;
+  @table-th-background-color: @white;
+  @table-th-font-style: italic;
+  @table-th-font-size: 14px;
+
+  @table-margin: @base-margin 0;
+  @table-padding: 10px;
+
+  @table-border: 1px solid #ccc;
+  @table-border-radius: 5px;
+
+  @table-td-border-top: 1px solid #ccc;
+  @table-font-size: 16px;
+  @table-line-height: 16px;
+
+
+/* Grid */
+
+  @grid-row-margin-bottom: 20px;
+	@grid-gutter: 1%;
+	@grid-column-count: 16;
+
+	@grid-tablet-width: 100%;	
+	@grid-mobile-width: 100%;
+
+
+/* Boxes */
+
+  @boxes-padding: 15px;
+  @boxes-header-font-size: 24px;
+  @boxes-paragraph-font-size: 14px;
+  @boxes-link-color: @gray;
+
+
+/* Rectangles */
+
+  @rectangles-padding: 10px;
+  @rectangles-header-font-size: 18px;
+  @rectangles-paragraph-font-size: 12px;
+  @rectangles-link-color: @gray;
+  @rectangles-height: 70px;
+
+
+/* Bootstrap */
+
+  //** Disabled cursor for form controls and buttons.
+  @cursor-disabled: not-allowed;
+
+  @caret-width-base:          4px;
+  @caret-width-large:         5px;
+  
+  @zindex-navbar:            1000;
+  @zindex-dropdown:          1000;
+  @zindex-popover:           1010;
+  @zindex-tooltip:           1030;
+  @zindex-navbar-fixed:      1030;
+  @zindex-modal-background:  1040;
+  @zindex-modal:             1050;
+
+  @font-size-base: @text-font-size;
+  @font-size-small: 12px;
+
+  @border-radius-base: 4px;
+  @border-radius-large: 4px;
+
+  @line-height-base: @base-line-height;
+  @line-height-computed: @base-line-height;
+
+  @screen-sm:                 768px;  
+  @screen-sm-min:             @screen-sm;
+  @screen-md-min:             1024px;
+
+  @grid-float-breakpoint: 768px;
+  @grid-float-breakpoint-max: (@grid-float-breakpoint - 1);
+
+
+/* Bootstrap - Dropdown */
+
+  @dropdown-bg:                    @white;
+  @dropdown-border:                rgba(0,0,0,.15);
+  @dropdown-fallback-border:       @grayMid;
+  @dropdown-divider-bg:            @grayMid;  
+  @dropdown-link-color:            @grayDark;
+  @dropdown-link-hover-color:      @white;
+  @dropdown-link-hover-bg:         @grayDark;
+  @dropdown-link-active-color:     @red;
+  @dropdown-link-active-bg:        @grayDark;
+  @dropdown-link-disabled-color:   @grayLight;
+  @dropdown-header-color:          @grayLight;  
+  @dropdown-caret-color:           @grayDark;
+
+
+/* Bootstrap - Modal */
+
+  @zindex-modal:                  1050;
+  @zindex-modal-background:       1040;
+
+  @modal-inner-padding:           20px;  
+  @modal-title-padding:           15px;
+  @modal-title-line-height:       1.428571429;  
+  @modal-content-bg:              @white;
+  @modal-content-border-color:    @grayMid;
+  @modal-content-fallback-border-color: @white;
+  
+  @modal-backdrop-bg:             @black;
+  @modal-backdrop-opacity:        .5;
+  @modal-header-border-color:     @grayMid;
+  @modal-footer-border-color:     @modal-header-border-color;
+  
+  @modal-lg:                      900px;
+  @modal-md:                      600px;
+  @modal-sm:                      300px;

@@ -1,0 +1,31 @@
+{% extends "layouts/full.html" %}
+{% block title %}{{_("Help")}}{% endblock %}
+{% block content %}
+
+<div class="content-normal">
+
+  <h1><span class="icon-help"></span> {{_("Help")}}</h1>
+
+  <h3>{{_("Custom Searches")}}</h3>
+  <p>{{_("Underneath the hood Mailpile is a high performance search engine that can answer complex questions.")}}</p>
+
+  <h3>{{_("Keyboard Shortcuts")}}</h3>
+  <p>{{_("Here will be a list of keyboard shortcuts / keybindings for all you cool cat power users out there!")}}</p>
+
+  <h3>{{_("Filters")}}</h3>
+  <p>{{_("Filters are a very powerful aspect of Mailpile that is not yet available to non techie users. However, if you are technically inclined")}}</p>  
+
+  <h3>{{_("Encryption & Security")}}</h3>
+  <p>{{_("Are you new to all these terms like encryption and keys? Don't fret. We will do our best to help explain and educate you how to use your Mailpile in the most secure way possible.")}}</p>
+
+  <h3>{{_("Setup")}}</h3>
+  <ul class="circle">
+    <li><a href="/page/gmail-2-step-verification/">{{_("Gmail's 2 Step App Passwords")}}</a></li>
+    <li><a href="/page/gmail-access-non-google-accounts/">{{_("Enable Access for Non-Google Apps")}}</a></li>
+  </ul>
+
+  {% include("help/bottom.html") %}
+
+</div>
+
+{% endblock %}

@@ -5,6 +5,7 @@ import time
 from urllib2 import urlopen
 
 import mailpile.util
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -65,8 +66,9 @@ class GravatarImporter(VCardImporter):
         return want
 
     def _get(self, url):
-        self.session.ui.mark('Getting: %s' % url)
-        return urlopen(url, data=None, timeout=3).read()
+        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]) as context:
+            self.session.ui.mark('Getting: %s' % url)
+            return urlopen(url, data=None, timeout=3).read()
 
     def check_gravatar(self, vcard, email):
         img = vcf = json = None
@@ -74,7 +76,7 @@ class GravatarImporter(VCardImporter):
             digest = md5_hex(vcl.value.lower())
             try:
                 if mailpile.util.QUITTING:
-                    return []
+                    return None, None, None, None
                 if not img:
                     img = self._get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
                                      ) % (self.config.url,

@@ -1,0 +1,200 @@
+<div class="thread-reply" id="message-{{mid}}" data-mid="{{mid}}">
+  <form id="form-compose-{{mid}}" class="form-compose clearfix" data-mid="{{mid}}">
+    <div id="compose-details-{{mid}}" class="{% if command == "view" %}hide{% endif %}" data-mid="{{mid}}">
+      <div class="compose-headers">
+        <label class="left">
+          {{_("To")}}
+        </label>
+        <label class="right">
+          <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" data-mid="{{mid}}" href="#">{{_("Cc")}}</a>
+          <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" data-mid="{{mid}}" href="#">{{_("Bcc")}}</a>
+        </label>
+        <input id="compose-to-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
+      </div>
+      <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
+        <label class="left">{{_("Cc")}}</label>
+        <label class="right">
+          <a href="#cc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> {{_("hide")}}</a>
+        </label>
+        <input id="compose-cc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="cc" type="text" tabindex="2" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
+      </div>
+      <div id="compose-bcc-html" class="compose-headers compose-bcc {% if not editing_strings.bcc %}hide{% endif %}">
+        <label class="left">{{_("Bcc")}}</label>
+        <label class="right">
+          <a href="#bcc" class="compose-hide-field" data-mid="{{mid}}"><span class="icon-eye"></span> hide</a>
+        </label>
+        <input id="compose-bcc-{{mid}}" class="compose-address-field" data-mid="{{mid}}" name="bcc" type="text" tabindex="3" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
+      </div>
+      <div class="compose-headers compose-subject">
+        <label>{{_("Subject")}}</label>
+        <input id="compose-subject" name="subject" tabindex="4" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
+      </div>
+    </div>
+    <div class="compose-options clearfix" data-mid="{{mid}}">
+      <div class="compose-options-crypto">
+        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none" data-mid="{{mid}}">
+            <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
+        </div>
+        <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none" data-mid="{{mid}}">
+            <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
+        </div>
+      </div>
+      <ul class="horizontal" data-mid="{{mid}}">
+        <li id="compose-to-summary-{{mid}}" class="compose-to-summary" data-mid="{{mid}}"></li>
+        <li>
+          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if command != "view" %}hide{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
+        </li>
+        <li>
+          <label id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
+        </li>
+      </ul>
+      <a class="compose-message-trash right" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
+      {% if command == "view" %}
+      <label class="compose-apply-quote right" data-mid="{{mid}}" data-quoted_reply="{{config.web.quoted_reply}}">
+        <input id="compose-quoted-reply-{{mid}}" type="checkbox" {% if config.web.quoted_reply in ['enabled', 'unset'] %}checked{% endif %}> {{_("Quote")}}
+      </label>
+      {% endif %}
+    </div>
+    <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
+      <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
+      <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
+        <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal clearfix">
+          {% if editing_strings.attachments %}
+          {% for att in attachments %}
+          <li id="compose-attachment-{{mid}}-{{att.aid}}" class="left">
+            {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
+            <div class="attachment-image">
+              <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                <span class="icon-circle-x"></span>
+              </a>
+              <div class="preview" style="background-image: url('/message/download/preview/={{mid}}/{{att.aid}}/');"></div>
+            </div>
+            {% else %}
+            <div class="attachment">
+              <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                <span class="icon-circle-x"></span>
+              </a>
+              <div class="preview">
+                <span class="icon-mime" type="{{att.mimetype}}"></span> 
+                {% set file_parts = att.filename.split(".") %}
+                {% set file_parts_length = file_parts|length %}
+                <span class="extension">{{ file_parts[file_parts_length - 1] }}</span>
+              </div>
+              <div class="filename">
+                {% if file_parts_length > 2 or att.filename|length > 20 %}
+                  {{ att.filename[0:16] }}...
+                {% else %}
+                  {{ file_parts[0] }}
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+          </li>
+          {% endfor %}
+          {% endif %}
+        </ul>
+        <div class="clearfix"></div>
+        <ul class="horizontal">
+          <li>
+            <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
+            <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
+          </li>
+          {% if config.prefs.gpg_email_key %}<li class="add-left">
+            <label class="compose-attach-key" data-mid="{{mid}}"
+                   title="{{_("Attach your public encryption key to this message")}}">
+              <input type="hidden" id="compose-hidden-attach-key-{{mid}}"
+                     name="attach-pgp-pubkey"
+                     value="{%- if editing_strings['attach-pgp-pubkey']
+                                in ('yes', 'true', true) %}yes{% else %}no
+                            {%- endif %}">
+              <input type="checkbox" id="compose-attach-key-{{mid}}"
+                     {%- if editing_strings['attach-pgp-pubkey']
+                         in ('yes', 'true', true) %} checked{% endif %}>
+              {{_("Attach Key")}}
+            </label>
+          </li>{% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="compose-actions clearfix">
+      <div class="dropdown left">
+        <!--
+        <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-archive"></span> Send <span id="reply-datetime-display">Now</span></a>
+        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="now" href="#">Now</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="60" href="#">1 min</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="3600" href="#">1 hr</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="10800" href="#">3 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="21600" href="#">6 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="43200" href="#">12 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="86400" href="#">1 day</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="172800" href="#">2 days</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="604800" href="#">1 week</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1209600" href="#">2 weeks</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
+        </ul>
+        -->
+        {% set from = editing_addresses and editing_strings.from_aids and editing_addresses[editing_strings.from_aids.0] or '' %}
+        <div class="dropup">
+          <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
+            <span id="compose-from-selected-{{mid}}" class="compose-from-selected">
+              {% if from.photo %}
+              <span class="avatar"><img src="{{from.photo}}"></span>
+              {% else %}
+              <span class="avatar"><img src="/static/img/avatar-default-white.png"></span>
+              {% endif %}
+              <span class="name">{{from.fn}}</span>
+              <span class="address">{{from.address}}</span>
+            </span>
+            <span class="compose-from-caret">
+              <span class="caret"></span>
+            </span>
+          </div>
+          <ul class="dropdown-menu">
+          {% set emails = profiles.emails|sort %}
+          {% if from.address not in emails %}
+            {% set emails = [from.address] + emails %}
+          {% endif %}
+          {% for profile_email in emails %}
+            {% set profile = (profile_email in profiles.emails)
+                             and profiles.profiles[profiles.emails[profile_email]]
+                             or {'fn': from.fn} %}
+            <li role="presentation">
+              <a href="#" class="compose-from" data-mid="{{mid}}">
+                <span class="avatar">
+                {% if profile.photo %}
+                <img src="{{profile.photo[0].photo}}">
+                {% else %}
+                <img src="/static/img/avatar-default-white.png">
+                {% endif %}
+                </span>
+                <span class="name">{{profile.fn}}</span>
+                <span class="address">{{ profile_email }}</span>
+              </a>
+            </li>
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="compose-buttons right" data-mid="{{mid}}">
+        <button class="compose-action button-primary" type="submit" name="save" value="save" alt="{{_("Save")}}">
+          <span class="icon-compose"></span> {{_("Save")}}
+        </button>
+        <button class="compose-action button-secondary" type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}" alt="{{_("Send")}}">
+          <span class="icon-sent"></span> {{_("Send")}}
+        </button>        
+      </div>
+    </div>
+    <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
+    <input id="compose-mid-{{mid}}" type="hidden" name="mid" value="{{mid}}">
+    <input id="compose-crypto-{{mid}}" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+    <input id="compose-signature-{{mid}}" type="hidden" value="">
+    <input id="compose-encryption-{{mid}}" type="hidden" value="">
+  </form>
+  <script>
+  $(document).ready(function() {
+    Mailpile.Composer.init('{{mid}}');
+  });
+  </script>
+</div>

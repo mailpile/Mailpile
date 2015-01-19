@@ -261,6 +261,10 @@ class Generator:
         # The contents of signed parts has to stay unmodified in order to keep
         # the signature intact per RFC1847 2.1, so we disable header wrapping.
         # RDM: This isn't enough to completely preserve the part, but it helps.
+        # BRE: Disabled! We are using this to generate the stuff we sign, so
+        #      we actually want the logic UNCHANGED.
+        return self._handle_multipart(msg)
+        # Disabled the following...
         old_maxheaderlen = self._maxheaderlen
         try:
             self._maxheaderlen = 0

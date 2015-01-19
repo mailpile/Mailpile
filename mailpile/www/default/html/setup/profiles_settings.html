@@ -1,0 +1,49 @@
+<div id="setup-profiles-add" class="setup-box setup-box-small add-top animated bounceInUp">
+  <form id="form-setup-profile-settings" class="standard" method="POST">
+    <h2 class="text-center"><span class="icon-profiles"></span> <%= action_i18n %> Profile</h2>
+    <fieldset>
+      <div id="validation-name">
+        <label class="validation-message">{{_("Name")}} <span class="setup-help-tooltip icon-signature-unverified" title="{{_("The name used in outgoing mail and on your public key")}}"></span></label>
+        <span ></span>      
+        <input id="input-setup-profile-name" type="text" class="profile-update" name="name" data-vcard_name="fn" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>" tabindex="1">
+      </div>
+      <div id="validation-email">
+        <label class="validation-message">{{_("Email")}} <span class="setup-help-tooltip icon-signature-unverified" title="{{_("One of your existing e-mail addresses (not a new one)")}}"></span></label>
+        <input id="input-setup-profile-email" class="profile-update" type="email" name="email" data-vcard_name="email" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>" tabindex="2">
+      </div>
+      <div id="validation-pass" class="hide">
+        <label class="validation-message">{{_("Password")}}</label>
+        <input id="input-setup-profile-pass" class="remove-bottom" data-provider="" type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="" tabindex="3">
+        <div class="check-auth half-top"></div>
+        <br>
+      </div>
+      <div id="validation-route_id">
+        <label class="validation-message">{{_("Sending Route")}} <span class="setup-help-tooltip icon-signature-unverified" title="{{_("Technical details of how mail is sent")}}"></span></label>
+        <select id="input-setup-profile-route_id" name="route_id" data-vcard_name="x-mailpile-profile-route" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="4">
+          <option value="">{{_("Select...")}}</option>
+            <% _.each(routes, function(route, id) { if (route.name) { %>
+            <option value="<%= id %>" <% if (id == route_id) { %>selected<% } %>><%= route.name %></option>
+            <% } }) %>
+            <option value="new">+ {{_("Add New Route")}}</option>
+        </select>
+        <div id="setup-profile-edit-route" class="half-bottom <% if (!route_id) { %>hide<% } %>">
+          <a href="#" class="btn-setup-profile-edit-route"><span class="icon-routes"></span> {{_("Edit Route")}}</a>
+        </div>
+      </div>
+      <div id="validation-note">
+        <label class="validation-message">{{_("Note")}} <span class="setup-help-tooltip icon-signature-unverified" title="{{_("A short note describing the role of this profile")}}"></span></label>
+        <input id="input-setup-profile-note" type="text" class="profile-update" name="note" data-vcard_name="note" placeholder="{{_("Personal, Work")}}" value="<%= note %>" tabindex="5">
+      </div>
+      <input id="input-setup-profile-id" value="<%= id %>" type="hidden">
+    </fieldset>
+    <a href="#profiles" class="button-info">{{_("Cancel")}}</a>
+    <button id="btn-setup-profile-<%= action.toLowerCase() %>" data-id="<%= id %>" type="submit" class="button-primary right">
+      <span class="icon-plus"></span> {{_("Save Profile")}}
+    </button>
+  </form>
+  <div id="setup-profiles-route-editing" class="hide">
+    <h2 class="text-center half-bottom"><span class="icon-profiles"></span> <span class="name"></span></h2>
+    <p class="text-center remove-bottom text-detail">Enter credentials for your sending mail server (SMTP)</p>
+  </div>
+</div>
+<div id="setup-profiles-route-settings" class="hide"></div>

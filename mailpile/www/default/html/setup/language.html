@@ -1,0 +1,17 @@
+<!-- Setup - Languge -->
+<div class="setup-box setup-box-small add-top animated bounceInUp">
+  <h2 class="text-center"><span class="icon-home"></span> {{_("Language")}}</h2>
+  <form id="form-setup-language" class="standard">
+    <label class="text-center">{{_("Select your language")}}</label>
+    {% set languages = mailpile('setup/welcome').result %}
+    <select name="language" class="center">
+      {% for lc, language in languages.languages.iteritems()|sort %}
+      <option value="{{ lc }}" {% if languages.language == lc %}selected{% endif %}>{{ language }}</option>
+      {% endfor %}
+    </select>
+    <div class="clearfix add-top">
+      <a href="/setup/#" class="button-info">{{_("Back")}}</a>
+      <button id="btn-setup-language-settings" class="button-primary right">{{_("Save")}}</button>
+    </div>
+  </form>
+</div>

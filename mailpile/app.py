@@ -9,6 +9,7 @@ import mailpile.defaults
 from mailpile.commands import COMMANDS, Command, Action
 from mailpile.commands import Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager
+from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -60,19 +61,29 @@ def Interact(session):
     try:
         prompt = session.ui.term.color('mailpile> ',
                                        color=session.ui.term.BLACK,
-                                       weight=session.ui.term.BOLD)
+                                       weight=session.ui.term.BOLD,
+                                       readline=True)
         while not mailpile.util.QUITTING:
-            session.ui.block()
-            opt = raw_input(prompt).decode('utf-8').strip()
+            try:
+                with session.ui.term:
+                    session.ui.block()
+                    opt = raw_input(prompt).decode('utf-8').strip()
+            except KeyboardInterrupt:
+                session.ui.unblock(force=True)
+                session.ui.notify(_('Interrupted. '
+                                    'Press CTRL-D or type `quit` to quit.'))
+                continue
             session.ui.term.check_max_width()
-            session.ui.unblock()
+            session.ui.unblock(force=True)
             if opt:
                 if ' ' in opt:
                     opt, arg = opt.split(' ', 1)
                 else:
                     arg = ''
                 try:
-                    session.ui.display_result(Action(session, opt, arg))
+                    result = Action(session, opt, arg)
+                    session.ui.block()
+                    session.ui.display_result(result)
                 except UsageError, e:
                     session.error(unicode(e))
                 except UrlRedirectException, e:
@@ -80,7 +91,7 @@ def Interact(session):
     except EOFError:
         print
     finally:
-        session.ui.unblock()
+        session.ui.unblock(force=True)
 
     try:
         if session.config.sys.history_length > 0:
@@ -131,6 +142,8 @@ class WaitCommand(Command):
 
 
 def Main(args):
+    DisableUnbrokeredConnections()
+
     # Bootstrap translations until we've loaded everything else
     mailpile.i18n.ActivateTranslation(None, ConfigManager, None)
     try:
@@ -192,8 +205,6 @@ def Main(args):
 
         if config.plugins:
             config.plugins.process_shutdown_hooks()
-        if config.loaded_config:
-            config.flush_mbox_cache(session, wait=True)
 
         config.stop_workers()
         if config.index:

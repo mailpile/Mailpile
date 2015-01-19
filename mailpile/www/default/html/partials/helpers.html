@@ -1,0 +1,90 @@
+<!-- Helpers -->
+
+<script id="template-modal-helper" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-help"></span> <%= title %></h4>
+      </div>
+      <div class="modal-body"><%= content %></div>
+      <% if (actions) { %>
+      <div class="modal-footer">
+        <% if (_.indexOf(actions, "hideable") > -1) { %>
+        <button type="submit" class="btn-helper-make-hidden" title="{{_("Don't Show")}}" alt="{{_("Don't Show")}}">
+          <span class="icon-eye"></span> {{_("Don't Show")}}
+        </button>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</script>
+
+
+<script id="template-helper-what-is-encryption-key" type="text/template">
+  <p>Encryption keys are used to encrypt messages. Mailpile uses the encryption standard <a href="https://en.wikipedia.org/wiki/Pretty_Good_Privacy#OpenPGP" target="_blank">OpenPGP</a>. In order to encrypt a message, you need encryption keys for all the recipients you are messaging. Here's an example of the encryption key that belongs to the company that made Mailpile.</p>
+  <h5><span class="icon-key"></span> Mailpile Team's Key</h5>
+  <ul>
+    <li id="item-encryption-key-4161CD18CCA11A0B1F4C3EA0AAD965A4707775F9" class="searchkey-result-item animated fadeIn">
+      <div class="clearfix">
+        <div class="avatar"><img src="/static/img/avatar-default.png"></div>
+        <div class="name">
+          Mailpile Team<br>
+          <span>team@mailpile.is</span>
+        </div>
+        <div class="right">
+          <span class="icon-fingerprint"></span>
+          <div class="fingerprint">
+            4161 CD18 CCA1 1A0B 1F4C 3EA0 AAD9 65A4 7077 75F9
+          </div>
+        </div>
+      </div>
+      <div class="searchkey-result-details add-top clearfix hide">
+        <div class="add-bottom">
+          <strong>{{_("Contact Info")}}</strong>
+          <table>
+          <tr>
+            <td>Mailpile Team</td>
+            <td>team@mailpile.is</td>
+            <td></td>
+          </tr>
+          </table>
+        </div>
+        <div class="add-bottom">
+          <strong>{{_("Score")}} +20</strong><br>
+          Key is in keychain<br>
+          Key is strong
+        </div>
+        <div class="half-bottom">
+          <strong>{{_("Details")}}</strong><br>
+          {{_("Strength")}}: 4096<br>
+          {{_("Algorithm")}}: RSA<br>
+          {{_("Created")}}: 29, 11, 2013
+        </div>
+      </div>
+      <div class="half-top clearfix">
+        <a href="#" class="searchkey-result-score left"
+            data-fingerprint="4161CD18CCA11A0B1F4C3EA0AAD965A4707775F9"
+            data-score_reason=""
+            data-score_stars="3">
+          <span class="icon-star color-06-blue"></span>
+          <span class="icon-star color-06-blue"></span>
+          <span class="icon-star color-06-blue"></span>
+        </a>
+        <div class="searchkey-result-actions right">
+          <select name="contact-key" class="crypto-key-policy" data-fingerprint="4161CD18CCA11A0B1F4C3EA0AAD965A4707775F9">
+            <option value="true" selected="selected">{{_("Use This Key")}}</option>
+            <option value="false">{{_("Don't Use This Key")}}</option>
+          </select>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <p>There are multiple ways to find and import encryption keys into your Mailpile. Most commonly, you can search your messages and the internet for encryption keys.</p>
+  <p><a href="#" class="btn-helper-action" data-action="CryptoFindKeys"><span class="icon-search"></span> Search for Encryption Keys</a></p>
+  <p>You can also import encryption keys from a file on your computer. Usually, encryption keys have the following file extensions <strong>.asc .key .pub</strong>
+  </p>
+  <p><a href="#" class="btn-helper-action" data-action="CryptoUploadKey"><span class="icon-upload"></span> Upload Encryption Keys</a></p>
+  <p class="remove-bottom"><em class="text-detail">Note: Mailpile created you a new encryption key or imported existing keys already on your computer. <a href="/setup/crypto/">View your encryption keys.</a></em></p>
+</script>

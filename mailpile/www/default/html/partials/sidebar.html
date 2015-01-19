@@ -1,0 +1,85 @@
+{% macro render_sidebar_tag(tag) -%}
+{# Show proper classes #}
+{% if tag.slug == "drafts" %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default">
+{% elif tag.slug == "outbox" %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
+{% else %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {% if tag.subtags and tag.tid not in config.web.subtags_collapsed %}show-subtags{% endif %}">
+{% endif %}
+{% if tag.slug == "outbox" or tag.slug == "drafts" %}
+{% set tag_new_count = tag.stats.all %}
+{% elif tag.stats.get("sum_new") %}
+{% set tag_new_count = tag.stats.sum_new %}          
+{% else %}
+{% set tag_new_count = tag.stats.new %}
+{% endif %}
+  <a href="{{tag.url}}" class="sidebar-tag color-{{tag.label_color}} {% if tag_new_count %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}" title="{{tag.name}} {{friendly_number(tag_new_count)}}" data-tid="{{tag.tid}}">
+    <span class="icon {{tag.icon}}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
+    <span class="name">{{tag.name}}</span> 
+    <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
+    {% if tag.get("subtags") %}
+    <span class="sidebar-tag-expand" data-tid="{{tag.tid}}">
+      {% if tag.tid in config.web.subtags_collapsed %}
+      <span class="icon-arrow-left"></span>
+      {% else %}
+      <span class="icon-arrow-down"></span>
+      {% endif %}
+    </span>
+    {% endif %}
+  </a>
+  {% if tag.subtags %}
+  <ul id="sidebar-subtags-{{tag.tid}}" class="sidebar-subtags {% if tag.tid in config.web.subtags_collapsed %}hide{% endif %}">
+    {% for subtag in tag.subtags %}
+    <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}" class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}">
+      <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
+        <span class="icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
+        <span class="name">{{subtag.name}}</span> 
+        {% if subtag.stats.new %}
+        <span class="notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
+        {% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{%- endmacro %}
+
+<!-- FIXME: make "density" class be pulled from user profile setting -->
+<div id="sidebar" class="{{ config.web.display_density }}">
+  <nav id="sidebar-lists">
+    <ul id="sidebar-priority" class="sidebar-sortable">
+      {%- for tag in mailpile("tags", "mode=tree", "display=priority").result.tags -%}
+      {{ render_sidebar_tag(tag) }}
+      {%- endfor -%}
+    </ul>
+    <hr>
+    <ul id="sidebar-tag" class="sidebar-sortable">
+      {%- for tag in mailpile("tags", "mode=tree", "display=tag").result.tags -%}
+      {{ render_sidebar_tag(tag) }}
+      {%- endfor -%}
+    </ul>
+  </nav>
+  <nav id="sidebar-bottom" class="text-center">
+    <a href="#" id="button-sidebar-add" title="{{_("Add Tag")}}">
+      <span class="icon-plus"></span>
+      <span class="text">{{_("Add")}}</span>
+    </a>
+    <a href="#" id="button-sidebar-organize" data-message="{{_("Done")}}" data-state="done" title="{{_("Edit Sidebar")}}">
+      <span class="icon icon-settings"></span>
+      <span class="text">{{_("Organize")}}</span>
+    </a>
+  </nav>
+</div>
+
+
+<script id="template-sidebar-item" type="text/template">
+  <li id="sidebar-tag-<%= tid %>" data-tid="<%= tid %>" data-display_order="<%= display_order %>" class="sidebar-tags-draggable">
+    <a href="/in/<%= slug %>/" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
+      <span class="icon <%= icon %>" style="color: <%= label_color %>;"></span>
+      <span class="name"><%= name %></span>
+      <span class="notification"></span>
+    </a>
+  </li>
+</script>

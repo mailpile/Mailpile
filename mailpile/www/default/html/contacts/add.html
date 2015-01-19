@@ -1,0 +1,27 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Add Contact")}}{% endblock %}
+{% block content %}
+{% if result.form %}
+<div id="contact-add" class="content-normal">
+  <form id="form-contact-add" class="standard">
+    <fieldset class="contact-add-fields">
+      <input type="hidden" name="csrf" value="">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" data-type="name" class="contact-add-name" value="" placeholder="Chelsea Manning">
+      <label>{{_("E-mail")}}</label>
+      <input type="text" name="email" data-type="email" class="contact-add-email" value="" placeholder="chelsea@manning.com">
+      <div class="contact-add-signature"></div>
+    </fieldset>
+    <div id="contact-add-key"></div>
+    <button type="submit" class="button-primary"><span class="icon-plus"></span> {{_("Add")}}</button>
+  </form>
+</div>
+{% else %}
+  {{ mailpile('http/redirect', '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
+{% endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
+{% endblock %}

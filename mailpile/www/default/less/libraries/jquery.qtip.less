@@ -1,0 +1,207 @@
+/*
+ * qTip2 - Pretty powerful tooltips - v2.1.1
+ * http://qtip2.com
+ *
+ * Copyright (c) 2013 Craig Michael Thompson
+ * Released under the MIT, GPL licenses
+ * http://jquery.org/license
+ *
+ * Date: Thu Oct 17 2013 08:49 UTC+0000
+ * Plugins: tips viewport imagemap svg
+ * Styles: basic css3
+ */
+.qtip {
+	position: absolute;
+	left: -28000px;
+	top: -28000px;
+	display: none;
+
+	max-width: 280px;
+	min-width: 50px;
+	
+	font-size: 10.5px;
+	line-height: 12px;
+
+	direction: ltr;
+
+	box-shadow: none;
+	padding: 0;
+}
+
+.qtip-content {
+	position: relative;
+	padding: 3px 3px;
+	overflow: hidden;
+	word-wrap: break-word;
+}
+
+.qtip-titlebar {
+	position: relative;
+	padding: 5px 35px 5px 10px;
+	overflow: hidden;
+
+	border-width: 0 0 1px;
+	font-weight: bold;
+}
+
+.qtip-titlebar + .qtip-content { border-top-width: 0 !important; }
+
+/* Default close button class */
+.qtip-close {
+	position: absolute;
+	right: -9px; top: -9px;
+
+	cursor: pointer;
+	outline: medium none;
+
+	border-width: 1px;
+	border-style: solid;
+	border-color: transparent;
+}
+
+.qtip-titlebar .qtip-close {
+	right: 4px; top: 50%;
+	margin-top: -9px;
+}
+
+* html .qtip-titlebar .qtip-close { top: 16px; } /* IE fix */
+
+.qtip-titlebar .ui-icon,
+.qtip-icon .ui-icon{
+	display: block;
+	text-indent: -1000em;
+	direction: ltr;
+}
+
+.qtip-icon, .qtip-icon .ui-icon {
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	text-decoration: none;
+}
+
+.qtip-icon .ui-icon {
+	width: 18px;
+	height: 14px;
+
+	line-height: 14px;
+	text-align: center;
+	text-indent: 0;
+	font: normal bold 10px/13px Tahoma,sans-serif;
+
+	color: inherit;
+	background: transparent none no-repeat -100em -100em;
+}
+
+
+/* Applied to 'focused' tooltips e.g. most recently displayed/interacted with */
+.qtip-focus{}
+
+/* Applied on hover of tooltips i.e. added/removed on mouseenter/mouseleave respectively */
+.qtip-hover{}
+
+/* Default tooltip style */
+.qtip-default {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #333;
+
+	background-color: #333;
+	color: #555;
+}
+
+.qtip-default .qtip-titlebar {
+	background-color: #333;
+}
+
+.qtip-default .qtip-icon {
+	border-color: #CCC;
+	background: #333;
+	color: #777;
+}
+
+.qtip-default .qtip-titlebar .qtip-close {
+	border-color: #AAA;
+	color: #111;
+}
+
+
+/* Tipped style */
+.qtip-tipped {
+	border: 0px solid #444;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	background-color: #444;
+	color: @white;
+  font-size: 12px;
+	font-weight: bold;
+	font-family: Arial;
+	line-height: 14px;
+	padding: 4px 6px;
+
+}
+
+.qtip-tipped .qtip-titlebar {
+	border-bottom-width: 0;
+	color: white;
+	background: #3A79B8;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#3A79B8), to(#2E629D));
+	background-image: -webkit-linear-gradient(top, #3A79B8, #2E629D);
+	background-image: -moz-linear-gradient(top, #3A79B8, #2E629D);
+	background-image: -ms-linear-gradient(top, #3A79B8, #2E629D);
+	background-image: -o-linear-gradient(top, #3A79B8, #2E629D);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#3A79B8,endColorstr=#2E629D);
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#3A79B8,endColorstr=#2E629D)";
+}
+
+.qtip-tipped .qtip-content {
+  text-align: center;
+}
+
+.qtip-tipped .qtip-icon {
+	border: 2px solid #285589;
+	background: #285589;
+}
+
+.qtip-tipped .qtip-icon .ui-icon {
+	background-color: #FBFBFB;
+	color: #555;
+}
+
+
+/* IE9 fix - removes all filters */
+.qtip:not(.ie9haxors) div.qtip-content,
+.qtip:not(.ie9haxors) div.qtip-titlebar {
+	filter: none;
+	-ms-filter: none;
+}
+
+
+.qtip .qtip-tip {
+	margin: 0 auto;
+	overflow: hidden;
+	z-index: 10;
+}
+
+/* Opera bug #357 - Incorrect tip position https://github.com/Craga89/qTip2/issues/367 */
+x:-o-prefocus, .qtip .qtip-tip {
+	visibility: hidden;
+}
+
+.qtip .qtip-tip,
+.qtip .qtip-tip .qtip-vml,
+.qtip .qtip-tip canvas {
+	position: absolute;
+	color: #123456;
+	background: transparent;
+	border: 0 dashed transparent;
+}
+
+.qtip .qtip-tip canvas { top: 0; left: 0; }
+
+.qtip .qtip-tip .qtip-vml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	visibility: visible;
+}

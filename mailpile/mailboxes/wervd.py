@@ -32,38 +32,44 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
-        fn = self._lookup(key)
-        del self._toc[key]
+        with self._lock:
+            fn = os.path.join(self._path, self._lookup(key))
+            del self._toc[key]
         safe_remove(fn)
 
     def _refresh(self):
-        mailbox.Maildir._refresh(self)
-        # WERVD mail names don't have dots in them
-        for t in [k for k in self._toc.keys() if '.' in k]:
-            del self._toc[t]
+        with self._lock:
+            mailbox.Maildir._refresh(self)
+            # WERVD mail names don't have dots in them
+            for t in [k for k in self._toc.keys() if '.' in k]:
+                del self._toc[t]
         safe_remove()  # Try to remove any postponed removals
 
     def _get_fd(self, key):
-        fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
-        key = self._decryption_key_func()
-        if key:
-            fd = DecryptingStreamer(fd, mep_key=key, name='WERVD')
+        with self._lock:
+            fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
+            mep_key = self._decryption_key_func()
+        if mep_key:
+            fd = DecryptingStreamer(fd, mep_key=mep_key, name='WERVD')
         return fd
 
     def get_message(self, key):
         """Return a Message representation or raise a KeyError."""
-        with self._get_fd(key) as fd:
-            if self._factory:
-                return self._factory(fd)
-            else:
-                return mailbox.MaildirMessage(fd)
+        with self._lock:
+            with self._get_fd(key) as fd:
+                if self._factory:
+                    return self._factory(fd)
+                else:
+                    return mailbox.MaildirMessage(fd)
 
     def get_string(self, key):
-        with self._get_fd(key) as fd:
-            return fd.read()
+        with self._lock:
+            with self._get_fd(key) as fd:
+                return fd.read()
 
     def get_file(self, key):
-        return StringIO.StringIO(self.get_string(key))
+        with self._lock:
+            return StringIO.StringIO(self.get_string(key))
 
     def add(self, message, copies=1):
         """Add message and return assigned key."""

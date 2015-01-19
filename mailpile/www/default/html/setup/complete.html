@@ -1,0 +1,16 @@
+<div id="setup-complete" class="setup-white setup-box-medium center text-center add-top">
+
+  <div id="setup-complete-icon" class="add-bottom animated icon-like"></div>
+  <h1 id="setup-complete-message" class="animated fadeIn add-bottom">{{_("Great Job!")}}</h1>
+  <h3 id="setup-complete-copying" class="text-detail animated fadeIn half-top">{{_("You have successfully setup your Mailpile!")}}</h3>
+
+  <div id="setup-complete-waiting" class="text-center add-top animated fadeIn <% if (StateModel.attributes.result.complete) { %>hide<% } %>">
+    <p>{{_("You can wait until importing is finished, see a brief tour, or")}} <a href="/in/inbox/">{{_("Skip To Inbox")}}</a></p>
+    <p><a href="#" id="setup-complete-tour-start" class="button-secondary"><span class="icon-flashlight"></span> {{_("Begin Tour")}}</a></p>    
+  </div>
+  <div id="setup-complete-explore" class="text-center add-top animated <% if (!StateModel.attributes.result.complete) { %>hide<% } %>">
+    <p>{{_("Can't wait any longer and want to start using your Mailpile?")}}</p>
+    <p><a href="/in/inbox/" class="button-primary"><span class="icon-inbox"></span> {{_("Go to Inbox")}}</a></p>
+  </div>
+
+</div>

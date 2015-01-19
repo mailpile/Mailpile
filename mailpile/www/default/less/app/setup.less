@@ -1,0 +1,306 @@
+/* Mailpile - Setup
+*  Version 0.1.0
+*	 Designed and built by @brennannovak and others
+*/
+
+/* Config - Change the settings in this file change the look and feel of your style */
+@import "config.less";
+
+
+/* Topbar */
+
+  .topbar-middle { 
+    position: relative;
+    top: 15px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 30px;
+    line-height: 30px;
+  }
+  
+  .topbar-middle .title {
+    position: relative;
+    top: 0px;
+    left: -95px;
+    font-family: @mailpile-text-font-family-bold;
+  }
+  
+  .topbar-middle .icon {
+    float: right;
+    position: relative;
+    top: 0px;
+    right: 20px;
+    display: block;
+    font-size: 30px;
+    line-height: 30px;
+  }
+
+
+/* Setup */
+
+  #setup-container {
+    position: relative;
+    top: 65px;
+    left: 0px;
+  }
+
+  div.setup-box {
+    margin: 0px auto;
+    padding: 25px;
+    border-radius: 5px;
+    background: @grayLight;
+    border: 1px solid @grayMid;
+  }
+
+  div.setup-box-small {
+    width: 400px;
+  }
+
+  div.setup-box-medium {
+    width: 600px;
+  }
+
+  div.setup-box-large {
+    width: 800px;
+  }
+
+  .setup-text-detail-large {
+    color: @gray;
+    font-size: 24px;
+  }
+
+  .setup-table {
+    background: @white;
+  }
+
+
+/* Setup Progress */
+
+  #setup-progress {
+    width: 520px;
+    position: relative;
+    top: 10px;
+    left: 15%;
+    text-align: center;
+  }
+
+  a.setup-progress-circle {
+    display: table-cell;
+    height: 38px;
+    width: 38px;
+    vertical-align: middle;
+    border-radius: 25px;
+    background: @white;
+    border: 1px solid @gray;
+  }
+
+  a.setup-progress-circle:hover,
+  a.setup-progress-circle:hover span.icon {
+    color: @grayDark;
+    background: darken(@grayLight, 10%);
+  }
+
+  a.setup-progress-circle span.icon {
+    display: inline-block;
+    color: @gray;
+  }
+
+  a.setup-progress-circle.on {
+    background: @blue;
+    border: 1px solid @grayLight;
+  }
+
+  a.setup-progress-circle.complete {
+    background: @green;
+    border: 1px solid @grayLight;
+  }
+
+  a.setup-progress-circle.on span.icon,
+  a.setup-progress-circle.complete span.icon {
+    color: @white;
+  }
+
+  a.setup-progress-circle.on:hover span.icon,
+  a.setup-progress-circle.complete:hover span.icon {
+    background: transparent;
+  }
+  
+  span.setup-progress-line {
+    width: 90px;
+    display: block;
+    border-bottom: 1px solid @grayMid;
+    margin: 20px 8px 0px 8px;
+  }
+
+
+/* Setup - Details */
+
+  label span.setup-help-tooltip {
+    color: @gray;
+    cursor: pointer;
+  }
+
+  a.setup-check-connection {
+    font-weight: normal; 
+  }
+
+  a.setup-check-connection:hover {
+    color: @green;
+  }
+
+
+/* Setup - Welcome */
+
+  #setup-welcome {
+    width: 100%;
+    height: 100%;
+  }
+
+  .welcome-logo {
+    width: 25%;
+  }
+
+  .welcome-icons {
+    width: 470px;
+    font-size: 40px;
+    line-height: 40px;
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto; 
+  }
+
+  .welcome-icons li {
+    margin: 0px (@base-margin / 1.5);
+  }
+
+
+/* Setup - Crypto */
+
+  #identity-vault-lock {
+    margin: @base-margin 0;
+    position: relative;
+    left: 32%;
+    top: 0px;
+  }
+
+  .setup-cryto-fingerprint-icon {
+    font-size: 48px;
+    line-height: 48px;
+    display: inline-block;
+  }
+  
+  .setup-crypto-fingerprint-fingerprint {
+    font-size: 21px;
+    line-height: 24px;
+    font-weight: normal;
+    font-style: italic;
+    display: inline-block;
+    width: 320px;    
+  }
+
+
+  label.radio-list-item div.radio {
+    width: 30px;
+  }
+
+  label.radio-list-item div.icon {
+    width: 30px;
+  }
+
+  label.radio-list-item .icon-key {
+    font-size: 30px;
+    line-height: 30px;
+  }
+
+  .setup-list-items {
+    background: @white;
+    border-radius: 5px;
+    border: 1px solid @grayMid;
+  }
+
+  .setup-list-items li:first-child {
+    border-top: 0px solid;
+  }
+
+  .setup-item {
+    padding: @base-padding;
+    border-top: 1px solid @grayMid;
+  }
+
+  .setup-item ul {
+    margin-bottom: 0px;
+  }
+  
+  .setup-item ul li {
+    margin-left: @base-margin;
+  }
+
+  .setup-item .avatar {
+    width: 50px;
+    display: inline-block;
+    float: left;
+    margin-right: @base-margin;
+  }
+
+  .setup-item .avatar img {
+    width: 50px;
+    border-radius: @base-border-radius;
+  }
+
+  .setup-item .name {
+    display: block;
+    margin-bottom: 5px;
+    vertical-align: text-top;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 18px;
+    color: @grayDark;
+  }
+
+  .setup-item .email {
+    font-size: 14px;
+    line-height: 14px;
+    color: @gray;
+  }
+
+  .setup-item.disabled,
+  .setup-item.disabled .name,
+  .setup-item.disabled .email,
+  .setup-item.disabled .setup-actions a {
+    color: @grayMid;
+  }
+
+  .setup-item-notice {
+    background: @colorSelectHover;
+    padding: @base-padding;
+    margin-bottom: 0px;
+    border-radius: (@base-border-radius * 1.5);
+  }
+
+
+/* Setup - Sources Settings */
+
+  #setup-source-settings {
+    background: @white;
+    border-radius: @base-border-radius;
+    padding: @base-padding;
+    border: 1px solid @grayMid;
+  }
+
+  #setup-source-settings div.left {
+    width: 275px;
+  }
+
+
+/* Setup - Complete */
+
+  #setup-complete-message {
+    line-height: 48px;
+  }
+
+  #setup-complete-icon {
+    font-size: 100px;
+    line-height: 100px;
+  }
+

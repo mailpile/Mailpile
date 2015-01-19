@@ -27,6 +27,7 @@ DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), False, APPVER],
+    'homedir': [_('Location of Mailpile data'), False, '(unset)'],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
@@ -51,7 +52,7 @@ CONFIG_RULES = {
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
             'html_theme': [_('Default theme'),
-                           'dir', os.path.join('static', 'default')],
+                           'dir', os.path.join('mailpile', 'www', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
@@ -65,6 +66,8 @@ CONFIG_RULES = {
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
         'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
+        'gpg_email_key':  (_('Attach public key to outgoing messages?'),
+                            bool, True),
         'openpgp_header': X(_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
@@ -95,7 +98,10 @@ CONFIG_RULES = {
     'web': (_("Web Interface Preferences"), False, {
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
+        'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
         'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
+        'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, []),
+        'donate_visibility': (_('Hide donate link in topbar'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
@@ -116,7 +122,7 @@ CONFIG_RULES = {
         'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mailbox protocol or format'),
                             ["mbox", "maildir", "macmaildir", "gmvault",
-                             "imap", "imap_ssl", "pop3"],
+                             "imap", "imap_ssl", "pop3", "pop3_ssl"],
                             ''),
         'pre_command':     (_('Shell command run before syncing'), str, ''),
         'post_command':    (_('Shell command run after syncing'), str, ''),

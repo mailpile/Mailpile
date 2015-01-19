@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from datetime import date
+import datetime
 from urllib import urlencode
 
 import mailpile.auth
@@ -22,7 +22,7 @@ from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
-from mailpile.ui import Session
+from mailpile.ui import Session, SilentInteraction
 from mailpile.util import *
 
 
@@ -265,11 +265,15 @@ class SetupMagic(Command):
             accepted_keys = []
             if gnupg.is_available():
                 keys = gnupg.list_secret_keys()
+                cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                          ).strftime("%Y-%m-%d")
                 for key, details in keys.iteritems():
-                    # Ignore revoked/expired keys.
-                    if ("revocation-date" in details and
-                        details["revocation-date"] <=
-                            date.today().strftime("%Y-%m-%d")):
+                    # Ignore revoked/expired/disabled keys.
+                    revoked = details.get('revocation_date')
+                    expired = details.get('expiration_date')
+                    if (details.get('disabled') or
+                            (revoked and revoked <= cutoff) or
+                            (expired and expired <= cutoff)):
                         continue
 
                     accepted_keys.append(key)
@@ -296,8 +300,8 @@ class SetupMagic(Command):
                         session.config.prefs.crypto_policy = 'openpgp-sign'
 
                 if len(accepted_keys) == 0:
-                    # FIXME: Start background process generating a key once a user
-                    #        has supplied a name and e-mail address.
+                    # FIXME: Start background process generating a key once a
+                    #        user has supplied a name and e-mail address.
                     pass
 
             else:
@@ -526,13 +530,16 @@ class SetupCrypto(TestableWebbable):
     TEST_DATA = {}
 
     def list_secret_keys(self):
-        today = date.today().strftime("%Y-%m-%d")
+        cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                  ).strftime("%Y-%m-%d")
         keylist = {}
         for key, details in self._gnupg().list_secret_keys().iteritems():
-            # Ignore revoked keys
-            if ("revocation-date" in details and
-                    details["revocation-date"] <= today):
-                # FIXME: Does this check expiry as well?
+            # Ignore (soon to be) revoked/expired/disabled keys.
+            revoked = details.get('revocation_date')
+            expired = details.get('expiration_date')
+            if (details.get('disabled') or
+                    (revoked and revoked <= cutoff) or
+                    (expired and expired <= cutoff)):
                 continue
 
             # Ignore keys that cannot both encrypt and sign
@@ -773,7 +780,7 @@ class SetupProfiles(SetupCrypto):
     def discover_new_email_addresses(self, profiles):
         addresses = {}
         existing = set([p['email'] for p in profiles.values()])
-        for key, info in self._gnupg().list_secret_keys().iteritems():
+        for key, info in self.list_secret_keys().iteritems():
             for uid in info['uids']:
                 email = uid.get('email')
                 note = uid.get('comment')
@@ -915,6 +922,9 @@ class SetupTestRoute(SetupProfiles):
         fromaddr = route.get('username', '')
         if '@' not in fromaddr:
             fromaddr = self.session.config.get_profile()['email']
+        if not fromaddr or '@' not in fromaddr:
+            fromaddr = '%s@%s' % (route.get('username', 'test'),
+                                  route.get('host', 'example.com'))
         assert(fromaddr)
 
         error_info = {'error': _('Unknown error')}
@@ -958,7 +968,10 @@ class Setup(TestableWebbable):
 
     @classmethod
     def _check_profiles(self, config):
-        data = ListProfiles(Session(config)).run().result
+        session = Session(config)
+        session.ui = SilentInteraction(config)
+        session.ui.block()
+        data = ListProfiles(session).run().result
         okay = routes = bad = 0
         for rid, ofs in data["rids"].iteritems():
             profile = data["profiles"][ofs]

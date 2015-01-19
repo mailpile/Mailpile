@@ -1,0 +1,56 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{% if result %}
+  <div class="hide" id="pile-newmessages-notification">New messages received! Click here (or press f) to refresh your view.</div>
+  <table id="pile-results" class="{{ config.web.display_density }}">
+  <tbody>
+  {% for mid in result.thread_ids %}
+    {% include("partials/search_item.html") %}
+  {% endfor %}
+  </tbody>
+  </table>
+  {% if result.stats.total > 0 %}
+  <div id="pile-bottom" class="clearfix">
+    {% set searchterms = result.search_terms|join(' ') %}
+    {% if result.stats.start > 1 %}
+    {% set newstart = result.stats.start-result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    <a href="/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
+    {% endif %}
+    {% if result.stats.start + result.stats.count < result.stats.total %}
+    {% set newstart = result.stats.start+result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    <a href="/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-next">{{_("Next")}}</a>
+    {% endif %}    
+    <h5 class="text-right">
+    {% if result.stats.total > 1 %}
+      {{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}}
+    {% elif result.stats.total == 1 %}
+      {{_("1 Conversation")}}
+    {% endif %}
+    </h5>
+  </div>
+  <div id="pile-speed" class="text-center clearfix">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
+  </div>
+  {% else %}
+  <div id="pile-empty" class="clearfix add-bottom text-center">
+    <h3 class="add-top">{{_("No Results Found")}} :)</h3>
+    <p>{{_("It seems your Mailpile does not contain any messages, tags or contacts for the search")}}:</p>
+    <p id="pile-empty-search-terms">"{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{% endfor %}"</p>
+    <p>{{_("Here are some other options for you")}}:</p>
+    <p><a href="/help/" id="pile-empty-search-terms-help" class="button-primary"><span class="icon-help"></span> {{_("Learn To Search Smarter")}}</a></p>
+    <p class="add-bottom"><a href="#" id="btn-pile-empty-search-web" class="button-primary"><span class="icon-search"></span> {{_("Search The Web For People")}}</a></p>
+  </div>
+  {% endif %}
+{% else %}
+  <div class="add-top add-bottom text-center">
+    <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
+  </div>
+{% endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Search.init();
+});
+</script>
+{% endblock %}

@@ -3,6 +3,7 @@ import hashlib
 import smtplib
 import socket
 import sys
+import time
 
 import mailpile.util
 from mailpile.util import *
@@ -12,6 +13,7 @@ from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event
 from mailpile.safe_popen import Popen, PIPE
+from mailpile.vcard import VCardLine
 
 
 def sha512_512k(data):
@@ -199,6 +201,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
         frm_vcard = session.config.vcards.get_vcard(frm)
+        update_to_vcards = msg and msg["x-mp-internal-pubkeys-attached"]
 
         if 'sendmail' in session.config.sys.debug:
             sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n'
@@ -342,6 +345,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     'Message sent, %d bytes',
                     total
                     ) % total, events)
+
             for ev in events:
                 for rcpt in to:
                     vcard = session.config.vcards.get_vcard(rcpt)
@@ -349,6 +353,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                         vcard.record_history('send', time.time(), msg_mid)
                         if frm_vcard:
                             vcard.prefer_sender(rcpt, frm_vcard)
+                        if update_to_vcards:
+                            vcard.gpgshared = int(time.time())
                         vcard.save()
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total

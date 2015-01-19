@@ -1,0 +1,22 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
+  {% include("partials/head.html") %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% include("partials/topbar.html") %}
+<div id="content-wide"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
+  {% block content %}{{results}}{% endblock %}
+</div></div>
+{% include("partials/hidden.html") %}
+{% include("partials/helpers.html") %}
+{% include("partials/tooltips.html") %}
+{% include("partials/modals.html") %}
+{% include("partials/javascript.html") %}
+</body>
+</html>

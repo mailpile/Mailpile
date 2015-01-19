@@ -1,0 +1,101 @@
+<div class="thread-item-metadata clearfix">
+  <div class="dropdown">
+    <div class="thread-item-from-avatar dropdown-toggle" data-toggle="dropdown">
+      <a href="#" title="{{_("From")}}: {{ from.address }}"><img src="{{ show_avatar(from) }}"></a>
+    </div>
+    <div class="thread-item-from dropdown dropdown-toggle" data-toggle="dropdown">
+      <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}: {{ from.address}}">{{ contact_name(from) }}</a>
+      <div class="thread-item-metadata-address">
+        {{from.address}}
+      </div>
+    </div>
+    <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(from)}}">
+      {% if not from.flags.contact and not from.flags.profile: %}
+      <li role="presentation">
+        <a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#">
+          <span class="icon-plus"></span> {{_("Add Contact")}}
+        </a>
+      </li>
+      {% else %}
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="/contacts/view/{{from.address}}/">
+          <span class="icon-user"></span> {{_("View Profile")}}
+        </a>
+      </li>
+      {% endif %}
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="mailto:{{from.address}}">
+          <span class="icon-compose"></span> {{_("Compose New")}}
+        </a>
+      </li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
+          <span class="icon-search"></span> {{_("Search Messages")}}
+        </a>
+      </li>
+      <li role="presentation">
+        <a class="message-action-find-keys" role="menuitem" tabindex="-1" href="{{from.address}}">
+          <span class="icon-key"></span> {% if from.flags.secure %}{{_("Show Encryption Keys")}}{% else %}{{_("Find Encryption Keys")}}{% endif %}
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="thread-item-details">
+    <a class="datetime" href="{{ metadata.urls.thread }}">
+      {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}<span class="icon-new"></span>{% endif %}{% endfor %}
+      {{ metadata.timestamp|friendly_datetime }} {{ metadata.timestamp|friendly_time }}
+    </a>
+    {% set signature = show_message_signature(metadata.crypto.signature) %}
+    {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
+    <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
+    <span class="thread-item-crypto-info icon {{ signature.color + ' ' + signature.icon }}" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}" data-expand="no"></span>
+    <span class="thread-message-metadata-details-toggle icon icon-circle-info" data-mid="{{mid}}"></span>
+  </div>
+</div>
+<div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
+  <ul class="clearfix">
+    <li>{{_("To")}}:</li>
+    {% if metadata.to_aids %}
+    {% for to_aid in metadata.to_aids %}{% set person = result.data.addresses[to_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+    {% else %}
+    <li>{{_("No Recipients")}} :(</li>
+    {% endif %}
+  </ul>
+  {% if metadata.cc_aids %}
+  <ul class="clearfix">
+    <li>{{_("Cc")}}:</li>
+    {% for cc_aid in metadata.cc_aids %}{% set person = result.data.addresses[cc_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if metadata.bcc_aids %}
+  <ul class="clearfix">
+    <li>{{_("Bcc")}}:</li>
+    {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <ul>
+    <li>{{_("Subject")}}:</li>
+    <li>{{metadata.subject}}</li>
+  </ul>
+  <ul class="clearfix">
+    <li>{{_("View:")}}</li>
+    <li><a href="#" class="thread-message-toggle-html" data-mid="{{mid}}" data-state="plain">{{_("HTML")}}</a></li>
+    <li><a href="/thread/={{mid}}/as.json" target="_blank">{{_("JSON")}}</a></li>
+    <li><a href="/message/raw/={{mid}}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+  </ul>
+</div>

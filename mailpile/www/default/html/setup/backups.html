@@ -1,0 +1,27 @@
+<!-- Advanced - Backups -->
+<div class="setup-box setup-box-medium add-top animated bounceInTop">
+  <h2 class="text-center"><span class="icon-key"></span> Key Backup</h2>
+  <p>It's very important you backup your encryption keys and Mailpile passphrase. If you lose either you will be unable to access your Mailpile or decrypt emails and attachments.</p> <p>There are a few ways you can back up these crucial security aspects depending on your level of technical knowledge.</p>
+  <div class="add-bottom text-center">
+    <a href="/settings/backup-keys.html" class="button-primary" target="_blank">Backup Keys Now</a>
+  </div>
+
+  {#
+  <h2 class="text-center"><span class="icon-settings"></span> Data Backup</h2>
+  <form class="standard" method="POST">
+    <p>Would you like to backup your data with one of the following cloud sync solutions</p>
+    <p>
+      <select name="install_type" class="center">
+        <option value="owncloud">ownCloud</option>
+        <option value="dropbox">Dropbox</option>
+        <option value="googledrive">GoogleDrive</option>
+      </select>
+    </p>
+    <p>
+    <div class="text-center">
+      <a href="/setup/#" class="button-info">{{_("Back")}}</a> &nbsp;&nbsp;
+      <button id="btn-setup-source-settings" class="center">{{_("Save")}}</button>
+    </div>
+  </form>
+  #}
+</div>

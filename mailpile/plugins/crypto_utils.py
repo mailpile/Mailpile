@@ -60,8 +60,11 @@ class GPGKeyImport(Command):
     SYNOPSIS = (None, 'crypto/gpg/importkey', 'crypto/gpg/importkey',
                 '<key_file>')
     HTTP_CALLABLE = ('POST', )
-    HTTP_QUERY_VARS = {'key_data': 'Contents of public key to be imported',
-                       'key_file': 'Location of file containing the public key'}
+    HTTP_QUERY_VARS = {
+        'key_data': 'Contents of public key to be imported',
+        'key_file': 'Location of file containing the public key',
+        'name': '(ignored)'
+    }
 
     def command(self):
         key_data = ""
@@ -117,10 +120,11 @@ class GPGKeySign(Command):
 class GPGKeyImportFromMail(Search):
     """Import a GPG Key."""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/gpg/importkeyfrommail', 
+    SYNOPSIS = (None, 'crypto/gpg/importkeyfrommail',
                 'crypto/gpg/importkeyfrommail', '<mid>')
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
+    COMMAND_CACHE_TTL = 0
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -165,7 +169,7 @@ class GPGKeyImportFromMail(Search):
 class GPGKeyList(Command):
     """List GPG Keys."""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/gpg/keylist', 
+    SYNOPSIS = (None, 'crypto/gpg/keylist',
                 'crypto/gpg/keylist', '<address>')
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {'address': 'E-mail address'}
@@ -187,7 +191,7 @@ class GPGKeyList(Command):
 class GPGKeyListSecret(Command):
     """List Secret GPG Keys"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/gpg/keylist/secret', 
+    SYNOPSIS = (None, 'crypto/gpg/keylist/secret',
                 'crypto/gpg/keylist/secret', '<address>')
     HTTP_CALLABLE = ('GET', )
 
@@ -199,10 +203,11 @@ class GPGKeyListSecret(Command):
 class GPGUsageStatistics(Search):
     """Get usage statistics from mail, given an address"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/gpg/statistics', 
+    SYNOPSIS = (None, 'crypto/gpg/statistics',
                 'crypto/gpg/statistics', '<address>')
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {'address': 'E-mail address'}
+    COMMAND_CACHE_TTL = 0
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -227,13 +232,12 @@ class GPGUsageStatistics(Search):
         if addr is None:
             return self._error("Must supply an address", None)
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr])
+        session, idx = self._do_search(search=["from:%s" % addr])
         total = 0
         for messageid in session.results:
             total += 1
 
-        session, idx, _, _ = self._do_search(search=["from:%s" % addr, 
-            "has:pgp"])
+        session, idx = self._do_search(search=["from:%s" % addr,  "has:pgp"])
         pgp = 0
         for messageid in session.results:
             pgp += 1
@@ -243,14 +247,187 @@ class GPGUsageStatistics(Search):
         else:
             ratio = 0
 
-        res = {"messages": total, 
-               "pgpsigned": pgp, 
+        res = {"messages": total,
+               "pgpsigned": pgp,
                "ratio": ratio,
                "address": addr}
 
         return self._success("Got statistics for address", res)
 
 
+class GPGCheckKeys(Search):
+    """Sanity check your keys and profiles"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/check_keys', 'crypto/gpg/check_keys',
+                '[--all-keys]')
+    HTTP_CALLABLE = ('GET', )
+    COMMAND_CACHE_TTL = 0
+
+    class CommandResult(Command.CommandResult):
+        def __init__(self, *args, **kwargs):
+            Command.CommandResult.__init__(self, *args, **kwargs)
+
+        def as_text(self):
+            if not isinstance(self.result, (dict,)):
+                return ''
+            if self.result.get('details'):
+                message = '%s.\n - %s' % (self.message, '\n - '.join(
+                    p['description'] for p in self.result['details']
+                ))
+            else:
+                message = '%s. %s' % (self.message, _('Looks good!'))
+            if self.result.get('fixes'):
+                message += '\n\n%s\n - %s' % (_('Proposed fixes:'),
+                                            '\n - '.join(
+                    '\n    * '.join(f) for f in self.result['fixes']
+                ))
+            return message
+
+    def command(self):
+        session, config = self.session, self.session.config
+        args = list(self.args)
+
+        all_keys = '--all-keys' in args
+        quiet = '--quiet' in args
+
+        date = datetime.date.today()
+        today = date.strftime("%Y-%m-%d")
+        date += datetime.timedelta(days=14)
+        fortnight = date.strftime("%Y-%m-%d")
+
+        serious = 0
+        details = []
+        fixes = []
+        bad_keys = {}
+        good_key = None
+        good_keys = {}
+        secret_keys = self._gnupg().list_secret_keys()
+
+        for fprint, info in secret_keys.iteritems():
+            k_info = {
+                'description': None,
+                'key': fprint,
+                'keysize': int(info.get('keysize', 0)),
+            }
+            is_serious = True
+            exp = info.get('expiration_date')
+            if info["disabled"]:
+                k_info['description'] = _('%s: --- Disabled.') % fprint
+                is_serious = False
+            elif (not info['capabilities_map'].get('encrypt') or
+                    not info['capabilities_map'].get('sign')):
+                rev = info.get('revocation_date')
+                if rev and rev <= today:
+                    k_info['description'] = _('%s: Bad: key was revoked'
+                                              ) % fprint
+                elif exp and exp <= today:
+                    k_info['description'] = _('%s: Bad: expired on %s'
+                                              ) % (fprint,
+                                                   info['expiration_date'])
+                else:
+                    k_info['description'] = _('%s: Bad: key is useless'
+                                              ) % fprint
+            elif exp and exp <= fortnight:
+                k_info['description'] = _('%s: Bad: expires on %s'
+                                          ) % (fprint, info['expiration_date'])
+            elif k_info['keysize'] < 2048:
+                k_info['description'] = _('%s: Bad: too small (%d bits)'
+                                          ) % (fprint, k_info['keysize'])
+            else:
+                good_keys[fprint] = info
+                if (not good_key
+                        or int(good_key['keysize']) < k_info['keysize']):
+                    good_key = info
+                k_info['description'] = _('%s: OK: %d bits, looks good!'
+                                          ) % (fprint, k_info['keysize'])
+                is_serious = False
+
+            if k_info['description'] is not None:
+                details.append(k_info)
+            if is_serious:
+                fixes += [[_('Disable bad keys:'),
+                           _('Run: %s') % '`gpg --edit-key %s`' % fprint,
+                           _('Type: %s') % '`disable`, `save`']]
+                serious += 1
+            if fprint not in good_keys:
+                bad_keys[fprint] = info
+
+        bad_recipient = False
+        if config.prefs.gpg_recipient:
+            for k in bad_keys:
+                if k.endswith(config.prefs.gpg_recipient):
+                    details.append({
+                        'gpg_recipient': True,
+                        'description': _('%s: Mailpile config uses bad key'
+                                         ) % k,
+                        'key': k
+                    })
+                    bad_recipient = True
+                    serious += 1
+
+        if bad_recipient and good_key:
+            fixes[:0] = [[_('Update the Mailpile config to use a good key:'),
+                          _('Run: %s') % ('`set prefs.gpg_recipient = %s`'
+                                          % good_key['fingerprint']),
+                          _('Note! The passphrase of this key will be used'
+                            ' to log in to Mailpile.')]]
+
+        profiles = config.vcards.find_vcards([], kinds=['profile'])
+        for vc in profiles:
+            p_info = {
+                'profile': vc.get('x-mailpile-rid').value,
+                'email': vc.email,
+                'fn': vc.fn
+            }
+            try:
+                if all_keys:
+                    vcls = [k.value for k in vc.get_all('key') if k.value]
+                else:
+                    vcls = [vc.get('key').value]
+            except (IndexError, AttributeError):
+                vcls = []
+            for key in vcls:
+                fprint = key.split(',')[-1]
+                if fprint and fprint in bad_keys:
+                    p_info['key'] = fprint
+                    p_info['description'] = _('%(key)s: Bad key in profile'
+                                              ' %(fn)s <%(email)s>'
+                                              ' (%(profile)s)') % p_info
+                    details.append(p_info)
+                    serious += 1
+            if not vcls:
+                p_info['description'] = _('No key for %(fn)s <%(email)s>'
+                                          ' (%(profile)s)') % p_info
+                details.append(p_info)
+                serious += 1
+
+        if len(good_keys) == 0:
+            fixes[:0] = [[
+                _("You need a new key! (RSA and RSA, 2048 bits or more)"),
+                _("Run: %s") % '`gpg --gen-key`',
+                _("(Answer the GPG tool's questions)")
+            ], [
+                _('Update the Mailpile config to use a good key:'),
+                _('Run: %s') % ('`set prefs.gpg_recipient = <FINGERPRINT>`'),
+                _('Note! The passphrase of this key will be used'
+                  ' to log in to Mailpile.')
+            ]]
+            fixes += [[
+                _("Inform your contacts you have a new key."),
+                _("Check who sends you encrypted mail: %s"
+                  ) % '`search is:encrypted to:me`',
+                _('Send them e-mail!')
+            ]]
+
+        if quiet and not serious:
+            return self._success('OK')
+
+        ret = self._error if serious else self._success
+        return ret(_('Sanity checked: %d keys in GPG keyring, %d profiles')
+                     % (len(secret_keys), len(profiles)),
+                   result={'passed': not serious,
+                           'details': details,
+                           'fixes': fixes})
 
 
 _plugins.register_commands(GPGKeySearch)
@@ -261,3 +438,4 @@ _plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
 _plugins.register_commands(GPGUsageStatistics)
 _plugins.register_commands(GPGKeyListSecret)
+_plugins.register_commands(GPGCheckKeys)

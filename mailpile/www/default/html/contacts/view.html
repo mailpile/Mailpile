@@ -1,0 +1,158 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}
+{% block content %}
+<div id="contact-view" class="content-normal">
+{% if result.contact %}
+  {% if result.contact.fn %}
+  {% set name = result.contact.fn %}
+  {% else %}
+  {% set name = _("No Name") %}
+  {% endif %}
+  <ul class="items grouped">
+    <li class="grouped">
+      <div class="clearfix">
+    {% if result.contact.photo %}
+      <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
+    {% else %}
+      <img class="contact-avatar left" width="80" src="{{ show_avatar("") }}">
+    {% endif %}
+    <h2  class="contact-name ">{{name}}</h2>
+    {% if result.contact.kind == 'profile' %}
+      <h5 class="contact-subname">{{_("Hey that's you")}} :)</h5>
+    {% endif %}
+      </div>
+    </li>
+  {% if result.contact.email %}
+    {% for email in result.contact.email %}
+    <li class="grouped clearfix">
+      <div class="left">
+        <strong>{{email.email}}</strong>
+      </div>
+      <div class="right">
+        <a class="compose-to-email" href="mailto:{{ email.email }}"><span class="icon-compose"></span> {{_("Compose")}}</a> &nbsp;&nbsp;
+        <a class="search-by-email" href="/search/?q=from:{{ email.email }}"><span class="icon-search"></span> {{_("Search")}}</a>
+      </div>
+    </li>
+    {% endfor %}
+  {% endif %}
+  </ul>
+
+  {% set keys = mailpile("crypto/gpg/keylist", result.contact.email.0.email).result %}  
+  <h4>{{_("Security & Keys")}}</h4>
+  <ul class="items grouped">
+    {% if keys %}
+    {% for id, key in keys.iteritems() %}
+    <li class="grouped">
+      <select class="crypto-key-policy right" data-fingerprint="{{key.fingerprint}}">
+        <option value="true">Use This Key</option>
+        <option value="false">Don't Use This Key</option>
+      </select>
+      <span class="icon-fingerprint left"></span>
+      <h5 class="contact-key">{{ nice_fingerprint(key.fingerprint) }}</h5>
+      <a href="#" class="show-key-details" data-keyid="{{id[8:]}}">See Details</a>
+      <div id="contact-key-details-{{id[8:]}}" class="contact-key-details clearfix">
+        <div class="left add-right">
+        Created: <strong>{{key['creation-date']}}</strong><br>
+        {% if key['revocation-date'] %}Expires: <strong>{{key['revocation-date']}}</strong>{% else %}Does not expire{% endif %}<br>
+        {% if key.capabilities %}Capabilities: <strong>{{key.capabilities}}</strong><br>{% endif %}
+        Length: <strong>{{key.keysize}}</strong><br>
+        Type: <strong>{{key.keytype}}</strong><br>
+        {% if key.trust %}Trust: <strong>{{key.trust}}</strong><br><br>{% endif %}
+        </div>
+        <div class="left">
+        {% for uid in key.uids %}
+          {% if uid.name or uid.email or uid.comment %}
+          {{uid.name}}<br>
+          {{uid.email}}<br>
+          {% if uid.comment %}{{uid.comment}}<br>{% endif %}
+          {{uid['creation-date']}}
+          {% endif %}
+        {% endfor %}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+    <li class="grouped">
+      <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
+        {% set crypto_policy = show_crypto_policy(policy) %}
+        <option value="{{ policy }}"
+          {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}
+          data-message="{{crypto_policy.message}}">{{crypto_policy.text}}</option>
+        {% endfor %}
+      </select>
+      {{_("messages when communicating with")}} {{name}}
+    </li>
+    {% else %}
+    <li class="grouped">
+      {{_("You have no encryption keys for this contact. You need encryption keys in order to communicate securely.")}}
+    </li>
+    {% endif %}
+  </ul>
+
+    <a href="{{result.contact.email.0.email}}" class="button-secondary message-action-find-keys add-bottom">
+      <span class="icon-key"></span> {{_("Find Encryption Keys")}}
+    </a>
+
+  {# FIXME: Commenting out for Beta
+  <h4>{{_("Stats")}}</h4>
+  <ul class="contact-detail">
+    <li>
+      Messages Sent To: {{result.sent_messages}}<br>
+      Messages Received From: {{result.received_messages}}<br>
+      {% if result.last_contact_to %}
+      Last Contacted: <a href="{{result.last_contact_to_msg_url}}">{{ friendly_datetime(result.last_contact_to) }}</a><br>
+      {% else %}
+      You've Never Contacted {{ result.contact.fn }}<br>
+      {% endif %}
+      {% if result.last_contact_from %}
+      Last Contacted You: <a href="{{result.last_contact_from_msg_url}}">{{ friendly_datetime(result.last_contact_from) }}</a><br>
+      {% else %}
+      You've Never Been Contacted By {{ result.contact.fn }}
+      {% endif %}
+    </li>
+  </ul>
+  #}
+
+  {% set contact_search = "email:" + result.contact.email.0.email %}
+  {% set conversations = mailpile("search", contact_search).result %}
+  {% if conversations and conversations.data %}
+  <h4>{{_("Conversations")}}</h4>
+  <ul class="contact-tag-filter">
+    <!-- FIXME: Commented out for Beta
+    <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
+    -->
+    {% if conversations.data.tags %}
+    {% for tid, tag in conversations.data.tags.iteritems() %}
+    {% if tag.display in ("priority", "tag", "archive") %}
+    <li><a href="/search/?q=from:{{result.contact.email.0.email}}&tag:{{tag.slug}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
+    {% endif %}
+    {% endfor %} 
+    {% endif %}
+  </ul>
+  <ul class="items grouped">
+    {% for mid in conversations.thread_ids %}
+      {% set thread_mid = conversations.data.metadata[mid].thread_mid %}
+      {% set conversation = conversations.data.metadata[mid] %}
+      {% set thread_count = conversations.data.threads[thread_mid]|length + 1 %}
+      <li class="grouped">
+        <a href="/thread/={{ mid }}/">{{ nice_subject(conversation) }}&nbsp;&nbsp;
+          <span class="text-detail"><span class="icon-inbox"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
+        </a>
+      </li>
+    {% endfor %}  
+  </ul>
+  {% else %}
+  <h4>{{_("No Conversations")}} :(</h4>
+  {% endif %}
+{% else %}
+    {% set error_title = "contact_missing" %}
+    {% include("partials/errors_content.html") %}
+{% endif %}
+</div>
+<script>
+$(document).ready(function() {
+  Mailpile.Contacts.init();
+});
+</script>
+{% endblock %}

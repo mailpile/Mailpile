@@ -258,7 +258,7 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
-        # FIXME: Do something more to this
+        # FIXME: should set revocation_date (checked in existing code)
         print line
 
     def parse_unknown(self, line):
@@ -591,7 +591,23 @@ class GnuPG:
                             "--list-secret-keys", "p",
                             "--list-secret-keys", "t",
                             "--list-secret-keys", "k"])
-        return self.parse_keylist(retvals[1]["stdout"])
+        secret_keys = self.parse_keylist(retvals[1]["stdout"])
+
+        # Another unfortunate thing GPG does, is it hides the disabled
+        # state when listing secret keys; it seems internally only the
+        # public key is disabled. This makes it hard for us to reason about
+        # which keys can actually be used, so we compensate...
+        list_keys = ["--fingerprint"]
+        for fprint in secret_keys:
+            list_keys += ["--list-keys", fprint]
+        retvals = self.run(list_keys)
+        public_keys = self.parse_keylist(retvals[1]["stdout"])
+        for fprint, info in public_keys.iteritems():
+            if fprint in secret_keys:
+                for k in ("disabled", ):  # FIXME: Copy more?
+                    secret_keys[fprint][k] = info[k]
+
+        return secret_keys
 
     def import_keys(self, key_data=None):
         """
@@ -817,6 +833,12 @@ class GnuPG:
                                                 "comment": comment})
         return results
 
+    def get_pubkey(self, keyid):
+        retvals = self.run(['--armor',
+                            '--export', keyid]
+                            )[1]["stdout"]
+        return "".join(retvals)
+
     def address_to_keys(self, address):
         res = {}
         keys = self.list_keys()
@@ -950,6 +972,10 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
         return self.crypto().encrypt(message_text,
                                      tokeys=tokeys, armor=True,
                                      sign=True, fromkey=from_key)
+
+    def _update_crypto_status(self, part):
+        part.signature_info.part_status = 'verified'
+        part.encryption_info.part_status = 'decrypted'
 
 
 class GnuPGExpectScript(threading.Thread):
@@ -1090,7 +1116,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
     ]
     VARIABLES = {
         'keytype': '1',
-        'bits': '1024',  # FIXME: '4096',
+        'bits': '4096',
         'name': 'Mailpile Generated Key',
         'email': '',
         'comment': 'www.mailpile.is',

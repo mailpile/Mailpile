@@ -36,7 +36,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _lookup(self, address):
         results = {}
         terms = ['from:%s' % address, 'has:pgpkey']
-        session, idx, _, _ = self._do_search(search=terms)
+        session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
             for key_data in self._get_keys(messageid):
@@ -56,7 +56,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
-            attachments = email.get_message_tree("attachments")["attachments"]
+            attachments = email.get_message_tree(want=["attachments"]
+                                                 )["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
                     key = part["part"].get_payload(None, True)
@@ -82,6 +83,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         for m in ak.packets():
             try:
                 if isinstance(m, pgpdump.packet.PublicKeyPacket):
+                    # FIXME m.datetime throws nasty error fails hard
+                    # Issue 1115
                     size = str(int(1.024 *
                                    round(len('%x' % m.modulus) / 0.256)))
                     validity = ('e'
@@ -89,7 +92,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                                 else '')
                     results.append({
                         "fingerprint": m.fingerprint,
-                        "created": m.datetime,
+                        "created": "1970-01-01 00:00:00",
                         "validity": validity,
                         "keytype_name": (m.pub_algorithm or '').split()[0],
                         "keysize": size,

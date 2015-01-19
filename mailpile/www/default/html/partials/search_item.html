@@ -1,0 +1,60 @@
+{%    if mid in result.data.message
+%}{%    set message = result.data.message[mid]
+%}{%  else
+%}{%    set message = None
+%}{%  endif
+%}{%  set metadata = result.data.metadata[mid]
+%}{%  set thread = result.data.threads[metadata.thread_mid]
+%}{%  set conversation_count = thread|length + 1
+%}{%  set from = result.data.addresses[metadata.from.aid]
+%}{%  if not from
+%}{%    set from = {'fn': 'Unknown sender', 'email': ''}
+%}{%  endif
+%}{%  if metadata.urls.editing and conversation_count < 2
+%}{%    set url = metadata.urls.editing
+%}{%  else
+%}{%    set url = metadata.urls.thread
+%}{%  endif
+%}
+<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}" data-state="normal" data-mid="{{mid}}">
+  <td class="draggable"></td>
+  <td class="avatar">
+    <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
+  </td>
+  <td class="from">
+    <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+      {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
+      {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
+      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
+      {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
+      {% endif %}
+    </a>
+  </td>
+  <td class="subject">
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted') %}
+    <span class="icon-lock-closed color-08-green"></span> 
+    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
+    <span class="icon-lock-closed color-12-red"></span> 
+    {% endif %}
+    <span class="item-tags">
+    {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
+    {% for tid in metadata.tag_tids %}
+      {% set tag = result.data.tags[tid] %}
+      {% if tag.label and not tag.searched %}
+      <span class="pile-message-tag color-{{tag.label_color}}" id="pile-message-tag-{{tag.tid}}-{{mid}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
+        <span class="pile-message-tag-icon {{tag.icon}}"></span>
+        <span class="pile-message-tag-name">{{tag.name}}</span>
+      </span>
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+    </span>
+    <a class="item-subject" href="{{url}}">{{ nice_subject(metadata) }}</a>
+  </td>
+  <td class="date">
+    <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
+  </td>
+  <td class="checkbox">
+    <input type="checkbox" name="mid" value="{{mid}}">
+  </td>
+</tr>

@@ -1,0 +1,82 @@
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="/static/css/default.css" />
+  <link rel="stylesheet" href="/static/css/print.css" media="print" />
+  {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
+  <link rel="stylesheet" href="/jsapi/as.css?ts={{ config.version }}-{{ config.timestamp }}" />
+  {% endif %}
+
+  <!-- Apple Icons -->
+  <link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png" />
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" id="basic-favicon" href="/static/img/favicon.png" />
+  <link rel="icon" id="basic-favicon" type="image/png" href="/static/img/favicon.png" />
+
+  <!-- JS Global Libraries -->
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/libraries.min.js"></script>
+  {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
+  <script src="/api/0/jsapi/as.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
+  {% if state.command_url in ("/message/draft/", "/message/", "/contacts/") %}
+  <script src="/static/js/plupload.full.min.js"></script>
+  {% endif %}
+
+  <!-- JS - App Specific -->
+  {% if state.command_url not in ("/setup/crypto/") %}
+  <script>
+  {% if result.data and result.data.addresses %}
+    {% set addresses_json = result.data.addresses|json %}
+  {% endif %}
+  {% if result.data and result.data.messages %}
+    {% set messages_json = result.data.messages|json %}
+  {% endif %}
+  {% if result.data and result.data.metadata %}
+    {% set metadata_json = result.data.metadata|json %}
+  {% endif %}
+  {% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
+  $(document).ready(function() {
+  
+    // Print JSON for JS Use
+    Mailpile.instance = {
+     "command": "{{ command }}",
+     "state": {{state|json|safe}},
+     "args": "{{ args }}",
+     "addresses": {% if result.data and result.data.addresses %}{{ addresses_json|safe }}{% else %}{}{% endif %},
+     "messages": {% if result.data and result.data.messages %}{{ messages_json|safe }}{% else %}{}{% endif %},
+     "metadata": {% if result.data and result.data.metadata %}{{ metadata_json|safe }}{% else %}{}{% endif %},
+     "search_tag_ids": {% if result.search_tag_ids %}{{result.search_tag_ids|safe }}{% else %}[]{% endif %},
+     "search_addresses": [],
+     "tags": {{ tags_json|safe }}
+    };
+
+    // Nagifications
+    {% if show_nagification(config.web.nag_backup_key) %}
+    Mailpile.notification({
+      status: 'warning',
+      message: '{{_("Back up your encryption key & passphrase")}}',
+      type: 'nagify',
+      action: '/settings/backup-keys.html'
+    });
+    {% endif %}
+  
+    // HTML5 Browser Notifications
+    if (Notification.permission == "granted") {
+      $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
+    }
+  
+    $('#notifications-permission-option').click(function() {
+      Notification.requestPermission();
+    });
+
+  });
+  
+  /* Plugins */
+  $(document).ready(
+    {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
+  );
+  </script>
+  <script src="/api/0/jsapi/app.js?ts={{ config.version }}-{{ config.timestamp }}"></script>
+  {% endif %}
+  {% endif %}

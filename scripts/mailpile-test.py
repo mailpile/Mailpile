@@ -14,7 +14,7 @@ import traceback
 
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
-mailpile_test = os.path.join(mailpile_root, 'testing')
+mailpile_test = os.path.join(mailpile_root, 'mailpile', 'tests', 'data')
 mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
 mailpile_gpgh = os.path.join(mailpile_test, 'gpg-keyring')
@@ -34,6 +34,8 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 ICELANDIC = u'r\xfanar'
+IS_CHARS = (u'\xe1\xe9\xed\xf3\xfa\xfd\xfe\xe6\xf6\xf0\xc1\xc9\xcd\xd3'
+            u'\xda\xdd\xde\xc6\xd6\xd0')
 MY_FROM = 'team+testing@mailpile.is'
 MY_NAME = 'Mailpile Team'
 MY_KEYID = '0x7848252F'
@@ -84,6 +86,7 @@ def do_setup():
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
     config.prefs.encrypt_index = True
+    config.prefs.inline_pgp = False
 
     # Configure our fake mail sending setup
     config.sys.http_port = 33414
@@ -167,6 +170,8 @@ def test_load_save_rescan():
                    ['from:barnaby', 'subject:testing', 'soup',
                     'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
                    ['from:square', 'subject:here', '-has:attachment'],
+                   [u'subject:' + IS_CHARS, 'subject:8859'],
+                   [u'subject:' + IS_CHARS, 'subject:UTF'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -235,7 +240,8 @@ def test_composition():
         'bcc': ['secret@test.com#%s' % MY_KEYID],
         'mid': [new_mid],
         'subject': ['This the TESTMSG subject'],
-        'body': ['Hello world!']
+        'body': ['Hello world!'],
+        'attach-pgp-pubkey': ['yes']
     }
     mp.message_update(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 1)
@@ -246,7 +252,7 @@ def test_composition():
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
     msg_data['body'] = [
-        ('Hello world: thisisauniquestring :) '+ICELANDIC)
+        ('Hello world... thisisauniquestring :) '+ICELANDIC)
     ]
     mp.message_update_send(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
@@ -274,8 +280,10 @@ def test_composition():
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
+    assert('encryption: ' not in contents(mailpile_sent).lower())
+    assert('attach-pgp-pubkey: ' not in contents(mailpile_sent).lower())
+    assert('x-mailpile-' not in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
     assert('secret@test.com' in grep('X-Args', mailpile_sent))
@@ -284,13 +292,15 @@ def test_composition():
                    ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
                    ['thisisauniquestring'] + MY_FROM.split(),
+                   ['thisisauniquestring',
+                    'in:mp_sig-verified', 'in:mp_enc-none', 'in:sent'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('Encryption key for' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
@@ -299,12 +309,12 @@ def test_composition():
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
-           in contents(mailpile_sent))
+    assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
+
 
 def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
@@ -360,6 +370,7 @@ if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
     mp._session.ui = ui
+    print '%s' % mp.help_splash()
     mp.Interact()
 
 

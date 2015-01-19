@@ -1,0 +1,115 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
+  {% include("partials/head.html") %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% if result.complete %}
+{% include("partials/topbar.html") %}
+{% else %}
+{% include("partials/topbar_setup.html") %}
+<script id="template-setup-topbar" type="text/template">
+{% include("partials/topbar.html") %}
+</script>
+{% endif %}
+<div id="setup-container">
+  {% block content %}{{results}}{% endblock %}
+  {% include("setup/modals.html") %}
+  <div class="clearfix"></div>
+</div>
+
+<script src="/api/0/jsapi/setup.js"></script>
+<script>
+/* Main Init Call */
+var SetupApp = (function ($, Backbone, global) {
+
+    var init = function() {
+
+      global.StateModel = new StateModel();
+      global.StateModel.set({ result: {{result|json|safe}} })
+
+      global.SecurityModel = new SecurityModel();
+
+      global.ProfilesCollection = new ProfilesCollection();
+      global.SourcesCollection  = new SourcesCollection();
+      global.SendingCollection  = new SendingCollection();
+
+      // Views
+      global.HomeView       = new HomeView({ el: $('#setup') });
+      global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
+      global.ProfilesSettingsView = new ProfilesSettingsView({ model: new ProfileModel(), el: $('#setup') });
+      global.SourcesView          = new SourcesView({ el: $('#setup') });
+      global.SourcesSettingsView  = new SourcesSettingsView({ model: new SourceModel(), el: $('#setup') });
+      global.SourcesConfigureView = new SourcesConfigureView({ el: $('#setup') });
+      global.SendingView    = new SendingView({ model: new SendingModel(), el: $('#setup') });
+      global.SecurityView   = new SecurityView({ el: $('body') });
+      // global.KeysView       = new KeysView({ el: $('body') });
+      global.BackupsView    = new BackupsView({ el: $('#setup') });
+      global.AccessView     = new AccessView({ el: $('#setup') });
+      global.LanguageView   = new LanguageView({ el: $('#setup') });
+      global.CompleteView   = new CompleteView({ model: new CompleteModel(), el: $('#setup') });
+      global.TooltipsView   = new TooltipsView({ el: $('#setup') });
+
+  		// Fetch State, Start Router
+      global.Router = new SetupRouter({ state: StateModel.attributes.result, el: $('#setup') });
+      Backbone.history.start();
+
+      // Global Tooltips
+      TooltipsView.showProgress();
+
+      // Eventlog Polling
+      var Events = {};
+      Events = $.timer(function() {
+
+        // Get Events
+        Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
+          if (result.status == 'success') {
+            _.each(result.result.events, function(event, key) {
+
+              // Mailsource & Sources Page
+              if (Backbone.history.fragment === 'sources') {
+                if (_.indexOf(['.mail_source.imap.ImapMailSource', '.mail_source.pop3.Pop3MailSource'], event.source) > -1) {
+                  SourcesView.eventUnconfigured(event);
+                  SourcesView.eventRemote(event);
+                }
+                else if (_.indexOf(['.mail_source.maildir.MaildirMailSource', '.mail_source.mbox.MboxMailSource'], event.source) > -1) {
+                  SourcesView.eventUnconfigured(event);
+                  SourcesView.eventLocal(event);
+                }
+              }
+
+              // Mailsource & Importing Page
+              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'complete') {
+                CompleteView.showProcessingMessage(event);
+              }
+            });
+          }
+        });  
+      });
+  
+      Events.set({ time: 5000, autostart : true });
+      Events.play();
+    };
+
+    return { init: init };
+
+} (jQuery, Backbone, window));
+
+$(document).ready(function() {
+
+  // Print JSON for JS Use
+  Mailpile.instance = {};
+
+  SetupApp.init();
+});
+</script>
+
+{% include("partials/helpers.html") %}
+
+</body>
+</html>

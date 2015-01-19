@@ -1,0 +1,132 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
+{% block content %}
+{% set setup_crypto = mailpile("setup/crypto") %}
+
+
+<div id="setup-passphrase" class="setup-box setup-box-medium add-top half-bottom animated fadeIn">
+  <div id="identity-vault-lock" class="vault-lock-outer">
+    <div class="vault-lock-inner">
+      <div class="vault-lock icon-lock-closed animated"></div>
+    </div>
+  </div>
+
+  {# Authenticated Confirmation Views #}
+  <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center half-top">
+    <h3 class="text-center">{{_("Creating Encryption Keys")}}</h3>
+    <p class="text-center">{{_("Your encryption keys are being created. You may proceed with setting up your Mailpile while this is happening in the background as this process will take a while.")}}</p>
+    <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
+  </div>
+
+  <div id="setup-passphrase-authenticated" class="hide text-center half-top">
+    <h3 class="half-bottom">{{_("Successfully Authenticated")}}</h3>
+    <p>{{_("Below is the unique fingerprint of your encryption key. Use this to help other people verify your encryption key by reading it to them in person, phone, or video chat, and have them compare it to the fingerprint on the encryption key they have!")}}</p>
+    <ul class="setup-list-items add-bottom">
+      <li class="setup-item">
+        <div class="setup-cryto-fingerprint-icon">
+          <span class="icon-fingerprint"></span>
+        </div>
+        <div id="setup-crypto-chosen_key" class="setup-crypto-fingerprint-fingerprint">
+          {{ nice_fingerprint(setup_crypto.result.chosen_key) }}
+        </div>
+      </li>
+    </ul>
+    <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
+  </div>
+
+  {# Input Form For Authenticating #}
+  <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center half-top">
+
+    {% if not result.creating_key and setup_crypto.result.secret_keys|length == 0 %}
+      <h3 class="text-center">{{_("Create your passphrase")}}</h3>
+      <p class="text-center">
+        {{_("Your passphrase should be something really hard to guess but memorable")}}<br>
+        {{_("This passphrase will be used to unlock your Mailpile and for your encryption keys")}}
+      </p>
+      <span id="validation-passphrase">
+        <span class="validation-message"></span>
+        <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      </span>
+      <p><em>{{_("Note: this passphrase is also what you use to log in to your Mailpile")}}</em></p>
+      <span id="validation-passphrase_confirm">
+        <label class="validation-message">{{_("Confirm your passphrase")}}</label>
+        <input id="input-setup-passphrase_confirm" class="medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      </span>
+      <input name="choose_key" value="!CREATE" type="hidden">
+
+    {% elif setup_crypto.result.secret_keys|length > 0 %}
+
+      <label>{{_("Select the encryption key you would like to use")}}</label>
+      <ul class="radio-list add-bottom">
+      {% for key, key_info in setup_crypto.result.secret_keys.iteritems() %}
+        {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
+        <li class="text-left">
+        <label class="radio-list-item">
+          <div class="radio text-right">
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key or setup_crypto.result.secret_keys|length == 1 or loop.index == 1 %}checked{% endif %} tabindex="1">
+          </div>
+          <div class="icon text-center">
+            <span class="icon-key"></span>
+          </div>
+          <div>
+            <strong class="half-bottom">{{ nice_fingerprint(key) }}</strong>
+            {% set uid_count = 0 %}
+            {% for uid in key_info.uids %}
+              {% set uid_count = uid_count + 1 %}
+              {% if uid_count <= 1 %}
+              <span>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+                {% if key_info.uids|length > 1 %}<a href="#" class="setup-crypto-more-uid">see more</a>{% endif %}
+              </span>
+              {% else %}
+              <span class="setup-crypto-uid-more hide"><br>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+              </span>
+              {% endif %}
+            {% endfor %}<br>
+            <span>
+              {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits &nbsp;
+              {{_("Created")}} {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}{{_("Expires")}} {{ key_info.expiration_date }}{% endif %}
+            </span>
+          </div>
+        </label>
+        </li>
+        {% endif %}
+      {% endfor %}
+      </ul>
+
+      <span id="validation-passphrase">
+        <label class="validation-message text-center {% if error and error.invalid_passphrase %}validation-error{% endif %}">
+          {% if error and error.invalid_passphrase %}
+          {{_("Passphrase you entered is incorrect")}}
+          {% else %}
+          {{_("Enter passphrase for the encryption you selected")}}
+          {% endif %}
+        </label>
+        <input id="input-setup-passphrase" class="medium center" type="password" name="passphrase" autofocus autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="2">
+      </span>
+      <div id="setup-passphrase-existing-confirm">
+        <span id="validation-passphrase_confirm">
+          <label class="validation-message"></label>
+          <input id="input-setup-passphrase_confirm" class="medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase" tabindex="3">
+        </span>
+      </div>
+      <input type="hidden" id="setup-passphrase-keys-exists" value="exists">
+    {% endif %}
+
+    <button id="btn-setup-passphrase" class="button-primary" type="submit">{{_("Authenticate")}}</button>
+  </form>
+</div>
+
+<script src="/api/0/jsapi/setup.js"></script>
+<script>
+$(document).ready(function() {
+  Mailpile.instance = {};
+  PassphraseView = new PassphraseView({ model: new PassphraseModel(), el: $('#setup-passphrase') });
+});
+</script>
+{% endblock %}

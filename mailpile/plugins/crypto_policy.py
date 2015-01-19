@@ -95,7 +95,7 @@ class AutoDiscoverCryptoPolicy(CryptoPolicyBaseAction):
             if self._update_crypto_state(email):
                 updated.add(email)
 
-        return updated
+        return self._success(_('Discovered crypto policy'), result=updated)
 
 
 class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
@@ -114,9 +114,11 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         vcard = self.session.config.vcards.get_vcard(email)
         if vcard:
             self._update_vcard(vcard, policy)
-            return {'email': email, 'policy:': policy}
+            return self._success(_('Set crypto policy for %s to %s'
+                                   ) % (email, policy),
+                                 result={'email': email, 'policy:': policy})
         else:
-            return self._error('No vcard for email %s!' % email)
+            return self._error(_('No vcard for email %s!') % email)
 
     def _parse_args(self):
         if self.data:
@@ -124,7 +126,7 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
             policy = unicode(self.data['policy'][0])
         else:
             if len(self.args) != 2:
-                return self._error('Please provide email address and policy!')
+                return self._error(_('Please provide email address and policy!'))
 
             email = self.args[0]
             policy = self.args[1]
@@ -142,12 +144,10 @@ class CryptoPolicyForUser(CryptoPolicyBaseAction):
             return self._error('Please provide a single email address!')
 
         email = self.args[0]
+        policy = self._vcard_policy(email) or self._find_policy(email)
 
-        policy_from_vcard = self._vcard_policy(email)
-        if policy_from_vcard:
-            return policy_from_vcard
-        else:
-            return self._find_policy(email)
+        return self._success(_('Crypto policy for %s is %s') % (email, policy),
+                             result=policy)
 
     def _vcard_policy(self, email):
         vcard = self.session.config.vcards.get_vcard(email)

@@ -1,0 +1,41 @@
+{%- set hard_coded_activities = safe('
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" title="' + _("Search and import encryption keys") + '" href="#">
+        <span class="navigation-icon icon-key"></span> ' + _("Find Encryption Keys") + '
+      </a>
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
+        <li role="presentation">
+          <a class="btn-crypto-search-key" href="#">
+            <span class="icon-search"></span> ' + _("Search for Key") + '
+          </a>
+        </li>
+        <li role="presentation">
+          <a class="btn-crypto-upload-key" href="#">
+            <span class="icon-upload"></span> ' + _("Upload Key") + '
+          </a>
+        </li>
+        <li role="presentation" class="divider"></li>
+        <li role="presentation">
+          <a class="btn-helper" data-helper="what-is-encryption-key" href="#">
+            <span class="icon-help"></span> ' + _("What's This?") + '
+          </a>
+        </li>
+      </ul>
+    </li>
+') -%}
+
+{%- set activities = [{
+    'name': 'contact_list',
+    'url': '/contacts/',
+    'text': _("Contacts"),
+    'description': _("View your contacts"),
+    'icon': 'user'
+},{
+    'name': 'contact_add',
+    'url': '#contact-add',
+    'text': _("Add Contact"),
+    'description': _("Add a new contact"),
+    'icon': 'plus'
+}] -%}
+
+{%- include('partials/tools_default.html') -%}

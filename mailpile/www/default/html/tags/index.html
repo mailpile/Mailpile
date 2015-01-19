@@ -1,0 +1,85 @@
+{% extends "layouts/" + render_mode + "-wide.html" %}
+{% block title %}{{_("Tags")}}{% endblock %}
+{% block content %}
+{% macro render_tag(tag) -%}
+<div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
+  <div class="rectangles-inner">
+      {% if tag.subtag_ids %}
+      {% set total_count = tag.stats.sum_all %}
+      {% else %}
+      {% set total_count = tag.stats.all %}
+      {% endif %}
+    <a class="tag-card-name left" href="/in/{{tag.slug}}/" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+      <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
+      {% if tag.name|length > 15 %}
+      {{tag.name[:12]}}...
+      {% else %}
+      {{tag.name}}
+      {% endif %}
+    </a>
+    <input type="checkbox" class="right">
+    <div class="tag-card-details clearfix">
+      {% if tag.subtag_ids %}
+      <a href="#" class="tag-card-subtags link-detail" data-tid="{{tag.tid}}">{{tag.subtag_ids|length}} {{_("Subtags")}}</a>
+      {% endif %}
+      <a href="/tags/edit.html?only={{tag.slug}}" class="link-detail right"><span class="icon-settings"></span> Settings</a>
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+<div id="content-tools">
+  {% include("partials/tools_tags.html") %}
+</div>
+<div id="content-view">
+  <div class="content-normal">
+    <h4>{{_("Priority Tags")}}</h4>
+  </div>
+  <div id="tags-priority-list" class="container rectangles-container center">
+    <div class="clearfix"></div>
+    {% for tag in result.tags %}
+    {% if tag.display == "priority" and not tag.parent %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="content-normal">
+    <h4>{{_("Tags")}}</h4>
+  </div>
+  <div id="tags-list" class="container rectangles-container center">
+    <div class="clearfix"></div>
+    {% for tag in result.tags %}
+    {% if tag.display == "tag" and not tag.parent %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% set tag_archive = [] %}
+  {% for tag in result.tags %}
+  {% if tag.display == "archive" %}
+      {% do tag_archive.append(tag.tid) %}
+  {% endif %}
+  {% endfor %} 
+  {% if tag_archive|length > 0 %}
+  <div class="content-normal">
+    <h4>{{_("Archived")}}</h4>
+  </div>
+  <div id="tags-archived-list" class="container rectangles-container center hide">
+    <div class="clearfix"></div>
+    {% for tag in result.tags %}
+    {% if tag.display == "archive" %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
+    </div>
+    <div class="content-normal">
+      <button id="button-tag-toggle-archive" data-message="{{_("Hide Archived")}}">{{_("Show Archived")}}</button>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<script>
+$(document).ready(function() {
+  Mailpile.Tags.init();
+});
+</script>
+{% endblock %}

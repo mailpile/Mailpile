@@ -1,5 +1,5 @@
 #!/bin/bash
-OUTPUT="$(dirname $0)/../testing/tmp/sent.mbx"
+OUTPUT="$(dirname $0)/../mailpile/tests/data/tmp/sent.mbx"
 mkdir -p "$(dirname $OUTPUT)"
 touch "$OUTPUT"
 if [ -f "$OUTPUT" ]; then

@@ -1,0 +1,340 @@
+<!-- Connection Down -->
+<script id="template-connection-down" type="text/template">
+  <div id="connection-down">
+    <div class="message">
+      <div id="connection-down-logo" class="add-top animated bounceIn">
+      {% include("../img/logo-color.svg") %}
+      </div>
+      <h1 class="half-top">Can't Connect</h1>
+      <p>This is caused by one of the following:</p>
+      <h3 class="half-top">Your Internet Connection Is Down</h3>
+      <h3 class="">Your Mailpile App Crashed</h3>
+      <p class="add-bottom"><a href="#" id="connection-down-hide">Hide This</a></p>
+    </div>
+  </div>
+</script>
+
+
+<!-- Notifications -->
+<script id="template-notifications" type="text/template">
+  <div id="notifications" class="hide">
+    <div class="notifications-header">
+      {{_("Notifications") }}
+    </div>
+    <div class="notifications-window">
+    <ul>
+      <li class="notification">
+        <a href="#">
+          <img src="/static/img/avatar-default.png">
+          <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <span class="icon-tag"></span> The <strong> Mailpile</strong> tag was applied to <strong>400 messages</strong>
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <img src="/static/img/avatar-default.png">
+          <strong>You</strong> sent <strong>5 tormail</strong> to various people
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <span class="icon-inbox"></span> <strong>16 new messages</strong> have been downloaded to <strong>Inbox</strong>
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <span class="icon-groups"></span> <strong>You</strong> added 5 people to group <strong>Group</strong>
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <span class="icon-inbox"></span> <strong>3 new messages</strong> have been downloaded to <strong>Bills & Banking</strong>
+        </a>                    
+      </li>
+      <li class="notification">
+        <a href="#">
+          <span class="icon-tag"></span> The <strong>Friends</strong> tag was applied to <strong>51 messages</strong>
+        </a>                    
+      </li>
+    </ul>
+    </div>
+    <div class="notifications-bottom">
+      <a href="/eventlog/">{{_("All Notifications")}}</a>
+    </div>
+  </div>
+</script>
+
+
+<!-- Search Param Editor -->
+<script id="template-search-params" type="text/template">
+  <div id="search-params" class="clearfix hide">
+    <ul>
+      <li><span class="icon-calendar"></span> {{_("From")}} <a href="#" class="" id="search-start-time">{{_("Start Date")}}</a> {{_("to")}} <a href="#" class="" id="search-end-time">{{_("Present")}}</a></li>
+      <li><span class="icon-tag"></span> {{_("With")}} <a href="#" id="search-tags">{{_("No Tags")}}</a></li>
+      <li><span class="icon-groups"></span> {{_("In")}} <a href="#" id="search-all-groups">{{_("All Groups")}}</a></li>
+      <li><span class="icon-user"></span> {{_("And")}} <a href="#" id="search-tags">{{_("All Contacts")}}</a></li>
+    </ul>
+  </div>
+</script>
+
+
+<!-- Debug -->
+<script id="template-debug" type="text/template">
+  <div id="debug">
+    <h3>DEBUG</h3>
+    <b>command:</b> {{ command }}<br>
+    <b>args:</b> {{ args }}<br>
+    <b>kwargs:</b> {{ kwargs }}
+    {{logged}}
+  </div>
+</script>
+
+
+<!-- Contact -->
+<script id="template-contact-add" type="text/template">
+  <form id="form-contact-add" class="standard">
+    <fieldset class="contact-add-fields">
+      <input type="hidden" name="csrf" value="">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" data-type="name" class="contact-add-name" value="" placeholder="Chelsea Manning">
+      <label>{{_("E-mail")}}</label>
+      <input type="text" name="email" data-type="email" class="contact-add-email" value="" placeholder="chelsea@manning.com">
+      <div class="contact-add-signature"></div>
+    </fieldset>
+    <div id="contact-add-key"></div>
+    <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+  </form>
+</script>
+
+
+<!-- Crypto - Results and templates for interacting with keyservers -->
+<script id="template-find-keys-running" type="text/template">
+  <span class="icon-search"></span> {{_("Searching for encryption keys for:")}} <span class="color-01-gray-mid"><%= query %></span>
+</script>
+
+<script id="template-find-keys-none" type="text/template">
+  <span class="icon-x"></span> {{_("No encryption keys found matching:")}} <span class="color-01-gray-mid"><%= query %></span>
+</script>
+
+<script id="template-find-keys-error" type="text/template">
+  <span class="icon-signature-unknown"></span> {{_("Make sure your internet connection is working")}}
+</script>
+
+<script id="template-crypto-encryption-key" type="text/template">
+  <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
+    <div class="clearfix">
+      <div class="avatar"><img src="<%= avatar %>"></div>
+      <div class="name">
+        <%= uid.name %><br>
+        <span><%= uid.email %></span>
+      </div>
+      <div class="right">
+        <span class="icon-fingerprint"></span>
+        <div class="fingerprint">
+          <%= Mailpile.nice_fingerprint(fingerprint) %>
+        </div>
+      </div>
+    </div>
+    <div class="searchkey-result-details add-top clearfix hide">
+      <% if (uids) { %>
+      <div class="add-bottom">
+        <strong>{{_("Contact Info")}}</strong>
+        <table>
+        <% _.each(uids, function(uid, key) { %>
+        <tr>
+          <td><%= uid.name %></td>
+          <td><%= uid.email %></td>
+          <td><%= uid.comment %></td>
+        </tr>
+        <% }) %>
+        </table>
+      </div>
+      <% } %>
+      <div class="add-bottom">
+        <strong>{{_("Score")}} <% if (score > 0) { %>+<% } %><%= score %></strong><br>
+        <% _.each(scores, function(item, key) { %>
+        <% if (item[1]) { %><%= item[1] %> <% if (item[0] > 0) { %>+<% } %><%= item[0] %><br><% } %>
+        <% }); %>
+      </div>
+      <div class="half-bottom">
+        <strong>{{_("Details")}}</strong><br>
+        {{_("Strength")}}: <%= keysize %><br>
+        {{_("Algorithm")}}: <%= keytype_name %><br>
+        {{_("Created")}}: <%= created.split(' ')[0] %>
+      </div>
+    </div>
+    <div class="half-top clearfix">
+      <a href="#" class="searchkey-result-score left"
+          data-fingerprint="<%= fingerprint %>"
+          data-score_reason="<%= score_reason %>"
+          data-score_stars="<%= score_stars %>">
+        <% for (i = 0; i < Math.abs(score_stars); i++) { %>
+        <span class="icon-star <%= score_color %>"></span>
+        <% } %>
+      </a>
+      <div class="searchkey-result-actions right">
+        <% if (on_keychain) { %>
+        <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
+          <option value="true" selected="selected">{{_("Use This Key")}}</option>
+          <option value="false">{{_("Don't Use This Key")}}</option>
+        </select>
+        <% } else { %>
+        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Import Key")}}
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </li>
+</script>
+
+
+<script id="template-crypto-encryption-key-importing" type="text/template">
+  <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
+  <div class="text-center">
+    <h4 class="half-bottom">{{_("Importing Encryption Key")}}</h4>
+    <p class="half-bottom">{% include("../img/loading-ellipsis.svg") %}</p>
+    <% if (file) { %>
+    <em class="text-detail">Uploading <%= file.name %> (<%= plupload.formatSize(file.size) %>)</em>
+    <% } else { %>
+    <em class="text-detail">This may take a few moments...</em>
+    <% } %>
+  </div>
+  </li>
+</script>
+
+
+<script id="template-search-keyserver-results" type="text/template">
+  <div class="contact-add-search-keyserver">
+    <div id="contact-search-keyserver-input"></div>
+    <div id="contact-search-keyserver-result"></div>
+  </div>
+</script>
+
+
+<script id="template-search-keyserver-item" type="text/template">
+  <li class="contact-add-search-item" data-keyid="<%= keyid %>">
+    <span class="name"><%= name %></span>
+    <span class="email"><span class="icon-inbox"></span> <%= email %></span>
+    <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
+    <span class="created">{{_("Created")}} <%= created %></span>
+    <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
+    <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
+  </li>
+</script>
+
+
+<script id="template-search-tags-link" type="text/template">
+  <span class="pile-message-tag color-<%= label_color %>" id="pile-message-tag-<%= tid %>-<%= mid %>" data-tid="<%= tid %>" data-mid="<%= mid %>">
+    <span class="pile-message-tag-icon <%= icon %>"></span>
+    <span class="pile-message-tag-name"><%= name %></span>
+  </span>
+</script>
+
+
+<script id="template-modal-private-key-item" type="text/template">
+  <li class="grouped">
+    <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>
+    <% if (expiration_date) { %>
+    <em>Key expires: <%= expiration_date %></em>
+    <% } %>
+    <% _.each(uids, function(uid, key) { %>
+    <strong><%= uid.name %></strong><br>
+    <%= uid.email %><br><br>
+    <% }); %>
+    <%= keytype_name %> Key / <%= keysize %> bits
+    <label class="right">
+    Send Key <input type="checkbox" name="send_key" value="<%= fingerprint %>">
+    </label>
+  </li>
+</script>
+
+
+<script id="template-thread-notification-unthreaded" type="text/template">
+  <a href="<%= url %>"><span class="icon-links"></span> {{_("Message moved to new thread")}} <span class="instruction">({{_("go to new thread")}})</span></a>
+</script>
+
+
+<script id="template-thread-notification-draft-trash" type="text/template">
+  <a href="#" onclick="window.location.reload(true);"><span class="icon-trash"></span> {{_("Draft was deleted")}} <span class="instruction">({{_("click to reload")}})</span></a>
+</script>
+
+
+<script id="template-notification-bubble" type="text/template">
+  <div id="event-<%= event_id %>" class="notification-bubble <%= status %> hide">
+    <span class="icon <%= icon %>"></span> 
+    <span class="text">
+      <span class="message"><%= message %></span><br> 
+      <% if (type === 'nagify') { %>
+      <span class="action">{{"Want to"}} <a href="<%= action %>" data-event_id="<%= event_id %>" class="action notification-nag">{{_("do it now?")}}</a></span>
+      <% } else if (undo) { %>
+      <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo">{{_("undo")}}</a></span>
+      <% } %>
+    </span>
+    <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-circle-x"></span></a>
+  </div>
+</script>
+
+
+<script id="template-messsage-inline-pgp-key-import" type="text/template">
+  <a href="<%= pgp_href %>" data-mid="<%= mid %>" download="{{_('Encryption Key from')}} <%= name %>.asc" class="message-crypto-import-key button-secondary half-bottom"><span class="icon-key"></span> {{_("Import Encryption Key")}}</a>
+  <a href="#" data-mid="<%= mid %>" class="message-crypto-show-inline-key link-detail"><span class="icon-eye"></span> {{_("Show Encryption Key")}}</a>
+  <div id="message-crypto-inline-key-<%= mid %>" class="message-crypto-inline-key half-top hide"><%= pgp_key %></div>
+</script>
+
+
+<script id="template-composer-attachment-image" type="text/template">
+  <li id="compose-attachment-<%= mid %>-<%= aid %>" class="left hide">
+    <div class="attachment-image">
+      <a href="#" data-mid="<%= mid %>" data-aid="<%= aid %>" class="compose-attachment-remove">
+        <span class="icon-circle-x"></span>
+      </a>
+      <div class="preview" style="background-image: url(<%= attachment_data %>);"></div>
+    </div>
+  </li>
+</script>
+
+
+<script id="template-composer-attachment" type="text/template">
+  <li id="compose-attachment-<%= mid %>-<%= aid %>" class="left hide">
+    <div class="attachment">
+      <a href="#" data-mid="<%= mid %>" data-aid="<%= aid %>" class="compose-attachment-remove">
+        <span class="icon-circle-x"></span>
+      </a>
+      <div class="preview">
+        <span class="icon-mime" type="<%= mimetype %>"></span>
+        <span class="extension"><%= extension %></span>
+      </div>
+      <div class="filename">
+        <%= name_fixed %>
+      </div>
+    </div>
+  </li>
+</script>
+
+
+<script id="template-encryption-helper-complete-message" type="text/template">
+  <div class="text-center">
+    <p>Great job. You have successfully found encryption keys for all the contacts you are trying to send an encrypted email to. Way to be more secure ;)</p>
+    <button class="button-secondary" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('encrypt', mid);">Back To Message</button>
+  </div>
+</script>
+
+
+<script id="template-contact-list-item" type="text/template">
+  <div class="rectangles-outer" id="contact-card-<%= email %>">
+    <div class="rectangles-inner">
+      <a class="contact-card-avatar left" href="/contacts/view/<%= email %>/">
+        <img src="/static/img/avatar-default.png">
+      </a>
+      <a class="contact-card-name" href="/contacts/view/<%= email %>/">
+        <%= fn %>
+      </a>
+      <input type="checkbox" class="contact-card-checkbox right">
+    </div>
+  </div>
+</script>

@@ -25,12 +25,13 @@ from lxml.html.clean import Cleaner
 from mailpile.util import *
 from platform import system
 from urllib import quote, unquote
+from datetime import datetime, timedelta
 
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
-from mailpile.crypto.mime import UnwrapMimeCrypto
+from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -178,12 +179,6 @@ def ExtractEmailAndName(string):
     return email, (name or email)
 
 
-def MessageAsString(part, unixfrom=False):
-    buf = StringIO.StringIO()
-    Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
-    return buf.getvalue().replace('--\r\n--', '--\r\n\r\n--')
-
-
 def CleanMessage(config, msg):
     replacements = []
     for key, value in msg.items():
@@ -191,7 +186,7 @@ def CleanMessage(config, msg):
 
         # Remove headers we don't want to expose
         if (lkey.startswith('x-mp-internal-') or
-                lkey in ('bcc', 'encryption')):
+                lkey in ('bcc', 'encryption', 'attach-pgp-pubkey')):
             replacements.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
@@ -220,6 +215,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
                 msg,
                 events)
 
+    attach_pgp_pubkey = 'no'
+    attached_pubkey = False
     crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
 
@@ -231,6 +228,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             sender = sender or val
         elif lhdr == 'encryption':
             crypto_policy = val.lower()
+        elif lhdr == 'attach-pgp-pubkey':
+            attach_pgp_pubkey = val.lower()
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
             rcpts += ExtractEmails(val, strip_keys=False)
 
@@ -276,6 +275,36 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
+    # Do we want to attach a key to outgoing messages?
+    if attach_pgp_pubkey in ['yes', 'true']:
+        g = GnuPG(config)
+        keys = g.address_to_keys(ExtractEmails(sender)[0])
+        for fp, key in keys.iteritems():
+            if not any(key["capabilities_map"].values()):
+                continue
+            # We should never really hit this more than once. But if we do, it
+            # should still be fine.
+            keyid = key["keyid"]
+            data = g.get_pubkey(keyid)
+
+            try:
+                from_name = key["uids"][0]["name"]
+                filename = _('Encryption key for %s.asc') % from_name
+            except:
+                filename = _('My encryption key.asc')
+
+            att = MIMEBase('application', 'pgp-keys')
+            att.set_payload(data)
+            encoders.encode_base64(att)
+            del att['MIME-Version']
+            att.add_header('Content-Id', MakeContentID())
+            att.add_header('Content-Disposition', 'attachment',
+                           filename=filename)
+            att.signature_info = SignatureInfo(parent=msg.signature_info)
+            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            msg.attach(att)
+            attached_pubkey = True
+
     # Should be 'openpgp', but there is no point in being precise
     if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
         wrapper = None
@@ -298,6 +327,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
+    if attached_pubkey:
+        msg['x-mp-internal-pubkeys-attached'] = "Yes"
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
@@ -445,8 +476,27 @@ class Email(object):
                 att = copy.deepcopy(att)
                 att.signature_info = SignatureInfo(parent=msi)
                 att.encryption_info = EncryptionInfo(parent=mei)
+                if att.get('content-id') is None:
+                    att.add_header('Content-Id', MakeContentID())
                 msg.attach(att)
                 del att['MIME-Version']
+
+        # Determine if we want to attach a PGP public key due to timing:
+        if idx.config.prefs.gpg_email_key:
+            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
+            offset = timedelta(days=30)
+            dates = []
+            for addr in addrs:
+                vcard = idx.config.vcards.get(addr)
+                if vcard != None:
+                    lastdate = vcard.gpgshared
+                    if lastdate:
+                        try:
+                            dates.append(datetime.fromtimestamp(float(lastdate)))
+                        except ValueError:
+                            pass
+            if all([date+offset < datetime.now() for date in dates]):
+                msg["Attach-PGP-Pubkey"] = "Yes"
 
         if save:
             msg_key = mbx.add(MessageAsString(msg))
@@ -485,7 +535,8 @@ class Email(object):
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
-    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject', 'Encryption')
+    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
+                         'Encryption', 'Attach-PGP-Pubkey')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -495,7 +546,8 @@ class Email(object):
         'to': 4,
         'cc': 5,
         'bcc': 6,
-        'encryption': 99,
+        'encryption': 98,
+        'attach-pgp-pubkey': 99,
     }
 
     def _attachment_aid(self, att):
@@ -515,7 +567,7 @@ class Email(object):
         tree = tree or self.get_message_tree()
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
-            'encryption': '', 'attachments': {}
+            'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
         }
         header_lines = []
         body_lines = []
@@ -537,7 +589,7 @@ class Email(object):
 
         for att in tree['attachments']:
             aid = self._attachment_aid(att)
-            strings['attachments'][aid] = fn = (att['filename'] or '(unnamed)')
+            strings['attachments'][aid] = (att['filename'] or '(unnamed)')
 
         if not strings['encryption']:
             strings['encryption'] = unicode(self.config.prefs.crypto_policy)
@@ -554,17 +606,20 @@ class Email(object):
                                   ).replace('\r\n', '\n')
         return strings
 
-    def get_editing_string(self, tree=None, attachment_headers=True):
-        tree = tree or self.get_message_tree()
-        estrings = self.get_editing_strings(tree)
+    def get_editing_string(self, tree=None,
+                                 estrings=None,
+                                 attachment_headers=True):
+        if estrings is None:
+            estrings = self.get_editing_strings(tree=tree)
+
         bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
             bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+
         if attachment_headers:
-            for att in tree['attachments']:
-                aid = self._attachment_aid(att)
-                bits.append('Attachment-%s: %s' % (aid, (att['filename']
-                                                         or '(unnamed)')))
+            for aid in sorted(estrings['attachments'].keys()):
+                bits.append('Attachment-%s: %s'
+                            % (aid, estrings['attachments'][aid]))
         bits.append('')
         bits.append(estrings['body'])
         return '\n'.join(bits)
@@ -582,6 +637,8 @@ class Email(object):
         if filedata and fn in filedata:
             data = filedata[fn]
         else:
+            if isinstance(fn, unicode):
+                fn = fn.encode('utf-8')
             data = open(fn, 'rb').read()
         ctype, encoding = mimetypes.guess_type(fn)
         maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
@@ -592,21 +649,19 @@ class Email(object):
             att.set_payload(data)
             encoders.encode_base64(att)
         att.add_header('Content-Id', MakeContentID())
+
+        # FS paths are strings of bytes, should be represented as utf-8 for
+        # correct header encoding.
+        base_fn = os.path.basename(fn)
+        if not isinstance(base_fn, unicode):
+            base_fn = base_fn.decode('utf-8')
+
         att.add_header('Content-Disposition', 'attachment',
-                       filename=os.path.basename(fn))
+                       filename=self.encoded_hdr(None, 'file', base_fn))
+
         att.signature_info = SignatureInfo(parent=msg.signature_info)
         att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
-
-    def add_attachments(self, session, filenames, filedata=None):
-        if not self.is_editable():
-            raise NotEditableError(_('Message or mailbox is read-only.'))
-        msg = self.get_msg()
-        for fn in filenames:
-            att = self._make_attachment(fn, msg, filedata=filedata)
-            msg.attach(att)
-            del att['MIME-Version']
-        return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
         if not self.is_editable():
@@ -732,7 +787,7 @@ class Email(object):
             ClearParseCache(cache_id=self.msg_idx_pos)
 
     def get_msg_info(self, field=None, uncached=False):
-        if uncached or not self.msg_info:
+        if (uncached or not self.msg_info) and not self.ephemeral_mid:
             self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
         if field is None:
             return self.msg_info
@@ -862,20 +917,17 @@ class Email(object):
             self.is_editable(quick=True)
         ]
 
-    def extract_attachment(self, session, att_id,
-                           name_fmt=None, mode='download'):
+    def _find_attachments(self, att_id, negative=False):
         msg = self.get_msg()
         count = 0
-        extracted = 0
-        filename, attributes = '', {}
         for part in (msg.walk() if msg else []):
             mimetype = part.get_content_type()
             if mimetype.startswith('multipart/'):
                 continue
 
-            content_id = part.get('content-id', '')
-            pfn = part.get_filename() or ''
             count += 1
+            content_id = part.get('content-id', '')
+            pfn = self.index.hdr(0, 0, value=part.get_filename() or '')
 
             if (('*' == att_id)
                     or ('#%s' % count == att_id)
@@ -884,51 +936,95 @@ class Email(object):
                     or (mimetype == att_id)
                     or (pfn.lower().endswith('.%s' % att_id))
                     or (pfn == att_id)):
+                if not negative:
+                    yield (count, content_id, pfn, mimetype, part)
+            elif negative:
+                yield (count, content_id, pfn, mimetype, part)
 
-                payload = part.get_payload(None, True) or ''
-                attributes = {
+    def add_attachments(self, session, filenames, filedata=None):
+        if not self.is_editable():
+            raise NotEditableError(_('Message or mailbox is read-only.'))
+        msg = self.get_msg()
+        for fn in filenames:
+            att = self._make_attachment(fn, msg, filedata=filedata)
+            msg.attach(att)
+            del att['MIME-Version']
+        return self.update_from_msg(session, msg)
+
+    def remove_attachments(self, session, *att_ids):
+        if not self.is_editable():
+            raise NotEditableError(_('Message or mailbox is read-only.'))
+
+        remove = []
+        for att_id in att_ids:
+            for count, cid, pfn, mt, part in self._find_attachments(att_id):
+                remove.append(self._attachment_aid({
                     'msg_mid': self.msg_mid(),
                     'count': count,
-                    'length': len(payload),
-                    'content-id': content_id,
+                    'content-id': cid,
                     'filename': pfn,
-                }
-                attributes['aid'] = self._attachment_aid(attributes)
-                if pfn:
-                    if '.' in pfn:
-                        pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
-                        attributes['att_ext'] = attributes['att_ext'].lower()
-                    attributes['att_name'] = pfn
-                if mimetype:
-                    attributes['mimetype'] = mimetype
+                }))
 
-                filesize = len(payload)
-                if mode.startswith('inline'):
-                    attributes['data'] = payload
-                    session.ui.notify(_('Extracted attachment %s') % att_id)
-                elif mode.startswith('preview'):
-                    attributes['thumb'] = True
-                    attributes['mimetype'] = 'image/jpeg'
-                    attributes['disposition'] = 'inline'
-                    thumb = StringIO.StringIO()
-                    if thumbnail(payload, thumb, height=250):
-                        session.ui.notify(_('Wrote preview to: %s') % filename)
-                        attributes['length'] = thumb.tell()
-                        filename, fd = session.ui.open_for_data(
-                            name_fmt=name_fmt, attributes=attributes)
-                        thumb.seek(0)
-                        fd.write(thumb.read())
-                        fd.close()
-                    else:
-                        session.ui.notify(_('Failed to generate thumbnail'))
-                        raise UrlRedirectException('/static/img/image-default.png')
-                else:
+        es = self.get_editing_strings()
+        es['headers'] = None
+        for k in remove:
+            if k in es['attachments']:
+                del es['attachments'][k]
+
+        estring = self.get_editing_string(estrings=es)
+        return self.update_from_string(session, estring)
+
+    def extract_attachment(self, session, att_id,
+                           name_fmt=None, mode='download'):
+        extracted = 0
+        filename, attributes = '', {}
+        for (count, content_id, pfn, mimetype, part
+                ) in self._find_attachments(att_id):
+            payload = part.get_payload(None, True) or ''
+            attributes = {
+                'msg_mid': self.msg_mid(),
+                'count': count,
+                'length': len(payload),
+                'content-id': content_id,
+                'filename': pfn,
+            }
+            attributes['aid'] = self._attachment_aid(attributes)
+            if pfn:
+                if '.' in pfn:
+                    pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
+                    attributes['att_ext'] = attributes['att_ext'].lower()
+                attributes['att_name'] = pfn
+            if mimetype:
+                attributes['mimetype'] = mimetype
+
+            filesize = len(payload)
+            if mode.startswith('inline'):
+                attributes['data'] = payload
+                session.ui.notify(_('Extracted attachment %s') % att_id)
+            elif mode.startswith('preview'):
+                attributes['thumb'] = True
+                attributes['mimetype'] = 'image/jpeg'
+                attributes['disposition'] = 'inline'
+                thumb = StringIO.StringIO()
+                if thumbnail(payload, thumb, height=250):
+                    attributes['length'] = thumb.tell()
                     filename, fd = session.ui.open_for_data(
                         name_fmt=name_fmt, attributes=attributes)
-                    fd.write(payload)
-                    session.ui.notify(_('Wrote attachment to: %s') % filename)
+                    thumb.seek(0)
+                    fd.write(thumb.read())
                     fd.close()
-                extracted += 1
+                    session.ui.notify(_('Wrote preview to: %s') % filename)
+                else:
+                    session.ui.notify(_('Failed to generate thumbnail'))
+                    raise UrlRedirectException('/static/img/image-default.png')
+            else:
+                filename, fd = session.ui.open_for_data(
+                    name_fmt=name_fmt, attributes=attributes)
+                fd.write(payload)
+                session.ui.notify(_('Wrote attachment to: %s') % filename)
+                fd.close()
+            extracted += 1
+
         if 0 == extracted:
             session.ui.notify(_('No attachments found for: %s') % att_id)
             return None, None
@@ -978,7 +1074,14 @@ class Email(object):
                            re.sub(self.RE_HTML_BORING, ' ',
                                re.sub(self.RE_HTML_LINKS, delink,
                                    re.sub(self.RE_HTML_IMGS, deimg, html)))))
-            text = (lxml.html.fromstring(html).text_content() +
+            if html.strip() != '':
+                try:
+                    html_text = lxml.html.fromstring(html).text_content()
+                except XMLSyntaxError:
+                    html_text = _('(Invalid HTML suppressed)')
+            else:
+                html_text = ''
+            text = (html_text +
                     (links and '\n\nLinks:\n' or '') + '\n'.join(links) +
                     (imgs and '\n\nImages:\n' or '') + '\n'.join(imgs))
             return re.sub(self.RE_EXCESS_WHITESPACE, '\n\n', text).strip()
@@ -989,9 +1092,14 @@ class Email(object):
 
     def get_message_tree(self, want=None):
         msg = self.get_msg()
+        want = list(want) if (want is not None) else None
         tree = {
             'id': self.get_msg_info(self.index.MSG_ID)
         }
+
+        if want is not None:
+            if 'editing_strings' in want or 'editing_string' in want:
+                want.extend(['text_parts', 'headers', 'attachments'])
 
         for p in 'text_parts', 'html_parts', 'attachments':
             if want is None or p in want:
@@ -1015,10 +1123,7 @@ class Email(object):
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
 
-        if (want is None
-                or 'headers' in want
-                or 'editing_string' in want
-                or 'editing_strings' in want):
+        if (want is None or 'headers' in want):
             tree['headers'] = {}
             for hdr in msg.keys():
                 tree['headers'][hdr] = self.index.hdr(msg, hdr)
@@ -1098,7 +1203,8 @@ class Email(object):
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': part.get_filename() or '',
+                    'filename': self.index.hdr(0, 0,
+                                               value=part.get_filename() or ''),
                     'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)
@@ -1203,15 +1309,22 @@ class Email(object):
             clines.append(line)
         return parse
 
+    BARE_QUOTE_STARTS = re.compile('(?i)^-+\s*Original Message.*-+$')
+    GIT_DIFF_STARTS = re.compile('^diff --git a/.*b/')
+    GIT_DIFF_LINE = re.compile('^([ +@-]|index |$)')
+
     def parse_line_type(self, line, block):
         # FIXME: Detect forwarded messages, ...
 
-        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n',
-                                                   '- --\n', '- --\r\n'):
+        if (block in ('body', 'quote', 'barequote')
+                and line in ('-- \n', '-- \r\n', '- --\n', '- --\r\n')):
             return 'signature', 'signature'
 
         if block == 'signature':
-            return 'signature', 'signature'
+            return block, block
+
+        if block == 'barequote':
+            return 'barequote', 'quote'
 
         stripped = line.rstrip()
 
@@ -1246,11 +1359,21 @@ class Email(object):
             else:
                 return 'pgptext', 'pgptext'
 
+        if self.BARE_QUOTE_STARTS.match(stripped):
+            return 'barequote', 'quote'
+
         if block == 'quote':
             if stripped == '':
                 return 'quote', 'quote'
         if line.startswith('>'):
             return 'quote', 'quote'
+
+        if self.GIT_DIFF_STARTS.match(stripped):
+            return 'gitdiff', 'quote'
+
+        if block == 'gitdiff':
+            if self.GIT_DIFF_LINE.match(stripped):
+                return 'gitdiff', 'quote'
 
         return 'body', 'text'
 
@@ -1674,10 +1797,8 @@ class AddressHeaderParser(list):
 if __name__ == "__main__":
     import doctest
     import sys
-
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print
     print '%s' % (results, )
     if results.failed:
         sys.exit(1)

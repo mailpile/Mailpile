@@ -1,5 +1,6 @@
 import time
 
+import mailpile.util
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -13,11 +14,13 @@ _plugins = PluginManager(builtin=__file__)
 class Events(Command):
     """Display events from the event log"""
     SYNOPSIS = (None, 'eventlog', 'eventlog',
-                '[incomplete] [wait] [<count>] [<field>=<val> ...]')
+                '[incomplete] [wait] [<count>] '
+                '[<field>=<val> <f>!=<v> <f>=~<re> ...]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'wait': 'seconds to wait for new data',
+        'gather': 'gather time (minimum wait), seconds',
         'incomplete': 'incomplete events only?',
         # Filtering by event attributes
         'event_id': 'an event ID',
@@ -45,6 +48,7 @@ class Events(Command):
         incomplete = (self.data.get('incomplete', ['no']
                                     )[0].lower() not in self._FALSE)
         waiting = int(self.data.get('wait', [0])[0])
+        gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
 
         limit = 0
         filters = {}
@@ -55,7 +59,7 @@ class Events(Command):
                 waiting = self.DEFAULT_WAIT_TIME
             elif '=' in arg:
                 field, value = arg.split('=', 1)
-                filters[str(field)] = str(value)
+                filters[unicode(field)] = unicode(value)
             else:
                 try:
                     limit = int(arg)
@@ -76,14 +80,22 @@ class Events(Command):
                     var, val = data.split(':', 1)
                     fset('%s_%s' % (arg, var), val)
 
-        expire = time.time() + waiting - self.GATHER_TIME
+        # Compile regular expression matches
+        for arg in filters:
+            if filters[arg][:1] == '~':
+                filters[arg] = re.compile(filters[arg][1:])
+
+        now = time.time()
+        expire = now + waiting - gather
         if waiting:
             if 'since' not in filters:
-                filters['since'] = time.time()
-            time.sleep(self.GATHER_TIME)
+                filters['since'] = now
+            if float(filters['since']) < 0:
+                filters['since'] = float(filters['since']) + now
+            time.sleep(gather)
 
         events = []
-        while not waiting or expire > time.time():
+        while not waiting or (expire + gather) > time.time():
             if incomplete:
                 events = list(config.event_log.incomplete(**filters))
             else:
@@ -92,7 +104,7 @@ class Events(Command):
                 break
             else:
                 config.event_log.wait(expire - time.time())
-                time.sleep(self.GATHER_TIME)
+                time.sleep(gather)
 
         if limit:
             if 'since' in filters:
@@ -139,8 +151,8 @@ class Cancel(Command):
 
 
 class Undo(Command):
-    """Undo an event"""
-    SYNOPSIS = (None, 'eventlog/undo', 'eventlog/undo', '<eventID>')
+    """Undo either the last action or one specified by Event ID"""
+    SYNOPSIS = ('u', 'undo', 'eventlog/undo', '[<Event ID>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
@@ -149,15 +161,42 @@ class Undo(Command):
     IS_USER_ACTIVITY = False
 
     def command(self):
-        event_id = self.data.get('event_id', [None])[0] or self.args[0]
+        event_id = (self.data.get('event_id', [None])[0]
+                    or (self.args and self.args[0])
+                    or (self.session.last_event_id))
+        if not event_id:
+            return self._error(_('Need an event ID!'))
         event = self.session.config.event_log.get(event_id)
         if event:
             try:
                 return event.source_class.Undo(self, event)
             except (NameError, AttributeError):
-                return self._error(_('Event is not undoable'))
+                self._ignore_exception()
+                return self._error(_('Event %s is not undoable') % event_id)
         else:
-            return self._error(_('Event not found'))
+            return self._error(_('Event %s not found') % event_id)
 
 
-_plugins.register_commands(Events, Cancel, Undo)
+class Watch(Command):
+    """Watch the events fly by"""
+    SYNOPSIS = (None, 'eventlog/watch', None, None)
+    ORDER = ('Internals', 9)
+    IS_USER_ACTIVITY = False
+
+    def command(self):
+        self.session.ui.notify(
+            _('Watching logs: Press CTRL-C to return to the CLI'))
+        unregister = self.session.config.event_log.ui_watch(self.session.ui)
+        try:
+            self.session.ui.unblock(force=True)
+            while not mailpile.util.QUITTING:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            if unregister:
+                self.session.config.event_log.ui_unwatch(self.session.ui)
+        return self._success(_('That was fun!'))
+
+
+_plugins.register_commands(Events, Cancel, Undo, Watch)

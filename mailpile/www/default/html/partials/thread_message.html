@@ -1,0 +1,193 @@
+<div id="message-{{mid}}" class="thread-message {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{mid}}">
+  {% set from = metadata.from %}
+  {% set url_danger = metadata.flags.spam %}
+  {% include("partials/thread_metadata.html") %}
+  {% set encryption_status = [message.crypto.encryption.status] %}
+  {% set signature_status = [message.crypto.signature.status] %}
+  <div class="thread-message-body">
+    {# If no text_part, show html_part }
+    {% if not message.text_parts %}
+      {% for part in message.html_parts %}
+      {% if part.data %}
+      Yay, I am some part.data: {{part.data}}
+      <iframe class="thread-item-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data}}"></iframe>
+      {% else %}
+      <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+      {% endif %}
+      {% endfor %}
+    {% endif #}
+    {% if message.text_parts %}
+      {% set special_text_parts = [] %}
+      {% set last_part = message.text_parts|length - 1 %}
+      {% for part in message.text_parts %}
+        {# Parts that do not have own crypto attribute inherit from message itself
+         # Watch for changes to the "status" which is present in each encryption and
+         # signature section - if either has changed, then we have moved from
+         # one security context to the next, and need to let the user know.
+         #}
+        {% if part.data %}
+          {% set part_encryption = (part.crypto and part.crypto.encryption or message.crypto.encryption) %}
+          {% set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
+          {% if part_encryption or part_signature %}
+          <div class="thread-item-crypto clearfix">
+              {% if part_encryption %}
+                {% if encryption_status and part_encryption.status != encryption_status[-1] %}
+                {% set encryption = show_text_part_encryption(part_encryption.status) %}
+                <span class="thread-item-crypto-info" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}">
+                  <span class="icon {{ encryption.color + ' ' + encryption.icon }}"></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
+                </span>
+                {% endif %}
+                {% do encryption_status.append(part_encryption.status) %}
+              {% endif %}
+              {% if part_signature %}
+                {% if signature_status and part_signature.status != signature_status[-1] %}
+                {% set signature = show_text_part_signature(part_signature.status) %}
+                <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
+                  <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ signature.color }}">{{ signature.text }}</span>
+                </span>
+                {% endif %}
+                {% do signature_status.append(part_signature.status) %}
+              {% endif %}
+            <div class="thread-item-crypto-line left"></div>
+          </div>
+          {% endif %}
+          {% autoescape false %}  
+          {% set part_text = part.data|nice_text|e|urlize|fix_urls(40, url_danger) %}
+          {% if part.type in ("text", "pgpsignedtext") %}
+            <div class="thread-item-text">{{ part_text }}</div>
+          {% elif part.type in ("pgptext",) %}
+            {% if part.crypto.encryption.status in ("missingkey", "error") %}
+            {% set crypto = show_message_encryption(part.crypto.encryption.status) %}
+            <div class="thread-item-crypto-error text-center">
+              <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
+              <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
+              <p>{{ crypto.message }}</p>
+              <p><button class="message-crypto-action" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}"><span class="icon-key"></span> {{_("Send Your Encryption Key")}}</button></p>
+              <!-- FIXME: Make a "crypto.suggestion" attribute in show_message_encryption() that performs further investigation.. -->
+              {# FIXME: hiding this in Beta Freeze
+              {% if part.crypto.encryption.missing_keys %}
+              <a href="#" class="message-crypto-investigate" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}">{{_("Investigate Message Further")}}</a>
+              {% endif %} #}
+            </div>
+            {% else %}
+            <div class="thread-item-text">{{ part_text }}</div>
+            {% endif %}
+          {% elif part.type in ("pgpbegin", "pgpend") %}
+            <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
+          {% elif part.type == "quote" %}
+            {# If this is the 2nd-to-last part, and the LAST part is a quote
+               or signature, we shall also hide. #}
+            {%- if loop.index == (loop.length - 1) and
+                   message.text_parts[last_part].type in ("signature", "quote") -%}
+              {% do special_text_parts.append("quote") %}
+              <div class="thread-item-quote hide">{{ part_text }}</div>
+            {# If this part is a quote at end of message, hide #}
+            {% elif loop.last %}
+              {% do special_text_parts.append("quote") %}
+              <div class="thread-item-quote hide">{{ part_text }}</div>
+            {% else %}
+              <div class="thread-item-quote">{{ part_text }}</div>
+            {%- endif -%}
+          {% elif part.type == "signature" %}
+            {% do special_text_parts.append("signature") %}
+            <div class="thread-item-signature hide">{{ part_text }}</div>
+          {% else %}
+            <div class="thread-item-text"><em>{{_("Unknown Text Part")}}</em></div>
+          {% endif %}
+          {% endautoescape %}
+        {% endif %}
+      {% endfor %}
+    {% elif not message.attachments %}
+    <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+    {% endif %}
+    {% if message.attachments %}
+    <div class="thread-message-attachments">
+      <ul class="thread-message-attachments horizontal clearfix">
+        {% for att in message.attachments %}
+        <li class="left">
+        {% set type = attachment_type(att.mimetype) %}
+        {% if (att.filename) %}
+        {% set filename = att.filename %}
+        {% else %}
+        {% set filename = _("Untitled") %}
+        {% endif %}
+        {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
+        <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
+          <div class="preview" style="background-image: url('/message/download/preview/={{ mid }}/part:{{ att.count }}/');"></div>
+        </a>
+        {% elif type == "keys" %}
+        {% do special_text_parts.append("pgp-key") %}
+        {% else %}
+        <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
+          <div class="preview">
+            <span class="icon-mime" type="{{att.mimetype}}"></span> 
+            {% set file_parts = filename.split(".") %}
+            {% set file_parts_length = file_parts|length %}
+            {% if filename != _("Untitled") %}
+            <span class="extension">
+              {{ file_parts[file_parts_length - 1] }}
+            </span>
+            {% endif %}
+          </div>
+          <div class="filename">
+            {% if att.crypto.encryption.status == "decrypted" %}
+            <span class="icon-lock-closed crypto-encrypted"></span>
+            {% elif att.crypto.encryption.status == "encrypted" %}
+            <span class="icon-lock-closed crypto-error"></span>
+            {% endif %}
+            {% if file_parts_length > 2 or filename|length > 20 %}
+              {{ att.filename[0:15] }}...
+            {% elif file_parts[0] %}
+              {{ file_parts[0] }}
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  </div>
+  <div class="thread-message-actions clearfix">
+    <ul class="thread-message-actions horizontal left" data-mid="{{mid}}">
+      {% if "quote" in special_text_parts or "signature" in special_text_parts %}
+      <li class="action"><a href="#" class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
+      {% endif %}
+      {% if not from.flags.contact and not from.flags.profile %}
+      <li class="action"><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
+      {% endif %}
+      {% if "pgp-key" in special_text_parts %}
+      <li class="action"><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
+      {% endif %}
+    </ul>
+    <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
+      {% if show_reply %}
+      <li class="action"><a class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
+      {% endif %}
+      <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
+      <li class="dropdown action">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> {{_("Move")}}</a>
+        <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="thread-message-move">
+          <li role="presentation"><a class="message-action-archive" role="menuitem" tabindex="-1" href="#"><span class="icon-archive"></span> {{_("Archive Message")}}</a></li>
+          <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> {{_("Move to Inbox")}}</a></li>
+          <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> {{_("Flag as Spam")}}</a></li>
+          {% if result.data.metadata|length > 1 %}
+          <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> {{_("Remove from Thread")}}</a></li>
+          {% endif %}
+          {% for header in message.header_list %}
+          {% if 'List-unsubscribe' == header[0] %}
+          <li role="presentation"><a class="message-action-unsubscribe" role="menuitem" tabindex="-1" data-unsubscribe="{{header[1]}}" href="#"><span class="icon-compose"></span> {{_("Unsubscribe")}}</a></li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </li>
+      <li class="action"><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
+    </ul>
+  </div>
+</div>
+<script>
+$(document).ready(function() {
+  Mailpile.Message.AnalyzeMessageInline('{{mid}}');
+});
+</script>

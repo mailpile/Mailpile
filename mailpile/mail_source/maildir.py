@@ -37,7 +37,8 @@ class MaildirMailSource(BaseMailSource):
     def _has_mailbox_changed(self, mbx, state):
         for sub in ('cur', 'new', 'tmp'):
             try:
-                state[sub] = os.path.getmtime(os.path.join(self._path(mbx), sub))
+                state[sub] = os.path.getmtime(os.path.join(self._path(mbx),
+                                                           sub))
             except (OSError, IOError):
                 state[sub] = None
         cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])

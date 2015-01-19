@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export MAILPILE_HOME="$(pwd)/testing/setup-tmp"
+export MAILPILE_HOME="$(pwd)/setup-tmp"
 if [ "$1" = "--mygpg" ]; then
     shift
 else

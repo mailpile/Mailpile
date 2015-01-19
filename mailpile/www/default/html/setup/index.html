@@ -1,0 +1,89 @@
+{% extends "layouts/setup.html" %}
+{% block title %}{{_("Setup")}}{% endblock %}
+{% block content %}
+
+<div id="setup" class="clearfix add-bottom"></div>
+
+{% include("setup/various.html") %}
+
+<script id="template-setup-home" type="text/template">
+{% include("setup/home.html")%}
+</script>
+
+<script id="template-setup-profiles-item" type="text/template">
+{% include("setup/profiles_list_item.html") %}
+</script>
+
+{% set setup_profiles = mailpile("setup/profiles") %}
+<input id="setup-profiles-count" type="hidden" value="{{ setup_profiles.result.profiles|length + setup_profiles.result.new_emails|length }}">
+<script id="template-setup-profiles" type="text/template">
+{% include("setup/profiles_list.html") %}
+</script>
+
+<script id="template-setup-profiles-add" type="text/template">
+{% include("setup/profiles_settings.html") %}
+</script>
+
+<script id="template-setup-sources-item" type="text/template">
+{% include("setup/sources_list_item.html") %}
+</script>
+
+<script id="template-setup-sources" type="text/template">
+{% include("setup/sources_list.html") %}
+</script>
+
+<script id="template-setup-sources-configure" type="text/template">
+{% include("setup/sources_configure.html") %}
+</script>
+
+<script id="template-setup-sources-settings" type="text/template">
+{% include("setup/sources_settings.html") %}
+</script>
+
+<script id="template-setup-sources-complete" type="text/template">
+{% include("setup/complete.html") %}
+</script>
+
+<script id="template-setup-sending-item" type="text/template">
+{% include("setup/sending_list_item.html") %}
+</script>
+
+<script id="template-setup-sending" type="text/template">
+{% include("setup/sending.html") %}
+</script>
+
+<script id="template-setup-sending-settings" type="text/template">
+{% include("setup/sending_settings.html") %}
+</script>
+
+<script id="template-setup-crypto-generated" type="text/template">
+{% include("setup/key_generated.html") %}
+</script>
+
+<script id="template-setup-security" type="text/template">
+{% include("setup/security.html") %}
+</script>
+
+{#
+<script id="template-setup-keys" type="text/template">
+{% include("setup/keys.html") %}
+</script>
+
+<script id="template-setup-passphrase" type="text/template">
+{% include("setup/passphrase.html") %}
+</script>
+#}
+
+<script id="template-setup-backups" type="text/template">
+{% include("setup/backups.html") %}
+</script>
+
+<script id="template-setup-access" type="text/template">
+{% include("setup/access.html") %}
+</script>
+
+<script id="template-setup-language" type="text/template">
+{% include("setup/language.html") %}
+</script>
+
+{% endblock %}

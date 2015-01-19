@@ -29,13 +29,18 @@ def NewEventId():
         return '%8.8x.%5.5x.%x' % (time.time(), EVENT_COUNTER, os.getpid())
 
 
-def _ClassName(obj):
+def _ClassName(obj, ignore_regexps=False):
     if isinstance(obj, (str, unicode)):
         return str(obj).replace('mailpile.', '.')
     elif hasattr(obj, '__classname__'):
         return str(obj.__classname__).replace('mailpile.', '.')
+    elif ignore_regexps and 'SRE_Pattern' in str(obj.__class__):
+        return obj
     else:
-        return str(obj.__class__).replace('mailpile.', '.')
+        module = str(obj.__class__.__module__)
+        if module.startswith('mailpile.'):
+            module = module[len('mailpile'):]
+        return '%s.%s' % (module, str(obj.__class__.__name__))
 
 
 class Event(object):
@@ -63,7 +68,7 @@ class Event(object):
             return cls()
 
     def __init__(self,
-                 ts=None, event_id=None, flags='C', message='',
+                 ts=None, event_id=None, flags='c', message='',
                  source=None, data=None, private_data=None):
         self._data = [
             '',
@@ -132,6 +137,19 @@ class Event(object):
                 data['private_data'] = self.private_data
             return data
 
+    def as_text(self, private=True, compact=False):
+        try:
+            return self.source_class.EventAsText(self, private=private,
+                                                       compact=True)
+        except (AttributeError, NameError):
+            if compact:
+                return '%s=%s:%s %s' % (self.event_id,
+                                        self.source.split('.')[-1],
+                                        self.flags, self.message)
+            else:
+                return json.dumps(self.as_dict(private=private),
+                                  default=json_helper)
+
     def as_json(self, private=True):
         try:
             return self.source_class.EventAsJson(self, private=private)
@@ -170,6 +188,7 @@ class EventLog(object):
         self._events = {}
 
         # Internals...
+        self._watching_uis = []
         self._waiter = threading.Condition(EventRLock())
         self._lock = EventLock()
         self._log_fd = None
@@ -255,22 +274,28 @@ class EventLog(object):
                     self._events[event.event_id] = event
 
     def _match(self, event, filters):
+        def compare(val, rule):
+            if isinstance(rule, (str, unicode)):
+                return unicode(val) == unicode(rule)
+            else:
+                return rule.match(unicode(val)) is not None
         for kw, rule in filters.iteritems():
             if kw.endswith('!'):
                 truth, okw, kw = False, kw, kw[:-1]
             else:
                 truth, okw = True, kw
             if kw == 'source':
-                if truth != (event.source == _ClassName(rule)):
+                if truth != compare(event.source,
+                                    _ClassName(rule, ignore_regexps=True)):
                     return False
             elif kw == 'flag':
                 if truth != (rule in event.flags):
                     return False
             elif kw == 'flags':
-                if truth != (event.flags == rule):
+                if truth != compare(event.flags, rule):
                     return False
             elif kw == 'event_id':
-                if truth != (event.event_id == rule):
+                if truth != compare(event.event_id, rule):
                     return False
             elif kw == 'since':
                 when = float(rule)
@@ -279,10 +304,10 @@ class EventLog(object):
                 if truth != (event.ts > when):
                     return False
             elif kw.startswith('data_'):
-                if truth != (str(event.data.get(kw[5:])) == str(rule)):
+                if truth != compare(event.data.get(kw[5:]), rule):
                     return False
             elif kw.startswith('private_data_'):
-                if truth != (str(event.data.get(kw[13:])) == str(rule)):
+                if truth != compare(event.data.get(kw[13:]), rule):
                     return False
             else:
                 # Unknown keywords match nothing...
@@ -331,6 +356,8 @@ class EventLog(object):
             self._logged += 1
             self._maybe_rotate_log()
             self._notify_waiters()
+            for ui in self._watching_uis:
+                ui.notify(event.as_text(compact=True))
         return event
 
     def log(self, *args, **kwargs):
@@ -352,6 +379,23 @@ class EventLog(object):
         for event_id in self._events.keys():
             if Event.COMPLETE in self._events[event_id].flags:
                 del self._events[event_id]
+
+    def ui_watch(self, ui):
+        while ui.log_parent is not None:
+            ui = ui.log_parent
+        if ui not in self._watching_uis:
+            self._watching_uis.append(ui)
+            return True
+        else:
+            return False
+
+    def ui_unwatch(self, ui):
+        while ui.log_parent is not None:
+            ui = ui.log_parent
+        try:
+            self._watching_uis.remove(ui)
+        except ValueError:
+            pass
 
     def load(self):
         with self._lock:

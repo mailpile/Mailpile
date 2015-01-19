@@ -23,10 +23,11 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         raise ValueError('Not a Maildir: %s' % fn)
 
     def _refresh(self):
-        mailbox.Maildir._refresh(self)
-        # Dotfiles are not mail. Ignore them.
-        for t in [k for k in self._toc.keys() if k.startswith('.')]:
-            del self._toc[t]
+        with self._lock:
+            mailbox.Maildir._refresh(self)
+            # Dotfiles are not mail. Ignore them.
+            for t in [k for k in self._toc.keys() if k.startswith('.')]:
+                del self._toc[t]
 
 
 mailpile.mailboxes.register(25, MailpileMailbox)

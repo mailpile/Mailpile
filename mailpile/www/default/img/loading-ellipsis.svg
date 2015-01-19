@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width='190px' height='15px' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 15" preserveAspectRatio="xMidYMid" class="uil-ellipsis">
+  <rect x="0" y="0" width="190" height="10" fill="none" class="bk"></rect>
+  <circle cx="32" cy="5" r="5" fill="#CCCCCC">
+    <animate id="anir11" attributeName="r" from="0" to="5" begin="0s;anir14.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir12" attributeName="r" from="5" to="5" begin="anir11.end" dur="3.75s" fill="freeze"></animate>
+    <animate id="anir13" attributeName="r" from="5" to="0" begin="anir12.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir14" attributeName="r" from="0" to="0" begin="anir13.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix11" attributeName="cx" from="32" to="32" begin="0s;anix18.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix12" attributeName="cx" from="32" to="32" begin="anix11.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix13" attributeName="cx" from="32" to="50" begin="anix12.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix14" attributeName="cx" from="100" to="100" begin="anix13.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix5" attributeName="cx" from="100" to="168" begin="anix14.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix16" attributeName="cx" from="168" to="168" begin="anix5.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix17" attributeName="cx" from="168" to="84" begin="anix16.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix18" attributeName="cx" from="168" to="32" begin="anix17.end" dur="0.75s" fill="freeze"></animate>
+  </circle>
+  <circle cx="100" cy="5" r="5" fill="#337FB2">
+    <animate id="anir21" attributeName="r" from="5" to="5" begin="0s;anir25.end" dur="3s" fill="freeze"></animate>
+    <animate id="anir22" attributeName="r" from="5" to="0" begin="anir21.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir23" attributeName="r" from="0" to="0" begin="anir22.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir24" attributeName="r" from="0" to="5" begin="anir23.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir25" attributeName="r" from="5" to="5" begin="anir24.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix21" attributeName="cx" from="32" to="100" begin="0s;anix28.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix22" attributeName="cx" from="100" to="100" begin="anix21.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix23" attributeName="cx" from="100" to="168" begin="anix22.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix24" attributeName="cx" from="168" to="169" begin="anix23.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix25" attributeName="cx" from="168" to="168" begin="anix24.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix26" attributeName="cx" from="168" to="32" begin="anix25.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix27" attributeName="cx" from="32" to="32" begin="anix26.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix28" attributeName="cx" from="32" to="32" begin="anix27.end" dur="0.75s" fill="freeze"></animate>
+  </circle>
+  <circle cx="168" cy="5" r="5" fill="#CCCCCC">
+    <animate id="anir31" attributeName="r" from="5" to="5" begin="0s;anir35.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir32" attributeName="r" from="5" to="0" begin="anir31.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir33" attributeName="r" from="0" to="0" begin="anir32.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir34" attributeName="r" from="0" to="5" begin="anir33.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir35" attributeName="r" from="5" to="5" begin="anir34.end" dur="1.125s" fill="freeze"></animate>
+    <animate id="anix31" attributeName="cx" from="100" to="168" begin="0s;anix38.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix32" attributeName="cx" from="168" to="168" begin="anix31.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix33" attributeName="cx" from="168" to="168" begin="anix32.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix34" attributeName="cx" from="168" to="32" begin="anix33.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix35" attributeName="cx" from="32" to="32" begin="anix34.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix36" attributeName="cx" from="32" to="32" begin="anix35.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix37" attributeName="cx" from="32" to="100" begin="anix36.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix38" attributeName="cx" from="100" to="100" begin="anix37.end" dur="0.75s" fill="freeze"></animate>
+  </circle>
+  <circle cx="168" cy="5" r="5" fill="#337FB2">
+    <animate id="anir41" attributeName="r" from="5" to="0" begin="0s;anir44.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir42" attributeName="r" from="0" to="0" begin="anir41.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir43" attributeName="r" from="0" to="5" begin="anir42.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anir44" attributeName="r" from="5" to="5" begin="anir43.end" dur="3.75s" fill="freeze"></animate>
+    <animate id="anix41" attributeName="cx" from="168" to="168" begin="0s;anix48.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix42" attributeName="cx" from="168" to="32" begin="anix41.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix43" attributeName="cx" from="32" to="32" begin="anix42.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix44" attributeName="cx" from="32" to="32" begin="anix43.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix45" attributeName="cx" from="32" to="100" begin="anix44.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix46" attributeName="cx" from="100" to="168" begin="anix45.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix47" attributeName="cx" from="100" to="168" begin="anix46.end" dur="0.75s" fill="freeze"></animate>
+    <animate id="anix48" attributeName="cx" from="168" to="168" begin="anix47.end" dur="0.75s" fill="freeze"></animate>
+  </circle>
+</svg>

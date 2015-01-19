@@ -1,0 +1,71 @@
+<!-- Advanced - Security -->
+<div class="setup-box setup-box-small add-top animated bounceInUp">
+  <h2 class="text-center"><span class="icon-privacy"></span> {{_("Security Settings")}}</h2>
+  <form id="form-setup-security" class="standard" method="POST">
+    <label class="clearfix">{{_("What are your security & privacy preferences?")}}</label>
+    <p>
+      <select id="input-setup-security-level">
+        <option value="custom" <% if (security_level == 'custom' ) { %>selected<% } %>>{{_("Custom")}}</option>
+        <option value="tinfoil" <% if (security_level == 'tinfoil' ) { %>selected<% } %>>{{_("You collect tinfoil hats")}}</option>
+        <option value="paranoid" <% if (security_level == 'paranoid' ) { %>selected<% } %>>{{_("Relatively paranoid")}}</option>
+        <option value="above" <% if (security_level == 'above' ) { %>selected<% } %>>{{_("Above average paranoia")}}</option>
+        <option value="concerned" <% if (security_level == 'concerned' ) { %>selected<% } %>>{{_("Privacy concerned")}}</option>
+        <option value="normal" <% if (security_level == 'normal' ) { %>selected<% } %>>{{_("Normal person")}}</option>
+        <option value="crazy" <% if (security_level == 'crazy' ) { %>selected<% } %>>{{_("Totally unconcerned")}}</option>
+      </select>
+    </p>
+    <fieldset>
+      <label>
+        <input type="checkbox" name="encrypt_events"  <% if (encrypt_events) { %>checked value="true"<% } %>>
+        {{_("Encrypt system events & notifications")}}
+      </label>
+      <label class="">
+        <input type="checkbox" name="encrypt_index" <% if (encrypt_index) { %>checked value="true"<% } %>>
+        {{_("Encrypt your search index of terms")}}
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_mail" <% if (encrypt_mail) { %>checked value="true"<% } %>>
+        {{_("Encrypt messages after they're downloaded")}}
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_vcards" <% if (encrypt_vcards) { %>checked value="true"<% } %>>
+        {{_("Encrypt your address book & contacts")}}
+      </label>
+      <label>
+        <input type="checkbox" name="index_encrypted" <% if (index_encrypted) { %>checked value="true"<% } %>>
+        {{_("Index messages that were encrypted")}}
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked value="true"<% } %>>
+        {{_("Encrypt various other things")}}
+      </label>
+    </fieldset>
+    <fieldset>
+      <h4 class="half-bottom">{{_("Encryption Keys")}}</h4>
+      <label>
+        <input type="checkbox" name="gpg_email_key">
+        {{_("Attach public key to outgoing emails")}}
+      </label>
+<!-- FIXME: Commented out settings not supported by backend 
+      <label>
+        <input type="checkbox" name="use_tor" checked="">
+        {{_("Send requests through Tor for better anonymity and privacy")}}
+      </label>
+      <label>
+        <input type="checkbox" name="upload_keyservers">
+        {{_("Upload your public encryption key to keyservers")}}
+      </label>
+      <label>
+        <input type="checkbox" name="use_gravatar">
+        {{_("Download contact pictures via Gravatar (over HTTPS)")}}
+      </label>
+-->
+    </fieldset>
+  </form>
+  <div class="clearfix half-top">
+    <a href="/setup/#" class="button-info">{{_("Back")}}</a> &nbsp;&nbsp;
+    <button id="btn-setup-security-save" class="button-primary right" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
+      <span class="icon-checkmark"></span> {{_("Save Changes")}}
+    </button>
+  </div>
+</div>

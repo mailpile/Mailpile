@@ -23,20 +23,33 @@ GLOBAL_GPL = None
 PLC_CACHE_LOCK = PListLock()
 PLC_CACHE = {}
 
+TIMERS = {
+    'render': 0,
+    'save': 0,
+    'save_count': 0,
+    'load': 0,
+    'load_count': 0,
+}
 
-def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
+
+def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5, runtime=None):
     def save(plc):
         job_name = _('Save PLC %s') % plc.sig
         session.ui.mark(job_name)
         session.config.save_worker.do(session, job_name, plc.save)
+        play_nice_with_threads()
 
     def remove(ts, plc):
         with PLC_CACHE_LOCK:
             if plc.sig in PLC_CACHE and ts == PLC_CACHE[plc.sig][0]:
                del PLC_CACHE[plc.sig]
 
-    expire = int(time.time()) - max(30, 300 - len(PLC_CACHE))
-    savets = int(time.time()) - 15
+    startt = int(time.time())
+    expire = startt - max(30, 300 - len(PLC_CACHE))
+    savets = startt - 15
+
+    def time_up():
+        return (runtime and startt + runtime < time.time())
 
     with PLC_CACHE_LOCK:
         plc_cache = sorted(PLC_CACHE.values())
@@ -45,12 +58,16 @@ def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
         if plc.changes:
             save(plc)
         remove(ts, plc)
+        if time_up():
+            return
 
     for ts, plc in plc_cache[-keep:]:
         if (plc.changes > min_changes) or (plc.changes and ts < savets):
             save(plc)
         if ts < expire:
             remove(ts, plc)
+        if time_up():
+            return
 
 
 class PostingListContainer(object):
@@ -98,6 +115,7 @@ class PostingListContainer(object):
             return self._unlocked_remove(*args, **kwargs)
 
     def _deleted_set(self):
+        # FIXME!
         return set()
 
     def save(self, split=True):
@@ -110,6 +128,7 @@ class PostingListContainer(object):
                     plc.save(split=False)
             return
 
+        t = [time.time()]
         encryption_key = self.config.master_key
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
@@ -119,6 +138,7 @@ class PostingListContainer(object):
                                in ([sig] + [str(v) for v in (values-del_set)]
                                    for sig, values in self.words.iteritems())
                                if len(l) > 1)
+            t.append(time.time())
 
             if not output:
                 try:
@@ -138,13 +158,53 @@ class PostingListContainer(object):
                 with open(outfile, 'wb') as fd:
                     fd.write(output)
 
+            t.append(time.time())
             self.changes = 0
 
+        if len(t) == 3:
+            TIMERS['render'] += t[1] - t[0]
+            TIMERS['save'] += t[2] - t[1]
+            TIMERS['save_count'] += 1
+
     def _splits(self):
-        # FIXME
-        return [self]
+        splits = [self]
+        if len(self.sig) < self.MAX_HASH_LEN:
+            total, sums = 0, {}
+            for sig, values in self.words.iteritems():
+                total += len(values)
+                if len(values) >= (self.MAX_ITEMS / 2):
+                    nsig = sig[:self.MAX_HASH_LEN]
+                else:
+                    nsig = sig[:len(self.sig)+1]
+                if nsig in sums:
+                    sums[nsig] += len(values)
+                else:
+                    sums[nsig] = len(values)
+
+            while total > self.MAX_ITEMS and sums:
+                skeys = sums.keys()
+                skeys.sort(key=lambda k: -sums[k])
+                nsig = skeys[0]
+                total -= sums[nsig]
+                del sums[nsig]
+                try:
+                    fn = self._SaveFile(self.config, nsig)
+                    if not os.path.exists(fn):
+                        open(fn, 'w').close()
+
+                    plc = PostingListContainer(self.session, nsig)
+                    for sig in list(self.words.keys()):
+                        if sig.startswith(nsig):
+                            plc.add(sig, self.words[sig])
+                            del self.words[sig]
+                    splits.append(plc)
+                except (OSError, IOError):
+                    pass
+
+        return splits
 
     def _load(self):
+        t0 = time.time()
         if not self.fd:
             fn, self.sig = self._GetFilenameAndSig(self.config, self.sig)
             try:
@@ -163,6 +223,8 @@ class PostingListContainer(object):
                 if self.config.sys.debug:
                     traceback.print_exc()
         self.fd = None
+        TIMERS['load'] += time.time() - t0
+        TIMERS['load_count'] += 1
 
     def _unlocked_parse_lines(self, lines):
         for line in lines:
@@ -478,6 +540,7 @@ class OldPostingList(object):
                         encryption_key = self.config.master_key
                         with EncryptingStreamer(encryption_key,
                                                 delimited=True,
+                                                dir=self.config.tempfile_dir(),
                                                 name='PostingList') as efd:
                             efd.write(output)
                             efd.save(outfile, mode=mode)
@@ -514,26 +577,40 @@ class OldPostingList(object):
 class GlobalPostingList(OldPostingList):
 
     @classmethod
-    def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
+    def _Optimize(cls, session, idx,
+                  force=False, lazy=False, quick=False, ratio=1.0, runtime=0):
+        starttime = time.time()
         count = 0
         global GLOBAL_GPL
-        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 10240)):
+        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 5*1024)):
+            # Processing keys in order is more efficient, as it lets things
+            # accumulate in the PLC_CACHE.
             keys = sorted(GLOBAL_GPL.keys())
+            if ratio:
+                keyn = int(len(keys) * ratio)
+                start = random.randint(0, len(keys))
+                # This lets the selection wrap around to the beginning,
+                # so we don't have a bias against writing out the first
+                # keys compared with the others.
+                keys += keys
+                keys = keys[start:start+keyn]
+
             pls = GlobalPostingList(session, '')
             for sig in keys:
+                if (count % 7) == 0:
+                    PLC_CACHE_FlushAndClean(session, min_changes=100000)
                 if (count % 97) == 0:
                     session.ui.mark(('Updating search index... %d%% (%s)'
                                      ) % (count * 100 / len(keys), sig))
-                elif (count % 17) == 0:
-                    play_nice_with_threads()
 
                 # If we're doing a full optimize later, we disable the
                 # compaction here. Otherwise it follows the normal
                 # rules (compacts as necessary).
                 pls._migrate(sig, compact=quick)
-                PLC_CACHE_FlushAndClean(session, min_changes=1000)
                 count += 1
                 if mailpile.util.QUITTING:
+                    break
+                if runtime and starttime + (0.80 * runtime) < time.time():
                     break
             PLC_CACHE_FlushAndClean(session)
             pls.save()

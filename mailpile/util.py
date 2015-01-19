@@ -47,7 +47,7 @@ PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                           ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
 
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'http', 'https', 'i', 'in', 'is', 'it',
+                'has', 'i', 'in', 'is', 'it',
                 'mailto', 'me',
                 'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
 
@@ -179,8 +179,14 @@ class MultiContext:
         return self
 
     def __exit__(self, *args, **kwargs):
+        raised = []
         for ctx in reversed(self.contexts):
-            ctx.__exit__(*args, **kwargs)
+            try:
+                ctx.__exit__(*args, **kwargs)
+            except Exception as e:
+                raised.append(e)
+        if raised:
+            raise raised[0]
 
 
 def FixupForWith(obj):
@@ -706,11 +712,13 @@ def RunTimed(timeout, func, *args, **kwargs):
     def work():
         try:
             result.append(func(*args, **kwargs))
-        except Exception as e:
-            exception.append(e)
+        except:
+            et, ev, etb = sys.exc_info()
+            exception.append((et, ev, etb))
     RunTimedThread(func.__name__, work).run_timed(timeout)
     if exception:
-        raise exception[0]
+        t, v, tb = exception[0]
+        raise t, v, tb
     return result[0]
 
 
@@ -744,5 +752,7 @@ class DebugFileWrapper(object):
 if __name__ == "__main__":
     import doctest
     import sys
-    if doctest.testmod().failed:
+    result = doctest.testmod()
+    print '%s' % (result, )
+    if result.failed:
         sys.exit(1)

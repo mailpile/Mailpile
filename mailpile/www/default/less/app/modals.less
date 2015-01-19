@@ -1,0 +1,147 @@
+/* Modals */
+
+  .modal-title .title {
+    text-transform: capitalize;
+  }
+
+  .modal-body-light-gray {
+    background: @grayLight;
+  }
+
+
+/* Modal - Tag picker */
+
+  table.modal-tag-picker-items {
+    width: 100%;
+    background: @white;
+    border-top: 1px solid @grayMid;
+    border-right: 1px solid @grayMid;
+    border-bottom: 0px;
+    border-left: 1px solid @grayMid;
+    border-radius: @base-border-radius;
+  }
+
+  tr.modal-tag-picker-header,
+  tr.modal-tag-picker-item {
+    width: 100%;
+  }
+
+  tr.modal-tag-picker-header:hover {
+    cursor: pointer;
+    background: @colorExpand;
+  }
+
+  tr.modal-tag-picker-header td {
+    border-top: 0px;
+    border-bottom: 1px solid @grayMid;
+    padding: (@base-padding / 2);
+    font-style: italic;
+    color: @grayDark;
+    padding-left: 10px;
+  }
+
+  tr.modal-tag-picker-item.priority,
+  tr.modal-tag-picker-item.tag,
+  tr.modal-tag-picker-item.archive {}
+
+  tr.modal-tag-picker-item td {
+    border-top: 0px;
+    border-bottom: 1px solid @grayMid;
+    padding: (@base-padding / 2);
+  }
+
+  tr.modal-tag-picker-item td.tag span.text {
+    font-weight: bold;
+  }
+
+  tr.modal-tag-picker-item td.selection {
+    color: @gray;
+    font-style: italic;
+    padding-right: 0px;
+  }
+
+  tr.modal-tag-picker-item td.checkbox {
+    width: 30px;
+  }
+
+
+/* Modal - Results from crypto searchkey command */
+
+  .searchkey-result-item {
+    list-style-type: none;
+    padding: @base-padding;
+    border: 1px solid @grayMid;
+    border-radius: @base-border-radius;
+    margin-bottom: @base-margin;
+  }
+
+  .searchkey-result-item:hover {
+    background: @grayLight;
+  }
+
+  .searchkey-result-item .avatar {
+    .global-user-avatar();
+  }
+
+  .searchkey-result-item .avatar img {
+    .global-user-avatar-img();
+  }
+
+  .searchkey-result-item .name {
+    width: 200px;
+    display: inline-block;
+    font-weight: bold;
+    word-break: break-word;
+    color: @grayDark;
+    vertical-align: top;
+  }
+
+  .searchkey-result-item .name span {
+    display: inline-block;
+    color: @gray;
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+  .searchkey-result-item .icon-fingerprint {
+    display: inline-block;
+    font-size: 30px;
+    line-height: 30px;
+    vertical-align: top;
+  }
+
+  .searchkey-result-item .fingerprint {
+    display: inline-block;
+    width: 200px;
+    vertical-align: top;
+  }
+
+  .searchkey-result-details {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .searchkey-result-details table {
+    width: 100%;
+    border: 0px;
+    background: transparent; 
+  }
+
+  .searchkey-result-details table tr:hover {
+    background: transparent;
+  }
+
+  .searchkey-result-details table td {
+    width: 150px;
+    border: 0px;
+    padding: 0px 15px 0px 0px;
+    font-size: 12px;
+  }
+
+  .searchkey-result-score {
+    padding: 5px 3px 0 3px;
+  }
+
+  .searchkey-result-score:hover {
+    opacity: 0.60;
+  }

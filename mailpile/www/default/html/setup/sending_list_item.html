@@ -1,0 +1,19 @@
+<li class="setup-item" id="setup-sending-<%= id %>">
+  <div class="clearfix">
+    <div class="left">
+      <span class="name"><%= name %></span>
+      <span class="text-detail"><%= host %></span>
+    </div>
+    <em class="right text-detail">
+      <span class="icon-profiles"></span> <% if (used_by) { %><%= used_by %><% } else { %>{{_("No")}}<% } %> {{_("Profiles")}}
+    </em>
+  </div>
+  <div class="clearfix">
+    <ul class="horizontal right">
+      <li><a href="#sending/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+      <% if (used_by) { %>
+      <li><a href="<%= id %>" class="setup-sending-remove"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+      <% } %>
+    </ul>
+  </div>
+</li>

@@ -1,0 +1,182 @@
+/* Pile */
+
+	#pile-results {
+	  width: 100%;
+	  min-width: 800px;
+    border: 0px;
+  }
+
+  #pile-results tr.result          { background: @white; }
+	#pile-results tr.result:hover    { background: @grayLight; }
+	#pile-results tr.result-hover    { background: @grayLight; }
+	#pile-results tr.result-on       { background: @colorSelect }
+	#pile-results tr.result-on:hover { background: @colorSelectHover }
+	
+	#pile-results td {
+    vertical-align: middle;
+		border-spacing: 0px;
+    border-top: 0px;
+    border-right: 0px;
+		border-bottom: 1px solid @grayMid;
+    border-left: 0px;
+		box-sizing: padding-box;
+		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 14px;
+		line-height: 14px;
+    padding-left: 0px;
+    padding-right: 0px;
+	}
+
+  #pile-results.comfy  td { padding-top: 10px; padding-bottom: 10px; }
+  #pile-results.cozy   td { padding-top: 6px; padding-bottom: 6px; }
+  #pile-results.snug   td { padding-top: 2px; padding-bottom: 2px; }
+
+	#pile-results tr a        { font-size: 14px; line-height: 14px; font-weight: normal; color: inherit; }
+	#pile-results tr.in_new a { font-weight: bold;}
+  #pile-results td span.pile-message-tag { font-weight: bold; margin-right: 5px; cursor: pointer; }
+
+  #pile-results        td.draggable       { width: 12px; cursor: move; }
+  #pile-results        td.draggable:hover { cursor: move; }
+  #pile-results        td.avatar       { width: 44px; text-align: center; }
+  #pile-results        td.avatar a     { display: block; text-align: center; }
+  #pile-results        td.avatar a img { display: inline-block; border-radius: 2px; }
+  #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }
+  #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
+  #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
+
+	#pile-results td.from {
+	  width: 255px;
+		overflow-x: hidden;
+		word-wrap: normal;
+		word-break: normal;
+    white-space: nowrap;		
+	}
+
+  #pile-results td.from span.conversation-count {
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+    left: 3px;
+    padding: 4px 8px 4px 8px;
+    box-sizing: border-box;
+    color: @grayDark;
+    background: @grayMid;
+    border-radius: @base-border-radius;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 11px;
+  }
+
+  #pile-results.cozy td.from span.conversation-count {
+    padding: 3px 6px;
+  }
+
+  #pile-results.snug td.from span.conversation-count {
+    padding: 0px;
+    background: transparent;
+    color: @gray;
+  }
+
+	#pile-results td.from .icon-reply,
+	#pile-results td.from .icon-forward,
+  #pile-results td.from .icon-compose {
+    position: relative;
+    top: 0px;
+    left: 4px;
+    color: @grayMid;
+  }
+
+	#pile-results td.subject {
+		min-width: 374px;
+		overflow: hidden;
+		word-wrap: normal;
+		word-break: normal;
+    white-space: nowrap;	
+	}
+	
+	#pile-results td.subject a {
+	  width: 370px;
+    display: inline-block;
+	}
+
+  #pile-results td.date {
+    width: 60px;
+    text-align: right;
+    white-space: nowrap;
+    color: @gray;
+  }
+
+  #pile-results td.checkbox {
+    width: 45px;
+    text-align: center;
+  }
+
+
+/* Pile Bottom */
+
+	#pile-bottom {
+		margin: 15px 15px 0px 15px;
+	}
+	
+	#pile-bottom h5 {
+    margin-top: 10px;
+		color: @grayDark;
+	}
+	
+	#pile-bottom a {
+		margin-right: 15px;
+	}
+
+  #pile-empty {
+    padding: @base-padding;
+    background: @white;
+    border-bottom: 1px solid @grayMid;
+    font-size: 14px;
+  }
+
+  #pile-empty-search-terms {
+    font-size: 24px;
+    font-weight: bold;
+    color: @gray;
+  }
+
+
+/* Pile Speed */
+
+	#pile-speed {
+	  margin-bottom: 50px;
+		font-family: @mailpile-text-font-family-bold;
+		color: @gray;
+	}
+
+	#pile-speed span {
+		font-size: 21px;
+		margin-right: 10px;
+		position: relative;
+		top: 3px;
+		left: 0px;
+	}
+
+
+/* Pile	- Drag & Drop */
+	
+  #pile-results tr.result:hover    td.draggable, 
+  #pile-results tr.result-hover    td.draggable,
+  #pile-results tr.result-on:hover td.draggable {
+    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+  }	
+	
+	.pile-results-drag {
+  	background: @white;
+  	border: 1px solid @gray;
+  	border-radius: 4px;
+  	padding: 5px 10px;
+  	z-index: 9999;
+  	font-size: 14px;
+  	font-weight: bold;
+	}
+
+

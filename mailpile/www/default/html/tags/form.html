@@ -1,0 +1,105 @@
+<div id="tags-settings" class="content-normal">
+  <div class="clearfix half-bottom">
+    <h2 class="contact-name half-bottom"><span id="tag-editor-icon" class="{{tag.icon}}" style="color: {{ theme_settings().colors[tag.label_color] }}"></span> {{form_title}}</h2>
+    {% if state.command_url != "/tags/add/" %}
+    <a href="#" id="button-tag-change-icon" class="">{{_("Change Icon")}}</a> &nbsp;&nbsp;<a href="#" id="button-tag-change-label-color" class="">{{_("Change Color")}}</a>
+    {% endif %}
+	</div>
+
+  <form id="form-tag-add" class="standard" method="POST">
+
+    <input type="hidden" name="csrf" value="">
+    <input type="hidden" id="data-tag-tid" name="icon" value="{{tag.tid}}" placeholder="{{tag.tid}}">
+    <input type="hidden" id="data-tag-icon" name="icon" value="{{tag.icon}}" placeholder="{{tag.icon}}">
+    <input type="hidden" id="data-tag-label-color" name="label_color" value="{{tag.label_color}}" placeholder="{{tag.label_color}}">
+
+    <label>{{_("Tag")}}</label>
+    <input type="text" id="data-tag-add-tag" name="name" value="{{tag.name}}" placeholder="{{_("Friends & Family")}}">
+
+    <label>{{_("Slug")}}</label>
+    <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
+
+    <div id="form-tag-details" class="content-medium {% if state.command_url == "/tags/add/" %}hide{% endif %}">
+
+      <label class="checkbox">
+        <input id="data-tag-label" type="checkbox" name="label" value="true" {% if tag.label %}checked{% endif %}> {{_("Show in search results")}}
+      </label>
+
+      <label>{{_("Display")}}</label>
+      <select name="display" id="data-tag-display">
+        <option value="tag"{% if tag.display == "tag"%} selected="selected"{% endif %}>{{_("Tag")}}</option>
+        <option value="priority"{% if tag.display == "priority"%} selected="selected"{% endif %}>{{_("Priority Tag")}}</option>
+        <option value="archive"{% if tag.display == "archive"%} selected="selected"{% endif %}>{{_("Archive")}}</option>
+        <option value="invisible"{% if tag.display == "invisible"%} selected="selected"{% endif %}>{{_("Invisible")}}</option>
+      </select>
+
+      {% if not tag.subtags %}
+      <label>{{_("Parent Tag")}}</label>
+      <select name="parent" id="data-tag-parent">
+        <option value="">-------- {{_("none")}} --------</option>
+        {% for ptag in mailpile("tags", "mode=tree").result.tags %}
+        {% if ptag.display == "priority" or ptag.display == "tag" %}
+        <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
+        {% endif %}    
+        {% endfor %}
+      </select>
+      {% endif %}
+
+      <label>{{_("Template")}}</label>
+      <select name="template">
+        <option value="default">{{_("Default")}}</option>
+      </select>
+
+      {% if tag.subtags %}
+      <h3 class="add-top">{{_("Subtags")}}</h3>
+      <ul class="items grouped">
+        {% for sub in tag.subtags %}
+        <li class="grouped">
+          <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} <a href="/tags/edit.html?only={{sub.slug}}" class="right"><span class="icon-settings"></span> {{_("Settings")}}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+    {% if state.command_url == "/tags/add/" %}
+    <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+    {% endif %}
+  </form>
+
+  {% if state.command_url == "/tags/" %}
+  <button type="submit" id="button-tag-delete" class="button-warning"><span class="icon-minus"></span> {{_("Delete Tag")}}</button>
+  {% endif %}
+</div>
+
+<script id="modal-tag-icon-picker" type="text/template">
+<div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">{{_("Pick Tag Icon")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <ul class="horizontal">
+        <%= icons %>
+      </ul>
+    </div>
+  </div>
+</div>
+</script>
+
+<script id="modal-tag-color-picker" type="text/template">
+<div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">{{_("Pick Tag Color")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <ul class="horizontal">
+        <%= colors %>
+      </ul>
+    </div>
+  </div>
+</div>
+</script>

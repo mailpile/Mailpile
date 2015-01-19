@@ -1,0 +1,42 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Compose")}}{% endblock %}
+{% block content %}
+{% if result %}
+{% set profiles = mailpile('profiles').result %}
+  {# Note: this code follows the pattern described on the following
+           stackexchange link, collecting information about how the loop
+           and inner IF-statements went into the found_editable list, so
+           that can influence the final processing and not redirect if
+           we found anything at all editable!
+
+    * https://stackoverflow.com/questions/4870346/can-a-jinja-variables-scope-extend-beyond-in-an-inner-block
+  #}
+  {% set found_editable = [] %}
+  {% set found_requested = [] %}
+  {% for mid in (result.thread_ids or result.message_ids) %}
+    {% set message = result.data.messages.get(mid) %}
+    {% set metadata = result.data.metadata[mid] %}
+    {% if message %}
+      {% do found_requested.append(mid) %}
+      {% if metadata.flags.draft %}
+        {% do found_editable.append(mid) %}
+        {% set composer_view = "draft" %}
+        {% set attachments = message.attachments %}
+        {% set editing_strings = message.editing_strings %}
+        {% set editing_addresses = result.data.addresses %}
+        {% include("partials/compose.html") %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  
+  {% if found_requested and not found_editable %}
+    {{ mailpile('http/redirect/url_thread', found_requested[0]) }}
+  {% endif %}
+
+{% else %}
+
+  {% set error_title = "message_missing" %}
+  {% include("partials/errors_content.html") %}
+
+{% endif %}
+{% endblock %}
