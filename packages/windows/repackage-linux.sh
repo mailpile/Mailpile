@@ -28,8 +28,8 @@ which makensis >/dev/null || sudo apt-get install nsis
 
 echo '=== Fetch / update Mailpile itself'
 mkdir -p $WORKDIR && cd $WORKDIR
-[ -d Mailpile ] || git clone https://github.com/pagekite/Mailpile
-(cd Mailpile && git pull && git checkout -f master)
+[ -d Mailpile ] || git clone -b release/beta https://github.com/pagekite/Mailpile
+(cd Mailpile && git pull && git checkout -f release/beta)
 
 
 echo '=== Download and extract binary packages'

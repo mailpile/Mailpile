@@ -23,8 +23,8 @@ which cmake       >/dev/null || sudo apt-get install cmake
 
 echo '=== Fetch / update Mailpile itself'
 mkdir -p $WORKDIR && cd $WORKDIR
-[ -d Mailpile ] || git clone https://github.com/pagekite/Mailpile
-(cd Mailpile && git pull)
+[ -d Mailpile ] || git clone -b release/beta https://github.com/pagekite/Mailpile
+(cd Mailpile && git pull && git checkout -f release/beta)
 
 echo '=== Fetch / update tool for building the compressed DMG'
 [ -d libdmg-hfsplus ] || git clone https://github.com/mailpile/libdmg-hfsplus
