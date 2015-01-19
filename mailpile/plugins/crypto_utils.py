@@ -347,9 +347,20 @@ class GPGCheckKeys(Search):
             if k_info['description'] is not None:
                 details.append(k_info)
             if is_serious:
-                fixes += [[_('Disable bad keys:'),
-                           _('Run: %s') % '`gpg --edit-key %s`' % fprint,
-                           _('Type: %s') % '`disable`, `save`']]
+                fixes += [[_('Revoke bad keys:'),
+                           _('Run: %s') % ('`gpg --gen-revoke %s`' % fprint),
+                           _('Follow the instructions given'),
+                           _('A block of text will be shown on your screen.'),
+                           _('Send that block to contacts that have your key.'),
+                           _('You can search for %s to find people who have it.') % 
+                              '`is:encrypted to:me`'
+                         ],[
+                           _('Disable bad keys:'),
+                           _('Run: %s') % ('`gpg --edit-key %s`' % fprint),
+                           _('Type %s') % '`disable`',
+                           _('Type %s') % '`save`',
+                           _('You\'re done!'),
+                         ]]
                 serious += 1
             if fprint not in good_keys:
                 bad_keys[fprint] = info
