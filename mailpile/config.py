@@ -1435,20 +1435,30 @@ class ConfigManager(ConfigDict):
 
         # We keep the master key in a file of its own and never delete
         # or overwrite master keys.
+        want_renamed_keyfile = None
         if (self._master_key_ondisk != self.master_key or
                self._master_key_recipient != self.prefs.gpg_recipient):
             if os.path.exists(keyfile):
-                os.rename(keyfile, keyfile + ('.%x' % time.time()))
-        if not os.path.exists(keyfile):
+                want_renamed_keyfile = keyfile + ('.%x' % time.time())
+        if want_renamed_keyfile or not os.path.exists(keyfile):
             gpgr = self.prefs.get('gpg_recipient')
             if self.master_key and gpgr != '!CREATE':
                 status, encrypted_key = GnuPG(self).encrypt(self.master_key,
                                                             tokeys=[gpgr])
                 if status == 0:
-                    with open(keyfile, 'wb') as fd:
-                        fd.write(encrypted_key)
-                    self._master_key_ondisk = self.master_key
-                    self._master_key_recipient = self.prefs.gpg_recipient
+                    try:
+                        with open(keyfile + '.new', 'wb') as fd:
+                            fd.write(encrypted_key)
+                        if want_renamed_keyfile:
+                            os.rename(keyfile, want_renamed_keyfile)
+                        os.rename(keyfile + '.new', keyfile)
+                        self._master_key_ondisk = self.master_key
+                        self._master_key_recipient = self.prefs.gpg_recipient
+                    except:
+                        if (want_renamed_keyfile and
+                                os.path.exists(want_renamed_keyfile)):
+                            os.rename(want_renamed_keyfile, keyfile)
+                        raise
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
