@@ -65,7 +65,7 @@ CONFIG_RULES = {
         'open_in_browser': (_('Open in browser on startup'), bool,       True),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
-        'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
+        'gpg_recipient':  p(_('Encrypt local data to ...'), 'gpgkeyid',    ''),
         'gpg_email_key':  (_('Attach public key to outgoing messages?'),
                             bool, True),
         'openpgp_header': X(_('Advertise GPG preferences in a header?'),

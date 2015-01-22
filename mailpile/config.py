@@ -475,6 +475,47 @@ def _EmailCheck(email):
     return email
 
 
+def _GPGKeyCheck(value):
+    """
+    Strip a GPG fingerprint of all spaces, make sure it seems valid.
+    Will also accept e-mail addresses, for legacy reasons.
+
+    >>> _GPGKeyCheck('User@Foo.com')
+    'User@Foo.com'
+
+    >>> _GPGKeyCheck('1234 5678 abcd EF00')
+    '12345678ABCDEF00'
+
+    >>> _GPGKeyCheck('12345678')
+    '12345678'
+
+    >>> _GPGKeyCheck('B906 EA4B 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    'B906EA4B8A2815C4F8596F9F47C13F3FED735179'
+
+    >>> _GPGKeyCheck('B906 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a GPG key ID or fingerprint
+
+    >>> _GPGKeyCheck('B906 8X28 1111 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a GPG key ID or fingerprint
+    """
+    value = value.replace(' ', '').replace('\t', '').strip()
+    try:
+        if len(value) not in (8, 16, 40):
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+        if re.match(r'^[0-9A-F]+$', value.upper()) is None:
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+    except ValueError:
+        try:
+            return _EmailCheck(value)
+        except ValueError:
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+    return value.upper()
+
+
 class IgnoreValue(Exception):
     pass
 
@@ -505,6 +546,7 @@ def RuledContainer(pcls):
             'False': False, 'false': False,
             'file': _FileCheck,
             'float': float,
+            'gpgkeyid': _GPGKeyCheck,
             'hostname': _HostNameCheck,
             'int': int,
             'long': long,
