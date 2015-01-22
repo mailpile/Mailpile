@@ -41,7 +41,9 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         passphrase = 'this probably does not really overwrite :-( '
 
     assert(sps is not None)
-    gpg = GnuPG(None, use_agent=False)
+
+    # Note: Must use GnuPG without a config, otherwise bad things happen.
+    gpg = GnuPG(None, use_agent=False, debug=('gnupg' in config.sys.debug))
     if gpg.is_available():
         gpg.passphrase = sps.get_reader()
         gpgr = config.prefs.gpg_recipient
