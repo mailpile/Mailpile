@@ -38,7 +38,9 @@ class GnuPGImporter(VCardImporter):
         results = []
         vcards = {}
         for key_id, key in keys.iteritems():
-            if key.get("disabled"):
+            if (key.get("disabled") or key.get("revoked") or
+                    not key["capabilities_map"].get("encrypt") or
+                    not key["capabilities_map"].get("sign")):
                 continue
             vcls = [VCardLine(name='KEY', value=self.VCL_KEY_FMT % key_id)]
             card = None
