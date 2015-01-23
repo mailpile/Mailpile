@@ -285,6 +285,39 @@ class GPGCheckKeys(Search):
                 ))
             return message
 
+    def _fix_gen_key(self, min_bits=2048):
+        return [
+            _("You need a new key!"),
+            _("Run: %s") % '`gpg --gen-key`',
+            _("Answer the tool\'s questions: use RSA and RSA, %d bits or more"
+              ) % min_bits]
+
+    def _fix_mp_config(self, good_key=None):
+        fprint = (good_key['fingerprint'] if good_key else '<FINGERPRINT>')
+        return [
+           _('Update the Mailpile config to use a good key:'),
+           _('IMPORTANT: This MUST be done before disabling the key!'),
+           _('Run: %s') % ('`set prefs.gpg_recipient = %s`' % fprint),
+           _('Run: %s') % ('`optimize`'),
+           _('This key\'s passphrase will be used to log in to Mailpile')]
+
+    def _fix_revoke_key(self, fprint, comment=''):
+        return [
+            _('Revoke bad keys:') + ('  ' + comment if comment else ''),
+            _('Run: %s') % ('`gpg --gen-revoke %s`' % fprint),
+            _('Say yes to the first question, follow the instructions'),
+            _('A revocation certificate will be shown on screen'),
+            _('Copy & paste that, save, and send to people who have the old key'),
+            _('You can search for %s to find such people'
+              ) % '`is:encrypted to:me`']
+
+    def _fix_disable_key(self, fprint, comment=''):
+        return [
+            _('Disable bad keys:') + ('  ' + comment if comment else ''),
+            _('Run: %s') % ('`gpg --edit-key %s`' % fprint),
+            _('Type %s') % '`disable`',
+            _('Type %s') % '`save`']
+
     def command(self):
         session, config = self.session, self.session.config
         args = list(self.args)
@@ -347,20 +380,8 @@ class GPGCheckKeys(Search):
             if k_info['description'] is not None:
                 details.append(k_info)
             if is_serious:
-                fixes += [[_('Revoke bad keys:'),
-                           _('Run: %s') % ('`gpg --gen-revoke %s`' % fprint),
-                           _('Follow the instructions given'),
-                           _('A block of text will be shown on your screen.'),
-                           _('Send that block to contacts that have your key.'),
-                           _('You can search for %s to find people who have it.') % 
-                              '`is:encrypted to:me`'
-                         ],[
-                           _('Disable bad keys:'),
-                           _('Run: %s') % ('`gpg --edit-key %s`' % fprint),
-                           _('Type %s') % '`disable`',
-                           _('Type %s') % '`save`',
-                           _('You\'re done!'),
-                         ]]
+                fixes += [self._fix_revoke_key(fprint, _('(optional)')),
+                          self._fix_disable_key(fprint)]
                 serious += 1
             if fprint not in good_keys:
                 bad_keys[fprint] = info
@@ -379,11 +400,7 @@ class GPGCheckKeys(Search):
                     serious += 1
 
         if bad_recipient and good_key:
-            fixes[:0] = [[_('Update the Mailpile config to use a good key:'),
-                          _('Run: %s') % ('`set prefs.gpg_recipient = %s`'
-                                          % good_key['fingerprint']),
-                          _('Note! The passphrase of this key will be used'
-                            ' to log in to Mailpile.')]]
+            fixes[:0] = [self._fix_mp_config(good_key)]
 
         profiles = config.vcards.find_vcards([], kinds=['profile'])
         for vc in profiles:
@@ -415,22 +432,8 @@ class GPGCheckKeys(Search):
                 serious += 1
 
         if len(good_keys) == 0:
-            fixes[:0] = [[
-                _("You need a new key! (RSA and RSA, 2048 bits or more)"),
-                _("Run: %s") % '`gpg --gen-key`',
-                _("(Answer the GPG tool's questions)")
-            ], [
-                _('Update the Mailpile config to use a good key:'),
-                _('Run: %s') % ('`set prefs.gpg_recipient = <FINGERPRINT>`'),
-                _('Note! The passphrase of this key will be used'
-                  ' to log in to Mailpile.')
-            ]]
-            fixes += [[
-                _("Inform your contacts you have a new key."),
-                _("Check who sends you encrypted mail: %s"
-                  ) % '`search is:encrypted to:me`',
-                _('Send them e-mail!')
-            ]]
+            fixes[:0] = [self._fix_gen_key(min_bits=self.MIN_KEYSIZE),
+                         self._fix_mp_config()]
 
         if quiet and not serious:
             return self._success('OK')
