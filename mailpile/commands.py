@@ -2119,6 +2119,7 @@ class Cached(Command):
             cid = self.args[0] if self.args else self.data.get('id', [None])[0]
             rv = self.session.config.command_cache.get_result(cid)
             self.session.copy(rv.session)
+            rv.session.ui.render_mode = self.session.ui.render_mode
             return rv
         except:
             self._starting()

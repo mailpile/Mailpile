@@ -41,6 +41,7 @@ var jhtml_url = function(original_url) {
 prepare_new_content = function(selector) {
     $(selector).find('a').each(function(idx, elem) {
         var url = $(elem).attr('href');
+        // FIXME: Should we add some majick to avoid dup click handlers?
         if (url && ((url.indexOf('/in/') == 0) ||
                     (url.indexOf('/search/') == 0))) {
             $(elem).click(function(ev) {
@@ -76,6 +77,22 @@ $(document).ready(function(){
     if (Mailpile && Mailpile.instance) {
         prepare_new_content('body');
     }
+    EventLog.subscribe('.command_cache.CommandCache', function(ev) {
+        for (var cidx in ev.data.cache_ids) {
+            var cid = ev.data.cache_ids[cidx];
+            if ($('.content-'+cid).length > 0) {
+                Mailpile.API.cached_get({
+                    id: cid,
+                    _output: 'as.jhtml'
+                }, function(json) {
+                    var cid = json.state.cache_id;
+                    var existing = $('.content-'+cid);
+                    existing.html(json.result);
+                    prepare_new_content(existing);
+                });
+            }
+        }
+    });
 });
 
 return {

@@ -389,7 +389,7 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, config, session=None, use_agent=False):
+    def __init__(self, config, session=None, use_agent=False, debug=False):
         global DEBUG_GNUPG
         self.available = None
         self.gpgbinary = GPG_BINARY
@@ -405,7 +405,8 @@ class GnuPG:
         else:
             self.passphrase = None
             self.homedir = GNUPG_HOMEDIR
-        self.debug = self._debug_all if DEBUG_GNUPG else self._debug_none
+        self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
+                      else self._debug_none)
 
     def _debug_all(self, msg):
         if self.session:
