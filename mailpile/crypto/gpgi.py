@@ -180,7 +180,9 @@ class GnuPGRecordParser:
         return self.keys
 
     def parse_line(self, line):
-        line = dict(zip(self.record_fields, map(lambda s: s.replace("\\x3a", ":"), line.strip().split(":"))))
+        line = dict(zip(self.record_fields,
+                        map(lambda s: s.replace("\\x3a", ":"),
+                        line.strip().split(":"))))
         r = self.dispatch.get(line["record"], self.parse_unknown)
         r(line)
 
@@ -198,6 +200,17 @@ class GnuPGRecordParser:
         line["private_key"] = False
         line["subkeys"] = []
         line["uids"] = []
+
+        for ts in ('expiration_date', 'creation_date'):
+            if line.get(ts) and '-' not in line[ts]:
+               try:
+                   unixtime = int(line[ts])
+                   if unixtime > 946684800:  # 2000-01-01
+                       dt = datetime.fromtimestamp(unixtime)
+                       line[ts] = dt.strftime('%Y-%m-%d')
+               except ValueError:
+                   line[ts+'_unparsed'] = line[ts]
+                   line[ts] = '1970-01-01'
 
         if line["record"] == "sec":
             line["secret"] = True
