@@ -25,16 +25,23 @@
 }
 OK GO
 tac
+echo 'show_splash_screen {"image": "icons-light/normal.png", "message": "Hello world!", "progress_bar": true}'
 
 sleep 2
+echo 'update_splash_screen {"progress": 0.2}'
 echo 'set_status_normal {}'
 
 sleep 2
+echo 'update_splash_screen {"progress": 0.5, "message": "Woohooooo"}'
+echo 'update_splash_screen {"progress": 0.5}'
 echo 'set_menu_sensitive {"item": "xkcd"}'
+echo 'notify_user {"message": "This is a notification"}'
 
 sleep 2
+echo 'update_splash_screen {"progress": 1.0}'
 echo 'set_status_working {}'
 sleep 2
+echo 'hide_splash_screen {}'
 echo 'set_status_attention {}'
 
 sleep 2
