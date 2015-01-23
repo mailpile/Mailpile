@@ -87,7 +87,17 @@ class Indicator(object):
     def set_menu_sensitive(self, item=None, sensitive=True):
         pass
 
-    def notify_user(self, message):
+    def update_splash_screen(self, message=None, progress=None):
+        pass
+
+    def show_splash_screen(self, height=None, width=None,
+                           progress_bar=False, image=None, message=None):
+        pass
+
+    def hide_splash_screen(self):
+        pass
+
+    def notify_user(self, message='Hello'):
         print 'NOTIFY: %s' % message
 
 
@@ -108,6 +118,10 @@ def UnityIndicator():
     gobject.threads_init()
 
     class MailpileIndicator(Indicator):
+        def __init__(self, config):
+            Indicator.__init__(self, config)
+            self.splash = None
+
         def _menu_setup(self):
             self.items = {}
             self.menu = gtk.Menu()
@@ -135,7 +149,81 @@ def UnityIndicator():
             self._set_status('startup', now=True)
             self.ind.set_menu(self.menu)
 
-        def notify_user(self, message):
+        def update_splash_screen(self, progress=None, message=None):
+            if self.splash:
+                if message is not None and 'message' in self.splash:
+                    self.splash['message'].set_markup(message)
+                if progress is not None and 'progress' in self.splash:
+                    self.splash['progress'].set_fraction(progress)
+
+        def show_splash_screen(self, height=None, width=None,
+                               progress_bar=False, image=None, message=None,
+                               now=False):
+            def show(self):
+                window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+                vbox = gtk.VBox(False, 1)
+
+                if message:
+                    lbl = gtk.Label()
+                    lbl.set_markup(message or '')
+                    lbl.set_alignment(0.5, 0.5)
+                    vbox.pack_start(lbl, True, True)
+                else:
+                    lbl = None
+
+                if image:
+                    img = gtk.gdk.pixbuf_new_from_file(image)
+                    def draw_background(widget, ev):
+                        alloc = widget.get_allocation()
+                        pb = img.scale_simple(alloc.width, alloc.height,
+                                              gtk.gdk.INTERP_BILINEAR)
+                        widget.window.draw_pixbuf(
+                            widget.style.bg_gc[gtk.STATE_NORMAL],
+                            pb, 0, 0, alloc.x, alloc.y)
+                        if (hasattr(widget, 'get_child') and
+                                widget.get_child() is not None):
+                            widget.propagate_expose(widget.get_child(), ev)
+                        return False
+                    vbox.connect('expose_event', draw_background)
+
+                if progress_bar:
+                    pbar = gtk.ProgressBar()
+                    pbar.set_orientation(gtk.PROGRESS_LEFT_TO_RIGHT)
+                    vbox.pack_end(pbar, False, True)
+                else:
+                    pbar = None
+
+                # FIXME: window.set_title('Your app name')
+                window.set_decorated(False)
+                window.set_position(gtk.WIN_POS_CENTER)
+                window.set_size_request(width or 240, height or 320)
+                window.add(vbox)
+                window.show_all()
+
+                self.hide_splash_screen(now=True)
+                self.splash = {
+                    'window': window,
+                    'vbox': vbox,
+                    'message': lbl,
+                    'progress': pbar
+                }
+            if now:
+                show(self)
+            else:
+                gobject.idle_add(show, self)
+
+        def hide_splash_screen(self, now=False):
+            def hide(self):
+                for k in self.splash or []:
+                    if self.splash[k] is not None:
+                        self.splash[k].destroy()
+                self.splash = None
+            if now:
+                hide(self)
+            else:
+                gobject.idle_add(hide, self)
+
+        def notify_user(self, message='Hello'):
             if pynotify:
                 notification = pynotify.Notification(
                     "Mailpile", message, "dialog-warning")
@@ -271,7 +359,7 @@ def MacOSXIndicator():
             if item and item in self.items:
                 self.items[item].setEnabled_(sensitive)
 
-        def notify_user(self, message):
+        def notify_user(self, message=None):
             pass  # FIXME
 
         def run(self):
@@ -306,6 +394,7 @@ class StdinWatcher(threading.Thread):
         try:
             while not self.gui.ready:
                 time.sleep(0.1)
+            time.sleep(0.1)
             while True:
                 line = sys.stdin.readline()
                 if not line:
