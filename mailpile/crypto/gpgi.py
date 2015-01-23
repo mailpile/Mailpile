@@ -164,13 +164,13 @@ class GnuPGRecordParser:
                               "capabilities", "flag", "sn", "hashtype",
                               "curve"]
         self.record_types = ["pub", "sub", "ssb", "fpr", "uat", "sec", "tru",
-                             "sig", "rev", "uid", "gpg"]
+                             "sig", "rev", "uid", "gpg", "rvk"]
         self.record_parsers = [self.parse_pubkey, self.parse_subkey,
                                self.parse_subkey, self.parse_fingerprint,
                                self.parse_userattribute, self.parse_privkey,
                                self.parse_trust, self.parse_signature,
                                self.parse_revoke, self.parse_uidline,
-                               self.parse_none]
+                               self.parse_none, self.parse_revocation_key]
 
         self.dispatch = dict(zip(self.record_types, self.record_parsers))
 
@@ -272,8 +272,10 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
-        # FIXME: should set revocation_date (checked in existing code)
-        print line
+        pass  # FIXME
+
+    def parse_revocation_key(self, line):
+        pass  # FIXME
 
     def parse_unknown(self, line):
         print "Unknown line with code '%s'" % (line,)
