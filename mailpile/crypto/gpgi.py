@@ -276,7 +276,7 @@ class GnuPGRecordParser:
         print line
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % line[0]
+        print "Unknown line with code '%s'" % (line,)
 
     def parse_none(line):
         pass
