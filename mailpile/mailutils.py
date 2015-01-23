@@ -1632,7 +1632,7 @@ class AddressHeaderParser(list):
                                                _raise=_raise)
                 return self
             except ValueError:
-                if _pass == 3 and _raise:
+                if _pass == '3' and _raise:
                     raise
         return self
 
