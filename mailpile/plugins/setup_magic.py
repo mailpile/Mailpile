@@ -608,6 +608,7 @@ class SetupCrypto(TestableWebbable):
             'secret_keys': self.list_secret_keys(),
         }
         error_info = None
+        choose_key = None
 
         if self.data.get('_method') == 'POST' or self._testing():
 
@@ -659,7 +660,8 @@ class SetupCrypto(TestableWebbable):
             # 3rd, if necessary master key and/or GPG key
             with BLOCK_HTTPD_LOCK, Idle_HTTPD():
                 if choose_key and not error_info:
-                    session.config.prefs.gpg_recipient = choose_key
+                    if choose_key != '!CREATE':
+                        session.config.prefs.gpg_recipient = choose_key
                     # FIXME: This should probably only happen if the GPG
                     #        key was successfully created.
                     self.make_master_key()
@@ -667,7 +669,7 @@ class SetupCrypto(TestableWebbable):
 
                 with Setup.KEY_WORKER_LOCK:
                     if ((not error_info) and
-                            (session.config.prefs.gpg_recipient
+                            (choose_key
                              == '!CREATE') and
                             (Setup.KEY_CREATING_THREAD is None or
                              Setup.KEY_CREATING_THREAD.failed)):
@@ -700,22 +702,26 @@ class SetupCrypto(TestableWebbable):
                         'variable': key
                     })
 
-        results.update({
-            'creating_key': (Setup.KEY_CREATING_THREAD is not None and
-                             Setup.KEY_CREATING_THREAD.running),
-            'creating_failed': (Setup.KEY_CREATING_THREAD is not None and
-                                Setup.KEY_CREATING_THREAD.failed),
-            'chosen_key': session.config.prefs.gpg_recipient,
-            'prefs': {
-                'index_encrypted': session.config.prefs.index_encrypted,
-                'obfuscate_index': session.config.prefs.obfuscate_index,
-                'encrypt_mail': session.config.prefs.encrypt_mail,
-                'encrypt_index': session.config.prefs.encrypt_index,
-                'encrypt_vcards': session.config.prefs.encrypt_vcards,
-                'encrypt_events': session.config.prefs.encrypt_events,
-                'encrypt_misc': session.config.prefs.encrypt_misc
-            }
-        })
+        if choose_key == '!CREATE':
+            results.update({
+                'creating_key': (Setup.KEY_CREATING_THREAD is not None and
+                                 Setup.KEY_CREATING_THREAD.running),
+                'creating_failed': (Setup.KEY_CREATING_THREAD is not None and
+                                    Setup.KEY_CREATING_THREAD.failed),
+            })
+        else:
+            results.update({
+                'chosen_key': session.config.prefs.gpg_recipient,
+                'prefs': {
+                    'index_encrypted': session.config.prefs.index_encrypted,
+                    'obfuscate_index': session.config.prefs.obfuscate_index,
+                    'encrypt_mail': session.config.prefs.encrypt_mail,
+                    'encrypt_index': session.config.prefs.encrypt_index,
+                    'encrypt_vcards': session.config.prefs.encrypt_vcards,
+                    'encrypt_events': session.config.prefs.encrypt_events,
+                    'encrypt_misc': session.config.prefs.encrypt_misc
+                }
+            })
 
         if changed:
             self._background_save(config=True)
