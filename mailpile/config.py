@@ -503,6 +503,8 @@ def _GPGKeyCheck(value):
     ValueError: Not a GPG key ID or fingerprint
     """
     value = value.replace(' ', '').replace('\t', '').strip()
+    if value == '!CREATE':
+        return value
     try:
         if len(value) not in (8, 16, 40):
             raise ValueError(_('Not a GPG key ID or fingerprint'))
