@@ -100,14 +100,15 @@ class BrokeredContext(object):
     from the brokers describing what sort of connection was established.
 
     WARNING: In spite of our best efforts (locking, etc.), mixing brokered
-             and unbrokered code will not work well at all.  The patching
+             and unbrokered code will not work well at all. The patching
              approach also limits us to initiating one outgoing connection
              at a time.
     """
-    def __init__(self, broker, need=None, reject=None):
+    def __init__(self, broker, need=None, reject=None, oneshot=False):
         self._broker = broker
         self._need = need
         self._reject = reject
+        self._oneshot = oneshot
         self._monkeys = []
         self._reset()
 
@@ -118,19 +119,28 @@ class BrokeredContext(object):
         self.on_localnet = False
         self.on_darknet = None
 
+    def _unmonkey(self):
+        if self._monkeys:
+            (socket.create_connection, ) = self._monkeys
+            self._monkeys = []
+            monkey_lock.release()
+
     def __enter__(self, *args, **kwargs):
         monkey_lock.acquire()
         self._monkeys = (socket.create_connection, )
         def create_brokered_conn(address, *a, **kw):
             self._reset()
-            return self._broker.create_conn_with_caps(
-                address, self, self._need, self._reject, *a, **kw)
+            try:
+                return self._broker.create_conn_with_caps(
+                    address, self, self._need, self._reject, *a, **kw)
+            finally:
+                if self._oneshot:
+                    self._unmonkey()
         socket.create_connection = create_brokered_conn
         return self
 
     def __exit__(self, *args, **kwargs):
-        (socket.create_connection, ) = self._monkeys
-        monkey_lock.release()
+        self._unmonkey()
 
 
 class BaseConnectionBroker(Capability):
@@ -171,8 +181,8 @@ class BaseConnectionBroker(Capability):
         self._debug = val
         return self
 
-    def context(self, need=None, reject=None):
-        return BrokeredContext(self, need=need, reject=reject)
+    def context(self, need=None, reject=None, oneshot=False):
+        return BrokeredContext(self, need=need, reject=reject, oneshot=oneshot)
 
     def create_conn_with_caps(self, address, context, need, reject,
                               *args, **kwargs):

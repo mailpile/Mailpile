@@ -190,7 +190,8 @@ class Http(Hacks):
         try:
             uo = URLopener()
             uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
-            with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP]):
+            with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP],
+                                         oneshot=True):
                 if method == 'POST':
                     (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
                 else:

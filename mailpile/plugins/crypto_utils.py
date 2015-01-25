@@ -81,9 +81,10 @@ class GPGKeyImport(Command):
                 key_data.append(file.read())
         for key_url in key_urls:
             with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):
-                key_data.append(urllib2.urlopen(key_url).read())
+                uo = urllib2.urlopen(key_url)
+            key_data.append(uo.read())
 
-        rvs = [self._gnupg().import_keys('\n'.join(key_data))]
+        rv = self._gnupg().import_keys('\n'.join(key_data))
 
         # Previous crypto evaluations may now be out of date, so we
         # clear the cache so users can see results right away.
@@ -92,8 +93,7 @@ class GPGKeyImport(Command):
         # FIXME: Start a keychain rescan, hopefully targetted on the keys
         #        we just added.
 
-        return self._success(_("Imported %d keys") % len(rvs),
-                             rvs if (len(rvs) != 1) else rvs[0])
+        return self._success(_("Imported %d keys") % len(key_data), rv)
 
 
 class GPGKeySign(Command):
