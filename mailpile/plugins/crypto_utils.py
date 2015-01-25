@@ -1,7 +1,9 @@
 import datetime
 import re
 import time
+import urllib2
 
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
@@ -61,28 +63,37 @@ class GPGKeyImport(Command):
                 '<key_file>')
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {
-        'key_data': 'Contents of public key to be imported',
+        'key_data': 'ASCII armor of public key to be imported',
         'key_file': 'Location of file containing the public key',
+        'key_url': 'URL of file containing the public key',
         'name': '(ignored)'
     }
 
     def command(self):
-        key_data = ""
-        if len(self.args) != 0:
-            key_file = self.data.get("key_file", self.args[0])
-            with  open(key_file) as file:
-                key_data = file.read()
-        if "key_data" in self.data:
-            key_data = self.data.get("key_data")
-        elif "key_file" in self.data:
-            pass
-        rv = self._gnupg().import_keys(key_data)
+        key_files = self.data.get("key_file", []) + [a for a in self.args
+                                                     if not '://' in a]
+        key_urls = self.data.get("key_url", []) + [a for a in self.args
+                                                   if '://' in a]
+        key_data = []
+        key_data.extend(self.data.get("key_data", []))
+        for key_file in key_files:
+            with open(key_file) as file:
+                key_data.append(file.read())
+        for key_url in key_urls:
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):
+                key_data.append(urllib2.urlopen(key_url).read())
+
+        rvs = [self._gnupg().import_keys('\n'.join(key_data))]
 
         # Previous crypto evaluations may now be out of date, so we
         # clear the cache so users can see results right away.
         ClearParseCache(pgpmime=True)
 
-        return rv
+        # FIXME: Start a keychain rescan, hopefully targetted on the keys
+        #        we just added.
+
+        return self._success(_("Imported %d keys") % len(rvs),
+                             rvs if (len(rvs) != 1) else rvs[0])
 
 
 class GPGKeySign(Command):

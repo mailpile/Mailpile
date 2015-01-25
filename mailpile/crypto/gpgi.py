@@ -643,7 +643,7 @@ class GnuPG:
             if x[0] == "IMPORTED":
                 res["imported"].append({
                     "fingerprint": x[1],
-                    "username": x[2]
+                    "username": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_OK":
                 reasons = {
@@ -657,7 +657,7 @@ class GnuPG:
                 res["updated"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2],
+                    "fingerprint": x[2].rstrip(),
                 })
             elif x[0] == "IMPORT_PROBLEM":
                 reasons = {
@@ -670,7 +670,7 @@ class GnuPG:
                 res["failed"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2]
+                    "fingerprint": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_RES":
                 res["results"] = {
@@ -687,7 +687,7 @@ class GnuPG:
                     "sec_imported": int(x[11]),
                     "sec_dups": int(x[12]),
                     "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14]),
+                    "not_imported": int(x[14].rstrip()),
                 }
         return res
 
