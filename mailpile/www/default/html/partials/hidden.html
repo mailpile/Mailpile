@@ -172,8 +172,12 @@
           data-fingerprint="<%= fingerprint %>"
           data-score_reason="<%= score_reason %>"
           data-score_stars="<%= score_stars %>">
+        <% if (score > 0) { %>
         <% for (i = 0; i < Math.abs(score_stars); i++) { %>
         <span class="icon-star <%= score_color %>"></span>
+        <% } %>
+        <% } else { %>
+        <span class="icon-signature-revoked <%= score_color %>"></span> <em>{{_("Don't use this key")}}</em>
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
