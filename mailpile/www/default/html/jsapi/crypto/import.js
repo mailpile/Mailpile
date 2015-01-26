@@ -33,7 +33,7 @@ Mailpile.Crypto.Import.Key = function(import_data) {
           key_result['uid'] = key_result.uids[0];
           key_result['action'] = 'hide-modal';
           key_result['on_keychain'] = true;
-          key_result['score_color'] = Mailpile.UI.Crypto.ScoreColor(6);
+          key_result['score_color'] = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
         }
       }
 
@@ -108,32 +108,23 @@ Mailpile.Crypto.Import.Uploader = function() {
       },
       FileUploaded: function(up, file, response) {
 
-        console.log(response);
         // Delay UI feedback (for local installs)
         setTimeout(function() {
-
           if (response.status === 200) {
-  
             var response_data = $.parseJSON(response.response);
-  
-            if (response_data.status === 'succss') {
-  
-              // Display UI
-              $('#upload-key-list').find('#item-encryption-key-UPLOADING');
-  
+
+            // Show UI feedback
+            if (response_data.status === 'success') {
+              $('#item-encryption-key-UPLOADING').html('Yay. Encrypted Key Successfully Uploaded. Someday this will look nicer :)');
             } else {
-  
               $('#upload-key-container').find('p.message').fadeIn();
               $('#item-encryption-key-UPLOADING').fadeOut().remove();
-              $('#form-upload-key').fadeIn().removeClass('hide');            
+              $('#form-upload-key').fadeIn().removeClass('hide');
             }
-  
           } else {
-            Mailpile.notification({status: 'error', message: '{{_("Encryption key upload failed status")}}: ' + response.status });
+            Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key. Status:")}}: ' + response.status });
           }
-
         }, 1000);
-
       },
       Error: function(up, err) {
         Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key because")}}: ' + err.message });
