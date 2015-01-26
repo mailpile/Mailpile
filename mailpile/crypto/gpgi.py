@@ -570,16 +570,21 @@ class GnuPG:
         rlp = GnuPGRecordParser()
         return rlp.parse(keylist)
 
-    def list_keys(self):
+    def list_keys(self, selectors=None):
         """
         >>> g = GnuPG(None)
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--fingerprint", "--list-keys"])
+        list_keys = ["--fingerprint"]
+        for sel in selectors or []:
+            list_keys += ["--list-keys", sel]
+        if not selectors:
+            list_keys += ["--list-keys"]
+        retvals = self.run(list_keys)
         return self.parse_keylist(retvals[1]["stdout"])
 
-    def list_secret_keys(self):
+    def list_secret_keys(self, selectors=None):
         #
         # Note: The "." parameter that is passed is to work around a bug
         #       in GnuPG < 2.1, where --list-secret-keys does not list
@@ -600,14 +605,12 @@ class GnuPG:
         #       BRE: Put --fingerprint at the front and added selectors
         #            for the worlds MOST POPULAR LETTERS!  Yaaay!
         #
-        retvals = self.run(["--fingerprint",
-                            "--list-secret-keys", ".",
-                            "--list-secret-keys", "a",
-                            "--list-secret-keys", "e",
-                            "--list-secret-keys", "i",
-                            "--list-secret-keys", "p",
-                            "--list-secret-keys", "t",
-                            "--list-secret-keys", "k"])
+        if not selectors:
+            selectors = [".", "a", "e", "i", "p", "t", "k"]
+        list_keys = ["--fingerprint"]
+        for sel in selectors:
+            list_keys += ["--list-secret-keys", sel]
+        retvals = self.run(list_keys)
         secret_keys = self.parse_keylist(retvals[1]["stdout"])
 
         # Another unfortunate thing GPG does, is it hides the disabled
@@ -858,7 +861,7 @@ class GnuPG:
 
     def address_to_keys(self, address):
         res = {}
-        keys = self.list_keys()
+        keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
             if any([x["email"] == address for x in props["uids"]]):
                 res[key] = props
@@ -911,6 +914,7 @@ class GnuPG:
 def GetKeys(gnupg, config, people):
     keys = []
     missing = []
+    ambig = []
 
     # First, we go to the contact database and get a list of keys.
     for person in set(people):
@@ -919,35 +923,55 @@ def GetKeys(gnupg, config, people):
         else:
             vcard = config.vcards.get_vcard(person)
             if vcard:
-                # FIXME: Rather than get_all, we should give the vcard the
-                #        option of providing us with its favorite key.
+                # It is the VCard's job to give us the best key first.
                 lines = [vcl for vcl in vcard.get_all('KEY')
                          if vcl.value.startswith('data:application'
                                                  '/x-pgp-fingerprint,')]
-                if len(lines) == 1:
+                if len(lines) > 0:
                     keys.append(lines[0].value.split(',', 1)[1])
                 else:
                     missing.append(person)
             else:
                 missing.append(person)
 
-    # FIXME: This doesn't really feel scalable...
-    all_keys = gnupg.list_keys()
-    for key_id, key in all_keys.iteritems():
-        for uid in key.get("uids", []):
-            if uid.get("email", None) in missing:
-                missing.remove(uid["email"])
-                keys.append(key_id)
+    # Load key data from gnupg for use below
+    if keys:
+        all_keys = gnupg.list_keys(selectors=keys)
+    else:
+        all_keys = {}
+
+    if missing:
+        # Keys are missing, so we try to just search the keychain
+        all_keys.update(gnupg.list_keys(selectors=missing))
+        found = []
+        for key_id, key in all_keys.iteritems():
+            for uid in key.get("uids", []):
+                if uid.get("email", None) in missing:
+                    missing.remove(uid["email"])
+                    found.append(uid["email"])
+                    keys.append(key_id)
+                elif uid.get("email", None) in found:
+                    ambig.append(uid["email"])
 
     # Next, we go make sure all those keys are really in our keychain.
     fprints = all_keys.keys()
     for key in keys:
-        if key not in keys and key not in fprints:
-            missing.append(key)
+        if key.startswith('0x'):
+            key = key[2:]
+        if key not in fprints:
+            match = [k for k in fprints if k.endswith(key)]
+            if len(match) == 0:
+                missing.append(key)
+            elif len(match) > 1:
+                ambig.append(key)
 
     if missing:
-        raise KeyLookupError(_('Keys missing or ambiguous for %s'
+        raise KeyLookupError(_('Keys missing for %s'
                                ) % ', '.join(missing), missing)
+    elif ambig:
+        ambig = list(set(ambig))
+        raise KeyLookupError(_('Keys ambiguous for %s'
+                               ) % ', '.join(ambig), ambig)
     return keys
 
 
