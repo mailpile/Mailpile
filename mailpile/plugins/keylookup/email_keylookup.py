@@ -1,3 +1,4 @@
+import datetime
 import time
 import copy
 
@@ -69,6 +70,16 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             self.key_cache[messageid] = keys
         return keys
 
+    def _get_creation_time(self, m):
+        """Compatibility shim, for differing versions of pgpdump"""
+        try:
+            return m.creation_time
+        except AttributeError:
+            try:
+                return m.datetime
+            except AttributeError:
+                return datetime.datetime(1970, 1, 1, 00, 00, 00)
+
     def _get_keydata(self, data):
         results = []
         try:
@@ -83,8 +94,6 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         for m in ak.packets():
             try:
                 if isinstance(m, pgpdump.packet.PublicKeyPacket):
-                    # FIXME m.datetime throws nasty error fails hard
-                    # Issue 1115
                     size = str(int(1.024 *
                                    round(len('%x' % m.modulus) / 0.256)))
                     validity = ('e'
@@ -92,7 +101,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                                 else '')
                     results.append({
                         "fingerprint": m.fingerprint,
-                        "created": "1970-01-01 00:00:00",
+                        "created": self._get_creation_time(m),
                         "validity": validity,
                         "keytype_name": (m.pub_algorithm or '').split()[0],
                         "keysize": size,
