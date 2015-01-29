@@ -332,7 +332,8 @@ class SimpleVCard(object):
         else:
             return self.VCARD4_KEYS.get(vcl.name.upper(), [''])[0]
 
-    UNREMOVABLE = ('x-mailpile-rid', 'clientpidmap', 'version')
+    UNREMOVABLE = ('x-mailpile-rid', 'x-mailpile-kind-hint',
+                   'clientpidmap', 'version')
 
     def remove(self, *line_ids):
         """
@@ -1053,17 +1054,32 @@ class VCardStore(dict):
                 self.loaded = True
                 prfs = self.config.prefs
                 key_func = lambda: self.config.master_key
-                for fn in sorted(os.listdir(self.vcard_dir)):
+                paths = [(fn, os.path.join(self.vcard_dir, fn))
+                         for fn in os.listdir(self.vcard_dir)
+                         if fn.endswith('.vcf')]
+                # Due to the way the eclipsing cleaner works, we want to
+                # load the most interesting VCards first - so we sort by
+                # size as a rough approximation of that.
+                paths.sort(key=lambda k: -os.path.getsize(k[1]))
+                for fn, path in paths:
                     if mailpile.util.QUITTING:
                         return
                     try:
                         c = MailpileVCard(config=self.config)
-                        c.load(os.path.join(self.vcard_dir, fn),
-                               config=self.config)
-                        self.index_vcard(c)
-                        if session:
-                            session.ui.mark('Loaded %s from %s'
-                                            % (c.email, fn))
+                        c.load(path, config=self.config)
+                        try:
+                            def ccb(key, card):
+                               if session:
+                                   session.ui.error('DISABLING %s, eclipses %s'
+                                                    % (path, key))
+                               os.rename(path, path + '.bak')
+                               raise ValueError('Eclipsing')
+                            self.index_vcard(c, collision_callback=ccb)
+                            if session:
+                                session.ui.mark('Loaded %s from %s'
+                                                % (c.email, fn))
+                        except ValueError:
+                            pass
                     except KeyboardInterrupt:
                         raise
                     except ValueError:
@@ -1322,6 +1338,10 @@ class VCardImporter(VCardPluginClass):
                 try:
                     new_vcard = MailpileVCard(config=self.config)
                     new_vcard.merge(self.config.guid, vcard.as_lines())
+                    kindhint = vcard.get('x-mailpile-kind-hint', 0)
+                    if kindhint is not 0:
+                        new_vcard.add(VCardLine(name='kind',
+                                                value=kindhint.value))
                     vcard_store.add_vcards(new_vcard)
                     updated[new_vcard.random_uid] = new_vcard
                     counter += 1

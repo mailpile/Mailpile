@@ -58,7 +58,7 @@ class GnuPGImporter(VCardImporter):
                          **attrs)
 
     @classmethod
-    def vcards_one_per_uid(cls, keys, vcards):
+    def vcards_one_per_uid(cls, keys, vcards, kindhint=None):
         """This creates one VCard per e-mail address found in UIDs"""
         new_vcards = []
         for key_id, key in keys.iteritems():
@@ -70,6 +70,9 @@ class GnuPGImporter(VCardImporter):
                     vcls = [cls.key_vcl(key_id, key)]
                     if uid.get('name'):
                         vcls.append(VCardLine(name='fn', value=uid['name']))
+                    if kindhint:
+                        vcls += [VCardLine(name='x-mailpile-kind-hint',
+                                           value=kindhint)]
                     card = vcards.get(email)
                     if card:
                         card.add(*vcls)
@@ -120,7 +123,8 @@ class GnuPGImporter(VCardImporter):
         # list as well and we want to be done handling them here.
         if secret:
             secret_keys = gnupg.list_secret_keys(selectors=selectors)
-            results += cls.vcards_one_per_uid(secret_keys, vcards)
+            results += cls.vcards_one_per_uid(secret_keys, vcards,
+                                              kindhint='profile')
         else:
             secret_keys = []
 
