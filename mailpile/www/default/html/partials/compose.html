@@ -153,13 +153,15 @@
           </div>
           <ul class="dropdown-menu">
           {% set emails = profiles.emails|sort %}
+          {% set found = [] %}
           {% if from.address not in emails %}
             {% set emails = [from.address] + emails %}
           {% endif %}
           {% for profile_email in emails %}
             {% set profile = (profile_email in profiles.emails)
                              and profiles.profiles[profiles.emails[profile_email]]
-                             or {'fn': from.fn} %}
+                             or {'fn': from.fn} -%}
+            {%- if profile['x-mailpile-profile-route'] -%}
             <li role="presentation">
               <a href="#" class="compose-from" data-mid="{{mid}}">
                 <span class="avatar">
@@ -173,7 +175,15 @@
                 <span class="address">{{ profile_email }}</span>
               </a>
             </li>
+            {%- do found.append(profile) -%}{%- endif %}
           {% endfor %}
+          {% if found|length == 0 %}
+            <li role="presentation">
+              <a target='_blank' href="/setup/#profiles">
+                No usable profiles found, click to check your settings!
+              </a>
+            </li>
+          {% endif %}
           </ul>
         </div>
       </div>
