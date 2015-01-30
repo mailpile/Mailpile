@@ -180,10 +180,23 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
     >>> cecp.items('config/sys: Technical system settings')
     [(u'debug', u'm\\xe1ny\\nlines\\nof\\nbelching  ')]
     """
+    NOT_UTF8 = '%C0'  # This byte is never valid at the start of an utf-8
+                      # string, so we use it to mark binary data.
+    SAFE = '!?: /#@<>[]()=-'
+
     def set(self, section, key, value, comment):
         key = unicode(key).encode('utf-8')
         section = unicode(section).encode('utf-8')
-        value = quote(unicode(value).encode('utf-8'), safe=' /')
+
+        if isinstance(value, unicode):
+            value = quote(value.encode('utf-8'), safe=self.SAFE)
+        elif isinstance(value, str):
+            quoted = quote(value, safe=self.SAFE)
+            if quoted != value:
+                value = self.NOT_UTF8 + quoted
+        else:
+            value = quote(unicode(value).encode('utf-8'), safe=self.SAFE)
+
         if value.endswith(' '):
             value = value[:-1] + '%20'
         if comment:
@@ -191,14 +204,20 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
             value = '%s%s%s' % (value, pad, comment)
         return ConfigParser.RawConfigParser.set(self, section, key, value)
 
+    def _decode_value(self, value):
+        if value.startswith(self.NOT_UTF8):
+            return unquote(value[len(self.NOT_UTF8):])
+        else:
+            return unquote(value).decode('utf-8')
+
     def get(self, section, key):
         key = unicode(key).encode('utf-8')
         section = unicode(section).encode('utf-8')
         value = ConfigParser.RawConfigParser.get(self, section, key)
-        return unquote(value).decode('utf-8')
+        return self._decode_value(value)
 
     def items(self, section):
-        return [(k.decode('utf-8'), unquote(i).decode('utf-8')) for k, i
+        return [(k.decode('utf-8'), self._decode_value(i)) for k, i
                 in ConfigParser.RawConfigParser.items(self, section)]
 
 
@@ -371,6 +390,17 @@ def _B36Check(b36val):
     return str(b36val).lower()
 
 
+def _NotUnicode(string):
+    """
+    Make sure a string is NOT unicode.
+    """
+    if isinstance(string, unicode):
+        string = string.encode('utf-8')
+    if not isinstance(string, str):
+        return str(string)
+    return string
+
+
 def _PathCheck(path):
     """
     Verify that a string is a valid path, make it absolute.
@@ -383,6 +413,8 @@ def _PathCheck(path):
         ...
     ValueError: File/directory does not exist: /no/such/path
     """
+    if isinstance(path, unicode):
+        path = path.encode('utf-8')
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         raise ValueError(_('File/directory does not exist: %s') % path)
@@ -539,6 +571,7 @@ def RuledContainer(pcls):
         RULE_DEFAULT = -1
         RULE_CHECK_MAP = {
             bool: _BoolCheck,
+            'bin': _NotUnicode,
             'bool': _BoolCheck,
             'b36': _B36Check,
             'dir': _DirCheck,
@@ -632,15 +665,11 @@ def RuledContainer(pcls):
                         comment = self.rules[key][self.RULE_COMMENT]
                     else:
                         comment = ''
-                    value = unicode(self[key])
+                    value = self[key]
                     if value is not None and value != '':
                         if key not in set_keys:
                             key = ';' + key
                             comment = '(default) ' + comment
-                        if comment:
-                            pad = ' ' * (30 - len(key) - len(value)) + ' ; '
-                        else:
-                            pad = ''
                         if not added_section:
                             config.add_section(str(section))
                             added_section = True

@@ -47,7 +47,7 @@ CONFIG_RULES = {
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
         'mailindex_file': (_('Metadata index file'), 'file',               ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
-        'mailbox':        [_('Mailboxes we index'), 'str',                 []],
+        'mailbox':        [_('Mailboxes we index'), 'bin',                 []],
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
@@ -133,7 +133,7 @@ CONFIG_RULES = {
         'port':            (_('Port'), int, 993),
         'keepalive':       (_('Keep server connections alive'), bool, False),
         'discovery':       (_('Mailbox discovery policy'), False, {
-            'paths':       (_('Paths to watch for new mailboxes'), str, []),
+            'paths':       (_('Paths to watch for new mailboxes'), 'bin', []),
             'policy':      (_('Default mailbox policy'),
                             ['unknown', 'ignore', 'watch',
                              'read', 'move', 'sync'], 'unknown'),
@@ -150,7 +150,7 @@ CONFIG_RULES = {
             'policy':      (_('Mailbox policy'),
                             ['unknown', 'ignore', 'read', 'move', 'sync'],
                             'ignore'),
-            'local':       (_('Local mailbox path'), str, ''),
+            'local':       (_('Local mailbox path'), 'bin', ''),
             'process_new': (_('Is a source of new mail'), bool, True),
             'primary_tag': (_('A tag representing this mailbox'), str, ''),
             'apply_tags':  (_('Tags applied to messages'), str, []),

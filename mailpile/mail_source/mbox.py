@@ -59,7 +59,7 @@ class MboxMailSource(BaseMailSource):
                     # few lines look like RFC2822 headers...
                     headcount = 0
                     for line in data.splitlines(True)[1:]:
-                        if (headcount > 3) and line in ('\n', '\r\n'):
+                        if (headcount > 2) and line in ('\n', '\r\n'):
                             return True
                         if line[-1:] == '\n' and line[:1] not in (' ', '\t'):
                             parts = line.split(':')
@@ -67,7 +67,7 @@ class MboxMailSource(BaseMailSource):
                                     ' ' in parts[0] or '\t' in parts[0]):
                                 return False
                             headcount += 1
-                    return (headcount > 3)
+                    return (headcount > 2)
         except (IOError, OSError):
             pass
         return False

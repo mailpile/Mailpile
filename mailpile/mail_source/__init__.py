@@ -274,9 +274,14 @@ class BaseMailSource(threading.Thread):
             existing = self._existing_mailboxes()
             max_mailboxes = self.MAX_MAILBOXES - len(existing)
             adding = []
-            paths = (paths or self.my_config.discovery.paths)[:]
+            paths = [(p.encode('utf-8') if isinstance(p, unicode) else p)
+                     for p in (paths or self.my_config.discovery.paths)]
             while paths:
                 raw_fn = paths.pop(0)
+                if 'sources' in config.sys.debug:
+                    self.session.ui.mark(_('Checking for new mailboxes in %s'
+                                           ) % raw_fn.decode('utf-8'))
+
                 fn = os.path.normpath(os.path.expanduser(raw_fn))
                 fn = os.path.abspath(fn)
                 if not os.path.exists(fn):
