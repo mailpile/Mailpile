@@ -3,7 +3,7 @@
 
 Mailpile.Crypto.Find.KeysResult = function(data, options) {
 
-  var items_html = '';
+  var items_hidden = '';
 
   _.each(data.result, function(key) {
 
@@ -46,17 +46,24 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       // Show View
       var item_data     = _.extend({ score_color: score_color, avatar: avatar, uid: uid, address: options.query, action: options.action }, key);
       var item_template = _.template($('#template-crypto-encryption-key').html());
+      var item_html     = item_template(item_data);
 
-      items_html += item_template(item_data);
+      // Only show results with positive score (hide others)
+      if (key.score_stars > 0) {
+        $(options.container).find('.result').append(item_html);
+      } else {
+        $(options.container).find('.result-hidden-keys').append(item_html);
+      }
   
       // Set Lookup State (data model)
       var key_data = {fingerprints: key.fingerprint, address: options.query, origins: key.origins };
       Mailpile.crypto_keylookup.push(key_data);
     }
- });
+  });
 
-  // Show Results
-  $(options.container).find('.result').append(items_html);
+  if ($(options.container).find('.result-hidden-keys li').length > 0) {
+    $(options.container).find('.result').append($('#template-search-keyserver-show-hidden').html());
+  }
 
   // Tooltips
   Mailpile.Crypto.Tooltips.KeyScore();

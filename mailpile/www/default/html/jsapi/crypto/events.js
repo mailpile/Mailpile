@@ -53,6 +53,13 @@ $(document).on('click', '#btn-search-keyservers-again', function(e) {
 });
 
 
+$(document).on('click', '.crypto-show-hidden-keys', function(e) {
+  e.preventDefault();
+  $(this).parent().fadeOut().remove();
+  $('#search-keyservers').find('ul.result-hidden-keys').removeClass('hide');
+});
+
+
 /* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();

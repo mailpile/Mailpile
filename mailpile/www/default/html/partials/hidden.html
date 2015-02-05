@@ -232,6 +232,18 @@
 </script>
 
 
+<script id="template-search-keyserver-show-hidden" type="text/template">
+  <li class="text-center remove-bottom">
+    <a href="#" class="crypto-show-hidden-keys">
+      <span class="icon-signature-revoked color-12-red"></span> {{_("Show Hidden Encryption Keys")}}
+    </a>
+    <div class="half-top">
+      <em class="text-detail">{{_("Hidden keys are either revoked or expired and should not be used")}}</em>
+    </div>
+  </li>
+</script>
+
+
 <script id="template-search-tags-link" type="text/template">
   <span class="pile-message-tag color-<%= label_color %>" id="pile-message-tag-<%= tid %>-<%= mid %>" data-tid="<%= tid %>" data-mid="<%= mid %>">
     <span class="pile-message-tag-icon <%= icon %>"></span>
