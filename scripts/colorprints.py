@@ -166,9 +166,9 @@ def colorprint2(fingerprint, md5shift=True):
             val = _b(val) 
 
         rgb = [_int(fingerprint[c*2:c*2+2]) for c in rgb]
-        r1 = _r(rgb[0])
-        g1 = _g(rgb[1])
-        b1 = _b(rgb[2])
+        r1 = _r(rgb[0]) & 0xe0  # 0xe0 == 3 bits per channel
+        g1 = _g(rgb[1]) & 0xe0
+        b1 = _b(rgb[2]) & 0xe0
         rm = (r1 + _r(rgb[3])) // 2
         gm = (g1 + _g(rgb[4])) // 2
         bm = (b1 + _b(rgb[5])) // 2
@@ -188,7 +188,8 @@ def colorprint2(fingerprint, md5shift=True):
                       '#%2.2x%2.2x%2.2x' % (r1, g1, b1),        # RGB
                       '#%2.2x%2.2x%2.2x' % (rm, gm, bm),        # Mixed
                       val,
-                      rval,
+                      rval & 0xe0,        # 0xc0 == 2 bits per channel
+                      val & 0x18,         # These bits are orphans!
                       fingerprint[i*2:i*2+2]])
 
     return pairs
@@ -250,25 +251,25 @@ print toangel([[mixed, 0.5 + float(val % 32)/64]
 print '<h4>New style colorprinting tests: 6x2 palette, channels, mixed</h4>'
 fingerprint = "A3C4 F0F9 79CA A22C DBA8  F512 EE8C BC9E 886D DD89"
 cprint2 = colorprint2(fingerprint, md5shift=False)
-print toangel([[sixtimestwo, 0.5 + float(rval >> 5)/16]
-                for sixtimestwo, rgb, mixed, val, rval, hc in cprint2],
+print toangel([[sixtimestwo, 1.0 - float(rval)/512]
+                for sixtimestwo, rgb, mixed, val, rval, dr, hc in cprint2],
               fingerprint)
-print toangel([[rgb, 0.5 + float(rval >> 4)/32]
-                for sixtimestwo, rgb, mixed, val, rval, hc in cprint2],
+print toangel([[rgb, 1.0 - float(rval)/512]
+                for sixtimestwo, rgb, mixed, val, rval, dr, hc in cprint2],
               fingerprint)
-print toangel([[mixed, 0.5 + float(rval >> 4)/32]
-                for sixtimestwo, rgb, mixed, val, rval, hc in cprint2],
+print toangel([[mixed, 1.0 - float(rval)/512]
+                for sixtimestwo, rgb, mixed, val, rval, dr, hc in cprint2],
               fingerprint), '<br>'
 
 print '<h4>Adding md5shift, checking bit flips</h4>'
 cprint2 = colorprint2(fingerprint, md5shift=True)
-print toangel([[mixed, 0.5 + float(rval >> 4)/32]
-                for sixtimestwo, rgb, mixed, val, rval, hc in cprint2],
+print toangel([[mixed, 1.0 - float(rval)/512]
+                for sixtimestwo, rgb, mixed, val, rval, dr, hc in cprint2],
               fingerprint)
 fingerprint = "A3C4 F0F8 79CA A22C DBA8  F512 EE8C BC9E 886D DD89"
 cprint2b = colorprint2(fingerprint, md5shift=True)
-print toangel([[mixed, 0.5 + float(val % 32)/64]
-                for sixtimestwo, rgb, mixed, val, rval, hc in cprint2b],
+print toangel([[mixed, 1.0 - float(rval)/512]
+                for sixtimestwo, rgb, mixed, val, rval, dr, hc in cprint2b],
               fingerprint), '<br>'
 
 print "<hr><h3>More samples (new style, full features)</h3>"
@@ -293,8 +294,8 @@ for line in """\
     if 'Key fingerprint' in line:
         fingerprint = line.split(' = ', 1)[1].strip()
         cprint = colorprint2(fingerprint)
-        print toangel([[mixed, 0.5 + float(val % 32)/64]
-                       for sixtimestwo, rgb, mixed, val, rval, hc in cprint],
+        print toangel([[mixed, 1.0 - float(rval)/512]
+                       for sixXtwo, rgb, mixed, val, rval, dr, hc in cprint],
                       fingerprint, copy=False, size=128)
         count += 1
         if count % 5 == 0:
