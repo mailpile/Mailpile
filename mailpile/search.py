@@ -983,6 +983,8 @@ class MailIndex(object):
                                 self.set_msg_at_idx_pos(int(msg_thr_mid, 36),
                                                         parent)
                                 break
+                            else:
+                                msg_thr_mid = None
                         if date - long(m_info[self.MSG_DATE],
                                        36) > 5 * 24 * 3600:
                             break
