@@ -129,6 +129,15 @@ class SetupMagic(Command):
             'name': _('All Mail'),
             'display_order': 1000,
         },
+        'Conversations': {
+            'type': 'tag',
+            'icon': 'icon-forum',
+            'label_color': '05-blue-light',
+            'search_terms': 'in:mp_rpl',
+            'name': _('Conversations'),
+            'template': 'conversations',
+            'display_order': 1001,
+        },
         'Photos': {
             'type': 'tag',
             'icon': 'icon-photos',
@@ -136,7 +145,7 @@ class SetupMagic(Command):
             'search_terms': 'att:jpg',
             'name': _('Photos'),
             'template': 'photos',
-            'display_order': 1001,
+            'display_order': 1002,
         },
         'Files': {
             'type': 'tag',
@@ -145,7 +154,7 @@ class SetupMagic(Command):
             'search_terms': 'has:attachment',
             'name': _('Files'),
             'template': 'files',
-            'display_order': 1002,
+            'display_order': 1003,
         },
         'Links': {
             'type': 'tag',
@@ -153,7 +162,7 @@ class SetupMagic(Command):
             'label_color': '12-red',
             'search_terms': 'http',
             'name': _('Links'),
-            'display_order': 1003,
+            'display_order': 1004,
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
