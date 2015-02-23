@@ -1,0 +1,5 @@
+selenium>=2.40.0
+mock>=1.0.1
+coverage
+nose
+tox

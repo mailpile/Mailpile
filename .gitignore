@@ -9,6 +9,7 @@
 mp-virtualenv
 .idea
 .*deps
+.tox
 mailpile.egg-info/
 mailpile-tmp.py
 mailpile/www/default/config.codekit
