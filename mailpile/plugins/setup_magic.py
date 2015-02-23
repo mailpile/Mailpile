@@ -58,12 +58,14 @@ class SetupMagic(Command):
         'Blank': {
             'type': 'blank',
             'flag_editable': True,
+            'flag_msg_only': True,
             'display': 'invisible',
             'name': _('Blank'),
         },
         'Drafts': {
             'type': 'drafts',
             'flag_editable': True,
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 1,
             'icon': 'icon-compose',
@@ -72,6 +74,7 @@ class SetupMagic(Command):
         },
         'Outbox': {
             'type': 'outbox',
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 3,
             'icon': 'icon-outbox',
@@ -80,6 +83,7 @@ class SetupMagic(Command):
         },
         'Sent': {
             'type': 'sent',
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 4,
             'icon': 'icon-sent',
@@ -155,11 +159,16 @@ class SetupMagic(Command):
         # messages, as input for machine learning algorithms. These get
         # automatically added, and may be automatically removed as well
         # to keep the working sets reasonably small.
-        'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible'},
-        'mp_fwd': {'type': 'fwded', 'label': False, 'display': 'invisible'},
-        'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible'},
-        'mp_read': {'type': 'read', 'label': False, 'display': 'invisible'},
-        'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
+        'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_fwd': {'type': 'fwded', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_read': {'type': 'read', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
     }
 
     def basic_app_config(self, session,
@@ -184,6 +193,7 @@ class SetupMagic(Command):
                     created.append(tagname)
                 session.config.get_tag(tagname).update({
                     'type': 'attribute',
+                    'flag_msg_only': True,
                     'display': 'invisible',
                     'label': False,
                 })

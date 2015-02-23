@@ -1405,15 +1405,20 @@ class MailIndex(object):
         if not msg_idxs:
             return set()
         CachedSearchResultSet.DropCaches()
-        session.ui.mark(_n('Tagging %d message (%s)',
-                           'Tagging %d messages (%s)',
+        if conversation:
+            session.ui.mark(_n('Tagging %d conversation (%s)',
+                           'Tagging %d conversations (%s)',
                            len(msg_idxs)
                            ) % (len(msg_idxs), tag_id))
-        for msg_idx in list(msg_idxs):
-            if conversation:
+            for msg_idx in list(msg_idxs):
                 for reply in self.get_conversation(msg_idx=msg_idx):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
+        else:
+            session.ui.mark(_n('Tagging %d message (%s)',
+                           'Tagging %d messages (%s)',
+                           len(msg_idxs)
+                           ) % (len(msg_idxs), tag_id))
         eids = set()
         added = set()
         threads = set()

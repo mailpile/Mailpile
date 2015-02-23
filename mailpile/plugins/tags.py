@@ -34,6 +34,7 @@ _plugins.register_config_section('tags', ["Tags", {
     ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', 'bool', False],
     'flag_editable': ['Mark tagged messages as editable?', 'bool', False],
+    'flag_msg_only': ['Never apply to entire conversations', 'bool', False],
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
@@ -230,13 +231,15 @@ class TagCommand(Command):
 
 class Tag(TagCommand):
     """Add or remove tags on a set of messages"""
-    SYNOPSIS = (None, 'tag', 'tag', '<[+|-]tags> <msgs>')
+    SYNOPSIS = (None, 'tag', 'tag', '[--conversations|--messages] '
+                                    '<[+|-]tags> <msgs>')
     ORDER = ('Tagging', 0)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
         'mid': 'message-ids',
         'add': 'tags',
         'del': 'tags',
+        'conversations': '[yes|no|auto]',
         'context': 'search context, for tagging relative results'
     }
 
@@ -255,8 +258,12 @@ class Tag(TagCommand):
                 what.append('Untagged ' +
                             ', '.join([k['name'] for k, ids
                                        in self.result['untagged']]))
-            return '%s (%d messages)' % (', '.join(what),
-                                         len(self.result['msg_ids']))
+            count = len(self.result['msg_ids'])
+            whats = ', '.join(what)
+            convs = (_n('%d conversation', '%d conversation', count)
+                     if self.result.get('conversations') else
+                     _n('%d message', '%d messages', count)) % count
+            return '%s (%s)' % (whats, convs)
 
     def _get_ops_and_msgids(self, words):
         # If we are asked to both add and remove a tag, we do neither as
@@ -265,28 +272,49 @@ class Tag(TagCommand):
         adding = set(self.data.get('add', []))
         ops = (['-%s' % t for t in (deling-adding) if t] +
                ['+%s' % t for t in (adding-deling) if t])
+        conversations = {'yes': True, 'no': False, 'auto': None
+                         }[self.data.get('conversations',
+                                         ['auto'])[0].lower()]
         if 'mid' in self.data:
             msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
         else:
-            while words and words[0][0] in ('-', '+'):
-                ops.append(words.pop(0))
+            while words and words[0][:1] in ('-', '+'):
+                op = words.pop(0)
+                if op in ('--conversations', '--messages'):
+                    conversations = True if (op[:3] == '--c') else False
+                else:
+                    ops.append(op)
             msg_ids = self._choose_messages(words)
-        return ops, msg_ids
+        return ops, msg_ids, conversations
 
-    def _do_tagging(self, ops, msg_ids, save=True, auto=False):
+    def _do_tagging(self, ops, msg_ids, conversations, save=True, auto=False):
         idx = self._idx()
         rv = {
+            'conversations': False,
             'msg_ids': [b36(i) for i in msg_ids],
             'tagged': [],
             'untagged': []
         }
+
         for op in ops:
             tag = self.session.config.get_tag(op[1:])
             if tag:
+                # FIXME: This should depend on more factors!
+                #    - Tags should have metadata about default scope
+                if conversations is None:
+                    conversation = ('flat' not in (self.session.order or ''))
+                    if (tag.flag_msg_only or
+                            tag.flag_editable or
+                            tag.type == 'attribute'):
+                        conversation = False
+                else:
+                    conversation = conversations
+                if conversation:
+                    rv['conversations'] = True
+
                 tag_id = tag._key
                 tag = tag.copy()
                 tag["tid"] = tag_id
-                conversation = ('flat' not in (self.session.order or ''))
                 if op[0] == '-':
                     removed = idx.remove_tag(self.session, tag_id,
                                              msg_idxs=msg_ids,
@@ -306,14 +334,27 @@ class Tag(TagCommand):
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
-        self.event.data['undo'] = _("Untag %d messages") % len(msg_ids)
+        if rv['conversations']:
+            undo_msg = _n('Untag %d conversation',
+                          'Untag %d conversations',
+                          len(msg_ids)) % len(msg_ids)
+            done_msg = _n('Tagged %d conversation',
+                          'Tagged %d conversations',
+                          len(msg_ids)) % len(msg_ids)
+        else:
+            undo_msg = _n('Untag %d message',
+                          'Untag %d messages', len(msg_ids)) % len(msg_ids)
+            done_msg = _n('Tagged %d message',
+                          'Tagged %d messages', len(msg_ids)) % len(msg_ids)
+
+        self.event.data['undo'] = undo_msg
         self.event.private_data['undo'] = {
             'tagged': [[t['tid'], mids] for t, mids in rv['tagged']],
             'untagged': [[t['tid'], mids] for t, mids in rv['untagged']],
         }
 
         self.finish(save=save)
-        return self._success(_('Tagged %d messages') % len(msg_ids), rv)
+        return self._success(done_msg, rv)
 
     @classmethod
     def Undo(cls, undo, event):
@@ -347,7 +388,7 @@ class TagLater(Tag):
     def command(self, **kwargs):
         args = list(self.args)
         seconds = args.pop(0)
-        ops, msg_ids = self._get_ops_and_msgids(args)
+        ops, msg_ids, conversations = self._get_ops_and_msgids(args)
         # FIXME: Schedule event!
         return self._success(_('Scheduled %d messages for future tagging')
                              % len(msg_ids), {
