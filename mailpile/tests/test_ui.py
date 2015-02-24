@@ -1,3 +1,4 @@
+import json
 import unittest
 import mailpile
 from mailpile.ui import UserInteraction
@@ -88,16 +89,16 @@ class TestUI(MailPileUnittest):
                 self.mp._ui.render_mode = 'text'
                 result = self.mp.rescan()
                 self.mp._ui.display_result(result)
-            self.assertEquals(out[0], ('{\n'
-                                       '    "mailboxes": 0, \n'
-                                       '    "messages": 0, \n'
-                                       '    "vcard_sources": [\n'
-                                       '        "gravatar", \n'
-                                       '        "gpg", \n'
-                                       '        "carddav", \n'
-                                       '        "mork"\n'
-                                       '    ], \n'
-                                       '    "vcards": 0\n'
-                                       '}\n'))
+
+            # Parse resulting json for easier assertions
+            json_result = json.loads(out[0])
+            vcard_sources = json_result.get('vcard_sources', [])
+            self.assertEqual(json_result.get('mailboxes'), 0)
+            self.assertEqual(json_result.get('messages'), 0)
+            self.assertEqual(json_result.get('vcards'), 0)
+            self.assertIn('gravatar', vcard_sources)
+            self.assertIn('gpg', vcard_sources)
+            self.assertIn('carddav', vcard_sources)
+            self.assertIn('mork', vcard_sources)
         finally:
             self.mp._ui = old_ui
