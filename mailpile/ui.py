@@ -181,7 +181,6 @@ class UserInteraction:
     LOG_PREFIX = ''
 
     def __init__(self, config, log_parent=None, log_prefix=None):
-        self.log_parent = log_parent
         self.log_buffer = []
         self.log_buffering = 0
         self.log_level = self.LOG_ALL
@@ -199,6 +198,15 @@ class UserInteraction:
             'even_odd': 'odd',
             'mailpile_size': 0
         }
+
+        # Short-circuit and avoid infinite recursion in parent logging.
+        self.log_parent = log_parent
+        recurse = 0
+        while self.log_parent and self.log_parent.log_parent:
+            self.log_parent = self.log_parent.log_parent
+            recurse += 1
+            if recurse > 10:
+                self.log_parent = None
 
     # Logging
 
