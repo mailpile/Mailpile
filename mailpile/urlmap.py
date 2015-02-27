@@ -239,7 +239,8 @@ class UrlMap:
 
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
         tag = self.config.get_tag(tag_slug)
-        tag_search = [tag.search_terms % tag] if tag is not None else [""]
+        tag_search = [term for term in (tag.search_terms % tag).split()
+                      if term] if tag is not None else [""]
         if tag is not None and tag.search_order and 'order' not in query_data:
             query_data['order'] = [tag.search_order]
 
