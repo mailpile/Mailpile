@@ -191,27 +191,29 @@ class UrlMap:
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
         (['', 'a', 'b'], <mailpile.commands.Output...>)
+
         >>> path_parts = '/a/b'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         Traceback (most recent call last):
           ...
         UsageError: Invalid output format: b
+
+        >>> path_parts = '/a/b/%%%%%bogon.json'.split('/')
+        >>> command = urlmap._choose_output(path_parts)
+        Traceback (most recent call last):
+          ...
+        UsageError: Invalid output format: %%%%%bogon.json
         """
         if len(path_parts) > 1 and not path_parts[-1]:
             path_parts.pop(-1)
         else:
-            fn = path_parts.pop(-1)
-            for suffix in self.OUTPUT_SUFFIXES:
-                if suffix == '.' + fn:
-                    return self._command('output', [suffix[1:]], method=False)
-                if fn.endswith(suffix):
-                    if fn == 'as' + suffix:
-                        return self._command('output', [fn[3:]], method=False)
-                    else:
-                        # FIXME: We are passing user input here which may
-                        #        have security implications.
-                        return self._command('output', [fn], method=False)
-            raise UsageError('Invalid output format: %s' % fn)
+            om = path_parts.pop(-1)
+            if re.match(r'^[a-zA-Z0-9\.!_-]+$', om):
+                fn = om.split('!')[0]  # Strip off !mode suffixes
+                for suffix in self.OUTPUT_SUFFIXES:
+                    if fn.endswith(suffix) or suffix == ('.' + fn):
+                        return self._command('output', [om], method=False)
+            raise UsageError('Invalid output format: %s' % om)
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
@@ -227,7 +229,7 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
-        ('json',)
+        ('as.json',)
         >>> commands[1].args
         ('@20', 'in:inbox')
         """

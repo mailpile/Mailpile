@@ -142,7 +142,8 @@ class MailpileCommand(Extension):
             ui.render_mode = how
             ui.display_result(Action(self.env.session, command, args,
                                      data=kwargs))
-            return ui.render_response(config)
+            rv = ui.render_response(config)
+            return (rv[0], rv[1].strip())
         finally:
             self.env.session.ui = old_ui
 

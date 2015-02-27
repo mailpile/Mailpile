@@ -178,33 +178,29 @@ class Command(object):
         def as_txt(self, template=None):
             return self.as_template('txt', template)
 
-        def as_template(self, etype, template=None):
-            what = ''.join((etype, '/' if template else '', template or ''))
-            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
-                if self.session.ui.render_mode.endswith(e):
-                    what += ':content'
-            if what in self.rendered:
-                return self.rendered[what]
-
+        def as_template(self, ttype,
+                        mode=None, wrap_in_json=False, template=None):
+            cache_id = ''.join(('j' if wrap_in_json else '', ttype,
+                                '/' if template else '', template or '',
+                                ':', mode or 'full'))
+            if cache_id in self.rendered:
+                return self.rendered[cache_id]
             tpath = self.command_obj.template_path(
-                etype, template_id=self.template_id, template=template)
+                ttype, template_id=self.template_id, template=template)
 
             data = self.as_dict()
             data['title'] = self.message
+            data['render_mode'] = mode or 'full'
 
-            def render():
-                return self.session.ui.render_web(
-                    self.session.config, [tpath], data)
-
-            if what.endswith(':content'):
-                data['render_mode'] = 'content'
-                data['result'] = render()
-                self.rendered[what] = self.session.ui.render_json(data)
+            rendering = self.session.ui.render_web(self.session.config,
+                                                   [tpath], data)
+            if wrap_in_json:
+                data['result'] = rendering
+                self.rendered[cache_id] = self.session.ui.render_json(data)
             else:
-                data['render_mode'] = 'full'
-                self.rendered[what] = render()
+                self.rendered[cache_id] = rendering
 
-            return self.rendered[what]
+            return self.rendered[cache_id]
 
     def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
@@ -268,19 +264,19 @@ class Command(object):
             except (ValueError, KeyError, TypeError, AttributeError):
                 self._ignore_exception()
 
-    def template_path(self, etype, template_id=None, template=None):
+    def template_path(self, ttype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
         if len(path_parts) == 1:
             path_parts.append('index')
-        if template not in (None, etype, 'as.' + etype):
+        if template not in (None, ttype, 'as.' + ttype):
             # Security: The template request may come from the URL, so we
             #           sanitize it very aggressively before heading off
             #           to the filesystem.
-            clean_tpl = CleanText(template.replace('.%s' % etype, ''),
+            clean_tpl = CleanText(template.replace('.%s' % ttype, ''),
                                   banned=(CleanText.FS +
                                           CleanText.WHITESPACE))
             path_parts[-1] += '-%s' % clean_tpl
-        path_parts[-1] += '.' + etype
+        path_parts[-1] += '.' + ttype
         return os.path.join(*path_parts)
 
     def _gnupg(self):
