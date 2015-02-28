@@ -1,12 +1,12 @@
 <div id="notification-bubbles"></div>
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="{{ U('/in/inbox/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/page/home/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="{{ U('/in/inbox/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/page/home/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-name.svg") %}
   </a>
   </div>
@@ -18,7 +18,7 @@
                          data-context="{{state.context}}"
                          value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
-	  </form>
+    </form>
     <nav class="topbar-nav">
       <ul>
         <li class="nav-search">
@@ -27,22 +27,20 @@
         <li class="{% if command == "edit" %} navigation-on{% endif %}">
           <a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
         </li>
+<!--
         <li class="{% if command == "contacts" %} navigation-on{% endif %}">
           <a href="{{ U('/contacts/') }}" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a>
         </li>
         <li class="{% if state.command_url in ("/tags/", "/filter/list/") %}navigation-on{% endif %}">
           <a href="{{ U('/tags/') }}" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a>
         </li>
+ -->
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}">
           <a href="{{ U(a.url) }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ U(a.icon) }}"></a>
         </li>
         {%- endfor -%}
-        {% if config.web.donate_visibility %}
-        <li class="{% if command == "page" %} navigation-on{% endif %}">
-          <a class="donate" href="{{ U('/page/donate/') }}" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
-        </li>
-        {% endif %}
+<!--
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
           <a id="button-settings" href="{{ U('/setup/#') }}" data-target="#" class="nav-icon dropdown-toggle" data-toggle="dropdown" alt="{{_("Settings")}}" aria-haspopup="true" aria-expanded="false"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="button-settings">
@@ -58,7 +56,19 @@
             <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/help/') }}"><span class="icon-help"></span> {{_("Help")}}</a></li>
           </ul>
         </li>
-        <li><a href="{{ U('/auth/logout/') }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
+-->
+        {% if config.web.donate_visibility %}
+        <li class="{% if command == "page" and state.query_args.arg.0 == "donate" %} navigation-on{% endif %}">
+          <a class="donate" href="{{ U("/page/donate/") }}" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
+        </li>
+        {% endif %}
+        <li class="{% if command == "page" and state.query_args.arg.0 == "home" %} navigation-on{% endif %}">
+          <a class="home" href="{{ U("/page/home/") }}" title="{{_("Home")}}" alt="{{_("Home")}}"><span class="link-icon icon-home"></span></a>
+        </li>
+        <li class="{% if command == "page" and state.query_args.arg.0 == "secure" %} navigation-on{% endif %}">
+          <a class="home" href="{{ U("/page/home/") }}" title="{{_("Secure Mode")}}" alt="{{_("Secure Mode")}}"><span class="link-icon icon-lock-open"></span></a>
+        </li>
+        <li><a href="{{ U("/auth/logout/") }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>
   </div>

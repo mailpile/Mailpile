@@ -48,7 +48,7 @@
 
 <!-- FIXME: make "density" class be pulled from user profile setting -->
 <div id="sidebar" class="{{ config.web.display_density }}">
-  <nav id="sidebar-lists">
+  <nav>
     <ul id="sidebar-priority" class="sidebar-sortable">
       {%- for tag in mailpile("tags", "mode=tree", "display=priority").result.tags -%}
       {{ render_sidebar_tag(tag) }}
@@ -61,12 +61,17 @@
       {%- endfor -%}
     </ul>
   </nav>
-  <nav id="sidebar-bottom" class="text-center">
-    <a href="#" id="button-sidebar-add" title="{{_("Add Tag")}}">
+  <nav id='sidebar-user-contacts'>
+  </nav>
+  <nav id="sidebar-bottom">
+    <a style='float: right' href="/contacts/" id="button-sidebar-people" title="{{_("Contacts")}}">
+      <span class="icon icon-groups"></span>
+    </a>
+    <a style='float: left' href="#" id="button-sidebar-add" title="{{_("Add Tag")}}">
       <span class="icon-plus"></span>
       <span class="text">{{_("Add")}}</span>
     </a>
-    <a href="#" id="button-sidebar-organize" data-message="{{_("Done")}}" data-state="done" title="{{_("Edit Sidebar")}}">
+    <a style='float: left' href="#" id="button-sidebar-organize" data-message="{{_("Done")}}" data-state="done" title="{{_("Edit Sidebar")}}">
       <span class="icon icon-settings"></span>
       <span class="text">{{_("Organize")}}</span>
     </a>
