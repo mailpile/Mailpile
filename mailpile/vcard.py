@@ -375,7 +375,7 @@ class SimpleVCard(object):
         return removed
 
     def _handle_pidmap_args(self, **kwargs):
-        src_id = kwargs.get('client_id', self._default_src_pid)
+        src_id = kwargs.get('client', self._default_src_pid)
         if src_id:
             create = kwargs.get('client_create', False)
             pid, pidmap, ver, is_new = self.get_pidmap(src_id, create=create)
@@ -413,6 +413,16 @@ class SimpleVCard(object):
                 if cardinality in ('1', '*1'):
                     if count:
                         raise ValueError('Already on card: %s' % vcl.name)
+
+                # Special case to avoid duplicate CLIENTPIDMAP lines
+                if vcl.name == 'clientpidmap':
+                    cpm = self.get_clientpidmap()
+                    pid, src_id = vcl.value.split(';', 1)
+                    if src_id in cpm:
+                        if int(pid) != cpm[src_id]['pid']:
+                            raise ValueError('CLIENTPIDMAP pid mismatch!')
+                        continue
+
                 if (src_pid is not None and
                         vcl.name not in self.UNREMOVABLE and
                         'pid' not in vcl):
@@ -766,15 +776,19 @@ class MailpileVCard(SimpleVCard):
     """
     HISTORY_MAX_AGE = 31 * 24 * 3600
 
+    DEFAULT_CLIENT  = 'default'
+    PRIORITY_CLIENT = 'priority'
+    USER_CLIENT     = 'priority'  # An alias to make code more readable
+
     def __init__(self, *lines, **kwargs):
         if 'client' not in kwargs:
-            kwargs['client'] = 'default'
+            kwargs['client'] = self.DEFAULT_CLIENT
         SimpleVCard.__init__(self, *lines, **kwargs)
 
         # Add the priority CLIENTPIDMAP line, for user settings
         self.add(VCardLine(name='CLIENTPIDMAP',
                            value='%s;%s' % (self.MAX_SRC_PID + 1,
-                                            'priority')))
+                                            self.PRIORITY_CLIENT)))
         self._priority_client = self.MAX_SRC_PID + 1
 
         self.configure_encryption(kwargs.get('config'))
