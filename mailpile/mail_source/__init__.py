@@ -457,8 +457,8 @@ class BaseMailSource(threading.Thread):
         if save:
             self._save_config()
 
-    BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
-    TAGNAME_STRIP_RE = re.compile('[{}\\[\\]]')
+    BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^[:alpha:]]+)$', re.UNICODE)
+    TAGNAME_STRIP_RE = re.compile('[{}\\[\\]]', re.UNICODE)
 
     def _path_to_tagname(self, path):  # -> tag name
         """This converts a path to a tag name."""
