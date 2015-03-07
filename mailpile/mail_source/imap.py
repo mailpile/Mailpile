@@ -365,31 +365,39 @@ class SharedImapMailbox(Mailbox):
 
     def get(self, key):
         info = self.get_info(key)
-        if 'RFC822.SIZE' not in info:
+        if 'UID' not in info:
             raise KeyError(key)
 
-        msg_bytes = int(info['RFC822.SIZE'])
-        with self.open_imap() as imap:
-            msg_data = []
+        # FIXME: This will hard fail to download mail, if our internet
+        #        connection averages 8 kbps or worse. Better would be to
+        #        adapt the chunk size here to actual network performance.
+        #
+        chunk_size = self.source.timeout * 1024
+        chunk = 0
+        msg_data = []
 
-            # FIXME: This will hard fail to download mail, if our internet
-            #        connection averages 8 kbps or worse. Better would be to
-            #        adapt the chunk size here to actual network performance.
-            #
-            chunk_size = self.source.timeout * 1024
-            chunks = 1 + msg_bytes // chunk_size
-            for chunk in range(0, chunks):
+        # Some IMAP servers misreport RFC822.SIZE, so we cannot really know
+        # how much data to expect. So we just FETCH chunk until one comes up
+        # short or empty and assume that's it...
+        while chunk >= 0:
+            with self.open_imap() as imap:
                 req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
                 # Note: use the raw method, not the convenient parsed version.
                 typ, data = self.source.timed(imap.uid,
                                               'FETCH', info['UID'], req,
                                               mailbox=self.path)
-                self._assert((typ == 'OK') and (chunk == chunks-1 or
-                                                len(data[0][1]) == chunk_size),
+                self._assert(typ == 'OK',
                              _('Fetching chunk %d failed') % chunk)
-                msg_data.append(data[0][1])
 
-            return info, ''.join(msg_data)
+                msg_data.append(data[0][1])
+                if len(data[0][1]) < chunk_size:
+                    chunk = -1
+                else:
+                    chunk += 1
+
+        # FIXME: Should we add a sanity check and complain if we got
+        #        significantly less data than expected via. RFC822.SIZE?
+        return info, ''.join(msg_data)
 
     def get_message(self, key):
         info, payload = self.get(key)

@@ -1,4 +1,5 @@
 import threading
+import traceback
 import time
 
 import mailpile.util
@@ -221,6 +222,7 @@ class Worker(threading.Thread):
         return (self.ALIVE and not mailpile.util.QUITTING)
 
     def _failed(self, session, name, task, e):
+        self.session.ui.debug(traceback.format_exc())
         self.session.ui.error(('%s failed in %s: %s'
                                ) % (name, self.name, e))
         if session:

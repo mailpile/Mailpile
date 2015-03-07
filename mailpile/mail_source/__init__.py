@@ -157,6 +157,9 @@ class BaseMailSource(threading.Thread):
         all_completed = True
         ostate = self._state
         for mbx_cfg in self._sorted_mailboxes():
+            if self._check_interrupt(clear=False):
+                all_completed = False
+                break
             try:
                 with self._lock:
                     mbx_key = FormatMbxId(mbx_cfg._key)

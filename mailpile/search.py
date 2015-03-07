@@ -606,7 +606,9 @@ class MailIndex(object):
                 event.data['rescans'] = []
             if reset:
                 event.data['rescan'] = {}
-            progress = event.data['rescan']
+            progress = event.data.get('rescan', {})
+            if not progress.keys():
+                reset = True
         else:
             progress = {}
             reset = True
@@ -805,8 +807,8 @@ class MailIndex(object):
             added += 1
 
         play_nice_with_threads()
-        progress['added'] += added
-        progress['updated'] += updated
+        progress['added'] = progress.get('added', 0) + added
+        progress['updated'] = progress.get('updated', 0) + updated
         return last_date, added, updated
 
     def edit_msg_info(self, msg_info,
