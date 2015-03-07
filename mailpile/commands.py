@@ -1651,7 +1651,7 @@ class GpgCommand(Command):
 
 class ListDir(Command):
     """Display working directory listing"""
-    SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
+    SYNOPSIS = (None, 'ls', None, "[-a] [-d] [</path/*.foo> ...]")
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
@@ -1660,30 +1660,66 @@ class ListDir(Command):
         def as_text(self):
             if self.result:
                 lines = []
-                for fn, sz, isdir in self.result:
-                    lines.append(('%10.10s  %s%s'
-                                  ) % (sz, fn, isdir and '/' or ''))
+                for fn, sz, isdir, ismailbox in self.result:
+                    lines.append(('%12.12s %s%s%s'
+                                  ) % (sz, '*' if ismailbox else ' ',
+                                       fn, '/' if isdir else ''))
                 return '\n'.join(lines)
             else:
                 return _('Nothing Found')
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
+        flags = [f for f in args if f[:1] == '-']
+        args = [a for a in args if a[:1] != '-']
 
         if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
-        try:
-            file_list = [(f.decode('utf-8'),
-                          os.path.getsize(f),
-                          os.path.isdir(f))
-                         for f in os.listdir('.') if not f.startswith('.')
-                         and not args or [a for a in args if a in f]]
-            file_list.sort(key=lambda i: i[0].lower())
-            return self._success(_('Current directory is %s') % os.getcwd(),
-                                 result=file_list)
-        except (OSError, IOError, UnicodeDecodeError), e:
-            return self._error(_('Failed to list directory: %s') % e)
+        if not args:
+            args = ['.']
+
+        def lsf(f):
+            try:
+                if f.startswith('./'):
+                    f = f[2:]
+                try:
+                    fn = f.decode('utf-8')
+                except (UnicodeDecodeError, UnicodeEncodeError):
+                    fn = f.decode('utf-8', 'replace')
+                ism = IsMailbox(f, self.session.config)
+                return (fn, os.path.getsize(f), os.path.isdir(f),
+                        str(ism[1]) if ism else False)
+            except (OSError, IOError):
+                return (fn, None, None, False)
+        def ls(p):
+            return [lsf(os.path.join(p, f)) for f in os.listdir(p)
+                    if '-a' in flags or f[:1] != '.']
+
+        file_list = []
+        import glob
+        for path in args:
+            try:
+                if path.startswith('src:'):
+                    srcid = path[4:].split('/', 0)[0]
+                    file_list.append(('FIXME! Source: %s' % srcid, 0, 0, 0))
+                else:
+                    path = os.path.expanduser(path.encode('utf-8'))
+                    if os.path.isdir(path) and '*' not in path:
+                        file_list.extend(ls(path))
+                    else:
+                        for p in glob.iglob(path):
+                            if os.path.isdir(p) and '-d' not in flags:
+                                file_list.extend(ls(p))
+                            else:
+                                file_list.append(lsf(p))
+            except (OSError, IOError, UnicodeDecodeError), e:
+                return self._error(_('Failed to list: %s') % e)
+
+        file_list.sort(key=lambda i: i[0].lower())
+        return self._success(_('Listed %d files or directories'
+                               ) % len(file_list),
+                             result=file_list)
 
 
 class ChangeDir(ListDir):
@@ -1700,8 +1736,8 @@ class ChangeDir(ListDir):
             return self._error(_('In lockdown, doing nothing.'))
 
         try:
-            os.chdir(args.pop(0).encode('utf-8'))
-            return ListDir.command(self, args=args)
+            os.chdir(os.path.expanduser(args.pop(0).encode('utf-8')))
+            return ListDir.command(self, args=['.'])
         except (OSError, IOError, UnicodeEncodeError), e:
             return self._error(_('Failed to change directories: %s') % e)
 
