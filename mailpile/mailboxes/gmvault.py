@@ -14,7 +14,10 @@ class MailpileMailbox(maildir.MailpileMailbox):
 
     @classmethod
     def parse_path(cls, config, fn, create=False):
-        if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
+        if (os.path.isdir(fn) and
+               os.path.isdirs(os.path.join(fn, 'db')) and
+               os.path.isdirs(os.path.join(fn, 'chats')) and
+               os.path.isdirs(os.path.join(fn, '.info'))):
             return (fn, )
         raise ValueError('Not a Gmvault: %s' % fn)
 

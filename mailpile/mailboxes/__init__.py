@@ -37,7 +37,7 @@ def IsMailbox(fn, config):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
             if mbox_cls.parse_path(config, fn):
-                return True
+                return (True, mbox_cls)
         except KeyboardInterrupt:
             raise
         except:
