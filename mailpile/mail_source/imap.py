@@ -380,20 +380,19 @@ class SharedImapMailbox(Mailbox):
         # how much data to expect. So we just FETCH chunk until one comes up
         # short or empty and assume that's it...
         while chunk >= 0:
+            req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
             with self.open_imap() as imap:
-                req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
                 # Note: use the raw method, not the convenient parsed version.
                 typ, data = self.source.timed(imap.uid,
                                               'FETCH', info['UID'], req,
                                               mailbox=self.path)
-                self._assert(typ == 'OK',
-                             _('Fetching chunk %d failed') % chunk)
-
-                msg_data.append(data[0][1])
-                if len(data[0][1]) < chunk_size:
-                    chunk = -1
-                else:
-                    chunk += 1
+            self._assert(typ == 'OK',
+                         _('Fetching chunk %d failed') % chunk)
+            msg_data.append(data[0][1])
+            if len(data[0][1]) < chunk_size:
+                chunk = -1
+            else:
+                chunk += 1
 
         # FIXME: Should we add a sanity check and complain if we got
         #        significantly less data than expected via. RFC822.SIZE?
