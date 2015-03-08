@@ -513,9 +513,10 @@ def backup_file(filename, backups=5, min_age_delta=0):
 
 
 def json_helper(obj):
-    if isinstance(obj, datetime.datetime):
+    try:
         return str(obj)
-
+    except:
+        return "COMPLEXBLOB"
 
 class GpgWriter(object):
     def __init__(self, gpg):
