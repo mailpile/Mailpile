@@ -23,17 +23,29 @@ import posixpath
 
 
 VFS_HANDLERS = []
+VFS_ALIASES = {}
 
-def register(prio, obj):
+
+def register_handler(prio, obj):
     global VFS_HANDLERS
     VFS_HANDLERS.append((prio, obj))
     VFS_HANDLERS.sort()
+
+def register_alias(name, prefix):
+    global VFS_ALIASES
+    assert(name[:1] == '/')
+    VFS_ALIASES[name] = prefix
 
 
 class FilePath(object):
     """
     Wrapper for file-names, to manage the insanity of paths being binary
-    data that people insist on treating as strings.
+    data that people insist on treating as strings. This is also where we
+    add and remove the /PREFIX$ stuff from paths.
+
+    The Mailpile VFS knows to use the raw_fp attribute instead of the
+    unicode() or str() representation, those methods expose data which
+    is suitable for writing to a config file or JSON stream.
     """
     def __init__(self, cooked_fp=None, binary_fp=None):
         assert((cooked_fp or binary_fp) and not (cooked_fp and binary_fp))
@@ -41,27 +53,56 @@ class FilePath(object):
             if isinstance(cooked_fp, FilePath):
                 self.raw_fp = cooked_fp.raw_fp
             elif isinstance(cooked_fp, str) and cooked_fp[-2:] == '=!':
-                self.raw_fp = cooked_fp[:-2].decode('base64')
+                self.raw_fp = self.unalias(cooked_fp[:-2].decode('base64'))
             elif isinstance(cooked_fp, unicode):
-                self.raw_fp = cooked_fp.encode('utf-8')
+                self.raw_fp = self.unalias(cooked_fp.encode('utf-8'))
             else:
-                self.raw_fp = str(cooked_fp)
+                self.raw_fp = self.unalias(str(cooked_fp))
         else:
             self.raw_fp = binary_fp
 
+    @classmethod
+    def unalias(self, fp):
+        if '$' in fp:
+            alias, path = fp.split('$', 1)
+            if alias in VFS_ALIASES:
+                return VFS_ALIASES[alias] + path
+        return fp
+
+    @classmethod
+    def alias(self, fp):
+        while fp[:2] == './':
+            fp = fp[2:]
+        alias, prefix = None, ''
+        for a, p in VFS_ALIASES.iteritems():
+            if len(p) > len(prefix) and fp.startswith(p):
+                alias, prefix = a, p
+        if alias:
+            return '$'.join([alias, fp[len(prefix):]])
+        return fp
+
     def __unicode__(self, errors='strict'):
+        """Render file path as a cooked unicode string"""
+        raw_fp = self.alias(self.raw_fp)
         try:
-            return (self.raw_fp[2:] if (self.raw_fp[:2] == './')
-                    else self.raw_fp).decode('utf-8', errors)
+            return raw_fp.decode('utf-8', errors)
         except (UnicodeDecodeError, UnicodeEncodeError):
-            return self.raw_fp.encode('base64').strip() + '=!'
+            return raw_fp.encode('base64').strip() + '=!'
 
     def __str__(self):
+        """Render file path as a cooked string"""
         return unicode(self).encode('utf-8')
+
+    def display(self):
+        """Lossy, user-friendly representation of this path."""
+        return self.__unicode__('replace')
+
+    def display_basename(self):
+        """Lossy, user-friendly representation of path's base name."""
+        return posixpath.basename(self.__unicode__('replace'))
 
     def startswith(self, stuff): return self.raw_fp.startswith(stuff)
     def endswith(self, stuff): return self.raw_fp.endswith(stuff)
-    def display(self): return self.__unicode__('replace')
     def lower(self): return self.__unicode__('replace').lower()
     def upper(self): return self.__unicode__('replace').upper()
 
@@ -75,11 +116,15 @@ class MailpileVfsBase(object):
     """
     Base class for VFS Handler objects.
     """
+    FS_ROOT = None
+
     def __init__(self):
         pass
 
     @classmethod
-    def Accepts(cls, path):
+    def Handles(cls, path):
+        if cls.FS_ROOT:
+            return path.startswith(cls.FS_ROOT)
         return False
 
     @classmethod
@@ -137,7 +182,7 @@ class MailpileVFS(MailpileVfsBase):
     @classmethod
     def _delegate(cls, path):
         for prio, handler in VFS_HANDLERS:
-            if handler.Accepts(path):
+            if handler.Handles(path):
                 return handler
         raise IOError('Invalid path: %s' % path)
 
@@ -179,7 +224,7 @@ class MailpileVfsLocal(MailpileVfsBase):
            operating systems (Windows, in particular).
     """
     @classmethod
-    def Accepts(cls, path):
+    def Handles(cls, path):
         return True
 
     def glob_(self, *args, **kwargs): return glob.iglob(*args, **kwargs)
@@ -190,4 +235,6 @@ class MailpileVfsLocal(MailpileVfsBase):
     def exists_(self, *args, **kwargs): return os.path.exists(*args, **kwargs)
 
 
-register(9999, MailpileVfsLocal())
+vfs = MailpileVFS
+register_handler(9999, MailpileVfsLocal())
+register_alias('/Home', os.path.expanduser('~'))

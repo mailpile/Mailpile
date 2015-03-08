@@ -15,14 +15,26 @@ from jinja2 import Environment, BaseLoader, TemplateNotFound
 from urllib import quote, unquote
 from urlparse import urlparse
 
+from mailpile.commands import Rescan
 from mailpile.command_cache import CommandCache
-from mailpile.search_history import SearchHistory
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.eventlog import EventLog
+from mailpile.httpd import HttpWorker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.util import AccessError
+from mailpile.mailboxes import OpenMailbox, NoSuchMailboxError, wervd
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
+from mailpile.search import MailIndex
+from mailpile.search_history import SearchHistory
+from mailpile.ui import Session, BackgroundInteraction
+from mailpile.util import *
+from mailpile.vcard import VCardStore
+from mailpile.vfs import vfs, FilePath
+from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 import mailpile.i18n
+import mailpile.vfs
+import mailpile.util
 
 try:
     import ssl
@@ -36,18 +48,6 @@ except ImportError:
         import socks
     except ImportError:
         socks = None
-
-import mailpile.util
-from mailpile.commands import Rescan
-from mailpile.eventlog import EventLog
-from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import OpenMailbox, NoSuchMailboxError, wervd
-from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
-from mailpile.search import MailIndex
-from mailpile.util import *
-from mailpile.ui import Session, BackgroundInteraction
-from mailpile.vcard import VCardStore
-from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 
 
 MAX_CACHED_MBOXES = 5
@@ -1189,6 +1189,8 @@ class ConfigManager(ConfigDict):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
         self.workdir = workdir or self.DEFAULT_WORKDIR()
+        mailpile.vfs.register_alias('/Mailpile', self.workdir)
+
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')

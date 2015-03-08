@@ -21,7 +21,6 @@ import webbrowser
 import mailpile.util
 import mailpile.ui
 import mailpile.postinglist
-from mailpile.vfs import MailpileVFS as vfs
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
@@ -34,6 +33,7 @@ from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
+from mailpile.vfs import vfs
 
 
 class Command(object):
@@ -1661,7 +1661,7 @@ class ListDir(Command):
         def as_text(self):
             if self.result:
                 lines = []
-                for fp, sz, isdir, ismailbox in self.result:
+                for bn, fp, sz, isdir, ismailbox in self.result:
                     lines.append(('%12.12s %s%s%s'
                                   ) % (sz, '*' if ismailbox else ' ',
                                        fp.display(), '/' if isdir else ''))
@@ -1686,10 +1686,10 @@ class ListDir(Command):
         def lsf(f):
             try:
                 ism = IsMailbox(f, self.session.config)
-                return (f, vfs.getsize(f), vfs.isdir(f),
+                return (f.display_basename(), f, vfs.getsize(f), vfs.isdir(f),
                         str(ism[1]) if ism else False)
             except (OSError, IOError):
-                return (fn, None, None, False)
+                return (f, None, None, False)
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
                     if '-a' in flags or f.raw_fp[:1] != '.']
@@ -1759,16 +1759,16 @@ class CatFile(Command):
         target = tfd = None
         if files and files[-1] and files[-1][:1] == '>':
             target = files.pop(-1)[1:]
-            if os.path.exists(target):
+            if vfs.exists(target):
                 return self._error(_('That file already exists: %s'
                                      ) % target)
-            tfd = open(target, 'wb')
+            tfd = vfs.open(target, 'wb')
             cb = lambda ll: [tfd.write(l) for l in ll]
         else:
             cb = lambda ll: lines.extend((l.decode('utf-8') for l in ll))
 
         for fn in files:
-            with open(fn, 'r') as fd:
+            with vfs.open(fn, 'r') as fd:
                 decrypt_and_parse_lines(fd, cb, self.session.config,
                                         newlines=True, decode=None)
 
@@ -2212,7 +2212,7 @@ class Pipe(Command):
             t = ' '.join(target)
             if t[0] == '>':
                 t = t[1:]
-            with open(t.strip(), 'w') as fd:
+            with vfs.open(t.strip(), 'w') as fd:
                 fd.write(output.encode('utf-8'))
 
         elif '@' in target[0]:
