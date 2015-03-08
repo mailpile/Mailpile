@@ -245,9 +245,12 @@ class BaseMailSource(threading.Thread):
         return seconds + random.randint(0, self.jitter)
 
     def _sleep(self, seconds):
+        enabled = self.my_config.enabled
         if self._sleeping != 0:
             self._sleeping = seconds
-            while (self.alive and self._sleeping > 0 and
+            while (self.alive and
+                    self._sleeping > 0 and
+                    enabled == self.my_config.enabled and
                     not mailpile.util.QUITTING):
                 time.sleep(min(1, self._sleeping))
                 self._sleeping -= 1
@@ -734,7 +737,8 @@ class BaseMailSource(threading.Thread):
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
             self._loop_count += 1
             if not self.my_config.enabled:
-                break
+                self._loop_count = 1
+                continue
 
             self.name = self.my_config.name  # In case the config changes
             self._update_unknown_state()

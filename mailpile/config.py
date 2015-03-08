@@ -1976,15 +1976,14 @@ class ConfigManager(ConfigDict):
         if daemons:
             for src_id, src_config in config.sources.iteritems():
                 ms_thread = config.mail_sources.get(src_id)
-                if (ms_thread and src_config.enabled
-                        and not ms_thread.isAlive()):
+                if (ms_thread and not ms_thread.isAlive()):
                     ms_thread = None
                 if not ms_thread:
                     from mailpile.mail_source import MailSource
                     try:
-                        config.mail_sources[src_id] = MailSource(
-                            config.background, src_config)
-                        config.mail_sources[src_id].start()
+                        ms = MailSource(config.background, src_config)
+                        config.mail_sources[src_id] = ms
+                        ms.start()
                     except ValueError:
                         pass
 
