@@ -17,6 +17,7 @@
 #   - Localize the code which deals with character sets and visual
 #     representation of file names and paths to one place.
 #
+import copy
 import glob
 import os
 import posixpath
@@ -142,24 +143,28 @@ class MailpileVfsBase(object):
 
     @classmethod
     def listdir(cls, fp, *args, **kwargs):
-        return [FilePath(binary_fp=f) for f in
-                cls.listdir_(FilePath(fp).raw_fp, *args, **kwargs)]
+        return [(f if isinstance(f, FilePath) else FilePath(binary_fp=f))
+                for f in cls.listdir_(FilePath(fp).raw_fp, *args, **kwargs)]
 
     @classmethod
-    def isdir(cls, fp, *args, **kwargs):
-        return cls.isdir_(FilePath(fp).raw_fp, *args, **kwargs)
+    def abspath(cls, fp):
+        return FilePath(binary_fp=cls.abspath_(FilePath(fp).raw_fp))
 
     @classmethod
-    def ismailbox(cls, fp, *args, **kwargs):
-        return cls.ismailbox_(FilePath(fp).raw_fp, *args, **kwargs)
+    def isdir(cls, fp):
+        return cls.isdir_(FilePath(fp).raw_fp)
 
     @classmethod
-    def getsize(cls, fp, *args, **kwargs):
-        return cls.getsize_(FilePath(fp).raw_fp, *args, **kwargs)
+    def ismailbox(cls, fp):
+        return cls.ismailbox_(FilePath(fp).raw_fp)
 
     @classmethod
-    def exists(cls, fp, *args, **kwargs):
-        return cls.exists_(FilePath(fp).raw_fp, *args, **kwargs)
+    def getsize(cls, fp):
+        return cls.getsize_(FilePath(fp).raw_fp)
+
+    @classmethod
+    def exists(cls, fp):
+        return cls.exists_(FilePath(fp).raw_fp)
 
     @classmethod
     def _fixme(self):
@@ -168,6 +173,7 @@ class MailpileVfsBase(object):
     glob_ = _fixme
     open_ = _fixme
     listdir_ = _fixme
+    abspath_ = _fixme
     isdir_ = _fixme
     ismailbox_ = _fixme
     getsize_ = _fixme
@@ -177,7 +183,7 @@ class MailpileVfsBase(object):
 class MailpileVFS(MailpileVfsBase):
     """
     This is a router object that implements the VFS interface but,
-    delegating calls to individual implementations depending on 
+    delegating calls to individual implementations.
     """
     @classmethod
     def _delegate(cls, path):
@@ -199,6 +205,10 @@ class MailpileVFS(MailpileVfsBase):
         return self._delegate(path).listdir_(path, *args, **kwargs)
 
     @classmethod
+    def abspath_(self, path, *args, **kwargs):
+        return self._delegate(path).abspath_(path, *args, **kwargs)
+
+    @classmethod
     def isdir_(self, path, *args, **kwargs):
         return self._delegate(path).isdir_(path, *args, **kwargs)
 
@@ -213,7 +223,7 @@ class MailpileVFS(MailpileVfsBase):
     @classmethod
     def exists_(self, path, *args, **kwargs):
         return self._delegate(path).exists_(path, *args, **kwargs)
-    
+
 
 class MailpileVfsLocal(MailpileVfsBase):
     """
@@ -230,9 +240,80 @@ class MailpileVfsLocal(MailpileVfsBase):
     def glob_(self, *args, **kwargs): return glob.iglob(*args, **kwargs)
     def open_(self, *args, **kwargs): return open(*args, **kwargs)
     def listdir_(self, *args, **kwargs): return os.listdir(*args, **kwargs)
-    def isdir_(self, *args, **kwargs): return os.path.isdir(*args, **kwargs)
-    def getsize_(self, *args, **kwargs): return os.path.getsize(*args, **kwargs)
-    def exists_(self, *args, **kwargs): return os.path.exists(*args, **kwargs)
+    def abspath_(self, path): return os.path.abspath(path)
+    def isdir_(self, path): return os.path.isdir(path)
+    def getsize_(self, path): return os.path.getsize(path)
+    def exists_(self, path): return os.path.exists(path)
+
+
+class MailpileVfsRoot(MailpileVfsBase):
+    """
+    This VFS implements a fancy root listing, including things like:
+
+       - Discovery of Thunderbird, Mail.app and Unix mail spools
+       - Listing configured sources
+       - Shortcut to the user's Home$
+       - Shortcuts to any root level registered VFSes
+
+    """
+    def __init__(self, config):
+        self.config = config
+        self.entries = {
+            'Home': (FilePath('/Home$'), [])
+        }
+        self._discover_mail_spool()
+        self._discover_thunderbird()
+
+    def _discover_mail_spool(self):
+        user = os.getenv('USER')
+        for search in ('/var/mail', '/var/spool/mail'):
+            if user and os.path.isdir(search):
+                spool_path = os.path.join(search, user)
+                if os.path.exists(spool_path):
+                    self.entries['Unix mail spool'] = (FilePath(spool_path),
+                                                       [])
+                    break
+
+    def _discover_thunderbird(self):
+        for search in ('~/.thunderbird', ):
+            tbird_home = os.path.expanduser(search)
+            if os.path.exists(tbird_home):
+                for profile in os.listdir(tbird_home):
+                    profpath = os.path.join(tbird_home, profile)
+                    if os.path.exists(os.path.join(profpath, 'Mail')):
+                        name = 'Thunderbird %s' % profile.split('.', 1)[-1]
+                        self.entries[name] = (FilePath(profpath), [])
+
+    def _entries(self):
+        e = copy.copy(self.entries)
+        for msid, msobj in self.config.mail_sources.iteritems():
+            e[msobj.my_config.name] = (FilePath('/src:%s' % msid), [])
+        return e
+
+    def Handles(self, path):
+        return (path == '/' or path[1:] in self._entries())
+
+    def glob_(self, *args, **kwargs):
+        return self.listdir_()
+
+    def listdir_(self, fp, *args, **kwargs):
+        return self._entries().keys() if (fp == '/') else []
+
+    def open_(self, fp, *args, **kwargs):
+        raise IOError('Cannot open entries in /')
+
+    def abspath_(self, fp):
+        return ('/' if (fp == '/') else
+                vfs.abspath(self._entries()[fp[1:]][0]).raw_fp)
+
+    def isdir_(self, fp):
+        return True if (fp == '/') else vfs.isdir(self._entries()[fp[1:]][0])
+
+    def getsize_(self, fp):
+        return True if (fp == '/') else vfs.getsize(self._entries()[fp[1:]][0])
+
+    def exists_(self, fp):
+        return True if (fp == '/') else vfs.exists(self._entries()[fp[1:]][0])
 
 
 vfs = MailpileVFS

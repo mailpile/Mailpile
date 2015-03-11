@@ -1664,7 +1664,7 @@ class ListDir(Command):
                 for bn, fp, sz, isdir, ismailbox in self.result:
                     lines.append(('%12.12s %s%s%s'
                                   ) % (sz, '*' if ismailbox else ' ',
-                                       fp.display(), '/' if isdir else ''))
+                                       bn, '/' if isdir else ''))
                 return '\n'.join(lines)
             else:
                 return _('Nothing Found')
@@ -1685,11 +1685,13 @@ class ListDir(Command):
 
         def lsf(f):
             try:
-                ism = IsMailbox(f, self.session.config)
-                return (f.display_basename(), f, vfs.getsize(f), vfs.isdir(f),
+                afp = vfs.abspath(f)
+                ism = IsMailbox(afp, self.session.config)
+                return (f.display_basename(),
+                        afp, vfs.getsize(afp), vfs.isdir(afp),
                         str(ism[1]) if ism else False)
             except (OSError, IOError):
-                return (f, None, None, False)
+                return (f.display_basename(), f, None, None, False)
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
                     if '-a' in flags or f.raw_fp[:1] != '.']

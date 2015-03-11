@@ -30,7 +30,7 @@ from mailpile.search_history import SearchHistory
 from mailpile.ui import Session, BackgroundInteraction
 from mailpile.util import *
 from mailpile.vcard import VCardStore
-from mailpile.vfs import vfs, FilePath
+from mailpile.vfs import vfs, FilePath, MailpileVfsRoot
 from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 import mailpile.i18n
 import mailpile.vfs
@@ -1190,6 +1190,7 @@ class ConfigManager(ConfigDict):
 
         self.workdir = workdir or self.DEFAULT_WORKDIR()
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
+        mailpile.vfs.register_handler(0000, MailpileVfsRoot(self))
 
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
