@@ -796,7 +796,8 @@ class Sendit(CompositionCommand):
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
         'mid': 'metadata-ID',
-        'to': 'recipients'
+        'to': 'recipients',
+        'from': 'sender e-mail'
     }
 
     # We set our events' source class explicitly, so subclasses don't
@@ -817,6 +818,10 @@ class Sendit(CompositionCommand):
                      self.data.get('cc', []) +
                      self.data.get('bcc', [])):
             bounce_to.extend(ExtractEmails(rcpt))
+
+        sender = self.data.get('from', [None])[0]
+        if not sender and bounce_to:
+            sender = idx.config.get_profile().get('email', None)
 
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
@@ -859,7 +864,9 @@ class Sendit(CompositionCommand):
 
                 SendMail(session, msg_mid,
                          [PrepareMessage(config, email.get_msg(pgpmime=False),
+                                         sender=sender,
                                          rcpts=(bounce_to or None),
+                                         bounce=(True if bounce_to else False),
                                          events=events)])
                 for ev in events:
                     ev.flags = Event.COMPLETE

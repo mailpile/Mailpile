@@ -204,21 +204,29 @@ def CleanMessage(config, msg):
     return msg
 
 
-def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
+def PrepareMessage(config, msg,
+                   sender=None, rcpts=None, events=None, bounce=False):
     msg = copy.deepcopy(msg)
 
     # Short circuit if this message has already been prepared.
-    if 'x-mp-internal-sender' in msg and 'x-mp-internal-rcpts' in msg:
+    if ('x-mp-internal-sender' in msg and
+            'x-mp-internal-rcpts' in msg and
+            not bounce):
         return (sender or msg['x-mp-internal-sender'],
                 rcpts or [r.strip()
                           for r in msg['x-mp-internal-rcpts'].split(',')],
                 msg,
                 events)
 
+    # Crypto policy defaults to "none" if we are bouncing a message,
+    # since it's usually other peoples' content and we want it delivered
+    # intact if at all possible.
+    crypto_policy = 'none' if bounce else config.prefs.crypto_policy.lower()
     attach_pgp_pubkey = 'no'
     attached_pubkey = False
-    crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
+    if bounce:
+        assert(len(rcpts) > 0)
 
     # Iterate through headers to figure out what we want to do...
     need_rcpts = not rcpts
@@ -243,13 +251,9 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     if crypto_policy == 'default':
         crypto_policy = config.prefs.crypto_policy
 
-    # This is the BCC hack that Brennan hates!
-    if config.prefs.always_bcc_self:
-        rcpts += [sender]
-
     sender = ExtractEmails(sender, strip_keys=False)[0]
     sender_keyid = None
-    if config.prefs.openpgp_header:
+    if not bounce and config.prefs.openpgp_header:
         try:
             gnupg = GnuPG(config)
             seckeys = dict([(uid["email"], fp) for fp, key
@@ -261,49 +265,55 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         except (KeyError, TypeError, IndexError, ValueError):
             traceback.print_exc()
 
-    rcpts, rr = [sender], rcpts
+    # Extract just the e-mail addresses from the RCPT list, make unique
+    rcpts, rr = [], rcpts
     for r in rr:
         for e in ExtractEmails(r, strip_keys=False):
             if e not in rcpts:
                 rcpts.append(e)
 
-    # Add headers we require
-    if 'date' not in msg:
-        msg['Date'] = email.utils.formatdate()
+    if not bounce:
+        # This is the BCC hack that Brennan hates!
+        if config.prefs.always_bcc_self and sender not in rcpts:
+            rcpts += [sender]
 
-    if sender_keyid and config.prefs.openpgp_header:
-        msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
-                                                   config.prefs.openpgp_header)
+        # Add headers we require
+        if 'date' not in msg:
+            msg['Date'] = email.utils.formatdate()
 
-    # Do we want to attach a key to outgoing messages?
-    if attach_pgp_pubkey in ['yes', 'true']:
-        g = GnuPG(config)
-        keys = g.address_to_keys(ExtractEmails(sender)[0])
-        for fp, key in keys.iteritems():
-            if not any(key["capabilities_map"].values()):
-                continue
-            # We should never really hit this more than once. But if we do, it
-            # should still be fine.
-            keyid = key["keyid"]
-            data = g.get_pubkey(keyid)
+        if sender_keyid and config.prefs.openpgp_header:
+            msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
+                                                       config.prefs.openpgp_header)
 
-            try:
-                from_name = key["uids"][0]["name"]
-                filename = _('Encryption key for %s.asc') % from_name
-            except:
-                filename = _('My encryption key.asc')
+        # Do we want to attach a key to outgoing messages?
+        if attach_pgp_pubkey in ['yes', 'true']:
+            g = GnuPG(config)
+            keys = g.address_to_keys(ExtractEmails(sender)[0])
+            for fp, key in keys.iteritems():
+                if not any(key["capabilities_map"].values()):
+                    continue
+                # We should never really hit this more than once. But if we
+                # do, should still be fine.
+                keyid = key["keyid"]
+                data = g.get_pubkey(keyid)
 
-            att = MIMEBase('application', 'pgp-keys')
-            att.set_payload(data)
-            encoders.encode_base64(att)
-            del att['MIME-Version']
-            att.add_header('Content-Id', MakeContentID())
-            att.add_header('Content-Disposition', 'attachment',
-                           filename=filename)
-            att.signature_info = SignatureInfo(parent=msg.signature_info)
-            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
-            msg.attach(att)
-            attached_pubkey = True
+                try:
+                    from_name = key["uids"][0]["name"]
+                    filename = _('Encryption key for %s.asc') % from_name
+                except:
+                    filename = _('My encryption key.asc')
+
+                att = MIMEBase('application', 'pgp-keys')
+                att.set_payload(data)
+                encoders.encode_base64(att)
+                del att['MIME-Version']
+                att.add_header('Content-Id', MakeContentID())
+                att.add_header('Content-Disposition', 'attachment',
+                               filename=filename)
+                att.signature_info = SignatureInfo(parent=msg.signature_info)
+                att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+                msg.attach(att)
+                attached_pubkey = True
 
     # Should be 'openpgp', but there is no point in being precise
     if 'pgp' in crypto_policy or 'gpg' in crypto_policy:

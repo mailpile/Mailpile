@@ -1818,7 +1818,8 @@ class ConfigManager(ConfigDict):
             return self.routes[routeid]
         else:
             print "Migration notice: Try running 'setup/migrate'."
-            raise ValueError(_("Route %s does not exist.") % routeid)
+            raise ValueError(_("Route %s for %s does not exist."
+                               ) % (routeid, frm))
 
     @classmethod
     def getLocaleDirectory(self):
