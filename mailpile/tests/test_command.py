@@ -71,6 +71,46 @@ class TestCommands(MailPileUnittest):
         self.assertEqual(res.as_dict()["result"]['crypto-policy'],
                          'best-effort')
 
+    def test_reply_subjects_on_first_msg(self):
+        # Subject: Verb. Target. Outcome.'
+        mid = self.mp.search('subject:Verb').result['data']['metadata']\
+                                            .values()[0]['mid']
+        res = self.mp.reply('ephemeral', '=%s' % mid)
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         'Re: Verb. Target. Outcome.')
+
+    def test_reply_subject_on_reply_msg(self):
+        # Subject: Re: Here's $1
+        mid = self.mp.search('subject:Here').result['data']['metadata']\
+                                            .values()[0]['mid']
+        res = self.mp.reply('ephemeral', '=%s' % mid)
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         "Re: Here's $1")
+
+    def test_reply_subject_on_fw_msg(self):
+        # Subject: Fw: About shrubberies
+        mid = self.mp.search('shrubberies').result['data']['metadata']\
+                                           .values()[0]['mid']
+        res = self.mp.reply('ephemeral', '=%s' % mid)
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         "Re: Fw: About shrubberies")
+
+    def test_fwd_subject_on_re_msg(self):
+        # Subject: Re: Here's $1
+        mid = self.mp.search('subject:Here').result['data']['metadata']\
+                                            .values()[0]['mid']
+        res = self.mp.forward('ephemeral', '=%s' % mid)
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         "Fwd: Re: Here's $1")
+
+    def test_fw_subject_on_fw_msg(self):
+        # Subject: Fw: A question shrubberies
+        mid = self.mp.search('shrubberies').result['data']['metadata']\
+                                           .values()[0]['mid']
+        res = self.mp.forward('ephemeral', '=%s' % mid)
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         "Fw: About shrubberies")
+
 
 class TestCommandResult(MailPileUnittest):
     def test_command_result_as_dict(self):
