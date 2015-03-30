@@ -76,7 +76,7 @@ Contributors:
 - Brennan Novak (<https://brennannovak.com/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Lots more, run `git shortlog -s` for a list! (Or see the list
-  [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
+  [on GitHub](https://github.com/pagekite/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
 backers](https://www.mailpile.is/#community).
