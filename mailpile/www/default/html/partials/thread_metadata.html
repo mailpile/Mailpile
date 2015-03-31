@@ -45,6 +45,9 @@
       {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}<span class="icon-new"></span>{% endif %}{% endfor %}
       {{ metadata.timestamp|friendly_datetime }} {{ metadata.timestamp|friendly_time }}
     </a>
+    {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].type == "outbox" %}
+    <a href="{{result.data.tags[tid].url}}" class="outbox"><span class="icon-outbox"></span> {{result.data.tags[tid].name}}</a>
+    {% endif %}{% endfor %}
     {% set signature = show_message_signature(metadata.crypto.signature) %}
     {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
     <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
