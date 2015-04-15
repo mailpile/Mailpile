@@ -21,7 +21,10 @@ from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
 
 
-DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
+DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
+                      "hkp://subset.pool.sks-keyservers.net"]
+DEFAULT_KEYSERVER_OPTIONS = ['ca-cert-file=%s' % __file__]
+
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 GPG_BINARY = 'gpg'
@@ -817,17 +820,34 @@ class GnuPG:
         retvals = self.run(action, send_passphrase=True)
         return retvals
 
-    def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
+    def recv_key(self, keyid,
+                 keyservers=DEFAULT_KEYSERVERS,
+                 keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--fingerprint',
+                   '--search-key', self._escape_hex_keyid_term(term)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
         return self._parse_import(retvals[1]["status"])
 
-    def search_key(self, term, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver,
-                            '--fingerprint',
-                            '--search-key', self._escape_hex_keyid_term(term)]
-                            )[1]["stdout"]
+    def search_key(self, term,
+                   keyservers=DEFAULT_KEYSERVERS,
+                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--fingerprint',
+                   '--search-key', self._escape_hex_keyid_term(term)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
         results = {}
-        lines = [x.strip().split(":") for x in retvals]
+        lines = [x.strip().split(":") for x in retvals[1]["stdout"]]
         curpub = None
         for line in lines:
             if line[0] == "info":
@@ -1256,3 +1276,40 @@ class GnuPGKeyEditor(GnuPGExpectScript):
 
     def gpg_args(self):
         return ['--no-use-agent', '--edit-key', self.keyid]
+
+
+## Include the SKS keyserver certificate here ##
+KEYSERVER_CERTIFICATE="""
+-----BEGIN CERTIFICATE-----
+MIIFizCCA3OgAwIBAgIJAK9zyLTPn4CPMA0GCSqGSIb3DQEBBQUAMFwxCzAJBgNV
+BAYTAk5PMQ0wCwYDVQQIDARPc2xvMR4wHAYDVQQKDBVza3Mta2V5c2VydmVycy5u
+ZXQgQ0ExHjAcBgNVBAMMFXNrcy1rZXlzZXJ2ZXJzLm5ldCBDQTAeFw0xMjEwMDkw
+MDMzMzdaFw0yMjEwMDcwMDMzMzdaMFwxCzAJBgNVBAYTAk5PMQ0wCwYDVQQIDARP
+c2xvMR4wHAYDVQQKDBVza3Mta2V5c2VydmVycy5uZXQgQ0ExHjAcBgNVBAMMFXNr
+cy1rZXlzZXJ2ZXJzLm5ldCBDQTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoC
+ggIBANdsWy4PXWNUCkS3L//nrd0GqN3dVwoBGZ6w94Tw2jPDPifegwxQozFXkG6I
+6A4TK1CJLXPvfz0UP0aBYyPmTNadDinaB9T4jIwd4rnxl+59GiEmqkN3IfPsv5Jj
+MkKUmJnvOT0DEVlEaO1UZIwx5WpfprB3mR81/qm4XkAgmYrmgnLXd/pJDAMk7y1F
+45b5zWofiD5l677lplcIPRbFhpJ6kDTODXh/XEdtF71EAeaOdEGOvyGDmCO0GWqS
+FDkMMPTlieLA/0rgFTcz4xwUYj/cD5e0ZBuSkYsYFAU3hd1cGfBue0cPZaQH2HYx
+Qk4zXD8S3F4690fRhr+tki5gyG6JDR67aKp3BIGLqm7f45WkX1hYp+YXywmEziM4
+aSbGYhx8hoFGfq9UcfPEvp2aoc8u5sdqjDslhyUzM1v3m3ZGbhwEOnVjljY6JJLx
+MxagxnZZSAY424ZZ3t71E/Mn27dm2w+xFRuoy8JEjv1d+BT3eChM5KaNwrj0IO/y
+u8kFIgWYA1vZ/15qMT+tyJTfyrNVV/7Df7TNeWyNqjJ5rBmt0M6NpHG7CrUSkBy9
+p8JhimgjP5r0FlEkgg+lyD+V79H98gQfVgP3pbJICz0SpBQf2F/2tyS4rLm+49rP
+fcOajiXEuyhpcmzgusAj/1FjrtlynH1r9mnNaX4e+rLWzvU5AgMBAAGjUDBOMB0G
+A1UdDgQWBBTkwyoJFGfYTVISTpM8E+igjdq28zAfBgNVHSMEGDAWgBTkwyoJFGfY
+TVISTpM8E+igjdq28zAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4ICAQAR
+OXnYwu3g1ZjHyley3fZI5aLPsaE17cOImVTehC8DcIphm2HOMR/hYTTL+V0G4P+u
+gH+6xeRLKSHMHZTtSBIa6GDL03434y9CBuwGvAFCMU2GV8w92/Z7apkAhdLToZA/
+X/iWP2jeaVJhxgEcH8uPrnSlqoPBcKC9PrgUzQYfSZJkLmB+3jEa3HKruy1abJP5
+gAdQvwvcPpvYRnIzUc9fZODsVmlHVFBCl2dlu/iHh2h4GmL4Da2rRkUMlbVTdioB
+UYIvMycdOkpH5wJftzw7cpjsudGas0PARDXCFfGyKhwBRFY7Xp7lbjtU5Rz0Gc04
+lPrhDf0pFE98Aw4jJRpFeWMjpXUEaG1cq7D641RpgcMfPFvOHY47rvDTS7XJOaUT
+BwRjmDt896s6vMDcaG/uXJbQjuzmmx3W2Idyh3s5SI0GTHb0IwMKYb4eBUIpQOnB
+cE77VnCYqKvN1NVYAqhWjXbY7XasZvszCRcOG+W3FqNaHOK/n/0ueb0uijdLan+U
+f4p1bjbAox8eAOQS/8a3bzkJzdyBNUKGx1BIK2IBL9bn/HravSDOiNRSnZ/R3l9G
+ZauX0tu7IIDlRCILXSyeazu0aj/vdT3YFQXPcvt5Fkf5wiNTo53f72/jYEJd6qph
+WrpoKqrwGwTpRUCMhYIUt65hsTxCiJJ5nKe39h46sg==
+-----END CERTIFICATE-----
+"""
