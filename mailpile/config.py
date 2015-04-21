@@ -1386,6 +1386,11 @@ class ConfigManager(ConfigDict):
                 for plugin in self.plugins.WANTED:
                     if plugin in self.plugins.available():
                         self.sys.plugins.append(plugin)
+            else:
+                for pos in range(0, len(self.sys.plugins)):
+                    name = self.sys.plugins[pos]
+                    if name in self.plugins.RENAMED:
+                        self.sys.plugins[pos] = self.plugins.RENAMED[name]
             self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!

@@ -22,7 +22,7 @@ from mailpile.util import *
 # These are the plugins we ship/import by default
 __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
     'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
@@ -56,6 +56,10 @@ class PluginManager(object):
     WANTED = [
         'gui'
     ]
+    # Plugins that have been renamed from past releases
+    RENAMED = {
+        'crypto_utils': 'crypto_gnupg'
+    }
     DISCOVERED = {}
     LOADED = []
 
