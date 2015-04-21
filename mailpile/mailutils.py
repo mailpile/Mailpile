@@ -28,9 +28,6 @@ from urllib import quote, unquote
 from datetime import datetime, timedelta
 
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
-from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
-from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
@@ -190,7 +187,7 @@ def CleanMessage(config, msg):
             replacements.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
-        elif lkey in ('to', 'from', 'cc'):
+        elif lkey in ('from', 'to', 'cc', 'reply-to'):
             if '#' in value:
                 replacements.append((key, re.sub(
                     r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
@@ -218,12 +215,7 @@ def PrepareMessage(config, msg,
                 msg,
                 events)
 
-    # Crypto policy defaults to "none" if we are bouncing a message,
-    # since it's usually other peoples' content and we want it delivered
-    # intact if at all possible.
-    crypto_policy = 'none' if bounce else config.prefs.crypto_policy.lower()
-    attach_pgp_pubkey = 'no'
-    attached_pubkey = False
+    crypto_policy = 'default'
     rcpts = rcpts or []
     if bounce:
         assert(len(rcpts) > 0)
@@ -235,9 +227,7 @@ def PrepareMessage(config, msg,
         if lhdr == 'from':
             sender = sender or val
         elif lhdr == 'encryption':
-            crypto_policy = val.lower()
-        elif lhdr == 'attach-pgp-pubkey':
-            attach_pgp_pubkey = val.lower()
+            crypto_policy = val
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
             rcpts += ExtractEmails(val, strip_keys=False)
 
@@ -248,22 +238,12 @@ def PrepareMessage(config, msg,
         raise NoRecipientError()
 
     # Are we encrypting? Signing?
+    crypto_policy = crypto_policy.lower()
     if crypto_policy == 'default':
-        crypto_policy = config.prefs.crypto_policy
+        crypto_policy = config.prefs.crypto_policy.lower()
 
+    # FIXME: This makes mistakes sometimes
     sender = ExtractEmails(sender, strip_keys=False)[0]
-    sender_keyid = None
-    if not bounce and config.prefs.openpgp_header:
-        try:
-            gnupg = GnuPG(config)
-            seckeys = dict([(uid["email"], fp) for fp, key
-                            in gnupg.list_secret_keys().iteritems()
-                            if key["capabilities_map"].get("encrypt")
-                            and key["capabilities_map"].get("sign")
-                            for uid in key["uids"]])
-            sender_keyid = seckeys.get(sender)
-        except (KeyError, TypeError, IndexError, ValueError):
-            traceback.print_exc()
 
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
@@ -272,6 +252,7 @@ def PrepareMessage(config, msg,
             if e not in rcpts:
                 rcpts.append(e)
 
+    # Bouncing disables all transformations, including crypto.
     if not bounce:
         # This is the BCC hack that Brennan hates!
         if config.prefs.always_bcc_self and sender not in rcpts:
@@ -281,64 +262,24 @@ def PrepareMessage(config, msg,
         if 'date' not in msg:
             msg['Date'] = email.utils.formatdate()
 
-        if sender_keyid and config.prefs.openpgp_header:
-            msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
-                                                       config.prefs.openpgp_header)
+        import mailpile.plugins
+        plugins = mailpile.plugins.PluginManager()
 
-        # Do we want to attach a key to outgoing messages?
-        if attach_pgp_pubkey in ['yes', 'true']:
-            g = GnuPG(config)
-            keys = g.address_to_keys(ExtractEmails(sender)[0])
-            for fp, key in keys.iteritems():
-                if not any(key["capabilities_map"].values()):
-                    continue
-                # We should never really hit this more than once. But if we
-                # do, should still be fine.
-                keyid = key["keyid"]
-                data = g.get_pubkey(keyid)
+        # Perform pluggable content transformations
+        sender, rcpts, msg, junk = plugins.outgoing_email_content_transform(
+            config, sender, rcpts, msg)
 
-                try:
-                    from_name = key["uids"][0]["name"]
-                    filename = _('Encryption key for %s.asc') % from_name
-                except:
-                    filename = _('My encryption key.asc')
+        # Perform pluggable encryption transformations
+        sender, rcpts, msg, matched = plugins.outgoing_email_crypto_transform(
+            config, sender, rcpts, msg,
+            crypto_policy=crypto_policy,
+            prefer_inline=config.prefs.inline_pgp,
+            cleaner=lambda m: CleanMessage(config, m))
 
-                att = MIMEBase('application', 'pgp-keys')
-                att.set_payload(data)
-                encoders.encode_base64(att)
-                del att['MIME-Version']
-                att.add_header('Content-Id', MakeContentID())
-                att.add_header('Content-Disposition', 'attachment',
-                               filename=filename)
-                att.signature_info = SignatureInfo(parent=msg.signature_info)
-                att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
-                msg.attach(att)
-                attached_pubkey = True
-
-    # Should be 'openpgp', but there is no point in being precise
-    if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
-        wrapper = None
-        if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
-            wrapper = OpenPGPMimeSignEncryptWrapper
-        elif 'sign' in crypto_policy:
-            wrapper = OpenPGPMimeSigningWrapper
-        elif 'encrypt' in crypto_policy:
-            wrapper = OpenPGPMimeEncryptingWrapper
-        elif 'none' not in crypto_policy:
+        if crypto_policy and (crypto_policy != 'none') and not matched:
             raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
-        if wrapper:
-            cpi = config.prefs.inline_pgp
-            msg = wrapper(config,
-                          sender=sender,
-                          cleaner=lambda m: CleanMessage(config, m),
-                          recipients=rcpts
-                          ).wrap(msg, prefer_inline=cpi)
-    elif crypto_policy and crypto_policy != 'none':
-        raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
-    if attached_pubkey:
-        msg['x-mp-internal-pubkeys-attached'] = "Yes"
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)

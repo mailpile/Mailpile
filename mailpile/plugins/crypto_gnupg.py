@@ -2,17 +2,115 @@ import datetime
 import re
 import time
 import urllib2
+from email import encoders
+from email.mime.base import MIMEBase
 
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
-from mailpile.mailutils import Email, ClearParseCache
+from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
+from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
+from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
+from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
+from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.mailutils import Email, ExtractEmails, ClearParseCache
+from mailpile.mailutils import MakeContentID
 from mailpile.plugins import PluginManager
 from mailpile.plugins.search import Search
 
 _plugins = PluginManager(builtin=__file__)
 
+
+##[ GnuPG e-mail processing ]#################################################
+
+def email_content(config, sender, rcpts, msg):
+    matched = False
+    gnupg = None
+
+    sender_keyid = None
+    if config.prefs.openpgp_header:
+        try:
+            gnupg = gnupg or GnuPG(config)
+            seckeys = dict([(uid["email"], fp) for fp, key
+                            in gnupg.list_secret_keys().iteritems()
+                            if key["capabilities_map"].get("encrypt")
+                            and key["capabilities_map"].get("sign")
+                            for uid in key["uids"]])
+            sender_keyid = seckeys.get(sender)
+        except (KeyError, TypeError, IndexError, ValueError):
+            traceback.print_exc()
+
+    if sender_keyid and config.prefs.openpgp_header:
+        msg["OpenPGP"] = ("id=%s; preference=%s"
+                          % (sender_keyid, config.prefs.openpgp_header))
+
+    if ('attach-pgp-pubkey' in msg and
+            msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
+        # FIXME: Check attach_pgp_pubkey for instructions on which key(s) to
+        #        attach. Attaching all of them may be a bit lame.
+        gnupg = gnupg or GnuPG(config)
+        keys = gnupg.address_to_keys(ExtractEmails(sender)[0])
+        key_count = 0
+        for fp, key in keys.iteritems():
+            if not any(key["capabilities_map"].values()):
+                continue
+            # We should never really hit this more than once. But if we
+            # do, should still be fine.
+            keyid = key["keyid"]
+            data = gnupg.get_pubkey(keyid)
+
+            try:
+                from_name = key["uids"][0]["name"]
+                filename = _('Encryption key for %s.asc') % from_name
+            except:
+                filename = _('My encryption key.asc')
+            att = MIMEBase('application', 'pgp-keys')
+            att.set_payload(data)
+            encoders.encode_base64(att)
+            del att['MIME-Version']
+            att.add_header('Content-Id', MakeContentID())
+            att.add_header('Content-Disposition', 'attachment',
+                           filename=filename)
+            att.signature_info = SignatureInfo(parent=msg.signature_info)
+            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            msg.attach(att)
+            key_count += 1
+
+        if key_count > 0:
+            msg['x-mp-internal-pubkeys-attached'] = "Yes"
+
+    return sender, rcpts, msg, matched, True
+
+def email_crypto(config, sender, rcpts, msg,
+                 crypto_policy='none',
+                 prefer_inline=False,
+                 cleaner=lambda m: m):
+    matched = False
+    if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
+        wrapper = None
+        if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeSignEncryptWrapper
+        elif 'sign' in crypto_policy:
+            wrapper = OpenPGPMimeSigningWrapper
+        elif 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeEncryptingWrapper
+        if wrapper:
+            matched = True
+            msg = wrapper(config,
+                          sender=sender,
+                          cleaner=cleaner,
+                          recipients=rcpts
+                          ).wrap(msg, prefer_inline=prefer_inline)
+
+    return sender, rcpts, msg, matched, (not matched)
+
+
+_plugins.register_outgoing_email_content_transform('500_gnupg', email_content)
+_plugins.register_outgoing_email_crypto_transform('500_gnupg', email_crypto)
+
+##[ Misc. GPG-related API commands ]##########################################
 
 class GPGKeySearch(Command):
     """Search for a GPG Key."""

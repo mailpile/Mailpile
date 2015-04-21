@@ -430,6 +430,11 @@ class PluginManager(object):
             print ('FIXME: Deprecated use of %s at %s (issue #547)'
                    ) % (stack[1][3], where)
 
+    def _rhtf(self, kw_hash, term, function):
+        if term in kw_hash:
+            raise PluginError('Already registered: %s' % term)
+        kw_hash[term] = function
+
 
     ##[ Pluggable configuration ]#############################################
 
@@ -462,28 +467,75 @@ class PluginManager(object):
             dest[rname] = rules
 
 
+    ##[ Pluggable message transformations ]###################################
+
+    INCOMING_EMAIL_ENCRYPTION = {}
+    INCOMING_EMAIL_CONTENT = {}
+    OUTGOING_EMAIL_CONTENT = {}
+    OUTGOING_EMAIL_ENCRYPTION = {}
+
+    def _txf_in(self, transforms, config, msg, kwargs):
+        matched = 0
+        for name in sorted(transforms.keys()):
+            msg, match, cont = transforms[name](config, msg, **kwargs)
+            if match:
+                matched += 1
+            if not cont:
+                break
+        return msg, matched
+
+    def _txf_out(self, transforms, cfg, s, r, msg, kwa):
+        matched = 0
+        for name in sorted(transforms.keys()):
+            s, r, msg, match, cont = transforms[name](cfg, s, r, msg, **kwa)
+            if match:
+                matched += 1
+            if not cont:
+                break
+        return s, r, msg, matched
+
+    def incoming_email_crypto_transform(self, cfg, msg, **kwa):
+        return self._txf_in(self.INCOMING_EMAIL_ENCRYPTION, cfg, msg, kwa)
+
+    def incoming_email_content_transform(self, config, msg, **kwa):
+        return self._txf_in(self.INCOMING_EMAIL_CONTENT, config, msg, kwa)
+
+    def outgoing_email_content_transform(self, cfg, s, r, m, **kwa):
+        return self._txf_out(self.OUTGOING_EMAIL_CONTENT, cfg, s, r, m, kwa)
+
+    def outgoing_email_crypto_transform(self, cfg, s, r, m, **kwa):
+        return self._txf_out(self.OUTGOING_EMAIL_ENCRYPTION, cfg, s, r, m, kwa)
+
+    def register_incoming_email_crypto_transform(self, name, transform):
+        return self._rhtf(self.INCOMING_EMAIL_ENCRYPTION, name, transform)
+
+    def register_incoming_email_content_transform(self, name, transform):
+        return self._rhtf(self.INCOMING_EMAIL_CONTENT, name, transform)
+
+    def register_outgoing_email_content_transform(self, name, transform):
+        return self._rhtf(self.OUTGOING_EMAIL_CONTENT, name, transform)
+
+    def register_outgoing_email_crypto_transform(self, name, transform):
+        return self._rhtf(self.OUTGOING_EMAIL_ENCRYPTION, name, transform)
+
+
     ##[ Pluggable keyword extractors ]########################################
 
     DATA_KW_EXTRACTORS = {}
     TEXT_KW_EXTRACTORS = {}
     META_KW_EXTRACTORS = {}
 
-    def _rkwe(self, kw_hash, term, function):
-        if term in kw_hash:
-            raise PluginError('Already registered: %s' % term)
-        kw_hash[term] = function
-
     def register_data_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.DATA_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.DATA_KW_EXTRACTORS, term, function)
 
     def register_text_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.TEXT_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.TEXT_KW_EXTRACTORS, term, function)
 
     def register_meta_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.META_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.META_KW_EXTRACTORS, term, function)
 
     def get_data_kw_extractors(self):
         self._compat_check(strict=False)
