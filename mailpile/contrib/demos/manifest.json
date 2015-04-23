@@ -162,6 +162,13 @@
             "priority": "100"
         }
     ],
+    # Transforms mutate messages; same format as the mailbox section
+    "email_transforms": {
+        "outgoing_content": [],
+        "outgoing_crypto": [],
+        "incoming_crypto": [],
+        "incoming_content": []
+    },
     "contacts": {
         "importers": ["DemoVCardImporter"],
         "exporters": [],

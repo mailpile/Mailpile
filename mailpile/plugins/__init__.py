@@ -31,6 +31,18 @@ __all__ = [
 PLUGINS = __all__
 
 
+class EmailTransform(object):
+    """Base class for e-mail transforms"""
+    def __init__(self, config):
+        self.config = config
+
+    def TransformIncoming(self, *args, **kwargs):
+        return list(args[:]) + [False]
+
+    def TransformOutgoing(self, *args, **kwargs):
+        return list(args[:]) + [False, True]
+
+
 class PluginError(Exception):
     pass
 
@@ -116,7 +128,7 @@ class PluginManager(object):
                         assert(manifest.get('name') == subdir)
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
-                except (ValueError):
+                except (ValueError, AssertionError):
                     print 'Bad manifest: %s' % manifest_filename
                 except (OSError, IOError):
                     pass
@@ -125,6 +137,9 @@ class PluginManager(object):
 
     def available(self):
         return self.BUILTIN[:] + self.DISCOVERED.keys()
+
+    def loadable(self):
+        return self.BUILTIN[:] + self.RENAMED.keys() + self.DISCOVERED.keys()
 
     def _import(self, full_name, full_path):
         # create parents as necessary
@@ -214,7 +229,8 @@ class PluginManager(object):
                 _, manifest = self.DISCOVERED[plugin_name]
 
                 if sys.modules.has_key(package):
-                    for method_name in self._mf_path(manifest, 'lifecycle', 'shutdown'):
+                    for method_name in self._mf_path(manifest,
+                                                     'lifecycle', 'shutdown'):
                         method = self._get_method(package, method_name)
                         method(self.config)
             except:
@@ -370,15 +386,26 @@ class PluginManager(object):
                 else:
                     print 'FIXME: Un-routable URL in manifest %s' % url
 
+        # Register email content/crypto hooks
+        s = self
+        for which, reg in (
+            ('outgoing_content', s.register_outgoing_email_content_transform),
+            ('outgoing_crypto', s.register_outgoing_email_crypto_transform),
+            ('incoming_crypto', s.register_incoming_email_crypto_transform),
+            ('incoming_content', s.register_incoming_email_content_transform)
+        ):
+            for item in manifest_path('email_transforms', which):
+                name = '%3.3d_%s' % (int(item.get('priority', 999)), full_name)
+                reg(name, self._get_class(full_name, item['class']))
+
         # Register contact/vcard hooks
-        for importer in manifest_path('contacts', 'importers'):
-            self.register_vcard_importers(self._get_class(full_name, importer))
-        for exporter in manifest_path('contacts', 'exporters'):
-            self.register_contact_exporters(self._get_class(full_name,
-                                                            exporter))
-        for context in manifest_path('contacts', 'context'):
-            self.register_contact_context_providers(self._get_class(full_name,
-                                                                    context))
+        for which, reg in (
+            ('importers', self.register_vcard_importers),
+            ('exporters', self.register_contact_exporters),
+            ('context', self.register_contact_context_providers)
+        ):
+            for item in manifest_path('contacts', which):
+                reg(self._get_class(full_name, item))
 
         # Register periodic jobs
         def reg_job(info, spd, register):
@@ -477,7 +504,8 @@ class PluginManager(object):
     def _txf_in(self, transforms, config, msg, kwargs):
         matched = 0
         for name in sorted(transforms.keys()):
-            msg, match, cont = transforms[name](config, msg, **kwargs)
+            txf = transforms[name](config)
+            msg, match, cont = txf.TransformIncoming(msg, **kwargs)
             if match:
                 matched += 1
             if not cont:
@@ -487,7 +515,8 @@ class PluginManager(object):
     def _txf_out(self, transforms, cfg, s, r, msg, kwa):
         matched = 0
         for name in sorted(transforms.keys()):
-            s, r, msg, match, cont = transforms[name](cfg, s, r, msg, **kwa)
+            txf = transforms[name](cfg)
+            s, r, msg, match, cont = txf.TransformOutgoing(s, r, msg, **kwa)
             if match:
                 matched += 1
             if not cont:

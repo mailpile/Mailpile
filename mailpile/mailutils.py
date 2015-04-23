@@ -176,21 +176,32 @@ def ExtractEmailAndName(string):
     return email, (name or email)
 
 
-def CleanMessage(config, msg):
-    replacements = []
+def CleanHeaders(msg, copy_all=True, tombstones=False):
+    clean_headers = []
     for key, value in msg.items():
         lkey = key.lower()
 
         # Remove headers we don't want to expose
         if (lkey.startswith('x-mp-internal-') or
                 lkey in ('bcc', 'encryption', 'attach-pgp-pubkey')):
-            replacements.append((key, None))
+            if tombstones:
+                clean_headers.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
         elif lkey in ('from', 'to', 'cc', 'reply-to'):
             if '#' in value:
-                replacements.append((key, re.sub(
+                clean_headers.append((key, re.sub(
                     r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
+            elif copy_all:
+                clean_headers.append((key, value))
+        elif copy_all:
+            clean_headers.append((key, value))
+
+    return clean_headers
+
+
+def CleanMessage(config, msg):
+    replacements = CleanHeaders(msg, copy_all=False, tombstones=True)
 
     for key, val in replacements:
         del msg[key]
@@ -1121,8 +1132,8 @@ class Email(object):
                 pass
 
             count += 1
-            if (part.get('content-disposition', 'inline') == 'inline'
-                    and mimetype in ('text/plain', 'text/html')):
+            if (part.get('content-disposition', 'inline')[:6] == 'inline'
+                    and mimetype.startswith('text/')):
                 payload, charset = self.decode_payload(part)
                 start = payload[:100].strip()
 

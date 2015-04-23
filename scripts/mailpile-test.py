@@ -52,6 +52,7 @@ if '-v' not in sys.argv:
 
 cfg.plugins.load('demos', process_manifest=True)
 cfg.plugins.load('hacks', process_manifest=True)
+cfg.plugins.load('experiments', process_manifest=True)
 cfg.plugins.load('smtp_server', process_manifest=True)
 
 

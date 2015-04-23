@@ -1372,7 +1372,7 @@ class ConfigManager(ConfigDict):
             os.path.join(self.workdir, 'plugins')
         ])
         self.sys.plugins.rules['_any'][self.RULE_CHECKER
-                                       ] = [None] + self.plugins.available()
+                                       ] = [None] + self.plugins.loadable()
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
@@ -1433,7 +1433,7 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self.set_rules(self._rules_source)
             self.sys.plugins.rules['_any'][
-                self.RULE_CHECKER] = [None] + self.plugins.available()
+                self.RULE_CHECKER] = [None] + self.plugins.loadable()
 
     def load_plugins(self, session):
         with self._lock:
