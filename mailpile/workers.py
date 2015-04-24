@@ -1,4 +1,5 @@
 import threading
+import traceback
 import time
 
 import mailpile.util
@@ -90,8 +91,9 @@ class Cron(threading.Thread):
         Thread main function for a Cron instance.
 
         """
-        self.ALIVE = True
         # Main thread loop
+        with self.session.config.index_check:
+            self.ALIVE = True
         while self.ALIVE and not mailpile.util.QUITTING:
             tasksToBeExecuted = []  # Contains tuples (name, func)
             now = time.time()
@@ -220,6 +222,7 @@ class Worker(threading.Thread):
         return (self.ALIVE and not mailpile.util.QUITTING)
 
     def _failed(self, session, name, task, e):
+        self.session.ui.debug(traceback.format_exc())
         self.session.ui.error(('%s failed in %s: %s'
                                ) % (name, self.name, e))
         if session:

@@ -227,18 +227,26 @@ class SimpleVCard(object):
     >>> vcard = SimpleVCard(VCardLine(name='fn', value='Bjarni'),
     ...                     VCardLine(name='email', value='bre@example.com'),
     ...                     VCardLine(name='email', value='bre2@example.com'),
-    ...                     VCardLine('EMAIL;TYPE=PREF:bre@evil.com'))
+    ...                     VCardLine('EMAIL;TYPE=PREF:bre@evil.com'),
+    ...                     client='default')
 
     The preferred (or Nth) line of any type can be retrieved using
     the get method. Lines are sorted by (preference, card order).
     >>> vcard.get('email').value
     u'bre@evil.com'
     >>> vcard.get('email', n=2).value
-    u'bre2@example.com'
+    u'bre@example.com'
     >>> vcard.get('email', n=4).value
     Traceback (most recent call last):
         ...
     IndexError: ...
+
+    If the client attribute is specified on creation, all lines will
+    have a PID attribute.
+    >>> vcard.get('clientpidmap').value
+    u'990;default'
+    >>> vcard.get('email')['pid']
+    '990.1'
 
     There are shorthand methods for accessing or setting the values of
     the full name and e-mail lines:
@@ -317,13 +325,20 @@ class SimpleVCard(object):
         'CALURI': ['*', None, None],
     }
     VCARD4_REQUIRED = ('VERSION', 'FN')
+    MAX_SRC_PID = 990
 
     def __init__(self, *lines, **kwargs):
         self.filename = None
         self._lines = []
         self._lock = VCardRLock()
+        self._default_src_pid = None
         if 'data' in kwargs and kwargs['data'] is not None:
             self.load(data=kwargs['data'])
+        if 'client' in kwargs and kwargs['client']:
+            self.add(VCardLine(name='CLIENTPIDMAP',
+                               value='%s;%s' % (self.MAX_SRC_PID,
+                                                kwargs['client'])))
+            self._default_src_pid = self.MAX_SRC_PID
         self.add(*lines)
 
     def _cardinality(self, vcl):
@@ -332,7 +347,8 @@ class SimpleVCard(object):
         else:
             return self.VCARD4_KEYS.get(vcl.name.upper(), [''])[0]
 
-    UNREMOVABLE = ('x-mailpile-rid', 'clientpidmap', 'version')
+    UNREMOVABLE = ('x-mailpile-rid', 'x-mailpile-kind-hint',
+                   'clientpidmap', 'version')
 
     def remove(self, *line_ids):
         """
@@ -358,7 +374,18 @@ class SimpleVCard(object):
                     removed += 1
         return removed
 
-    def add(self, *vcls):
+    def _handle_pidmap_args(self, **kwargs):
+        src_id = kwargs.get('client', self._default_src_pid)
+        if src_id:
+            create = kwargs.get('client_create', False)
+            pid, pidmap, ver, is_new = self.get_pidmap(src_id, create=create)
+            if kwargs.get('client_increment_version', True):
+                ver += 1
+            return pid, pidmap, ver, is_new
+        else:
+            return None, None, None, None
+
+    def add(self, *vcls, **kwargs):
         """
         Add one or more lines to a VCard.
 
@@ -373,6 +400,7 @@ class SimpleVCard(object):
             ...
         ValueError: Not allowed on card: evil
         """
+        src_pid, pidmap, version, is_new = self._handle_pidmap_args(**kwargs)
         for vcl in vcls:
             with self._lock:
                 if not vcl.name:
@@ -385,10 +413,24 @@ class SimpleVCard(object):
                 if cardinality in ('1', '*1'):
                     if count:
                         raise ValueError('Already on card: %s' % vcl.name)
+
+                # Special case to avoid duplicate CLIENTPIDMAP lines
+                if vcl.name == 'clientpidmap':
+                    cpm = self.get_clientpidmap()
+                    pid, src_id = vcl.value.split(';', 1)
+                    if src_id in cpm:
+                        if int(pid) != cpm[src_id]['pid']:
+                            raise ValueError('CLIENTPIDMAP pid mismatch!')
+                        continue
+
+                if (src_pid is not None and
+                        vcl.name not in self.UNREMOVABLE and
+                        'pid' not in vcl):
+                    vcl.set_attr('pid', '%s.%s' % (src_pid, version))
                 self._lines.append(vcl)
                 vcl.line_id = len(self._lines)
 
-    def set_line(self, ln, vcl):
+    def set_line(self, ln, vcl, **kwargs):
         """
         Modify one line of a VCard.
 
@@ -403,6 +445,13 @@ class SimpleVCard(object):
         """
         if not (ln > 0 and ln <= len(self._lines)):
             raise ValueError(_('Line number %s is out of range') % ln)
+
+        src_pid, pidmap, version, is_new = self._handle_pidmap_args(**kwargs)
+        if (src_pid is not None and
+                vcl.name not in self.UNREMOVABLE and
+                'pid' not in vcl):
+            vcl.set_attr('pid', '%s.%s' % (src_pid, version))
+
         with self._lock:
             vcl.line_id = ln
             self._lines[ln-1] = vcl
@@ -425,20 +474,58 @@ class SimpleVCard(object):
         cpm = {}
         for pm in self.get_all('clientpidmap'):
             pid, guid = pm.value.split(';')
-            cpm[guid] = cpm[int(pid)] = {
-                'pid': int(pid),
+            pid = int(pid)
+            cpm[guid] = cpm[pid] = {
+                'pid': pid,
                 'lines': []
             }
         for vcl in self.as_lines():
             if 'pid' in vcl:
-                pv = [v.split('.', 1) for v in vcl['pid'].split(',')]
+                pv = [v.strip().split('.', 1) for v in vcl['pid'].split(',')]
                 for pid, version in pv:
-                    try:
-                        cpm[int(pid)]['lines'].append((int(version), vcl))
-                    except KeyError, e:
-                        print ("KNOWN BUG IN VERSIONING CODE. "
-                               "[%s] [pid: %s] [cpm: %s]") % (e, pid, cpm)
+                    pid = int(pid)
+                    if pid in cpm:
+                        cpm[pid]['lines'].append((int(version), vcl))
+                    else:
+                        pass  # FIXME: Something is weird, but we have no
+                              #        repair strategy, so nothing to say.
         return cpm
+
+    def get_pidmap(self, src_id, create=False):
+        """
+        Fetch the pidmap, src_pid and version for a given src_id, optionally
+        creating new CLIENTPIDMAP entries on demand.
+        """
+        with self._lock:
+            cpm = self.get_clientpidmap()
+            pidmap = cpm.get(src_id, False)
+            if pidmap:
+                src_pid = pidmap['pid']
+                is_new = False
+            elif create:
+                # A tad inefficient, but avoids artificial ID inflation
+                # and puts a bound on how insanely huge a VCard can get.
+                pids = [p['pid'] for p in cpm.values()]
+                src_pid = None
+                for pid in range(1, self.MAX_SRC_PID):  # Skip MAX, is default
+                    if pid not in pids:
+                        src_pid = pid
+                        break
+                if src_pid is None:
+                    raise ValueError("Client PID map is too big")
+
+                self.add(VCardLine(name='clientpidmap',
+                                   value='%s;%s' % (src_pid, src_id)))
+                pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
+                is_new = True
+            else:
+                raise KeyError('No such CLIENTPIDMAP: %s' % src_id)
+
+            version = 0
+            for ver, ol in pidmap['lines'][:]:
+                version = max(ver, version)
+
+            return src_pid, pidmap, version, is_new
 
     def merge(self, src_id, lines):
         """
@@ -451,6 +538,7 @@ class SimpleVCard(object):
         ...                            value='1;thisisauid'))
         >>> vc.merge('thisisauid', [VCardLine(name='fn', value='Bjarni'),
         ...                         VCardLine(name='x-a', value='b')])
+        1
         >>> vc.get('x-a')['pid']
         '1.3'
         >>> vc.get('fn')['pid']
@@ -463,10 +551,12 @@ class SimpleVCard(object):
         u'bre@foo'
 
         >>> vc.merge('otheruid', [VCardLine(name='x-b', value='c')])
+        2
         >>> vc.get('x-b')['pid']
         '2.1'
 
         >>> vc.merge('thisisauid', [VCardLine(name='fn', value='Inrajb')])
+        3
         >>> vc.get('fn')['pid']
         '1.4'
         >>> vc.fn
@@ -490,18 +580,14 @@ class SimpleVCard(object):
         if not lines:
             return
 
+        lines = [l for l in lines if not l.name in self.UNREMOVABLE]
+        changes = 0
         with self._lock:
             # First, we figure out which CLIENTPIDMAP applies, if any
-            cpm = self.get_clientpidmap()
-            pidmap = cpm.get(src_id)
-            if pidmap:
-                src_pid = pidmap['pid']
-            else:
-                pids = [p['pid'] for p in cpm.values()]
-                src_pid = max([int(p) for p in pids] + [0]) + 1
-                self.add(VCardLine(name='clientpidmap',
-                                   value='%s;%s' % (src_pid, src_id)))
-                pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
+            src_pid, pidmap, version, is_new = self.get_pidmap(src_id,
+                                                               create=True)
+            if is_new:
+                changes += 1
 
             # Deduplicate the lines, but give them a rank if they are repeated
             lines.sort(key=lambda k: (k.name, k.value))
@@ -510,12 +596,10 @@ class SimpleVCard(object):
 
             def rankit(rank):
                 if rank:
+                    rank += int(dedup[-1].get('x-rank', 0))
                     dedup[-1].set_attr('x-rank', rank)
 
             for line in lines[1:]:
-                if line.name in self.UNREMOVABLE:
-                    # Do not merge these
-                    continue
                 if (dedup[-1].name == line.name and
                         dedup[-1].value == line.value):
                     rank += 1
@@ -529,30 +613,41 @@ class SimpleVCard(object):
             # 1st, iterate through existing lines for this source, removing
             # all that differ from our input. Remove any input lines which
             # are identical to those already on this card.
-            this_version = 0
-            for ver, ol in cpm[src_pid]['lines'][:]:
-                this_version = max(ver, this_version)
+            to_remove = []
+            for ver, ol in pidmap['lines'][:]:
                 match = [l for l in lines if (l
                                               and l.name == ol.name
                                               and l.value == ol.value)]
                 for l in match:
                     lines.remove(l)
                 if not match:
-                    # FIXME: Actually, we should JUST remove our pid and if
-                    #        no pids are left, remove the line itself.
-                    self.remove(ol.line_id)
+                    pids = [pid for pid in ol.get('pid', '').split(',')
+                            if pid and int(pid.split('.')[0]) != src_pid]
+                    if pids:
+                        ol.set_attr('pid', ','.join(pids))
+                        changes += 1
+                    elif not ol.get('pref') and ol.name not in ('email', ):
+                        # Note: We never remove e-mail addresses or a user's
+                        # preferred settings. That just causes trouble.
+                        self.remove(ol.line_id)
+                        changes += 1
 
-            # 2nd, iterate through provided lines and copy them.
-            this_version += 1
+            # 2nd, iterate through any lines that are left and copy them.
+            version += 1
             for vcl in lines:
-                pids = [pid for pid in vcl.get('pid', '').split(',')
-                        if pid and pid.split('.')[0] != src_pid]
-                pids.append('%s.%s' % (src_pid, this_version))
-                vcl.set_attr('pid', ','.join(pids))
-                self.add(vcl)
+                old = [ol for ol in self.get_all(vcl.name)
+                       if ol.value == vcl.value]
+                for ol in old:
+                    pids = [pid for pid in ol.get('pid', '').split(',')
+                            if pid and int(pid.split('.')[0]) != src_pid]
+                    pids.append('%s.%s' % (src_pid, version))
+                    ol.set_attr('pid', ','.join(sorted(pids)))
+                if not old:
+                    vcl.set_attr('pid', '%s.%s' % (src_pid, version))
+                    self.add(vcl)
+                    changes += 1
 
-            # FIXME: 3rd, collapse lines from multiple sources that have
-            #        identical values?
+        return changes
 
     def get_all(self, key, sort=False):
         with self._lock:
@@ -561,27 +656,42 @@ class SimpleVCard(object):
             self._sort_lines(lines)
         return lines
 
-    def get(self, key, n=0, prefer=None):
+    def get(self, key, default=None, n=0, prefer=None):
         lines = self.get_all(key)
         if prefer:
             for k, v in prefer.iteritems():
                 llines = [l for l in lines if l.get(k) == v]
                 if llines:
                     lines = llines
-        return self._sort_lines(lines)[n]
+        if lines:
+            return self._sort_lines(lines)[n]
+        elif default is not None:
+            return default
+        else:
+            raise IndexError(n)
 
     def _sort_lines(self, lines=None):
         lines = self._lines if (lines is None) else lines
 
         def sortkey(l):
             if not l:
-                return (3, 0, 0, 0)
+                return (3, 0, 0, 0, 0)
+
+            preferred = ('pref' in l or 'pref' in l.get('type', '').lower())
+            versions = [[int(v) for v in pid.split('.')]
+                        for pid in l.get('pid', '').split(',') if pid]
+
             return ((l.name == 'version') and 1 or 2,
                     (l.name),
-                    (1 - ((('pref' in l or
-                            'pref' in l.get('type', '').lower()) and 100 or 0)
-                          or (50 - (l.get('pid', 0) and 50))
-                          or int(l.get('x-rank', 0)))),
+                    # This is the important line - here we give elements a
+                    # boost depending on various factors. The pid factor is
+                    # what boosts users preferences above others, as the
+                    # MailpileVCard assigns a very high PID to that source.
+                    (1 - ((10000 if preferred else 0) +
+                          (int(l.get('x-rank', 0)) * 10) +
+                          sum((pid if (pid != self._default_src_pid) else 1)
+                              for pid, version in versions))),
+                    (-len(l.value)),
                     (l.line_id))
 
         with self._lock:
@@ -666,8 +776,21 @@ class MailpileVCard(SimpleVCard):
     """
     HISTORY_MAX_AGE = 31 * 24 * 3600
 
+    DEFAULT_CLIENT  = 'default'
+    PRIORITY_CLIENT = 'priority'
+    USER_CLIENT     = 'priority'  # An alias to make code more readable
+
     def __init__(self, *lines, **kwargs):
+        if 'client' not in kwargs:
+            kwargs['client'] = self.DEFAULT_CLIENT
         SimpleVCard.__init__(self, *lines, **kwargs)
+
+        # Add the priority CLIENTPIDMAP line, for user settings
+        self.add(VCardLine(name='CLIENTPIDMAP',
+                           value='%s;%s' % (self.MAX_SRC_PID + 1,
+                                            self.PRIORITY_CLIENT)))
+        self._priority_client = self.MAX_SRC_PID + 1
+
         self.configure_encryption(kwargs.get('config'))
 
     def configure_encryption(self, config):
@@ -773,7 +896,7 @@ class MailpileVCard(SimpleVCard):
                 rid = self.get('x-mailpile-rid').value
             except IndexError:
                 crap = '%s %s' % (self.email, random.randint(0, 0x1fffffff))
-                rid = b64w(sha1b64(crap)).lower()
+                rid = b64w(sha1b64(crap)).lower()[:12]
                 self.add(VCardLine(name='x-mailpile-rid', value=rid))
         return rid
 
@@ -796,7 +919,7 @@ class MailpileVCard(SimpleVCard):
         for k in vcl.keys():
             if k not in ('line_id', ):
                 if k.startswith('x-mailpile-'):
-                    d[k.replace('x-mailpile-', '')] = vcl[k]
+                    d[k[len('x-mailpile-'):]] = vcl[k]
                 else:
                     d[k] = vcl[k]
         return d
@@ -991,7 +1114,7 @@ class VCardStore(dict):
         self.loaded = False
         self._lock = VCardRLock()
 
-    def index_vcard(self, card):
+    def index_vcard(self, card, collision_callback=None):
         attrs = (['email'] if (card.kind in self.KINDS_PEOPLE)
                  else ['nickname'])
         with self._lock:
@@ -999,6 +1122,10 @@ class VCardStore(dict):
                 for n, vcl in enumerate(card.get_all(attr, sort=True)):
                     key = vcl.value.lower()
                     if n == 0 or key not in self:
+                        if collision_callback and key in self:
+                            existing = self[key].get(attr, 0)
+                            if existing is not 0 and existing.value == key:
+                                collision_callback(key, card)
                         self[key] = card
             self[card.random_uid] = card
 
@@ -1023,17 +1150,32 @@ class VCardStore(dict):
                 self.loaded = True
                 prfs = self.config.prefs
                 key_func = lambda: self.config.master_key
-                for fn in sorted(os.listdir(self.vcard_dir)):
+                paths = [(fn, os.path.join(self.vcard_dir, fn))
+                         for fn in os.listdir(self.vcard_dir)
+                         if fn.endswith('.vcf')]
+                # Due to the way the eclipsing cleaner works, we want to
+                # load the most interesting VCards first - so we sort by
+                # size as a rough approximation of that.
+                paths.sort(key=lambda k: -os.path.getsize(k[1]))
+                for fn, path in paths:
                     if mailpile.util.QUITTING:
                         return
                     try:
                         c = MailpileVCard(config=self.config)
-                        c.load(os.path.join(self.vcard_dir, fn),
-                               config=self.config)
-                        self.index_vcard(c)
-                        if session:
-                            session.ui.mark('Loaded %s from %s'
-                                            % (c.email, fn))
+                        c.load(path, config=self.config)
+                        try:
+                            def ccb(key, card):
+                               if session:
+                                   session.ui.error('DISABLING %s, eclipses %s'
+                                                    % (path, key))
+                               os.rename(path, path + '.bak')
+                               raise ValueError('Eclipsing')
+                            self.index_vcard(c, collision_callback=ccb)
+                            if session:
+                                session.ui.mark('Loaded %s from %s'
+                                                % (c.email, fn))
+                        except ValueError:
+                            pass
                     except KeyboardInterrupt:
                         raise
                     except ValueError:
@@ -1246,10 +1388,17 @@ class VCardImporter(VCardPluginClass):
     MERGE_BY = ['email']
     UPDATE_INDEX = False
 
-    def import_vcards(self, session, vcard_store):
-        all_vcards = self.get_vcards()
-        updated = []
+    def import_vcards(self, session, vcard_store, **kwargs):
+        session.ui.mark(_('Generating new VCards'))
+        all_vcards = self.get_vcards(**kwargs)
+        all_vcards.sort(key=lambda k: (k.email, k.random_uid))
+        counter = len(all_vcards)
+
+        updated = {}
         for vcard in all_vcards:
+            session.ui.mark(_('Merging %s') % vcard.email)
+            counter += 1
+
             # Some importers want to update the index's idea of what names go
             # with what e-mail addresses. Not all do, but some...
             if (self.UPDATE_INDEX and vcard.fn and
@@ -1264,21 +1413,51 @@ class VCardImporter(VCardPluginClass):
                 for vcl in vcard.get_all(merge_by):
                     existing.extend(
                         vcard_store.find_vcards_with_line(merge_by, vcl.value))
+            last = ''
+            existing.sort(key=lambda k: (k.email, k.random_uid))
             for card in existing:
-                card.merge(self.config.guid, vcard.as_lines())
-                updated.append(card)
+                if card.random_uid == last:
+                    continue
+                last = card.random_uid
+                try:
+                    counter += 1
+                    vcard_store.deindex_vcard(card)
+                    if card.merge(self.config.guid, vcard.as_lines()):
+                        updated[card.random_uid] = card
+                    vcard_store.index_vcard(card)
+                except ValueError:
+                    session.ui.error(_('Failed to merge VCard %s into %s'
+                                       ) % (vcard.email, card.random_uid))
 
             # Otherwise, create new ones.
             if not existing:
-                new_vcard = MailpileVCard(config=self.config)
-                new_vcard.merge(self.config.guid, vcard.as_lines())
-                vcard_store.add_vcards(new_vcard)
-                updated.append(new_vcard)
-                play_nice_with_threads()
+                try:
+                    new_vcard = MailpileVCard(config=self.config)
+                    new_vcard.merge(self.config.guid, vcard.as_lines())
+                    kindhint = vcard.get('x-mailpile-kind-hint', 0)
+                    if kindhint is not 0:
+                        new_vcard.add(VCardLine(name='kind',
+                                                value=kindhint.value))
+                    vcard_store.add_vcards(new_vcard)
+                    updated[new_vcard.random_uid] = new_vcard
+                    counter += 1
+                except ValueError:
+                    session.ui.error(_('Failed to create new VCard for %s'
+                                       ) % (vcard.email, card.random_uid))
 
-        for vcard in set(updated):
+            if counter > 100:
+                if not kwargs.get('fast'):
+                    play_nice_with_threads()
+                    counter = 0
+
+        session.ui.mark(_('Saving %d updated cards') % len(updated))
+        for vcard in updated.values():
             vcard.save()
-            play_nice_with_threads()
+            if not kwargs.get('fast'):
+                counter += 1
+                if counter % 10 == 0:
+                    play_nice_with_threads()
+
         return len(updated)
 
     def get_vcards(self):

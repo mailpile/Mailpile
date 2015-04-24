@@ -309,7 +309,8 @@ class VCardAddLines(VCardCommand):
         'name': 'Line name',
         'value': 'Line value',
         'replace': 'int=replace line by number',
-        'replace_all': 'If nonzero, replaces all lines'
+        'replace_all': 'If nonzero, replaces all lines',
+        'client': 'Source of this change'
     }
 
     def command(self):
@@ -336,21 +337,23 @@ class VCardAddLines(VCardCommand):
         if not vcard:
             return self._error('%s not found: %s' % (self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
+        client = self.data.get('client', [vcard.USER_CLIENT])[0]
         try:
             for l in lines:
                 if l[0] == '=':
                     l = l[1:]
                     name = l.split(':', 1)[0]
                     existing = [ex._line_id for ex in vcard.get_all(name)]
-                    vcard.add(VCardLine(l.strip()))
+                    vcard.add(VCardLine(l.strip()), client=client)
                     vcard.remove(*existing)
 
                 elif '=' in l[:5]:
                     ln, l = l.split('=', 1)
-                    vcard.set_line(int(ln.strip()), VCardLine(l.strip()))
+                    vcard.set_line(int(ln.strip()), VCardLine(l.strip()),
+                                   client=client)
 
                 else:
-                    vcard.add(VCardLine(l))
+                    vcard.add(VCardLine(l), client=client)
 
             vcard.save()
             return self._success(_("Added %d lines") % len(lines),

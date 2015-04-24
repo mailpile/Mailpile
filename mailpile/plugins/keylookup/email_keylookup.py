@@ -1,3 +1,4 @@
+import datetime
 import time
 import copy
 
@@ -56,7 +57,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
-            attachments = email.get_message_tree("attachments")["attachments"]
+            attachments = email.get_message_tree(want=["attachments"]
+                                                 )["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
                     key = part["part"].get_payload(None, True)
@@ -67,6 +69,16 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                         break
             self.key_cache[messageid] = keys
         return keys
+
+    def _get_creation_time(self, m):
+        """Compatibility shim, for differing versions of pgpdump"""
+        try:
+            return m.creation_time
+        except AttributeError:
+            try:
+                return m.datetime
+            except AttributeError:
+                return datetime.datetime(1970, 1, 1, 00, 00, 00)
 
     def _get_keydata(self, data):
         results = []
@@ -89,7 +101,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                                 else '')
                     results.append({
                         "fingerprint": m.fingerprint,
-                        "created": m.datetime,
+                        "created": self._get_creation_time(m),
                         "validity": validity,
                         "keytype_name": (m.pub_algorithm or '').split()[0],
                         "keysize": size,

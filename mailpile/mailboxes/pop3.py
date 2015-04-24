@@ -8,6 +8,7 @@ import time
 from mailbox import Mailbox, Message
 
 import mailpile.mailboxes
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
@@ -48,15 +49,17 @@ class POP3Mailbox(Mailbox):
                 except poplib.error_proto:
                     self._pop3 = None
 
-            if self.conn_cls:
-                self._pop3 = self.conn_cls(self.host, self.port or 110)
-                self.secure = self.use_ssl
-            elif self.use_ssl:
-                self._pop3 = poplib.POP3_SSL(self.host, self.port or 995)
-                self.secure = True
-            else:
-                self._pop3 = poplib.POP3(self.host, self.port or 110)
-                self.secure = False
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_POP3]):
+                if self.conn_cls:
+                    self._pop3 = self.conn_cls(self.host, self.port or 110)
+                    self.secure = self.use_ssl
+                elif self.use_ssl:
+                    self._pop3 = poplib.POP3_SSL(self.host, self.port or 995)
+                    self.secure = True
+                else:
+                    self._pop3 = poplib.POP3(self.host, self.port or 110)
+                    self.secure = False
+
             if self.debug:
                 self._pop3.set_debuglevel(self.debug)
 

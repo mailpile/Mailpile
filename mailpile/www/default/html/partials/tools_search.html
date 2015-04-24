@@ -1,0 +1,110 @@
+{%- set hard_coded_display_modes = safe('
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="navigation-icon icon-eye"></span> ' + _("Display") + '</a>
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
+        <li role="presentation">
+          <a class="change-view-size" data-view_size="snug" href="#">' + _("Snug") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-view-size" data-view_size="cozy" href="#">' + _("Cozy") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-view-size" data-view_size="comfy" href="#">' + _("Comfy") + '</a>
+        </li>
+      </ul>
+    </li>
+') -%}
+
+{% if "in:inbox" in result.search_terms %}
+{%- set search_actions_1 = '
+  <li class="hide">
+    <a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '">
+      <span class="icon icon-tag"></span>
+    </a>
+  </li>
+  <li class="hide">
+    <a class="bulk-action-archive" href="#" title="' + _("Archive Selection") + '">
+      <span class="icon icon-archive"></span>
+    </a>
+  </li>' -%}
+{% else %}
+{%- set search_actions_1 = '
+  <li class="hide">
+    <a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '">
+      <span class="icon icon-tag"></span>
+    </a>
+  </li>
+' -%}
+{% endif %}
+{%- set search_actions_2 = '
+  <li class="hide">
+    <a class="bulk-action-unread" href="#" title="' + _("Unread") + '">
+      <span class="icon icon-notifications"></span>
+    </a>
+  </li>
+  <li class="hide">
+    <a class="bulk-action-read" href="#" title="' + _("Read") + '">
+      <span class="icon icon-checkmark"></span>
+    </a>
+  </li>
+' -%}
+{% if "in:spam" in result.search_terms %}
+{%- set search_actions_3 = '
+  <li class="hide">
+    <a class="bulk-action-spam" data-action="remove" href="#" title="' + _("Move out of Spam") + '">
+      <span class="icon-not-spam"></span>
+    </a>
+  </li>
+' -%}
+{% else %}
+{%- set search_actions_3 = '
+  <li class="hide">
+    <a class="bulk-action-spam" href="#" title="' + _("Move to Spam") + '">
+      <span class="icon-spam"></span>
+    </a>
+  </li>
+' -%}
+{% endif %}
+{%- set search_actions_4 = '
+  <li class="hide">
+    <a class="bulk-action-trash" href="#" title="' + _("Delete Messages") + '">
+      <span class="icon icon-trash"></span>
+    </a>
+  </li>
+' -%}
+{%- set hard_coded_selection_actions = safe(search_actions_1 + search_actions_2 + search_actions_3 + search_actions_4) -%}
+
+{%- set display_refiners = [{
+    'name': 'display_all',
+    'icon': 'inbox',
+    'url': '/search/',
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'text': _("All"),
+    'description': _("All messages")
+},{
+    'name': 'unread',
+    'icon': 'new',
+    'url': '/search/',
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'url_args_add': [['qr', 'is:unread']],
+    'text': _("Unread"),
+    'description': _("Unread messages")
+},{
+    'name': 'has_attachment',
+    'icon': 'attachment',
+    'url': '/search/',
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'url_args_add': [['qr', 'has:attachment']],
+    'text': _("Attachments"),
+    'description': _("Messages with attachments")
+}]
+-%}
+{%- set display_modes = [{
+    'name': 'display_list',
+    'icon': 'list',
+    'url': '/search/',
+    'text': _("List"),
+    'description': _("List view")
+}]
+-%}
+{%- include('partials/tools_default.html') -%}

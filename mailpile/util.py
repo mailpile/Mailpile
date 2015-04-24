@@ -47,7 +47,7 @@ PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                           ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
 
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'http', 'https', 'i', 'in', 'is', 'it',
+                'has', 'i', 'in', 'is', 'it',
                 'mailto', 'me',
                 'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
 
@@ -713,7 +713,8 @@ def RunTimed(timeout, func, *args, **kwargs):
         try:
             result.append(func(*args, **kwargs))
         except:
-            exception.append((sys.exc_type, sys.exc_value, sys.exc_traceback))
+            et, ev, etb = sys.exc_info()
+            exception.append((et, ev, etb))
     RunTimedThread(func.__name__, work).run_timed(timeout)
     if exception:
         t, v, tb = exception[0]

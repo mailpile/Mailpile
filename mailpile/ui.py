@@ -58,14 +58,25 @@ class NoColors:
     MAGENTA = ''
     CYAN = ''
     FORMAT = "%s%s"
+    FORMAT_READLINE = "%s%s"
     RESET = ''
     LINE_BELOW = ''
+
+    def __init__(self):
+        self.lock = UiRLock()
+
+    def __enter__(self, *args, **kwargs):
+        return self.lock.__enter__()
+
+    def __exit__(self, *args, **kwargs):
+        return self.lock.__exit__(*args, **kwargs)
 
     def max_width(self):
         return 79
 
-    def color(self, text, color='', weight=''):
-        return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
+    def color(self, text, color='', weight='', readline=False):
+        return '%s%s%s' % ((self.FORMAT_READLINE if readline else self.FORMAT)
+                           % (color, weight), text, self.RESET)
 
     def replace_line(self, text, chars=None):
         pad = ' ' * max(0, min(self.max_width(),
@@ -79,7 +90,8 @@ class NoColors:
         pass
 
     def write(self, data):
-        sys.stderr.write(data)
+        with self:
+            sys.stderr.write(data)
 
     def check_max_width(self):
         pass
@@ -98,6 +110,7 @@ class ANSIColors(NoColors):
     CYAN = '36'
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
+    FORMAT_READLINE = "\001\x1B[%s%sm\002"
 
     CURSOR_UP = "\x1B[1A"
     CURSOR_DN = "\x1B[1B"
@@ -106,6 +119,7 @@ class ANSIColors(NoColors):
     CLEAR_LINE = "\x1B[2K"
 
     def __init__(self):
+        NoColors.__init__(self)
         self.check_max_width()
 
     def replace_line(self, text, chars=None):
@@ -154,6 +168,7 @@ class Completer(object):
 class UserInteraction:
     """Log the progress and performance of individual operations"""
     MAX_BUFFER_LEN = 150
+    JSON_WRAP_TYPES = ('jhtml', 'jjs', 'jtxt', 'jcss', 'jxml', 'jrss')
 
     LOG_URGENT = 0
     LOG_RESULT = 5
@@ -166,10 +181,10 @@ class UserInteraction:
 
     LOG_PREFIX = ''
 
+
     def __init__(self, config, log_parent=None, log_prefix=None):
-        self.log_parent = log_parent
         self.log_buffer = []
-        self.log_buffering = False
+        self.log_buffering = 0
         self.log_level = self.LOG_ALL
         self.log_prefix = log_prefix or self.LOG_PREFIX
         self.interactive = False
@@ -185,6 +200,15 @@ class UserInteraction:
             'even_odd': 'odd',
             'mailpile_size': 0
         }
+
+        # Short-circuit and avoid infinite recursion in parent logging.
+        self.log_parent = log_parent
+        recurse = 0
+        while self.log_parent and self.log_parent.log_parent:
+            self.log_parent = self.log_parent.log_parent
+            recurse += 1
+            if recurse > 10:
+                self.log_parent = None
 
     # Logging
 
@@ -214,7 +238,7 @@ class UserInteraction:
     def _display_log(self, text, level=LOG_URGENT):
         if not text.startswith(self.log_prefix):
             text = '%slog(%s): %s' % (self.log_prefix, level, text)
-        if self.log_parent:
+        if self.log_parent is not None:
             self.log_parent.log(level, text)
         else:
             self.term.write(self._fmt_log(text, level=level))
@@ -223,7 +247,7 @@ class UserInteraction:
         if text and 'log' in self.config.sys.debug:
             if not text.startswith(self.log_prefix):
                 text = '%slog(%s): %s' % (self.log_prefix, level, text)
-            if self.log_parent:
+            if self.log_parent is not None:
                 return self.log_parent.log(level, text)
             else:
                 self.term.write(self._fmt_log(text, level=level))
@@ -241,12 +265,17 @@ class UserInteraction:
             pass
 
     def block(self):
-        self._display_log('')
-        self.log_buffering = True
+        with self.term:
+            self._display_log('')
+            self.log_buffering += 1
 
-    def unblock(self):
-        self.log_buffering = False
-        self.flush_log()
+    def unblock(self, force=False):
+        with self.term:
+            if self.log_buffering <= 1 or force:
+                self.log_buffering = 0
+                self.flush_log()
+            else:
+                self.log_buffering -= 1
 
     def log(self, level, message):
         if self.log_buffering:
@@ -274,11 +303,9 @@ class UserInteraction:
                 action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
-#       print '(%s/%d) %s' % (self, len(self.time_tracking), action)
 
     def report_marks(self, quiet=False, details=False):
         t = self.times
-#       print '(%s/%d) REPORT' % (self, len(self.time_tracking))
         if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
@@ -295,7 +322,6 @@ class UserInteraction:
 
     def reset_marks(self, mark=True, quiet=False, details=False):
         """This sequence of actions is complete."""
-#       print '(%s/%d) RESET' % (self, len(self.time_tracking))
         if self.times and mark:
             self.mark()
         elapsed = self.report_marks(quiet=quiet, details=details)
@@ -304,7 +330,6 @@ class UserInteraction:
 
     def push_marks(self, subtask):
         """Start tracking a new sub-task."""
-#       print '(%s/%d) PUSH' % (self, len(self.time_tracking))
         self.time_tracking.append((subtask, []))
 
     def pop_marks(self, name=None, quiet=True):
@@ -313,13 +338,13 @@ class UserInteraction:
         if len(self.time_tracking) > 1:
             if not name or (self.time_tracking[-1][0] == name):
                 self.time_tracking.pop(-1)
-#       print '(%s/%d) POP' % (self, len(self.time_tracking))
         return elapsed
 
     # Higher level command-related methods
-    def _display_result(self, result):
-        sys.stdout.write(unicode(result).encode('utf-8').rstrip())
-        sys.stdout.write('\n')
+    def _display_result(self, ttype, result):
+        with self.term:
+            sys.stdout.write(unicode(result).encode('utf-8').rstrip())
+            sys.stdout.write('\n')
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
@@ -331,22 +356,48 @@ class UserInteraction:
     def finish_command(self, cmd):
         self.pop_marks(name=cmd)
 
+    def _parse_render_mode(self):
+        # Split out the template/type and rendering mode
+        if '!' in self.render_mode:
+            ttype, mode = self.render_mode.split('!')
+        else:
+            ttype, mode = self.render_mode, None
+
+        # Figure out whether a template has been requested, or if we
+        # are using the default "as.foo" template. Assume :content if
+        # people request a .jfoo, unless otherwise specified.
+        if ttype.split('.')[-1].lower() in self.JSON_WRAP_TYPES:
+            parts = ttype.split('.')
+            parts[-1] = parts[-1][1:]
+            ttype = '.'.join(parts)
+            wrap_in_json = True
+            mode = mode or 'content'
+        else:
+            wrap_in_json = False
+
+        # Figure out which template we're really asking for...
+        if '.' in ttype:
+            template = ttype
+            ttype = ttype.split('.')[1]
+        else:
+            template = 'as.' + ttype
+
+        return ttype.lower(), mode, wrap_in_json, template
+
     def display_result(self, result):
         """Render command result objects to the user"""
-        self._display_log('', level=self.LOG_RESULT)
-        if self.render_mode == 'json':
-            return self._display_result(result.as_('json'))
-        for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
-            if self.render_mode.endswith(suffix):
-                jsuffix = 'j' + suffix
-                if self.render_mode in (suffix, jsuffix):
-                    template = 'as.' + suffix
-                else:
-                    template = self.render_mode.replace('.' + jsuffix,
-                                                        '.' + suffix)
-                return self._display_result(
-                    result.as_template(suffix, template=template))
-        return self._display_result(unicode(result))
+        if self.render_mode in ('json', 'as.json'):
+            return self._display_result('json', result.as_('json'))
+        if self.render_mode in ('text', 'as.text'):
+            return self._display_result('text', unicode(result))
+
+        ttype, mode, wrap_in_json, template = self._parse_render_mode()
+        rendering = result.as_template(ttype,
+                                       mode=mode,
+                                       wrap_in_json=wrap_in_json,
+                                       template=template)
+
+        return self._display_result(ttype, rendering)
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -412,43 +463,68 @@ class UserInteraction:
                 pass
         return None
 
+    def _render_error(self, cfg, error_info):
+        emsg = "<h1>%(error)s</h1>"
+        if 'http' in cfg.sys.debug:
+            emsg += "<p>%(details)s</p>"
+            if 'traceback' in error_info:
+                emsg += "<h3>TRACEBACK:</h3><pre>%(traceback)s</pre>"
+            if 'source' in error_info:
+                emsg += "<h3>SOURCE:</h3><xmp>%(source)s</xmp>"
+            if 'data' in error_info:
+                emsg += "<h3>DATA:</h3><pre>%(data)s</pre>"
+            if 'config' in error_info.get('data'):
+                del error_info['data']['config']
+        ei = {}
+        for kw in ('error', 'details', 'traceback', 'source', 'data'):
+            value = error_info.get(kw, '')
+            if isinstance(value, dict):
+                ei[kw] = escape_html('%.8196s' % self.render_json(value))
+            else:
+                ei[kw] = escape_html('%.2048s' % value).replace('\n', '<br>')
+        return emsg % ei
+
     def render_web(self, cfg, tpl_names, data):
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
-        alldata["config"] = cfg
+        alldata['config'] = cfg
         alldata.update(data)
         try:
             template = self._web_template(cfg, tpl_names)
             if template:
                 return template.render(alldata)
             else:
-                emsg = _("<h1>Template not found</h1>\n<p>%s</p><p>"
-                         "<b>DATA:</b> %s</p>")
                 tpl_esc_names = [escape_html(tn) for tn in tpl_names]
-                return emsg % (' or '.join(tpl_esc_names),
-                               escape_html('%s' % alldata))
+                return self._render_error(cfg, {
+                    'error': _('Template not found'),
+                    'details': ' or '.join(tpl_esc_names),
+                    'data': alldata
+                })
         except (UndefinedError, ):
-            emsg = _("<h1>Template error</h1>\n"
-                     "<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>")
-            return emsg % (escape_html(traceback.format_exc()),
-                           ' or '.join([escape_html(tn) for tn in tpl_names]),
-                           escape_html('%.4096s' % alldata))
+            tpl_esc_names = [escape_html(tn) for tn in tpl_names]
+            return self._render_error(cfg, {
+                'error': _('Template error'),
+                'details': ' or '.join(tpl_esc_names),
+                'traceback': traceback.format_exc(),
+                'data': alldata
+            })
         except (TemplateNotFound, TemplatesNotFound), e:
-            emsg = _("<h1>Template not found in %s</h1>\n"
-                     "<b>%s</b><br/>"
-                     "<div><hr><p><b>DATA:</b> %s</p></div>")
-            return emsg % tuple([escape_html(unicode(v))
-                                 for v in (e.name, e.message,
-                                           '%.4096s' % alldata)])
+            tpl_esc_names = [escape_html(tn) for tn in tpl_names]
+            return self._render_error(cfg, {
+                'error': _('Template not found'),
+                'details': 'In %s:\n%s' % (e.name, e.message),
+                'data': alldata
+            })
         except (TemplateError, TemplateSyntaxError,
                 TemplateAssertionError,), e:
-            emsg = _("<h1>Template error in %s</h1>\n"
-                     "Parsing template %s: <b>%s</b> on line %s<br/>"
-                     "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
-            return emsg % tuple([escape_html(unicode(v))
-                                 for v in (e.name, e.filename, e.message,
-                                           e.lineno, e.source,
-                                           '%.4096s' % alldata)])
+            return self._render_error(cfg, {
+                'error': _('Template error'),
+                'details': ('In %s (%s), line %s:\n%s'
+                            % (e.name, e.filename, e.lineno, e.message)),
+                'source': e.source,
+                'traceback': traceback.format_exc(),
+                'data': alldata
+            })
 
     def edit_messages(self, session, emails):
         if not self.interactive:
@@ -462,17 +538,21 @@ class UserInteraction:
 
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
-        self.block()
 
         tf = tempfile.NamedTemporaryFile()
         tf.write(edit_this.encode('utf-8'))
         tf.flush()
-        os.system('%s %s' % (os.getenv('VISUAL', default='vi'), tf.name))
+        with self.term:
+            try:
+                self.block()
+                os.system('%s %s' % (os.getenv('VISUAL', default='vi'),
+                                     tf.name))
+            finally:
+                self.unblock()
         tf.seek(0, 0)
         edited = tf.read().decode('utf-8')
         tf.close()
 
-        self.unblock()
         if edited == edit_this:
             return False
 
@@ -486,11 +566,12 @@ class UserInteraction:
     def get_password(self, prompt):
         if not self.interactive:
             return ''
-        try:
-            self.block()
-            return getpass.getpass(prompt.encode('utf-8')).decode('utf-8')
-        finally:
-            self.unblock()
+        with self.term:
+            try:
+                self.block()
+                return getpass.getpass(prompt.encode('utf-8')).decode('utf-8')
+            finally:
+                self.unblock()
 
 
 class HttpUserInteraction(UserInteraction):
@@ -507,8 +588,8 @@ class HttpUserInteraction(UserInteraction):
         self._debug_log(text, level)
         self.logged.append((level, text))
 
-    def _display_result(self, result):
-        self.results.append(result)
+    def _display_result(self, ttype, result):
+        self.results.append((ttype, result))
 
     # Stream raw data to the client on open_for_data
     def open_for_data(self, name_fmt=None, attributes={}):
@@ -518,41 +599,37 @@ class HttpUserInteraction(UserInteraction):
         if config.sys.debug:
             return '%s\n%s' % (
                 '\n'.join([l[1] for l in self.logged]),
-                ('\n%s\n' % ('=' * 79)).join(self.results)
+                ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
             )
         else:
-            return ('\n%s\n' % ('=' * 79)).join(self.results)
+            return ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
 
-    def _render_single_response(self, config):
-        if len(self.results) == 1:
-            return self.results[0]
-        if len(self.results) > 1:
-            raise Exception(_('FIXME: Multiple results, OMG WTF'))
-        return ""
+    def _ttype_to_mimetype(self, ttype, result):
+        return ({
+            'css': 'text/css',
+            'js': 'text/javascript',
+            'json': 'application/json',
+            'html': 'text/html',
+            'rss': 'application/rss+xml',
+            'text': 'text/plain',
+            'txt': 'text/plain',
+            'xml': 'application/xml'
+        }.get(ttype.lower(), 'text/plain'), result)
 
     def render_response(self, config):
-        if (self.render_mode == 'json' or
-                self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
-                                                    'jrss', 'jtxt', 'jxml')):
+        ttype, mode, wrap_in_json, template = self._parse_render_mode()
+        if (ttype == 'json' or wrap_in_json):
             if len(self.results) == 1:
-                return ('application/json', self.results[0])
+                data = self.results[0][1]
             else:
-                return ('application/json', '[%s]' % ','.join(self.results))
-        elif self.render_mode.endswith('html'):
-            return ('text/html', self._render_single_response(config))
-        elif self.render_mode.endswith('js'):
-            return ('text/javascript', self._render_single_response(config))
-        elif self.render_mode.endswith('css'):
-            return ('text/css', self._render_single_response(config))
-        elif self.render_mode.endswith('txt'):
-            return ('text/plain', self._render_single_response(config))
-        elif self.render_mode.endswith('rss'):
-            return ('application/rss+xml',
-                    self._render_single_response(config))
-        elif self.render_mode.endswith('xml'):
-            return ('application/xml', self._render_single_response(config))
+                data = '[%s]' % ','.join(r for t, r in self.results)
+            return ('application/json', data)
         else:
-            return ('text/plain', self._render_text_responses(config))
+            if len(self.results) == 1:
+                return self._ttype_to_mimetype(*self.results[0])
+            if len(self.results) > 1:
+               raise Exception(_('FIXME: Multiple results, OMG WTF'))
+            return ""
 
     def edit_messages(self, session, emails):
         return False
@@ -574,7 +651,7 @@ class SilentInteraction(UserInteraction):
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
         self._debug_log(text, level)
 
-    def _display_result(self, result):
+    def _display_result(self, ttype, result):
         return result
 
     def edit_messages(self, session, emails):
@@ -586,7 +663,7 @@ class CapturingUserInteraction(UserInteraction):
         mailpile.ui.UserInteraction.__init__(self, config)
         self.captured = ''
 
-    def _display_result(self, result):
+    def _display_result(self, ttype, result):
         self.captured = unicode(result)
 
 
@@ -645,6 +722,7 @@ class Session(object):
         self.order = None
         self.results = []
         self.searched = []
+        self.last_event_id = None
         self.displayed = None
         self.context = None
 
@@ -655,7 +733,7 @@ class Session(object):
                            lambda s, v: s.set_interactive(v))
 
     def copy(self, session, ui=False, search=True):
-        if ui:
+        if ui is True:
             self.main = session.main
             self.ui = session.ui
         if search:

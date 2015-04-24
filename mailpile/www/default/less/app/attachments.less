@@ -1,0 +1,96 @@
+/* Attachments (used in both Compose & Thread) */
+
+  .attachment-image {
+    display: block;
+    width: 150px;
+    height: 125px;
+    border: 1px solid @gray;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    vertical-align: text-top;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .attachment-image div.preview {
+    display: block;
+    width: 100%;
+    height: 125px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+
+  .attachment {
+    display: block;
+    width: 150px;
+    height: 125px;
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid @gray;
+  	text-align: center;
+    vertical-align: text-top;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .attachment div.preview {
+    height: 97px;
+    display: inline-table;
+  }
+  
+  .attachment div.preview span.icon-mime {
+    width: 60px;
+    display: table-cell;
+    vertical-align: middle;
+    color: @gray;
+    font-size: 40px;
+    line-height: 40px;
+  }
+  
+  .attachment div.preview span.extension {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    color: @gray;
+    text-transform: uppercase;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .attachment div.filename {
+    width: 100%;
+    height: 12px;
+    display: block;
+    padding: (@base-padding / 2) 0;
+    box-sizing: content-box;
+    border-top: 1px solid @gray;
+    background: @grayLight;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 12px;
+    color: @grayDark;
+  }
+
+  .attachment:hover {
+    background: @grayLight;
+    border: 1px solid @gray;
+  }
+
+  .attachment:hover div.filename {
+    color: @grayDark;
+  }
+  
+  .attachment:hover span.icon-mime,
+  .attachment:hover span.extension {
+    color: @grayDark;
+  }

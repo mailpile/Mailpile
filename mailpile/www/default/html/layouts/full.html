@@ -1,0 +1,42 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
+  {% include("partials/head.html") %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% include("partials/topbar.html") %}
+{% include("partials/sidebar.html") %}
+<div id="content" class="clearfix">
+  <div id="content-tools">
+  {% if result %}
+  {% if command == "search" %}
+    {% include("partials/tools_search.html") %}
+  {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
+    {% include("partials/tools_contacts.html") %}
+  {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
+    {% include("partials/tools_tags.html") %}
+  {% elif state.command_url in ("/settings/") %}
+    {% include("partials/tools_settings.html") %}
+  {% elif state.command_url == "/message/" %}
+    {% include("partials/tools_message.html") %}
+  {% else %}
+    {% include("partials/tools_default.html") %}
+  {% endif %}
+  {% endif %}
+  </div>
+  <div id="content-view"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
+    {% block content %}{{results}}{% endblock %}
+  </div></div>
+</div>
+{% include("partials/hidden.html") %}
+{% include("partials/helpers.html") %}
+{% include("partials/tooltips.html") %}
+{% include("partials/modals.html") %}
+{% include("partials/javascript.html") %}
+</body>
+</html>

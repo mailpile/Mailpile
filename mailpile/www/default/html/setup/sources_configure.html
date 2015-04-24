@@ -1,0 +1,62 @@
+<div id="setup-box-source-configure" class="setup-box setup-box-large add-top add-bottom animated bounceInUp add-bottom">
+  <div class="clearfix text-center">
+    <h2 class="half-bottom"><span class="icon-tag"></span> Configure <%= name %></h2>
+    <p class="text-detail">Configure which mailboxes to import & which tags to apply after mail is imported</p>
+  </div>
+  <form id="form-setup-source-configure" class="standard">
+    <% console.log(tags) %>
+    <table class="full rounded background-white add-bottom">
+    <tr>
+      <th class="text-left setup-tooltip" title="{{_('Source of these Messages')}}">Mailbox</th>
+      <th class="text-left setup-tooltip" title="{{_('Create a Tag in your Mailpile')}}">Mailpile (Tag)</th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Inbox tag to these Messages')}}"><span class="icon-inbox"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Drafts tag to these Messages')}}"><span class="icon-compose"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Sent tag to these Messages')}}"><span class="icon-sent"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Spam tag to these Messages')}}"><span class="icon-spam"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Trash tag to these Messages')}}"><span class="icon-trash"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Import these Messages')}}"><input type="checkbox" id="source-mailbox-read-all"></th>
+    </tr>
+    <% _.each(mailbox, function(mailbox, key) { %>
+    <tr>
+      <td class="middle">
+        <% if (mailbox.name) { %>
+        <%= mailbox.name %>
+        <% } else { %>
+        <em>{{_("No Name")}}</em>
+        <% } %>
+      </td>
+      <td class="middle">
+        <% var tag = _.findWhere(tags, {tid: mailbox.primary_tag}); if (tag) { %>
+        <span class="<%= tag.icon + " color-" + tag.label_color %>"></span> <strong><%= tag.name %></strong> <a href="/tags/edit.html?only=<%= tag.slug %>" class="link-detail right">{{_("Edit Tag")}}</a>
+        <% } else { %>
+        <input type="text" name="mailbox.<%= key %>.primary_tag" value="<%= mailbox.primary_tag %>" class="input-full remove-bottom">
+        <% } %>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.inbox %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.inbox; }) == special_tags.inbox) { %>checked<% } %>>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.drafts %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.drafts; }) == special_tags.drafts) { %>checked<% } %>>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.sent %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.sent; }) == special_tags.sent) { %>checked<% } %>>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.spam %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.spam; }) == special_tags.spam) { %>checked<% } %>>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.trash; }) == special_tags.trash) { %>checked<% } %>>
+      </td>
+      <td class="middle text-center">
+        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>read<% } else { %><%= mailbox.policy %><% } %>" <% if (mailbox.policy == 'read' || mailbox.policy == 'unknown') { %>checked<% } %>>
+      </td>
+    </tr>
+    <% }); %>
+    </table>
+    <input type="hidden" name="_section" value="sources.<%= id %>">
+    <div class="clearfix">
+      <a href="#sources" class="button-info left">Previous</a>
+      <button id="btn-setup-source-configure" data-id="<%= id %>" class="button-primary right">{{_("Save")}}</button>
+    </div>
+  </form>
+</div>

@@ -24,13 +24,13 @@ def register_crypto_key_lookup_handler(handler):
 
 def _score_validity(validity, local=False):
     if "r" in validity:
-        return (-1000, _('Key is revoked'))
+        return (-1000, _('Encryption key is revoked'))
     elif "d" in validity:
-        return (-1000, _('Key is disabled'))
+        return (-1000, _('Encryption key is disabled'))
     elif "e" in validity:
-        return (-100, _('Key has expired'))
+        return (-100, _('Encryption key has expired'))
     elif local and ("f" in validity or "u" in validity):
-        return (50, _('Key is trusted'))
+        return (50, _('Encryption key has been imported and verified'))
     return (0, '')
 
 
@@ -38,7 +38,7 @@ def _update_scores(key_id, key_info, known_keys_list):
     """Update scores and score explanations"""
     key_info["score"] = sum([score for source, (score, reason)
                              in key_info.get('scores', {}).iteritems()
-                             if source != 'Known keys'])
+                             if source != 'Known encryption keys'])
 
     # This is done here, not on the keychain lookup handler, in case
     # for some reason (e.g. UID changes on source keys) remote sources
@@ -48,17 +48,27 @@ def _update_scores(key_id, key_info, known_keys_list):
                                         local=True)
         if score == 0:
             score += 9
-            reason = _('Key is on keychain')
+            reason = _('Encryption key has been imported')
 
         key_info["on_keychain"] = True
         key_info['score'] += score
-        key_info['scores']['Known keys'] = [score, reason]
+        key_info['scores']['Known encryption keys'] = [score, reason]
 
     if "keysize" in key_info:
         bits = int(key_info["keysize"])
         score = bits // 1024
         key_info['score'] += score
-        key_info['scores']['Key size'] = [score, _('Key is %d bits') % bits]
+
+        if bits >= 4096: 
+          key_strength = _('Encryption key is very strong')
+        elif bits >= 3072: 
+          key_strength = _('Encryption key is strong')
+        elif bits >= 2048:
+          key_strength = _('Encryption key is average')
+        else: 
+          key_strength = _('Encryption key is weak')
+
+        key_info['scores']['Encryption key strength'] = [score, key_strength]
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
@@ -108,7 +118,7 @@ def lookup_crypto_keys(session, address,
 
         if event:
             ordered_keys.sort(key=lambda k: -k["score"])
-            event.message = _('Searching for keys in: %s') % _(h.NAME)
+            event.message = _('Searching for encryption keys in: %s') % _(h.NAME)
             event.private_data = {"result": ordered_keys,
                                   "runningsearch": h.NAME}
             session.config.event_log.log_event(event)
@@ -173,7 +183,7 @@ class KeyLookup(Command):
         '<address> [<allowremote>]')
     HTTP_CALLABLE = ('GET',)
     HTTP_QUERY_VARS = {
-        'address': 'The nick/address to find a key for',
+        'address': 'The nick/address to find a encryption key for',
         'allowremote': 'Whether to permit remote key lookups (defaults to true)'
     }
 
@@ -199,7 +209,7 @@ class KeyImport(Command):
                       '<address> <fingerprint,...> <origins ...>')
     HTTP_CALLABLE = ('POST',)
     HTTP_POST_VARS = {
-        'address': 'The nick/address to find a key for',
+        'address': 'The nick/address to find an encryption key for',
         'fingerprints': 'List of fingerprints we want',
         'origins': 'List of origins to search'
     }
@@ -223,7 +233,8 @@ class KeyImport(Command):
             # clear the cache so users can see results right away.
             ClearParseCache(pgpmime=True)
 
-        return self._success(_n('Imported %d key', 'Imported %d keys',
+        return self._success(_n('Imported %d encryption key',
+                                'Imported %d encryption keys',
                                 len(result)) % len(result),
                              result=result)
 
@@ -296,7 +307,7 @@ class KeychainLookupHandler(LookupHandler):
     PRIORITY = 0
 
     def _score(self, key):
-        return (1, _('Found key in keychain'))
+        return (1, _('Found encryption key in keychain'))
 
     def _getkey(self, key):
         return False  # Already on keychain
@@ -326,7 +337,7 @@ class KeyserverLookupHandler(LookupHandler):
     PRIORITY = 200
 
     def _score(self, key):
-        return (1, _('Found key in keyserver'))
+        return (1, _('Found encryption key in keyserver'))
 
     def _lookup(self, address):
         return self._gnupg().search_key(address)

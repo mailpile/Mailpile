@@ -43,7 +43,6 @@ class EditableSearchResults(SearchResults):
 
 def AddComposeMethods(cls):
     class newcls(cls):
-        WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
         COMMAND_CACHE_TTL = 0
 
         def _create_contacts(self, emails):
@@ -297,15 +296,16 @@ class Draft(AddComposeMethods(View)):
 
     def _side_effects(self, emails):
         session, idx = self.session, self._idx()
-        if not emails:
-            session.ui.mark(_('No messages!'))
-        elif session.ui.edit_messages(session, emails):
-            self._tag_blank(emails, untag=True)
-            self._tag_drafts(emails)
-            self._background_save(index=True)
-            self.message = _('%d message(s) edited') % len(emails)
-        else:
-            self.message = _('%d message(s) unchanged') % len(emails)
+        with GLOBAL_EDITING_LOCK:
+            if not emails:
+                session.ui.mark(_('No messages!'))
+            elif session.ui.edit_messages(session, emails):
+                self._tag_blank(emails, untag=True)
+                self._tag_drafts(emails)
+                self._background_save(index=True)
+                self.message = _('%d message(s) edited') % len(emails)
+            else:
+                self.message = _('%d message(s) unchanged') % len(emails)
         session.ui.mark(self.message)
         return None
 
@@ -655,6 +655,7 @@ class Attach(CompositionCommand):
     """Attach a file to a message"""
     SYNOPSIS = ('a', 'attach', 'message/attach', '<messages> [<path/to/file>]')
     ORDER = ('Composing', 2)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -704,6 +705,8 @@ class Attach(CompositionCommand):
             try:
                 email.add_attachments(session, files, filedata=filedata)
                 updated.append(email)
+            except KeyboardInterrupt:
+                raise
             except NotEditableError:
                 err(_('Read-only message: %s') % subject)
             except:
@@ -720,6 +723,69 @@ class Attach(CompositionCommand):
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
                                            expand=updated, error=errors)
+
+
+class UnAttach(CompositionCommand):
+    """Remove an attachment from a message"""
+    SYNOPSIS = (None, 'unattach', 'message/unattach', '<mid> <atts>')
+    ORDER = ('Composing', 2)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
+    HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_QUERY_VARS = {}
+    HTTP_POST_VARS = {
+        'mid': 'metadata-ID',
+        'att': 'Attachment IDs or filename'
+    }
+
+    def command(self, emails=None):
+        session, idx = self.session, self._idx()
+        args = list(self.args)
+        atts = []
+
+        if '--' in args:
+            atts = args[args.index('--') + 1:]
+            args = args[:args.index('--')]
+        elif args:
+            atts = [args.pop(-1)]
+        atts.extend(self.data.get('att', []))
+
+        if not emails:
+            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            emails = [self._actualize_ephemeral(i) for i in
+                      self._choose_messages(args, allow_ephemeral=True)]
+        if not emails:
+            return self._error(_('No messages selected'))
+
+        updated = []
+        errors = []
+        def err(msg):
+            errors.append(msg)
+            session.ui.error(msg)
+
+        for email in emails:
+            subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+            try:
+                email.remove_attachments(session, *atts)
+                updated.append(email)
+            except KeyboardInterrupt:
+                raise
+            except NotEditableError:
+                err(_('Read-only message: %s') % subject)
+            except:
+                err(_('Error removing from %s') % subject)
+                self._ignore_exception()
+
+        if errors:
+            self.message = _('Removed %s from %d messages, failed %d'
+                             ) % (', '.join(atts), len(updated), len(errors))
+        else:
+            self.message = _('Removed %s from %d messages'
+                             ) % (', '.join(atts), len(updated))
+
+        session.ui.notify(self.message)
+        return self._return_search_results(self.message, updated,
+                                           expand=updated, error=errors)
+
 
 
 class Sendit(CompositionCommand):
@@ -754,8 +820,14 @@ class Sendit(CompositionCommand):
 
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
-            mids = self._choose_messages(args)
-            emails = [Email(idx, i) for i in mids]
+            emails = [self._actualize_ephemeral(i) for i in
+                      self._choose_messages(args, allow_ephemeral=True)]
+
+        # First make sure the draft tags are all gone, so other edits either
+        # fail or complete while we wait for the lock.
+        with GLOBAL_EDITING_LOCK:
+            self._tag_drafts(emails, untag=True)
+            self._tag_blank(emails, untag=True)
 
         # Process one at a time so we don't eat too much memory
         sent = []
@@ -824,8 +896,6 @@ class Sendit(CompositionCommand):
         if sent:
             self._tag_sent(sent)
             self._tag_outbox(sent, untag=True)
-            self._tag_drafts(sent, untag=True)
-            self._tag_blank(sent, untag=True)
             for email in sent:
                 email.reset_caches()
                 idx.index_email(self.session, email)
@@ -838,8 +908,9 @@ class Sendit(CompositionCommand):
 
 class Update(CompositionCommand):
     """Update message from a file or HTTP upload."""
-    SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
+    SYNOPSIS = (None, 'update', 'message/update', '<messages> <<filename>')
     ORDER = ('Composing', 1)
+    WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
                                 Attach.HTTP_POST_VARS)
@@ -891,7 +962,8 @@ class UnThread(CompositionCommand):
         args = list(self.args)
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
-        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
+        emails = [self._actualize_ephemeral(i) for i in
+                  self._choose_messages(args, allow_ephemeral=True)]
 
         if emails:
             for email in emails:
@@ -944,8 +1016,8 @@ _plugins.register_config_variables('prefs', {
 _plugins.register_slow_periodic_job('sendmail',
                                     'prefs.empty_outbox_interval',
                                     EmptyOutbox.sendmail)
-_plugins.register_commands(Compose, Reply, Forward,  # Create
-                           Draft, Update, Attach,    # Manipulate
-                           UnThread,                 # ...
-                           Sendit, UpdateAndSendit,  # Send
-                           EmptyOutbox)              # ...
+_plugins.register_commands(Compose, Reply, Forward,           # Create
+                           Draft, Update, Attach, UnAttach,   # Manipulate
+                           UnThread,                          # ...
+                           Sendit, UpdateAndSendit,           # Send
+                           EmptyOutbox)                       # ...

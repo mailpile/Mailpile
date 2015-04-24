@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from datetime import date
+import datetime
 from urllib import urlencode
 
 import mailpile.auth
@@ -22,7 +22,7 @@ from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
-from mailpile.ui import Session
+from mailpile.ui import Session, SilentInteraction
 from mailpile.util import *
 
 
@@ -58,12 +58,14 @@ class SetupMagic(Command):
         'Blank': {
             'type': 'blank',
             'flag_editable': True,
+            'flag_msg_only': True,
             'display': 'invisible',
             'name': _('Blank'),
         },
         'Drafts': {
             'type': 'drafts',
             'flag_editable': True,
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 1,
             'icon': 'icon-compose',
@@ -72,6 +74,7 @@ class SetupMagic(Command):
         },
         'Outbox': {
             'type': 'outbox',
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 3,
             'icon': 'icon-outbox',
@@ -80,6 +83,7 @@ class SetupMagic(Command):
         },
         'Sent': {
             'type': 'sent',
+            'flag_msg_only': True,
             'display': 'priority',
             'display_order': 4,
             'icon': 'icon-sent',
@@ -125,41 +129,55 @@ class SetupMagic(Command):
             'name': _('All Mail'),
             'display_order': 1000,
         },
+        'Conversations': {
+            'type': 'tag',
+            'icon': 'icon-forum',
+            'label_color': '05-blue-light',
+            'search_terms': 'in:mp_rpl',
+            'name': _('Conversations'),
+            'template': 'conversations',
+            'display_order': 1001,
+        },
         'Photos': {
             'type': 'tag',
             'icon': 'icon-photos',
             'label_color': '08-green',
-            'search_terms': 'att:jpg',
+            'search_terms': 'att:jpg to:me',
             'name': _('Photos'),
             'template': 'photos',
-            'display_order': 1001,
+            'display_order': 1002,
         },
         'Files': {
             'type': 'tag',
             'icon': 'icon-document',
             'label_color': '06-blue',
-            'search_terms': 'has:attachment',
+            'search_terms': 'has:attachment to:me',
             'name': _('Files'),
             'template': 'files',
-            'display_order': 1002,
+            'display_order': 1003,
         },
         'Links': {
             'type': 'tag',
             'icon': 'icon-links',
             'label_color': '12-red',
-            'search_terms': 'http',
+            'search_terms': 'http to:me',
             'name': _('Links'),
-            'display_order': 1003,
+            'display_order': 1004,
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
         # automatically added, and may be automatically removed as well
         # to keep the working sets reasonably small.
-        'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible'},
-        'mp_fwd': {'type': 'fwded', 'label': False, 'display': 'invisible'},
-        'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible'},
-        'mp_read': {'type': 'read', 'label': False, 'display': 'invisible'},
-        'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
+        'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_fwd': {'type': 'fwded', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_read': {'type': 'read', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
+        'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible',
+                   'flag_msg_only': True},
     }
 
     def basic_app_config(self, session,
@@ -184,6 +202,7 @@ class SetupMagic(Command):
                     created.append(tagname)
                 session.config.get_tag(tagname).update({
                     'type': 'attribute',
+                    'flag_msg_only': True,
                     'display': 'invisible',
                     'label': False,
                 })
@@ -265,11 +284,15 @@ class SetupMagic(Command):
             accepted_keys = []
             if gnupg.is_available():
                 keys = gnupg.list_secret_keys()
+                cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                          ).strftime("%Y-%m-%d")
                 for key, details in keys.iteritems():
-                    # Ignore revoked/expired keys.
-                    if ("revocation-date" in details and
-                        details["revocation-date"] <=
-                            date.today().strftime("%Y-%m-%d")):
+                    # Ignore revoked/expired/disabled keys.
+                    revoked = details.get('revocation_date')
+                    expired = details.get('expiration_date')
+                    if (details.get('disabled') or
+                            (revoked and revoked <= cutoff) or
+                            (expired and expired <= cutoff)):
                         continue
 
                     accepted_keys.append(key)
@@ -296,8 +319,8 @@ class SetupMagic(Command):
                         session.config.prefs.crypto_policy = 'openpgp-sign'
 
                 if len(accepted_keys) == 0:
-                    # FIXME: Start background process generating a key once a user
-                    #        has supplied a name and e-mail address.
+                    # FIXME: Start background process generating a key once a
+                    #        user has supplied a name and e-mail address.
                     pass
 
             else:
@@ -526,13 +549,16 @@ class SetupCrypto(TestableWebbable):
     TEST_DATA = {}
 
     def list_secret_keys(self):
-        today = date.today().strftime("%Y-%m-%d")
+        cutoff = (datetime.date.today() + datetime.timedelta(days=365)
+                  ).strftime("%Y-%m-%d")
         keylist = {}
         for key, details in self._gnupg().list_secret_keys().iteritems():
-            # Ignore revoked keys
-            if ("revocation-date" in details and
-                    details["revocation-date"] <= today):
-                # FIXME: Does this check expiry as well?
+            # Ignore (soon to be) revoked/expired/disabled keys.
+            revoked = details.get('revocation_date')
+            expired = details.get('expiration_date')
+            if (details.get('disabled') or
+                    (revoked and revoked <= cutoff) or
+                    (expired and expired <= cutoff)):
                 continue
 
             # Ignore keys that cannot both encrypt and sign
@@ -773,7 +799,7 @@ class SetupProfiles(SetupCrypto):
     def discover_new_email_addresses(self, profiles):
         addresses = {}
         existing = set([p['email'] for p in profiles.values()])
-        for key, info in self._gnupg().list_secret_keys().iteritems():
+        for key, info in self.list_secret_keys().iteritems():
             for uid in info['uids']:
                 email = uid.get('email')
                 note = uid.get('comment')
@@ -915,6 +941,9 @@ class SetupTestRoute(SetupProfiles):
         fromaddr = route.get('username', '')
         if '@' not in fromaddr:
             fromaddr = self.session.config.get_profile()['email']
+        if not fromaddr or '@' not in fromaddr:
+            fromaddr = '%s@%s' % (route.get('username', 'test'),
+                                  route.get('host', 'example.com'))
         assert(fromaddr)
 
         error_info = {'error': _('Unknown error')}
@@ -958,7 +987,10 @@ class Setup(TestableWebbable):
 
     @classmethod
     def _check_profiles(self, config):
-        data = ListProfiles(Session(config)).run().result
+        session = Session(config)
+        session.ui = SilentInteraction(config)
+        session.ui.block()
+        data = ListProfiles(session).run().result
         okay = routes = bad = 0
         for rid, ofs in data["rids"].iteritems():
             profile = data["profiles"][ofs]

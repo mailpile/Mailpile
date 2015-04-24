@@ -164,13 +164,13 @@ class GnuPGRecordParser:
                               "capabilities", "flag", "sn", "hashtype",
                               "curve"]
         self.record_types = ["pub", "sub", "ssb", "fpr", "uat", "sec", "tru",
-                             "sig", "rev", "uid", "gpg"]
+                             "sig", "rev", "uid", "gpg", "rvk"]
         self.record_parsers = [self.parse_pubkey, self.parse_subkey,
                                self.parse_subkey, self.parse_fingerprint,
                                self.parse_userattribute, self.parse_privkey,
                                self.parse_trust, self.parse_signature,
                                self.parse_revoke, self.parse_uidline,
-                               self.parse_none]
+                               self.parse_none, self.parse_revocation_key]
 
         self.dispatch = dict(zip(self.record_types, self.record_parsers))
 
@@ -180,7 +180,9 @@ class GnuPGRecordParser:
         return self.keys
 
     def parse_line(self, line):
-        line = dict(zip(self.record_fields, map(lambda s: s.replace("\\x3a", ":"), line.strip().split(":"))))
+        line = dict(zip(self.record_fields,
+                        map(lambda s: s.replace("\\x3a", ":"),
+                        line.strip().split(":"))))
         r = self.dispatch.get(line["record"], self.parse_unknown)
         r(line)
 
@@ -194,9 +196,21 @@ class GnuPGRecordParser:
             "authenticate": "A" in line["capabilities"],
         }
         line["disabled"] = "D" in line["capabilities"]
+	line["revoked"] = "r" in line["validity"]
         line["private_key"] = False
         line["subkeys"] = []
         line["uids"] = []
+
+        for ts in ('expiration_date', 'creation_date'):
+            if line.get(ts) and '-' not in line[ts]:
+               try:
+                   unixtime = int(line[ts])
+                   if unixtime > 946684800:  # 2000-01-01
+                       dt = datetime.fromtimestamp(unixtime)
+                       line[ts] = dt.strftime('%Y-%m-%d')
+               except ValueError:
+                   line[ts+'_unparsed'] = line[ts]
+                   line[ts] = '1970-01-01'
 
         if line["record"] == "sec":
             line["secret"] = True
@@ -258,11 +272,13 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
-        # FIXME: Do something more to this
-        print line
+        pass  # FIXME
+
+    def parse_revocation_key(self, line):
+        pass  # FIXME
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % line[0]
+        print "Unknown line with code '%s'" % (line,)
 
     def parse_none(line):
         pass
@@ -388,7 +404,7 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, config, session=None, use_agent=False):
+    def __init__(self, config, session=None, use_agent=False, debug=False):
         global DEBUG_GNUPG
         self.available = None
         self.gpgbinary = GPG_BINARY
@@ -404,7 +420,8 @@ class GnuPG:
         else:
             self.passphrase = None
             self.homedir = GNUPG_HOMEDIR
-        self.debug = self._debug_all if DEBUG_GNUPG else self._debug_none
+        self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
+                      else self._debug_none)
 
     def _debug_all(self, msg):
         if self.session:
@@ -553,16 +570,21 @@ class GnuPG:
         rlp = GnuPGRecordParser()
         return rlp.parse(keylist)
 
-    def list_keys(self):
+    def list_keys(self, selectors=None):
         """
         >>> g = GnuPG(None)
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--fingerprint", "--list-keys"])
+        list_keys = ["--fingerprint"]
+        for sel in selectors or []:
+            list_keys += ["--list-keys", sel]
+        if not selectors:
+            list_keys += ["--list-keys"]
+        retvals = self.run(list_keys)
         return self.parse_keylist(retvals[1]["stdout"])
 
-    def list_secret_keys(self):
+    def list_secret_keys(self, selectors=None):
         #
         # Note: The "." parameter that is passed is to work around a bug
         #       in GnuPG < 2.1, where --list-secret-keys does not list
@@ -583,15 +605,29 @@ class GnuPG:
         #       BRE: Put --fingerprint at the front and added selectors
         #            for the worlds MOST POPULAR LETTERS!  Yaaay!
         #
-        retvals = self.run(["--fingerprint",
-                            "--list-secret-keys", ".",
-                            "--list-secret-keys", "a",
-                            "--list-secret-keys", "e",
-                            "--list-secret-keys", "i",
-                            "--list-secret-keys", "p",
-                            "--list-secret-keys", "t",
-                            "--list-secret-keys", "k"])
-        return self.parse_keylist(retvals[1]["stdout"])
+        if not selectors:
+            selectors = [".", "a", "e", "i", "p", "t", "k"]
+        list_keys = ["--fingerprint"]
+        for sel in selectors:
+            list_keys += ["--list-secret-keys", sel]
+        retvals = self.run(list_keys)
+        secret_keys = self.parse_keylist(retvals[1]["stdout"])
+
+        # Another unfortunate thing GPG does, is it hides the disabled
+        # state when listing secret keys; it seems internally only the
+        # public key is disabled. This makes it hard for us to reason about
+        # which keys can actually be used, so we compensate...
+        list_keys = ["--fingerprint"]
+        for fprint in secret_keys:
+            list_keys += ["--list-keys", fprint]
+        retvals = self.run(list_keys)
+        public_keys = self.parse_keylist(retvals[1]["stdout"])
+        for fprint, info in public_keys.iteritems():
+            if fprint in secret_keys:
+                for k in ("disabled", "revoked"):  # FIXME: Copy more?
+                    secret_keys[fprint][k] = info[k]
+
+        return secret_keys
 
     def import_keys(self, key_data=None):
         """
@@ -610,7 +646,7 @@ class GnuPG:
             if x[0] == "IMPORTED":
                 res["imported"].append({
                     "fingerprint": x[1],
-                    "username": x[2]
+                    "username": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_OK":
                 reasons = {
@@ -624,7 +660,7 @@ class GnuPG:
                 res["updated"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2],
+                    "fingerprint": x[2].rstrip(),
                 })
             elif x[0] == "IMPORT_PROBLEM":
                 reasons = {
@@ -637,7 +673,7 @@ class GnuPG:
                 res["failed"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2]
+                    "fingerprint": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_RES":
                 res["results"] = {
@@ -654,7 +690,7 @@ class GnuPG:
                     "sec_imported": int(x[11]),
                     "sec_dups": int(x[12]),
                     "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14]),
+                    "not_imported": int(x[14].rstrip()),
                 }
         return res
 
@@ -825,7 +861,7 @@ class GnuPG:
 
     def address_to_keys(self, address):
         res = {}
-        keys = self.list_keys()
+        keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
             if any([x["email"] == address for x in props["uids"]]):
                 res[key] = props
@@ -878,6 +914,7 @@ class GnuPG:
 def GetKeys(gnupg, config, people):
     keys = []
     missing = []
+    ambig = []
 
     # First, we go to the contact database and get a list of keys.
     for person in set(people):
@@ -886,35 +923,55 @@ def GetKeys(gnupg, config, people):
         else:
             vcard = config.vcards.get_vcard(person)
             if vcard:
-                # FIXME: Rather than get_all, we should give the vcard the
-                #        option of providing us with its favorite key.
+                # It is the VCard's job to give us the best key first.
                 lines = [vcl for vcl in vcard.get_all('KEY')
                          if vcl.value.startswith('data:application'
                                                  '/x-pgp-fingerprint,')]
-                if len(lines) == 1:
+                if len(lines) > 0:
                     keys.append(lines[0].value.split(',', 1)[1])
                 else:
                     missing.append(person)
             else:
                 missing.append(person)
 
-    # FIXME: This doesn't really feel scalable...
-    all_keys = gnupg.list_keys()
-    for key_id, key in all_keys.iteritems():
-        for uid in key.get("uids", []):
-            if uid.get("email", None) in missing:
-                missing.remove(uid["email"])
-                keys.append(key_id)
+    # Load key data from gnupg for use below
+    if keys:
+        all_keys = gnupg.list_keys(selectors=keys)
+    else:
+        all_keys = {}
+
+    if missing:
+        # Keys are missing, so we try to just search the keychain
+        all_keys.update(gnupg.list_keys(selectors=missing))
+        found = []
+        for key_id, key in all_keys.iteritems():
+            for uid in key.get("uids", []):
+                if uid.get("email", None) in missing:
+                    missing.remove(uid["email"])
+                    found.append(uid["email"])
+                    keys.append(key_id)
+                elif uid.get("email", None) in found:
+                    ambig.append(uid["email"])
 
     # Next, we go make sure all those keys are really in our keychain.
     fprints = all_keys.keys()
     for key in keys:
-        if key not in keys and key not in fprints:
-            missing.append(key)
+        if key.startswith('0x'):
+            key = key[2:]
+        if key not in fprints:
+            match = [k for k in fprints if k.endswith(key)]
+            if len(match) == 0:
+                missing.append(key)
+            elif len(match) > 1:
+                ambig.append(key)
 
     if missing:
-        raise KeyLookupError(_('Keys missing or ambiguous for %s'
+        raise KeyLookupError(_('Keys missing for %s'
                                ) % ', '.join(missing), missing)
+    elif ambig:
+        ambig = list(set(ambig))
+        raise KeyLookupError(_('Keys ambiguous for %s'
+                               ) % ', '.join(ambig), ambig)
     return keys
 
 
@@ -1100,7 +1157,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
     ]
     VARIABLES = {
         'keytype': '1',
-        'bits': '1024',  # FIXME: '4096',
+        'bits': '4096',
         'name': 'Mailpile Generated Key',
         'email': '',
         'comment': 'www.mailpile.is',

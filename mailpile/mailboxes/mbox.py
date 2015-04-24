@@ -33,14 +33,21 @@ class MailpileMailbox(mailbox.mbox):
         self._save_to = None
         self._encryption_key_func = lambda: None
         self._decryption_key_func = lambda: None
-        self._lock = MboxLock()
+        self._lock = MboxRLock()
+
+    def __enter__(self, *args, **kwargs):
+        self._lock.acquire()
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._lock.release()
 
     def _get_fd(self):
         return open(self._path, 'rb+')
 
     def __setstate__(self, dict):
         self.__dict__.update(dict)
-        self._lock = MboxLock()
+        self._lock = MboxRLock()
         self.is_local = False
         with self._lock:
             self._save_to = None
@@ -119,7 +126,8 @@ class MailpileMailbox(mailbox.mbox):
 
     def get_msg_size(self, toc_id):
         try:
-            return self._toc[toc_id][1] - self._toc[toc_id][0]
+            with self._lock:
+                return self._toc[toc_id][1] - self._toc[toc_id][0]
         except (IndexError, KeyError, IndexError, TypeError):
             return 0
 
@@ -141,8 +149,9 @@ class MailpileMailbox(mailbox.mbox):
         return self.get_msg_cs(start, 80, max_length)
 
     def get_msg_ptr(self, mboxid, toc_id):
-        msg_start = self._toc[toc_id][0]
-        msg_size = self.get_msg_size(toc_id)
+        with self._lock:
+            msg_start = self._toc[toc_id][0]
+            msg_size = self.get_msg_size(toc_id)
         return '%s%s:%s:%s' % (mboxid,
                                b36(msg_start),
                                b36(msg_size),

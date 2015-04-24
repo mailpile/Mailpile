@@ -1,4 +1,4 @@
-APPVER = "0.4.0"
+APPVER = "0.4.4"
 ABOUT = """\
 Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
                for searching and                   <https://www.mailpile.is/>
@@ -27,6 +27,7 @@ DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), False, APPVER],
+    'homedir': [_('Location of Mailpile data'), False, '(unset)'],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
@@ -47,12 +48,12 @@ CONFIG_RULES = {
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
         'mailindex_file': (_('Metadata index file'), 'file',               ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
-        'mailbox':        [_('Mailboxes we index'), 'str',                 []],
+        'mailbox':        [_('Mailboxes we index'), 'bin',                 []],
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
             'html_theme': [_('Default theme'),
-                           'dir', os.path.join('static', 'default')],
+                           'dir', os.path.join('mailpile', 'www', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
@@ -65,7 +66,7 @@ CONFIG_RULES = {
         'open_in_browser': (_('Open in browser on startup'), bool,       True),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
-        'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
+        'gpg_recipient':  p(_('Encrypt local data to ...'), 'gpgkeyid',    ''),
         'gpg_email_key':  (_('Attach public key to outgoing messages?'),
                             bool, True),
         'openpgp_header': X(_('Advertise GPG preferences in a header?'),
@@ -100,7 +101,8 @@ CONFIG_RULES = {
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
         'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
-        'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, [])
+        'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, []),
+        'donate_visibility': (_('Hide donate link in topbar'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
@@ -132,7 +134,7 @@ CONFIG_RULES = {
         'port':            (_('Port'), int, 993),
         'keepalive':       (_('Keep server connections alive'), bool, False),
         'discovery':       (_('Mailbox discovery policy'), False, {
-            'paths':       (_('Paths to watch for new mailboxes'), str, []),
+            'paths':       (_('Paths to watch for new mailboxes'), 'bin', []),
             'policy':      (_('Default mailbox policy'),
                             ['unknown', 'ignore', 'watch',
                              'read', 'move', 'sync'], 'unknown'),
@@ -149,7 +151,7 @@ CONFIG_RULES = {
             'policy':      (_('Mailbox policy'),
                             ['unknown', 'ignore', 'read', 'move', 'sync'],
                             'ignore'),
-            'local':       (_('Local mailbox path'), str, ''),
+            'local':       (_('Local mailbox path'), 'bin', ''),
             'process_new': (_('Is a source of new mail'), bool, True),
             'primary_tag': (_('A tag representing this mailbox'), str, ''),
             'apply_tags':  (_('Tags applied to messages'), str, []),

@@ -10,6 +10,7 @@ from urllib import quote, unquote
 
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -82,7 +83,7 @@ class CachedSearchResultSet(SearchResultSet):
         SEARCH_RESULT_CACHE = {}
 
 
-class MailIndex:
+class MailIndex(object):
     """This is a lazily parsing object representing a mailpile index."""
 
     MSG_MID = 0
@@ -235,6 +236,10 @@ class MailIndex:
                             pos = int(words[self.MSG_MID], 36)
                             self.set_msg_at_idx_pos(pos, words,
                                                     original_line=line)
+                            if session and len(self.INDEX) % 107 == 100:
+                                session.ui.mark(
+                                    _('Loading metadata index...') +
+                                    ' %s' % len(self.INDEX))
                         except ValueError:
                             bogus = True
 
@@ -406,30 +411,80 @@ class MailIndex:
             else:
                 session.ui.warning(_('Bogus line: %s') % line)
 
-    def try_decode(self, text, charset):
-        for cs in (charset, 'iso-8859-1', 'utf-8'):
+    @classmethod
+    def try_decode(self, text, charset, replace=''):
+        # FIXME: We need better heuristics for choosing charsets, as pretty
+        #        much any 8-bit legacy charset will decode pretty much any
+        #        blob of data. At least utf-8 will raise on some things
+        #        (which is why we make it the 1st guess), but still not all.
+        for cs in (charset, 'utf-8', 'iso-8859-1'):
             if cs:
                 try:
                     return text.decode(cs)
                 except (UnicodeEncodeError, UnicodeDecodeError, LookupError):
                     pass
-        return "".join(i for i in text if ord(i) < 128)
+        return "".join((i if (ord(i) < 128) else replace) for i in text)
 
-    def hdr(self, msg, name, value=None):
-        try:
-            if value is None and msg:
-                # Security: RFC822 headers are not allowed to have (unencoded)
-                # non-ascii characters in them, so we just strip them all out
-                # before parsing.
-                # FIXME: This is "safe", but can we be smarter/gentler?
-                value = CleanText(msg[name], replace='_').clean
-            # Note: decode_header does the wrong thing with "quoted" data.
-            decoded = email.header.decode_header((value or ''
-                                                  ).replace('"', ''))
-            return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
-                    ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-        except email.errors.HeaderParseError:
-            return ''
+    @classmethod
+    def hdr(self, msg, name, value=None, charset=None):
+        """
+        This method stubbornly tries to decode header data and convert
+        to Pythonic unicode strings. The strings are guaranteed not to
+        contain tab, newline or carriage return characters.
+
+        If used with a message object, the header and the MIME charset
+        will be inferred from the message headers.
+        >>> hdr = MailIndex.hdr
+        >>> msg = email.message.Message()
+        >>> msg['content-type'] = 'text/plain; charset=utf-8'
+        >>> msg['from'] = 'G\\xc3\\xadsli R \\xc3\\x93la <f@b.is>'
+        >>> hdr(msg, 'from')
+        u'G\\xedsli R \\xd3la <f@b.is>'
+
+        The =?...?= MIME header encoding is also recognized and processed.
+
+        >>> hdr(None, None, '=?iso-8859-1?Q?G=EDsli_R_=D3la?=\\r\\n<f@b.is>')
+        u'G\\xedsli R \\xd3la <f@b.is>'
+
+        >>> hdr(None, None, '"=?utf-8?Q?G=EDsli_R?= =?iso-8859-1?Q?=D3la?="')
+        u'G\\xedsli R \\xd3la'
+
+        And finally, guesses are made with raw binary data. This process
+        could be improved, it currently only attempts utf-8 and iso-8859-1.
+
+        >>> hdr(None, None, '"G\\xedsli R \\xd3la"\\r\\t<f@b.is>')
+        u'"G\\xedsli R \\xd3la"  <f@b.is>'
+
+        >>> hdr(None, None, '"G\\xc3\\xadsli R \\xc3\\x93la"\\n <f@b.is>')
+        u'"G\\xedsli R \\xd3la"  <f@b.is>'
+        """
+        if value is None:
+            value = msg and msg[name] or ''
+            charset = charset or msg.get_content_charset() or 'utf-8'
+        else:
+            charset = charset or 'utf-8'
+
+        if not isinstance(value, unicode):
+            # Already a str! Oh shit, might be nasty binary data.
+            value = self.try_decode(value, charset, replace='?')
+
+        # At this point we know we have a unicode string. Next we try
+        # to very stubbornly decode and discover character sets.
+        if '=?' in value and '?=' in value:
+            try:
+                # decode_header wants an unquoted str (not unicode)
+                value = value.encode('utf-8').replace('"', '')
+                # decode_header gets confused by newlines
+                value = value.replace('\r', ' ').replace('\n', ' ')
+                # Decode!
+                pairs = email.header.decode_header(value)
+                value = ' '.join([self.try_decode(t, cs or charset)
+                                  for t, cs in pairs])
+            except email.errors.HeaderParseError:
+                pass
+
+        # Finally, return the unicode data, with white-space normalized
+        return value.replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
 
     def _remove_location(self, session, msg_ptr):
         msg_idx_pos = self.PTRS[msg_ptr]
@@ -546,11 +601,14 @@ class MailIndex:
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
     def _get_scan_progress(self, mailbox_idx, event=None, reset=False):
-        if event and 'rescans' not in event.data:
-            event.data['rescans'] = []
+        if event:
+            if 'rescans' not in event.data:
+                event.data['rescans'] = []
             if reset:
                 event.data['rescan'] = {}
-            progress = event.data['rescan']
+            progress = event.data.get('rescan', {})
+            if not progress.keys():
+                reset = True
         else:
             progress = {}
             reset = True
@@ -749,8 +807,8 @@ class MailIndex:
             added += 1
 
         play_nice_with_threads()
-        progress['added'] += added
-        progress['updated'] += updated
+        progress['added'] = progress.get('added', 0) + added
+        progress['updated'] = progress.get('updated', 0) + updated
         return last_date, added, updated
 
     def edit_msg_info(self, msg_info,
@@ -927,6 +985,8 @@ class MailIndex:
                                 self.set_msg_at_idx_pos(int(msg_thr_mid, 36),
                                                         parent)
                                 break
+                            else:
+                                msg_thr_mid = None
                         if date - long(m_info[self.MSG_DATE],
                                        36) > 5 * 24 * 3600:
                             break
@@ -1083,7 +1143,7 @@ class MailIndex:
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
-            charset = part.get_content_charset() or 'iso-8859-1'
+            charset = part.get_content_charset() or 'utf-8'
 
             def _loader(p):
                 if payload[0] is None:
@@ -1347,15 +1407,20 @@ class MailIndex:
         if not msg_idxs:
             return set()
         CachedSearchResultSet.DropCaches()
-        session.ui.mark(_n('Tagging %d message (%s)',
-                           'Tagging %d messages (%s)',
+        if conversation:
+            session.ui.mark(_n('Tagging %d conversation (%s)',
+                           'Tagging %d conversations (%s)',
                            len(msg_idxs)
                            ) % (len(msg_idxs), tag_id))
-        for msg_idx in list(msg_idxs):
-            if conversation:
+            for msg_idx in list(msg_idxs):
                 for reply in self.get_conversation(msg_idx=msg_idx):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
+        else:
+            session.ui.mark(_n('Tagging %d message (%s)',
+                           'Tagging %d messages (%s)',
+                           len(msg_idxs)
+                           ) % (len(msg_idxs), tag_id))
         eids = set()
         added = set()
         threads = set()
@@ -1515,13 +1580,36 @@ class MailIndex:
             term = term.lower()
 
             if ':' in term:
-                if term.startswith('body:'):
+                if term.startswith('in:'):
+                    rt.extend(self.search_tag(session, term, hits,
+                                              recursion=recursion))
+                elif term.startswith('body:'):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
                     rt.extend(range(0, len(self.INDEX)))
-                elif term.startswith('in:'):
-                    rt.extend(self.search_tag(session, term, hits,
-                                              recursion=recursion))
+                elif term in ('to:me', 'cc:me', 'from:me'):
+                    vcards = self.config.vcards
+                    emails = []
+                    for vc in vcards.find_vcards([], kinds=['profile']):
+                        emails += [vcl.value for vcl in vc.get_all('email')]
+                    for email in set(emails):
+                        if email:
+                            rt.extend(hits('%s:%s' % (email,
+                                                      term.split(':')[0])))
+                elif term == 'is:encrypted':
+                    for status in EncryptionInfo.STATUSES:
+                        if status in CryptoInfo.STATUSES:
+                            continue
+                        rt.extend(self.search_tag(session,
+                                                  'in:mp_enc-%s' % status,
+                                                  hits, recursion=recursion))
+                elif term == 'is:signed':
+                    for status in SignatureInfo.STATUSES:
+                        if status in CryptoInfo.STATUSES:
+                            continue
+                        rt.extend(self.search_tag(session,
+                                                  'in:mp_sig-%s' % status,
+                                                  hits, recursion=recursion))
                 else:
                     t = term.split(':', 1)
                     fnc = _plugins.get_search_term(t[0])
@@ -1608,6 +1696,7 @@ class MailIndex:
             return
 
         count = len(results)
+        how = how or 'flat-unsorted'
         session.ui.mark(_n('Sorting %d message by %s...',
                            'Sorting %d messages by %s...',
                            count
@@ -1682,3 +1771,13 @@ class MailIndex:
                                ) % (count, _(how)))
 
         return True
+
+
+if __name__ == '__main__':
+    import doctest
+    import sys
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={})
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)

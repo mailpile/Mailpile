@@ -13,6 +13,7 @@ from urllib import quote, unquote
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import MBX_ID_LEN
+from mailpile.util import MboxRLock
 
 
 __all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'pop3', 'wervd',
@@ -36,7 +37,7 @@ def IsMailbox(fn, config):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
             if mbox_cls.parse_path(config, fn):
-                return True
+                return (True, mbox_cls)
         except KeyboardInterrupt:
             raise
         except:
@@ -66,6 +67,7 @@ def UnorderedPicklable(parent, editable=False):
             self.editable = editable
             self.source_map = {}
             self.is_local = False
+            self._lock = MboxRLock()
             self._save_to = None
             self._encryption_key_func = lambda: None
             self._decryption_key_func = lambda: None
@@ -74,17 +76,26 @@ def UnorderedPicklable(parent, editable=False):
         def __init2__(self, *args, **kwargs):
             pass
 
+        def __enter__(self, *args, **kwargs):
+            self._lock.acquire()
+            return self
+
+        def __exit__(self, *args, **kwargs):
+            self._lock.release()
+
         def __setstate__(self, data):
             self.__dict__.update(data)
-            self._save_to = None
-            self._encryption_key_func = lambda: None
-            self._decryption_key_func = lambda: None
-            if not hasattr(self, 'source_map'):
-                self.source_map = {}
-            if (len(self.source_map) > 0 and
-                    not hasattr(self, 'is_local') or not self.is_local):
-                self.is_local = True
-            self.update_toc()
+            self._lock = MboxRLock()
+            with self._lock:
+                self._save_to = None
+                self._encryption_key_func = lambda: None
+                self._decryption_key_func = lambda: None
+                if not hasattr(self, 'source_map'):
+                    self.source_map = {}
+                if (len(self.source_map) > 0 and
+                        not hasattr(self, 'is_local') or not self.is_local):
+                    self.is_local = True
+                self.update_toc()
 
         def __getstate__(self):
             odict = self.__dict__.copy()
@@ -97,17 +108,20 @@ def UnorderedPicklable(parent, editable=False):
             return odict
 
         def save(self, session=None, to=None, pickler=None):
-            if to and pickler:
-                self._save_to = (pickler, to)
-            if self._save_to and len(self) > 0:
-                pickler, fn = self._save_to
-                if session:
-                    session.ui.mark(_('Saving %s state to %s') % (self, fn))
-                pickler(self, fn)
+            with self._lock:
+                if to and pickler:
+                    self._save_to = (pickler, to)
+                if self._save_to and len(self) > 0:
+                    pickler, fn = self._save_to
+                    if session:
+                        session.ui.mark(_('Saving %s state to %s')
+                                        % (self, fn))
+                    pickler(self, fn)
 
         def add_from_source(self, source_id, *args, **kwargs):
-            key = self.add(*args, **kwargs)
-            self.source_map[source_id] = key
+            with self._lock:
+                key = self.add(*args, **kwargs)
+                self.source_map[source_id] = key
             return key
 
         def update_toc(self):
@@ -116,15 +130,46 @@ def UnorderedPicklable(parent, editable=False):
         def get_msg_ptr(self, mboxid, toc_id):
             return '%s%s' % (mboxid, quote(toc_id))
 
+        def get_file(self, *args, **kwargs):
+            with self._lock:
+                return parent.get_file(self, *args, **kwargs)
+
         def get_file_by_ptr(self, msg_ptr):
             return self.get_file(unquote(msg_ptr[MBX_ID_LEN:]))
 
         def get_msg_size(self, toc_id):
-            fd = self.get_file(toc_id)
-            fd.seek(0, 2)
-            return fd.tell()
+            with self._lock:
+                fd = self.get_file(toc_id)
+                fd.seek(0, 2)
+                return fd.tell()
 
         def get_bytes(self, toc_id):
-            return self.get_file(toc_id).read()
+            with self._lock:
+                return self.get_file(toc_id).read()
+
+        def get_string(self, *args, **kwargs):
+            with self._lock:
+                return parent.get_string(self, *args, **kwargs)
+
+        def remove(self, *args, **kwargs):
+            with self._lock:
+                return parent.remove(self, *args, **kwargs)
+
+        def _get_fd(self, *args, **kwargs):
+            with self._lock:
+                return parent._get_fd(self, *args, **kwargs)
+
+        def _refresh(self, *args, **kwargs):
+            with self._lock:
+                return parent._refresh(self, *args, **kwargs)
+
+        def __setitem__(self, *args, **kwargs):
+            with self._lock:
+                return parent.__setitem__(self, *args, **kwargs)
+
+        def __getitem__(self, *args, **kwargs):
+            with self._lock:
+                return parent.__getitem__(self, *args, **kwargs)
+
 
     return UnorderedPicklableMailbox

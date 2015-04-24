@@ -37,19 +37,18 @@ class MboxMailSource(BaseMailSource):
 
     def _has_mailbox_changed(self, mbx, state):
         try:
-            mt = state['mt'] = long(os.path.getmtime(self._path(mbx)))
-            sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
+            mt = long(os.path.getmtime(self._path(mbx)))
+            sz = long(os.path.getsize(self._path(mbx)))
         except (OSError, IOError):
-            mt = sz = state['mt'] = state['sz'] = -1
-        mtsz = '%s/%s' % (mt, sz)
+            mt = sz = -1
+        mtsz = state['mtsz'] = '%s/%s' % (mt, sz)
         return (mtsz != self.event.data.get('mailbox_state', {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        mtsz = '%s/%s' % (state['mt'], state['sz'])
         if 'mailbox_state' in self.event.data:
-            self.event.data['mailbox_state'][mbx._key] = mtsz
+            self.event.data['mailbox_state'][mbx._key] = state['mtsz']
         else:
-            self.event.data['mailbox_state'] = {mbx._key: mtsz}
+            self.event.data['mailbox_state'] = {mbx._key: state['mtsz']}
 
     def is_mailbox(self, fn):
         try:
@@ -60,7 +59,7 @@ class MboxMailSource(BaseMailSource):
                     # few lines look like RFC2822 headers...
                     headcount = 0
                     for line in data.splitlines(True)[1:]:
-                        if (headcount > 3) and line in ('\n', '\r\n'):
+                        if (headcount > 2) and line in ('\n', '\r\n'):
                             return True
                         if line[-1:] == '\n' and line[:1] not in (' ', '\t'):
                             parts = line.split(':')
@@ -68,7 +67,7 @@ class MboxMailSource(BaseMailSource):
                                     ' ' in parts[0] or '\t' in parts[0]):
                                 return False
                             headcount += 1
-                    return (headcount > 3)
+                    return (headcount > 2)
         except (IOError, OSError):
             pass
         return False

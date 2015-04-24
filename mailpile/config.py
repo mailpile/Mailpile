@@ -180,10 +180,23 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
     >>> cecp.items('config/sys: Technical system settings')
     [(u'debug', u'm\\xe1ny\\nlines\\nof\\nbelching  ')]
     """
+    NOT_UTF8 = '%C0'  # This byte is never valid at the start of an utf-8
+                      # string, so we use it to mark binary data.
+    SAFE = '!?: /#@<>[]()=-'
+
     def set(self, section, key, value, comment):
         key = unicode(key).encode('utf-8')
         section = unicode(section).encode('utf-8')
-        value = quote(unicode(value).encode('utf-8'), safe=' /')
+
+        if isinstance(value, unicode):
+            value = quote(value.encode('utf-8'), safe=self.SAFE)
+        elif isinstance(value, str):
+            quoted = quote(value, safe=self.SAFE)
+            if quoted != value:
+                value = self.NOT_UTF8 + quoted
+        else:
+            value = quote(unicode(value).encode('utf-8'), safe=self.SAFE)
+
         if value.endswith(' '):
             value = value[:-1] + '%20'
         if comment:
@@ -191,14 +204,20 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
             value = '%s%s%s' % (value, pad, comment)
         return ConfigParser.RawConfigParser.set(self, section, key, value)
 
+    def _decode_value(self, value):
+        if value.startswith(self.NOT_UTF8):
+            return unquote(value[len(self.NOT_UTF8):])
+        else:
+            return unquote(value).decode('utf-8')
+
     def get(self, section, key):
         key = unicode(key).encode('utf-8')
         section = unicode(section).encode('utf-8')
         value = ConfigParser.RawConfigParser.get(self, section, key)
-        return unquote(value).decode('utf-8')
+        return self._decode_value(value)
 
     def items(self, section):
-        return [(k.decode('utf-8'), unquote(i).decode('utf-8')) for k, i
+        return [(k.decode('utf-8'), self._decode_value(i)) for k, i
                 in ConfigParser.RawConfigParser.items(self, section)]
 
 
@@ -371,6 +390,17 @@ def _B36Check(b36val):
     return str(b36val).lower()
 
 
+def _NotUnicode(string):
+    """
+    Make sure a string is NOT unicode.
+    """
+    if isinstance(string, unicode):
+        string = string.encode('utf-8')
+    if not isinstance(string, str):
+        return str(string)
+    return string
+
+
 def _PathCheck(path):
     """
     Verify that a string is a valid path, make it absolute.
@@ -383,6 +413,8 @@ def _PathCheck(path):
         ...
     ValueError: File/directory does not exist: /no/such/path
     """
+    if isinstance(path, unicode):
+        path = path.encode('utf-8')
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         raise ValueError(_('File/directory does not exist: %s') % path)
@@ -475,6 +507,49 @@ def _EmailCheck(email):
     return email
 
 
+def _GPGKeyCheck(value):
+    """
+    Strip a GPG fingerprint of all spaces, make sure it seems valid.
+    Will also accept e-mail addresses, for legacy reasons.
+
+    >>> _GPGKeyCheck('User@Foo.com')
+    'User@Foo.com'
+
+    >>> _GPGKeyCheck('1234 5678 abcd EF00')
+    '12345678ABCDEF00'
+
+    >>> _GPGKeyCheck('12345678')
+    '12345678'
+
+    >>> _GPGKeyCheck('B906 EA4B 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    'B906EA4B8A2815C4F8596F9F47C13F3FED735179'
+
+    >>> _GPGKeyCheck('B906 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a GPG key ID or fingerprint
+
+    >>> _GPGKeyCheck('B906 8X28 1111 15C4 F859  6F9F 47C1 3F3F ED73 5179')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a GPG key ID or fingerprint
+    """
+    value = value.replace(' ', '').replace('\t', '').strip()
+    if value == '!CREATE':
+        return value
+    try:
+        if len(value) not in (8, 16, 40):
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+        if re.match(r'^[0-9A-F]+$', value.upper()) is None:
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+    except ValueError:
+        try:
+            return _EmailCheck(value)
+        except ValueError:
+            raise ValueError(_('Not a GPG key ID or fingerprint'))
+    return value.upper()
+
+
 class IgnoreValue(Exception):
     pass
 
@@ -496,6 +571,7 @@ def RuledContainer(pcls):
         RULE_DEFAULT = -1
         RULE_CHECK_MAP = {
             bool: _BoolCheck,
+            'bin': _NotUnicode,
             'bool': _BoolCheck,
             'b36': _B36Check,
             'dir': _DirCheck,
@@ -505,6 +581,7 @@ def RuledContainer(pcls):
             'False': False, 'false': False,
             'file': _FileCheck,
             'float': float,
+            'gpgkeyid': _GPGKeyCheck,
             'hostname': _HostNameCheck,
             'int': int,
             'long': long,
@@ -588,15 +665,11 @@ def RuledContainer(pcls):
                         comment = self.rules[key][self.RULE_COMMENT]
                     else:
                         comment = ''
-                    value = unicode(self[key])
+                    value = self[key]
                     if value is not None and value != '':
                         if key not in set_keys:
                             key = ';' + key
                             comment = '(default) ' + comment
-                        if comment:
-                            pad = ' ' * (30 - len(key) - len(value)) + ' ; '
-                        else:
-                            pad = ''
                         if not added_section:
                             config.add_section(str(section))
                             added_section = True
@@ -1072,6 +1145,9 @@ class MailpileJinjaLoader(BaseLoader):
         return source, path, unchanged
 
 
+GLOBAL_INDEX_CHECK = ConfigLock()
+GLOBAL_INDEX_CHECK.acquire()
+
 class ConfigManager(ConfigDict):
     """
     This class manages the live global mailpile configuration. This includes
@@ -1120,6 +1196,7 @@ class ConfigManager(ConfigDict):
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
         self._master_key_ondisk = None
+        self._master_key_recipient = None
 
         self.plugins = None
         self.background = None
@@ -1135,6 +1212,7 @@ class ConfigManager(ConfigDict):
 
         self.event_log = None
         self.index = None
+        self.index_check = GLOBAL_INDEX_CHECK
         self.vcards = {}
         self.search_history = SearchHistory()
         self._mbox_cache = []
@@ -1155,7 +1233,7 @@ class ConfigManager(ConfigDict):
             trim_blocks=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
                         'jinja2.ext.do', 'jinja2.ext.autoescape',
-                        'mailpile.jinjaextensions.MailpileCommand']
+                        'mailpile.www.jinjaextensions.MailpileCommand']
         )
 
         self._magic = True  # Enable the getattr/getitem magic
@@ -1243,8 +1321,14 @@ class ConfigManager(ConfigDict):
 
     def _unlocked_load(self, session, filename=None, public=False):
         self._mkworkdir(session)
-        self.index = None
+        if self.index:
+            self.index_check.acquire()
+            self.index = None
         self.loaded_config = False
+
+        # Set the homedir default
+        self.rules['homedir'][2] = self.workdir
+        self._rules_source['homedir'][2] = self.workdir
         self.reset(rules=False, data=True)
 
         filename = filename or self.conffile
@@ -1257,6 +1341,7 @@ class ConfigManager(ConfigDict):
                                             self, newlines=True)
                 self.master_key = ''.join(keydata)
                 self._master_key_ondisk = self.master_key
+                self._master_key_recipient = self.prefs.gpg_recipient
 
             if os.path.exists(filename):
                 with open(filename, 'rb') as fd:
@@ -1280,7 +1365,7 @@ class ConfigManager(ConfigDict):
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         '..', 'plugins'),
+                         'contrib'),
             os.path.join(self.workdir, 'plugins')
         ])
         self.sys.plugins.rules['_any'][self.RULE_CHECKER
@@ -1316,6 +1401,10 @@ class ConfigManager(ConfigDict):
                                                       mode='rw', mkdir=True),
                                   dec_key_func, enc_key_func
                                   ).load()
+        if 'log' in self.sys.debug:
+            self.event_log.ui_watch(session.ui)
+        else:
+            self.event_log.ui_unwatch(session.ui)
 
         # Load Search History
         self.search_history = SearchHistory.Load(self,
@@ -1354,7 +1443,7 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
-    def _unlocked_save(self):
+    def _unlocked_save(self, session=None):
         if not self.loaded_config:
             return
 
@@ -1369,20 +1458,38 @@ class ConfigManager(ConfigDict):
         if not self.master_key:
             self.master_key = self.prefs.obfuscate_index
 
+        if session:
+            if 'log' in self.sys.debug:
+                self.event_log.ui_watch(session.ui)
+            else:
+                self.event_log.ui_unwatch(session.ui)
+
         # We keep the master key in a file of its own and never delete
         # or overwrite master keys.
-        if self._master_key_ondisk != self.master_key:
+        want_renamed_keyfile = None
+        if (self._master_key_ondisk != self.master_key or
+               self._master_key_recipient != self.prefs.gpg_recipient):
             if os.path.exists(keyfile):
-                os.rename(keyfile, keyfile + ('.%x' % time.time()))
-        if not os.path.exists(keyfile):
+                want_renamed_keyfile = keyfile + ('.%x' % time.time())
+        if want_renamed_keyfile or not os.path.exists(keyfile):
             gpgr = self.prefs.get('gpg_recipient')
             if self.master_key and gpgr != '!CREATE':
                 status, encrypted_key = GnuPG(self).encrypt(self.master_key,
                                                             tokeys=[gpgr])
                 if status == 0:
-                    with open(keyfile, 'wb') as fd:
-                        fd.write(encrypted_key)
-                    self._master_key_ondisk = self.master_key
+                    try:
+                        with open(keyfile + '.new', 'wb') as fd:
+                            fd.write(encrypted_key)
+                        if want_renamed_keyfile:
+                            os.rename(keyfile, want_renamed_keyfile)
+                        os.rename(keyfile + '.new', keyfile)
+                        self._master_key_ondisk = self.master_key
+                        self._master_key_recipient = self.prefs.gpg_recipient
+                    except:
+                        if (want_renamed_keyfile and
+                                os.path.exists(want_renamed_keyfile)):
+                            os.rename(want_renamed_keyfile, keyfile)
+                        raise
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
@@ -1715,7 +1822,7 @@ class ConfigManager(ConfigDict):
         """Get the gettext translation object, no matter where our CWD is"""
         # NOTE: MO files are loaded from the directory where the
         #       scripts reside in
-        return os.path.join(os.path.dirname(__file__), "..", "locale")
+        return os.path.join(os.path.dirname(__file__), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
@@ -1723,22 +1830,21 @@ class ConfigManager(ConfigDict):
         data, optionally creating the directory if it is missing.
 
         >>> p = cfg.data_directory('html_theme', mode='r', mkdir=False)
-        >>> p == os.path.abspath('static/default')
+        >>> p == os.path.abspath('mailpile/www/default')
         True
         """
-        with self._lock:
-            # This should raise a KeyError if the ftype is unrecognized
-            bpath = self.sys.path.get(ftype)
-            if not bpath.startswith('/'):
-                cpath = os.path.join(self.workdir, bpath)
-                if os.path.exists(cpath) or 'w' in mode:
-                    bpath = cpath
-                    if mkdir and not os.path.exists(cpath):
-                        os.mkdir(cpath)
-                else:
-                    bpath = os.path.join(os.path.dirname(__file__),
-                                         '..', bpath)
-            return os.path.abspath(bpath)
+        # This should raise a KeyError if the ftype is unrecognized
+        bpath = self.sys.path.get(ftype)
+        if not bpath.startswith('/'):
+            cpath = os.path.join(self.workdir, bpath)
+            if os.path.exists(cpath) or 'w' in mode:
+                bpath = cpath
+                if mkdir and not os.path.exists(cpath):
+                    os.mkdir(cpath)
+            else:
+                bpath = os.path.join(os.path.dirname(__file__),
+                                     '..', bpath)
+        return os.path.abspath(bpath)
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
         # The theme gets precedence
@@ -1774,11 +1880,10 @@ class ConfigManager(ConfigDict):
         return path
 
     def tempfile_dir(self):
-        with self._lock:
-            d = os.path.join(self.workdir, 'tmp')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            return d
+        d = os.path.join(self.workdir, 'tmp')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return d
 
     def clean_tempfile_dir(self):
         try:
@@ -1793,24 +1898,35 @@ class ConfigManager(ConfigDict):
             pass
 
     def postinglist_dir(self, prefix):
-        with self._lock:
-            d = os.path.join(self.workdir, 'search')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            d = os.path.join(d, prefix and prefix[0] or '_')
-            if not os.path.exists(d):
-                os.mkdir(d)
-            return d
+        d = os.path.join(self.workdir, 'search')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        d = os.path.join(d, prefix and prefix[0] or '_')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return d
+
+    def interruptable_wait_for_lock(self):
+        # This construct allows the user to CTRL-C out of things.
+        delay = 0.01
+        while self._lock.acquire(False) == False:
+            if mailpile.util.QUITTING:
+                raise KeyboardInterrupt('Quitting')
+            time.sleep(delay)
+            delay = min(1, delay*2)
+        self._lock.release()
+        return self._lock
 
     def get_index(self, session):
         # Note: This is a long-running lock, but having two sets of the
         # index would really suck and this should only ever happen once.
-        with self._lock:
+        with self.interruptable_wait_for_lock():
             if self.index:
                 return self.index
             idx = MailIndex(self)
             idx.load(session)
             self.index = idx
+            self.index_check.release()
             return idx
 
     def get_tor_socket(self):
@@ -1847,7 +1963,7 @@ class ConfigManager(ConfigDict):
         def start_httpd(sspec=None):
             sspec = sspec or (config.sys.http_host, config.sys.http_port)
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                config.http_worker = HttpWorker(session, sspec)
+                config.http_worker = HttpWorker(config.background, sspec)
                 config.http_worker.start()
 
         # We may start the HTTPD without the loaded config...
@@ -1873,19 +1989,20 @@ class ConfigManager(ConfigDict):
                         pass
 
             if config.slow_worker == config.dumb_worker:
-                config.slow_worker = Worker('Slow worker', session)
+                config.slow_worker = Worker('Slow worker', config.background)
                 config.slow_worker.start()
             if config.scan_worker == config.dumb_worker:
-                config.scan_worker = Worker('Scan worker', session)
+                config.scan_worker = Worker('Scan worker', config.background)
                 config.scan_worker.start()
             if config.async_worker == config.dumb_worker:
-                config.async_worker = Worker('Async worker', session)
+                config.async_worker = Worker('Async worker', config.background)
                 config.async_worker.start()
             if config.save_worker == config.dumb_worker:
-                config.save_worker = ImportantWorker('Save worker', session)
+                config.save_worker = ImportantWorker('Save worker',
+                                                     config.background)
                 config.save_worker.start()
             if not config.cron_worker:
-                config.cron_worker = Cron('Cron worker', session)
+                config.cron_worker = Cron('Cron worker', config.background)
                 config.cron_worker.start()
             if not config.http_worker:
                 start_httpd(httpd_spec)
@@ -1931,6 +2048,7 @@ class ConfigManager(ConfigDict):
                     config.background, 'gpl_optimize',
                     lambda: GlobalPostingList.Optimize(config.background,
                                                        config.index,
+                                                       lazy=True,
                                                        ratio=0.25, runtime=15))
             config.cron_worker.add_task('gpl_optimize', 29, optimizer)
 
@@ -1959,6 +2077,11 @@ class ConfigManager(ConfigDict):
                 config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
+        try:
+            self.index_check.release()
+        except:
+            pass
+
         with config._lock:
             worker_list = (config.mail_sources.values() +
                            config.other_workers +

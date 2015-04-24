@@ -41,7 +41,9 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         passphrase = 'this probably does not really overwrite :-( '
 
     assert(sps is not None)
-    gpg = GnuPG(None, use_agent=False)
+
+    # Note: Must use GnuPG without a config, otherwise bad things happen.
+    gpg = GnuPG(None, use_agent=False, debug=('gnupg' in config.sys.debug))
     if gpg.is_available():
         gpg.passphrase = sps.get_reader()
         gpgr = config.prefs.gpg_recipient
@@ -100,7 +102,7 @@ class Authenticate(Command):
 
     @classmethod
     def RedirectBack(cls, url, data):
-        qs = [(k, v) for k, vl in data.iteritems() for v in vl
+        qs = [(k, v.encode('utf-8')) for k, vl in data.iteritems() for v in vl
               if k not in ['_method', '_path'] + cls.HTTP_POST_VARS.keys()]
         qs = urlencode(qs)
         url = ''.join([url, '?%s' % qs if qs else ''])
@@ -147,12 +149,14 @@ class Authenticate(Command):
                     config.gnupg_passphrase.data = sps.data
 
                     # Load the config and index, if necessary
-                    if not config.loaded_config:
-                        self._config()
-                        if load_index:
-                            self._idx()
-                        else:
-                            pass  # FIXME: Start load in background
+                    config = self._config()
+                    self._idx(wait=False)
+                    if load_index:
+                        try:
+                            while not config.index:
+                                time.sleep(1)
+                        except KeyboardInterrupt:
+                            pass
 
                     session.ui.debug('Good passphrase for %s' % session_id)
                     return self._success(_('Hello world, welcome!'), result={

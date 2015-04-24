@@ -14,7 +14,7 @@ import traceback
 
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
-mailpile_test = os.path.join(mailpile_root, 'testing')
+mailpile_test = os.path.join(mailpile_root, 'mailpile', 'tests', 'data')
 mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
 mailpile_gpgh = os.path.join(mailpile_test, 'gpg-keyring')
@@ -34,6 +34,8 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 ICELANDIC = u'r\xfanar'
+IS_CHARS = (u'\xe1\xe9\xed\xf3\xfa\xfd\xfe\xe6\xf6\xf0\xc1\xc9\xcd\xd3'
+            u'\xda\xdd\xde\xc6\xd6\xd0')
 MY_FROM = 'team+testing@mailpile.is'
 MY_NAME = 'Mailpile Team'
 MY_KEYID = '0x7848252F'
@@ -168,6 +170,8 @@ def test_load_save_rescan():
                    ['from:barnaby', 'subject:testing', 'soup',
                     'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
                    ['from:square', 'subject:here', '-has:attachment'],
+                   [u'subject:' + IS_CHARS, 'subject:8859'],
+                   [u'subject:' + IS_CHARS, 'subject:UTF'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -311,6 +315,7 @@ def test_composition():
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
+
 def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
     new_mid = mp.message_compose().result['thread_ids'][0]
@@ -365,6 +370,7 @@ if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
     mp._session.ui = ui
+    print '%s' % mp.help_splash()
     mp.Interact()
 
 

@@ -9,8 +9,8 @@ module.exports = function(grunt) {
           separator: ';'
         },
         src: [
-          'static/default/js/libraries.js',
-          'static/default/js/helpers.js',
+          'mailpile/www/default/js/libraries.js',
+          'mailpile/www/default/js/helpers.js',
           'bower_components/underscore/underscore.js',
           'bower_components/backbone/backbone.js',
           'bower_components/backbone-validation/dist/backbone-validation.js',
@@ -28,13 +28,13 @@ module.exports = function(grunt) {
           'bower_components/bootstrap/js/dropdown.js',
           'bower_components/bootstrap/js/modal.js',
           'bower_components/mousetrap/mousetrap.js',
-          'static/default/js/mousetrap.global.bind.js',
+          'mailpile/www/default/js/mousetrap.global.bind.js',
           'bower_components/listjs/dist/list.js',
           'bower_components/purl/purl.js',
           'bower_components/favico.js/favico.js',
           'bower_components/select2/select2.js'
         ],
-        dest: 'static/default/js/libraries.min.js'
+        dest: 'mailpile/www/default/js/libraries.min.js'
       },
     },
     uglify: {
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'static/default/js/libraries.min.js': ['static/default/js/libraries.min.js']
+          'mailpile/www/default/js/libraries.min.js': ['mailpile/www/default/js/libraries.min.js']
         }
       }
     },
@@ -53,13 +53,13 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "static/default/css/default.css": "static/default/less/default.less"
+          "mailpile/www/default/css/default.css": "mailpile/www/default/less/default.less"
         }
       }
     },
     watch: {
       js: {
-        files: ['static/default/js/*.js'],
+        files: ['mailpile/www/default/js/*.js'],
         tasks: ['concat:js', 'uglify:js'],
         options: {
           livereload: true,
@@ -67,10 +67,10 @@ module.exports = function(grunt) {
       },
       css: {
         files: [
-          'static/default/less/config.less',
-          'static/default/less/default.less',
-          'static/default/less/app/*.less',
-          'static/default/less/libraries/*.less'
+          'mailpile/www/default/less/config.less',
+          'mailpile/www/default/less/default.less',
+          'mailpile/www/default/less/app/*.less',
+          'mailpile/www/default/less/libraries/*.less'
         ],
         tasks: ['less:style'],
         options: {

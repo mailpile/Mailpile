@@ -79,7 +79,7 @@ class UrlMap:
         Return an instantiated mailpile.command object or raise a UsageError.
 
         >>> urlmap._command('output', args=['html'], method=False)
-        <mailpile.commands.Output instance at 0x...>
+        <mailpile.commands.Output...>
         >>> urlmap._command('bogus')
         Traceback (most recent call last):
             ...
@@ -95,7 +95,7 @@ class UrlMap:
         BadDataError: Bad variable (evil): message/update
         >>> urlmap._command('search', args=['html'],
         ...                 query_data={'ui_': '1', 'q[]': 'foobar'})
-        <mailpile.plugins.search.Search instance at 0x...>
+        <mailpile.plugins.search.Search...>
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
@@ -183,35 +183,37 @@ class UrlMap:
         >>> path_parts = '/a/b/as.json'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
+        (['', 'a', 'b'], <mailpile.commands.Output...>)
 
         If there is no filename part, the path_parts list is unchanged
         aside from stripping off the trailing empty string if present.
         >>> path_parts = '/a/b/'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
+        (['', 'a', 'b'], <mailpile.commands.Output...>)
+
         >>> path_parts = '/a/b'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         Traceback (most recent call last):
           ...
         UsageError: Invalid output format: b
+
+        >>> path_parts = '/a/b/%%%%%bogon.json'.split('/')
+        >>> command = urlmap._choose_output(path_parts)
+        Traceback (most recent call last):
+          ...
+        UsageError: Invalid output format: %%%%%bogon.json
         """
         if len(path_parts) > 1 and not path_parts[-1]:
             path_parts.pop(-1)
         else:
-            fn = path_parts.pop(-1)
-            for suffix in self.OUTPUT_SUFFIXES:
-                if suffix == '.' + fn:
-                    return self._command('output', [suffix[1:]], method=False)
-                if fn.endswith(suffix):
-                    if fn == 'as' + suffix:
-                        return self._command('output', [fn[3:]], method=False)
-                    else:
-                        # FIXME: We are passing user input here which may
-                        #        have security implications.
-                        return self._command('output', [fn], method=False)
-            raise UsageError('Invalid output format: %s' % fn)
+            om = path_parts.pop(-1)
+            if re.match(r'^[a-zA-Z0-9\.!_-]+$', om):
+                fn = om.split('!')[0]  # Strip off !mode suffixes
+                for suffix in self.OUTPUT_SUFFIXES:
+                    if fn.endswith(suffix) or suffix == ('.' + fn):
+                        return self._command('output', [om], method=False)
+            raise UsageError('Invalid output format: %s' % om)
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
@@ -227,7 +229,7 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
-        ('json',)
+        ('as.json',)
         >>> commands[1].args
         ('@20', 'in:inbox')
         """
@@ -239,7 +241,8 @@ class UrlMap:
 
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
         tag = self.config.get_tag(tag_slug)
-        tag_search = [tag.search_terms % tag] if tag is not None else [""]
+        tag_search = [term for term in (tag.search_terms % tag).split()
+                      if term] if tag is not None else [""]
         if tag is not None and tag.search_order and 'order' not in query_data:
             query_data['order'] = [tag.search_order]
 
@@ -348,7 +351,7 @@ class UrlMap:
         The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
+        (<...UrlRedirect...>, ('/in/inbox/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
@@ -711,15 +714,15 @@ else:
     ])
     session = mailpile.ui.Session(config)
     urlmap = UrlMap(session)
-    urlmap.print_map_markdown()
+    if '-nomap' in sys.argv:
+        # For the UrlMap._map_api_command test
+        plugin_manager.register_commands(UrlRedirect)
 
-    # For the UrlMap._map_api_command test
-    plugin_manager.register_commands(UrlRedirect)
-
-    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
-                              extraglobs={'urlmap': urlmap,
-                                          'request': None})
-    print
-    print '<!-- %s -->' % (results, )
-    if results.failed:
-        sys.exit(1)
+        results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                                  extraglobs={'urlmap': urlmap,
+                                              'request': None})
+        print '%s' % (results, )
+        if results.failed:
+            sys.exit(1)
+    else:
+        urlmap.print_map_markdown()
