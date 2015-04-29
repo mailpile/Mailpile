@@ -426,7 +426,7 @@ class Command(object):
         if fn in self.data:
             return self.data[fn]
         else:
-            return open(fn, 'rb').read()
+            return vfs.open(fn, 'rb').read()
 
     def _ignore_exception(self):
         self.session.ui.debug(traceback.format_exc())
@@ -1461,7 +1461,7 @@ class WritePID(Command):
     SPLIT_ARG = False
 
     def command(self):
-        with open(self.args[0], 'w') as fd:
+        with vfs.open(self.args[0], 'w') as fd:
             fd.write('%d' % os.getpid())
         return self._success(_('Wrote PID to %s') % self.args)
 
@@ -1661,10 +1661,12 @@ class ListDir(Command):
         def as_text(self):
             if self.result:
                 lines = []
-                for bn, fp, sz, isdir, ismailbox in self.result:
+                for i in self.result:
                     lines.append(('%12.12s %s%s%s'
-                                  ) % (sz, '*' if ismailbox else ' ',
-                                       bn, '/' if isdir else ''))
+                                  ) % (i.get('bytes', ''),
+                                       '*' if i.get('flag_mailbox') else ' ',
+                                       i['name'],
+                                       '/' if i.get('flag_directory') else ''))
                 return '\n'.join(lines)
             else:
                 return _('Nothing Found')
@@ -1684,14 +1686,18 @@ class ListDir(Command):
             args = ['.']
 
         def lsf(f):
+            afp = vfs.abspath(f)
+            info = {'name': f.display_basename(), 'path': afp}
             try:
-                afp = vfs.abspath(f)
-                ism = IsMailbox(afp, self.session.config)
-                return (f.display_basename(),
-                        afp, vfs.getsize(afp), vfs.isdir(afp),
-                        str(ism[1]) if ism else False)
+                b = vfs.getsize(afp)
+                if b is not None:
+                    info['bytes'] = b
+                info.update(dict(('flag_%s' % unicode(k).lower(), True)
+                                 for k in
+                                 vfs.getflags(afp, self.session.config)))
+                return info
             except (OSError, IOError):
-                return (f.display_basename(), f, None, None, False)
+                return info
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
                     if '-a' in flags or f.raw_fp[:1] != '.']
@@ -1711,7 +1717,7 @@ class ListDir(Command):
             except (OSError, IOError, UnicodeDecodeError), e:
                 return self._error(_('Failed to list: %s') % e)
 
-        file_list.sort(key=lambda i: i[0].lower())
+        file_list.sort(key=lambda i: i['name'].lower())
         return self._success(_('Listed %d files or directories'
                                ) % len(file_list),
                              result=file_list)
@@ -2099,12 +2105,12 @@ class AddMailboxes(Command):
                     adding.append(raw_fn)
                 elif IsMailbox(fn, config):
                     adding.append(raw_fn)
-                elif os.path.exists(fn) and os.path.isdir(fn):
+                elif vfs.exists(fn) and vfs.isdir(fn):
                         session.ui.mark('Scanning %s for mailboxes' % fn)
                         try:
                             for f in [f for f in os.listdir(fn)
                                       if not f.startswith('.')]:
-                                paths.append(os.path.join(fn, f))
+                                paths.append(vfs.path_join(fn, f))
                                 if len(paths) > self.MAX_PATHS:
                                     return self._error(_('Too many files'))
                         except OSError:

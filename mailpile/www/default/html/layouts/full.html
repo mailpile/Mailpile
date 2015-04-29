@@ -13,7 +13,8 @@
 {% include("partials/sidebar.html") %}
 <div id="content" class="clearfix">
   <div id="content-tools">
-  {% if result %}
+{% block contenttools %}
+ {% if result %}
   {% if command == "search" %}
     {% include("partials/tools_search.html") %}
   {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
@@ -27,7 +28,8 @@
   {% else %}
     {% include("partials/tools_default.html") %}
   {% endif %}
-  {% endif %}
+ {% endif %}
+{% endblock %}
   </div>
   <div id="content-view"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
     {% block content %}{{results}}{% endblock %}

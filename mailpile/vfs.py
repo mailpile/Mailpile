@@ -48,11 +48,12 @@ class FilePath(object):
     unicode() or str() representation, those methods expose data which
     is suitable for writing to a config file or JSON stream.
     """
-    def __init__(self, cooked_fp=None, binary_fp=None):
+    def __init__(self, cooked_fp=None, binary_fp=None, flags=None):
         assert((cooked_fp or binary_fp) and not (cooked_fp and binary_fp))
         if cooked_fp:
             if isinstance(cooked_fp, FilePath):
                 self.raw_fp = cooked_fp.raw_fp
+                flags = cooked_fp.flags if (flags is None) else flags
             elif isinstance(cooked_fp, str) and cooked_fp[-2:] == '=!':
                 self.raw_fp = self.unalias(cooked_fp[:-2].decode('base64'))
             elif isinstance(cooked_fp, unicode):
@@ -61,6 +62,7 @@ class FilePath(object):
                 self.raw_fp = self.unalias(str(cooked_fp))
         else:
             self.raw_fp = binary_fp
+        self.flags = flags
 
     @classmethod
     def unalias(self, fp):
@@ -110,7 +112,7 @@ class FilePath(object):
     def join(self, *fpaths):
         joined = posixpath.join(self.raw_fp,
                                 *[FilePath(fp).raw_fp for fp in fpaths])
-        return FilePath(binary_fp=joined)
+        return FilePath(binary_fp=joined, flags=FilePath(fpaths[-1]).flags)
 
 
 class MailpileVfsBase(object):
@@ -137,6 +139,11 @@ class MailpileVfsBase(object):
         return cls.open_(FilePath(fp).raw_fp, *args, **kwargs)
 
     @classmethod
+    # FIXME: Give us an open mailbox object, or raise IOError
+    def open_mailbox(cls, fp, *args, **kwargs):
+        return cls.open_(FilePath(fp).raw_fp, *args, **kwargs)
+
+    @classmethod
     def glob(cls, fp, *args, **kwargs):
         return [FilePath(binary_fp=f) for f in
                 cls.glob_(FilePath(fp).raw_fp, *args, **kwargs)]
@@ -151,12 +158,29 @@ class MailpileVfsBase(object):
         return FilePath(binary_fp=cls.abspath_(FilePath(fp).raw_fp))
 
     @classmethod
+    def getflags(cls, fp, config):
+        return cls.getflags_(FilePath(fp).raw_fp, config)
+
+    @classmethod
+    def getflags_(cls, fp, config):
+        # By default, this method just checks isdir_ and mailbox_type_,
+        # but subclasses can override this (and even do things the other
+        # way around, e.g. for IMAP).
+        flags, fp = [], FilePath(fp)
+        mailbox_type = cls.mailbox_type_(fp.raw_fp, config)
+        flags.extend(['Mailbox', mailbox_type[1]] if mailbox_type else
+                     ['NoSelect'])
+        flags.extend(['Directory'] if cls.isdir_(fp.raw_fp) else
+                     ['HasNoChildren', 'NoInferiors'])
+        return flags
+
+    @classmethod
     def isdir(cls, fp):
         return cls.isdir_(FilePath(fp).raw_fp)
 
     @classmethod
-    def ismailbox(cls, fp):
-        return cls.ismailbox_(FilePath(fp).raw_fp)
+    def mailbox_type(cls, fp, config):
+        return cls.mailbox_type_(FilePath(fp).raw_fp, config)
 
     @classmethod
     def getsize(cls, fp):
@@ -175,7 +199,7 @@ class MailpileVfsBase(object):
     listdir_ = _fixme
     abspath_ = _fixme
     isdir_ = _fixme
-    ismailbox_ = _fixme
+    mailbox_type_ = _fixme
     getsize_ = _fixme
     exists_ = _fixme
 
@@ -213,8 +237,8 @@ class MailpileVFS(MailpileVfsBase):
         return self._delegate(path).isdir_(path, *args, **kwargs)
 
     @classmethod
-    def ismailbox_(self, path, *args, **kwargs):
-        return self._delegate(path).ismailbox_(path, *args, **kwargs)
+    def mailbox_type_(self, path, config):
+        return self._delegate(path).mailbox_type_(path, config)
 
     @classmethod
     def getsize_(self, path, *args, **kwargs):
@@ -242,6 +266,9 @@ class MailpileVfsLocal(MailpileVfsBase):
     def listdir_(self, *args, **kwargs): return os.listdir(*args, **kwargs)
     def abspath_(self, path): return os.path.abspath(path)
     def isdir_(self, path): return os.path.isdir(path)
+    def mailbox_type_(self, path, config):
+        from mailpile.mailboxes import IsMailbox
+        return IsMailbox(path, config)
     def getsize_(self, path): return os.path.getsize(path)
     def exists_(self, path): return os.path.exists(path)
 
@@ -259,7 +286,8 @@ class MailpileVfsRoot(MailpileVfsBase):
     def __init__(self, config):
         self.config = config
         self.entries = {
-            'Home': (FilePath('/Home$'), [])
+            'My Files': (FilePath('/Home$'), 'NoSelect'),
+            'Settings': (FilePath('/Config$'), 'NoSelect')
         }
         self._discover_mail_spool()
         self._discover_thunderbird()
@@ -271,7 +299,7 @@ class MailpileVfsRoot(MailpileVfsBase):
                 spool_path = os.path.join(search, user)
                 if os.path.exists(spool_path):
                     self.entries['Unix mail spool'] = (FilePath(spool_path),
-                                                       [])
+                                                       'NoInferiors')
                     break
 
     def _discover_thunderbird(self):
@@ -282,7 +310,7 @@ class MailpileVfsRoot(MailpileVfsBase):
                     profpath = os.path.join(tbird_home, profile)
                     if os.path.exists(os.path.join(profpath, 'Mail')):
                         name = 'Thunderbird %s' % profile.split('.', 1)[-1]
-                        self.entries[name] = (FilePath(profpath), [])
+                        self.entries[name] = (FilePath(profpath), 'NoSelect')
 
     def _entries(self):
         e = copy.copy(self.entries)
@@ -308,6 +336,11 @@ class MailpileVfsRoot(MailpileVfsBase):
 
     def isdir_(self, fp):
         return True if (fp == '/') else vfs.isdir(self._entries()[fp[1:]][0])
+
+    def mailbox_type_(self, fp, config):
+        if fp == '/':
+            return False
+        return vfs.mailbox_type(self._entries()[fp[1:]][0], config)
 
     def getsize_(self, fp):
         return True if (fp == '/') else vfs.getsize(self._entries()[fp[1:]][0])

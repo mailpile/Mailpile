@@ -43,6 +43,7 @@ prepare_new_content = function(selector) {
         var url = $(elem).attr('href');
         // FIXME: Should we add some majick to avoid dup click handlers?
         if (url && ((url.indexOf('/in/') == 0) ||
+                    (url.indexOf('/browse/') == 0) ||
                     (url.indexOf('/search/') == 0))) {
             $(elem).click(function(ev) {
                 if (update_using_jhtml(url)) ev.preventDefault();
@@ -52,7 +53,8 @@ prepare_new_content = function(selector) {
 };
 
 update_using_jhtml = function(original_url) {
-    if (Mailpile.instance['command'] == 'search') {
+    if ((Mailpile.instance['command'] == 'search') ||
+            (Mailpile.instance['command'] == 'ls')) {
         var cv = $('#content-view');
         cv.hide();
         return $.ajax({

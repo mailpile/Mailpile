@@ -14,6 +14,8 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import *
 from mailpile.mailutils import FormatMbxId
 from mailpile.util import *
+from mailpile.vfs import MailpileVFS as vfs
+from mailpile.vfs import FilePath, MailpileVfsBase
 
 
 __all__ = ['mbox', 'maildir', 'imap']
