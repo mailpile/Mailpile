@@ -825,8 +825,7 @@ class GnuPG:
                  keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
         for keyserver in keyservers:
             cmd = ['--keyserver', keyserver,
-                   '--fingerprint',
-                   '--search-key', self._escape_hex_keyid_term(term)]
+                   '--recv-key', self._escape_hex_keyid_term(keyid)]
             for opt in keyserver_options:
                 cmd[2:2] = ['--keyserver-options', opt]
             retvals = self.run(cmd)
