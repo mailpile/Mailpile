@@ -22,7 +22,7 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'tags:') {
     e.preventDefault();
-    $.getJSON("/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
+    $.getJSON("{{ config.sys.http_path }}/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
   	  $("#content-wide").html(data.result);
     });
   }
@@ -62,6 +62,3 @@ $(document).on('mouseover', '#button-settings', function() {
   // FIXME: crap, this makes the links in the dropdown note fire... something obnoxious in Bootstrap causes it :(
   // $('#settings-menu').dropdown('toggle');
 });
-
-
-

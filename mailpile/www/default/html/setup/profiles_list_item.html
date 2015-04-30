@@ -4,7 +4,7 @@
       <% if (photo) { %>
       <img src="<%= photo %>">
       <% } else { %>
-      <img src="/static/img/avatar-default.png">
+      <img src="{{ config.sys.http_path }}/static/img/avatar-default.png">
       <% } %>
     </span>
     <span class="name"><%= name %> <% if (note) { %>(<%= note %>)<% } %></span>

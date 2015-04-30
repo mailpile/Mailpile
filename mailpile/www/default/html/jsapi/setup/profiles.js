@@ -43,7 +43,7 @@ var ProfileModel = Backbone.Model.extend({
 
 
 var ProfilesCollection = Backbone.Collection.extend({
-  url: '/api/0/setup/profiles/',
+  url: '{{ config.sys.http_path }}/api/0/setup/profiles/',
   model: ProfileModel
 });
 

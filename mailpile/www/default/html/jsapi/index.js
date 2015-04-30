@@ -73,23 +73,23 @@ Mailpile = {
     web: {{config_web|safe}}
   },
   api: {
-    compose      : "/api/0/message/compose/",
-    compose_send : "/api/0/message/update/send/",
-    compose_save : "/api/0/message/update/",
-    contacts     : "/api/0/search/address/",
-    message      : "/api/0/message/=",
-    tag          : "/api/0/tag/",
-    tag_list     : "/api/0/tags/",
-    tag_add      : "/api/0/tags/add/",
-    tag_update   : "/api/0/settings/set/",
-    search_new   : "/api/0/search/?q=in%3Anew",
-    search       : "/api/0/search/",
-    settings_add : "/api/0/settings/add/"
+    compose      : "{{ config.sys.http_path }}/api/0/message/compose/",
+    compose_send : "{{ config.sys.http_path }}/api/0/message/update/send/",
+    compose_save : "{{ config.sys.http_path }}/api/0/message/update/",
+    contacts     : "{{ config.sys.http_path }}/api/0/search/address/",
+    message      : "{{ config.sys.http_path }}/api/0/message/=",
+    tag          : "{{ config.sys.http_path }}/api/0/tag/",
+    tag_list     : "{{ config.sys.http_path }}/api/0/tags/",
+    tag_add      : "{{ config.sys.http_path }}/api/0/tags/add/",
+    tag_update   : "{{ config.sys.http_path }}/api/0/settings/set/",
+    search_new   : "{{ config.sys.http_path }}/api/0/search/?q=in%3Anew",
+    search       : "{{ config.sys.http_path }}/api/0/search/",
+    settings_add : "{{ config.sys.http_path }}/api/0/settings/add/"
   },
   urls: {
-    message_draft : "/message/draft/=",
-    message_sent  : "/thread/=",
-    tags          : "/tags/"
+    message_draft : "{{ config.sys.http_path }}/message/draft/=",
+    message_sent  : "{{ config.sys.http_path }}/thread/=",
+    tags          : "{{ config.sys.http_path }}/tags/"
   },
   plugins: [],
   theme: {},
@@ -120,8 +120,8 @@ Mailpile.API = {
 
 {% endfor %}
   },
-  _sync_url: "/api",
-  _async_url: "/async",
+  _sync_url: "{{ config.sys.http_path }}/api",
+  _async_url: "{{ config.sys.http_path }}/async",
 };
 
 

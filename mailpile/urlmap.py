@@ -218,7 +218,7 @@ class UrlMap:
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /in/inbox/ for now.  (FIXME)"""
-        return [UrlRedirect(self.session, 'redirect', arg=['/in/inbox/'])]
+        return [UrlRedirect(self.session, 'redirect', arg=['%s/in/inbox/' % self.config.sys.http_path])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
@@ -432,7 +432,7 @@ class UrlMap:
     def _url(self, url, output='', qs=''):
         if output and '.' not in output:
             output = 'as.%s' % output
-        return ''.join([url, output, qs and '?' or '', qs])
+        return ''.join([self.config.sys.http_path, url, output, qs and '?' or '', qs])
 
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""

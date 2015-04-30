@@ -15,13 +15,13 @@
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
+    <a href="{{ config.sys.http_path }}/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-next">{{_("Next")}}</a>
-    {% endif %}    
+    <a href="{{ config.sys.http_path }}/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-next">{{_("Next")}}</a>
+    {% endif %}
     <h5 class="text-right">
     {% if result.stats.total > 1 %}
       {{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}}
@@ -39,7 +39,7 @@
     <p>{{_("It seems your Mailpile does not contain any messages, tags or contacts for the search")}}:</p>
     <p id="pile-empty-search-terms">"{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{% endfor %}"</p>
     <p>{{_("Here are some other options for you")}}:</p>
-    <p><a href="/help/" id="pile-empty-search-terms-help" class="button-primary"><span class="icon-help"></span> {{_("Learn To Search Smarter")}}</a></p>
+    <p><a href="{{ config.sys.http_path }}/help/" id="pile-empty-search-terms-help" class="button-primary"><span class="icon-help"></span> {{_("Learn To Search Smarter")}}</a></p>
     <p class="add-bottom"><a href="#" id="btn-pile-empty-search-web" class="button-primary"><span class="icon-search"></span> {{_("Search The Web For People")}}</a></p>
   </div>
   {% endif %}

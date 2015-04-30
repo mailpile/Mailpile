@@ -10,13 +10,13 @@
 {% if tag.slug == "outbox" or tag.slug == "drafts" %}
 {% set tag_new_count = tag.stats.all %}
 {% elif tag.stats.get("sum_new") %}
-{% set tag_new_count = tag.stats.sum_new %}          
+{% set tag_new_count = tag.stats.sum_new %}
 {% else %}
 {% set tag_new_count = tag.stats.new %}
 {% endif %}
   <a href="{{tag.url}}" class="sidebar-tag color-{{tag.label_color}} {% if tag_new_count %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}" title="{{tag.name}} {{friendly_number(tag_new_count)}}" data-tid="{{tag.tid}}">
     <span class="icon {{tag.icon}}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
-    <span class="name">{{tag.name}}</span> 
+    <span class="name">{{tag.name}}</span>
     <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
     {% if tag.get("subtags") %}
     <span class="sidebar-tag-expand" data-tid="{{tag.tid}}">
@@ -34,7 +34,7 @@
     <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}" class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}">
       <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
         <span class="icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
-        <span class="name">{{subtag.name}}</span> 
+        <span class="name">{{subtag.name}}</span>
         {% if subtag.stats.new %}
         <span class="notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
         {% endif %}
@@ -76,7 +76,7 @@
 
 <script id="template-sidebar-item" type="text/template">
   <li id="sidebar-tag-<%= tid %>" data-tid="<%= tid %>" data-display_order="<%= display_order %>" class="sidebar-tags-draggable">
-    <a href="/in/<%= slug %>/" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
+    <a href="{{ config.sys.http_path }}/in/<%= slug %>/" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
       <span class="icon <%= icon %>" style="color: <%= label_color %>;"></span>
       <span class="name"><%= name %></span>
       <span class="notification"></span>

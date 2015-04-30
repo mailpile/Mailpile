@@ -212,7 +212,7 @@ class MailpileCommand(Extension):
         return friendly_number(number,
                                decimals=decimals, base=1024, suffix='B')
 
-    def _show_avatar(self, contact):
+    def _show_avatar(self, contact): #FIXME http_path
         if "photo" in contact:
             photo = contact['photo']
         else:

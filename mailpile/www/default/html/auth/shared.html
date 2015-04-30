@@ -25,7 +25,7 @@ Decrypting Index, Messages, and Contacts
   <form method="POST"
         {# Avoid adding the action if it is not needed, as it strips off
            the query string which tells us where to redirect back to. #}
-        {% if state.command_url != "/auth/login/" %}action="/auth/login/"{% endif %}
+        {% if state.command_url != "/auth/login/" %}action="{{config.sys.http_path}}/auth/login/"{% endif %}
         id="form-login" class="form-login clearfix animated">
     <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
     <button type="submit" class="submit"><span class="icon-key"></span></button>

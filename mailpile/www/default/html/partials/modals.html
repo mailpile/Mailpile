@@ -22,7 +22,7 @@
         <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-tag"></span> {{_("Add Tag")}}</h4>
       </div>
-      <div class="modal-body clearfix">    
+      <div class="modal-body clearfix">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" value="" placeholder="{{_("Friends & Family")}}" class="input-medium">
         <button id="button-modal-add-tag" title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add" data-location="<%= location %>">
@@ -237,7 +237,7 @@
             <% _.each(unencryptables, function(recipient, key) { %>
             <li id="item-encryption-key-" address="<%= recipient.address %>" class="searchkey-result-item animated fadeIn">
               <div class="clearfix">
-                <div href="/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="/static/img/avatar-default.png"></div>
+                <div href="{{ config.sys.http_path }}/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="{{ config.sys.http_path }}/static/img/avatar-default.png"></div>
                 <div class="name">
                   <%= recipient.fn %><br>
                   <span><%= recipient.address %></span>
@@ -263,7 +263,6 @@
     </div>
   </div>
 </script>
-
 
 <!-- Crypto - Modal to import key -->
 <script id="modal-upload-key" type="text/template">

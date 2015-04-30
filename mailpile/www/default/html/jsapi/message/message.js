@@ -80,7 +80,7 @@ $(document).on('click', '.message-action-reply', function() {
 $(document).on('click', '.message-action-forward', function() {
   var mid = $(this).parent().parent().data('mid');
   $.ajax({
-    url      : '/api/0/message/forward/',
+    url      : '{{ config.sys.http_path }}/api/0/message/forward/',
     type     : 'POST',
     data     : { mid: mid, 'atts': true },
     success  : function(response) {
@@ -98,7 +98,7 @@ $(document).on('click', '.message-action-forward', function() {
 $(document).on('click', '.message-action-inbox', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['inbox'],  del: ['spam', 'trash'], mid: mid}, function() {
-    window.location.href = '/in/inbox/';
+    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
   });
 });
 
@@ -125,7 +125,7 @@ $(document).on('click', '.message-action-spam', function() {
 $(document).on('click', '.message-action-unthread', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   $.ajax({
-    url      : '/api/0/message/unthread/',
+    url      : '{{ config.sys.http_path }}/api/0/message/unthread/',
     type     : 'POST',
     data     : { mid: mid },
     success  : function(response) {

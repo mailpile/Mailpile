@@ -36,7 +36,7 @@
   {% else %}
   <h3>{{_("No Filters Exist")}} :)</h3>
   <p>{{_("Filters are clever rules that automatically apply tags, sort and otherwise handle your messages.")}}</p>
-  <p>Current filters are only supported in the CLI (command line interface). You can <a href="/help/filters/command-line-interface/">read the documentation</a>.</p>
+  <p>Current filters are only supported in the CLI (command line interface). You can <a href="{{ config.sys.http_path }}/help/filters/command-line-interface/">read the documentation</a>.</p>
   {% endif %}
 </div>
 {% endblock %}
