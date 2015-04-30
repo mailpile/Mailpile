@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
 
-  <link rel="stylesheet" href="{{ config.sys.http_path }}/static/css/default.css"/>
+  <link rel="stylesheet" href="/static/css/default.css"/>
   <title>Send SMS</title>
 
 </head>
@@ -9,7 +9,7 @@
 
   <h3>Send an SMS</h3>
 
-  <form method="post" id="send_sms" action="{{ config.sys.http_path }}/static/plugins/sms/twilio_sms.py">
+  <form method="post" id="send_sms" action="/static/plugins/sms/twilio_sms.py">
     <label>To:</label>
     <input type="text" name="to_number" placeholder="15051110000" autocomplete="off">
   	<label>Message:</label>
@@ -17,7 +17,7 @@
     <input type="submit" name="post" id="send_sms" value="Send" autocomplete="off">
   </form>
 
-  <script type="text/javascript" src="{{ config.sys.http_path }}/static/js/libraries/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
   <script type="text/javascript">
   $(document).ready(function()
   {
