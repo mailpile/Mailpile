@@ -1388,6 +1388,9 @@ class VCardImporter(VCardPluginClass):
     MERGE_BY = ['email']
     UPDATE_INDEX = False
 
+    def get_guid(self, vcard):
+        return self.config.guid
+
     def import_vcards(self, session, vcard_store, **kwargs):
         session.ui.mark(_('Generating new VCards'))
         all_vcards = self.get_vcards(**kwargs)
@@ -1422,7 +1425,7 @@ class VCardImporter(VCardPluginClass):
                 try:
                     counter += 1
                     vcard_store.deindex_vcard(card)
-                    if card.merge(self.config.guid, vcard.as_lines()):
+                    if card.merge(self.get_guid(vcard), vcard.as_lines()):
                         updated[card.random_uid] = card
                     vcard_store.index_vcard(card)
                 except ValueError:
@@ -1433,7 +1436,7 @@ class VCardImporter(VCardPluginClass):
             if not existing:
                 try:
                     new_vcard = MailpileVCard(config=self.config)
-                    new_vcard.merge(self.config.guid, vcard.as_lines())
+                    new_vcard.merge(self.get_guid(vcard), vcard.as_lines())
                     kindhint = vcard.get('x-mailpile-kind-hint', 0)
                     if kindhint is not 0:
                         new_vcard.add(VCardLine(name='kind',

@@ -32,13 +32,43 @@ class GnuPGImporter(VCardImporter):
     # Update index's email->name mapping
     UPDATE_INDEX = True
 
-    def get_vcards(self, selectors=None, public=True, secret=True):
+    def get_guid(self, vcard):
+        return '%s/%s' % (self.config.guid, vcard.get('x-gpg-mrgid').value)
+
+    def import_vcards(self, session, vcard_store, *args, **kwargs):
+        kwargs['vcards'] = vcard_store
+        return VCardImporter.import_vcards(self, session, vcard_store,
+                                           *args, **kwargs)
+
+    def get_vcards(self,
+                   selectors=None, public=True, secret=True, vcards=None):
         if not self.config.active:
             return []
-        return self.gnupg_keys_as_vcards(GnuPG(self.session.config),
-                                         selectors=selectors,
-                                         public=public,
-                                         secret=secret)
+
+        # Generate all the nice new cards!
+        new_cards = self.gnupg_keys_as_vcards(GnuPG(self.session.config),
+                                              selectors=selectors,
+                                              public=public,
+                                              secret=secret)
+
+        # Generate tombstones for keys which are gone from the keyring.
+        if vcards:
+            deleted = set()
+            search = ';%s/' % self.config.guid
+            for cardid, vcard in (vcards or {}).iteritems():
+                for vcl in vcard.get_all('clientpidmap'):
+                    if search in vcl.value:
+                        deleted.add(vcl.value.split(';')[1])
+            if selectors:
+                deleted = set([guid for guid in deleted
+                               if guid.split('/')[-1] in selectors])
+            deleted -= set([self.get_guid(card) for card in new_cards])
+            for guid in deleted:
+                mrgid = guid.split('/')[-1]
+                new_cards.append(MailpileVCard(VCardLine(name='x-gpg-mrgid',
+                                                         value=mrgid)))
+
+        return new_cards
 
     @classmethod
     def key_is_useless(cls, key):
@@ -81,6 +111,33 @@ class GnuPGImporter(VCardImporter):
                                  VCardLine(name='email', value=email)]
                         vcards[email] = card = MailpileVCard(*vcls)
                         new_vcards.append(card)
+        return new_vcards
+
+    @classmethod
+    def vcards_per_key(cls, keys, vcards):
+        """This creates on VCards per key"""
+        new_vcards = []
+        for key_id, key in keys.iteritems():
+            if cls.key_is_useless(key):
+                continue
+            vcls = [cls.key_vcl(key_id, key)]
+            emails = []
+            for uid in key.get('uids', []):
+                if uid.get('email'):
+                    vcls.append(VCardLine(name='email', value=uid['email']))
+                    emails.append(uid['email'])
+                if uid.get('name'):
+                    name = uid['name']
+                    vcls.append(VCardLine(name='fn', value=name))
+            if emails:
+                # This is us taking care to only create one card for each
+                # set of e-mail addresses.
+                card = MailpileVCard(*vcls)
+                card.add(VCardLine(name='x-gpg-mrgid', value=key_id))
+                for email in emails:
+                    if email not in vcards:
+                        vcards[email] = card
+                new_vcards.append(card)
         return new_vcards
 
     @classmethod
@@ -133,7 +190,7 @@ class GnuPGImporter(VCardImporter):
             for key in secret_keys:
                 if key in keys:
                     del keys[key]
-            results += cls.vcards_merged(keys, vcards)
+            results += cls.vcards_per_key(keys, vcards)
 
         # Set ranking markers on the best/newest key
         for card in results:
@@ -185,5 +242,38 @@ class PGPKeysAsVCards(Command):
                                ) % len(vcards), vcards)
 
 
-_plugins.register_commands(PGPKeysAsVCards)
+class PGPKeysImportAsVCards(Command):
+    """Import PGP keys as VCards"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/vcardimport',
+                      'crypto/gpg/vcardimport', '<selectors>')
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+        'q': 'selectors',
+        'no_public': 'omit public keys',
+        'no_secret': 'omit secret keys'
+    }
+
+    def command(self):
+        session, config = self.session, self.session.config
+
+        selectors = [a for a in self.args if not a.startswith('-')]
+        selectors.extend(self.data.get('q', []))
+
+        public = not (int(self.data.get('no_public', [0])[0]) or
+                      '-no_public' in self.args)
+        secret = not (int(self.data.get('no_secret', [0])[0]) or
+                      '-no_secret' in self.args)
+
+        imported = 0
+        for cfg in config.prefs.vcard.importers.gpg:
+            gimp = GnuPGImporter(session, cfg)
+            imported += gimp.import_vcards(session, config.vcards,
+                                           selectors=selectors)
+
+        return self._success(_('Imported %d VCards from GPG keychain'
+                               ) % imported, {'vcards': imported})
+
+
+_plugins.register_commands(PGPKeysAsVCards, PGPKeysImportAsVCards)
 _plugins.register_vcard_importers(GnuPGImporter)
