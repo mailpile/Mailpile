@@ -18,7 +18,7 @@
       </li>
       {% else %}
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/contacts/view/{{from.address}}/">
+        <a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/contacts/view/{{from.address}}/">
           <span class="icon-user"></span> {{_("View Profile")}}
         </a>
       </li>
@@ -29,7 +29,7 @@
         </a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="{{ config.sys.subdirectory }}/search/?q=from:{{from.address}}">
+        <a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/search/?q=from:{{from.address}}">
           <span class="icon-search"></span> {{_("Search Messages")}}
         </a>
       </li>
@@ -98,7 +98,7 @@
   <ul class="clearfix">
     <li>{{_("View:")}}</li>
     <li><a href="#" class="thread-message-toggle-html" data-mid="{{mid}}" data-state="plain">{{_("HTML")}}</a></li>
-    <li><a href="{{ config.sys.subdirectory }}/thread/={{mid}}/as.json" target="_blank">{{_("JSON")}}</a></li>
-    <li><a href="{{ config.sys.subdirectory }}/message/raw/={{mid}}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+    <li><a href="{{ config.sys.http_path }}/thread/={{mid}}/as.json" target="_blank">{{_("JSON")}}</a></li>
+    <li><a href="{{ config.sys.http_path }}/message/raw/={{mid}}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
   </ul>
 </div>

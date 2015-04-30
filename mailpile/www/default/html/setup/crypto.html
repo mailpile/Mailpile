@@ -15,7 +15,7 @@
   <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center half-top">
     <h3 class="text-center">{{_("Creating Encryption Keys")}}</h3>
     <p class="text-center">{{_("Your encryption keys are being created. You may proceed with setting up your Mailpile while this is happening in the background as this process will take a while.")}}</p>
-    <p><a href="{{ config.sys.subdirectory }}/setup/" class="button-primary">{{_("Next")}}</a></p>
+    <p><a href="{{ config.sys.http_path }}/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
   <div id="setup-passphrase-authenticated" class="hide text-center half-top">
@@ -31,11 +31,11 @@
         </div>
       </li>
     </ul>
-    <p><a href="{{ config.sys.subdirectory }}/setup/" class="button-primary">{{_("Next")}}</a></p>
+    <p><a href="{{ config.sys.http_path }}/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
   {# Input Form For Authenticating #}
-  <form method="POST" action="{{ config.sys.subdirectory }}/setup/crypto/" id="form-setup-passphrase" class="standard text-center half-top">
+  <form method="POST" action="{{ config.sys.http_path }}/setup/crypto/" id="form-setup-passphrase" class="standard text-center half-top">
 
     {% if not result.creating_key and setup_crypto.result.secret_keys|length == 0 %}
       <h3 class="text-center">{{_("Create your passphrase")}}</h3>
@@ -122,7 +122,7 @@
   </form>
 </div>
 
-<script src="{{ config.sys.subdirectory }}/api/0/jsapi/setup.js"></script>
+<script src="{{ config.sys.http_path }}/api/0/jsapi/setup.js"></script>
 <script>
 $(document).ready(function() {
   Mailpile.instance = {};

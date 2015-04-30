@@ -17,7 +17,7 @@
   </form>
 </div>
 {% else %}
-  {{ mailpile('http/redirect', config.sys.subdirectory + '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
+  {{ mailpile('http/redirect', config.sys.http_path + '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
 {% endif %}
 <script>
 $(document).ready(function() {

@@ -10,7 +10,7 @@
 
     # This section defines URL routes and MIME types.
     "routes": {
-        "{{ config.sys.subdirectory }}/static/i18nhelper/icon.png": {"file": "i18n.png"}
+        "{{ config.sys.http_path }}/static/i18nhelper/icon.png": {"file": "i18n.png"}
     },
 
     "user_interface": {
@@ -19,7 +19,7 @@
                 "context": ["/"],
                 "name": "i18nhelper",
                 "text": "Internationalization",
-                "icon": "{{ config.sys.subdirectory }}/static/i18nhelper/icon.png",
+                "icon": "{{ config.sys.http_path }}/static/i18nhelper/icon.png",
                 "description": "i18n helper functions",
                 "url": "#",
                 "javascript_setup": "activity_setup"

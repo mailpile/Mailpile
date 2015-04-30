@@ -112,13 +112,13 @@
         {% set filename = _("Untitled") %}
         {% endif %}
         {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
-        <a href="{{ config.sys.subdirectory }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
-          <div class="preview" style="background-image: url('{{ config.sys.subdirectory }}/message/download/preview/={{ mid }}/part:{{ att.count }}/');"></div>
+        <a href="{{ config.sys.http_path }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
+          <div class="preview" style="background-image: url('{{ config.sys.http_path }}/message/download/preview/={{ mid }}/part:{{ att.count }}/');"></div>
         </a>
         {% elif type == "keys" %}
         {% do special_text_parts.append("pgp-key") %}
         {% else %}
-        <a href="{{ config.sys.subdirectory }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
+        <a href="{{ config.sys.http_path }}/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
           <div class="preview">
             <span class="icon-mime" type="{{att.mimetype}}"></span>
             {% set file_parts = filename.split(".") %}

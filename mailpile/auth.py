@@ -125,9 +125,9 @@ class Authenticate(Command):
         if (path and
                not path[1:].startswith(DeAuthenticate.SYNOPSIS[2] or '!') and
                not path[1:].startswith(self.SYNOPSIS[2] or '!')):
-            self.RedirectBack(self.session.config.sys.subdirectory + path, self.data)
+            self.RedirectBack(self.session.config.sys.http_path + path, self.data)
         else:
-            raise UrlRedirectException('%s/' % self.session.config.sys.subdirectory)
+            raise UrlRedirectException('%s/' % self.session.config.sys.http_path)
 
     def _do_login(self, user, password, load_index=False, redirect=False):
         session, config = self.session, self.session.config

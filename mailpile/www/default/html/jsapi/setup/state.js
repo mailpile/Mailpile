@@ -1,6 +1,6 @@
 /* Setup - State - Model */
 var StateModel = Backbone.Model.extend({
-  url: '{{ config.sys.subdirectory }}/api/0/setup/',
+  url: '{{ config.sys.http_path }}/api/0/setup/',
   defaults: {
     result: {
       language: false,
@@ -16,10 +16,10 @@ var StateModel = Backbone.Model.extend({
     var check = this.attributes.result;
 
     if (!check.language) {
-      state = '{{ config.sys.subdirectory }}/setup/welcome/';
+      state = '{{ config.sys.http_path }}/setup/welcome/';
     }
     else if (!check.crypto) {
-      state = '{{ config.sys.subdirectory }}/setup/crypto/';
+      state = '{{ config.sys.http_path }}/setup/crypto/';
     }
     else if (!check.profiles) {
       state = '#profiles';

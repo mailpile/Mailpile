@@ -237,7 +237,7 @@
             <% _.each(unencryptables, function(recipient, key) { %>
             <li id="item-encryption-key-" address="<%= recipient.address %>" class="searchkey-result-item animated fadeIn">
               <div class="clearfix">
-                <div href="{{ config.sys.subdirectory }}/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="{{ config.sys.subdirectory }}/static/img/avatar-default.png"></div>
+                <div href="{{ config.sys.http_path }}/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="{{ config.sys.http_path }}/static/img/avatar-default.png"></div>
                 <div class="name">
                   <%= recipient.fn %><br>
                   <span><%= recipient.address %></span>

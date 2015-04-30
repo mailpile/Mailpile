@@ -4,7 +4,7 @@
 <div id="setup-welcome" class="text-center add-top">
   <h1 class="animated fadeIn">Welcome to Mailpile!</h1>
   <div class="add-top half-bottom">
-    <img src="{{ config.sys.subdirectory }}/static/img/logo-color.svg" class="animated bounceIn welcome-logo">
+    <img src="{{ config.sys.http_path }}/static/img/logo-color.svg" class="animated bounceIn welcome-logo">
   </div>
   <div class="welcome-icons add-top half-bottom clearfix">
   <ul class="animated fadeIn horizontal clearfix">
@@ -18,7 +18,7 @@
   </ul>
   </div>
   <h4 class="text-detail animated fadeIn">{{_("You're about to experience secure email like never before!")}}</h4>
-  <form method="POST" action="{{ config.sys.subdirectory }}/setup/welcome/" class="animated bounceIn">
+  <form method="POST" action="{{ config.sys.http_path }}/setup/welcome/" class="animated bounceIn">
     <p>
     <select name="language">
       <option value="">{{_("Select Language")}}...</option>

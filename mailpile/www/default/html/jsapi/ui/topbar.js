@@ -22,7 +22,7 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'tags:') {
     e.preventDefault();
-    $.getJSON("{{ config.sys.subdirectory }}/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
+    $.getJSON("{{ config.sys.http_path }}/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
   	  $("#content-wide").html(data.result);
     });
   }

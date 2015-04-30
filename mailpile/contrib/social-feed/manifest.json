@@ -8,7 +8,7 @@
     },
     "routes": {
         "/api/0/social-feed/": {"file": "social-feed.html", "api": 0},
-        "{{ config.sys.subdirectory }}/static/social-feed/social-feed.png": {"file": "social-feed.png"}
+        "{{ config.sys.http_path }}/static/social-feed/social-feed.png": {"file": "social-feed.png"}
     },
     "user_interface": {
         "display_modes": [
@@ -16,7 +16,7 @@
                 "context": ["/search/"],
                 "name": "social-feed",
                 "text": "Social",
-                "icon": "{{ config.sys.subdirectory }}/static/social-feed/social-feed.png",
+                "icon": "{{ config.sys.http_path }}/static/social-feed/social-feed.png",
                 "description": "View a search as a social media feed",
                 "url": "#social-feed",
                 "javascript_setup": "feed_setup",

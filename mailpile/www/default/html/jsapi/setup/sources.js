@@ -85,7 +85,7 @@ var SourceModel = Backbone.Model.extend({
 
 
 var SourcesCollection = Backbone.Collection.extend({
-  url: '{{ config.sys.subdirectory }}/api/0/settings/?var=sources&secrets=true',
+  url: '{{ config.sys.http_path }}/api/0/settings/?var=sources&secrets=true',
   model: SourceModel,
   can_next: false
 });
@@ -188,7 +188,7 @@ var SourcesView = Backbone.View.extend({
     // Has Unconfigured Mailboxes (action)
     if (event.data.have_unknown) {
       $('#setup-item-notice-' + event.data.id)
-        .html('{{_("Source has unconfigured mailboxes")}} <a href="{{ config.sys.subdirectory }}/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
+        .html('{{_("Source has unconfigured mailboxes")}} <a href="{{ config.sys.http_path }}/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
         .fadeIn();
 
       $('#setup-sources-analyzing').hide();
@@ -249,7 +249,7 @@ var SourcesView = Backbone.View.extend({
     else if (event.data.connection.error[0] == 'auth') {
       message =  '{{_("Cannot connect to server")}}';
       $('#setup-item-notice-' + event.data.id)
-        .html(event.data.connection.error[1] + ' <a href="{{ config.sys.subdirectory }}/setup/#sources/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Edit Now")}}</a>')
+        .html(event.data.connection.error[1] + ' <a href="{{ config.sys.http_path }}/setup/#sources/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Edit Now")}}</a>')
         .fadeIn();
     }
     else if (!event.data.connection.live && !event.data.connection.error[0]) {

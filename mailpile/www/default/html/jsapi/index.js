@@ -73,23 +73,23 @@ Mailpile = {
     web: {{config_web|safe}}
   },
   api: {
-    compose      : "{{ config.sys.subdirectory }}/api/0/message/compose/",
-    compose_send : "{{ config.sys.subdirectory }}/api/0/message/update/send/",
-    compose_save : "{{ config.sys.subdirectory }}/api/0/message/update/",
-    contacts     : "{{ config.sys.subdirectory }}/api/0/search/address/",
-    message      : "{{ config.sys.subdirectory }}/api/0/message/=",
-    tag          : "{{ config.sys.subdirectory }}/api/0/tag/",
-    tag_list     : "{{ config.sys.subdirectory }}/api/0/tags/",
-    tag_add      : "{{ config.sys.subdirectory }}/api/0/tags/add/",
-    tag_update   : "{{ config.sys.subdirectory }}/api/0/settings/set/",
-    search_new   : "{{ config.sys.subdirectory }}/api/0/search/?q=in%3Anew",
-    search       : "{{ config.sys.subdirectory }}/api/0/search/",
-    settings_add : "{{ config.sys.subdirectory }}/api/0/settings/add/"
+    compose      : "{{ config.sys.http_path }}/api/0/message/compose/",
+    compose_send : "{{ config.sys.http_path }}/api/0/message/update/send/",
+    compose_save : "{{ config.sys.http_path }}/api/0/message/update/",
+    contacts     : "{{ config.sys.http_path }}/api/0/search/address/",
+    message      : "{{ config.sys.http_path }}/api/0/message/=",
+    tag          : "{{ config.sys.http_path }}/api/0/tag/",
+    tag_list     : "{{ config.sys.http_path }}/api/0/tags/",
+    tag_add      : "{{ config.sys.http_path }}/api/0/tags/add/",
+    tag_update   : "{{ config.sys.http_path }}/api/0/settings/set/",
+    search_new   : "{{ config.sys.http_path }}/api/0/search/?q=in%3Anew",
+    search       : "{{ config.sys.http_path }}/api/0/search/",
+    settings_add : "{{ config.sys.http_path }}/api/0/settings/add/"
   },
   urls: {
-    message_draft : "{{ config.sys.subdirectory }}/message/draft/=",
-    message_sent  : "{{ config.sys.subdirectory }}/thread/=",
-    tags          : "{{ config.sys.subdirectory }}/tags/"
+    message_draft : "{{ config.sys.http_path }}/message/draft/=",
+    message_sent  : "{{ config.sys.http_path }}/thread/=",
+    tags          : "{{ config.sys.http_path }}/tags/"
   },
   plugins: [],
   theme: {},
@@ -120,8 +120,8 @@ Mailpile.API = {
 
 {% endfor %}
   },
-  _sync_url: "{{ config.sys.subdirectory }}/api",
-  _async_url: "{{ config.sys.subdirectory }}/async",
+  _sync_url: "{{ config.sys.http_path }}/api",
+  _async_url: "{{ config.sys.http_path }}/async",
 };
 
 
