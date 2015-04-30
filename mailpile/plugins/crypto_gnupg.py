@@ -18,6 +18,7 @@ from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.mailutils import Email, ExtractEmails, ClearParseCache
 from mailpile.mailutils import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
+from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
 
 _plugins = PluginManager(builtin=__file__)
@@ -192,8 +193,11 @@ class GPGKeyImport(Command):
         # clear the cache so users can see results right away.
         ClearParseCache(pgpmime=True)
 
-        # FIXME: Start a keychain rescan, hopefully targetted on the keys
-        #        we just added.
+        # Update the VCards!
+        PGPKeysImportAsVCards(self.session,
+                              arg=([i['fingerprint'] for i in rv['updated']] +
+                                   [i['fingerprint'] for i in rv['imported']])
+                              ).run()
 
         return self._success(_("Imported %d keys") % len(key_data), rv)
 

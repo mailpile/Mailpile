@@ -6,6 +6,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import ClearParseCache
 from mailpile.plugins import PluginManager
+from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.util import *
 
 
@@ -34,6 +35,9 @@ def _score_validity(validity, local=False):
     return (0, '')
 
 
+# FIXME: https://leap.se/en/docs/design/transitional-key-validation
+#        ... provides a very structured ranking for keys coming from
+#        different types of sources.  Check it!
 def _update_scores(key_id, key_info, known_keys_list):
     """Update scores and score explanations"""
     key_info["score"] = sum([score for source, (score, reason)
@@ -229,6 +233,10 @@ class KeyImport(Command):
                                     origins=origins,
                                     event=self.event)
         if len(result) > 0:
+            # Update the VCards!
+            PGPKeysImportAsVCards(self.session,
+                                  arg=[k['fingerprint'] for k in result]
+                                  ).run()
             # Previous crypto evaluations may now be out of date, so we
             # clear the cache so users can see results right away.
             ClearParseCache(pgpmime=True)
@@ -264,8 +272,8 @@ class LookupHandler:
         raise NotImplemented("Subclass and override _getkey")
 
     def _gk_succeeded(self, result):
-        return 0 < (len(result.get('imported', [])) +
-                    len(result.get('updated', [])))
+        return (result and 0 < (len(result.get('imported', [])) +
+                                len(result.get('updated', []))))
 
     def _lookup(self, address):
         raise NotImplemented("Subclass and override _lookup")
@@ -275,7 +283,7 @@ class LookupHandler:
         keys = {}
         for key_id, key_info in all_keys.iteritems():
             fprint = key_info.get('fingerprint', '')
-            if (not get) or fprint in get:
+            if (get is None) or (fprint and fprint in get):
 
                 score, reason = self._score(key_info)
                 if 'validity' in key_info:
