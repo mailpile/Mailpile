@@ -103,7 +103,7 @@ clean:
                mailpile-tmp.py mailpile.py \
 	       .appver MANIFEST setup.cfg .SELF .*deps \
 	       scripts/less-compiler.mk ghostdriver.log
-	@rm -rf *.egg-info build/ mp-virtualenv/ \
+	@rm -rf *.egg-info build/ mp-virtualenv/ bower_components/ \
                mailpile/tests/data/tmp/ testing/tmp/
 
 mrproper: clean
@@ -123,8 +123,10 @@ virtualenv:
 	virtualenv -p python2 mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
-js:
-	bower install
+bower_components:
+	@bower install
+
+js: bower_components
 	# Warning: Horrible hack to extract rules from Gruntfile.js
 	cat `cat Gruntfile.js \
                 |sed -e '1,/concat:/d ' \
@@ -136,7 +138,7 @@ js:
                -o `pwd`/mailpile/www/default/js/libraries.min.js
 	@rm -f mailpile/www/default/js/mailpile-min.js.tmp
 
-less: less-compiler
+less: less-compiler bower_components
 	@make -s -f scripts/less-compiler.mk
 
 less-loop: less-compiler

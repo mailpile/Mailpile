@@ -6,7 +6,8 @@ all: mailpile/www/default/css/default.css \
 
 mailpile/www/default/css/default.css: .less-deps
 	@(cd mailpile/www/default/less && \
-            lessc -x default.less \
+            #lessc --02 -x default.less \
+            lessc default.less \
               |perl -npe 's,(libraries|app)/,,g' \
               |perl -npe 's,/mailpile/www/,../,g' \
 	    >../css/default.css)
