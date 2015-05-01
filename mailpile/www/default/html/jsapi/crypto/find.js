@@ -11,7 +11,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
 
       // Loop through UIDs for match to Query
       var uid = _.findWhere(key.uids, {email: options.query});
-      var avatar   = '/static/img/avatar-default.png';
+      var avatar   = '{{ config.sys.http_path }}/static/img/avatar-default.png';
 
       // Try to find Avatar
       if (uid) {

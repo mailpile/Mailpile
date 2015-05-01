@@ -136,11 +136,12 @@ class Command(object):
 
         def as_dict(self):
             from mailpile.urlmap import UrlMap
+            um = UrlMap(self.session)
             rv = {
                 'command': self.command_name,
                 'state': {
-                    'command_url': UrlMap.ui_url(self.command_obj),
-                    'context_url': UrlMap.context_url(self.command_obj),
+                    'command_url': um.ui_url(self.command_obj),
+                    'context_url': um.context_url(self.command_obj),
                     'query_args': self.command_obj.state_as_query_args(),
                     'cache_id': self.command_obj.cache_id(),
                     'context': self.command_obj.context or ''
@@ -243,8 +244,9 @@ class Command(object):
         from mailpile.urlmap import UrlMap
         args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
         # The replace() stuff makes these usable as CSS class IDs
-        return ('%s-%s' % (UrlMap.ui_url(self), md5_hex(str(args)))
-                          ).replace('/', '-').replace('.', '-')
+        return ('%s-%s' % (UrlMap(self.session).ui_url(self),
+                           md5_hex(str(args))
+                           )).replace('/', '-').replace('.', '-')
 
     def cache_requirements(self, result):
         raise NotImplementedError('Cachable commands should override this, '
@@ -1387,8 +1389,8 @@ class BrowseOrLaunch(Command):
 
     @classmethod
     def Browse(cls, sspec):
-        http_url = ('http://%s:%s/' % sspec
-                    ).replace('/0.0.0.0:', '/localhost:')
+        http_url = ('http://%s:%s%s/' % sspec
+                    ).replace('//0.0.0.0:', '//localhost:')
         try:
             MakePopenUnsafe()
             webbrowser.open(http_url)
@@ -1403,10 +1405,11 @@ class BrowseOrLaunch(Command):
         if config.http_worker:
             sspec = config.http_worker.sspec
         else:
-            sspec = (config.sys.http_host, config.sys.http_port)
+            sspec = (config.sys.http_host, config.sys.http_port,
+                     config.sys.http_path or '')
 
         try:
-            socket.create_connection(sspec)
+            socket.create_connection(sspec[:2])
             self.Browse(sspec)
             os._exit(1)
         except IOError:
@@ -1417,17 +1420,21 @@ class BrowseOrLaunch(Command):
 
 class RunWWW(Command):
     """Just run the web server"""
-    SYNOPSIS = (None, 'www', None, '[<host:port>]')
+    SYNOPSIS = (None, 'www', None, '[<host:port/path>]')
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
 
     def command(self):
         config = self.session.config
-        ospec = (config.sys.http_host, config.sys.http_port)
+        ospec = (config.sys.http_host, config.sys.http_port,
+                 config.sys.http_path)
 
         if self.args:
-            sspec = self.args[0].split(':', 1)
-            sspec[1] = int(sspec[1])
+            from mailpile.config import WebRootCheck
+            host, portpath = self.args[0].split('://')[-1].split(':', 1)
+            port, path = (portpath+'/').split('/', 1)
+            port = int(port)
+            sspec = (host, port, WebRootCheck(path))
         else:
             sspec = ospec
 
@@ -1440,9 +1447,10 @@ class RunWWW(Command):
                                             daemons=True)
         if config.http_worker:
             sspec = config.http_worker.httpd.sspec
-            http_url = 'http://%s:%s/' % sspec
+            http_url = 'http://%s:%s%s/' % sspec
             if sspec != ospec:
-                (config.sys.http_host, config.sys.http_port) = ospec
+                (config.sys.http_host, config.sys.http_port,
+                 config.sys.http_path) = sspec
                 self._background_save(config=True)
                 return self._success(_('Moved the web server to %s'
                                        ) % http_url)

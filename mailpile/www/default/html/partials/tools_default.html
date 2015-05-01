@@ -18,9 +18,9 @@
   {%- for elem in activities %}
     <li class="btn-activity-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{elem.url}}" title="{{elem.description}}">
+      <a href="{{ config.sys.http_path }}{{elem.url}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
-        <img class="navigation-icon" src="{{elem.icon}}">
+        <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
@@ -36,9 +36,9 @@
     {%- set url = elem.url|add_state_query_string(state, elem) %}
     <li class="btn-display-refiner-{{elem.name}}
         {%- if state.command_url|add_state_query_string(state) == url %} navigation-on{% endif %}">
-      <a href="{{url}}" title="{{elem.description}}">
+      <a href="{{ config.sys.http_path }}{{url}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
-        <img class="navigation-icon" src="{{elem.icon}}">
+        <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
@@ -55,10 +55,10 @@
   {%- for elem in display_modes %}
     <li class="btn-display-mode-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{elem.url|add_state_query_string(state, elem)}}"
+      <a href="{{ config.sys.http_path }}{{elem.url|add_state_query_string(state, elem)}}"
          title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
-        <img class="navigation-icon" src="{{elem.icon}}">
+        <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
@@ -88,10 +88,10 @@
   {%- for elem in selection_actions %}
     <li class="btn-selection-action-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{elem.url|add_state_query_string(state, elem)}}"
+      <a href="{{ config.sys.http_path }}{{elem.url|add_state_query_string(state, elem)}}"
          title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
-        <img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">
+        <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}" alt="{{elem.text}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
       {%- else -%}{{elem.text}}{%- endif -%}

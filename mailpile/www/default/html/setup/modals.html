@@ -29,12 +29,12 @@
         <p>{{_("Make sure you have enabled at least one of the following Google settings")}}:</p>
         <p>
           <!-- FIXME: Add helper JS events to show in modal <a class="btn-helper-action" data-action="CryptoFindKeys"> -->
-          <a href="/page/gmail-access-non-google-accounts/" target="_blank">
+          <a href="{{ config.sys.http_path }}/page/gmail-access-non-google-accounts/" target="_blank">
             <span class="icon-help"></span> {{_("Enable Access for Non-Google Apps")}}
           </a>
         </p>
         <p>
-          <a href="/page/gmail-2-step-verification/" class="helper" target="_blank">
+          <a href="{{ config.sys.http_path }}/page/gmail-2-step-verification/" class="helper" target="_blank">
             <span class="icon-help"></span> {{_("Gmail's 2-Step App Passwords")}}
           </a>
         </p>
@@ -61,7 +61,7 @@
           <li>You might have Google's 2 factor auth enabled</li>
         </ul>
         <p>
-          <a href="/page/gmail-2-step-verification/" class="button-secondary" target="_blank">
+          <a href="{{ config.sys.http_path }}/page/gmail-2-step-verification/" class="button-secondary" target="_blank">
             <span class="icon-help"></span> Help: Gmail's 2-Step App Passwords
           </a>
         </p>

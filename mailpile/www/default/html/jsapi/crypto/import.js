@@ -29,7 +29,7 @@ Mailpile.Crypto.Import.Key = function(import_data) {
           console.log(key_result);
 
           // FIXME: kludgy
-          key_result['avatar'] = '/static/img/avatar-default.png';
+          key_result['avatar'] = '{{ config.sys.http_path }}/static/img/avatar-default.png';
           key_result['uid'] = key_result.uids[0];
           key_result['action'] = 'hide-modal';
           key_result['on_keychain'] = true;
@@ -63,7 +63,7 @@ Mailpile.Crypto.Import.Uploader = function() {
   	browse_button : 'upload-key-pick', // you can pass in id...
   	container: 'upload-key-container', // ... or DOM Element itself
     drop_element: 'upload-key-container',
-  	url : '/api/0/crypto/gpg/importkey/',
+  	url : '{{ config.sys.http_path }}/api/0/crypto/gpg/importkey/',
 //    multipart : true,
 //    multipart_params : {'key_file': 'upload'},
     file_data_name : 'key_data',

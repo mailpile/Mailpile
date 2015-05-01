@@ -421,6 +421,27 @@ def _PathCheck(path):
     return os.path.abspath(path)
 
 
+def WebRootCheck(path):
+    """
+    Verify that a string is a valid web root path, normalize the slashes.
+
+    >>> WebRootCheck('/')
+    ''
+
+    >>> WebRootCheck('/foo//bar////baz//')
+    '/foo/bar/baz'
+
+    >>> WebRootCheck('/foo/$%!')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid web root: /foo/$%!
+    """
+    p = re.sub('/+', '/', '/%s/' % path)[:-1]
+    if (p != CleanText(p, banned=CleanText.NONVARS.replace('/', '')).clean):
+        raise ValueError('Invalid web root: %s' % path)
+    return p
+
+
 def _FileCheck(path):
     """
     Verify that a string is a valid path to a file, make it absolute.
@@ -598,6 +619,7 @@ def RuledContainer(pcls):
             'timestamp': long,
             'unicode': unicode,
             'url': _UrlCheck, # FIXME: check more than the scheme?
+            'webroot': WebRootCheck,
         }
         _NAME = 'container'
         _RULES = None
@@ -1970,7 +1992,8 @@ class ConfigManager(ConfigDict):
                                                          log_parent=session.ui)
 
         def start_httpd(sspec=None):
-            sspec = sspec or (config.sys.http_host, config.sys.http_port)
+            sspec = sspec or (config.sys.http_host, config.sys.http_port,
+                              config.sys.http_path or '')
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 config.http_worker = HttpWorker(config.background, sspec)
                 config.http_worker.start()

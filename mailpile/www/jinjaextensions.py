@@ -212,11 +212,12 @@ class MailpileCommand(Extension):
         return friendly_number(number,
                                decimals=decimals, base=1024, suffix='B')
 
-    def _show_avatar(self, contact): #FIXME http_path
+    def _show_avatar(self, contact):
         if "photo" in contact:
             photo = contact['photo']
         else:
-            photo = '/static/img/avatar-default.png'
+            photo = ('%s/static/img/avatar-default.png'
+                     % self.env.session.config.sys.http_path)
         return photo
 
     def _navigation_on(self, search_tag_ids, on_tid):
@@ -472,12 +473,13 @@ class MailpileCommand(Extension):
             'message': message
         }
 
-    @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
-            url = "/contacts/view/" + person['address'] + "/"
+            url = ("%s/contacts/view/%s/"
+                   % (self.env.session.config.sys.http_path,
+                      person['address']))
         else:
-            url = "/#add-contact"
+            url = "%s/#add-contact" % self.env.session.config.sys.http_path
         return url
 
     def _contact_name(self, person):

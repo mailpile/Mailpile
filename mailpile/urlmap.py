@@ -218,7 +218,8 @@ class UrlMap:
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /in/inbox/ for now.  (FIXME)"""
-        return [UrlRedirect(self.session, 'redirect', arg=['%s/in/inbox/' % self.config.sys.http_path])]
+        destination = '%s/in/inbox/' % self.config.sys.http_path
+        return [UrlRedirect(self.session, 'redirect', arg=[destination])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
@@ -432,7 +433,8 @@ class UrlMap:
     def _url(self, url, output='', qs=''):
         if output and '.' not in output:
             output = 'as.%s' % output
-        return ''.join([self.config.sys.http_path, url, output, qs and '?' or '', qs])
+        return ''.join([self.config.sys.http_path,
+                        url, output, qs and '?' or '', qs])
 
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""
@@ -534,17 +536,15 @@ class UrlMap:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
 
-    @classmethod
     def canonical_url(self, cls):
         """Return the full versioned URL for a command"""
         return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
                                 cls.SYNOPSIS[2])
-    @classmethod
+
     def ui_url(self, cls):
         """Return the full user-facing URL for a command"""
         return '/%s/' % cls.SYNOPSIS[2]
 
-    @classmethod
     def context_url(self, cls):
         """Return the UI context URL for a command"""
         return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])

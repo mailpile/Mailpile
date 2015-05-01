@@ -31,7 +31,7 @@
         </li>
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}">
-          <a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ a.icon }}"></a>
+          <a href="{{ config.sys.http_path }}{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ config.sys.http_path }}{{ a.icon }}"></a>
         </li>
         {%- endfor -%}
         {% if config.web.donate_visibility %}

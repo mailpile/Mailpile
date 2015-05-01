@@ -52,7 +52,7 @@ Mailpile.Search.init = function() {
       if (Notification.permission == "granted") {
         new Notification(ev.data.messages + "{{_(' new messages received')}}", { 
             body:'{{_("Your pile is growing...")}}',
-            icon:'/static/img/logo-color.png', 
+            icon:'{{ config.sys.http_path }}/static/img/logo-color.png', 
           }  
         )
       }
