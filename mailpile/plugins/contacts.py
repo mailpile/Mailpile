@@ -603,15 +603,15 @@ class AddressSearch(VCardCommand):
         'ms': 'deadline in ms'
     }
 
-    def _boost_rank(self, term, *matches):
+    def _boost_rank(self, boost, term, *matches):
         boost = 0.0
         for match in matches:
             match = match.lower()
             if term in match:
                 if match.startswith(term):
-                    boost += 25 * (float(len(term)) / len(match))
+                    boost += boost * boost * (float(len(term)) / len(match))
                 else:
-                    boost += 5 * (float(len(term)) / len(match))
+                    boost += boost * (float(len(term)) / len(match))
         return int(boost)
 
     def _vcard_addresses(self, cfg, terms, ignored_count, deadline):
@@ -623,9 +623,10 @@ class AddressSearch(VCardCommand):
                 info = addresses.get(email_vcl.value) or {}
                 info.update(AddressInfo(email_vcl.value, fn.value,
                                         vcard=vcard))
+                info['rank'] = min(15, info.get('rank', 15))
                 addresses[email_vcl.value] = info
                 for term in terms:
-                    info['rank'] += self._boost_rank(term, fn.value,
+                    info['rank'] += self._boost_rank(5, term, fn.value,
                                                      email_vcl.value)
             if len(addresses) and time.time() > deadline:
                 break
@@ -685,16 +686,17 @@ class AddressSearch(VCardCommand):
             email, fn = ExtractEmailAndName(frm)
             boost = min(10, matches[frm])
             for term in terms:
-                boost += self._boost_rank(term, fn, email)
+                boost += self._boost_rank(4, term, fn, email)
 
             if not email or '@' not in email:
                 # FIXME: This may not be the right thing for alternate
                 #        message transports.
                 pass
             elif email.lower() in existing:
-                existing[email.lower()]['rank'] += min(20, boost)
+                existing[email.lower()]['rank'] += boost
             else:
                 info = AddressInfo(email, fn)
+                info['rank'] = info.get('rank', 0) + boost
                 existing[email.lower()] = info
                 addresses.append(info)
 
