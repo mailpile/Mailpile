@@ -1652,6 +1652,8 @@ class GpgCommand(Command):
             try:
                 self.session.ui.block()
                 os.system(' '.join([GPG_BINARY] + args))
+                from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
+                PGPKeysImportAsVCards(self.session).run()
             except:
                 self.session.ui.unblock()
 

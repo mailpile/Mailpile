@@ -43,7 +43,7 @@ class DNSPKALookupHandler(LookupHandler):
             return {}
         dom = address.replace("@", "._pka.")
         result = self.req.req(dom)
-        for res in result.answers:
+        for res in (result.answers if result else []):
             if res["typename"] != "TXT":
                 continue
             for entry in res["data"]:

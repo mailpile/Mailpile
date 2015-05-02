@@ -122,7 +122,8 @@ def lookup_crypto_keys(session, address,
 
         if event:
             ordered_keys.sort(key=lambda k: -k["score"])
-            event.message = _('Searching for encryption keys in: %s') % _(h.NAME)
+            event.message = _('Searching for encryption keys in: %s'
+                              ) % _(h.NAME)
             event.private_data = {"result": ordered_keys,
                                   "runningsearch": h.NAME}
             session.config.event_log.log_event(event)
@@ -136,7 +137,8 @@ def lookup_crypto_keys(session, address,
             # h.lookup will remove found keys from the wanted list,
             # but we have to watch out for the effects of timeouts.
             wanted = ungotten[:]
-            results = RunTimed(timeout, h.lookup, address, get=wanted)
+            results = RunTimed(timeout, h.lookup, address,
+                               get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
         except (TimedOut, IOError, ValueError):
             if session.config.sys.debug:
@@ -296,7 +298,7 @@ class LookupHandler:
                 key_info['scores'] = {
                     self.NAME: [score, reason]
                 }
-                if get:
+                if get is not None:
                     get.remove(fprint)
                     if self._gk_succeeded(self._getkey(key_info)):
                         keys[key_id] = key_info
