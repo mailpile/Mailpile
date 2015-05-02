@@ -107,6 +107,9 @@ class EmailCryptoTxf(EmailTransform):
         return _CopyAsMultipart(msg, copy_callback, cleaner)
 
     def DkgHeaderTransformIncoming(self, msg):
+        # FIXME: Parse incoming message/rfc822-headers parts, migrate
+        #        back to public header. Somehow annotate which are secure
+        #        and which are not.
         return msg
 
 
