@@ -54,18 +54,23 @@ class GnuPGImporter(VCardImporter):
         # Generate tombstones for keys which are gone from the keyring.
         if vcards:
             deleted = set()
+            deleted_names = {}
             search = ';%s/' % self.config.guid
             for cardid, vcard in (vcards or {}).iteritems():
                 for vcl in vcard.get_all('clientpidmap'):
                     if search in vcl.value:
-                        deleted.add(vcl.value.split(';')[1])
+                        key_id = vcl.value.split(';')[1]
+                        deleted.add(key_id)
+                        deleted_names[key_id] = vcard.fn
             if selectors:
                 deleted = set([guid for guid in deleted
                                if guid.split('/')[-1] in selectors])
             deleted -= set([self.get_guid(card) for card in new_cards])
             for guid in deleted:
                 mrgid = guid.split('/')[-1]
-                new_cards.append(MailpileVCard(VCardLine(name='x-gpg-mrgid',
+                fn = deleted_names[guid]
+                new_cards.append(MailpileVCard(VCardLine(name='fn', value=fn),
+                                               VCardLine(name='x-gpg-mrgid',
                                                          value=mrgid)))
 
         return new_cards
