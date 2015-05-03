@@ -136,6 +136,9 @@ def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader):
             for uid in keydata.get('uids', []):
                 if uid.get('email'):
                     kws.append('%s:pgpkey' % uid['email'])
+    # FIXME: If this part is a signature, record which signatures we've
+    #        seen from which keys, for historic profiling purposes. Keys
+    #        used more often are less likely to be forgeries.
     return kws
 
 
