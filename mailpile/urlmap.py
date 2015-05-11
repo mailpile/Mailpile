@@ -168,7 +168,7 @@ class UrlMap:
         return command(self.session, name, args, data=data, async=async)
 
     OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
-                       '.text', '.vcf', '.xml',
+                       '.text', '.vcf', '.xml', '.csv',
                        # These are the template-based ones which can
                        # be embedded in JSON.
                        '.jcss', '.jhtml', '.jjs', '.jrss', '.jtxt',

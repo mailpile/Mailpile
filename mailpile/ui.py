@@ -390,6 +390,8 @@ class UserInteraction:
             return self._display_result('json', result.as_('json'))
         if self.render_mode in ('text', 'as.text'):
             return self._display_result('text', unicode(result))
+        if self.render_mode in ('csv', 'as.csv'):
+            return self._display_result('csv', result.as_csv())
 
         ttype, mode, wrap_in_json, template = self._parse_render_mode()
         rendering = result.as_template(ttype,
@@ -606,6 +608,7 @@ class HttpUserInteraction(UserInteraction):
     def _ttype_to_mimetype(self, ttype, result):
         return ({
             'css': 'text/css',
+            'csv': 'text/csv',
             'js': 'text/javascript',
             'json': 'application/json',
             'html': 'text/html',

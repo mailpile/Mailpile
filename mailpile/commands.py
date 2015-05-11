@@ -96,6 +96,7 @@ class Command(object):
                 'html': self.as_html,
                 'text': self.as_text,
                 'css': self.as_css,
+                'csv': self.as_csv,
                 'rss': self.as_rss,
                 'xml': self.as_xml,
                 'txt': self.as_txt,
@@ -158,6 +159,19 @@ class Command(object):
                            if k.startswith('ui_')]:
                 rv[ui_key] = self.kwargs[ui_key]
             return rv
+
+        def as_csv(self, template=None, result=None):
+            result = self.result if (result is None) else result
+            if (isinstance(result, (list, tuple)) and
+                    (not result or isinstance(result[0], (list, tuple)))):
+                import csv, StringIO
+                output = StringIO.StringIO()
+                writer = csv.writer(output, dialect='excel')
+                for row in result:
+                    writer.writerow([unicode(r).encode('utf-8') for r in row])
+                return output.getvalue().decode('utf-8')
+            else:
+                return ''
 
         def as_json(self):
             return self.session.ui.render_json(self.as_dict())
