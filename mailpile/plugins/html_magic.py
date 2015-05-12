@@ -2,7 +2,7 @@
 # current theme, skin and active plugins.
 #
 import mailpile.config
-from mailpile.commands import Command
+from mailpile.commands import Command, RenderPage
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -26,8 +26,7 @@ _plugins = PluginManager(builtin=__file__)
 
 ##[ Commands ]################################################################
 
-
-class JsApi(Command):
+class JsApi(RenderPage):
     """Output API bindings, plugin code and CSS as CSS or Javascript"""
     SYNOPSIS = (None, None, 'jsapi', None)
     ORDER = ('Internals', 0)

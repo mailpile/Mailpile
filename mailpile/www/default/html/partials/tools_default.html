@@ -18,7 +18,7 @@
   {%- for elem in activities %}
     <li class="btn-activity-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{ config.sys.http_path }}{{elem.url}}" title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}}" href="#" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}">
       {%- elif elem.icon -%}
@@ -86,10 +86,9 @@
   {%- endif %}
   <ul class="horizontal right">
   {%- for elem in selection_actions %}
-    <li class="btn-selection-action-{{elem.name}}
+    <li class="hide btn-selection-action-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{ config.sys.http_path }}{{elem.url|add_state_query_string(state, elem)}}"
-         title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}}" href="#" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}" alt="{{elem.text}}">
       {%- elif elem.icon -%}

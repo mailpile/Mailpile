@@ -283,16 +283,16 @@ class Command(object):
 
     def template_path(self, ttype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
-        if len(path_parts) == 1:
+        if template in (None, ttype, 'as.' + ttype):
             path_parts.append('index')
-        if template not in (None, ttype, 'as.' + ttype):
+        else:
             # Security: The template request may come from the URL, so we
             #           sanitize it very aggressively before heading off
             #           to the filesystem.
             clean_tpl = CleanText(template.replace('.%s' % ttype, ''),
                                   banned=(CleanText.FS +
                                           CleanText.WHITESPACE))
-            path_parts[-1] += '-%s' % clean_tpl
+            path_parts.append(clean_tpl.clean)
         path_parts[-1] += '.' + ttype
         return os.path.join(*path_parts)
 
@@ -1497,11 +1497,12 @@ class RenderPage(Command):
     HTTP_STRICT_VARS = False
     IS_USER_ACTIVITY = True
 
-    class CommandResult(Command.CommandResult):
-        def __init__(self, *args, **kwargs):
-            Command.CommandResult.__init__(self, *args, **kwargs)
-            if self.result and 'path' in self.result:
-                self.template_id = 'page/' + self.result['path'] + '/index'
+    def template_path(self, ttype, template_id=None, **kwargs):
+        if not template_id:
+            template_id = '%s/%s' % (self.SYNOPSIS[2],
+                                     self.args and self.args[0] or '')
+        return Command.template_path(self, ttype, template_id=template_id,
+                                     **kwargs)
 
     def command(self):
         return self._success(_('Rendered the page'), result={

@@ -13,6 +13,7 @@
 
     # This section defines URL routes and MIME types.
     "routes": {
+        "/jsapi/templates/datadig-modal.html": {"file": "datadig-modal.html", "api": 0},
         "/static/datadig/icon.png": {"file": "icon.png"}
     },
 
@@ -24,7 +25,7 @@
                 "name": "datadig",
                 "text": "CSV Data",
                 "description": "Extract tables of data from selected messages",
-                "icon": "/static/datadig/icon.png"
+                "icon": "list"
             }
         ]
     },
