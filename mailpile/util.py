@@ -668,6 +668,11 @@ class CleanText:
                                         set(range(ord('0'), ord('9') + 1)) -
                                         set(range(ord('a'), ord('z') + 1)) -
                                         set([ord('_')]))])
+    NONPATH = ''.join([chr(c) for c in (set(range(32, 127)) -
+                                        set(range(ord('0'), ord('9') + 1)) -
+                                        set(range(ord('a'), ord('z') + 1)) -
+                                        set(range(ord('A'), ord('Z') + 1)) -
+                                        set([ord('_'), ord('/')]))])
 
     def __init__(self, text, banned='', replace=''):
         self.clean = str("".join([i if (((ord(i) > 31 and ord(i) < 127) or
