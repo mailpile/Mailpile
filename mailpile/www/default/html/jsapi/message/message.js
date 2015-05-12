@@ -166,9 +166,10 @@ $(document).on('click', '.message-action-add-contact', function(e) {
     mid: mid
   };
 
-  var modal_template = _.template($("#modal-contact-add").html());
-  $('#modal-full').html(modal_template(modal_data));
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.API.with_template('modal-contact-add', function(modal) {
+    $('#modal-full').html(modal(modal_data));
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  });
 });
 
 
@@ -202,19 +203,17 @@ $(document).on('click', '.message-crypto-action', function() {
   Mailpile.API.crypto_gpg_keylist_secret_get({}, function(result) {
     var mid = $(this).data('mid');
     var modal_data = { name: 'User Name', address: 'name@address.org' };
-    var modal_template = _.template($("#modal-send-public-key").html());
-    $('#modal-full').html(modal_template(modal_data));
+    Mailpile.API.with_template('modal-send-public-key', function(modal) {
+      var key_html = '';
+      _.each(result.result, function(key) {
+        var key_template = _.template($('#template-modal-private-key-item').html());
+        key_html +=  key_template(key);
+      });
 
-    var key_html = '';
-
-    _.each(result.result, function(key) {
-      var key_template = _.template($('#template-modal-private-key-item').html());
-      key_html +=  key_template(key);
+      $('#modal-full').html(modal(modal_data));
+      $('#crypto-private-key-list').html(key_html);
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     });
-
-    $('#crypto-private-key-list').html(key_html);
-
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
   });
 });
 

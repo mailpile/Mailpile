@@ -1,0 +1,52 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">
+        <span class="icon-lock-open color-10-orange"></span>
+        <span class="title">{{_("Cannot Encrypt")}}</span>
+      </h4>
+    </div>
+    <div class="modal-body clearfix">
+      <div id="encryption-helper-find-keys" class="hide">
+        <p class="message paragraph-important animated">
+          <span class="icon-search"></span> {{_("Searching for encryption keys for:")}} <span class="color-01-gray-mid"></span>
+        </p>
+        <p class="loading text-center">
+        {% include("../img/loading-ellipsis.svg") %}
+        </p>
+        <ul class="result"></ul>
+      </div>
+      <div id="encryption-helper-missing-keys">
+        <p class="paragraph-alert">
+          <span class="icon-signature-unknown"></span> {{_("You are missing encryption keys for the following contacts")}}
+        </p>
+        <ul>
+          <% _.each(unencryptables, function(recipient, key) { %>
+          <li id="item-encryption-key-" address="<%= recipient.address %>" class="searchkey-result-item animated fadeIn">
+            <div class="clearfix">
+              <div href="{{ config.sys.http_path }}/contacts/view/<%= recipient.address %>/" class="avatar" target="_blank"><img src="{{ config.sys.http_path }}/static/img/avatar-default.png"></div>
+              <div class="name">
+                <%= recipient.fn %><br>
+                <span><%= recipient.address %></span>
+              </div>
+              <div class="right text-right">
+              <ul class="none">
+                <li class="half-bottom">
+                  <a href="<%= recipient.address %>" class="encryption-helper-find-key" data-mid="<%= mid %>"><span class="icon-search"></span> {{_("Find Encryption Keys")}}</a>
+                </li>
+              </ul>
+              </div>
+            </div>
+          </li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="encryption-helper-unencrypted left button-info" data-mid="<%= mid %>" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"><span class="icon-lock-open"></span> {{_("Send Unencrypted")}}</button>
+
+      <button class="encryption-helper-upload-key button-secondary right"><span class="icon-lock-closed"></span> {{_("Send Encrypted")}}</button>
+    </div>
+  </div>
+</div>

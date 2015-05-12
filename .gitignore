@@ -12,7 +12,6 @@ mp-virtualenv
 .tox
 mailpile.egg-info/
 mailpile-tmp.py
-mailpile/www/
 mailpile/www/default/plugins/
 mailpile/tests/data/tmp
 mailpile/tests/data/gpg-keyring/random_seed

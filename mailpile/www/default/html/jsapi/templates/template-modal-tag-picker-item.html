@@ -1,0 +1,14 @@
+<tr class="modal-tag-picker-item <%= display %>" data-tid="<%= tid %>">
+  <td class="tag text-left color-<%= label_color %>">
+    <% if (parent) { var parent = _.findWhere(Mailpile.instance.tags, { tid: parent}); %>
+    <span class="<%= parent.icon %>"></span> <span class="text"><%= parent.name %></span> &nbsp;&gt;&nbsp;
+    <% } %>
+    <span class="<%= icon %>"></span> <span class="text"><%= name %></span>
+  </td>
+  <td class="selection text-right" id="tag-selected-<%= tid %>">
+    <% if (selected[tid]) { %><%= selected[tid] %> {{_("Messages")}}<% } %>
+  </td>
+  <td class="checkbox text-center">
+    <input class="tag-picker-checkbox" type="checkbox" name="tid" value="<%= tid %>" <% if (_.indexOf(Mailpile.tags_cache, tid) > -1) { %>checked<% } %>>
+  </td>
+</tr>

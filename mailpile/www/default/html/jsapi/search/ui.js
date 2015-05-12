@@ -104,46 +104,48 @@ Mailpile.render_modal_tags = function() {
 
     // Open Modal with selection options
     Mailpile.API.tags_get({}, function(data) {
+      Mailpile.API.with_template('template-modal-tag-picker-item',
+                                 function(tag_template) {
+        var priority_html = '';
+        var tags_html     = '';
+        var archive_html  = '';
 
-      var tag_template = _.template($('#template-modal-tag-picker-item').html());
-      var priority_html = '';
-      var tags_html     = '';
-      var archive_html  = '';
+        /// Show tags in selected messages
+        var selected_tids = {};
+        _.each(Mailpile.messages_cache, function(mid, key) {
+          var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
+          if (metadata && metadata.tag_tids) {
+            _.each(metadata.tag_tids, function(tid, key) {
+              if (selected_tids[tid] === undefined) {
+                selected_tids[tid] = 1;
+              } else {
+                selected_tids[tid]++;
+              }
+            });
+          }
+        });
 
-      /// Show tags in selected messages
-      var selected_tids = {};
-      _.each(Mailpile.messages_cache, function(mid, key) {
-        var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
-        if (metadata && metadata.tag_tids) {
-          _.each(metadata.tag_tids, function(tid, key) {
-            if (selected_tids[tid] === undefined) {
-              selected_tids[tid] = 1;
-            } else {
-              selected_tids[tid]++;
-            }
-          });
-        }
+        // Build Tags List
+        _.each(data.result.tags, function(tag, key) {
+          if (tag.display === 'priority' && tag.type === 'tag') {
+            priority_data  = _.extend(tag, { selected: selected_tids });
+            priority_html += tag_template(priority_data);
+          }
+          else if (tag.display === 'tag' && tag.type === 'tag') {
+            tag_data   = _.extend(tag, { selected: selected_tids });
+            tags_html += tag_template(tag_data);
+          }
+          else if (tag.display === 'archive' && tag.type === 'tag') {
+            archive_data  = _.extend(tag, { selected: selected_tids });
+            archive_html += tag_template(archive_data);
+          }
+        });
+
+        Mailpile.API.with_template('modal-tag-picker', function(modal) {
+          $('#modal-full').html(modal({ priority: priority_html, tags: tags_html, archive: archive_html }));
+          $('#modal-full').modal(Mailpile.UI.ModalOptions);
+        });
       });
-
-      // Build Tags List
-      _.each(data.result.tags, function(tag, key) {
-        if (tag.display === 'priority' && tag.type === 'tag') {
-          priority_data  = _.extend(tag, { selected: selected_tids });
-          priority_html += tag_template(priority_data);
-        }
-        else if (tag.display === 'tag' && tag.type === 'tag') {
-          tag_data   = _.extend(tag, { selected: selected_tids });
-          tags_html += tag_template(tag_data);
-        }
-        else if (tag.display === 'archive' && tag.type === 'tag') {
-          archive_data  = _.extend(tag, { selected: selected_tids });
-          archive_html += tag_template(archive_data);
-        }
-      });
-
-      var modal_template = _.template($("#modal-tag-picker").html());
-      $('#modal-full').html(modal_template({ priority: priority_html, tags: tags_html, archive: archive_html }));
-      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     });
  
   } else {

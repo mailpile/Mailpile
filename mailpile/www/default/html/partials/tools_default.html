@@ -18,7 +18,7 @@
   {%- for elem in activities %}
     <li class="btn-activity-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a class="bulk-action-{{elem.name}}" href="#" title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}}" href="{{ config.sys.http_path }}{{elem.url}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ config.sys.http_path }}{{elem.icon}}">
       {%- elif elem.icon -%}
@@ -52,7 +52,8 @@
   </script>{% endif %}
   </ul>
   <ul class="right horizontal">
-  {%- for elem in display_modes %}
+  {%- if display_modes|length > 1 %}
+   {%- for elem in display_modes %}
     <li class="btn-display-mode-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
       <a href="{{ config.sys.http_path }}{{elem.url|add_state_query_string(state, elem)}}"
@@ -64,7 +65,8 @@
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
-  {%- endfor %}{{ hard_coded_display_modes|safe }}
+   {%- endfor %}
+  {%- endif %}{{ hard_coded_display_modes|safe }}
   {%- if display_modes %}<script>
     $(document).ready({{
       ui_elements_setup('.btn-display-mode-%(name)s', display_modes)
