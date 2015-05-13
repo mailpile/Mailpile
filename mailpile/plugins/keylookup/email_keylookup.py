@@ -66,7 +66,7 @@ def _get_keydata(data):
             if isinstance(m, pgpdump.packet.UserIDPacket):
                 results[-1]["uids"].append({"name": m.user_name,
                                             "email": m.user_email})
-        except (AttributeError, KeyError, IndexError, NameError):
+        except (TypeError, AttributeError, KeyError, IndexError, NameError):
             import traceback
             traceback.print_exc()
 

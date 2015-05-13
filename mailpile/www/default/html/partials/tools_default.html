@@ -82,7 +82,9 @@
 <div class="bulk-actions clearfix">
 {%- endif %}
   {%- if not tools_disable_checkbox %}
-  <div id="bulk-actions-message" class="left" data-bulk_selected="{{_("Items Selected")}}" data-bulk_selected_none="{{_('Click item or checkbox to select')}}">
+  <div id="bulk-actions-message" class="left"
+       data-bulk_selected="{{_("Items Selected")}}"
+       data-bulk_selected_none="{{_('Click item or checkbox to select')}}">
     {{_('Click item or checkbox to select')}}
   </div>
   {%- endif %}
