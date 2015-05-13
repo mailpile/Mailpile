@@ -1,4 +1,5 @@
 import re
+import time
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -15,9 +16,15 @@ from mailpile.mailutils import Email
 class dataDigCommand(Command):
     """Extract tables of structured data from e-mail content"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'datadig', 'datadig', '<things ...> -- <messages ...>')
+    SYNOPSIS = (None, 'datadig', 'datadig', '<terms ...> -- <messages ...>')
     HTTP_CALLABLE = ('GET', )
-    HTTP_QUERY_VARS = {}
+    HTTP_QUERY_VARS = {
+        'timeout': 'runtime in seconds',
+        'header': 'runtime in seconds',
+        'no-mid': 'omit metadata-ID column',
+        'term': 'extraction term',
+        'mid': 'metadata-ID'
+    }
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -27,51 +34,93 @@ class dataDigCommand(Command):
             else:
                 return _("Nothing Happened")
 
-    def _filter(self, idx, e, thing, filters):
-        if not isinstance(thing, (list, tuple)):
-            thing = [thing]
+    def _filter(self, idx, e, celldata, filters):
+        if not isinstance(celldata, (list, tuple)):
+            celldata = [celldata]
         for fltr in filters:
-            thing = thing
-        return thing
+            # FIXME!
+            celldata = celldata
+        return celldata
 
-    def _thing(self, idx, e, thing):
-        filters = thing.split('|')
-        thing, lthing = filters[0], filters[0].lower()
-        if lthing == 'from':
+    def _cell(self, idx, e, cellspec):
+        filters = cellspec.split('||')
+        cspec, lcspec = filters[0], filters[0].lower()
+        lcspec = lcspec.split(':', 1)[0].split('=', 1)[-1]
+
+        if lcspec == 'sender':
             return self._filter(idx, e, e.get_msg_info(field=idx.MSG_FROM),
                                 filters)
-        if lthing == 'subject':
+
+        if lcspec == 'subject':
             return self._filter(idx, e, e.get_msg_info(field=idx.MSG_SUBJECT),
                                 filters)
-        if lthing in ('to', 'cc', 'bcc', 'list', 'received'):
-            return self._filter(idx, e, e.get_msg()[lthing], filters)
-        if lthing.startswith('text:'):
-            rxp = re.compile(thing[5:])
-            body = e.get_editing_strings()['body']
-            mobj = re.search(rxp, body)
+
+        if lcspec in ('from', 'to', 'cc', 'bcc', 'date'):
+            return self._filter(idx, e, e.get_msg()[lcspec], filters)
+
+        if lcspec in ('text', ):
+            rxp = cspec.split(':', 1)[1]
+            if lcspec == 'text':
+                body = e.get_editing_strings()['body']
+                mobj = re.search(rxp, body)
             if mobj:
                 return self._filter(idx, e, list(mobj.groups()), filters)
-        return []
+
+        return ['']
+
+    def _truthy(self, val):
+        return val.lower() in ('1', 'true', 'y', 'yes', 'on')
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
-        args = list(self.args)
 
-        things = []
-        while args and args[0].lower() != '--':
-            things.append(args.pop(0))
-        if args and args[0].lower() == '--':
-            args.pop(0)
-        msg_idxs = self._choose_messages(args)
+        # Command-line arguments...
+        msgs = list(self.args)
+        timeout = -1
+        with_header = False
+        without_mid = False
+        columns = []
+        while msgs and msgs[0].lower() != '--':
+            arg = msgs.pop(0)
+            if arg.startswith('--timeout='):
+                timeout = float(arg[10:])
+            elif arg.startswith('--header'):
+                with_header = True
+            elif arg.startswith('--no-mid'):
+                without_mid = True
+            else:
+                columns.append(msgs.pop(0))
+        if msgs and msgs[0].lower() == '--':
+            msgs.pop(0)
 
-        results = []
+        # Form arguments...
+        timeout = float(self.data.get('timeout', [timeout])[0])
+        with_header |= self._truthy(self.data.get('header', [''])[0])
+        without_mid |= self._truthy(self.data.get('no-mid', [''])[0])
+        columns.extend(self.data.get('term', []))
+        msgs.extend(['=%s' % mid.replace('=', '')
+                     for mid in self.data.get('mid', [])])
+
+        # Add a header to the CSV if requested
+        if with_header:
+            results = [[col.split('||')[0].split(':', 1)[0].split('=', 1)[0]
+                        for col in columns]]
+            if not without_mid:
+                results[0] = ['MID'] + results[0]
+        else:
+            results = []
+
+        deadline = (time.time() + timeout) if (timeout > 0) else None
+        msg_idxs = self._choose_messages(msgs)
         for msg_idx in msg_idxs:
             e = Email(idx, msg_idx)
             session.ui.mark(_('Digging into =%s') % e.msg_mid())
-            row = ['=%s' % e.msg_mid()]
-            for thing in things:
-                row.extend(self._thing(idx, e, thing))
+            row = [] if without_mid else ['%s' % e.msg_mid()]
+            for cellspec in columns:
+                row.extend(self._cell(idx, e, cellspec))
             results.append(row)
+            if deadline and deadline < time.time():
+                break
 
         return self._success(_('Found %d rows in %d messages'
                                ) % (len(results), len(msg_idxs)), results)

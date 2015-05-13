@@ -165,14 +165,16 @@ Mailpile.API = {
     if (method !== 'GET' && method !== 'POST') method = 'GET';
 
     if (method === 'GET') {
-      for (var k in data) {
-        if (!data[k] || data[k] == undefined) {
-          delete data[k];
-        }
-      }
-
       // Make Querystring
-      var params = $.param(data);
+      var params = data._serialized;
+      if (!params) {
+        for (var k in data) {
+          if (!data[k] || data[k] == undefined) {
+            delete data[k];
+          }
+        }
+        params = $.param(data);
+      }
 
       $.ajax({
         url      : base_url + command + output + "?" + params,
@@ -188,7 +190,7 @@ Mailpile.API = {
       $.ajax({
         url      : base_url + command + output,
         type     : 'POST',
-        data     : data,
+        data     : (data._serialized || data),
         dataType : 'json',
         success  : callback,
         error    : function(response, status) {
