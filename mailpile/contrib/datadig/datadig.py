@@ -19,6 +19,7 @@ class dataDigCommand(Command):
     SYNOPSIS = (None, 'datadig', 'datadig', '<terms ...> -- <messages ...>')
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
+        'track-id': 'tracking ID for event log',
         'timeout': 'runtime in seconds',
         'header': 'runtime in seconds',
         'no-mid': 'omit metadata-ID column',
@@ -77,6 +78,7 @@ class dataDigCommand(Command):
         # Command-line arguments...
         msgs = list(self.args)
         timeout = -1
+        tracking_id = None
         with_header = False
         without_mid = False
         columns = []
@@ -89,7 +91,7 @@ class dataDigCommand(Command):
             elif arg.startswith('--no-mid'):
                 without_mid = True
             else:
-                columns.append(msgs.pop(0))
+                columns.append(arg)
         if msgs and msgs[0].lower() == '--':
             msgs.pop(0)
 
@@ -97,6 +99,7 @@ class dataDigCommand(Command):
         timeout = float(self.data.get('timeout', [timeout])[0])
         with_header |= self._truthy(self.data.get('header', [''])[0])
         without_mid |= self._truthy(self.data.get('no-mid', [''])[0])
+        tracking_id = self.data.get('track-id', [tracking_id])[0]
         columns.extend(self.data.get('term', []))
         msgs.extend(['=%s' % mid.replace('=', '')
                      for mid in self.data.get('mid', [])])
@@ -112,9 +115,19 @@ class dataDigCommand(Command):
 
         deadline = (time.time() + timeout) if (timeout > 0) else None
         msg_idxs = self._choose_messages(msgs)
+        progress = []
         for msg_idx in msg_idxs:
             e = Email(idx, msg_idx)
-            session.ui.mark(_('Digging into =%s') % e.msg_mid())
+            if self.event and tracking_id:
+                progress.append(msg_idx)
+                self.event.private_data = {"progress": len(progress),
+                                           "track-id": tracking_id,
+                                           "total": len(msg_idxs),
+                                           "reading": e.msg_mid()}
+                self.event.message = _('Digging into =%s') % e.msg_mid()
+                self._update_event_state(self.event.RUNNING, log=True)
+            else:
+                session.ui.mark(_('Digging into =%s') % e.msg_mid())
             row = [] if without_mid else ['%s' % e.msg_mid()]
             for cellspec in columns:
                 row.extend(self._cell(idx, e, cellspec))

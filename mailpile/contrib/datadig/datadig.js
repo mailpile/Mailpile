@@ -1,11 +1,14 @@
+var disabled = false;
+
 function preview() {
-  $('#modal-full .datadig-working').show();
+  if (disabled) return false;
   $('#modal-full .datadig-hints').hide();
   $('#modal-full #datadig-preview').hide();
+  $('#modal-full .datadig-working').show();
   $('#modal-full .datadig-preview-area').show();
   Mailpile.API.datadig_get({
     _output: 'as.jhtml',
-    _serialized: $('#modal-full .datadig-form').serialize() + '&timeout=5'
+    _serialized: $('#modal-full .datadig-form').serialize() + '&timeout=3'
   }, function(data) {
     $('#modal-full .datadig-working').hide();
     $('#modal-full #datadig-preview').html(data['result']).fadeIn();
@@ -15,18 +18,63 @@ function preview() {
 
 var column_html = '';
 function add_column() {
+  if (disabled) return false;
   $('#modal-full .datadig-data-terms').append($(column_html));
   return false;
 }
 
 function set_column_from_hint(i, elem) {
+  if (disabled) return false;
   var cspec = $(this).find('.datadig-cspec').html();
   $('#modal-full .datadig-columns input').last().attr('value', cspec);
 }
 
 function show_hints() {
+  if (disabled) return false;
   $('#modal-full .datadig-hints').show();
   $('#modal-full .datadig-preview-area').hide();
+}
+
+function download() {
+  if (disabled) return false;
+  disabled = true;
+
+  // Add hidden form-field for tracking progress
+  var track_id = '@' + (new Date()).getTime();
+  var input = $('<input type="hidden" name="track-id" value="' + track_id + '">');
+  mf.find('.datadig-form').append(input);
+
+  // Change state of UI...
+  $('#modal-full .datadig-hints').hide();
+  $('#modal-full #datadig-preview').hide();
+  $('#modal-full .datadig-working').show();
+  $('#modal-full .datadig-downloading').show();
+  $('#modal-full .datadig-preview-area').show();
+  $('#modal-full .modal-footer').css('opacity', 0.5);
+
+  var ev_source = '.*datadig.dataDigCommand';
+  var watch_id = null
+  function watcher(ev) {
+    if (ev.private_data['track-id'] == track_id) {
+      if (ev.flags == "c") {
+        // Revert UI back to normal, unsubscribe from events
+        disabled = false;
+        $('#modal-full .datadig-hints').show();
+        $('#modal-full .datadig-working').hide();
+        $('#modal-full .datadig-downloading').hide();
+        $('#modal-full .datadig-preview-area').hide();
+        $('#modal-full .modal-footer').css('opacity', 1.0);
+        EventLog.unsubscribe(ev_source, watch_id);
+      }
+      else {
+        // Or, just report progress!
+        $('#modal-full #datadig-downloading-progress').html(
+          ev.private_data.progress + ' / ' + ev.private_data.total
+        );
+      }
+    }
+  }
+  watch_id = EventLog.subscribe(ev_source, watcher);
 }
 
 // Display the datadig widget!
@@ -46,6 +94,7 @@ $(document).on('click', '.bulk-action-datadig', function() {
     // Make the hints clickable
     mf.find('.datadig-hints .datadig-hint').click(set_column_from_hint);
 
+    disabled = false;
     mf.modal(Mailpile.UI.ModalOptions);
   });
 });
@@ -53,5 +102,6 @@ $(document).on('click', '.bulk-action-datadig', function() {
 return {
   'preview': preview,
   'show_hints': show_hints,
-  'add_column': add_column
+  'add_column': add_column,
+  'download': download
 }

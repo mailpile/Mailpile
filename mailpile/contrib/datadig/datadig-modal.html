@@ -1,5 +1,5 @@
 <div class="modal-dialog">
- <form class="datadig-form" action="/datadig/as.csv" method="GET"
+ <form class="datadig-form" action="{{ config.sys.http_path }}/datadig/as.csv" method="GET"
        target="datadig-post-target">
   <div class="modal-content">
     <div class="modal-header">
@@ -73,6 +73,11 @@
         <div class="datadig-working text-center hide">
           {% include("../img/loading-ellipsis.svg") %}
         </div>
+        <div class="datadig-downloading text-center hide">
+          <i>{{_("Generating CSV file.")}}
+             {{_("Please wait, this may take a while...")}}</i><br>
+          <span id='datadig-downloading-progress'></span>
+        </div>
         <div id="datadig-preview" style="max-height: 200px; overflow: scroll;"></div>
       </div>
     </div>
@@ -82,7 +87,8 @@
         <li><input type="checkbox" name="no-mid" value="yes"> Omit Metadata-ID
       </ul>
       <div class="right">
-        <button class="button-secondary right">
+        <button class="button-secondary right"
+                onclick="javascript:Mailpile.plugins.datadig.download();">
           <span class="icon-list"></span>
           {{_("Download CSV")}}
         </button> &nbsp;
