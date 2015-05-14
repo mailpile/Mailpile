@@ -25,7 +25,7 @@
                 "name": "datadig",
                 "text": "CSV Data",
                 "description": "Extract tables of data from selected messages",
-                "icon": "list"
+                "icon": "spreadsheet"
             }
         ]
     },

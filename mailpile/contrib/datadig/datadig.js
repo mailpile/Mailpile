@@ -20,6 +20,7 @@ var column_html = '';
 function add_column() {
   if (disabled) return false;
   $('#modal-full .datadig-data-terms').append($(column_html));
+  $('#modal-full .datadig-data-terms input').last().focus();
   return false;
 }
 
@@ -41,7 +42,8 @@ function download() {
 
   // Add hidden form-field for tracking progress
   var track_id = '@' + (new Date()).getTime();
-  var input = $('<input type="hidden" name="track-id" value="' + track_id + '">');
+  var input = $('<input class="datadig-track-id" type="hidden" name="track-id" value="' + track_id + '">');
+  mf.find('.datadig-track-id').remove();
   mf.find('.datadig-form').append(input);
 
   // Change state of UI...
@@ -52,12 +54,13 @@ function download() {
   $('#modal-full .datadig-preview-area').show();
   $('#modal-full .modal-footer').css('opacity', 0.5);
 
+  // This changes the state of the modal to show the progress of our
+  // data extraction, by temporarily subscribing to the EventLog.
   var ev_source = '.*datadig.dataDigCommand';
-  var watch_id = null
-  function watcher(ev) {
+  var watch_id = EventLog.subscribe(ev_source, function(ev) {
     if (ev.private_data['track-id'] == track_id) {
       if (ev.flags == "c") {
-        // Revert UI back to normal, unsubscribe from events
+        // Completed! Revert UI back to normal, unsubscribe from events
         disabled = false;
         $('#modal-full .datadig-hints').show();
         $('#modal-full .datadig-working').hide();
@@ -67,14 +70,13 @@ function download() {
         EventLog.unsubscribe(ev_source, watch_id);
       }
       else {
-        // Or, just report progress!
+        // Otherwise, report progress!
         $('#modal-full #datadig-downloading-progress').html(
           ev.private_data.progress + ' / ' + ev.private_data.total
         );
       }
     }
-  }
-  watch_id = EventLog.subscribe(ev_source, watcher);
+  });
 }
 
 // Display the datadig widget!
@@ -96,9 +98,11 @@ $(document).on('click', '.bulk-action-datadig', function() {
 
     disabled = false;
     mf.modal(Mailpile.UI.ModalOptions);
+    mf.find('.datadig-data-terms input').last().focus();
   });
 });
 
+// Expose these methods as Mailpile.plugins.datadig.*
 return {
   'preview': preview,
   'show_hints': show_hints,

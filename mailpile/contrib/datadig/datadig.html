@@ -4,7 +4,7 @@
   <table id="datadig-results" class="{{ config.web.display_density }}">
     <tbody>
     {% for row in result %}
-      <tr class="result" data-mid="row[0]">
+      <tr class="result" data-mid="{{row[0]}}">
       {% for col in row %}
         <td>{{col}}</td>
       {% endfor %}

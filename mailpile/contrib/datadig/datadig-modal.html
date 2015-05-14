@@ -4,7 +4,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title"><span class="icon-list"></span> {{_("Extract CSV data from e-mail")}}</h4>
+      <h4 class="modal-title"><span class="icon-spreadsheet"></span> {{_("Extract CSV data from e-mail")}}</h4>
     </div>
     <div class="modal-body clearfix">
       <p class="datadig-help">
@@ -69,6 +69,8 @@
       <div class="datadig-preview-area hide">
         <p class="message paragraph-important">
           <span class="icon-search"></span> {{_("Preview")}}
+          <b onclick="javascript:Mailpile.plugins.datadig.show_hints();"
+             class='right'>&times;</b>
         </p>
         <div class="datadig-working text-center hide">
           {% include("../img/loading-ellipsis.svg") %}
@@ -89,7 +91,7 @@
       <div class="right">
         <button class="button-secondary right"
                 onclick="javascript:Mailpile.plugins.datadig.download();">
-          <span class="icon-list"></span>
+          <span class="icon-download"></span>
           {{_("Download CSV")}}
         </button> &nbsp;
       </div>
