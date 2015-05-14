@@ -11,7 +11,7 @@ $(document).on('submit', '#form-search', function(e) {
     var more_check = search_query.substring(3, 999).split(' ');
     if (!more_check[1]) {
       e.preventDefault();
-      window.location.href = '/in/' + $.trim(search_query.substring(3, 999)) + '/';
+      window.location.href = '{{ config.sys.http_path }}/in/' + $.trim(search_query.substring(3, 999)) + '/';
     }
   }
   else if (search_query.substring(0, 9) === 'contacts:') {

@@ -28,7 +28,7 @@
   <ul>
     <li id="item-encryption-key-4161CD18CCA11A0B1F4C3EA0AAD965A4707775F9" class="searchkey-result-item animated fadeIn">
       <div class="clearfix">
-        <div class="avatar"><img src="{{ config.sys.http_path }}/static/img/avatar-default.png"></div>
+        <div class="avatar"><img src="{{ U('/static/img/avatar-default.png') }}"></div>
         <div class="name">
           Mailpile Team<br>
           <span>team@mailpile.is</span>
@@ -86,5 +86,5 @@
   <p>You can also import encryption keys from a file on your computer. Usually, encryption keys have the following file extensions <strong>.asc .key .pub</strong>
   </p>
   <p><a href="#" class="btn-helper-action" data-action="CryptoUploadKey"><span class="icon-upload"></span> Upload Encryption Keys</a></p>
-  <p class="remove-bottom"><em class="text-detail">Note: Mailpile created you a new encryption key or imported existing keys already on your computer. <a href="{{ config.sys.http_path }}/setup/crypto/">View your encryption keys.</a></em></p>
+  <p class="remove-bottom"><em class="text-detail">Note: Mailpile created you a new encryption key or imported existing keys already on your computer. <a href="{{ U('/setup/crypto/') }}">View your encryption keys.</a></em></p>
 </script>

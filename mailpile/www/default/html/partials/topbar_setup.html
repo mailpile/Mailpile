@@ -1,18 +1,18 @@
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="{{ config.sys.http_path }}/" title="Mailpile">
+  <a href="{{ U('/') }}" title="Mailpile">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-    <a href="{{ config.sys.http_path }}/" title="Mailpile">
+    <a href="{{ U('/') }}" title="Mailpile">
       {% include("../img/logo-name.svg") %}
     </a>
   </div>
   <div id="setup-progress" class="clearfix">
     <ul class="horizontal">
       <li class="setup-progress-crypto left">
-        <a href="{{ config.sys.http_path }}/setup/crypto/" class="setup-progress-circle" title="{{_("Encryption Keys")}}">
+        <a href="{{ U('/setup/crypto/') }}" class="setup-progress-circle" title="{{_("Encryption Keys")}}">
           <span class="icon icon-lock-closed"></span></a>
       </li>
       <li class="left">

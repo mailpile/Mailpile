@@ -76,7 +76,7 @@
 
 <script id="template-sidebar-item" type="text/template">
   <li id="sidebar-tag-<%= tid %>" data-tid="<%= tid %>" data-display_order="<%= display_order %>" class="sidebar-tags-draggable">
-    <a href="{{ config.sys.http_path }}/in/<%= slug %>/" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
+    <a href="{{ U('/in/<%= slug %>/') }}" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
       <span class="icon <%= icon %>" style="color: <%= label_color %>;"></span>
       <span class="name"><%= name %></span>
       <span class="notification"></span>

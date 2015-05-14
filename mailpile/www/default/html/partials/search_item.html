@@ -11,18 +11,18 @@
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
 %}{%  endif
 %}{%  if metadata.urls.editing and conversation_count < 2
-%}{%    set url = metadata.urls.editing
+%}{%    set msg_url = metadata.urls.editing
 %}{%  else
-%}{%    set url = metadata.urls.thread
+%}{%    set msg_url = metadata.urls.thread
 %}{%  endif
 %}
 <tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}" data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
-    <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
+    <a href="{{msg_url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
   <td class="from">
-    <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+    <a href="{{msg_url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
       {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
       {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
@@ -49,10 +49,10 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{url}}">{{ nice_subject(metadata) }}</a>
+    <a class="item-subject" href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
-    <a href="{{ config.sys.http_path }}/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
+    <a href="{{ U('/search/dates:{{metadata.date}}') }}/">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
   <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">

@@ -25,7 +25,7 @@
     <ul>
       <li class="notification">
         <a href="#">
-          <img src="{{ config.sys.http_path }}/static/img/avatar-default.png">
+          <img src="{{ U('/static/img/avatar-default.png') }}">
           <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
         </a>
       </li>
@@ -36,7 +36,7 @@
       </li>
       <li class="notification">
         <a href="#">
-          <img src="{{ config.sys.http_path }}/static/img/avatar-default.png">
+          <img src="{{ U('/static/img/avatar-default.png') }}">
           <strong>You</strong> sent <strong>5 tormail</strong> to various people
         </a>
       </li>
@@ -63,7 +63,7 @@
     </ul>
     </div>
     <div class="notifications-bottom">
-      <a href="{{ config.sys.http_path }}/eventlog/">{{_("All Notifications")}}</a>
+      <a href="{{ U('/eventlog/') }}">{{_("All Notifications")}}</a>
     </div>
   </div>
 </script>
@@ -344,10 +344,10 @@
 <script id="template-contact-list-item" type="text/template">
   <div class="rectangles-outer" id="contact-card-<%= email %>">
     <div class="rectangles-inner">
-      <a class="contact-card-avatar left" href="{{ config.sys.http_path }}/contacts/view/<%= email %>/">
-        <img src="{{ config.sys.http_path }}/static/img/avatar-default.png">
+      <a class="contact-card-avatar left" href="{{ U('/contacts/view/<%= email %>/') }}">
+        <img src="{{ U('/static/img/avatar-default.png') }}">
       </a>
-      <a class="contact-card-name" href="{{ config.sys.http_path }}/contacts/view/<%= email %>/">
+      <a class="contact-card-name" href="{{ U('/contacts/view/<%= email %>/') }}">
         <%= fn %>
       </a>
       <input type="checkbox" class="contact-card-checkbox right">

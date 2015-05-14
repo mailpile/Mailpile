@@ -1,17 +1,17 @@
 <div id="notification-bubbles"></div>
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="{{ config.sys.http_path }}/in/inbox/" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/in/inbox/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="{{ config.sys.http_path }}/in/inbox/" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/in/inbox/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-name.svg") %}
   </a>
   </div>
   <div class="topbar-actions">
-    <form id="form-search" class="form-search clearfix" action="{{ config.sys.http_path }}/search/">
+    <form id="form-search" class="form-search clearfix" action="{{ U('/search/') }}">
 		  <input id="search-query" class="typeahead" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 alt="{{_("Search")}}" value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
@@ -24,37 +24,37 @@
           <a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
         </li>
         <li class="{% if command == "contacts" %} navigation-on{% endif %}">
-          <a href="{{ config.sys.http_path }}/contacts/" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a>
+          <a href="{{ U('/contacts/') }}" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a>
         </li>
         <li class="{% if state.command_url in ("/tags/", "/filter/list/") %}navigation-on{% endif %}">
-          <a href="{{ config.sys.http_path }}/tags/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a>
+          <a href="{{ U('/tags/') }}" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a>
         </li>
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}">
-          <a href="{{ config.sys.http_path }}{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ config.sys.http_path }}{{ a.icon }}"></a>
+          <a href="{{ U(a.url) }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ U(a.icon) }}"></a>
         </li>
         {%- endfor -%}
         {% if config.web.donate_visibility %}
         <li class="{% if command == "page" %} navigation-on{% endif %}">
-          <a class="donate" href="{{ config.sys.http_path }}/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
+          <a class="donate" href="{{ U('/page/donate/') }}" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
         </li>
         {% endif %}
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
-          <a id="button-settings" href="{{ config.sys.http_path }}/setup/#" data-target="#" class="nav-icon dropdown-toggle" data-toggle="dropdown" alt="{{_("Settings")}}" aria-haspopup="true" aria-expanded="false"><span class="link-icon icon-settings"></span></a>
+          <a id="button-settings" href="{{ U('/setup/#') }}" data-target="#" class="nav-icon dropdown-toggle" data-toggle="dropdown" alt="{{_("Settings")}}" aria-haspopup="true" aria-expanded="false"><span class="link-icon icon-settings"></span></a>
           <ul id="settings-menu" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="button-settings">
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#profiles"><span class="icon-profiles"></span> {{_("Profiles")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#sources"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#sending"><span class="icon-routes"></span> {{_("Sending Routes")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#language"><span class="icon-home"></span> {{_("Language")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/crypto/"><span class="icon-key"></span> {{_("Encryption Keys")}}</a></li>
-            {# <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#passphrase"><span class="icon-lock-closed"></span> {{_("Password")}}</a></li> #}
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/setup/#security"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/settings/backup-keys.html"><span class="icon-list"></span> {{_("Backups")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#profiles') }}"><span class="icon-profiles"></span> {{_("Profiles")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#sources') }}"><span class="icon-inbox"></span> {{_("Mail Sources")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#sending') }}"><span class="icon-routes"></span> {{_("Sending Routes")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#language') }}"><span class="icon-home"></span> {{_("Language")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/crypto/') }}"><span class="icon-key"></span> {{_("Encryption Keys")}}</a></li>
+            {# <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#passphrase') }}"><span class="icon-lock-closed"></span> {{_("Password")}}</a></li> #}
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/setup/#security') }}"><span class="icon-privacy"></span> {{_("Security")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/settings/backup-keys.html') }}"><span class="icon-list"></span> {{_("Backups")}}</a></li>
             <li role="presentation" class="divider"></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ config.sys.http_path }}/help/"><span class="icon-help"></span> {{_("Help")}}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ U('/help/') }}"><span class="icon-help"></span> {{_("Help")}}</a></li>
           </ul>
         </li>
-        <li><a href="{{ config.sys.http_path }}/auth/logout/" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
+        <li><a href="{{ U('/auth/logout/') }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>
   </div>
