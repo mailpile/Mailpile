@@ -30,6 +30,8 @@ class MailpileCommand(Extension):
         s = self
         e.globals['mailpile'] = s._command
         e.globals['mailpile_render'] = s._command_render
+        e.globals['U'] = s._url_path_fix
+        e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
         e.globals['regex_replace'] = s._regex_replace
         e.filters['regex_replace'] = s._regex_replace
@@ -551,6 +553,14 @@ class MailpileCommand(Extension):
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
+
+    def _url_path_fix(self, *urlparts):
+        url = ''.join([unicode(p) for p in urlparts])
+        if url[:1] in ('/', ):
+            http_path = self.env.session.config.sys.http_path or ''
+            if not url.startswith(http_path):
+                url = http_path + url
+        return self._safe(url)
 
     def _urlencode(self, s):
         if type(s) == 'Markup':
