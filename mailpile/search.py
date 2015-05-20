@@ -21,6 +21,7 @@ from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
 from mailpile.util import *
+from mailpile.vfs import vfs, FilePath
 
 
 _plugins = PluginManager()
@@ -103,6 +104,12 @@ class MailIndex(object):
     MSG_FIELDS_V1 = 11
     MSG_FIELDS_V2 = 13
 
+    MSG_BODY_LAZY = '{L}'
+    MSG_BODY_GHOST = '{G}'
+    MSG_BODY_DELETED = '{D}'
+    MSG_BODY_UNSCANNED = (MSG_BODY_LAZY, MSG_BODY_GHOST)
+    MSG_BODY_MAGIC = (MSG_BODY_LAZY, MSG_BODY_GHOST, MSG_BODY_DELETED)
+
     BOGUS_METADATA = [None, '', None, '0', '(no sender)', '', '', '0',
                       '(not in index)', '', '', '', '-1']
 
@@ -152,9 +159,16 @@ class MailIndex(object):
 
     @classmethod
     def get_body(self, msg_info):
-        if msg_info[self.MSG_BODY].startswith('{'):
+        msg_body = msg_info[self.MSG_BODY]
+        if msg_body.startswith('{'):
+            if msg_body == self.MSG_BODY_LAZY:
+                return {'snippet': _('(unprocessed)'), 'lazy': True}
+            elif msg_body == self.MSG_BODY_GHOST:
+                return {'snippet': _('(ghost)'), 'ghost': True}
+            elif msg_body == self.MSG_BODY_DELETED:
+                return {'snippet': _('(deleted)'), 'deleted': True}
             try:
-                return json.loads(msg_info[self.MSG_BODY])
+                return json.loads(msg_body)
             except ValueError:
                 pass
         return {
@@ -177,9 +191,10 @@ class MailIndex(object):
             else:
                 d[k] = v
         if len(d) == 1 and 'snippet' in d:
-            return d['snippet']
-        else:
-            return json.dumps(d)
+            snippet = d['snippet']
+            if snippet[:3] in self.MSG_BODY_MAGIC or snippet[:1] != '{':
+                return d['snippet']
+        return json.dumps(d)
 
     @classmethod
     def set_body(self, msg_info, **kwargs):
@@ -626,8 +641,9 @@ class MailIndex(object):
         return progress
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
-                     process_new=None, apply_tags=None, stop_after=None,
-                     editable=False, event=None):
+                     process_new=None, apply_tags=None, editable=False,
+                     stop_after=None, deadline=None, reverse=False, lazy=False,
+                     event=None):
         mailbox_idx = FormatMbxId(mailbox_idx)
         progress = self._get_scan_progress(mailbox_idx,
                                            event=event, reset=True)
@@ -676,6 +692,7 @@ class MailIndex(object):
             return ((n == 1) and parse_fmt1 or parse_fmtn
                     ) % (mailbox_idx, 100 * ui / n, ui, n)
 
+        start_time = time.time()
         progress.update({
             'total': len(messages),
             'batch_size': stop_after or len(messages)
@@ -686,12 +703,14 @@ class MailIndex(object):
         for ui in range(0, len(messages)):
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
             existing_ptrs.add(msg_ptr)
-            if (ui % 317) == 0:
+            if (ui % 317) == 0 and not deadline:
                 play_nice_with_threads()
 
         added = updated = 0
-        last_date = long(time.time())
+        last_date = long(start_time)
         not_done_yet = 'NOT DONE YET'
+        if reverse:
+            messages.reverse()
         for ui in range(0, len(messages)):
             if mailpile.util.QUITTING or self.interrupt:
                 self.interrupt = None
@@ -700,15 +719,25 @@ class MailIndex(object):
             if stop_after and added >= stop_after:
                 messages_md5 = not_done_yet
                 break
+            elif deadline and time.time() > start_time + deadline:
+                messages_md5 = not_done_yet
+                break
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
-                if (ui % 317) == 0:
+                if not lazy:
+                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
+                if (not lazy and
+                        msg_info[self.MSG_BODY] in self.MSG_BODY_UNSCANNED):
                     session.ui.mark(parse_status(ui))
-                elif (ui % 129) == 0:
+                    # Do not continue, fall through!
+                elif (ui % 317) == 0:
+                    session.ui.mark(parse_status(ui))
+                    continue
+                elif (ui % 129) == 0 and not deadline:
                     play_nice_with_threads()
-                continue
+                    continue
             else:
                 session.ui.mark(parse_status(ui))
 
@@ -724,7 +753,8 @@ class MailIndex(object):
                                                         stop_after=stop_after,
                                                         editable=editable,
                                                         event=event,
-                                                        progress=progress)
+                                                        progress=progress,
+                                                        lazy=lazy)
             except TypeError:
                 a = u = 0
 
@@ -741,7 +771,8 @@ class MailIndex(object):
             'added': added,
             'updated': updated,
         })
-        play_nice_with_threads()
+        if not deadline:
+            play_nice_with_threads()
 
         self._scanned[mailbox_idx] = messages_md5
         short_fn = '/'.join(mailbox_fn.split('/')[-2:])
@@ -768,7 +799,8 @@ class MailIndex(object):
                        mailbox_idx, mbox, msg_mbox_idx,
                        msg_ptr=None, msg_data=None, last_date=None,
                        process_new=None, apply_tags=None, stop_after=None,
-                       editable=False, event=None, progress=None):
+                       editable=False, event=None, progress=None,
+                       lazy=False):
         added = updated = 0
         msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
         last_date = last_date or long(time.time())
@@ -781,11 +813,20 @@ class MailIndex(object):
         try:
             if msg_data:
                 msg_fd = cStringIO.StringIO(msg_data)
+            elif lazy:
+                msg_data = mbox.get_bytes(msg_mbox_idx, 10240)
+                msg_data = msg_data.split('\r\n\r\n')[0].split('\n\n')[0]
+                msg_fd = cStringIO.StringIO(msg_data)
+                msg_bytes = mbox.get_msg_size(msg_mbox_idx)
             else:
                 msg_fd = mbox.get_file(msg_mbox_idx)
+
             msg = ParseMessage(msg_fd,
                                pgpmime=session.config.prefs.index_encrypted,
                                config=session.config)
+            if not lazy:
+                msg_bytes = msg_fd.tell()
+
         except (IOError, OSError, ValueError, IndexError, KeyError):
             if session.config.sys.debug:
                 traceback.print_exc()
@@ -800,13 +841,16 @@ class MailIndex(object):
                 self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
                 updated += 1
         else:
+            lazy_body = self.MSG_BODY_LAZY if lazy else None
             msg_info = self._index_incoming_message(
-                session, msg_id, msg_ptr, msg_fd.tell(), msg,
-                last_date + 1, mailbox_idx, process_new, apply_tags)
+                session, msg_id, msg_ptr, msg_bytes, msg,
+                last_date + 1, mailbox_idx, process_new, apply_tags,
+                lazy_body)
             last_date = long(msg_info[self.MSG_DATE], 36)
             added += 1
 
-        play_nice_with_threads()
+        if not lazy:
+            play_nice_with_threads()
         progress['added'] = progress.get('added', 0) + added
         progress['updated'] = progress.get('updated', 0) + updated
         return last_date, added, updated
@@ -837,18 +881,24 @@ class MailIndex(object):
             msg_info[self.MSG_TAGS] = ','.join(msg_tags or [])
         return msg_info
 
+    def _extract_header_info(self, msg):
+        # FIXME: this stuff is actually pretty weak!
+        msg_to = AddressHeaderParser(msg.get('to', ''))
+        msg_cc = AddressHeaderParser(msg.get('cc', ''))
+        msg_cc += AddressHeaderParser(msg.get('bcc', ''))  # Usually a noop
+        msg_subj = self.hdr(msg, 'subject')
+        return msg_to, msg_cc, msg_subj
+
     # FIXME: Finish merging this function with the one below it...
     def _extract_info_and_index(self, session, mailbox_idx,
                                 msg_mid, msg_id,
                                 msg_size, msg, default_date,
                                 **index_kwargs):
-        # Extract info from the message headers
+
         msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                        default_date)
-        msg_to = AddressHeaderParser(msg.get('to', ''))
-        msg_cc = (AddressHeaderParser(msg.get('cc', '')) +
-                  AddressHeaderParser(msg.get('bcc', '')))
-        msg_subj = self.hdr(msg, 'subject')
+
+        msg_to, msg_cc, msg_subj = self._extract_header_info(msg)
 
         filters = _plugins.get_filter_hooks([self.filter_keywords])
         kw, bi = self.index_message(session, msg_mid, msg_id,
@@ -869,33 +919,44 @@ class MailIndex(object):
 
     def _index_incoming_message(self, session,
                                 msg_id, msg_ptr, msg_size, msg, default_date,
-                                mailbox_idx, process_new, apply_tags):
-        # First, add the message to the index so we can index terms to
-        # the right MID.
-        msg_idx_pos, msg_info = self.add_new_msg(
-            msg_ptr, msg_id, default_date, self.hdr(msg, 'from'), [], [],
-            msg_size, _('(processing message ...)'), '', [])
-        msg_mid = b36(msg_idx_pos)
+                                mailbox_idx, process_new, apply_tags,
+                                lazy_body):
+        if lazy_body:
+            msg_ts = self._extract_date_ts(session, 'new', msg_id, msg,
+                                           default_date)
+            msg_to, msg_cc, msg_subj = self._extract_header_info(msg)
+            msg_idx_pos, msg_info = self.add_new_msg(
+                msg_ptr, msg_id, msg_ts,
+                self.hdr(msg, 'from'), msg_to, msg_cc, msg_size, msg_subj,
+                lazy_body, [])
 
-        # Now actually go parse it and update the search index
-        (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
-         ) = self._extract_info_and_index(session, mailbox_idx,
-                                          msg_mid, msg_id, msg_size, msg,
-                                          default_date,
-                                          process_new=process_new,
-                                          apply_tags=apply_tags,
-                                          incoming=True)
+        else:
+            # First, add the message to the index so we can index terms to
+            # the right MID.
+            msg_idx_pos, msg_info = self.add_new_msg(
+                msg_ptr, msg_id, default_date, self.hdr(msg, 'from'), [], [],
+                msg_size, _('(processing message ...)'), '', [])
+            msg_mid = b36(msg_idx_pos)
 
-        # Finally, update the metadata index with whatever we learned
-        self.edit_msg_info(msg_info,
-                           msg_ts=msg_ts,
-                           msg_to=msg_to,
-                           msg_cc=msg_cc,
-                           msg_subject=msg_subj,
-                           msg_body=msg_body,
-                           msg_tags=tags)
+            # Parse and index
+            (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
+             ) = self._extract_info_and_index(session, mailbox_idx,
+                                              msg_mid, msg_id, msg_size, msg,
+                                              default_date,
+                                              process_new=process_new,
+                                              apply_tags=apply_tags,
+                                              incoming=True)
 
-        self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+            # Finally, update the metadata index with whatever we learned
+            self.edit_msg_info(msg_info,
+                               msg_ts=msg_ts,
+                               msg_to=msg_to,
+                               msg_cc=msg_cc,
+                               msg_subject=msg_subj,
+                               msg_body=msg_body,
+                               msg_tags=tags)
+            self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+
         self.set_conversation_ids(msg_info[self.MSG_MID], msg)
         return msg_info
 

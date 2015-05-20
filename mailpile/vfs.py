@@ -54,7 +54,8 @@ class FilePath(object):
             if isinstance(cooked_fp, FilePath):
                 self.raw_fp = cooked_fp.raw_fp
                 flags = cooked_fp.flags if (flags is None) else flags
-            elif isinstance(cooked_fp, str) and cooked_fp[-2:] == '=!':
+            elif (isinstance(cooked_fp, (str, unicode)) and
+                    cooked_fp[-2:] == '=!'):
                 self.raw_fp = self.unalias(cooked_fp[:-2].decode('base64'))
             elif isinstance(cooked_fp, unicode):
                 self.raw_fp = self.unalias(cooked_fp.encode('utf-8'))
@@ -95,6 +96,9 @@ class FilePath(object):
     def __str__(self):
         """Render file path as a cooked string"""
         return unicode(self).encode('utf-8')
+
+    def encoded(self):
+        return self.alias(self.raw_fp).encode('base64').strip() + '=!'
 
     def display(self):
         """Lossy, user-friendly representation of this path."""

@@ -12,6 +12,7 @@ from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
+from mailpile.vfs import vfs, FilePath
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -443,12 +444,17 @@ def mailbox_search(config, idx, term, hits):
     except ValueError:
         mbox_id = None
 
-    mailboxes = [m for m in config.sys.mailbox.keys()
-                 if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
+    mailboxes = []
+    for m in config.sys.mailbox.keys():
+        fn = FilePath(config.sys.mailbox[m]).display().lower()
+        if (mbox_id == m) or word in fn:
+            mailboxes.append(m)
+
     rt = []
     for mbox_id in mailboxes:
         mbox_id = FormatMbxId(mbox_id)
         rt.extend(hits('%s:mailbox' % mbox_id))
+
     return rt
 
 

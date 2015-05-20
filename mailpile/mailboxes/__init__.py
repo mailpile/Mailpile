@@ -143,9 +143,9 @@ def UnorderedPicklable(parent, editable=False):
                 fd.seek(0, 2)
                 return fd.tell()
 
-        def get_bytes(self, toc_id):
+        def get_bytes(self, toc_id, *args):
             with self._lock:
-                return self.get_file(toc_id).read()
+                return self.get_file(toc_id).read(*args)
 
         def get_string(self, *args, **kwargs):
             with self._lock:

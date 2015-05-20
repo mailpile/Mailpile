@@ -79,13 +79,17 @@ class POP3Mailbox(Mailbox):
         """Replace the keyed message; raise KeyError if it doesn't exist."""
         raise NotImplementedError('Method must be implemented by subclass')
 
-    def _get(self, key):
+    def _get(self, key, _bytes=None):
         with self._lock:
             if key not in self.iterkeys():
                 raise KeyError('Invalid key: %s' % key)
 
             self._connect()
-            ok, lines, octets = self._pop3.retr(self._km[key])
+            if _bytes is not None:
+                lines = max(10, _bytes//30)  # A wild guess!
+                ok, lines, octets = self._pop3.top(self._km[key], lines)
+            else:
+                ok, lines, octets = self._pop3.retr(self._km[key])
             if not ok.startswith('+OK'):
                 raise KeyError('Invalid key: %s' % key)
 
@@ -97,24 +101,29 @@ class POP3Mailbox(Mailbox):
         have_octets = sum(len(l) for l in lines)
         if octets == have_octets + len(lines):
             lines.append('')
-            return '\n'.join(lines)
+            data = '\n'.join(lines)
         elif octets == have_octets + 2*len(lines):
             lines.append('')
-            return '\r\n'.join(lines)
+            data = '\r\n'.join(lines)
         elif octets == have_octets + len(lines) - 1:
-            return '\n'.join(lines)
+            data = '\n'.join(lines)
         elif octets == have_octets + 2*len(lines) - 2:
-            return '\r\n'.join(lines)
+            data = '\r\n'.join(lines)
         else:
             raise ValueError('Length mismatch in message %s' % key)
+
+        if _bytes is not None:
+            return data[:_bytes]
+        else:
+            return data
 
     def get_message(self, key):
         """Return a Message representation or raise a KeyError."""
         return Message(self._get(key))
 
-    def get_bytes(self, key):
+    def get_bytes(self, key, *args):
         """Return a byte string representation or raise a KeyError."""
-        return self._get(key)
+        return self._get(key, *args)
 
     def get_file(self, key):
         """Return a file-like representation or raise a KeyError."""
@@ -242,6 +251,9 @@ if __name__ == "__main__":
         >>> pm.get_bytes('evil')
         'From: test@mailpile.is\\nSubject: Msg 1\\n\\nOh, hi!\\n'
 
+        >>> pm.get_bytes('evil', 5)
+        'From:'
+
         >>> pm['invalid-key']
         Traceback (most recent call last):
            ...
@@ -265,6 +277,9 @@ if __name__ == "__main__":
                                   len(s.TEST_MSG)
                                   if m[0] == '2' else
                                   len(s.TEST_MSG.replace('\r', ''))),
+            'top': lambda s, m, n: ('+OK',
+                                    s.TEST_MSG.splitlines()[:n],
+                                    len(''.join(s.TEST_MSG.splitlines(1)[:n]))),
         }
         RESULTS = {}
 

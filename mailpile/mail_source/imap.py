@@ -363,7 +363,7 @@ class SharedImapMailbox(Mailbox):
             info['UID'] = uid
         return info
 
-    def get(self, key):
+    def get(self, key, _bytes=None):
         info = self.get_info(key)
         if 'UID' not in info:
             raise KeyError(key)
@@ -375,6 +375,8 @@ class SharedImapMailbox(Mailbox):
         chunk_size = self.source.timeout * 1024
         chunk = 0
         msg_data = []
+        if _bytes and chunk_size > _bytes:
+            chunk_size = _bytes
 
         # Some IMAP servers misreport RFC822.SIZE, so we cannot really know
         # how much data to expect. So we just FETCH chunk until one comes up
@@ -393,6 +395,8 @@ class SharedImapMailbox(Mailbox):
                 chunk = -1
             else:
                 chunk += 1
+            if _bytes and chunk * chunk_size > _bytes:
+                chunk = -1
 
         # FIXME: Should we add a sanity check and complain if we got
         #        significantly less data than expected via. RFC822.SIZE?
@@ -402,8 +406,8 @@ class SharedImapMailbox(Mailbox):
         info, payload = self.get(key)
         return Message(payload)
 
-    def get_bytes(self, key):
-        info, payload = self.get(key)
+    def get_bytes(self, key, *args):
+        info, payload = self.get(key, *args)
         return payload
 
     def get_file(self, key):
