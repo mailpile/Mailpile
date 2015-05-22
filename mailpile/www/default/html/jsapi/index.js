@@ -161,6 +161,9 @@ Mailpile.API = {
       delete data['_output'];
     }
 
+    // Get search context
+    var context = $('#search-query').data('context');
+
     // Force method to GET if not POST
     if (method !== 'GET' && method !== 'POST') method = 'GET';
 
@@ -175,6 +178,7 @@ Mailpile.API = {
         }
         params = $.param(data);
       }
+      if (context) params += '&context=' + context;
 
       $.ajax({
         url      : base_url + command + output + "?" + params,
@@ -187,10 +191,18 @@ Mailpile.API = {
       });
     }
     else if (method === 'POST') {
+      if (context) {
+        if (data._serialized) {
+          data = data._serialized + '&context=' + context;
+        }
+        else {
+          data['context'] = context;
+        }
+      }
       $.ajax({
         url      : base_url + command + output,
         type     : 'POST',
-        data     : (data._serialized || data),
+        data     : data,
         dataType : 'json',
         success  : callback,
         error    : function(response, status) {

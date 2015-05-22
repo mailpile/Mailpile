@@ -10,10 +10,17 @@ Mailpile.Search.init = function() {
   Mailpile.UI.Search.Dropable('#pile-results tr', 'a.sidebar-tag');
   Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'td.draggable');
 
-
   // Render Display Size
   if (!localStorage.getItem('view_size')) {
     localStorage.setItem('view_size', Mailpile.config.web.display_density);
+  }
+
+  var search = ($('#search-query').attr('value') + ' ');
+  if (search.match(/^\s*in:\S+\s*$/)) {
+    $('.btn-activity-save_search').remove();
+  }
+  else {
+    $('.btn-activity-edit_tag').remove();
   }
 
   Mailpile.pile_display(localStorage.getItem('view_size'));

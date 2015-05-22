@@ -51,3 +51,23 @@ Mailpile.UI.init = function() {
   Mailpile.UI.Tooltips.ComposeEmail();
 
 };
+
+
+Mailpile.UI.tag_icons_as_lis = function() {
+  var icons_html = '';
+  $.each(Mailpile.theme.icons, function(key, icon) {
+    icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
+  });
+  return icons_html;
+};
+
+
+Mailpile.UI.tag_colors_as_lis = function() {
+  var sorted_colors =  _.keys(Mailpile.theme.colors).sort();
+  var colors_html = '';
+  $.each(sorted_colors, function(key, name) {
+    var hex = Mailpile.theme.colors[name];
+    colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + hex + '" data-name="' + name + '" data-hex="' + hex + '"></a></li>';
+  });
+  return colors_html;
+};

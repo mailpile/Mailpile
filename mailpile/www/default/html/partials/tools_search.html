@@ -74,6 +74,29 @@
 ' -%}
 {%- set hard_coded_selection_actions = safe(search_actions_1 + search_actions_2 + search_actions_3 + search_actions_4) -%}
 
+{%- if 'in:' in result.search_terms|join(' ') %}
+{%-   set saveClass = 'hide' %}
+{%-   set editClass = '' %}
+{%- else %}
+{%-   set saveClass = '' %}
+{%-   set editClass = 'hide' %}
+{%- endif %}
+{%- set activities = [{
+    'name': 'save_search',
+    'icon': 'star',
+    'class': saveClass,
+    'url': '#save_search',
+    'text': _("Save"),
+    'description': _("Save the results of this search to a new tag")
+}, {
+    'name': 'edit_tag',
+    'icon': 'settings',
+    'class': editClass,
+    'url': '#edit_tag',
+    'text': _("Edit"),
+    'description': _("Edit this tag")
+}] -%}
+
 {%- set display_refiners = [{
     'name': 'display_all',
     'icon': 'inbox',

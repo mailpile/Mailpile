@@ -121,14 +121,6 @@ class SetupMagic(Command):
         },
         # These are magical tags that perform searches and show
         # messages in contextual views.
-        'All Mail': {
-            'type': 'tag',
-            'icon': 'icon-logo',
-            'label_color': '06-blue',
-            'search_terms': 'all:mail',
-            'name': _('All Mail'),
-            'display_order': 1000,
-        },
         'Conversations': {
             'type': 'tag',
             'icon': 'icon-forum',
@@ -163,6 +155,14 @@ class SetupMagic(Command):
             'search_terms': 'http to:me',
             'name': _('Links'),
             'display_order': 1004,
+        },
+        'All Mail': {
+            'type': 'tag',
+            'icon': 'icon-logo',
+            'label_color': '06-blue',
+            'search_terms': 'all:mail',
+            'name': _('All Mail'),
+            'display_order': 1100,
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get

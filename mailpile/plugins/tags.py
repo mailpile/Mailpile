@@ -61,6 +61,7 @@ _plugins.register_config_section('filters', ["Filters", {
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
     'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
+    'primary_tag': ['Tag dedicated to this filter', 'str', ''],
 }, {}])
 
 _plugins.register_config_variables('sys', {
@@ -674,36 +675,71 @@ class FilterCommand(Command):
 
 class Filter(FilterCommand):
     """Add auto-tag rule for current search or terms"""
-    SYNOPSIS = (None, 'filter', None, '[new|read] [notag] [=<mid>] '
-                                      '[<terms>] [+<tag>] [-<tag>] '
-                                      '[<comment>]')
+    SYNOPSIS = (None, 'filter', 'filter', '[new|read] [notag|maketag] [=<mid>] '
+                                          '[<terms>] [+<tag>] [-<tag>] '
+                                          '[<comment>]')
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = {
+        'comment': '...',
+        'terms': '...',
+        'add-tag': 'tag,tag,tag,... or !CREATE',
+        'del-tag': 'tag,tag,tag,... ',
+        'mark-read': 'yes or no',
+        'skip-inbox': 'yes or no',
+        'never-spam': 'yes or no',
+        'create-tag': 'yes or no',
+        'tag-icon': 'icon',
+        'tag-color': 'color',
+        'replace': 'filter ID'
+    }
+
+    def _truthy(self, var):
+        return (self.data.get(var, ['n'])[0][:1].lower()
+                in ('y', 't', 'o', '1'))
 
     def command(self, save=True):
         session, config = self.session, self.session.config
         args = list(self.args)
 
         flags = []
-        while args and args[0] in ('add', 'set', 'new', 'read', 'notag'):
+        while args and args[0] in ('add', 'set', 'new', 'read',
+                                   'notag', 'maketag'):
             flags.append(args.pop(0))
+        if self._truthy('create-tag'):
+            flags.append('maketag')
 
-        if args and args[0] and args[0][0] == '=':
+        if args and args[0][:1] == '=':
             filter_id = args.pop(0)[1:]
         else:
-            filter_id = None
+            filter_id = self.data.get('replace', [None])[0] or None
 
-        if args and args[0] and args[0][0] == '@':
+        if args and args[0][:1] == '@':
             filter_type = args.pop(0)[1:]
         else:
             filter_type = FILTER_TYPES[0]
+
+        # Convert HTTP variable tag ops...
+        for tag in self.data.get('add-tag', []):
+            args.append('+%s' % tag)
+        for tag in self.data.get('del-tag', []):
+            args.append('-%s' % tag)
+        if self._truthy('mark-read'):
+            args.append('-new')
+        if self._truthy('skip-inbox'):
+            args.append('-inbox')
+        if self._truthy('never-spam'):
+            args.append('-spam')
 
         auto_tag = False
         if 'read' in flags:
             terms = ['@read']
         elif 'new' in flags:
             terms = ['*']
-        elif args[0] and args[0][0] not in ('-', '+'):
+        elif self.data.get('terms', [''])[0]:
+            terms = self.data['terms'][0].strip().split()
+            auto_tag = True
+        elif args and args[0][:1] not in ('-', '+'):
             terms = []
             while args and args[0][0] not in ('-', '+'):
                 terms.append(args.pop(0))
@@ -711,13 +747,33 @@ class Filter(FilterCommand):
             terms = session.searched
             auto_tag = True
 
-        if not terms or (len(args) < 1):
+        tag_ops = []
+        while args and args[0][0] in ('-', '+'):
+            tag_ops.append(args.pop(0))
+
+        comment = self.data.get('comment', [None])[0] or ' '.join(args)
+
+        if filter_id:
+            primary_tag = config.filters[filter_id].primary_tag or None
+        else:
+            primary_tag = None
+
+        if primary_tag is None and 'maketag' in flags:
+            if not comment:
+                raise UsageError(_('Need tag name'))
+            result = AddTag(session, arg=[comment]).run(save=False).result
+            primary_tag = result['added'][0]['tid']
+
+        if not terms or (len(tag_ops) < 1):
             raise UsageError(_('Need flags and search terms or a hook'))
 
         tags, tids = [], []
-        while args and args[0][0] in ('-', '+'):
-            tag = args.pop(0)
-            tid = config.get_tag_id(tag[1:])
+        for tag in tag_ops:
+            if tag[1:] == '!PRIMARY':
+                tid = primary_tag
+                tag = tag[0] + tid
+            else:
+                tid = config.get_tag_id(tag[1:])
             if tid is not None:
                 tags.append(tag)
                 tids.append(tag[0] + tid)
@@ -732,7 +788,8 @@ class Filter(FilterCommand):
                 raise UsageError()
 
         filter_dict = {
-            'comment': ' '.join(args),
+            'primary_tag': primary_tag,
+            'comment': comment,
             'terms': ' '.join(terms),
             'tags': ' '.join(tids),
             'type': filter_type
@@ -740,10 +797,22 @@ class Filter(FilterCommand):
         if filter_id:
             config.filters[filter_id] = filter_dict
         else:
-            config.filters.append(filter_dict)
+            filter_id = config.filters.append(filter_dict)
+
+        if 'maketag' in flags and primary_tag and primary_tag in config.tags:
+            tag_icon = self.data.get('tag-icon', [None])[0]
+            tag_color = self.data.get('tag-color', [None])[0]
+            if tag_icon:
+                config.tags[primary_tag].icon = tag_icon
+            if tag_color:
+                config.tags[primary_tag].label_color = tag_color
+            config.tags[primary_tag].name = comment
+            config.tags[primary_tag].slug = 'saved-search-%s' % filter_id
 
         self.finish(save=save)
-        return True
+
+        filter_dict['id'] = filter_id
+        return self._success(_('Added new filter'), result=filter_dict)
 
 
 class DeleteFilter(FilterCommand):
