@@ -1,10 +1,12 @@
 import copy
 import datetime
 import hashlib
+import random
 import re
 import urllib
 import json
 import shlex
+import time
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string
@@ -20,6 +22,10 @@ from mailpile.urlmap import UrlMap
 from mailpile.plugins import PluginManager
 
 
+RID_COUNTER = 0
+RID_COUNTER_LOCK = ConfigLock()
+
+
 class MailpileCommand(Extension):
     """Run Mailpile Commands, """
     tags = set(['mpcmd'])
@@ -31,6 +37,7 @@ class MailpileCommand(Extension):
         e.globals['mailpile'] = s._command
         e.globals['mailpile_render'] = s._command_render
         e.globals['U'] = s._url_path_fix
+        e.globals['make_rid'] = s._make_rid
         e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
         e.globals['regex_replace'] = s._regex_replace
@@ -553,6 +560,13 @@ class MailpileCommand(Extension):
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
+
+    def _make_rid(self):
+        with RID_COUNTER_LOCK:
+            global RID_COUNTER
+            RID_COUNTER += 1
+            return ('%8.8x%3.3x%x'
+                    % (time.time(), random.randint(0, 0xfff), RID_COUNTER))
 
     def _url_path_fix(self, *urlparts):
         url = ''.join([unicode(p) for p in urlparts])
