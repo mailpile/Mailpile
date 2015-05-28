@@ -14,6 +14,28 @@
   <link rel="shortcut icon" id="basic-favicon" href="{{ U('/static/img/favicon.png') }}" />
   <link rel="icon" id="basic-favicon" type="image/png" href="{{ U('/static/img/favicon.png') }}" />
 
+  {%- if config.version not in ('1.0.0', '0.5.0') %}
+  <!-- Uglify dev versions -->
+  <style type="text/css">
+    .topbar { filter: blur(1px); -webkit-filter: blur(1px); }
+    form#form-search:after { content: "[DEV MODE] {{ random([
+      'Oops, coder probably drunk. Expect bugs!',
+      'Are you sure that button works?',
+      'Blurry, because development. :-)',
+      'How old are those contact lenses?',
+      'Thank you for testing Mailpile! =8-]',
+      'Time and focus will reduce bugs and blur.',
+      'We know about the blur. Working on it.',
+      'Shoftware prgoramming i sserius bisnus',
+      'Why can`t this thing just work??',
+      'Where did I leave my glasses?',
+      'Have you tried turning it off and on again?',
+      'I love lamp! :D',
+      'git commit -a -m `please work this time`',
+      'Can I crash on your couch?']) }}" }
+  </style>
+  {%- endif %}
+
   <!-- JS Global Libraries -->
   <script src="{{ U('/static/js/jquery.min.js') }}"></script>
   <script src="{{ U('/static/js/libraries.min.js') }}"></script>

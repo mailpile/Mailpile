@@ -38,6 +38,7 @@ class MailpileCommand(Extension):
         e.globals['mailpile_render'] = s._command_render
         e.globals['U'] = s._url_path_fix
         e.globals['make_rid'] = s._make_rid
+        e.globals['random'] = s._random
         e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
         e.globals['regex_replace'] = s._regex_replace
@@ -567,6 +568,9 @@ class MailpileCommand(Extension):
             RID_COUNTER += 1
             return ('%8.8x%3.3x%x'
                     % (time.time(), random.randint(0, 0xfff), RID_COUNTER))
+
+    def _random(self, sequence):
+        return sequence[random.randint(0, len(sequence)-1)]
 
     def _url_path_fix(self, *urlparts):
         url = ''.join([unicode(p) for p in urlparts])
