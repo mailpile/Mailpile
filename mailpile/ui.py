@@ -11,13 +11,14 @@
 ###############################################################################
 import datetime
 import getpass
+import json
 import os
 import random
 import re
 import sys
 import tempfile
+import time
 import traceback
-import json
 import urllib
 from collections import defaultdict
 from json import JSONEncoder
@@ -537,7 +538,8 @@ class UserInteraction:
                 raise NotEditableError(_('Message %s is not editable')
                                        % e.msg_mid())
 
-        sep = '-' * 79 + '\n'
+        sep = '%s(%8.8x%3.3x)-\n' % ('-' * 68, time.time(),
+                                     random.randint(0, 0xfff))
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 
         tf = tempfile.NamedTemporaryFile()
