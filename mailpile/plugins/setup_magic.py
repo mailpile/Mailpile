@@ -3,8 +3,11 @@ import random
 import sys
 import datetime
 from urllib import urlencode
+from urllib2 import urlopen
+from lxml import objectify
 
 import mailpile.auth
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.defaults import CONFIG_RULES
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
@@ -452,7 +455,8 @@ class SetupGetEmailSettings(TestableWebbable):
     SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers', None)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-        'email': 'E-mail address'
+        'email': 'E-mail address',
+        'timeout': 'Seconds'
     })
     TEST_DATA = {
         'imap_host': 'imap.wigglebonk.com',
@@ -465,21 +469,154 @@ class SetupGetEmailSettings(TestableWebbable):
         'smtp_port': 465,
         'smtp_tls': False
     }
+    ISPDB_URL = 'https://autoconfig.thunderbird.net/v1.1/%(domain)s'
 
-    def _get_domain_settings(self, domain):
-        raise Exception('FIXME')
+    def _urlget(self, url):
+        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]) as context:
+            self.session.ui.mark('Getting: %s' % url)
+            return urlopen(url, data=None, timeout=3).read()
+
+    def _username(self, val, email):
+        lpart = email.split('@')[0]
+        return str(val).replace('%EMAILADDRESS%', email
+                                ).replace('%EMAILLOCALPART%', lpart)
+
+    def _source_proto(self, insrv):
+        sockettype = str(insrv.socketType)
+        servertype = str(insrv.get('type', ''))
+        if sockettype.lower() == 'ssl':
+            servertype += '_ssl'
+        elif sockettype.lower() == 'starttls':
+            servertype += '_tls'
+        else:
+            print 'FIXME/SOURCE: %s/%s' % (sockettype, servertype)
+        return servertype.lower()
+
+    def _route_proto(self, outsrv):
+        sockettype = str(outsrv.socketType)
+        servertype = str(outsrv.get('type', 'smtp'))
+        if sockettype.lower() == 'ssl':
+            servertype += 'ssl'
+        elif sockettype.lower() == 'starttls':
+            servertype += 'tls'
+        else:
+            print 'FIXME/ROUTE: %s/%s' % (sockettype, servertype)
+        return servertype.lower()
+
+    def _rank(self, entry):
+        rank = 0
+        proto = entry.get('protocol', 'unknown')
+        for srch, score in [('pop3', 1),
+                            ('imap', 2),
+                            ('ssl', 10),
+                            ('tls', 5)]:
+            if srch in proto:
+                rank -= score
+        return rank
+
+    def _get_ispdb(self, email, domain):
+        try:
+            result = {'sources': [], 'routes': []}
+            xml_data = self._urlget(self.ISPDB_URL % {'domain': domain})
+            if xml_data:
+                data = objectify.fromstring(xml_data)
+# FIXME: Massage these so they match the format of the routes and
+#        sources more closely. Also look out and report the visiturl to
+#        handle GMail. OAuth2 is coming up as an auth mech, we will need to
+#        support it: https://bugzilla.mozilla.org/show_bug.cgi?id=1166625
+                try:
+                    for enable in data.emailProvider.enable:
+                        result['enable'] = result.get('enable', [])
+                        result['enable'].append({
+                            'url': enable.get('visiturl', ''),
+                            'description': str(enable.instruction)
+                        })
+                except AttributeError:
+                    pass
+                try:
+                    for docs in data.emailProvider.documentation:
+                        result['docs'] = result.get('docs', [])
+                        result['docs'].append({
+                            'url': docs.get('url', ''),
+                            'description': str(docs.descr)
+                        })
+                except AttributeError:
+                    pass
+                for insrv in data.emailProvider.incomingServer:
+                    result['sources'].append({
+                        'protocol': self._source_proto(insrv),
+                        'username': self._username(insrv.username, email),
+                        'auth_type': str(insrv.authentication),
+                        'host': str(insrv.hostname),
+                        'port': str(insrv.port),
+                    })
+                for outsrv in data.emailProvider.outgoingServer:
+                    result['routes'].append({
+                        'protocol': self._route_proto(outsrv),
+                        'username': self._username(outsrv.username, email),
+                        'auth_type': str(outsrv.authentication),
+                        'host': str(outsrv.hostname),
+                        'port': str(outsrv.port),
+                    })
+                result['sources'].sort(key=self._rank)
+                result['routes'].sort(key=self._rank)
+                return result
+        except (IOError, ValueError, AttributeError):
+            pass
+        return None
+
+    def _get_mx1(self, domain):
+        print 'FIXME: Get MX record for %s' % domain
+        return domain
+
+    def _guess_settings(self, email, domain):
+        print 'FIXME: Guess settings for %s' % email
+        return None
+
+    def _get_email_settings(self, email, deadline):
+        # Thunderbird does this:
+        #  - tb-install-dir/isp/example.com.xml on the harddisk
+        #  - check for autoconfig.example.com
+        #  - look up of "example.com" in the ISPDB
+        #  - look up "MX example.com" in DNS, and for mx1.mail.hoster.com,
+        #    look up "hoster.com" in the ISPDB
+        #  - try to guess (imap.example.com, smtp.example.com etc.)
+        #
+        # We mostly follow Thunderbird's design, except we give the ISPDB
+        # priority: if it has an entry, don't try autoconfig.example.com.
+
+        domain = email.split('@')[-1].lower()
+        settings = None
+
+        if not settings and deadline > time.time():
+            settings = self._get_ispdb(email, domain)
+
+        if not settings and deadline > time.time():
+            mx1 = self._get_mx1(domain)
+            if mx1 != domain:
+                settings = self._get_ispdb(email, mx1)
+
+        if not settings and deadline > time.time():
+            settings = self._guess_settings(email, domain)
+
+        return settings
 
     def setup_command(self, session):
         results = {}
+        deadline = time.time() + float(self.data.get('timeout', [10])[0])
         for email in list(self.args) + self.data.get('email'):
-            settings = self._testing_data(self._get_domain_settings,
-                                          self.TEST_DATA, email)
+            settings = self._testing_data(self._get_email_settings,
+                                          self.TEST_DATA, email, deadline)
             if settings:
                 results[email] = settings
+            if time.time() >= deadline:
+                break
         if results:
-            self._success(_('Found settings for %d addresses'), results)
+            return self._success(
+                _('Found settings for %d addresses') % len(results),
+                result=results)
         else:
-            self._error(_('No settings found'))
+            return self._error(_('No settings found'))
 
 
 class SetupWelcome(TestableWebbable):
