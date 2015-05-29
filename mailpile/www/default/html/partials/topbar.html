@@ -24,6 +24,13 @@
         <li class="nav-search">
           <a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a>
         </li>
+  {%- if config.version not in ('1.0.0', '0.5.0') %}
+        <li style="width: 10em; margin: 10px 0; white-space: nowrap;">
+          <a class="auto-modal" data-flags="" data-icon="icon-code"
+             title="{{_('How to report bugs')}}"
+             href="/page/contribute/bugs.html">{{_("Report Bugs")}}</a>
+        </li>
+  {%- endif %}
         <li class="{% if command == "edit" %} navigation-on{% endif %}">
           <a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
         </li>
