@@ -1,0 +1,143 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block title %}{{_("Welcome Home")}}{% endblock %}
+{%- block content %}<div id="page" class="content-normal">
+  <span style='float: right;'>
+    <select>
+      <option>English</option>
+    </select>
+  </span>
+
+  <h1>
+    <span class="icon icon-home"></span> Welcome Home [DEV: WIP]
+  </h1>
+
+  <table width='100%' style='margin: 3em 0; background: none; border: 0; text-align: right;'>
+    <tr>
+      <th colspan=4 style='background: none; border: 0; text-align: left;'>
+        <h3 style='margin: 0;'>{{_("E-mail Accounts")}}</h3>
+      </th><td width='1%'><span class="icon icon-new"></span>
+      </td><td width='1%'><span class="icon icon-inbox"></span>
+      </td><td><i>settings</i>
+      </td><td width='1%'>
+      </td>
+    </tr>
+    {%- for profile_rid in result.rids %}
+     {%- set p = result.profiles[result.rids[profile_rid]] %}
+     {%- if p['x-mailpile-mailroute'] %}
+      {%- set route = config.routes[p['x-mailpile-mailroute'][0].mailroute] %}
+     {%- else %}
+      {%- set route = '' %}
+     {%- endif %}
+    <tr valign="top">
+       <td width='1%'>
+         <a data-post="from={{ p.email.0.email }}" data-action="/compose/"
+            class="auto-post" href="#">
+           <span class="icon icon-compose"></span>
+         </a>
+       </td><td width='1%'>
+         <a class="auto-modal" data-flags="reload" data-icon="icon-user"
+            title="{{_("Edit Profile")}}"
+            href="{{ U('/profiles/view/', profile_rid, '/edit.html') }}">
+           <span class="icon icon-user" style="color: #070;"></span>
+         </a>
+       </td><td style='text-align: left;'>
+         {{ p.fn }}
+       </td><td style='text-align: left;'>{% for e in p.email %}
+         {{ e.email }}{% if not loop.last %}<br>{% endif %}
+       {% endfor %}</td><td><b>{# new mail #}</b>
+       </td><td>{# total mail #}
+       </td><td>
+         <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
+            title="{{_("New Incoming Mail Source")}}"
+            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=new-source') }}">
+           <span class="icon icon-mailsource" style="color: #aaa;"></span>
+         </a>
+         {%- for ms in (p['x-mailpile-mailsource'] or []) %}
+         <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
+            title="{{_("Configure Mail Source")}}"
+            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=source-', ms) }}">
+           <span class="icon icon-mailsource" style="color: #070;"></span>
+         </a>
+         {%- endfor %}
+         <a class="auto-modal" data-flags="reload" data-icon="icon-outbox"
+            title="{{_("Configure Outgoing Mail")}}"
+            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=route') }}">
+           <span class="icon icon-outbox"
+                 {% if route -%} style="color: #070;"
+                 title="{{ route.username }} @ {{ route.hostname }}"
+                 {%- else -%}    style="color: #aaa;"
+                 {%- endif %}></span>
+         </a>
+      {# <span class="icon icon-groups" style="color: #aaa;"></span> #}
+         <a class="auto-modal" data-flags="reload" data-icon="icon-lock-closed"
+            title="{{_("Security Settings")}}"
+            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=security') }}">
+           <span class="icon icon-lock-closed"
+                 {% if p.key -%} style="color: #070;"
+                 title="{{ p.key[0].keysize }} bit {{ p.key[0].keytype }}"
+                 {%- else -%}    style="color: #aaa;"
+                 {%- endif %}></span>
+         </a>
+       </td><td>
+         <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
+            title="{{_("Delete or Disable Account")}}"
+            href="{{ U('/profiles/remove/?ui_profile=', profile_rid) }}">
+           <span class="icon icon-trash" style="color: #750;"></span>
+         </a>
+       </td>
+    </tr>
+    {%- endfor %}
+    {%- if result.profiles|length < 1 %}
+    <tr><td colspan=8><div class='text-center'>
+      <br>
+      <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
+      <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
+            title="{{_("Add Account")}}"
+            href="{{ U('/profiles/add/') }}"><button>
+        <span class="icon icon-plus"></span> {{_("Add Account")}}
+      </button></a></p>
+    </div></td></tr>
+    {%- endif %}
+    <tr><td></td><td>
+      </td><td style='text-align: left;'>
+        <a href="{{ U('/in/inbox/') }}">
+         <span class="icon icon-inbox"></span> {{_("Master Inbox")}}
+        </a>
+        &nbsp;&nbsp;
+        <a href="{{ U('/in/new/') }}">
+          <span class="icon icon-new"></span> {{_("Unread Mail")}}
+        </a>
+      </td><td colspan=4>
+        <a href="{{ U('/browse/') }}">
+          <span class="icon icon-list"></span> {{_("Browse")}}
+        </a>
+        &nbsp;&nbsp;
+        <a class="auto-modal" data-flags="reload" data-icon="icon-user"
+           title="{{_("Add Account")}}"
+           href="{{ U('/profiles/add/') }}">
+          <span class="icon icon-plus"></span> {{_("Add Account")}}
+        </a>
+      </td><td>
+      </td>
+    </tr>
+  </table>
+  <p></p>
+
+{#
+  <div style="display: inline-block; width: 45%; padding: 0 1em;">
+    <h3>Conversations</h3>
+    {{ mailpile_render('as.html!content', 'search', 'in:mp_rpl')[1]|safe }}
+  </div>
+#}
+
+  <div style="display: inline-block; width: 30%; float: right; padding: 0 1em; border-left: 1px solid #aaa;">
+    <h3>Events</h3>
+    <ul>
+      <li>13:53 - Downloaded 4 spiders
+      <li>13:22 - Refreshed milk
+      <li>13:12 - Mopped the floor
+    </ul>
+  </div>
+
+</div>
+{%- endblock %}

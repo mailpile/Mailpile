@@ -1,12 +1,12 @@
 <div id="notification-bubbles"></div>
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="{{ U('/page/home/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="{{ U('/page/home/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     {% include("../img/logo-name.svg") %}
   </a>
   </div>
@@ -25,7 +25,7 @@
           <a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a>
         </li>
   {%- if config.version not in ('1.0.0', '0.5.0') %}
-        <li style="width: 10em; margin: 10px 0; white-space: nowrap;">
+        <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;">
           <a class="auto-modal" data-flags="" data-icon="icon-code"
              title="{{_('How to report bugs')}}"
              href="/page/contribute/bugs.html">{{_("Report Bugs")}}</a>
@@ -64,17 +64,19 @@
           </ul>
         </li>
 -->
+        <li class="{% if command == "profiles" %} navigation-on{% endif %}">
+          <a class="home" href="{{ U("/profiles/") }}" title="{{_("Home")}}" alt="{{_("Home")}}"><span class="link-icon icon-home"></span></a>
+        </li>
+{#
+        <li class="">
+          <a class="secure" href="#" title="{{_("Secure Mode")}}" alt="{{_("Secure Mode")}}"><span class="link-icon icon-lock-open"></span></a>
+        </li>
+#}
         {% if config.web.donate_visibility %}
-        <li class="{% if command == "page" and state.query_args.arg.0 == "donate" %} navigation-on{% endif %}">
-          <a class="donate" href="{{ U("/page/donate/") }}" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a>
+        <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %}">
+          <a class="donate" href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}" alt="{{_("Contribute")}}"><span class="link-icon icon-donate"></span></a>
         </li>
         {% endif %}
-        <li class="{% if command == "page" and state.query_args.arg.0 == "home" %} navigation-on{% endif %}">
-          <a class="home" href="{{ U("/page/home/") }}" title="{{_("Home")}}" alt="{{_("Home")}}"><span class="link-icon icon-home"></span></a>
-        </li>
-        <li class="{% if command == "page" and state.query_args.arg.0 == "secure" %} navigation-on{% endif %}">
-          <a class="home" href="{{ U("/page/home/") }}" title="{{_("Secure Mode")}}" alt="{{_("Secure Mode")}}"><span class="link-icon icon-lock-open"></span></a>
-        </li>
         <li><a href="{{ U("/auth/logout/") }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>

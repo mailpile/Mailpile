@@ -456,7 +456,8 @@ class SetupGetEmailSettings(TestableWebbable):
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
         'email': 'E-mail address',
-        'timeout': 'Seconds'
+        'timeout': 'Seconds',
+        'track-id': 'tracking ID for event log'
     })
     TEST_DATA = {
         'imap_host': 'imap.wigglebonk.com',
@@ -471,6 +472,14 @@ class SetupGetEmailSettings(TestableWebbable):
     }
     ISPDB_URL = 'https://autoconfig.thunderbird.net/v1.1/%(domain)s'
 
+    def _progress(self, message):
+        if self.event and self.tracking_id:
+            self.event.private_data = {"track-id": self.tracking_id}
+            self.event.message = message
+            self._update_event_state(self.event.RUNNING, log=True)
+        else:
+            session.ui.mark(message)
+ 
     def _urlget(self, url):
         with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]) as context:
             self.session.ui.mark('Getting: %s' % url)
@@ -515,9 +524,11 @@ class SetupGetEmailSettings(TestableWebbable):
         return rank
 
     def _get_ispdb(self, email, domain):
+        domain_hash = {'domain': domain}
+        self._progress(_('Checking ISPDB for %(domain)s') % domain_hash)
         try:
             result = {'sources': [], 'routes': []}
-            xml_data = self._urlget(self.ISPDB_URL % {'domain': domain})
+            xml_data = self._urlget(self.ISPDB_URL % domain_hash)
             if xml_data:
                 data = objectify.fromstring(xml_data)
 # FIXME: Massage these so they match the format of the routes and
@@ -560,6 +571,7 @@ class SetupGetEmailSettings(TestableWebbable):
                     })
                 result['sources'].sort(key=self._rank)
                 result['routes'].sort(key=self._rank)
+                self._progress(_('Found %(domain)s in ISPDB') % domain_hash)
                 return result
         except (IOError, ValueError, AttributeError):
             pass
@@ -567,13 +579,17 @@ class SetupGetEmailSettings(TestableWebbable):
 
     def _get_mx1(self, domain):
         print 'FIXME: Get MX record for %s' % domain
+        time.sleep(1)
         return domain
 
     def _guess_settings(self, email, domain):
-        print 'FIXME: Guess settings for %s' % email
+        args_hash = {'domain': domain, 'email': email}
+        self._progress(_('Guessing settings for %(email)s') % args_hash)
+        print 'FIXME: Guess settings for %(email)s / %(domain)s' % args_hash
+        time.sleep(5)
         return None
 
-    def _get_email_settings(self, email, deadline):
+    def _get_email_settings(self, email):
         # Thunderbird does this:
         #  - tb-install-dir/isp/example.com.xml on the harddisk
         #  - check for autoconfig.example.com
@@ -588,28 +604,29 @@ class SetupGetEmailSettings(TestableWebbable):
         domain = email.split('@')[-1].lower()
         settings = None
 
-        if not settings and deadline > time.time():
+        if not settings and self.deadline > time.time():
             settings = self._get_ispdb(email, domain)
 
-        if not settings and deadline > time.time():
+        if not settings and self.deadline > time.time():
             mx1 = self._get_mx1(domain)
             if mx1 != domain:
                 settings = self._get_ispdb(email, mx1)
 
-        if not settings and deadline > time.time():
+        if not settings and self.deadline > time.time():
             settings = self._guess_settings(email, domain)
 
         return settings
 
     def setup_command(self, session):
         results = {}
-        deadline = time.time() + float(self.data.get('timeout', [10])[0])
+        self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
+        self.tracking_id = self.data.get('track-id', [None])[0]
         for email in list(self.args) + self.data.get('email'):
             settings = self._testing_data(self._get_email_settings,
-                                          self.TEST_DATA, email, deadline)
+                                          self.TEST_DATA, email)
             if settings:
                 results[email] = settings
-            if time.time() >= deadline:
+            if time.time() >= self.deadline:
                 break
         if results:
             return self._success(
