@@ -88,7 +88,7 @@ Mailpile.Crypto.Import.Uploader = function() {
           // Show Warning for 50 mb or larger
           if (file.size > 52428800) {
             start_upload = false;
-            alert(file.name + ' {{_("is")}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")}}');
+            alert(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")|escapejs}}');
           } else {
 
             var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
@@ -122,12 +122,12 @@ Mailpile.Crypto.Import.Uploader = function() {
               $('#form-upload-key').fadeIn().removeClass('hide');
             }
           } else {
-            Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key. Status:")}}: ' + response.status });
+            Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key. Status:")|escapejs}}: ' + response.status });
           }
         }, 1000);
       },
       Error: function(up, err) {
-        Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key because")}}: ' + err.message });
+        Mailpile.notification({status: 'error', message: '{{_("Could not upload encryption key because")|escapejs}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
       }

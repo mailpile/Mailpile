@@ -91,6 +91,7 @@ class MailpileCommand(Extension):
         # Make a function-version of the safe command
         e.globals['safe'] = s._safe
         e.filters['json'] = s._json
+        e.filters['escapejs'] = s._escapejs
 
         # Strip trailing blank lines from email
         e.globals['nice_text'] = s._nice_text
@@ -598,6 +599,27 @@ class MailpileCommand(Extension):
         json = json.replace('<', '\\x3c')
         json = json.replace('&', '\\x26')
         return json
+
+    _JS_ESCAPES = (
+            ('\\', '\\x5c'),
+            ('\'', '\\x27'),
+            ('"', '\\x22'),
+            ('>', '\\x3e'),
+            ('<', '\\x3c'),
+            ('&', '\\x26'),
+            ('=', '\\x3d'),
+            ('-', '\\x2d'),
+            (';', '\\x3b'),
+    )
+
+    def _escapejs(self, value):
+        """ Hex encodes some characters for use in JavaScript strings.
+
+        Lightly inspired from https://github.com/django/django/blame/ebc773ada3e4f40cf5084268387b873d7fe22e8b/django/utils/html.py#L63
+        """
+        for bad, good in self._JS_ESCAPES:
+            value = self._safe(value).replace(bad, good)
+        return value
 
     @classmethod
     def _nice_text(self, text):

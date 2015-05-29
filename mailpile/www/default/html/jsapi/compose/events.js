@@ -306,7 +306,7 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
           $('#modal-full').find('span.icon-lock-open')
             .removeClass('icon-lock-open color-10-orange')
             .addClass('icon-lock-closed color-08-green')
-            .html('{{_("Yay, Can Now Encrypt")}}');
+            .html('{{_("Yay, Can Now Encrypt")|escapejs}}');
 
           var success_template = _.template($('#template-encryption-helper-complete-message').html());
           var success_html = success_template({ mid: mid });

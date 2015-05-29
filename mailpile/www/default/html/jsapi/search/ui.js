@@ -149,7 +149,7 @@ Mailpile.render_modal_tags = function() {
     });
  
   } else {
-    Mailpile.notification({ status: 'info', message: '{{_("No Messages Selected")}}' });
+    Mailpile.notification({ status: 'info', message: '{{_("No Messages Selected")|escapejs}}' });
   }
 };
 

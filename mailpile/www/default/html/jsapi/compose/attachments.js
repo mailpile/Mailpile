@@ -138,7 +138,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           // Show Warning for 50 mb or larger
           if (file.size > 52428800) {
             start_upload = false;
-            alert(file.name + ' {{_("is")}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")}}');
+            alert(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")|escapejs}}');
           } else {
 
             // Start
@@ -160,11 +160,11 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
-          Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed status")}}: ' + response.status });
+          Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed status")|escapejs}}: ' + response.status });
         }
       },
       Error: function(up, err) {
-        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")}}: ' + err.message });
+        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
       }
@@ -187,4 +187,3 @@ Mailpile.Composer.Attachments.Remove = function(mid, aid) {
     }
   });
 };
-

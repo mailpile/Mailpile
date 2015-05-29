@@ -25,8 +25,8 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
 
         // UID Featured Item
         var uid = {
-          name: '{{_("No Name")}}',
-          email: '{{_("No Email")}}'
+          name: '{{_("No Name")|escapejs}}',
+          email: '{{_("No Email")|escapejs}}'
         };
 
         if (key.uids[0].name) {
