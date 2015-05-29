@@ -49,7 +49,7 @@ Mailpile.Message.Tooltips.Attachments = function() {
         console.log($(this));
         var html = '';
           html += $(this).attr('title')
-          html += '<small>{{_("Download")}} ' + $(this).data('size') + '</small>';
+          html += '<small>{{_("Download")|escapejs}} ' + $(this).data('size') + '</small>';
         return html;
       }
     },

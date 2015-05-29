@@ -58,7 +58,7 @@ $(document).on('click', '.thread-message-toggle-html', function(e) {
   var mid = $(this).data('mid');
   if (state === 'plain') {
     $(this).data('state', 'html');
-    $(this).html('{{_("Plain Text")}}');
+    $(this).html('{{_("Plain Text")|escapejs}}');
     Mailpile.Message.ShowHTML(mid);
   } else {
     $(this).data('state', 'plain');
