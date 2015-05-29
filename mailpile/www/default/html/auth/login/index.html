@@ -1,0 +1,6 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Please log in")}}{% endblock %}
+{% block content %}
+{% set status_message = status %}
+{% include("auth/shared.html") %}
+{% endblock %}

@@ -1,0 +1,42 @@
+/* Navigation */
+
+  .navigation-on {
+		background: lighten(@gray, 15%);
+		border-radius: @base-border-radius;    
+  }
+
+	.navigation-on > a {
+		cursor: default;
+		color: @grayDark;
+	}
+
+	.navigation-on > a:hover,
+  .navigation-on > a:hover > span {
+    color: @grayDark;
+  }
+
+
+/* Selects */
+
+  .checkbox-item-picker {
+    background: @grayLight;
+    margin: 0px 20px 20px 0px;
+    padding: 5px;
+    display: inline-block;
+    border-radius: 4px;
+    border: 1px solid @grayMid;
+    
+  }
+  
+  .checkbox-item-picker:hover {
+    background: @grayMid;
+    cursor: pointer;
+  }
+  
+  .checkbox-item-picker-selected {
+    background: @colorSelect;    
+  } 
+  .checkbox-item-picker-selected:hover,{
+    background: @colorSelectHover;
+  }
+  

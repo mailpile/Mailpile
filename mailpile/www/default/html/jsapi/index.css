@@ -1,0 +1,30 @@
+/* Colors */
+
+  {% for name, color in theme_settings().colors.iteritems() %}
+  .color-{{name}} { color: {{color}}; }
+  {% endfor %}
+
+/* Sidebar & Navigation On */
+
+  a.sidebar-tag,
+  a.sidebar-tag:active,
+  a.sidebar-tag:hover  { color: {{ theme_settings().navigation_link }};  }
+
+  li.navigation-on a.sidebar-tag:hover,
+  li.navigation-on a.sidebar-tag:hover span.sidebar-name,
+  li.navigation-on a.sidebar-tag:hover span.sidebar-notification { color: {{ theme_settings().navigation_link }}; }
+
+/* Sidebar Labels (dynamic) */
+  {% for name, color in theme_settings().colors.iteritems() %}
+
+  a.sidebar-tag.color-{{ name }}:active span.sidebar-name,
+  a.sidebar-tag.color-{{ name }}:hover span.sidebar-name,
+  li.navigation-on a.sidebar-tag.color-{{ name }}:active span.sidebar-name,
+  li.navigation-on a.sidebar-tag.color-{{ name }}:hover span.sidebar-name { color: {{ color }}; }
+
+  {% endfor %}
+
+{% for css_file in result.css_files %}
+  /* CSS for {{ css_file.classname }} */
+  {{ css_file.css|safe }}
+{% endfor %}

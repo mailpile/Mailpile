@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+    <title>geopoint</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="geopoint" sketch:type="MSArtboardGroup" fill="#000000">
+            <path d="M52.2267135,3 C36.2023455,3 23.2267135,15.6706576 23.2267135,31.292582 C23.2267135,35.7736892 24.3175619,39.9949473 26.2067208,43.7601787 L52.2249513,97 L78.2678535,43.7653412 C80.1358652,39.9949473 81.2267135,35.7754101 81.2267135,31.292582 C81.2267135,15.6706576 68.2528438,3 52.2267135,3 Z M68.5577174,32.0170621 C68.5577174,35.5947203 67.2835925,38.879833 65.1688623,41.4834871 C62.310452,44.9991945 57.8994773,47.2638401 52.9421972,47.2638401 C47.9849172,47.2638401 43.5792293,44.9991945 40.7155322,41.4834871 C38.5990397,38.879833 37.3249148,35.5947203 37.3249148,32.0170621 C37.3266771,23.5951963 44.3193849,16.7668424 52.9439595,16.7668424 C61.5685341,16.7668424 68.5577174,23.5969171 68.5577174,32.0170621 Z" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

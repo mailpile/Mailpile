@@ -1,0 +1,18 @@
+{% extends "layouts/" + render_mode + ".html" %}
+
+{% block content %}
+
+<div id="page" class="content-normal">
+  
+  <h3>This is a static page</h3>
+  
+  <p>But it still gets rendered via. Jinja, so it can do things.</p>
+
+  <p>Our data:</p>
+  <pre>
+    result = {{ result }}
+  </pre>
+
+</div>
+
+{% endblock %}

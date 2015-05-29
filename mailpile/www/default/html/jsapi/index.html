@@ -1,0 +1,21 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+
+<h1>JSAPI test page</h1>
+<p>
+  This page just tries to load <b><tt>/jsapi/as.js</tt></b> and parse,
+  for triggering nice Javascript errors.  In the future, it might be nice
+  if it printed out documentation or something for developers to look at.
+</p>
+<p>Status: <b><script>
+  if (Mailpile && Mailpile.API) {
+    document.write('Yay, the Mailpile JS API appears to exist!');
+  } else {
+    document.write('The Mailpile JS API failed to load, boo!');
+  }
+</script><noscript>The Mailpile JS API failed to load, boo!</noscript></b></p>
+
+<p>Use the source, Luke:</p>
+<pre>{{ mailpile_render('as.js', 'jsapi')[1] }}</pre>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{#
+## This is a straw-man design pattern that might get us closer to letting
+## Javascript and Jinja2 cooperate instead of duplicating effort.
+##
+## This example uses a simple Jinja2 macro to first render a static HTML
+## version of some data, and then expose both the raw data and the template
+## used to the Javascript universe, so they can be manipulated there and
+## code reused.
+#}
+{% block content %}<div id="page" class="content-normal">
+  
+  <h3>This is Javascript-friendly Jinja2 straw-man!</h3>
+
+  <p>Hey, check this out <a href="as.js">as javascript (JSON)</a></p>
+
+  {% import 'page/template-straw-man/tags.html' as tags %}
+  {{ tags.render_html() }}
+
+  <script>var model = {{ tags.render_json() }};</script>
+
+</div>{% endblock %}

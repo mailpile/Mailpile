@@ -1,0 +1,110 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Browsing")}} - {{ message }}{% endblock %}
+
+{% block contenttools %}
+{%- set activities = [{
+  'name': 'parent-folder',
+  'url': '../',
+  'text': _("Parent"),
+  'description': _("Open Parent Folder"),
+  'icon': 'upload'
+}, {
+  'name': 'folder_add',
+  'url': '#folder-add',
+  'text': _("Add Folder"),
+  'description': _("Create a new folder"),
+  'icon': 'plus'
+}, {
+  'name': 'mailbox_add',
+  'url': '#mailbox-add',
+  'text': _("Add Mailbox"),
+  'description': _("Create a new mailbox"),
+  'icon': 'plus'
+}] -%}
+{%- include("partials/tools_default.html") -%}
+{% endblock %}
+
+{%- macro help(attr) -%}
+  {% if attr == 'flag_mailpile' %}
+    <p class='help help-{{ attr }}'>
+      These are Mailpile-specific data.
+    </p>
+  {% elif attr == 'flag_directory' %}
+  {% elif attr == 'flag_mailbox' %}
+    <p class='help help-{{ attr }}'>
+      These are mailboxes recognized by Mailpile. You can view their
+      contents or add them to the search index by selecting them and
+      clicking "Watch" above.
+    </p>
+  {% elif attr == 'flag_files' %}
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro browse_url(attr, info) -%}
+  {%- if attr == 'flag_mailbox' -%}
+    {{- U('/search/?q=vfs:', info.encoded) -}} 
+  {%- else -%}
+    {{- U('/browse', info.path, '/') -}}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro box_icon(attr, info, icn) -%}
+  {%- if info.icon -%}
+    <img src="{{ U(info.icon) }}">
+  {%- else -%}
+    <span class='icon-{{ icn }}'></span>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro settings(attr, info, icn) -%}
+  {%- if info.settings or (attr == 'flag_mailbox') -%}
+    {%- if attr == 'flag_mailbox' -%}
+      {%- set _url = '#mailbox-settings' -%}
+    {%- else -%}
+      {%- set _url = info.settings -%}
+    {%- endif -%}
+    <div style="position: absolute; bottom: 5px; right: 13px;">
+      <a class='browse-item-settings link-detail right' href="{{ U(_url) }}"
+         title='{{_("Settings")}}'>
+        <span class='icon-settings'></span>
+      </a>
+    </div>
+  {%- endif -%}
+{%- endmacro -%}
+
+{% block content %}
+<div class="clearfix"></div>
+{%- set loops = [] %}
+{%- for attr, titl, icn, link in (
+    ('flag_mailpile',  'Mailpile',  'star',       True),
+    ('flag_mailbox',   'Mailboxes', 'inbox',      True),
+    ('flag_directory', 'Folders',   'news',       True),
+    ('flag_files',     'Files',     'document',   True)) %}
+  {%- set oloop_first = loop.first %}
+  {%- for info in result|selectattr(attr) %}
+    {%- if loop.first %}
+      {%- do loops.append(info.name) %}
+      <div class='{{ attr }} container rectangles-container center'>
+        <h2 class="left"><span class='icon-{{ icn }}'></span> {{ titl }}</h2>
+        <div class="right" style="width: 50%">{{ help(attr) }}</div>
+        <div class="clearfix"></div>
+    {%- endif %}
+        <div class="rectangles-outer">
+          <div class="rectangles-inner">
+            {%- set _url = browse_url(attr, info) %}
+            <a class="browse-item-icon left" {%- if link %} href="{{ _url }}"{% endif %}>
+              {{ box_icon(attr, info, icn) }} &nbsp;
+            </a>
+            <input type="checkbox" class="browse-item-checkbox right">
+            {{ settings(attr, info) }}
+            <a class="browse-item-name" {%- if link %} href="{{ _url }}"{% endif %}>
+              {{ info.name }}
+            </a>
+          </div>
+        </div>
+    {%- if loop.last %}
+      </div>
+    {%- endif %}
+  {%- endfor %}
+{%- endfor %}
+{% endblock %}

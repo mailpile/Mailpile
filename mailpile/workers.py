@@ -1,7 +1,10 @@
 import threading
+import traceback
 import time
 
 import mailpile.util
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
 
@@ -25,12 +28,19 @@ class Cron(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.ALIVE = False
+        self.daemon = mailpile.util.TESTING
         self.name = name
         self.session = session
+        self.last_run = time.time()
+        self.running = 'Idle'
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
-        self.lock = threading.Lock()
+        self.lock = WorkerLock()
+
+    def __str__(self):
+        return '%s: %s (%ds)' % (threading.Thread.__str__(self),
+                                 self.running, time.time() - self.last_run)
 
     def add_task(self, name, interval, task):
         """
@@ -41,14 +51,10 @@ class Cron(threading.Thread):
         interval -- The interval (in seconds) of the task
         task    -- A task function
         """
-        self.lock.acquire()
-        try:
-                self.schedule[name] = [name, interval, task, time.time()]
-                self.sleep = 1
-                self.__recalculateSleep()
-        finally:
-                #Not releasing the lock will block the entire cron thread
-                self.lock.release()
+        with self.lock:
+            self.schedule[name] = [name, interval, task, time.time()]
+            self.sleep = 1
+            self.__recalculateSleep()
 
     def __recalculateSleep(self):
         """
@@ -61,7 +67,7 @@ class Cron(threading.Thread):
         for i in range(2, 61):  # i = second
             # Check if any scheduled task intervals are != 0 mod i
             filteredTasks = [True for task in self.schedule.values()
-                                           if int(task[1]) % i != 0]
+                             if int(task[1]) % i != 0]
             # We can sleep for i seconds if i divides all intervals
             if (len(filteredTasks) == 0):
                 self.sleep = i
@@ -76,52 +82,59 @@ class Cron(threading.Thread):
         name -- The name of the task to cancel
         """
         if name in self.schedule:
-            self.lock.acquire()
-            try:
+            with self.lock:
                 del self.schedule[name]
                 self.__recalculateSleep()
-            finally:
-                self.lock.release()
 
     def run(self):
         """
         Thread main function for a Cron instance.
 
         """
-        self.ALIVE = True
         # Main thread loop
+        with self.session.config.index_check:
+            self.ALIVE = True
         while self.ALIVE and not mailpile.util.QUITTING:
+            tasksToBeExecuted = []  # Contains tuples (name, func)
             now = time.time()
             # Check if any of the task is (over)due
-            self.lock.acquire()
-            tasksToBeExecuted = []  # Contains tuples (name, func)
-            for task_spec in self.schedule.values():
-                name, interval, task, last = task_spec
-                if last + interval <= now:
-                    tasksToBeExecuted.append((name, task))
-            self.lock.release()
-            #Execute the tasks
-            for name, task in tasksToBeExecuted:
-                    #Set last_executed
-                    self.schedule[name][3] = time.time()
-                    task()
+            with self.lock:
+                for task_spec in self.schedule.values():
+                    name, interval, task, last = task_spec
+                    if last + interval <= now:
+                        tasksToBeExecuted.append((name, task))
 
-            # Some tasks take longer than others,
-            #    so use the time before executing tasks
-            #    as reference for the delay
+            # Execute the tasks
+            for name, task in tasksToBeExecuted:
+                # Set last_executed
+                self.schedule[name][3] = time.time()
+                try:
+                    self.last_run = time.time()
+                    self.running = name
+                    task()
+                except Exception, e:
+                    self.session.ui.error(('%s failed in %s: %s'
+                                           ) % (name, self.name, e))
+                finally:
+                    self.last_run = time.time()
+                    self.running = 'Finished %s' % self.running
+
+            # Some tasks take longer than others, so use the time before
+            # executing tasks as reference for the delay
             sleepTime = self.sleep
             delay = time.time() - now + sleepTime
 
-            # Sleep for max. 1 sec to react to the quit
-            #    signal in time
+            # Sleep for max. 1 sec to react to the quit signal in time
             while delay > 0 and self.ALIVE:
                 # self.sleep might change during loop (if tasks are modified)
-                # In that case, just check if any tasks need to be executed
+                # In that case, just wake up and check if any tasks need
+                # to be executed
                 if self.sleep != sleepTime:
-                        delay -= (sleepTime - self.sleep)  # old-new
-                # Sleep for max 1 second to check self.ALIVE
-                time.sleep(min(1, delay))
-                delay -= 1
+                    delay = 0
+                else:
+                    # Sleep for max 1 second to check self.ALIVE
+                    time.sleep(max(0, min(1, delay)))
+                    delay -= 1
 
     def quit(self, session=None, join=True):
         """
@@ -134,27 +147,61 @@ class Cron(threading.Thread):
         """
         self.ALIVE = False
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
 
 
 class Worker(threading.Thread):
 
-    def __init__(self, name, session):
+    def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
-        self.NAME = name or 'Worker'
+        self.daemon = mailpile.util.TESTING or daemon
+        self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
-        self.LOCK = threading.Condition()
+        self.JOBS_LATER = []
+        self.LOCK = threading.Condition(WorkerRLock())
+        self.last_run = time.time()
+        self.running = 'Idle'
         self.pauses = 0
         self.session = session
+        self.important = False
 
-    def add_task(self, session, name, task):
-        self.LOCK.acquire()
-        self.JOBS.append((session, name, task))
-        self.LOCK.notify()
-        self.LOCK.release()
+    def __str__(self):
+        return ('%s: %s (%ds, jobs=%s, jobs_after=%s)'
+                % (threading.Thread.__str__(self),
+                   self.running,
+                   time.time() - self.last_run,
+                   len(self.JOBS), len(self.JOBS_LATER)))
 
-    def do(self, session, name, task):
+    def add_task(self, session, name, task,
+                 after=None, unique=False, first=False):
+        with self.LOCK:
+            if unique:
+                for s, n, t in self.JOBS:
+                    if n == name:
+                        return
+            if unique and after:
+                for ts, (s, n, t) in self.JOBS_LATER:
+                    if n == name:
+                        return
+
+            snt = (session, name, task)
+            if first:
+                self.JOBS[:0] = [snt]
+            elif after:
+                self.JOBS_LATER.append((after, snt))
+            else:
+                self.JOBS.append(snt)
+
+            self.LOCK.notify()
+
+    def add_unique_task(self, session, name, task, **kwargs):
+        return self.add_task(session, name, task, unique=True, **kwargs)
+
+    def do(self, session, name, task, unique=False):
         if session and session.main:
             # We run this in the foreground on the main interactive session,
             # so CTRL-C has a chance to work.
@@ -164,76 +211,138 @@ class Worker(threading.Thread):
             finally:
                 self.unpause(session)
         else:
-            self.add_task(session, name, task)
+            self.add_task(session, name, task, unique=unique)
             if session:
                 rv = session.wait_for_task(name)
             else:
                 rv = True
         return rv
 
+    def _keep_running(self, **ignored_kwargs):
+        return (self.ALIVE and not mailpile.util.QUITTING)
+
+    def _failed(self, session, name, task, e):
+        self.session.ui.debug(traceback.format_exc())
+        self.session.ui.error(('%s failed in %s: %s'
+                               ) % (name, self.name, e))
+        if session:
+            session.report_task_failed(name)
+
+    def _play_nice_with_threads(self):
+        play_nice_with_threads()
+
     def run(self):
         self.ALIVE = True
-        while self.ALIVE and not mailpile.util.QUITTING:
-            self.LOCK.acquire()
-            while len(self.JOBS) < 1:
-                self.LOCK.wait()
-            session, name, task = self.JOBS.pop(0)
-            self.LOCK.release()
+        while self._keep_running():
+            with self.LOCK:
+                while len(self.JOBS) < 1:
+                    if not self._keep_running(locked=True):
+                        return
+                    self.LOCK.wait()
 
+            self._play_nice_with_threads()
+            with self.LOCK:
+                session, name, task = self.JOBS.pop(0)
+                if len(self.JOBS) < 0:
+                    now = time.time()
+                    self.JOBS.extend(snt for ts, snt
+                                     in self.JOBS_LATER if ts <= now)
+                    self.JOBS_LATER = [(ts, snt) for ts, snt
+                                       in self.JOBS_LATER if ts > now]
             try:
+                self.last_run = time.time()
+                self.running = name
                 if session:
                     session.ui.mark('Starting: %s' % name)
                     session.report_task_completed(name, task())
                 else:
                     task()
+            except (IOError, OSError), e:
+                self._failed(session, name, task, e)
+                time.sleep(1)
             except Exception, e:
-                self.session.ui.error(('%s failed in %s: %s'
-                                       ) % (name, self.NAME, e))
-                if session:
-                    session.report_task_failed(name)
+                self._failed(session, name, task, e)
+            finally:
+                self.last_run = time.time()
+                self.running = 'Finished %s' % self.running
 
     def pause(self, session):
-        self.LOCK.acquire()
-        self.pauses += 1
-        if self.pauses == 1:
-            self.LOCK.release()
+        with self.LOCK:
+            self.pauses += 1
+            first = (self.pauses == 1)
 
+        if first:
             def pause_task():
                 session.report_task_completed('Pause', True)
                 session.wait_for_task('Unpause', quiet=True)
 
             self.add_task(None, 'Pause', pause_task)
             session.wait_for_task('Pause', quiet=True)
-        else:
-            self.LOCK.release()
 
     def unpause(self, session):
-        self.LOCK.acquire()
-        self.pauses -= 1
-        if self.pauses == 0:
-            session.report_task_completed('Unpause', True)
-        self.LOCK.release()
+        with self.LOCK:
+            self.pauses -= 1
+            if self.pauses == 0:
+                session.report_task_completed('Unpause', True)
 
     def die_soon(self, session=None):
         def die():
             self.ALIVE = False
-        self.add_task(session, '%s shutdown' % self.NAME, die)
+        self.add_task(session, '%s shutdown' % self.name, die)
 
     def quit(self, session=None, join=True):
         self.die_soon(session=session)
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
+
+
+class ImportantWorker(Worker):
+    def _keep_running(self, _pass=1, locked=False):
+        # This is a much more careful shutdown test, that refuses to
+        # stop with jobs queued up and tries to compensate for potential
+        # race conditions in our quitting code by waiting a bit and
+        # then re-checking if it looks like it is time to die.
+        if len(self.JOBS) > 0:
+            return True
+        else:
+             if _pass == 2:
+                 return Worker._keep_running(self)
+             if self.ALIVE and not mailpile.util.QUITTING:
+                 return True
+             else:
+                 if locked:
+                     try:
+                         self.LOCK.release()
+                         time.sleep(1)
+                     finally:
+                         self.LOCK.acquire()
+                 else:
+                     time.sleep(1)
+                 return self._keep_running(_pass=2, locked=locked)
+
+    def _failed(self, session, name, task, e):
+        # Important jobs!  Re-queue if they fail, it might be transient
+        Worker._failed(self, session, name, task, e)
+        self.add_unique_task(session, name, task)
+
+    def _play_nice_with_threads(self):
+        # Our jobs are important, if we have too many we stop playing nice
+        if len(self.JOBS) < 10:
+            play_nice_with_threads()
 
 
 class DumbWorker(Worker):
-    def add_task(self, session, name, task):
-        try:
-            self.LOCK.acquire()
+    def add_task(self, session, name, task, unique=False):
+        with self.LOCK:
             return task()
-        finally:
-            self.LOCK.release()
 
-    def do(self, session, name, task):
+    def add_unique_task(self, session, name, task):
+        return self.add_task(session, name, task)
+
+    def do(self, session, name, task, unique=False):
         return self.add_task(session, name, task)
 
     def run(self):
@@ -242,6 +351,9 @@ class DumbWorker(Worker):
 
 if __name__ == "__main__":
     import doctest
-    junk = {}
-    print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'junk': junk}), )
+    import sys
+    result = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                             extraglobs={'junk': {}})
+    print '%s' % (result, )
+    if result.failed:
+        sys.exit(1)

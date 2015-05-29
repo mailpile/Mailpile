@@ -1,0 +1,19 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Add Tag")}} {% endblock %}
+{% block content %}
+  {% set form_title = _("Add Tag") %}
+  {% set tag = {
+    "tid": "",
+    "name": "Home, Work, Travel",
+    "slug": "home-work-travel",
+    "label_color": "gray",
+    "icon": "icon-tag",
+    "display": "tag"
+  } %}
+  {% include("tags/form.html") %}
+<script>
+$(document).ready(function() {
+  Mailpile.Tags.init();
+});
+</script>
+{% endblock %}

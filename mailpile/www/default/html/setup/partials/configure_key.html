@@ -1,0 +1,88 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Create Encryption Key")}} | {{_("Setup")}}{% endblock %}
+{% block content %}
+
+<div class="setup-box setup-box-medium animated bounceInUp">
+  <h1 class="text-center"><span class="icon-key"></span> Your Encryption Key</h1>
+  
+  {# BRE: The options and dialog below are questions we may not want
+    to ask, if they're complicating things too much.  It's a lot of text.
+    But I'm asking them here anyway, as a straw man for us to discuss
+    futher. Maybe they belong elsewhere in the flow?  Or we just don't
+    make them configurable at all?  I err towards asking, as this relates
+    to privacy, but... #}
+
+  {% if error %}
+    <h2>Oh shits {{ error }}</h2>
+  {% endif %}
+  
+  <form method="POST">
+
+  {% if result.have_key %}
+    
+    <p>HERE THERE SHOULD BE SOME INFO ABOUT THE KEY</p>
+  
+  {% elif result.creating_key %}
+  
+    <p>Your key is being created, please wait ...<p>
+  
+  {% elif result.profiles %}
+    <h3>Configure key</h3>
+    <p>We are about to create your PGP key. How exciting!</p>
+    <p>The public portion of the key gets shared with other people, like
+       a digital business card. Note that without a copy of your public key,
+       people cannot send you encrypted e-mail or verify your digital
+       signatures. So the public part has to be shared, but it is up to you
+       how widely you share it and what information it contains.</p>
+    <hr>
+    <p>Much like a business card, you can list a variety of contact information
+       on the key, and this helps people figure out who the key belongs to and
+       how to get in touch.</p>
+    <p>Which of the following addresses would you like listed on your public
+       key?</p>
+    <ul>
+      {% for rid in result.profiles|sort %}
+        {% set profile = result.profiles[rid] %}
+        <li>
+          <input type='checkbox' name='add_rid' value='{{ profile.rid }}'>
+          {{ profile.name }} &lt;{{ profile.email }}&gt;
+          (<input type='text' name='comment:{{ profile.email }}' value=''>)
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <input type=submit value='Continue...'>
+  
+  <hr><h3>Publishing your key</h3>
+  <p>PGP keys can be published to open key directories, making it easier
+     for people to find your key and send you secure mail. Just like the
+     phone book, this is a public resource which anyone can access. Would
+     you like to publish your key details, once it has been created?<p>
+  <ul>
+     <li><input type='radio' name='publish_to_keyservers' value='yes'
+          {% if result.publish_to_keyservers %}checked{% endif %}>
+         Yes, publish my details for all to see</li>
+     <li><input type='radio' name='publish_to_keyservers' value='no'
+          {% if not result.publish_to_keyservers %}checked{% endif %}>
+         No, I prefer to remain 'unlisted'</li>
+  </ul>
+  <input type=submit value='Continue...'>
+  
+  <hr><h3>Sharing your key</h3>
+  <p>In order to help others communicate with you securely, Mailpile can
+     attach your key to outgoing e-mail. This will allow the recipients to
+     send encrypted replies or verify your digital signatures.</p>
+  <ul>
+     <li><input type='radio' name='attach_public_key' value='yes'
+          {% if result.attach_public_key %}checked{% endif %}>
+         Yes, attach my key to outgoing mail</li>
+     <li><input type='radio' name='attach_public_key' value='no'
+          {% if not result.attach_public_key %}checked{% endif %}>
+         No, I prefer to share it manually</li>
+  </ul>
+  <input type=submit value='Continue...'>
+  
+  </form>
+
+</div>
+{% endblock %}

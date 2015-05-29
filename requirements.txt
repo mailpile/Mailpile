@@ -1,3 +1,6 @@
-lxml==2.3.2
-http://sourceforge.net/projects/py-gnupg/files/GnuPGInterface/0.3.2/GnuPGInterface-0.3.2.tar.gz
-Jinja2==dev
+lxml>=2.3.2
+Jinja2
+spambayes>=1.1b1
+markupsafe
+pyDNS
+pgpdump

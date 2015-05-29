@@ -1,0 +1,29 @@
+{% extends "layouts/full.html" %}
+{% block title %}{{_("Enable Access for Non-Google Apps")}} | {{_("Help")}}{% endblock %}
+{% block content %}
+
+<div class="content-normal">
+
+  <h1><span class="icon-help"></span> {{_("Help")}}</h1>
+
+  <div class="clearfix">
+    <h3>{{_("Enable Access for Non-Google Apps")}}</h3>
+  
+    <p>By default Google makes accessing your Gmail account difficult for non-Google email programs (or email programs that use less than ideal security settings). You will need to follow these steps to get your account working with Mailpile.</p>
+    
+    <ol>
+      <li>Go to the Google accounts website, <a href="http://accounts.google.com/" target="_blank">http://accounts.google.com/</a></li>
+      <li>If you haven't already, log in.</li>
+      <li>Click the "Security" button on the top center of the screen.</li>
+      <li>Click into the "Enable Less Secure Apps" item</li>
+      <li>Select "Enable" from the list</li>
+    </ol>
+
+    <h4>Related Articles:</h4>
+    <p><span class="icon-help"></span> <a href="/page/gmail-2-step-verification/">Gmail's 2-Step App Passwords</a></p>
+
+  </div>
+  {% include("help/bottom.html") %}
+</div>
+
+{% endblock %}

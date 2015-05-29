@@ -1,0 +1,18 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{% if result %}
+  {% set profiles = mailpile('profiles').result %}
+  {% set showed_composer = [] %}
+  {% set show_reply = "true" %}
+  {% for mid in result.thread_ids|reverse %}
+    {% if mid in result.data.messages %}
+      {% set metadata = result.data.metadata[mid] %}
+      {% set message  = result.data.messages[mid] %}
+      {% include("partials/thread_message.html") %}
+    {% endif %}
+  {% endfor %}
+{% else %}
+  {% set error_title = "message_missing" %}
+  {% include("partials/errors_content.html") %}
+{% endif  %}{# if result #}
+{% endblock %}

@@ -1,0 +1,195 @@
+/* Topbar */
+
+	.topbar {
+		width: 100%;
+		height: 62px;
+		display: table;
+	  position: fixed;
+	  top: 0px;
+	  left: 0px;
+	  z-index: 100;
+		min-width: 800px;
+		border-bottom: 1px solid @gray;
+		box-sizing: border-box;
+		background: @grayLight;
+	}
+
+	.topbar-logo {
+    width: 67px;
+		display: table-cell;
+    box-sizing: border-box;
+    vertical-align: middle;
+	}
+
+	.topbar-logo #logo-icon {
+		display: block;
+    margin-left: 15px;
+    height: 37px;
+	}
+
+	.topbar-logo-name {
+    width: 157px;
+    height: 40px;
+		display: table-cell;
+    box-sizing: border-box;
+    vertical-align: middle;
+	}
+
+	.topbar-logo-name #logo-name {
+		display: block;
+    margin-left: 10px;
+	}
+	
+	.topbar-actions {
+    min-width: 775px;
+		display: table-cell;
+		box-sizing: border-box;  	
+    vertical-align: middle;
+	}
+
+  .form-search {
+    width: 350px;
+    height: 36px;
+    float: left;
+    margin-top: 5px;
+    margin-left: 15px;
+    border-radius: 5px;
+    border: 1px solid @gray;
+  }
+
+  .form-search input {
+    width: 282px;
+    height: 18px;
+    padding: 9px 12px;
+    float: left;    
+    font: normal 18px @text-font-family-bold;
+    border: 0;
+    background: @white;
+    border-radius: 5px 0 0 5px;
+    color: @grayMid;   
+  }
+
+  .form-search input:focus {
+    outline: 0;
+    background: #fff;
+    box-shadow: 0 0 1px @grayDark inset;
+    color: @grayDark;
+  }
+
+  .form-search input::-webkit-input-placeholder,
+  .form-search input:-moz-placeholder,
+  .form-search input:-ms-input-placeholder {
+    color: #999;
+    font-weight: normal;
+    font-style: italic;
+  }
+
+  .form-search button {
+    overflow: visible;
+    position: relative;
+    float: right;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    height: 36px;
+    width: 44px;
+    font: bold 18px/40px @text-font-family-bold;
+    color: @white;
+    background: @blue;
+    border-radius: 0 3px 3px 0;
+    text-shadow: 0 -1px 0 rgba(0, 0 ,0, .3);
+  }
+
+  .form-search button:hover {
+    background: darken(@blue, 5%);
+  }
+  
+  .form-search button:active,
+  .form-search button:focus {
+    background: darken(@blue, 15%);
+    outline: 0;
+  }
+
+  .form-search button::-moz-focus-inner { /* remove extra button spacing for Mozilla Firefox */
+    border: 0;
+    padding: 0;
+  }
+
+	.topbar-nav {
+		float: right;
+		position: relative;
+		top: 0px;
+		right: 20px;
+	}
+
+  .topbar-nav ul {
+    list-style: none;
+  }
+
+  .topbar-nav ul:after {
+    clear: both;
+  }
+
+	.topbar-nav > ul > li {
+		float: left;
+		margin-left: 15px;
+		text-align: center;
+	}
+
+	.topbar-nav > ul > li > a {
+	  width: 32px;
+	  height: 32px;
+	  display: block;
+	  margin: 6px 8px;
+		font-weight: normal;
+		color: @grayDark;
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;
+	}
+
+	.topbar-nav > ul > li > a:hover {
+		color: @blue;
+	  -webkit-transition-duration: 0.2s;
+	  -moz-transition-duration: 0.2s;
+	  transition-duration: 0.2s;
+	}
+
+	.topbar-nav > ul > li > a img {
+    height: 32px;
+  }
+	
+	.topbar-nav > ul > li > a.donate:hover {
+  	color: @red;
+	}
+	
+	.topbar-nav > ul > li > a span.link-icon { 
+    display: block;
+    font-size: 32px;
+    line-height: 32px;
+  }
+
+  .topbar-nav > ul > li.navigation-on {
+    background: @grayMid;
+    border-radius: @base-border-radius;
+  }
+  
+  .topbar-nav > ul > li.navigation-on > a {
+    color: @grayDark;
+    cursor: default;
+  }
+  
+  .topbar-nav > ul > li.navigation-on.nav-dropdown > a:hover {
+    cursor: pointer !important;
+  }
+
+  .topbar-nav .nav-search {
+    display: none;
+  }
+
+  .topbar-nav > ul > li.nav-dropdown ul.dropdown-menu li {
+    display: block;
+    float: none;
+    text-align: left;
+  }
+

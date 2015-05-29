@@ -1,0 +1,109 @@
+<div class="modal-dialog">
+ <form class="datadig-form" action="{{ config.sys.http_path }}/datadig/as.csv" method="GET"
+       target="datadig-post-target">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-spreadsheet"></span> {{_("Extract CSV data from e-mail")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <p class="datadig-help">
+        {{_("This tool will extract data from the selected e-mails into a CSV file, which you can load into a spreadsheet application such as Microsoft Excel or LibreOffice Calc.")}}
+      </p>
+      <p class="message paragraph-important">
+        <span class="icon-settings"></span> {{_("Choose what data to extract")}}
+      </p>
+      <p class='datadig-columns text-center'
+         onclick="javascript:Mailpile.plugins.datadig.show_hints();">
+        <b>{{_("Columns")}}:</b> &nbsp; <span class="datadig-data-terms">
+          {# The following div gets extracted and used as a sub-template! #}
+          <span class="datadig-data-term">
+            <span><input type="text" name="term" placeholder="{{_("Data Source")}}" size=12 value=""> &nbsp;</span>
+          </span>
+        </span>
+        <a onclick="javascript:Mailpile.plugins.datadig.add_column();">
+          <span class="icon-plus"></span> Add
+        </a>
+      </p>
+      <div class="datadig-hints">
+        <table width="100%">
+          <tr>
+            <th width="40%">{{_("Data Source")}}</th>
+            <th>{{_("Explanation")}}</th>
+            <th width="1%"></th>
+          </tr>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>Sender</td>
+            <td>{{_("The message sender")}}</td>
+            <td><i>{{_("fast")}}</i></td>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>Subject</td>
+            <td>{{_("The message subject")}}</td>
+            <td><i>{{_("fast")}}</i></td>
+          </tr>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>To</td>
+            <td>{{_("The message To header")}}</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>Date</td>
+            <td>{{_("The message Date header")}}</td>
+            <td>&nbsp;</td>
+          </tr>
+          </tr>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>URL=text:(https?:\S+[\w/])</td>
+            <td>{{_("Search for an URL")}}</td>
+            <td><i>{{_("slow")}}</i></td>
+          </tr>
+          <tr class='datadig-hint'>
+            <td class='datadig-cspec'>Money=text:\$(\d+)</td>
+            <td>{{_("Search for a dollar amount")}}</td>
+            <td><i>{{_("slow")}}</i></td>
+          </tr>
+        </table>
+        <i class='right'>{{_("Click an example to use it as a column")}}</i>
+        <br>
+      </div>
+      <div class="datadig-preview-area hide">
+        <p class="message paragraph-important">
+          <span class="icon-search"></span> {{_("Preview")}}
+          <b onclick="javascript:Mailpile.plugins.datadig.show_hints();"
+             class='right'>&times;</b>
+        </p>
+        <div class="datadig-working text-center hide">
+          {% include("../img/loading-ellipsis.svg") %}
+        </div>
+        <div class="datadig-downloading text-center hide">
+          <i>{{_("Generating CSV file.")}}
+             {{_("Please wait, this may take a while...")}}</i><br>
+          <span id='datadig-downloading-progress'></span>
+        </div>
+        <div id="datadig-preview" style="max-height: 200px; overflow: scroll;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <ul class='left' style="display: inline-block; text-align: left;">
+        <li><input type="checkbox" name="header" value="yes" checked> Include header
+        <li><input type="checkbox" name="no-mid" value="yes"> Omit Metadata-ID
+      </ul>
+      <div class="right">
+        <button class="button-secondary right"
+                onclick="javascript:Mailpile.plugins.datadig.download();">
+          <span class="icon-download"></span>
+          {{_("Download CSV")}}
+        </button> &nbsp;
+      </div>
+      <div class="right">
+        <button class="button-info" type="button"
+                onclick="javascript:Mailpile.plugins.datadig.preview();">
+          <span class="icon-search"></span>
+          {{_("Preview")}}
+        </button>
+      </div>
+    </div>
+  </div>
+ </form>
+ <iframe class="hide" name="datadig-post-target"></iframe>
+</div>

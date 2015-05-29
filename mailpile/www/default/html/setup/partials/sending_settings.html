@@ -1,0 +1,50 @@
+<div id="setup-sending-settings" class="setup-box setup-box-small animated <% if (complete == 'sending') { %>add-top bounceInRight<% } else { %>half-top bounceInUp<% } %> add-bottom">
+  <form id="form-setup-sending-settings" class="standard" method="POST">
+    <% if (complete == 'sending') { %>
+    <h2 class="text-center"><span class="icon-routes"></span> <%= action %> Route</h2>
+    <% } %>
+    <fieldset>     
+      <span id="validation-name"  class="<% if (complete == 'profiles') { %>hide<% } %>">
+        <label class="validation-message">{{_("Route Name")}}</label>
+        <input type="text" name="name" value="<%= name %>" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
+      </span>
+      <span id="validation-username">
+        <label class="validation-message">{{_("Username")}}</label>
+        <input type="text" name="username" value="<%= username %>" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
+      </span>
+      <div id="validation-password">
+        <label class="validation-message">{{_("Password")}}</label>
+        <input id="input-setup-sending-password" type="password" name="password" value="<%= password %>" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
+      </span>
+      <span id="validation-host">
+        <label class="validation-message">{{_("Server")}}</label>
+        <input type="text" name="host" value="<%= host %>" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
+      </span>
+      <span id="validation-port">
+        <label class="validation-message">{{_("Port")}}</label>
+        <select id="route-add-port">
+          <option value="587" <% if (port === 587) { %>selected<% } %>>587</option>
+          <option value="465" <% if (port === 465) { %>selected<% } %>>465</option>
+          <option value="25" <% if (port === 25) { %>selected<% } %>>25</option>
+          <option value="other">{{_("Other")}}</option>
+        </select>
+        <span class="hide">
+          <input id="input-setup-sending-port" type="text" name="port" value="<%= port %>">
+          <label class="validation-message">{{_("Protocol")}}</label>
+          <input id="input-setup-sending-protocol" type="text" name="protocol" value="<%= protocol %>">
+        </span>
+      </span>
+      <div id="setup-sending-check-auth">
+        <a href="#" id="btn-setup-sending-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Route")}}</a>
+      </div>
+    </fieldset>
+    <input type="hidden" name="_section" value="routes.<%= id %>">
+    <input type="hidden" id="input-sending-complete" value="<%= complete %>">
+    <div class="clearfix">
+      <a href="#profiles" id="btn-setup-sending-back" class="button-info">{{_("Back")}}</a>
+      <button id="btn-setup-sending-save" type="submit" class="button-primary right">
+        <span class="icon-plus"></span> {{_("Save Route")}}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,24 @@
+/**
+ * Use a readable font for print styles
+ */
+body {
+  font-family: Georgia, serif;
+  background: none;
+  color: black;
+}
+#sidebar,
+#header {
+  display: none;
+}
+#content {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: none;
+}
+.thread-item-text {
+  clear: both;
+}
+.hide-when-printing {
+  display: none;
+}

@@ -1,0 +1,242 @@
+/* Sidebar */
+
+  #sidebar {
+    width: 225px;
+    background: @grayLight;
+    position: fixed;
+    top: 62px;
+    bottom: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    padding-top: 5px;
+    border-right: 1px solid @gray;
+    border-spacing: 0px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  #sidebar-lists  {
+    padding: 0px;
+    padding-bottom: 50px;
+    margin: 0px;
+  }
+  
+  #sidebar-bottom {
+    width: 224px;
+    height: 24px;
+    position: fixed;
+    top: auto;
+    bottom: 0px;
+    left: 0px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: @grayLight;
+    border-top: 1px solid @gray;
+  }
+
+  #sidebar-bottom a {
+    display: inline-block;
+    margin: 0px 10px;
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: normal;
+    color: @grayDark;
+  }
+
+  #sidebar-bottom a:hover {
+    color: @blue;
+  }
+
+	#sidebar hr  { margin: 10px 0px;	}
+
+  #sidebar      ul    { margin: 0px; padding: 0px; }
+  #sidebar      ul li { margin: 3px 0px; padding: 0px 0px; transition-duration: 0.3s; }
+  #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 3px; padding-top: 2px; padding-bottom: 2px; }
+  #sidebar.snug ul li { margin-top: 1px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
+
+  #sidebar ul li.show-subtags {
+    background: @white;
+    border-top: 1px solid @grayMid;
+    border-bottom: 1px solid @grayMid;
+    padding-top: 5px;
+	  transition-duration: 0.3s;
+  }
+
+  #sidebar a.sidebar-tag {
+    position: relative;
+    width: 200px;
+    display: inline-block;
+    margin: 0px 7px;
+    padding: 6px 5px;
+    vertical-align: middle;
+    text-align: left;
+    transition-duration: 0.2s;
+  }
+
+  #sidebar a.sidebar-tag:hover  { color: @gray; }
+
+  #sidebar.cozy a.sidebar-tag   { padding: 3px 0px; }
+  #sidebar.snug a.sidebar-tag   { padding: 0px 0px; }
+
+  #sidebar li.is-editing,
+  #sidebar li.is-editing a.sidebar-tag { cursor: move; }
+
+  #sidebar a.sidebar-tag span.icon {
+    width: 24px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 18px;
+  }
+
+	#sidebar.cozy a.sidebar-tag span.icon { font-size: 18px; line-height: 18px; }
+  #sidebar.snug a.sidebar-tag span.icon { font-size: 16px; line-height: 16px; }
+
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag > span.notification {
+    vertical-align: middle;
+    font-family: @mailpile-text-font-family;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  #sidebar a.sidebar-tag span.name {
+    display: inline-block;
+    max-width: 132px;
+    padding-left: 5px;
+    white-space: nowrap;
+	}
+
+  #sidebar a.sidebar-tag span.notification {
+    letter-spacing: -.5px;
+    color: @gray;
+  }
+
+  #sidebar.cozy span.name,
+  #sidebar.cozy span.notification { font-size: 16px; line-height: 18px; }
+  #sidebar.snug span.name,
+  #sidebar.snug span.notification { font-size: 14px; line-height: 16px; }
+
+  #sidebar a.sidebar-tag.has-unread span.name,
+  #sidebar a.sidebar-tag.has-unread span.notification {
+    font-family: @mailpile-text-font-family-bold;
+    font-weight: normal;
+  }
+
+ #sidebar span.sidebar-tag-expand {
+   float: right;
+   display: inline-block;
+   color: @grayMid;
+ }
+
+
+/* Sidebar - Subtags */
+
+  #sidebar ul.sidebar-subtags {
+    margin-bottom: 8px;
+    padding: 0px;
+  }
+
+  #sidebar ul.sidebar-subtags li.sidebar-subtag {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag.has-unread span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag.has-unread span.notification {
+    font-family: @text-font-family;
+    font-weight: bold;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag span.icon {
+    font-size: 16px;
+    line-height: 16px;
+  }
+
+  #sidebar li.sidebar-subtag a.sidebar-tag span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag span.notification {
+    vertical-align: middle;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: @text-font-family;
+    line-height: 16px;
+  }
+
+
+/* Sidebar - Edit */
+
+  a.sidebar-tag span.sidebar-tag-archive {
+    cursor: pointer;
+    background: @gray;
+    color: @white;
+    vertical-align: middle;
+    padding: 5px;
+    position: absolute;
+    top: 4px;
+    right: 0px;
+    font-size: 8px;
+    line-height: 8px;
+    border-radius: 10px;
+  }
+
+  a.sidebar-tag span.sidebar-tag-archive:hover {
+    background: @orange;
+  }
+
+
+/* Sidebar - Drag & Drop */
+
+  .sidebar-tags-draggable {
+    border-radius: @base-border-radius;
+  }
+
+  .sidebar-tags-draggable-hover {
+	  transition-duration: 0.3s;	    
+  }
+
+  .sidebar-tags-draggable-hover.show-subtags {
+
+  }
+
+  .sidebar-tags-draggable-active,
+  .sidebar-tags-draggable-active.show-subtags {
+    background: @grayMid;
+	  transition-duration: 0.3s;
+  }
+
+  .sidebar-tags-draggable-highlight {
+	  transition-duration: 0.3s;
+  }
+
+
+/* Sidebar - Sortable */
+
+  .sidebar-tags-sortable {
+    height: 29px;
+    padding: 5px 10px;
+    margin: 4px 0;
+    border-radius: @base-border-radius;
+    background: @grayMid;
+  }
+  
+
+/* Sidebar - Tag Drag */
+
+  .sidebar-tag-drag {
+  	background: @white;
+  	border: 1px solid @gray;
+  	border-radius: 4px;
+  	padding: 5px 10px;
+  	z-index: 9999;
+  	font-size: 14px;
+  	font-weight: bold;
+    z-index: 9999;
+  }
+  

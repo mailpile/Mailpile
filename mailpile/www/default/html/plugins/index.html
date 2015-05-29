@@ -1,0 +1,14 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+
+{% if result %}
+
+  <ul>
+  {% for plugin in result %}
+    <li>{{ plugin }} {% if plugin.builtin %} CORE {% endif %}</li>
+  {% endfor %}
+  </ul>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+    <title>news</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M100,77.3132941 C100,83.4849706 94.657,89 89.046,89 L13.208,89 C3.95,89 0,84.197702 0,74.3382399 L0,28.9077316 C0,28.9077316 0,23.872095 4,23.8720948 C5.42578125,23.8720948 13.82,23.8720948 13.82,23.8720948 L13.82,16.0356368 C13.82,16.0356368 13.8199997,11 18.3125,11 C44.8072917,11 69.3020843,11.0000356 95.796875,11 C100,10.9999943 100,16.0356368 100,16.0356368 L100,77.3132941 L100,77.3132941 Z M13,31 L7,31 L7,72.1201666 C7,78.1254931 8.2688394,81 9.880991,81 C11.8444182,81 13,78.1254931 13,72.1201666 L13,31 L13,31 Z M83,41 L59,41 L59,68 L83,68 M90,24 L27,24 L27,31 L90,31 M33,72 L50,72 L50,68 L33,68 M33,59 L50,59 L50,54 L33,54 M50,46 L50,43.6990336 L50,41 L33,41 L33,46" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="news" sketch:type="MSArtboardGroup">
+            <mask id="mask-2" sketch:name="news" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <use fill="#000000" sketch:type="MSShapeGroup" xlink:href="#path-1"></use>
+        </g>
+    </g>
+</svg>

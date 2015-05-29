@@ -1,33 +1,90 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 from datetime import date
-from setuptools import setup
-from mailpile.app import APPVER
+from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
+import datetime
 import os
+import re
+import subprocess
+from glob import glob
 
+here = os.path.abspath(os.path.dirname(__file__))
+
+## This figures out what version we want to call ourselves ###################
 try:
-  # This borks sdist.
-  os.remove('.SELF')
+    GIT_HEAD = open('.git/HEAD').read().strip().split('/')[-1]
+    BRANCH = {
+       'master': 'dev',
+       'release': ''
+    }.get(GIT_HEAD, GIT_HEAD)
+except (OSError, IOError):
+    BRANCH = None
+if BRANCH:
+    BRANCHVER = '.%s%s' % (BRANCH, str(datetime.date.today()).replace('-', ''))
+else:
+    BRANCHVER = ''
+
+APPVER = '%s%s' % (next(
+    line.strip() for line in open('mailpile/defaults.py', 'r')
+    if re.match(r'^APPVER\s*=', line)
+).split('"')[1], BRANCHVER)
+
+
+## Cleanup ###################################################################
+try:
+    assert(0 == subprocess.call(['make', 'clean'], cwd=here))
 except:
-  pass
+    print "Faild to run 'make clean'. Bailing out."
+    exit(1)
+
+
+## Install ###################################################################
+
+class Builder(build_py):
+    def run(self):
+        try:
+            assert(0 == subprocess.call(['make', 'bdist-prep'], cwd=here))
+        except:
+            print "Error building package. Try running 'make'."
+            exit(1)
+        else:
+            build_py.run(self)
+
+
+## "Main" ####################################################################
 
 setup(
     name="mailpile",
-    version=APPVER.replace('github',
-                           'dev'+date.today().isoformat().replace('-', '')),
+    version=APPVER,
     license="AGPLv3+",
-    author="Bjarni R. Einarsson",
-    author_email="bre@klaki.net",
-    url="http://www.mailpile.is/",
-    description="""Mailpile is a personal tool for searching and indexing e-mail.""",
-    long_description="""\
-Mailpile is a tool for building and maintaining a tagging search
-engine for a personal collection of e-mail.  It can be used as a
-simple web-mail client.
+    author="Mailpile ehf.",
+    author_email="team@mailpile.is",
+    url="https://www.mailpile.is/",
+    description="""\
+An e-mail search engine and webmail client, with easy encryption and privacy.
 """,
-   packages=['mailpile','mailpile.plugins'],
-   entry_points = {
-     'console_scripts': [
-       'mailpile = mailpile.__main__:main'
-     ]
-   },
-)
+    long_description=open('README.md', 'r').read(),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: JavaScript',
+        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+        'License :: OSI Approved :: Apache Software License',
+        'Intended Audience :: End Users/Desktop',
+        'Topic :: Communications :: Email :: Email Clients (MUA)',
+        'Topic :: Security :: Cryptography',
+        'Operating System :: POSIX',
+        'Environment :: Console',
+        'Environment :: Web Environment'],
+    keywords='email webmail search pgp',
+    packages=find_packages(
+        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    include_package_data=True,
+    install_requires=open('requirements.txt', 'r').read().strip().splitlines(),
+    cmdclass={'build_py': Builder},
+    entry_points={
+        'console_scripts': [
+            'mailpile = mailpile.__main__:main'
+        ]},
+    test_suite='nose.collector',
+    tests_require=['nose'])

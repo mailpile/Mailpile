@@ -1,0 +1,42 @@
+<div id="tag-add" class="content-normal hide">
+
+  <h3>{{_("Add New Tag")}}</h3>
+
+  <form id="form-tag-add" class="standard" method="POST">
+
+    <input type="hidden" name="csrf" value="">
+
+    <label>{{_("Tag")}}</label>
+    <input type="text" id="data-tag-add-tag" name="name" value="" placeholder="{{_("Friends & Family")}}">
+
+    <label>{{_("Slug")}}</label>
+    <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="{{_("friends-family")}}">
+
+    <label>{{_("Display")}}</label>
+    <select name="display" id="data-tag-add-display">
+      <option value="tag">{{_("Tag")}}</option>
+      <option value="archive">{{_("Archive")}}</option>
+    </select>
+
+    <label>{{_("Parent")}}</label>
+    <select name="parent" id="data-tag-add-parrent">
+      <option value="">-------- {{_("none")}} --------</option>
+    {% for tag in result.tags %}
+      {% if tag.display == "tag" %}
+      <option value="{{tag.tid}}">{{tag.name}}</option>
+      {% endif %}    
+    {% endfor %}
+    </select>
+
+    <label>{{_("Template")}}</label>
+    <select name="template" id="data-tag-add-template">
+      <option value="default">{{_("Default")}}</option>
+    </select>
+
+    <label>{{_("Search Terms")}}</label>
+    <textarea name="search_terms" id="data-tag-add-search-terms" placeholder="in:inbox"></textarea>
+
+    <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+  </form>
+
+</div>

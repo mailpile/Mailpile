@@ -1,0 +1,27 @@
+{% extends "layouts/" + render_mode + "-wide.html" %}
+{% block title %}Use The Force, Grapher{% endblock %}
+{% block content %}
+{% if result %}
+
+<div id="content-tools">
+  {% include("partials/tools_search.html") %}
+</div>
+<div id="content-view">
+  <div id="pile-graph" style="background: #FFFFFF; display: block; position: relative;">
+    <div id="graph-actions" style="position: absolute; top: 10px; right: 20px;" class="clearfix">
+      <a style="display: none;" id="btn-compose-message" class="bulk-action" href="#add-to-group"><span class="icon-compose"></span> Compose Message to Selected</a>
+      <a style="display: none;" id="btn-found-group" class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add Selected to Group</a>
+    </div>
+    <div id="pile-graph-canvas" style="width: 100%;">
+      <svg id="pile-graph-canvas-svg" width="100%" height="500"></svg>
+    </div>
+  </div>
+</div>
+<script>
+$(document).ready(function() {
+	var data = {{result|json|safe}};
+	Mailpile.plugins.forcegrapher.draw(data);
+});
+</script>
+{% endif %}
+{% endblock %}

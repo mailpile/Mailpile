@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+    <title>video</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="video" sketch:type="MSArtboardGroup" fill="#000000">
+            <path d="M76,50.4826136 L76,64.9946779 C76,67.7637156 73.7608602,70 70.9987413,70 L5.00125865,70 C2.23337654,70 0,67.759041 0,64.9946779 L0,35.0053221 C0,32.2362844 2.23913977,30 5.00125865,30 L70.9987413,30 C73.7666235,30 76,32.240959 76,35.0053221 L76,50.2214185 L100,34.067 L100,50.352 L100,66.641 L76,50.4826136 Z" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

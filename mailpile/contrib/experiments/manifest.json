@@ -1,0 +1,33 @@
+# This is a Mailpile plugin manifest, describing the `hacks` plugin.
+{
+    "name": "experiments",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": ["experiments.py"],
+        "javascript": [],
+        "css": []
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {},
+
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
+    "config": {
+        "variables": {
+            "prefs": {
+                "experiment_dkg_hdrs": ["Enable DKG-style encrypted headers",
+                                        "bool", "False"]
+            }
+        }
+    },
+
+    "email_transforms": {
+        "outgoing_crypto": [{"priority": 10, "class": "EmailCryptoTxf"}],
+        "incoming_crypto": [{"priority": 990, "class": "EmailCryptoTxf"}]
+    },
+
+    # These are our Python-related hooks
+    "commands": [
+    ]
+}

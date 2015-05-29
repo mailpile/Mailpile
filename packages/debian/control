@@ -1,0 +1,13 @@
+Source: mailpile
+Maintainer: Mailpile <team@mailpile.is>
+Section: mail
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 8), python (>= 2.7), python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2, node-less, python-setuptools, python-nose
+X-Python-Version: >= 2.7
+
+Package: mailpile
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2, spambayes (>= 1.1b), spambayes (<< 1.1c~), gnupg
+Homepage: https://www.mailpile.is
+Description: Mail client with a web-mail interface, fast integrated search engine, and encryption.

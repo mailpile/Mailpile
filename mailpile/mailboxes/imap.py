@@ -6,6 +6,11 @@ except ImportError:
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 
+import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+from mailpile.mailboxes import UnorderedPicklable
+
 
 class IMAPMailbox(Mailbox):
     """
@@ -13,7 +18,9 @@ class IMAPMailbox(Mailbox):
 
     As of now only get_* is implemented.
     """
-    def __init__(self, host, port=993, user=None, password=None, mailbox=None, use_ssl=True, factory=None):
+    def __init__(self, host,
+                 port=993, user=None, password=None, mailbox=None,
+                 use_ssl=True):
         """Initialize a Mailbox instance."""
         if use_ssl:
             self._mailbox = IMAP4_SSL(host, port)
@@ -24,7 +31,6 @@ class IMAPMailbox(Mailbox):
             mailbox = "INBOX"
         self.mailbox = mailbox
         self._mailbox.select(mailbox)
-        self._factory = factory
 
     def add(self, message):
         """Add message and return assigned key."""
@@ -51,7 +57,7 @@ class IMAPMailbox(Mailbox):
         """Return a Message representation or raise a KeyError."""
         return Message(self._get(key))
 
-    def get_bytes(self, key):
+    def get_bytes(self, key, *args):
         """Return a byte string representation or raise a KeyError."""
         raise NotImplementedError('Method must be implemented by subclass')
 
@@ -99,3 +105,31 @@ class IMAPMailbox(Mailbox):
 
     # Whether each message must end in a newline
     _append_newline = False
+
+
+class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
+    UNPICKLABLE = ['_mailbox']
+
+    @classmethod
+    def parse_path(cls, config, path, create=False):
+        if path.startswith("imap://"):
+            url = path[7:]
+            try:
+                serverpart, mailbox = url.split("/")
+            except ValueError:
+                serverpart = url
+                mailbox = None
+            userpart, server = serverpart.split("@")
+            user, password = userpart.split(":")
+            # WARNING: Order must match IMAPMailbox.__init__(...)
+            return (server, 993, user, password)
+        raise ValueError('Not an IMAP url: %s' % path)
+
+    def get_msg_size(self, toc_id):
+        # FIXME: We should make this less horrible.
+        fd = self.get_file(toc_id)
+        fd.seek(0, 2)
+        return fd.tell()
+
+
+mailpile.mailboxes.register(10, MailpileMailbox)

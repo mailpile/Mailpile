@@ -1,0 +1,163 @@
+{% extends "layouts/" + render_mode + ".html" %}
+
+{% macro render_form_settings_profile(routes) -%}  
+  <label>{{_("Name")}}</label>
+  <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
+  <label>{{_("Email")}}</label>
+  <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" autocorrect="off" autocapitalize="off" id="profile-add-email">
+  <label>{{_("Delivery route")}}</label>
+  <select name="route">
+    {% for route in routes %}
+    <option value="{{route}}">{{routes[route].name}}</option>
+    {% endfor %}
+  </select>
+{%- endmacro %}
+
+{% macro render_form_settings_route(rid, route) -%}
+  <input type="hidden" name="route_id" value="{{rid}}"/>
+  <label>{{_("Route name")}}</label>
+  <input type="text" name="name" value="{{route.name or ""}}" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
+  <label>{{_("Login")}}</label>
+  <input type="text" name="username" value="{{route.username or ""}}" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
+  <label>{{_("Password")}}</label>
+  <input type="password" name="password" value="{{route.password or ""}}" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
+  <label>{{_("Server")}}</label>
+  <input type="text" name="host" value="{{route.host or ""}}" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
+  <label>{{_("Port")}}</label>
+  <select name="port" id="route-add-port">
+    <option {% if route.port == 25 %}selected {% endif %}value="25">25</option>
+    <option {% if route.port == 587 %}selected {% endif %}value="587">587</option>
+    <option {% if route.port == 465 %}selected {% endif %}value="465">465 (TLS)</option>
+  </select>
+{%- endmacro %}
+
+{% block content %}
+
+{% if "profiles" in result %}
+<!-- Profiles - Accessed via /settings/profiles -->
+<div id="settings-profiles" class="content-normal">
+  <button id="btn-settings-profile-add" class="right"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
+  <h3>{{_("Your Profiles")}}</h3>
+  <ul class="items">
+    {% for profile in result.profiles %}
+    <li class="separate">
+      <h3>{{profile.name}}</h3>
+      <label>{{_("Address:")}}</label> {{ profile.email }}<br/>
+      <label>{{_("Route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
+      <ul class="horizontal right">
+        <li><a href="" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+        <li><a href=""><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+      </ul>
+      <form id="form-settings-profile-" class="form-settings-profile-edit hide standard">
+        {{ render_form_settings_profile(config.routes) }}
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if "routes" in result %}
+<!-- Routes - Accessed via /settings/routes -->
+<div id="settings-routes" class="content-normal">
+  <button id="btn-settings-route-add" class="right"><span class="icon-plus"></span> {{_("Add Route")}}</button>
+  <h3>{{_("Routes")}}</h3>
+  <ul class="items">
+  {% for rid in result.routes %}
+  {% set route = result.routes[rid] %}
+    <li class="separate">
+      <h4 class="">{{route.name}}</h4>
+      <ul class="horizontal right">
+        <li><a href="#" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+        <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+      </ul>
+      <form id="form-settings-route-{{rid}}" class="form-settings-route-edit hide standard">
+        <h4>{{_("Edit Route")}}</h4>
+        {{ render_form_settings_route(rid, route) }}
+        <input type="submit" value="Cancel" class="button-info">
+        <input type="submit" value="Save" class="button-primary">
+      </form>
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if "prefs" in result %}
+<!-- Preferences - Accessed via /settings/prefs -->
+<div id="settings-preferrences" class="content-normal">
+  <h3>{{_("Preferences")}}</h3>
+  <a class="button" id="notifications-permission-option">{{_("Permit browser notifications")}}</a>
+  <ul>
+    {% for p in result.prefs %}
+    <li>{{p}}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if "sys" in result %}
+<!-- Advanced - Accessed via /settings/sys -->
+<div id="settings-advanced" class="content-normal">
+  <h3>{{_("Advanced Settings")}}</h3>
+  <ul>
+    {% for p in result.sys %}
+    <li>{{p}}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- Settings - Modal for form to add a new profile -->
+<script id="modal-settings-profile-add" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-settings-profile-add" class="standard" action="" method="POST">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-profiles"></span> {{_("Add Profile")}}</h4>
+      </div>
+      <div class="modal-body">
+        {{ render_form_settings_profile(config.routes) }}
+      </div>
+      <div class="modal-footer">
+        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
+      </div>
+    </div>
+  </form>
+</script>
+
+<!-- Settings - Modal for form to add a new route -->
+<script id="modal-settings-route-add" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-settings-route-add" class="standard" action="" method="POST">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-routes"></span> {{_("Add Route")}}</h4>
+      </div>
+      <div class="modal-body">
+        {{ render_form_settings_route('add', config.routes) }}
+      </div>
+      <div class="modal-footer">
+        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Route")}}</button>
+      </div>
+    </div>
+  </form>
+</script>
+
+{% endblock %}
+{% block title %}
+  {% if "profiles" in result %}
+    {{_("Profiles")}} | {{_("Settings")}}  
+  {% elif "routes" in result %}
+    {{_("Routes")}} | {{_("Settings")}}
+  {% elif "prefs" in result %}
+    {{_("Preferences")}} | {{_("Settings")}}
+  {% elif "sys" in result %}
+    {{_("Advanced")}} | {{_("Settings")}}
+  {% else %}
+    ??? | {{_("Settings")}}
+  {% endif %}
+{% endblock %}
+

@@ -1,0 +1,169 @@
+/* Contact - List */
+
+  .contact-card-avatar { 
+    .global-user-avatar();
+  }
+
+  .contact-card-avatar img {
+    .global-user-avatar-img();
+  }
+
+  .contact-card-name {
+    max-width: 100px;
+    display: inline-block;
+    border: 0px solid @white;
+    margin-top: 0px;
+    padding-top: 0px;
+    font-size: 14px;
+    line-height: 18px;
+    vertical-align: top;
+    word-break: break-word;
+  }
+
+  .contact-card-name:hover {
+    color: @blue;
+  }
+
+  .contact-card-checkbox {
+    margin-top: 0px;
+    vertical-align: top;
+  }
+
+/* Contact - View */
+
+  #contact-view {
+    margin-bottom: 100px;
+  }
+
+  #contact-view .contact-avatar {
+    display: block;
+    margin-right: 20px;
+    border-radius: 3px;
+  }
+
+  #contact-view .contact-name {
+    font-family: @mailpile-text-font-family-bold;
+    margin-bottom: 5px;
+  }
+
+  #contact-view .contact-subname {
+    display: block;
+    float: left;
+    color: @gray;
+  }
+
+  #contact-view h5.contact-key {
+    width: 315px;
+  }
+
+  #contact-view .icon-fingerprint {
+    font-size: 36px;
+    margin-right: 10px;
+  }
+
+
+/* Contact - Details */
+
+  .contact-detail li {
+    background: @white;
+    margin-bottom: @base-margin;
+    padding: @base-padding;
+    border: 1px solid @gray;
+    border-radius: @base-border-radius;
+  }
+
+  .contact-detail li h5 {
+    margin-bottom: @base-margin / 1.5;
+  }
+
+  .contact-detail a span.contact-detail-light {
+    color: @gray;
+    font-weight: normal;
+  }
+
+  .contact-detail a:hover span.contact-detail-light,
+  .contact-detail a span.contact-detail-light:hover {
+    color: @red;
+  }
+
+  .contact-key-details {
+    margin-top: @base-margin;
+    font-size: 14px;
+  }
+
+  .contact-tag-filter {
+    background: @white;
+    border: 1px solid @gray;
+    border-radius: @base-border-radius;
+    padding: @base-padding 0;    
+  }
+
+  .contact-tag-filter li {
+    display: inline;
+    margin: @base-margin;
+  }
+
+
+/* Contacts - Conversation */
+
+  .contact-conversation-avatar {
+    width: 45px;
+    display: inline-block;
+    border-radius: 3px;
+  }
+  
+  .contact-conversation-name {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 18px;
+  }
+  
+  .contact-conversation-address {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: normal;
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 14px; 
+    color: @grayMid;
+  }
+
+
+/* Contacts - Add */
+
+  .contact-add-fields {
+    float: left;
+    margin-right: 45px;
+  }
+
+  .contact-add-search-keyserver {
+    float: left;
+  }
+
+  .contact-add-search-item {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 5px;
+  }
+
+  .contact-add-search-item:hover {
+    cursor: pointer;
+    background: @grayMid;
+  }
+
+  .contact-add-search-item .name {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .contact-add-search-item .email,
+  .contact-add-search-item .key,
+  .contact-add-search-item .keysize,
+  .contact-add-search-item .keytype,
+  .contact-add-search-item .created {
+    display: block;
+    font-size: 14px;
+    font-family: Helvetica, Arial, sans-serif;
+  }  
+  

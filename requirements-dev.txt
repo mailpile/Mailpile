@@ -1,0 +1,9 @@
+lxml>=2.3.2
+Jinja2
+spambayes>=1.1b1
+selenium>=2.40.0
+markupsafe
+nose
+mock>=1.0.1
+pyDNS
+pgpdump

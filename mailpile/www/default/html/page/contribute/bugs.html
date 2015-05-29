@@ -1,0 +1,54 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Reporting bugs")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-code"></span> {{_("Reporting Bugs")}}</h1>
+  <p>
+    Thank you for testing Mailpile! Have you found a bug?
+  </p>
+
+{%- if config.version not in ('1.0.0', '0.5.0') %}
+  <h4>Warning: Men at work!</h4>
+  <p>
+    Mailpile is currently
+    <a target=_blank href="https://github.com/mailpile/Mailpile/commits/master">under very heavy development</a>.
+    If your top bar is a bit blurry and has a "Report Bugs" link, then you're
+    running code which is being actively developed and many things are
+    expected to be broken.
+  </p>
+  <p>
+    So for now, we don't particularly recommend filing
+    <a target=_blank href="https://github.com/mailpile/Mailpile/issues">issues
+    on Github</a>, except for long-term ideas, discussions or feature requests.
+    Pull requests on the other hand, are <i>always</i> welcome! ;-)
+  </p>
+  <p>
+    We don't mean to be ungrateful. Quite the opposite, writing a good bug
+    report is a lot of work and we really don't want you to waste your time.
+    While so many things are broken, the only way for you to know whether a
+    bug is worth filing, is to <i>talk to us</i>.
+  </p>
+  <p>
+    So please,
+    <a target=_blank href="https://webchat.freenode.net/?channels=%23mailpile">hop
+    on to #mailpile on Freenode</a> and have a chat!
+  </p>
+  <p>
+    Obviously, this will all change
+    <a target=_blank href="https://www.mailpile.is/roadmap/">once development
+    slows down</a> for the next release. But for now: IRC before Issues.<br>
+  </p>
+  <p>
+    Thanks!
+  </p>
+
+{%- else %}
+
+  <p>
+    <b>FIXME: Write a bug reporting policy for releases!</b>
+  </p>
+
+{%- endif %}
+</div>
+{% endblock %}

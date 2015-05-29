@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+    <title>calendar</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="calendar" sketch:type="MSArtboardGroup" fill="#000000">
+            <path d="M6,31 L94,31 L94,90.906 C94,95.379 90.419,99 85.999,99 L13.999,99 C9.582,99 6,95.379 6,90.906 L6,31 L6,31 Z M74,11 L85.999,11 C90.419,11 94,14.624 94,19.093 L94,25 L94,26 L6,26 L6,25 L6,19.093 C6,14.624 9.582,11 13.999,11 L25.999,11 L25.999,4 C25.999,2.342 28.342,1 29.999,1 C31.656,1 33.999,2.342 33.999,4 L33.999,11 L65.999,11 L65.999,4 C65.999,2.342 68.344,1 70.001,1 C71.656,1 74,2.342 74,4 L74,11 L74,11 Z M68,84 L68,73.8689069 L58.1761684,73.8689069 L58.1761684,42 L47.6810708,42 L35,53.9116002 L42.104699,61.1966848 L47.8192158,55.710728 L47.8192154,73.8689069 L37.0225346,73.8689069 L37.0225346,84 L68,84 L68,84 Z" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,7 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{% set result = use_data_view('/api/0/md5sum/wordy/', result) %}
+
+Result: {{ result }}
+
+{% endblock %}

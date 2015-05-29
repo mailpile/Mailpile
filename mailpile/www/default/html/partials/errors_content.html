@@ -1,0 +1,19 @@
+<div id="error" class="content-normal">
+  {% if error_title == "message_missing" %}
+  <h2><span class="icon-inbox"></span> {{_("Message Not Found")}}</h2>
+  <p>{{_("We were unable to find the message you requested, perhaps it was deleted?")}}</p>
+  {% elif error_title == "contact_missing" %}
+  <h2><span class="icon-user"></span> {{_("Contact Missing")}}</h2>
+  <p>{{_("We were unable to find the contact you requested, perhaps it was typed (or linked to) incorrectly?")}}</p>  
+  {% elif error_title == "tag_missing" %}
+  <h2><span class="icon-tag"></span> {{_("Tag Missing")}}</h2>
+  <p>{{_("We were unable to find the tag you requested, perhaps it was typed (or linked to) incorrectly?")}}</p>  
+  {% else %}
+  <h2><span class="icon-inbox"></span> {{_("Oops, You've Found a Quirk")}}</h2>
+  <p>{{_("There's something happening here. What it is ain't exactly clear. Everybody look what's going down.")}}</p>
+  {% endif %}
+  {% if state.query_args.arg %}
+  <p>You can also try to view the <a href="{{ U('/message/raw/', state.query_args.arg.0, '/as.text') }}">raw message data</a></p>
+  {% endif %}
+  <p>{{_("If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank\">bug report</a>", url="https://github.com/pagekite/Mailpile/issues")}}</p>
+</div>

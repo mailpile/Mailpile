@@ -1,0 +1,12 @@
+<div id="thread-title" class="sub-navigation clearfix">
+  <div class="thread-draggable"></div>
+  <div class="thread-details">
+    <h1 class="half-top remove-bottom">{{ nice_subject(result.data.metadata[result.thread_ids[-1]]) }}</h1>
+    <ul class="horizontal remove-top half-bottom">
+      <li><a href="#"><span class="icon-inbox"></span> {{ result.data.metadata|length }} {{_("Messages")}}</a></li>
+      <li><a class="show-thread-people" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
+      <!-- <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li> -->
+      <li><a class="show-thread-tags" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
+    </ul>
+  </div>
+</div>

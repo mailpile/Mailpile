@@ -1,0 +1,19 @@
+PATH:=$(PATH):/Applications/CodeKit.app/Contents/Resources/engines/less/bin/
+
+all: mailpile/www/default/css/default.css \
+     mailpile/www/default/css/print.css
+	@true
+
+mailpile/www/default/css/default.css: .less-deps
+	@(cd mailpile/www/default/less && \
+            lessc -x default.less \
+              |perl -npe 's,(libraries|app)/,,g' \
+              |perl -npe 's,/mailpile/www/,../,g' \
+	    >../css/default.css)
+	@ls -l mailpile/www/default/css/default.css
+
+mailpile/www/default/css/print.css: .less-deps
+	@(cd mailpile/www/default/less && lessc -x print.less >../css/print.css)
+	@ls -l mailpile/www/default/css/print.css
+
+.less-deps: scripts/less-compiler.in \

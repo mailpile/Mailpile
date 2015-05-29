@@ -1,6 +1,6 @@
 # Mailpile - a program for doing stuff with e-mail
 
-Copyright (C) 2011-2013, Bjarni Rúnar Einarsson & friends
+Copyright (C) 2011-2014, Bjarni R. Einarsson, Mailpile ehf and friends.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of either:
@@ -25,7 +25,7 @@ and the Apache License along with this program. If not, see
 ## Note to contributors ##
 
 This software will not be dual-licensed indefinitely. One of the
-licensed will be dropped before January 2014, although at this time
+licensed will be dropped before the end of 2014, although at this time
 which one has yet to be determined. This change will be made after
 discussions and consultation with the Mailpile Community.
 

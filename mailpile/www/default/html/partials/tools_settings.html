@@ -1,0 +1,10 @@
+{#
+<nav class="sub-navigation clearfix">
+  <ul class="left horizontal">
+    <li {% if "profiles" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="{{ U('/settings/profiles/) }}"><span class="navigation-icon icon-profiles"></span><span class="navigation-text">{{_("Profiles")}}</span></a></li>
+    <li {% if "routes" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="{{ U('/settings/routes/') }}"><span class="navigation-icon icon-routes"></span><span class="navigation-text">{{_("Routes")}}</span></a></li>
+    <li {% if "prefs" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="{{ U('/settings/prefs/') }}"><span class="navigation-icon icon-preferences"></span><span class="navigation-text">{{_("Preferences")}}</span></a></li>
+    <li {% if "sys" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="{{ U('/settings/sys/') }}"><span class="navigation-icon icon-settings"></span><span class="navigation-text">{{_("Advanced")}}</span></a></li>
+  </ul>
+</nav>
+#}
