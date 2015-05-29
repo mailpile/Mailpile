@@ -618,8 +618,8 @@ class MailpileCommand(Extension):
         Lightly inspired from https://github.com/django/django/blame/ebc773ada3e4f40cf5084268387b873d7fe22e8b/django/utils/html.py#L63
         """
         for bad, good in self._JS_ESCAPES:
-            value = self._safe(value).replace(bad, good)
-        return value
+            value = value.replace(bad, good)
+        return self._safe(value)
 
     @classmethod
     def _nice_text(self, text):
