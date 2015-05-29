@@ -66,14 +66,17 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     });
   });
   $(document).on('click', '#modal-save-search .ss-save', function() {
-    if ($('#modal-save-search #ss-comment').attr('value') != '') {
+    if ($('#modal-save-search #ss-comment').val() != '') {
       Mailpile.API.filter_post({
         _serialized: $('#modal-save-search').serialize()
       }, function(data) {
         window.location.href = ('{{ config.sys.http_path }}/in/saved-search-'
                                 + data['result']['id'] + '/');
       });
-    };
+    }
+    else {
+      alert('Please name your search!');
+    }
     return false;
   });
   function show_settings() {

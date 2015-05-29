@@ -213,12 +213,43 @@ Mailpile.API = {
     return true;
   },
 
-  with_template: function(name, action, error) {
+  jhtml_url: function(original_url) {
+    var new_url = original_url;
+    var html = new_url.indexOf('.html');
+    if (html != -1) {
+      new_url = (new_url.slice(0, html+1) + 'j' +
+                 new_url.slice(html+1));
+    }
+    else {
+      var qs = new_url.indexOf('?');
+      if (qs != -1) {
+        new_url = (new_url.slice(0, qs) + 'as.jhtml' +
+                   new_url.slice(qs));
+      }
+      else {
+        var anch = new_url.indexOf('#');
+        if (anch != -1) {
+          new_url = (new_url.slice(0, anch) + 'as.jhtml' +
+                     new_url.slice(anch));
+        }
+        else {
+          new_url += 'as.jhtml';
+        }
+      }
+    }
+    return new_url;
+  },
+
+  with_template: function(name, action, error, flags) {
+      var url = "{{ config.sys.http_path }}/jsapi/templates/" + name + ".html";
+      if (flags) {
+        url += '?ui_flags=' + flags.replace(' ', '+');
+      }
       $.ajax({
-        url      : "{{ config.sys.http_path }}/jsapi/templates/" + name + ".html",
-        type     : 'GET',
-        success  : function(data) { action(_.template(data)); },
-        error    : error
+        url: url,
+        type: 'GET',
+        success: function(data) { action(_.template(data)); },
+        error: error
       });
   },
 
