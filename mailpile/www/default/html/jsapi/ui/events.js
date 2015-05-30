@@ -40,6 +40,12 @@ $(document).on('click', '.hide-donate-page', function(e) {
   });
 });
 
+
+$(document).on('click', 'span.checkbox, div.checkbox', function(e) {
+  $(this).prev().trigger('click');
+});
+
+
 $(document).on('click', '.auto-modal', function(e) {
   var elem = $(this);
   var jhtml_url = Mailpile.API.jhtml_url(this.href);

@@ -26,12 +26,17 @@
   purpose.
 
 #}{% set rid = make_rid() %}
+<div class="content-normal" style="max-width: 42em">
+
+  <h1><span class="icon-user"></span> {{_("Create a new Account")}}</h1>
+
+  <p>[DEV: Work in progress]</p>
 
   <script>
     var _fpa = (function() {
       var pf = '#form-profile-add ';
       var rid = '{{ rid }}';
-      var old_pw = '';
+      var old = {password: '', username: ''};
       return {
         next: function(show) {
           $(pf + 'div.section').slideUp();
@@ -44,32 +49,64 @@
           return false;
         },
         select: function(sel, cls) {
+          var val = $(sel).val();
           $(pf + '.' + cls).hide();
-          $(pf + '.' + cls + '.' + $(sel).val()).show();
-        },
-        mark_copied: function(elem) {
-          var $elem = $(elem);
-          if ($elem.val() == old_pw) {
-            $elem.parent().find('.fpa-password-copied').show();
+          if (val) {
+            $(pf + '.' + cls + '.any').show();
+            $(pf + '.' + cls + '.' + val).show();
           }
           else {
-            $elem.parent().find('.fpa-password-copied').hide();
+            $(pf + '.' + cls + '.undefined').show();
           }
         },
-        copy_passwords: function() {
-          var pw = $(pf + '.fpa-basic-password').val();
-          var old_old_pw = old_pw;
-          old_pw = pw;
-          $(pf + '.fpa-password').each(function(i) {
+        mark_copied: function(elem, what) {
+          var $elem = $(elem);
+          if ($elem.val() == old[what]) {
+            $elem.parent().find('.fpa-' + what + '-copied').show();
+          }
+          else {
+            $elem.parent().find('.fpa-' + what + '-copied').hide();
+          }
+        },
+        copy_basic: function(what) {
+          var value = $(pf + '.fpa-basic-' + what).val();
+          var old_old = old[what];
+          old[what] = value;
+          $(pf + '.fpa-' + what).each(function(i) {
             var $t = $(this);
-            if (old_old_pw == $t.val() || '' == $t.val()) $t.val(pw);
-            _fpa.mark_copied(this);
+            if (old_old == $t.val() || '' == $t.val()) $t.val(value);
+            _fpa.mark_copied(this, what);
           });
+        },
+        email_changed: function() {
+          // If the e-mail in basics changes, try to select the matching
+          // PGP key, if there is one. This may override user selections,
+          // which might be lame but should rarely be an issue because of
+          // the "order of progression" of the form.
+          var email = $(pf + '.fpa-email').val();
+          var found = 0;
+          $(pf + '.fpa-pgp-key option').each(function(i) {
+            var uids = $(this).data('uids');
+            if (found == 0 && uids && uids.indexOf(" "+email+" ") != -1) {
+              $(this).prop('selected', true);
+              found = 1;
+            }
+            else {
+              $(this).prop('selected', false);
+            }
+            if (!found) {
+              $(pf + '.fpa-pgp-key-default').prop('selected', true);
+            }
+          });
+          _fpa.copy_basic('username');
         },
         basics_next: function(show1, show2) {
           var email = $(pf + '.fpa-email').val();
-          // FIXME: Basic validation please...
-          if ($(pf + '.fpa-autoconfig').is(':checked')) {
+          if (!email) {
+            // FIXME: Improve validation...
+            alert('You need at least an e-mail address to procoeed.');
+          }
+          else if ($(pf + '.fpa-autoconfig').is(':checked')) {
             $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
             $(pf + 'div.fpa-detection-in-progress').slideDown();
             $(pf + '.fpa-detection-progress').html('{{_("Detecting settings for: ")}}' + email);
@@ -84,10 +121,10 @@
               'timeout': 10,
               'email': email
             }, function(result) {
+              EventLog.unsubscribe(ev_source, watch_id);
               $(pf + 'div.fpa-detection-in-progress').slideUp();
               $(pf + 'div.fpa-network-settings').slideDown();
               _fpa.next("profile-add-security");
-              EventLog.unsubscribe(ev_source, watch_id);
             }, function(error) {
               EventLog.unsubscribe(ev_source, watch_id);
             });
@@ -100,8 +137,6 @@
       };
     })();
   </script>
-
-  <p>[DEV: Work in progress]</p>
 
   <form id="form-profile-add" class="standard"
         style="position: relative; max-width: 60em;">
@@ -124,12 +159,14 @@
       <div class="basics old">
         <div class="left" style="margin-right: 1em; width: 14em;">
           <label>{{_("E-mail")}}</label>
-          <input type="text" name="email" class='fpa-email' value="" placeholder="chelsea@manning.com">
+          <input type="text" name="email" class='fpa-email fpa-basic-username'
+                 placeholder="chelsea@manning.com"
+                 value="" onchange="javascript:_fpa.email_changed();">
         </div>
         <div class="left" style="margin-right: 0; width: 14em;">
           <label>{{_("Password")}}</label>
           <input type="password" class="fpa-basic-password" placeholder="sssh!"
-                 value="" onchange="javascript:_fpa.copy_passwords();">
+                 value="" onchange="javascript:_fpa.copy_basic('password');">
         </div>
       </div>
       <div class="basics new hide">
@@ -146,7 +183,9 @@
           {{_("Add custom signature")}} ...
         </a> &nbsp;&nbsp;
         <input type="checkbox" class="fpa-autoconfig" value="yes" checked>
-        {{ _("Detect settings") }} &nbsp;
+        <span class="checkbox">
+          {{ _("Detect settings") }}
+        </span> &nbsp;
         <button onclick='javascript:_fpa.basics_next();'
                 type="button">{{_("Next")}} ...</button>
       </div>
@@ -171,13 +210,13 @@
       </p>
       <div class="section profile-add-route hide" style="position: relative;">
         <select class="right" style="width: auto;"
-                onchange="javascript:_fpa.select(this, 'route-settings-{{rid}}');">
+                onchange="javascript:_fpa.select(this, 'route-settings');">
           <option value="smtp" selected>SMTP</option>
           <option value="smtpssl">SMTP/SSL</option>
           <option value="local">{{_("Local")}}</option>
           <option value="none">{{_("None")}}</option>
         </select>
-        <div class="route-settings-{{rid}} smtp smtpssl">
+        <div class="route-settings smtp smtpssl">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <label>{{_("Host name")}}</label>
             <input type="text" name="smtp-host" value="" placeholder="mail.server.com">
@@ -187,21 +226,28 @@
             <input type="text" name="smtp-port" value="" placeholder="25, 465 or 587">
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
+            <small class="right fpa-username-copied hide">({{ _("copied") }})</small>
             <label>{{_("Username")}}</label>
-            <input type="text" name="smtp-username" value="" placeholder="you123">
+            <input type="text" name="smtp-username" class="fpa-username"
+                   onchange="javascript:_fpa.mark_copied(this, 'username');"
+                   value="" placeholder="you123">
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
             <small class="right fpa-password-copied hide">({{ _("copied") }})</small>
             <label>{{_("Password")}}</label>
             <input type="password" name="smtp-password" class="fpa-password"
-                   onchange="javascript:_fpa.mark_copied(this);"
+                   onchange="javascript:_fpa.mark_copied(this, 'password');"
                    value="" placeholder="sssh!">
           </div>
         </div>
-        <div class="route-settings-{{rid}} local hide">
-          <i>Local settings FTW!</i>
+        <div class="route-settings local hide">
+          <div class="left" style="margin-right: 0; width: 29em;">
+            <label>{{_("Shell command")}}</label>
+            <input type="text" name="local-command" style="width: 100%;"
+                   value="" placeholder="- {{_('Leave blank to autodetect')}} -">
+          </div>
         </div>
-        <div class="route-settings-{{rid}} none text-center hide" style="width: 70%;">
+        <div class="route-settings none text-center hide" style="width: 70%;">
           <br><br><i>{{_("No outgoing mail for this account.")}}</i><br><br>
         </div>
         <br clear="both">
@@ -224,20 +270,89 @@
           <option value="imapssl">IMAP/SSL</option>
           <option value="pop3">POP3</option>
           <option value="pop3ssl">POP3/SSL</option>
-          <option value="local">{{_("Local")}}</option>
+          <option value="spool">{{_("Mail spool")}}</option>
+          <option value="local">{{_("Files")}}</option>
           <option value="none">{{_("None")}}</option>
         </select>
   
-        <div class="source-settings-{{rid}} imap imapssl text-center" style="width: 70%;">
-          <br><br><i>FIMXE: IMAP</i><br><br>
+        <div class="source-settings-{{rid}} imap imapssl pop3 pop3ssl">
+          <div class="left" style="margin-right: 1em; width: 14em;">
+            <label>{{_("Host name")}}</label>
+            <input type="text" name="source-{{rid}}-host" value="" placeholder="mail.server.com">
+          </div>
+          <div class="left" style="margin-right: 1em; width: 14em;">
+            <label>{{_("Port number")}}</label>
+            <input type="text" name="source-{{rid}}-port" value="" placeholder="110, 143, 993 or 995">
+          </div>
+          <div class="left" style="margin-right: 1em; width: 14em;">
+            <small class="right fpa-username-copied hide">({{ _("copied") }})</small>
+            <label>{{_("Username")}}</label>
+            <input type="text" name="source-{{rid}}-username" class="fpa-username"
+                   onchange="javascript:_fpa.mark_copied(this, 'username');"
+                   value="" placeholder="you123">
+          </div>
+          <div class="left" style="margin-right: 1em; width: 14em;">
+            <small class="right fpa-password-copied hide">({{ _("copied") }})</small>
+            <label>{{_("Password")}}</label>
+            <input type="password" name="source-{{rid}}-password" class="fpa-password"
+                   onchange="javascript:_fpa.mark_copied(this, 'password');"
+                   value="" placeholder="sssh!">
+          </div>
+          <div class="left" style="margin-right: 0; width: 29em;">
+            <input type="checkbox" name="source-{{rid}}-leave-on-server" value="yes" checked>
+            <span class="checkbox">
+              {{_("Leave mail on server")}}
+            </span><br>
+
+            <input type="checkbox" name="source-{{rid}}-index-all-mail" value="yes" checked>
+            <span class="checkbox">
+              {{_("Download all mail and add to search engine")}}
+            </span>
+
+{#- FIXME: This does not work yet
+            <span class="source-settings-{{rid}} imap">
+              <br>
+              <input type="checkbox" name="source-{{rid}}-force-starttls" value="yes" checked>
+              <span class="checkbox">
+                {{_("Require STARTTLS encryption")}}
+              </span>
+            </span>
+#}
+            <span class="source-settings-{{rid}} imap imapssl">
+              <br>
+              <input type="checkbox" name="source-{{rid}}-auto-tags" value="yes">
+              <span class="checkbox">
+                {{_("Create visible Mailpile tags for all folders")}}
+              </span>
+            </span>
+          </div>
         </div>
-  
-        <div class="source-settings-{{rid}} pop3 pop3ssl text-center hide" style="width: 70%;">
-          <br><br><i>FIMXE: POP3</i><br><br>
-        </div>
-  
-        <div class="source-settings-{{rid}} local text-center hide" style="width: 70%;">
-          <br><br><i>FIMXE: LOCAL</i><br><br>
+
+        <div class="source-settings-{{rid}} local spool hide">
+          <div class="source-settings-{{rid}} local left" style="margin-right: 0; width: 29em;">
+            <label>{{_("File or folder")}}</label>
+            <input type="text" name="source-{{rid}}-local" style="width: 100%"
+                   value="" placeholder="/home/user/Mail/">
+          </div>
+          <div class="source-settings-{{rid}} spool left" style="margin-right: 0; width: 29em;">
+            <p><i>
+              {{_("Receive mail from local Unix mail spool.")}}
+              {{_("Use this setting if you have a working mail server on this machine.")}}
+            </i></p>
+          </div>
+          <div class="left" style="margin-right: 0; width: 29em;">
+            <input type="checkbox" name="source-{{rid}}-copy-local" value="yes" checked>
+            <span class="checkbox">
+              {{_("Copy mail to Mailpile secure storage")}}
+            </span><br>
+            <input type="checkbox" name="source-{{rid}}-delete-local" value="yes">
+            <span class="checkbox">
+              <span class="source-settings-{{rid}} local">
+                {{_("Delete from source location")}}</span>
+              <span class="source-settings-{{rid}} spool">
+                {{_("Delete from Unix mail spool")}}</span>
+            </span>
+          </div>
         </div>
   
         <div class="source-settings-{{rid}} none text-center hide" style="width: 70%;">
@@ -259,7 +374,59 @@
       <span class="icon-checkmark right hide" style="padding: 5px; color: #5f5;"></span>
     </p>
     <div class="section profile-add-security hide" style="position: relative;">
-      <br clear="both">
+      <div class="left" style="margin-right: 0; width: 29em;">
+        <label>{{_("Encryption key")}}</label>
+        <select name="security-pgp-key" class='fpa-pgp-key' style="width: 100%"
+                onchange="javascript:_fpa.select(this, 'security-opt');">
+          <option value="!CREATE2048" class="fpa-pgp-key-default">{{_("Create a new 2048 bit RSA key")}}</option>
+        {% set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
+        {%- for fingerprint in pgp_keys -%}
+          {%- set key = pgp_keys[fingerprint] -%}
+          <option value="{{fingerprint}}" data-uids=" {% for uid in key.uids -%}
+              {{ uid.email}} {% endfor %} ">{{_("Use:")}}
+            {{key.creation_date}}/{{key.keytype_name}}{{key.keysize}}:
+            {{key.uid}}
+          </option>{% endfor %}
+          <option value="!CREATE4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
+          <option value="">{{_("Disable encryption for this account")}}</option>
+        </select>
+        <div class="security-opt any text-right" style="margin: -13px 0 13px 0;">
+          <a class="more-crypto-show" href="javascript:_fpa.more('more-crypto');">
+            {{_("Show all encryption settings")}}
+          </a>
+        </div>
+      </div>
+      <div class="security-opt any left" style="margin-right: 0; width: 29em;">
+        <input type="checkbox" name="security-always-sign" value="yes" checked>
+        <span class="checkbox">
+          {{_("Always digitally sign outgoing mail")}}
+        </span><br>
+
+        <input type="checkbox" name="security-attach-keys" value="yes" checked>
+        <span class="checkbox">
+          {{_("Automatically attach keys to outgoing mail")}}
+        </span><br>
+
+        <div class="more-crypto hide">
+          <input type="checkbox" name="security-always-encrypt" value="yes">
+          <span class="checkbox">
+            {{_("Always encrypt if possible")}}
+          </span><br>
+
+          <input type="checkbox" name="security-request-encryption" value="yes">
+          <span class="checkbox">
+            {{_("Advertise preference for encrypted mail")}}
+          </span>
+
+{# FIXME: This does not work yet...
+          <br>
+          <input type="checkbox" name="security-keyserver" value="yes">
+          <span class="checkbox">
+            {{_("Upload key to public directory (key server)")}}
+          </span>
+#}
+        </div>
+      </div>
     </div>
 
     <br clear="both">
@@ -268,6 +435,7 @@
     </button>
   </form>
 
+</div>
 {%- else %}
   {{ mailpile('http/redirect', U('/contacts/view/', result.contacts.0.email.0.email, '/')) }}
 {%- endif %}
