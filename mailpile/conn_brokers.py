@@ -176,7 +176,7 @@ class BaseConnectionBroker(Capability):
         self.supports = list(self.SUPPORTS)[:]
         self.master = master
         self._config = None
-        self._debug = master._debug if master else None
+        self._debug = master._debug if (master is not None) else None
 
     def configure(self):
         self.supports = list(self.SUPPORTS)[:]
@@ -347,8 +347,9 @@ class SocksConnBroker(TcpConnectionBroker):
             address = (str(address[0]), address[1])
             sock.connect(address)
         except socks.ProxyError:
-            self._debug(traceback.format_exc())
-            raise IOError('Proxy failed for %s' % address)
+            if self._debug is not None:
+                self._debug(traceback.format_exc())
+            raise IOError('Proxy failed for %s:%s' % address)
         return sock
 
 
