@@ -33,6 +33,8 @@ CONFIG_RULES = {
     'sys': p(_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
+        'http_host':     p(_('Listening host for web UI'),
+                           'hostname', 'localhost'),
         'http_port':     p(_('Listening port for web UI'), int,         33411),
         'http_path':     p(_('HTTP path of web UI'), 'webroot',            ''),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
@@ -43,8 +45,6 @@ CONFIG_RULES = {
                            str, 'pool.sks-keyservers.net'),
         'gpg_home':      p(_('Override the home directory of GnuPG'), 'dir',
                            None),
-        'http_host':     p(_('Listening host for web UI'),
-                           'hostname', 'localhost'),
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
         'mailindex_file': (_('Metadata index file'), 'file',               ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
@@ -59,6 +59,16 @@ CONFIG_RULES = {
         }],
         'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
         'login_banner':   [_('A custom banner for the login page'), str,   ''],
+        'proxy':          [_('Proxy settings'), False, {
+            'protocol':   (_('Proxy protocol'),
+                           ["tor", "socks5", "socks4", "http", "none"],
+                           'none'),
+            'fallback':   (_('Allow fallback to direct conns'), bool, False),
+            'username':   (_('User name'), str, ''),
+            'password':   (_('Password'), str, ''),
+            'host':       (_('Host'), str, ''),
+            'port':       (_('Port'), int, 8080)
+        }],
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),

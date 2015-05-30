@@ -1991,6 +1991,14 @@ class ConfigManager(ConfigDict):
             config.background.ui = BackgroundInteraction(config,
                                                          log_parent=session.ui)
 
+        # Tell conn broker that we exist
+        from mailpile.conn_brokers import Master as ConnBroker
+        ConnBroker.set_config(config)
+        if 'connbroker' in config.sys.debug:
+            ConnBroker.debug_callback = lambda msg: config.background.ui.debug(msg)
+        else:
+            ConnBroker.debug_callback = None
+
         def start_httpd(sspec=None):
             sspec = sspec or (config.sys.http_host, config.sys.http_port,
                               config.sys.http_path or '')

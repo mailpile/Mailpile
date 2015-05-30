@@ -6,6 +6,7 @@ import sys
 import time
 
 import mailpile.util
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.util import *
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -75,32 +76,11 @@ def SMTorP_HashCash(rcpt, msg, callback1k=None):
                                                 callback1k=cb))
 
 
-def _AddSocksHooks(cls, SSL=False):
-
-    class Socksified(cls):
-        def _get_socket(self, host, port, timeout):
-            new_socket = self.socket()
-            new_socket.connect((host, port))
-
-            if SSL and ssl is not None:
-                new_socket = ssl.wrap_socket(new_socket,
-                                             self.keyfile, self.certfile)
-                self.file = smtplib.SSLFakeFile(new_socket)
-
-            return new_socket
-
-        def connect(self, host='localhost', port=0, socket_cls=None):
-            self.socket = socket_cls or socket.socket
-            return cls.connect(self, host=host, port=port)
-
-    return Socksified
-
-
-class SMTP(_AddSocksHooks(smtplib.SMTP)):
+class SMTP(smtplib.SMTP):
     pass
 
 if ssl is not None:
-    class SMTP_SSL(_AddSocksHooks(smtplib.SMTP_SSL, SSL=True)):
+    class SMTP_SSL(smtplib.SMTP_SSL):
         pass
 else:
     SMTP_SSL = SMTP
@@ -262,11 +242,13 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             def sm_startup():
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
-                if proto == 'smtorp':
-                    server.connect(host, int(port),
-                                   socket_cls=session.config.get_tor_socket())
+                if smtp_ssl or sendmail[:7] in ('smtorp', 'smtptls'):
+                    conn_needs = [ConnBroker.OUTGOING_ENCRYPTED]
                 else:
+                    conn_needs = [ConnBroker.OUTGOING_SMTP]
+                with ConnBroker.context(need=conn_needs) as ctx:
                     server.connect(host, int(port))
+
                 if not smtp_ssl:
                     # We always try to enable TLS, even if the user just
                     # requested plain-text smtp.  But we only throw errors
@@ -276,6 +258,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     except:
                         if sendmail.startswith('smtptls'):
                             raise InsecureSmtpError()
+
                 if user and pwd:
                     try:
                         server.login(user.encode('utf-8'), pwd.encode('utf-8'))

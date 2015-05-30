@@ -35,6 +35,16 @@ import sys
 import threading
 import traceback
 
+# Import SOCKS proxy support...
+try:
+    import sockschain as socks
+except ImportError:
+    try:
+        import socks
+    except ImportError:
+        socks = None
+
+
 org_cconn = socket.create_connection
 org_sslwrap = ssl.wrap_socket
 
@@ -51,6 +61,7 @@ class Capability(object):
     OUTGOING_RAW = 'o:raw'      # Request this to avoid meddling brokers
     OUTGOING_ENCRYPTED = 'o:e'  # Request this if sending encrypted data
     OUTGOING_CLEARTEXT = 'o:c'  # Request this if sending clear-text data
+    OUTGOING_TRACKABLE = 'o:t'  # Reject this to require anonymity
     OUTGOING_SMTP = 'o:smtp'    # These inform brokers what protocol is being
     OUTGOING_IMAP = 'o:imap'    # .. used, to allow protocol-specific features
     OUTGOING_POP3 = 'o:pop3'    # .. such as enabling STARTTLS or upgrading
@@ -66,6 +77,18 @@ class Capability(object):
     INCOMING_POP3 = 26
     INCOMING_HTTP = 27
     INCOMING_HTTPS = 28
+
+    ALL_OUTGOING = set([OUTGOING_RAW, OUTGOING_ENCRYPTED, OUTGOING_CLEARTEXT,
+                        OUTGOING_TRACKABLE,
+                        OUTGOING_SMTP, OUTGOING_IMAP, OUTGOING_POP3,
+                        OUTGOING_HTTP, OUTGOING_HTTPS])
+
+    ALL_OUTGOING_ENCRYPTED = set([OUTGOING_RAW, OUTGOING_TRACKABLE,
+                                  OUTGOING_ENCRYPTED, OUTGOING_HTTPS])
+
+    ALL_INCOMING = set([INCOMING_RAW, INCOMING_LOCALNET, INCOMING_INTERNET,
+                        INCOMING_DARKNET, INCOMING_SMTP, INCOMING_IMAP,
+                        INCOMING_POP3, INCOMING_HTTP, INCOMING_HTTPS])
 
 
 class CapabilityFailure(IOError):
@@ -150,13 +173,28 @@ class BaseConnectionBroker(Capability):
     SUPPORTS = []
 
     def __init__(self, master=None):
-        self.supports = self.SUPPORTS[:]
+        self.supports = list(self.SUPPORTS)[:]
         self.master = master
-        self._debug = None
+        self._config = None
+        self._debug = master._debug if master else None
 
-    def _raise_or_none(self, exc):
+    def configure(self):
+        self.supports = list(self.SUPPORTS)[:]
+
+    def set_config(self, config):
+        self._config = config
+        self.configure()
+
+    def config(self):
+        if self._config is not None:
+            return self._config
+        if self.master is not None:
+            return self.master.config()
+        return None
+
+    def _raise_or_none(self, exc, why):
         if exc is not None:
-            raise exc()
+            raise exc(why)
         return None
 
     def _check(self, need, reject, _raise=CapabilityFailure):
@@ -164,12 +202,12 @@ class BaseConnectionBroker(Capability):
             if n not in self.supports:
                 if self._debug is not None:
                     self._debug('%s: lacking capabilty %s' % (self, n))
-                return self._raise_or_none(_raise)
+                return self._raise_or_none(_raise, 'Lacking %s' % n)
         for n in reject or []:
             if n in self.supports:
                 if self._debug is not None:
                     self._debug('%s: unwanted capabilty %s' % (self, n))
-                return self._raise_or_none(_raise)
+                return self._raise_or_none(_raise, 'Unwanted %s' % n)
         if self._debug is not None:
             self._debug('%s: checks passed!' % (self, ))
         return self
@@ -225,34 +263,129 @@ class TcpConnectionBroker(BaseConnectionBroker):
     The only clever thing this class does, is to avoid trying to connect
     to .onion addresses, preventing that from leaking over DNS.
     """
-    SUPPORTS = [Capability.OUTGOING_RAW,
-                Capability.OUTGOING_ENCRYPTED,
-                Capability.OUTGOING_CLEARTEXT, # In strict mode, omit?
-                Capability.OUTGOING_SMTP,
-                Capability.OUTGOING_IMAP,
-                Capability.OUTGOING_POP3,
-                Capability.OUTGOING_HTTP,
-                Capability.OUTGOING_HTTPS,
-                Capability.INCOMING_RAW,
-#               Capability.INCOMING_INTERNET,  # Only if we have a public IP!
-                Capability.INCOMING_SMTP,
-                Capability.INCOMING_IMAP,
-                Capability.INCOMING_POP3,
-                Capability.INCOMING_HTTP,
-                Capability.INCOMING_HTTPS,
-                Capability.INCOMING_LOCALNET]
+    SUPPORTS = (
+        # Normal TCP/IP is not anonymous, and we do not have incoming
+        # capability unless we have a public IP.
+        (Capability.ALL_OUTGOING) |
+        (Capability.ALL_INCOMING - set([Capability.INCOMING_INTERNET]))
+    )
+
+    DEBUG_FMT = '%s: Raw TCP conn to: %s'
+
+    def configure(self):
+        BaseConnectionBroker.configure(self)
+        # FIXME: If our config indicates we have a public IP, add the
+        #        INCOMING_INTERNET capability.
+        # FIXME: If our coonfig indicates that the user does not care
+        #        about anonymity at all, remove OUTGOING_TRACKABLE.
+        if (self.config().sys.proxy.protocol != 'none' and
+                not self.config().sys.proxy.fallback):
+            self.supports = []
 
     def _describe(self, context, conn):
         context.encryption = None
         context.is_internet = True
         return conn
 
-    def _create_connection(self, context, address, *args, **kwargs):
-        if self._debug is not None:
-            self._debug('%s: Raw TCP conn to: %s' % (self, address))
+    def _avoid(self, address):
         if address[0].endswith('.onion'):
             raise CapabilityFailure('Cannot connect to .onion addresses')
+
+    def _conn(self, address, *args, **kwargs):
         return org_cconn(address, *args, **kwargs)
+
+    def _create_connection(self, context, address, *args, **kwargs):
+        self._avoid(address)
+        if self._debug is not None:
+            self._debug(self.DEBUG_FMT % (self, address))
+        return self._conn(address, *args, **kwargs)
+
+
+class SocksConnBroker(TcpConnectionBroker):
+    """
+    This broker offers the same services as the TcpConnBroker, but over a
+    SOCKS connection.
+    """
+    SUPPORTS = []
+    CONFIGURED = Capability.ALL_OUTGOING
+    DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
+    PROXY_TYPES = ('socks5', 'http', 'socks4')
+
+    def __init__(self, *args, **kwargs):
+        TcpConnectionBroker.__init__(self, *args, **kwargs)
+        self.proxy_config = None
+        self.typemap = {}
+
+    def configure(self):
+        BaseConnectionBroker.configure(self)
+        if self.config().sys.proxy.protocol in self.PROXY_TYPES:
+            self.proxy_config = self.config().sys.proxy
+            self.supports = list(self.CONFIGURED)[:]
+            self.typemap = {
+                'socks5': socks.PROXY_TYPE_SOCKS5,
+                'socks4': socks.PROXY_TYPE_SOCKS4,
+                'http': socks.PROXY_TYPE_HTTP,
+                'tor': socks.PROXY_TYPE_SOCKS5  # For TorConnBrokerk
+            }
+        else:
+            self.proxy_config = None
+            self.supports = []
+
+    def _conn(self, address, timeout=None, source_address=None):
+        sock = socks.socksocket()
+        sock.setproxy(proxytype=self.typemap[self.proxy_config.protocol],
+                      addr=self.proxy_config.host,
+                      port=self.proxy_config.port,
+                      rdns=True,
+                      username=self.proxy_config.username or None,
+                      password=self.proxy_config.password or None)
+        if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+            sock.settimeout(float(timeout))
+        if source_address:
+            raise IOError('Cannot bind source address')
+        try:
+            address = (str(address[0]), address[1])
+            sock.connect(address)
+        except socks.ProxyError:
+            self._debug(traceback.format_exc())
+            raise IOError('Proxy failed for %s' % address)
+        return sock
+
+
+class TorConnBroker(SocksConnBroker):
+    """
+    This broker offers the same services as the TcpConnBroker, but over Tor.
+
+    This removes the "trackable" capability, so requests that reject it can
+    find their way here safely...
+    """
+    SUPPORTS = []
+    CONFIGURED = (Capability.ALL_OUTGOING_ENCRYPTED
+                  - set([Capability.OUTGOING_TRACKABLE]))
+    REJECTS = None
+    DEBUG_FMT = '%s: Raw Tor conn to: %s'
+    PROXY_TYPES = ('tor', )
+
+    def _avoid(self, address):
+        pass
+
+
+class TorOnionBroker(SocksConnBroker):
+    """
+    This broker offers the same services as the TcpConnBroker, but over Tor.
+    This removes the "trackable" capability, so requests that reject it can
+    find their way here safely...
+    """
+    SUPPORTS = []
+    CONFIGURED = (Capability.ALL_OUTGOING
+                  - set([Capability.OUTGOING_TRACKABLE]))
+    REJECTS = None
+    DEBUG_FMT = '%s: Raw Tor conn to: %s'
+    PROXY_TYPES = ('tor', )
+
+    def _avoid(self, address):
+        if not address[0].endswith('.onion'):
+            raise CapabilityFailure('Can only connect to .onion addresses')
 
 
 class BaseConnectionBrokerProxy(TcpConnectionBroker):
@@ -300,6 +433,8 @@ class AutoHttpsConnBroker(BaseConnectionBrokerProxy):
         return conn
 
     def _proxy_address(self, address):
+        if address[0].endswith('.onion'):
+            raise CapabilityFailure('I do not like .onion addresses')
         if int(address[1]) == 80:
             return (address[0], 443)
         return address
@@ -332,6 +467,16 @@ class MasterBroker(BaseConnectionBroker):
     def __init__(self, *args, **kwargs):
         BaseConnectionBroker.__init__(self, *args, **kwargs)
         self.brokers = []
+        self._debug = self._debugger
+        self.debug_callback = None
+
+    def configure(self):
+        for prio, cb in self.brokers:
+            cb.configure()
+
+    def _debugger(self, *args, **kwargs):
+        if self.debug_callback is not None:
+            self.debug_callback(*args, **kwargs)
 
     def register_broker(self, priority, cb):
         """
@@ -391,6 +536,11 @@ if __name__ != "__main__":
     register(9500, AutoSmtpStartTLSConnBroker)
     register(9500, AutoImapStartTLSConnBroker)
     register(9500, AutoPop3StartTLSConnBroker)
+
+    if socks is not None:
+        register(1500, SocksConnBroker)
+        register(3500, TorConnBroker)
+        register(3500, TorOnionBroker)
 
     def SslWrapOnlyOnce(sock, *args, **kwargs):
         """

@@ -478,12 +478,16 @@ class SetupGetEmailSettings(TestableWebbable):
             self.event.message = message
             self._update_event_state(self.event.RUNNING, log=True)
         else:
-            session.ui.mark(message)
+            self.session.ui.mark(message)
  
     def _urlget(self, url):
-        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]) as context:
+        if url.lower().startswith('https'):
+            conn_needs = [ConnBroker.OUTGOING_HTTPS]
+        else:
+            conn_needs = [ConnBroker.OUTGOING_HTTP]
+        with ConnBroker.context(need=conn_needs) as context:
             self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url, data=None, timeout=3).read()
+            return urlopen(url, data=None, timeout=10).read()
 
     def _username(self, val, email):
         lpart = email.split('@')[0]
