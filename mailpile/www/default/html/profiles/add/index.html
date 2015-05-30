@@ -104,12 +104,12 @@
           var email = $(pf + '.fpa-email').val();
           if (!email) {
             // FIXME: Improve validation...
-            alert('You need at least an e-mail address to procoeed.');
+            alert('{{_("You need at least an e-mail address to proceed.")|escapejs}}');
           }
           else if ($(pf + '.fpa-autoconfig').is(':checked')) {
             $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
             $(pf + 'div.fpa-detection-in-progress').slideDown();
-            $(pf + '.fpa-detection-progress').html('{{_("Detecting settings for: ")}}' + email);
+            $(pf + '.fpa-detection-progress').html('{{_("Detecting settings for: ")|escapejs}}' + email);
             var ev_source = '.*.SetupGetEmailSettings';
             var watch_id = EventLog.subscribe(ev_source, function(ev) {
               if (ev.private_data['track-id'] == rid) {
@@ -124,6 +124,7 @@
               EventLog.unsubscribe(ev_source, watch_id);
               $(pf + 'div.fpa-detection-in-progress').slideUp();
               $(pf + 'div.fpa-network-settings').slideDown();
+              $('.edit-provider-settings').hide();
               var nxt = "profile-add-basics";
               var result = data.result[email];
               if (result) {
@@ -180,9 +181,6 @@
             }
             next = 'fpa-warning';
           }
-          else {
-            $('.edit-provider-settings').hide();
-          }
           return next;
         }
       };
@@ -201,10 +199,10 @@
     <div class="section profile-add-basics" style="position: relative;">
       <select class="right" style="width: auto;"
               onchange="javascript:_fpa.select(this, 'basics');">
-        <option value="old" selected>{{_("Existing")}}</option>
-        <option value="new">{{_("Sign up")}}</option>
+        <option value="old" selected>{{_("Existing Account")}}</option>
+        <option value="new">{{_("New Address")}}</option>
       </select>
-      <div style="padding-right: 0em; width: 29em;">
+      <div style="padding-right: 0em; width: 22em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%" value="" placeholder="Chelsea Manning">
       </div>
@@ -239,7 +237,7 @@
           {{ _("Detect settings") }}
         </span> &nbsp;
         <button onclick='javascript:_fpa.basics_next();'
-                type="button">{{_("Next")}} ...</button>
+                class="button-info" type="button">{{_("Next")}} ...</button>
       </div>
       <br clear="both">
     </div>
@@ -307,7 +305,7 @@
         <br clear="both">
         <div style="position: absolute; right: 0; bottom: 1.5em;">
           <button onclick='javascript:_fpa.next("profile-add-source");'
-                  type="button">{{_("Next")}} ...</button>
+                  class="button-info" type="button">{{_("Next")}} ...</button>
         </div>
         <br clear="both">
       </div>
@@ -381,10 +379,11 @@
                 {{_("Create visible Mailpile tags for all folders")}}
               </span>
             </span>
-            <a target=_blank class='edit-provider-settings hide' href="">
-              <br><br>
-              {{_("Edit mail provider settings")}} ...
-            </a>
+            <div class='edit-provider-settings hide'><br>
+              <a target=_blank class='edit-provider-settings button-secondary'>
+                <span class="icon-settings"></span> {{_("Enable IMAP")}}
+              </a>
+            </div>
           </div>
         </div>
 
@@ -422,7 +421,7 @@
         <br clear="both">
         <div style="position: absolute; right: 0; bottom: 1.5em;">
           <button onclick='javascript:_fpa.next("profile-add-security");'
-                  type="button">{{_("Next")}} ...</button>
+                  class="button-info" type="button">{{_("Next")}} ...</button>
         </div>
         <br clear="both">
       </div>
@@ -430,22 +429,23 @@
 
     <div class='section fpa-warning hide' style='position: relative'>
       <p class="message paragraph-alert">
-        <span class="icon-warning"></span> <b>{{_("Important")}}!</b>
+        <span class="icon-settings"></span> <b>{{_("Important")}}!</b>
         <span class="description" href=""></span>
       </p>
-      <div style='width: 30em;'>
-        <p>
-          {{_("Mailpile may not be able to access your mail unless you log on to your account and enable IMAP and/or POP3.")}}
-          {{_("Without this, some providers will even mistake Mailpile for an intruder!")}}
-        </p>
-        <ul style="list-style: disc; margin-left: 2em;" class="docs"></ul>
-        <p><a target=_blank class='edit-provider-settings' href="">
-          {{_("Edit mail provider settings")}} ...
-        </a></p>
-      </div>
-      <div style="position: absolute; right: 0; bottom: 0;">
+      <p>
+        {{_("Mailpile may not be able to access your mail unless you log on to your account and enable IMAP and/or POP3.")}}
+        {{_("Without this, some providers will even mistake Mailpile for an intruder!")}}
+      </p>
+      <ul style="list-style: disc; margin-left: 2em;" class="docs"></ul>
+      <p>
+        <a target=_blank class='edit-provider-settings button-secondary right'>
+          <span class="icon-settings"></span> {{_("Enable IMAP")}}
+        </a>
+        <br clear="both">
+      </p>
+      <div style="position: absolute; left: 0; bottom: 0;">
         <button onclick='javascript:_fpa.next("profile-add-security");'
-                type="button">{{_("Next")}} ...</button>
+                class="button-info" type="button">{{_("Got it")}} ...</button>
       </div>
     </div>
 
