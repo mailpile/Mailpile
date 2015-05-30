@@ -100,7 +100,7 @@
           });
           _fpa.copy_basic('username');
         },
-        basics_next: function(show1, show2) {
+        basics_next: function() {
           var email = $(pf + '.fpa-email').val();
           if (!email) {
             // FIXME: Improve validation...
@@ -120,11 +120,16 @@
               'track-id': rid,
               'timeout': 10,
               'email': email
-            }, function(result) {
+            }, function(data) {
               EventLog.unsubscribe(ev_source, watch_id);
               $(pf + 'div.fpa-detection-in-progress').slideUp();
               $(pf + 'div.fpa-network-settings').slideDown();
-              _fpa.next("profile-add-security");
+              var nxt = "profile-add-basics";
+              var result = data.result[email];
+              if (result) {
+                nxt = _fpa.copy_email_settings(result) || nxt;
+              }
+              _fpa.next(nxt);
             }, function(error) {
               EventLog.unsubscribe(ev_source, watch_id);
             });
@@ -133,6 +138,52 @@
           else {
             return _fpa.next("profile-add-route");
           }
+        },
+        copy_email_settings: function(result) {
+          var next = 0;
+          if (result.routes && result.routes.length > 0) {
+            var found = result.routes[0];
+            $("input[name='smtp-host']").val(found.host);
+            $("input[name='smtp-port']").val(found.port);
+            $("input[name='smtp-username']").val(found.username);
+            var $s = $("select[name='route-protocol']");
+            $s.find('option').prop('selected', false);
+            $s.find("option[value='" + found.protocol + "']").prop('selected', true);
+            _fpa.select($s, 'route-settings');
+            next = 'profile-add-source';
+          }
+          if (result.sources && result.sources.length > 0) {
+            var found = result.sources[0];
+            $("input[name='source-{{rid}}-host']").val(found.host);
+            $("input[name='source-{{rid}}-port']").val(found.port);
+            $("input[name='source-{{rid}}-username']").val(found.username);
+            var $s = $("select[name='source-{{rid}}-protocol']");
+            $s.find("option").prop('selected', false);
+            $s.find("option[value='" + found.protocol + "']").prop('selected', true);
+            _fpa.select($s, 'source-settings-{{rid}}');
+            next = 'profile-add-security';
+          }
+          if (result.enable) {
+            $('.edit-provider-settings').attr('href', result.enable[0].url).show();
+            $('.fpa-warning .description').html(result.enable[0].description);
+            $('.fpa-warning ul.docs').html(' ');
+            if (result.docs) {
+              for (var i = 0; i < result.docs.length; i++) {
+                 var doc = result.docs[i];
+                 if (doc.description.indexOf('TB') == -1 &&
+                     doc.description.indexOf('Thunder') == -1) {
+                   $('.fpa-warning ul.docs').append($(
+                     '<li><a target=_blank href="' + doc.url + '">' + doc.description + '</a></li>'
+                   ));
+                 }
+              }
+            }
+            next = 'fpa-warning';
+          }
+          else {
+            $('.edit-provider-settings').hide();
+          }
+          return next;
         }
       };
     })();
@@ -141,6 +192,7 @@
   <form id="form-profile-add" class="standard"
         style="position: relative; max-width: 60em;">
     <input type="hidden" name="csrf" value="">
+
     <p class="message paragraph-important"
        onclick='javascript:_fpa.next("profile-add-basics");'>
       <span class="icon-user"></span> {{_("Basic Details")}}
@@ -209,22 +261,24 @@
         <span class="icon-checkmark right hide" style="padding: 5px; color: #5f5;"></span>
       </p>
       <div class="section profile-add-route hide" style="position: relative;">
-        <select class="right" style="width: auto;"
+        <select class="right" name="route-protocol" style="width: auto;"
                 onchange="javascript:_fpa.select(this, 'route-settings');">
           <option value="smtp" selected>SMTP</option>
           <option value="smtpssl">SMTP/SSL</option>
+          <option value="smtptls">SMTP/STARTTLS</option>
           <option value="local">{{_("Local")}}</option>
           <option value="none">{{_("None")}}</option>
         </select>
-        <div class="route-settings smtp smtpssl">
+        <div class="route-settings smtp smtpssl smtptls">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <label>{{_("Host name")}}</label>
             <input type="text" name="smtp-host" value="" placeholder="mail.server.com">
           </div>
-          <div class="left" style="margin-right: 1em; width: 14em;">
+          <div class="left" style="margin-right: 0; width: 10em;">
             <label>{{_("Port number")}}</label>
             <input type="text" name="smtp-port" value="" placeholder="25, 465 or 587">
           </div>
+          <br clear="both">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <small class="right fpa-username-copied hide">({{ _("copied") }})</small>
             <label>{{_("Username")}}</label>
@@ -264,8 +318,9 @@
         <span class="icon-checkmark right hide" style="padding: 5px; color: #5f5;"></span>
       </p>
       <div class="section profile-add-source hide" style="position: relative;">
-        <select class="right" name="source-type" style="width: auto;"
-                onchange="javascript:_fpa.select(this, 'source-settings-{{rid}}');">
+        <select class="right" style="width: auto;"
+                onchange="javascript:_fpa.select(this, 'source-settings-{{rid}}');"
+                name="source-{{rid}}-protocol">
           <option value="imap" selected>IMAP</option>
           <option value="imapssl">IMAP/SSL</option>
           <option value="pop3">POP3</option>
@@ -280,10 +335,11 @@
             <label>{{_("Host name")}}</label>
             <input type="text" name="source-{{rid}}-host" value="" placeholder="mail.server.com">
           </div>
-          <div class="left" style="margin-right: 1em; width: 14em;">
+          <div class="left" style="margin-right: 0; width: 13em;">
             <label>{{_("Port number")}}</label>
             <input type="text" name="source-{{rid}}-port" value="" placeholder="110, 143, 993 or 995">
           </div>
+          <br clear="both">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <small class="right fpa-username-copied hide">({{ _("copied") }})</small>
             <label>{{_("Username")}}</label>
@@ -325,6 +381,10 @@
                 {{_("Create visible Mailpile tags for all folders")}}
               </span>
             </span>
+            <a target=_blank class='edit-provider-settings hide' href="">
+              <br><br>
+              {{_("Edit mail provider settings")}} ...
+            </a>
           </div>
         </div>
 
@@ -368,6 +428,27 @@
       </div>
     </div>
 
+    <div class='section fpa-warning hide' style='position: relative'>
+      <p class="message paragraph-alert">
+        <span class="icon-warning"></span> <b>{{_("Important")}}!</b>
+        <span class="description" href=""></span>
+      </p>
+      <div style='width: 30em;'>
+        <p>
+          {{_("Mailpile may not be able to access your mail unless you log on to your account and enable IMAP and/or POP3.")}}
+          {{_("Without this, some providers will even mistake Mailpile for an intruder!")}}
+        </p>
+        <ul style="list-style: disc; margin-left: 2em;" class="docs"></ul>
+        <p><a target=_blank class='edit-provider-settings' href="">
+          {{_("Edit mail provider settings")}} ...
+        </a></p>
+      </div>
+      <div style="position: absolute; right: 0; bottom: 0;">
+        <button onclick='javascript:_fpa.next("profile-add-security");'
+                type="button">{{_("Next")}} ...</button>
+      </div>
+    </div>
+
     <p class="message paragraph-important"
        onclick='javascript:_fpa.next("profile-add-security");'>
       <span class="icon-lock-closed"></span> {{_("Security and Privacy")}}
@@ -376,8 +457,9 @@
     <div class="section profile-add-security hide" style="position: relative;">
       <div class="left" style="margin-right: 0; width: 29em;">
         <label>{{_("Encryption key")}}</label>
-        <select name="security-pgp-key" class='fpa-pgp-key' style="width: 100%"
-                onchange="javascript:_fpa.select(this, 'security-opt');">
+        <select class='fpa-pgp-key' style="width: 100%"
+                onchange="javascript:_fpa.select(this, 'security-opt');"
+                name="security-pgp-key">
           <option value="!CREATE2048" class="fpa-pgp-key-default">{{_("Create a new 2048 bit RSA key")}}</option>
         {% set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
         {%- for fingerprint in pgp_keys -%}
