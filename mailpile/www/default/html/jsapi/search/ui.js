@@ -44,6 +44,7 @@ Mailpile.pile_action_unselect = function(item) {
 
     // Remove From Data Model
     Mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
+    Mailpile.bulk_cache_remove('messages_cache', '!all');
 
     // Remove Tags
     var metadata = _.findWhere(Mailpile.instance.metadata, { mid: item.attr('data-mid') });
@@ -113,15 +114,17 @@ Mailpile.render_modal_tags = function() {
         /// Show tags in selected messages
         var selected_tids = {};
         _.each(Mailpile.messages_cache, function(mid, key) {
-          var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
-          if (metadata && metadata.tag_tids) {
-            _.each(metadata.tag_tids, function(tid, key) {
-              if (selected_tids[tid] === undefined) {
-                selected_tids[tid] = 1;
-              } else {
-                selected_tids[tid]++;
-              }
-            });
+          if (mid != '!all') {
+            var metadata = _.findWhere(Mailpile.instance.metadata, { mid: mid });
+            if (metadata && metadata.tag_tids) {
+              _.each(metadata.tag_tids, function(tid, key) {
+                if (selected_tids[tid] === undefined) {
+                  selected_tids[tid] = 1;
+                } else {
+                  selected_tids[tid]++;
+                }
+              });
+            }
           }
         });
 
@@ -163,13 +166,14 @@ Mailpile.UI.Search.Draggable = function(element) {
     revert: false,
     opacity: 1,
     helper: function(event) {
-      // FIXME: the word 'message' needs to updated as per Issue #666 mwhuahahaha
-      if (Mailpile.messages_cache.length == 0) {
-        drag_count = '1 message</div>';
+      if (Mailpile.messages_cache.length < 2) {
+        // Note: Dragging w/o selecting first may mean the length is zero
+        drag_count = '{{_("1 message")|escapejs}}';
       } else {
-        drag_count = Mailpile.messages_cache.length + ' messages';
+        human_count = Mailpile.bulk_cache_human_length('messages_cache');
+        drag_count = human_count + ' {{_("messages")|escapejs}}';
       }
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving ' + drag_count + '</div>');
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> {{_("Moving")|escapejs}} ' + drag_count + '</div>');
     },
     start: function(event, ui) {
   
@@ -202,7 +206,8 @@ Mailpile.UI.Search.Dropable = function(element, accept) {
       Mailpile.bulk_cache_add('messages_cache', $(event.target).data('mid'));
 
       // Save Update
-      Mailpile.API.tag_post({ add: ui.draggable.data('tid'), mid: Mailpile.messages_cache }, function() {
+      Mailpile.API.tag_post({ add: ui.draggable.data('tid'),
+                              mid: Mailpile.messages_cache }, function() {
 
         var tag = _.findWhere(Mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
         var hex = Mailpile.theme.colors[tag.label_color];
@@ -211,8 +216,10 @@ Mailpile.UI.Search.Dropable = function(element, accept) {
         // Update Multiple Selected Messages
         if (Mailpile.messages_cache.length > 0) {
           $.each(Mailpile.messages_cache, function(key, mid) {
-            updated.push(mid);
-            $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + hex + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
+            if (mid != '!all') {
+              updated.push(mid);
+              $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + hex + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
+            }
           });
         }
       });

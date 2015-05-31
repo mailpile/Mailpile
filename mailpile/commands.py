@@ -378,14 +378,14 @@ class Command(object):
                     msg_ids |= set(self.session.results[b:b + c])
                 else:
                     self.session.ui.warning(_('No results to choose from!'))
-            elif what.lower() == 'all':
+            elif what.lower() in ('all', '!all', '=!all'):
                 if self.session.results:
                     msg_ids |= set(self.session.results)
                 else:
                     self.session.ui.warning(_('No results to choose from!'))
             elif what.startswith('='):
                 try:
-                    msg_id = int(what[1:], 36)
+                    msg_id = int(what.replace('=', ''), 36)
                     if msg_id >= 0 and msg_id < len(self._idx().INDEX):
                         msg_ids.add(msg_id)
                     else:

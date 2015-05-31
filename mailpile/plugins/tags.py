@@ -277,7 +277,7 @@ class Tag(TagCommand):
                          }[self.data.get('conversations',
                                          ['auto'])[0].lower()]
         if 'mid' in self.data:
-            msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
+            words = ['=%s' % m for m in self.data['mid']]
         else:
             while words and words[0][:1] in ('-', '+'):
                 op = words.pop(0)
@@ -285,7 +285,7 @@ class Tag(TagCommand):
                     conversations = True if (op[:3] == '--c') else False
                 else:
                     ops.append(op)
-            msg_ids = self._choose_messages(words)
+        msg_ids = self._choose_messages(words)
         return ops, msg_ids, conversations
 
     def _do_tagging(self, ops, msg_ids, conversations, save=True, auto=False):

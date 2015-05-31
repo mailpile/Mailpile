@@ -1,24 +1,60 @@
 Mailpile.bulk_actions_update_ui = function() {
-  if (Mailpile.messages_cache.length === 1) {
-    var message = '<span id="bulk-actions-selected-count">1</span> ' + $('#bulk-actions-message').data('bulk_selected');
+  if (Mailpile.messages_cache.length > 0) {
+    var message = ('<span id="bulk-actions-selected-count">' +
+                     Mailpile.bulk_cache_human_length('messages_cache') +
+                   '</span> ');
+    if (_.indexOf(Mailpile.messages_cache, '!all') > -1) {
+      message = ('<a onclick="javascript:Mailpile.unselect_all_matches();">' +
+                   '<span class="icon-new"></span> ' +
+                   $('#bulk-actions-message').data('unselect_all') +
+                 '</a>');
+    }
+    else if ($("#pile-select-all-action").attr('checked')) {
+      // This extra check is necessary, because some actions don't
+      // untick the select-all box.
+      var checkboxes = $('#pile-results input[type=checkbox]');
+      if (Mailpile.messages_cache.length == checkboxes.length) {
+        message = ('<a onclick="javascript:Mailpile.select_all_matches();">' +
+                     message + ' ' +
+                     $('#bulk-actions-message').data('select_all') +
+                   '</a>');
+      }
+      else {
+        message += $('#bulk-actions-message').data('bulk_selected');
+      }
+    }
+    else {
+      message += $('#bulk-actions-message').data('bulk_selected');
+    }
     $('#bulk-actions-message').html(message);
     Mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
   }
-  else if (Mailpile.messages_cache.length < 1) { 
+  else {
     var message = $('#bulk-actions-message').data('bulk_selected_none');
     $('#bulk-actions-message').html(message);
     Mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
-	}
-	else {
-	  $('#bulk-actions-selected-count').html(Mailpile.messages_cache.length);
   }
+};
+
+
+Mailpile.select_all_matches = function() {
+  Mailpile.bulk_cache_add('messages_cache', '!all');
+  Mailpile.bulk_actions_update_ui();
+  return false;
+};
+
+
+Mailpile.unselect_all_matches = function() {
+  Mailpile.bulk_cache_remove('messages_cache', '!all');
+  Mailpile.bulk_actions_update_ui();
+  return false;
 };
 
 
 Mailpile.bulk_action_read = function() {
   Mailpile.API.tag_post({ del: 'new', mid: Mailpile.messages_cache }, function(result) {
     $.each(Mailpile.messages_cache, function(key, mid) {
-      $('#pile-message-' + mid).removeClass('in_new');
+      if (mid != '!all') $('#pile-message-' + mid).removeClass('in_new');
     });
   });
 };
@@ -27,7 +63,7 @@ Mailpile.bulk_action_read = function() {
 Mailpile.bulk_action_unread = function() {
   Mailpile.API.tag_post({ add: 'new', mid: Mailpile.messages_cache }, function(result) {
     $.each(Mailpile.messages_cache, function(key, mid) {
-      $('#pile-message-' + mid).addClass('in_new');
+      if (mid != '!all') $('#pile-message-' + mid).addClass('in_new');
     });
   });
 };
@@ -37,7 +73,7 @@ Mailpile.bulk_action_select_target = function() {
   var target = this.search_target;
   var mid = $('#pile-results tr').eq(target).data('mid');
   Mailpile.bulk_cache_add('messages_cache', mid);
-  $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').prop('checked',true);
+  $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').prop('checked', true);
   this.bulk_actions_update_ui();
   return true;
 };
@@ -79,10 +115,11 @@ Mailpile.bulk_action_toggle_target = function() {
 
 Mailpile.bulk_action_select_all = function() {
   var checkboxes = $('#pile-results input[type=checkbox]');
-  $.each(checkboxes, function() {      
+  $.each(checkboxes, function() {
     Mailpile.pile_action_select($(this).parent().parent());
   });
   $("#pile-select-all-action").attr('checked','checked');
+  Mailpile.bulk_actions_update_ui();
 };
 
 
@@ -92,6 +129,8 @@ Mailpile.bulk_action_select_none = function() {
     Mailpile.pile_action_unselect($(this).parent().parent());
   });
   $("#pile-select-all-action").removeAttr('checked');
+  Mailpile.bulk_cache_remove('messages_cache', '!all');
+  Mailpile.bulk_actions_update_ui();
 };
 
 
@@ -108,7 +147,9 @@ Mailpile.bulk_action_select_invert = function() {
     $("#pile-select-all-action").attr('checked','checked');
   } else if (this['messages_cache'].length == 0) {
     $("#pile-select-all-action").removeAttr('checked');
+    Mailpile.bulk_cache_remove('messages_cache', '!all');
   }
+  Mailpile.bulk_actions_update_ui();
 };
 
 

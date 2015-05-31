@@ -82,7 +82,9 @@ function download() {
 // Display the datadig widget!
 $(document).on('click', '.bulk-action-datadig', function() {
   Mailpile.API.with_template('datadig-modal', function(modal) {
-    mf = $('#modal-full').html(modal({}));
+    mf = $('#modal-full').html(modal({
+      context: $('#search-query').data('context')
+    }));
 
     // Extract our data-term template
     column_html = mf.find('.datadig-data-term').html();
