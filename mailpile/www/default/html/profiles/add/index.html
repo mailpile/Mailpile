@@ -78,6 +78,13 @@
             _fpa.mark_copied(this, what);
           });
         },
+        exclude: function(elem, s1, s2, s3) {
+          if ($(elem).is(':checked')) {
+            if (s1) $(pf + 'input[name="' + s1 +'"]').removeAttr('checked');
+            if (s2) $(pf + 'input[name="' + s2 +'"]').removeAttr('checked');
+            if (s3) $(pf + 'input[name="' + s3 +'"]').removeAttr('checked');
+          }
+        },
         email_changed: function() {
           // If the e-mail in basics changes, try to select the matching
           // PGP key, if there is one. This may override user selections,
@@ -188,6 +195,7 @@
   </script>
 
   <form id="form-profile-add" class="standard"
+        method="POST" action="{{ U("/profiles/add/") }}"
         style="position: relative; max-width: 60em;">
     <input type="hidden" name="csrf" value="">
 
@@ -229,7 +237,7 @@
       </div>
       <br clear="both"><label>&nbsp;</label>
       <div style="position: absolute; text-align: right; right: 0; bottom: 1.5em;">
-        <a class="more-basics-show" href="javascript:_fpa.more('more-basics');">
+        <a class="more-basics-show" onclick="javascript:_fpa.more('more-basics');">
           {{_("Add custom signature")}} ...
         </a> &nbsp;&nbsp;
         <input type="checkbox" class="fpa-autoconfig" value="yes" checked>
@@ -460,7 +468,7 @@
         <select class='fpa-pgp-key' style="width: 100%"
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
-          <option value="!CREATE2048" class="fpa-pgp-key-default">{{_("Create a new 2048 bit RSA key")}}</option>
+          <option value="!CREATE:RSA2048" class="fpa-pgp-key-default">{{_("Create a new 2048 bit RSA key")}}</option>
         {% set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
         {%- for fingerprint in pgp_keys -%}
           {%- set key = pgp_keys[fingerprint] -%}
@@ -469,36 +477,72 @@
             {{key.creation_date}}/{{key.keytype_name}}{{key.keysize}}:
             {{key.uid}}
           </option>{% endfor %}
-          <option value="!CREATE4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
+          <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
           <option value="">{{_("Disable encryption for this account")}}</option>
         </select>
         <div class="security-opt any text-right" style="margin: -13px 0 13px 0;">
-          <a class="more-crypto-show" href="javascript:_fpa.more('more-crypto');">
-            {{_("Show all encryption settings")}}
+          <a class="more-crypto-show" onclick="javascript:_fpa.more('more-crypto');">
+            {{_("Show too many encryption settings")}}
           </a>
         </div>
       </div>
       <div class="security-opt any left" style="margin-right: 0; width: 29em;">
-        <input type="checkbox" name="security-always-sign" value="yes" checked>
+        <input type="checkbox" name="security-best-effort-crypto" value="yes"
+               onchange='javascript:_fpa.exclude(this, "security-always-sign", "security-always-encrypt");'
+               checked>
         <span class="checkbox">
-          {{_("Always digitally sign outgoing mail")}}
-        </span><br>
-
-        <input type="checkbox" name="security-attach-keys" value="yes" checked>
-        <span class="checkbox">
-          {{_("Automatically attach keys to outgoing mail")}}
+          {{_("Best-effort digital signatures and encryption")}}
+          (<a class='auto-help' href="{{ U('/help/crypto-policy.html') }}"
+              target=_blank>details</a>)
         </span><br>
 
         <div class="more-crypto hide">
-          <input type="checkbox" name="security-always-encrypt" value="yes">
+          <input type="checkbox" name="security-always-sign" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-best-effort-crypto");'>
           <span class="checkbox">
-            {{_("Always encrypt if possible")}}
+            {{_("Always digitally sign outgoing mail")}}
           </span><br>
 
-          <input type="checkbox" name="security-request-encryption" value="yes">
+          <input type="checkbox" name="security-always-encrypt" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-best-effort-crypto");'>
           <span class="checkbox">
-            {{_("Advertise preference for encrypted mail")}}
+            {{_("Always encrypt if possible (may make mail unreadable)")}}
           </span>
+          <br style='margin-bottom: 0.5em;'>
+        </div>
+
+        <input type="checkbox" name="security-attach-keys" value="yes" checked>
+        <span class="checkbox">
+          {{_("Automatically attach encryption keys to outgoing mail")}}
+        </span><br>
+
+        <div class="more-crypto hide">
+          <input type="checkbox" name="security-prefer-inline" value="yes" checked>
+          <span class="checkbox">
+            {{_("Prefer compatibility (avoid PGP/MIME, makes mail ugly)")}}
+          </span>
+          <br style='margin-bottom: 0.5em;'>
+
+          <input type="checkbox" name="security-openpgp-header-encrypt" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-openpgp-header-none");'>
+          <span class="checkbox">
+            {{_("Signal a preference for encrypted mail")}}
+            (<a class='auto-help' href="{{ U('/help/crypto-signaling.html') }}"
+                target=_blank>details</a>)
+          </span><br>
+
+          <input type="checkbox" name="security-openpgp-header-sign" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-openpgp-header-none");'
+                 checked>
+          <span class="checkbox">
+            {{_("Signal a preference for signed mail")}}
+          </span><br>
+
+          <input type="checkbox" name="security-openpgp-header-none" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-openpgp-header-sign", "security-openpgp-header-encrypt");'>
+          <span class="checkbox">
+            {{_("Signal a preference for un-signed, un-encrypted mail")}}
+          </span><br>
 
 {# FIXME: This does not work yet...
           <br>
@@ -519,6 +563,6 @@
 
 </div>
 {%- else %}
-  {{ mailpile('http/redirect', U('/contacts/view/', result.contacts.0.email.0.email, '/')) }}
+  {{ mailpile('http/redirect', U('/profiles/')) }}
 {%- endif %}
 {%- endblock %}

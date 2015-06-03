@@ -451,7 +451,7 @@ class Email(object):
             for addr in addrs:
                 vcard = idx.config.vcards.get(addr)
                 if vcard != None:
-                    lastdate = vcard.gpgshared
+                    lastdate = vcard.pgp_key_shared
                     if lastdate:
                         try:
                             dates.append(datetime.fromtimestamp(float(lastdate)))

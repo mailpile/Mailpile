@@ -114,29 +114,35 @@ class UrlMap:
         SPECIAL_VARS = ('csrf', 'arg', 'context')
 
         if command.HTTP_STRICT_VARS:
+            prefixes = ['ui_'] + [vn[:-1] for vn in
+                                  (command.HTTP_QUERY_VARS.keys() +
+                                   command.HTTP_POST_VARS.keys())
+                                  if vn[-1:] == '*']
+
+            copy_q = []
+            for var in (query_data or []):
+                var = var.replace('[]', '')
+                if (var not in command.HTTP_QUERY_VARS and
+                        (var not in SPECIAL_VARS) and
+                        (not [v for v in prefixes if var.startswith(v)])):
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+                else:
+                    copy_q.append(var)
+
+            copy_p = []
             for var in (post_data or []):
                 var = var.replace('[]', '')
                 if ((var not in command.HTTP_QUERY_VARS) and
                         (var not in command.HTTP_POST_VARS) and
-                        (not var.startswith('ui_')) and
-                        (var not in SPECIAL_VARS)):
+                        (var not in SPECIAL_VARS) and
+                        (not [v for v in prefixes if var.startswith(v)])):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
-            for var in (query_data or []):
-                var = var.replace('[]', '')
-                if (var not in command.HTTP_QUERY_VARS and
-                        (not var.startswith('ui_')) and
-                        (var not in SPECIAL_VARS)):
-                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+                else:
+                    copy_p.append(var)
 
-            ui_keys = [k for k in ((query_data or {}).keys() +
-                                   (post_data or {}).keys())
-                       if k.startswith('ui_')]
-            copy_vars = ((ui_keys, query_data),
-                         (ui_keys, post_data),
-                         (command.HTTP_QUERY_VARS, query_data),
-                         (command.HTTP_QUERY_VARS, post_data),
-                         (command.HTTP_POST_VARS, post_data),
-                         (['arg'], query_data))
+            copy_vars = [(copy_q, query_data),
+                         (copy_p, post_data),
+                         (['arg'], query_data)]
         else:
             for var in command.HTTP_BANNED_VARS:
                 var = var.replace('[]', '')

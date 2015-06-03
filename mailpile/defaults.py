@@ -124,12 +124,14 @@ CONFIG_RULES = {
                             'smtp'),
         'username':        (_('User name'), str, ''),
         'password':        (_('Password'), str, ''),
+        'auth_type':       (_('Authentication scheme'), str, 'password-cleartext'),
         'command':         (_('Shell command'), str, ''),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 587)
     }, {}],
     'sources': [_('Incoming message sources'), {
         'name':            (_('Source name'), str, ''),
+        'profile':         (_('Profile this source belongs to'), str, ''),
         'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mailbox protocol or format'),
                             ["mbox", "maildir", "macmaildir", "gmvault",
@@ -140,6 +142,7 @@ CONFIG_RULES = {
         'interval':        (_('How frequently to check for mail'), int, 300),
         'username':        (_('User name'), str, ''),
         'password':        (_('Password'), str, ''),
+        'auth_type':       (_('Authentication scheme'), str, 'password'),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
         'keepalive':       (_('Keep server connections alive'), bool, False),
@@ -166,16 +169,7 @@ CONFIG_RULES = {
             'primary_tag': (_('A tag representing this mailbox'), str, ''),
             'apply_tags':  (_('Tags applied to messages'), str, []),
         }, {})
-    }, {}],
-
-    ### OLD CRAP, JUST HERE SO AS NOT TO KILL CONFIG FILES
-    'profiles': [_('DEPRECATED: User profiles and personalities'), {
-        'name':            (_('Account name'), 'str', ''),
-        'email':           (_('E-mail address'), 'email', ''),
-        'signature':       (_('Message signature'), 'multiline', ''),
-        'route':           (_('DEPRECATED, DO NOT USE'), str, ''),
-        'messageroute':    (_('Outgoing mail route'), str, ''),
-    }, []]
+    }, {}]
 }
 
 

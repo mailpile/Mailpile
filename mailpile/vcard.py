@@ -374,6 +374,19 @@ class SimpleVCard(object):
                     removed += 1
         return removed
 
+    def remove_all(self, name):
+        """
+        Remove one or more lines from the VCard.
+
+        >>> vc = SimpleVCard(VCardLine(name='fn', value='Houdini'))
+        >>> vc.remove_all('fn')
+        >>> vc.get('fn')
+        Traceback (most recent call last):
+            ...
+        IndexError: ...
+        """
+        self.remove(*[line.line_id for line in self.get_all(name)])
+
     def _handle_pidmap_args(self, **kwargs):
         src_id = kwargs.get('client', self._default_src_pid)
         if src_id:
@@ -805,115 +818,6 @@ class MailpileVCard(SimpleVCard):
         self.encryption_key_func = enc
         self.decryption_key_func = dec
 
-    def _history_parse_expire(self, history_vcl, now):
-        history = {
-            'sent': [],
-            'received': []
-        }
-        entries = []
-        for entry in [e for e in history_vcl.value.split(',') if e]:
-            try:
-                what, when, mid = entry.split('-')
-                when = int(when, 36)
-                if when > now - self.HISTORY_MAX_AGE:
-                    history['sent' if (what == 's') else 'received'].append(
-                        (when, mid))
-                    entries.append(entry)
-            except (ValueError, IndexError, TypeError):
-                pass
-        history_vcl.value = ','.join(entries)
-        return entries, history
-
-    def recent_history(self, now=None):
-        try:
-            now = now if (now is not None) else time.time()
-            history_vcl = self.get('x-mailpile-history')
-            return self._history_parse_expire(history_vcl, now)[1]
-        except IndexError:
-            return {}
-
-    def record_history(self, what, when, mid, now=None):
-        assert(what[0] in ('s', 'r'))
-        with self._lock:
-            try:
-                history_vcl = self.get('x-mailpile-history')
-            except IndexError:
-                history_vcl = VCardLine(name='x-mailpile-history', value='')
-                self.add(history_vcl)
-            now = now if (now is not None) else time.time()
-            entries, history = self._history_parse_expire(history_vcl, now)
-            entries.append('%s-%s-%s' % (what[0], b36(int(when)), mid))
-            history_vcl.value = ','.join(entries)
-
-    def prefer_sender(self, address, sender):
-        address = address.lower()
-        for vcl in self.get_all('x-mailpile-prefer-profile'):
-            addr = vcl.get('address')
-            if addr and addr == address:
-                vcl.value = sender.random_uid
-                return
-        self.add(VCardLine(name='x-mailpile-prefer-profile',
-                           value=sender.random_uid,
-                           address=address))
-
-    def sending_profile(self, address):
-        default = None
-        which_email = None
-        for vcl in self.get_all('x-mailpile-prefer-profile'):
-            addr = vcl.get('address')
-            value = vcl.value
-            if addr:
-                if addr == address.lower():
-                    if ',' in value:
-                        value, which_email = value.split(',')
-                    return (value, which_email)
-            else:
-                if ',' in value:
-                    default, which_email = value.split(',')
-                else:
-                    default, which_email = value, None
-        return (default, which_email)
-
-    def sends_to(self, address):
-        domain = address.rsplit('#')[0].rsplit('@', 1)[-1].lower()
-        address = address.lower()
-        my_email = self.email
-        for vcl in self.get_all('x-mailpile-scope'):
-            if vcl.value in (domain, address):
-                return vcl.get('address') or my_email
-        return False
-
-    def same_domain(self, address):
-        domain = address.rsplit('#')[0].rsplit('@')[-1].lower()
-        for vcl in self.get_all('email'):
-            if domain == vcl.value.rsplit('@', 1)[-1].lower():
-                return vcl.value
-        return False
-
-    def _random_uid(self):
-        with self._lock:
-            try:
-                rid = self.get('x-mailpile-rid').value
-            except IndexError:
-                crap = '%s %s' % (self.email, random.randint(0, 0x1fffffff))
-                rid = b64w(sha1b64(crap)).lower()[:12]
-                self.add(VCardLine(name='x-mailpile-rid', value=rid))
-        return rid
-
-    signature = property(
-        lambda self: self._vcard_get('x-mailpile-profile-signature'),
-        lambda self, v: self._vcard_set('x-mailpile-profile-signature', v))
-
-    route = property(
-        lambda self: self._vcard_get('x-mailpile-profile-route'),
-        lambda self, v: self._vcard_set('x-mailpile-profile-route', v))
-
-    gpgshared = property(
-        lambda self: self._vcard_get('x-mailpile-last-gpg-key-share'),
-        lambda self, v: self._vcard_set('x-mailpile-last-gpg-key-share', v))
-
-    random_uid = property(_random_uid)
-
     def _mpcdict(self, vcl):
         d = {}
         for k in vcl.keys():
@@ -925,9 +829,12 @@ class MailpileVCard(SimpleVCard):
         return d
 
     MPCARD_SINGLETONS = ('fn', 'kind', 'note',
+                         'x-mailpile-crypto-policy',
+                         'x-mailpile-crypto-format',
+                         'x-mailpile-profile-tag',
                          'x-mailpile-profile-signature',
                          'x-mailpile-profile-route',
-                         'x-mailpile-last-gpg-key-share')
+                         'x-mailpile-last-pgp-key-share')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
     def as_mpCard(self):
@@ -1004,6 +911,157 @@ class MailpileVCard(SimpleVCard):
             return self
         else:
             raise ValueError('Save to what file?')
+
+    ## Attributes ##################################################
+
+    def _history_parse_expire(self, history_vcl, now):
+        history = {
+            'sent': [],
+            'received': []
+        }
+        entries = []
+        for entry in [e for e in history_vcl.value.split(',') if e]:
+            try:
+                what, when, mid = entry.split('-')
+                when = int(when, 36)
+                if when > now - self.HISTORY_MAX_AGE:
+                    history['sent' if (what == 's') else 'received'].append(
+                        (when, mid))
+                    entries.append(entry)
+            except (ValueError, IndexError, TypeError):
+                pass
+        history_vcl.value = ','.join(entries)
+        return entries, history
+
+    def recent_history(self, now=None):
+        try:
+            now = now if (now is not None) else time.time()
+            history_vcl = self.get('x-mailpile-history')
+            return self._history_parse_expire(history_vcl, now)[1]
+        except IndexError:
+            return {}
+
+    def record_history(self, what, when, mid, now=None):
+        assert(what[0] in ('s', 'r'))
+        with self._lock:
+            try:
+                history_vcl = self.get('x-mailpile-history')
+            except IndexError:
+                history_vcl = VCardLine(name='x-mailpile-history', value='')
+                self.add(history_vcl)
+            now = now if (now is not None) else time.time()
+            entries, history = self._history_parse_expire(history_vcl, now)
+            entries.append('%s-%s-%s' % (what[0], b36(int(when)), mid))
+            history_vcl.value = ','.join(entries)
+
+    def same_domain(self, address):
+        domain = address.rsplit('#')[0].rsplit('@')[-1].lower()
+        for vcl in self.get_all('email'):
+            if domain == vcl.value.rsplit('@', 1)[-1].lower():
+                return vcl.value
+        return False
+
+    def _random_uid(self):
+        with self._lock:
+            try:
+                rid = self.get('x-mailpile-rid').value
+            except IndexError:
+                crap = '%s %s' % (self.email, random.randint(0, 0x1fffffff))
+                rid = b64w(sha1b64(crap)).lower()[:12]
+                self.add(VCardLine(name='x-mailpile-rid', value=rid))
+        return rid
+
+    random_uid = property(_random_uid)
+
+    ## Attributes provided by contacts ##############################
+
+    def prefer_sender(self, address, sender):
+        address = address.lower()
+        for vcl in self.get_all('x-mailpile-prefer-profile'):
+            addr = vcl.get('address')
+            if addr and addr == address:
+                vcl.value = sender.random_uid
+                return
+        self.add(VCardLine(name='x-mailpile-prefer-profile',
+                           value=sender.random_uid,
+                           address=address))
+
+    def sending_profile(self, address):
+        default = None
+        which_email = None
+        for vcl in self.get_all('x-mailpile-prefer-profile'):
+            addr = vcl.get('address')
+            value = vcl.value
+            if addr:
+                if addr == address.lower():
+                    if ',' in value:
+                        value, which_email = value.split(',')
+                    return (value, which_email)
+            else:
+                if ',' in value:
+                    default, which_email = value.split(',')
+                else:
+                    default, which_email = value, None
+        return (default, which_email)
+
+    pgp_key = property(
+        lambda self: self._vcard_get('key').split(',')[-1],
+        lambda self, v: self._vcard_set('key',
+            'data:application/x-pgp-fingerprint,' + v))
+
+    pgp_key_shared = property(
+        lambda self: self._vcard_get('x-mailpile-last-pgp-key-share'),
+        lambda self, v: self._vcard_set('x-mailpile-last-pgp-key-share', v))
+
+    crypto_policy = property(
+        lambda self: self._vcard_get('x-mailpile-crypto-policy'),
+        lambda self, v: self._vcard_set('x-mailpile-crypto-policy', v))
+
+    crypto_format = property(
+        lambda self: self._vcard_get('x-mailpile-crypto-format'),
+        lambda self, v: self._vcard_set('x-mailpile-crypto-format', v))
+
+    ## Attributes provided by profiles ##############################
+
+    def add_scope(self, scope):
+        scope = scope.split('#')[0].lower()
+        for vcl in self.get_all('x-mailpile-profile-scope'):
+            if vcl.value == scope:
+                return
+        self.add(VCardLine(name='x-mailpile-profile-scope', value=scope))
+
+    def sends_to(self, address):
+        domain = address.rsplit('#')[0].rsplit('@', 1)[-1].lower()
+        address = address.lower()
+        my_email = self.email
+        for vcl in self.get_all('x-mailpile-profile-scope'):
+            if vcl.value in (domain, address):
+                return vcl.get('address') or my_email
+        return False
+
+    def add_source(self, source_id):
+        for vcl in self.get_all('x-mailpile-profile-source'):
+            if vcl.value == source_id:
+                return
+        self.add(VCardLine(name='x-mailpile-profile-source', value=source_id))
+
+    def sources(self):
+        sources = []
+        for vcl in self.get_all('x-mailpile-profile-source'):
+            sources.append(vcl.value)
+        return sources
+
+    signature = property(
+        lambda self: self._vcard_get('x-mailpile-profile-signature'),
+        lambda self, v: self._vcard_set('x-mailpile-profile-signature', v))
+
+    route = property(
+        lambda self: self._vcard_get('x-mailpile-profile-route'),
+        lambda self, v: self._vcard_set('x-mailpile-profile-route', v))
+
+    tag = property(
+        lambda self: self._vcard_get('x-mailpile-profile-tag'),
+        lambda self, v: self._vcard_set('x-mailpile-profile-tag', v))
 
 
 class AddressInfo(dict):
@@ -1259,8 +1317,8 @@ class VCardStore(dict):
         ...                MailpileVCard(VCardLine('FN:Guy'),
         ...                              VCardLine('EMAIL;TYPE=PREF:g@f.com'),
         ...                              VCardLine('EMAIL:ok@foo.com'),
-        ...                              VCardLine('X-MAILPILE-SCOPE;zzz'),
-        ...                              VCardLine('X-MAILPILE-SCOPE;'
+        ...                              VCardLine('X-MAILPILE-PROFILE-SCOPE;zzz'),
+        ...                              VCardLine('X-MAILPILE-PROFILE-SCOPE;'
         ...                                        'address=ok@foo.com:x.y'),
         ...                              VCardLine('KIND:profile')),
         ...                MailpileVCard(VCardLine('FN:Icelander'),

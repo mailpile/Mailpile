@@ -337,7 +337,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                         if frm_vcard:
                             vcard.prefer_sender(rcpt, frm_vcard)
                         if update_to_vcards:
-                            vcard.gpgshared = int(time.time())
+                            vcard.pgp_key_shared = int(time.time())
                         vcard.save()
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total

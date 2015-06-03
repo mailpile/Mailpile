@@ -178,6 +178,12 @@ class AddVCard(VCardCommand):
                         pairs.append(pair)
         return [(p1, p2, '') for p1, p2 in pairs]
 
+    def _before_vcard_create(self, kind, triplets):
+        return {}
+
+    def _after_vcard_create(self, kind, vcard, state):
+        pass
+
     def command(self, recipients=False, quietly=False, internal=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
@@ -227,15 +233,7 @@ class AddVCard(VCardCommand):
         if triplets:
             vcards = []
             kind = self.KIND if not internal else 'internal'
-
-            route_id = self.data.get('route_id', [None])[0]
-            if route_id:
-                if len(triplets) > 1 or kind != 'profile':
-                    raise ValueError('Can only configure route_IDs '
-                                     'for one profile at a time')
-                if route_id not in self.session.config.routes:
-                    raise ValueError(_('Not a valid route ID: %s')
-                                     % route_id)
+            state = self._before_vcard_create(kind, triplets)
 
             for handle, name, note in triplets:
                 vcard = config.vcards.get(handle.lower())
@@ -254,10 +252,11 @@ class AddVCard(VCardCommand):
                 else:
                     vcard = self._make_new_vcard(handle.lower(), name, note,
                                                  kind)
-                if route_id:
-                    vcard.route = route_id
+                self._after_vcard_create(kind, vcard, state)
                 config.vcards.add_vcards(vcard)
                 vcards.append(vcard)
+            if state.get('save_config', False):
+                self._background_save(config=True)
         else:
             return self._error('Nothing to do!')
         return self._success(_('Added %d contacts') % len(vcards),
@@ -758,8 +757,131 @@ class Profile(ProfileVCard(VCard)):
 class AddProfile(ProfileVCard(AddVCard)):
     """Add profiles"""
     HTTP_POST_VARS = dict_merge(AddVCard.HTTP_POST_VARS, {
-        'route_id': 'Route ID for sending mail'
+        'route_id': 'Route ID for sending mail',
+
+        'signature': '.signature',
+        'route-protocol': 'Route type',
+        'smtp-*': 'SMTP settings',
+        'local-command': 'sendmail command',
+        'source-*': 'Source settings',
+        'security-*': 'Security settings'
     })
+
+    def _before_vcard_create(self, kind, triplets):
+        route_id = self.data.get('route_id', [None])[0]
+        if (route_id or [k for k in self.data.keys() if k[:5] in
+                         ('route', 'smtp-', 'sourc', 'secur', 'local')]):
+            if len(triplets) > 1 or kind != 'profile':
+                raise ValueError('Can only configure detailed settings '
+                                 'for one profile at a time')
+
+        if route_id:
+            if route_id not in self.session.config.routes:
+                raise ValueError('Not a valid route ID: %s' % route_id)
+        elif self.data.get('route-protocol', ['none'])[0] != 'none':
+            route_id = self.session.config.routes.append({})
+
+        return {
+            'save_config': True,
+            'route_id': route_id
+        }
+
+    def _yn(self, val, default='no'):
+        return (self.data.get(val, [default])[0][:2].lower()
+                in ('ye', '1', 'on', 'tr'))
+
+    def _after_vcard_create(self, kind, vcard, state):
+        if state['route_id']:
+            vcard.route = state['route_id']
+            vcard.signature = self.data.get('signature', [''])[0]
+
+            openpgp_key = self.data.get('security-pgp-key', [''])[0]
+            if openpgp_key:
+                # The key itself!
+                if openpgp_key.startswith('!CREATE'):
+                    key_type = openpgp_key[8:] or 'RSA2048'
+                    print 'FIXME! SHOULD CREATE: %s' % key_type
+                else:
+                    vcard.pgp_key = openpgp_key
+
+                # Encryption policy rules
+                outg_auto = self._yn('security-best-effort-crypto')
+                outg_sig  = self._yn('security-always-sign')
+                outg_enc  = self._yn('security-always-encrypt')
+                if outg_enc and outg_sig:
+                    vcard.crypto_policy = 'openpgp-sign-encrypt'
+                elif outg_sig:
+                    vcard.crypto_policy = 'openpgp-sign'
+                elif outg_enc:
+                    vcard.crypto_policy = 'openpgp-encrypt'
+                elif outg_auto:
+                    vcard.crypto_policy = 'best-effort'
+                else:
+                    vcard.crypto_policy = 'none'
+
+                # Crypto formatting rules
+                pgp_keys    = self._yn('security-attach-keys')
+                pgp_inline  = self._yn('security-prefer-inline')
+                pgp_hdr_enc = self._yn('security-openpgp-header-encrypt')
+                pgp_hdr_sig = self._yn('security-openpgp-header-sign')
+                pgp_hdr_non = self._yn('security-openpgp-header-none')
+                pgp_hdr_both = pgp_hdr_enc and pgp_hdr_sig
+                if pgp_hdr_both:
+                    pgp_hdr_enc = pgp_hdr_sig = False
+                vcard.crypto_format = ''.join([
+                    'openpgp_header:SE+' if (pgp_hdr_both) else '',
+                    'openpgp_header:S+'  if (pgp_hdr_sig)  else '',
+                    'openpgp_header:E+'  if (pgp_hdr_enc)  else '',
+                    'openpgp_header:N+'  if (pgp_hdr_clr)  else '',
+                    'send_keys+'         if (pgp_keys)     else '',
+                    'prefer_inline'      if (pgp_inline)   else 'pgpmime'
+                ])
+
+            else:
+                vcard.remove_all('key')
+                vcard.crypto_policy = 'none'
+                vcard.crypto_format = 'none'
+
+            # Create the Account tag
+            vcard.tag = self.session.config.tags.append({
+                'name': vcard.email,
+                'slug': 'account-%s' % vcard.route,
+                'type': 'profile',
+                'icon': 'icon-user',
+                'flag_msg_only': True,
+                'label': False,
+                'display': 'invisible'
+            })
+
+            # Sending route
+            route = self.session.config.routes.get(state['route_id'])
+            route.name = vcard.email
+            for var in ('route-protocol', 'smtp-username', 'smtp-password',
+                        'smtp-auth_type', 'smtp-host', 'smtp-port',
+                        'local-command'):
+                rvar = var.split('-', 1)[1]
+                route[rvar] = self.data.get(var, [''])[0]
+
+            # Mail sources!
+            sources = [r[7:].rsplit('-', 1)[0] for r in self.data.keys()
+                       if r.startswith('source-') and r.endswith('-protocol')]
+            for src_id in sources:
+                # This little dance makes sure source is actually a config
+                # section, not just an anonymous dict.
+                source = self.session.config.sources.get(src_id, {})
+                self.session.config.sources[src_id] = source
+                source = self.session.config.sources[src_id]
+
+                source.name = vcard.email
+                source.profile = vcard.random_uid
+                source.discovery.policy = 'watch'
+                source.discovery.apply_tags = [vcard.tag]
+                for var in ('source-%s-protocol', 'source-%s-auth_type',
+                            'source-%s-username', 'source-%s-password',
+                            'source-%s-host', 'source-%s-port'):
+                    rvar = var.rsplit('-', 1)[-1]
+                    source[rvar] = self.data.get(var % src_id, [''])[0]
+                vcard.add_source(src_id)
 
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):
