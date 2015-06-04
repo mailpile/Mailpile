@@ -333,15 +333,17 @@ class BaseMailSource(threading.Thread):
         finally:
             self._state = ostate
 
-    def take_over_mailbox(self, mailbox_idx, save=True):
+    def take_over_mailbox(self, mailbox_idx,
+                          policy=None, create_local=None, save=True):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
             mailbox_idx = FormatMbxId(mailbox_idx)
             self.my_config.mailbox[mailbox_idx] = {
                 'path': '@%s' % mailbox_idx,
-                'policy': disco_cfg.policy,
+                'policy': policy or disco_cfg.policy,
                 'process_new': disco_cfg.process_new,
+                'local': '!CREATE' if create_local else '',
             }
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
@@ -405,11 +407,13 @@ class BaseMailSource(threading.Thread):
                 if len(name) < 4:
                     name = _('Mail: %s') % name
                 disco_cfg.parent_tag = name
-            disco_cfg.parent_tag = self._create_tag(disco_cfg.parent_tag,
-                                                    use_existing=False,
-                                                    label=False,
-                                                    icon='icon-mailsource',
-                                                    unique=False)
+            disco_cfg.parent_tag = self._create_tag(
+                disco_cfg.parent_tag,
+                use_existing=False,
+                label=False,
+                icon='icon-mailsource',
+                visible=disco_cfg.visible_tags,
+                unique=False)
             if save:
                 self._save_config()
             return disco_cfg.parent_tag
@@ -453,12 +457,14 @@ class BaseMailSource(threading.Thread):
                         with_icon = config.tags[mbx_cfg.apply_tags[0]].icon
                     except (KeyError, ValueError):
                         pass
-                mbx_cfg.primary_tag = self._create_tag(mbx_cfg.primary_tag,
-                                                       use_existing=False,
-                                                       label=as_label,
-                                                       icon=with_icon,
-                                                       unique=False,
-                                                       parent=parent)
+                mbx_cfg.primary_tag = self._create_tag(
+                    mbx_cfg.primary_tag,
+                    use_existing=False,
+                    visible=disco_cfg.visible_tags,
+                    label=as_label,
+                    icon=with_icon,
+                    unique=False,
+                    parent=parent)
             except (ValueError, IndexError):
                 self.session.ui.debug(traceback.format_exc())
 
@@ -494,6 +500,7 @@ class BaseMailSource(threading.Thread):
                     use_existing=True,
                     unique=False,
                     label=True,
+                    visible=True,
                     icon=None,
                     parent=None):  # -> tag ID
         if tag_name_or_id in self.session.config.tags:
@@ -507,29 +514,22 @@ class BaseMailSource(threading.Thread):
             raise ValueError('Tag name is not unique!')
         elif len(tags) == 1 and use_existing:
             tag_id = tags[0]._key
-        elif len(tags) > 1:
-            raise ValueError('Tag name matches multiple tags!')
         else:
-            from mailpile.plugins.tags import AddTag, Slugify
-            bogus_name = 'New-Tag-%s' % len(str(self.session.config))
-            AddTag(self.session, arg=[bogus_name]).run(save=False)
-            tags = self.session.config.get_tags(bogus_name)
-            if tags:
-                if self.my_config.name:
-                    tags[0].slug = Slugify('/'.join([self.my_config.name,
-                                                     tag_name]),
-                                           self.session.config.tags)
-                else:
-                    tags[0].slug = Slugify(tag_name, self.session.config.tags)
-                tags[0].name = tag_name
-                tags[0].label = label
-                if icon:
-                    tags[0].icon = icon
-                if parent:
-                    tags[0].parent = parent
-                tag_id = tags[0]._key
+            from mailpile.plugins.tags import Slugify
+            if self.my_config.name:
+                slug = Slugify('/'.join([self.my_config.name, tag_name]),
+                               self.session.config.tags)
             else:
-                raise ValueError('Failed to create tag?')
+                slug = Slugify(tag_name, self.session.config.tags)
+            tag_id = self.session.config.tags.append({
+                'name': tag_name,
+                'slug': slug,
+                'type': 'mailbox',
+                'parent': parent or '',
+                'label': label,
+                'icon': icon or 'icon-tag',
+                'display': 'tag' if visible else 'invisible',
+            })
         return tag_id
 
     def interrupt_rescan(self, reason):

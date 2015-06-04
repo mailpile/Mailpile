@@ -1,6 +1,8 @@
+import os
 import random
 import time
 
+import mailpile.defaults
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
 from mailpile.i18n import gettext as _
@@ -178,6 +180,9 @@ class AddVCard(VCardCommand):
                         pairs.append(pair)
         return [(p1, p2, '') for p1, p2 in pairs]
 
+    def _sanity_check(self, kind, vcard):
+        pass
+
     def _before_vcard_create(self, kind, triplets):
         return {}
 
@@ -233,6 +238,8 @@ class AddVCard(VCardCommand):
         if triplets:
             vcards = []
             kind = self.KIND if not internal else 'internal'
+
+            self._sanity_check(kind, triplets)
             state = self._before_vcard_create(kind, triplets)
 
             for handle, name, note in triplets:
@@ -747,54 +754,137 @@ def ProfileVCard(parent):
         ORDER = ('Tagging', 3)
         VCARD = "profile"
 
-    return ProfileVCardCommand
+        def _yn(self, val, default='no'):
+            return (self.data.get(val, [default])[0][:2].lower()
+                    in ('ye', '1', 'on', 'tr'))
 
+        def _sendmail_command(self):
+            # FIXME - figure out where sendmail is for reals
+            return mailpile.defaults.DEFAULT_SENDMAIL
 
-class Profile(ProfileVCard(VCard)):
-    """View profile"""
+        def _sanity_check(self, kind, triplets):
+            route_id = self.data.get('route_id', [None])[0]
+            if (route_id or [k for k in self.data.keys() if k[:5] in
+                             ('route', 'smtp-', 'sourc', 'secur', 'local')]):
+                if len(triplets) > 1 or kind != 'profile':
+                    raise ValueError('Can only configure detailed settings '
+                                     'for one profile at a time')
 
+            # FIXME: Check more important invariants and raise
 
-class AddProfile(ProfileVCard(AddVCard)):
-    """Add profiles"""
-    HTTP_POST_VARS = dict_merge(AddVCard.HTTP_POST_VARS, {
-        'route_id': 'Route ID for sending mail',
+        def _configure_sending_route(self, vcard, route_id):
+            # Sending route
+            route = self.session.config.routes.get(route_id)
+            protocol = self.data.get('route-protocol', ['none'])[0]
+            if protocol == 'none':
+                return
+            elif protocol == 'local':
+                route.command = self.data.get('local-command'
+                                              ) or self._sendmail_command()
+            elif protocol in ('smtp', 'smtptls', 'smtpssl'):
+                for var in ('smtp-username', 'smtp-password',
+                            'smtp-auth_type', 'smtp-host', 'smtp-port'):
+                   rvar = var.split('-', 1)[1]
+                   route[rvar] = self.data.get(var, [''])[0]
+            else:
+                raise ValueError(_('Unhandled outgoing mail protocol: %s'
+                                   ) % protocol)
+            route.protocol = protocol
+            route.name = vcard.email
+            vcard.route = route_id
 
-        'signature': '.signature',
-        'route-protocol': 'Route type',
-        'smtp-*': 'SMTP settings',
-        'local-command': 'sendmail command',
-        'source-*': 'Source settings',
-        'security-*': 'Security settings'
-    })
+        def _get_mail_spool(self):
+            path = os.getenv('MAIL') or None
+            user = os.getenv('USER')
+            if user and not path:
+                if os.path.exists('/var/mail'):
+                    path = '/var/mail/%s' % user
+                if os.path.exists('/var/spool/mail'):
+                    path = '/var/spool/mail/%s' % user
+            return path
 
-    def _before_vcard_create(self, kind, triplets):
-        route_id = self.data.get('route_id', [None])[0]
-        if (route_id or [k for k in self.data.keys() if k[:5] in
-                         ('route', 'smtp-', 'sourc', 'secur', 'local')]):
-            if len(triplets) > 1 or kind != 'profile':
-                raise ValueError('Can only configure detailed settings '
-                                 'for one profile at a time')
+        def _configure_mail_sources(self, vcard):
+            config = self.session.config
+            sources = [r[7:].rsplit('-', 1)[0] for r in self.data.keys()
+                       if r.startswith('source-') and r.endswith('-protocol')]
+            for src_id in sources:
+                prefix = 'source-%s-' % src_id
+                protocol = self.data.get(prefix + 'protocol', ['none'])[0]
+                def make_new_source():
+                    # This little dance makes sure source is actually a
+                    # config section, not just an anonymous dict.
+                    source = config.sources.get(src_id, {})
+                    config.sources[src_id] = source
+                    source = config.sources[src_id]
+                    source.name = vcard.email
+                    source.profile = vcard.random_uid
+                    source.discovery.apply_tags = [vcard.tag]
+                    source.discovery.create_tag = True
+                    source.discovery.process_new = True
+                    vcard.add_source(src_id)
+                    return source
 
-        if route_id:
-            if route_id not in self.session.config.routes:
-                raise ValueError('Not a valid route ID: %s' % route_id)
-        elif self.data.get('route-protocol', ['none'])[0] != 'none':
-            route_id = self.session.config.routes.append({})
+                if protocol == 'none':
+                    pass
 
-        return {
-            'save_config': True,
-            'route_id': route_id
-        }
+                elif protocol == 'spool':
+                    path = self._get_mail_spool()
+                    if not path:
+                        raise ValueError(_('Mail spool not found'))
 
-    def _yn(self, val, default='no'):
-        return (self.data.get(val, [default])[0][:2].lower()
-                in ('ye', '1', 'on', 'tr'))
+                    if path in config.sys.mailbox.values():
+                        raise ValueError(_('Already configured: %s') % path)
+                    else:
+                        mailbox_idx = config.sys.mailbox.append(path)
 
-    def _after_vcard_create(self, kind, vcard, state):
-        if state['route_id']:
-            vcard.route = state['route_id']
-            vcard.signature = self.data.get('signature', [''])[0]
+                    source = make_new_source()
+                    source.protocol = 'mbox'
+                    for tag in config.get_tags(type='inbox'):
+                        source.discovery.apply_tags.append(tag._key)
 
+                    # We need to communicate with the source below,
+                    # so we save config to trigger instanciation.
+                    self._background_save(config=True, wait=True)
+
+                    local_copy = self._yn(prefix + 'copy-local')
+                    if self._yn(prefix + 'delete-source'):
+                        policy = 'move'
+                    else:
+                        policy = 'read'
+
+                    src_obj = config.mail_sources[src_id]
+                    src_obj.take_over_mailbox(mailbox_idx,
+                                              policy=policy,
+                                              create_local=local_copy,
+                                              save=False)
+
+                elif protocol in ('imap', 'imap_ssl', 'pop3', 'pop3_ssl'):
+                    source = make_new_source()
+
+                    # Discovery policy
+                    disco = source.discovery
+                    if self._yn(prefix + 'index-all-mail'):
+                        if self._yn(prefix + 'leave-on-server'):
+                            disco.policy = 'sync'
+                        else:
+                            disco.policy = 'move'
+                        disco.local_copy = True
+                    else:
+                        disco.policy = 'ignore'
+                        disco.local_copy = False
+                    disco.guess_tags = True
+                    disco.visible_tags = self._yn(prefix + 'auto-tags')
+
+                    # Connection settings
+                    for rvar in ('protocol', 'auth_type', 'host', 'port',
+                                 'username', 'password'):
+                        source[rvar] = self.data.get(prefix + rvar, [''])[0]
+
+                else:
+                    raise ValueError(_('Unhandled incoming mail protocol: %s'
+                                       ) % protocol)
+
+        def _configure_security(self, vcard):
             openpgp_key = self.data.get('security-pgp-key', [''])[0]
             if openpgp_key:
                 # The key itself!
@@ -820,11 +910,11 @@ class AddProfile(ProfileVCard(AddVCard)):
                     vcard.crypto_policy = 'none'
 
                 # Crypto formatting rules
-                pgp_keys    = self._yn('security-attach-keys')
-                pgp_inline  = self._yn('security-prefer-inline')
-                pgp_hdr_enc = self._yn('security-openpgp-header-encrypt')
-                pgp_hdr_sig = self._yn('security-openpgp-header-sign')
-                pgp_hdr_non = self._yn('security-openpgp-header-none')
+                pgp_keys     = self._yn('security-attach-keys')
+                pgp_inline   = self._yn('security-prefer-inline')
+                pgp_hdr_enc  = self._yn('security-openpgp-header-encrypt')
+                pgp_hdr_sig  = self._yn('security-openpgp-header-sign')
+                pgp_hdr_none = self._yn('security-openpgp-header-none')
                 pgp_hdr_both = pgp_hdr_enc and pgp_hdr_sig
                 if pgp_hdr_both:
                     pgp_hdr_enc = pgp_hdr_sig = False
@@ -832,7 +922,7 @@ class AddProfile(ProfileVCard(AddVCard)):
                     'openpgp_header:SE+' if (pgp_hdr_both) else '',
                     'openpgp_header:S+'  if (pgp_hdr_sig)  else '',
                     'openpgp_header:E+'  if (pgp_hdr_enc)  else '',
-                    'openpgp_header:N+'  if (pgp_hdr_clr)  else '',
+                    'openpgp_header:N+'  if (pgp_hdr_none) else '',
                     'send_keys+'         if (pgp_keys)     else '',
                     'prefer_inline'      if (pgp_inline)   else 'pgpmime'
                 ])
@@ -842,46 +932,59 @@ class AddProfile(ProfileVCard(AddVCard)):
                 vcard.crypto_policy = 'none'
                 vcard.crypto_format = 'none'
 
-            # Create the Account tag
-            vcard.tag = self.session.config.tags.append({
+    return ProfileVCardCommand
+
+
+class Profile(ProfileVCard(VCard)):
+    """View profile"""
+
+
+class AddProfile(ProfileVCard(AddVCard)):
+    """Add profiles (Accounts)"""
+    HTTP_POST_VARS = dict_merge(AddVCard.HTTP_POST_VARS, {
+        'route_id': 'Route ID for sending mail',
+
+        'signature': '.signature',
+        'route-protocol': 'Route type',
+        'smtp-*': 'SMTP settings',
+        'local-command': 'sendmail command',
+        'source-*': 'Source settings',
+        'security-*': 'Security settings'
+    })
+
+    def _before_vcard_create(self, kind, triplets):
+        route_id = self.data.get('route_id', [None])[0]
+        if route_id:
+            if route_id not in self.session.config.routes:
+                raise ValueError('Not a valid route ID: %s' % route_id)
+        elif self.data.get('route-protocol', ['none'])[0] != 'none':
+            route_id = self.session.config.routes.append({})
+
+        return {
+            'save_config': True,
+            'route_id': route_id
+        }
+
+    def _after_vcard_create(self, kind, vcard, state):
+        vcard.signature = self.data.get('signature', [''])[0]
+
+        with self.session.config._lock:
+            tags = self.session.config.tags
+            vcard.tag = tags.append({
                 'name': vcard.email,
-                'slug': 'account-%s' % vcard.route,
+                'slug': '%8.8x' % time.time(),
                 'type': 'profile',
                 'icon': 'icon-user',
                 'flag_msg_only': True,
                 'label': False,
                 'display': 'invisible'
             })
+            tags[vcard.tag].slug = 'account-%d' % len(tags)
 
-            # Sending route
-            route = self.session.config.routes.get(state['route_id'])
-            route.name = vcard.email
-            for var in ('route-protocol', 'smtp-username', 'smtp-password',
-                        'smtp-auth_type', 'smtp-host', 'smtp-port',
-                        'local-command'):
-                rvar = var.split('-', 1)[1]
-                route[rvar] = self.data.get(var, [''])[0]
-
-            # Mail sources!
-            sources = [r[7:].rsplit('-', 1)[0] for r in self.data.keys()
-                       if r.startswith('source-') and r.endswith('-protocol')]
-            for src_id in sources:
-                # This little dance makes sure source is actually a config
-                # section, not just an anonymous dict.
-                source = self.session.config.sources.get(src_id, {})
-                self.session.config.sources[src_id] = source
-                source = self.session.config.sources[src_id]
-
-                source.name = vcard.email
-                source.profile = vcard.random_uid
-                source.discovery.policy = 'watch'
-                source.discovery.apply_tags = [vcard.tag]
-                for var in ('source-%s-protocol', 'source-%s-auth_type',
-                            'source-%s-username', 'source-%s-password',
-                            'source-%s-host', 'source-%s-port'):
-                    rvar = var.rsplit('-', 1)[-1]
-                    source[rvar] = self.data.get(var % src_id, [''])[0]
-                vcard.add_source(src_id)
+        if state['route_id']:
+            self._configure_sending_route(vcard, state['route_id'])
+        self._configure_mail_sources(vcard)
+        self._configure_security(vcard)
 
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):

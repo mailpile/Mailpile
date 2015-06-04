@@ -15,20 +15,25 @@
     <tr>
       <th colspan=4 style='background: none; border: 0; text-align: left;'>
         <h3 style='margin: 0;'>{{_("E-mail Accounts")}}</h3>
+{%- if result.profiles|length > 0 %}
       </th><td width='1%'><span class="icon icon-new"></span>
       </td><td width='1%'><span class="icon icon-inbox"></span>
       </td><td><i>settings</i>
-      </td><td width='1%'>
+{% else %}
+      </td><td colspan=3 style='border: 0;'>
+{% endif %}
+      </td><td width='1%' style='border: 0;'>
       </td>
     </tr>
     {%- for profile_rid in result.rids %}
      {%- set p = result.profiles[result.rids[profile_rid]] %}
+     {%- set t = mailpile('tags', config.tags[p['x-mailpile-profile-tag']].slug).result.tags.0 %}
      {%- if p['x-mailpile-mailroute'] %}
       {%- set route = config.routes[p['x-mailpile-mailroute'][0].mailroute] %}
      {%- else %}
       {%- set route = '' %}
      {%- endif %}
-    <tr valign="top">
+    <tr valign="top" style="background: #fff;">
        <td width='1%'>
          <a data-post="from={{ p.email.0.email }}" data-action="/compose/"
             class="auto-post" href="#">
@@ -41,11 +46,13 @@
            <span class="icon icon-user" style="color: #070;"></span>
          </a>
        </td><td style='text-align: left;'>
-         {{ p.fn }}
+         <a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">
+           {{ p.fn }}
+         </a>
        </td><td style='text-align: left;'>{% for e in p.email %}
-         {{ e.email }}{% if not loop.last %}<br>{% endif %}
-       {% endfor %}</td><td><b>{# new mail #}</b>
-       </td><td>{# total mail #}
+           {{ e.email }}{% if not loop.last %}<br>{% endif %}
+       {% endfor %}</td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
+       </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
        </td><td>
          <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
             title="{{_("New Incoming Mail Source")}}"
@@ -88,12 +95,12 @@
     </tr>
     {%- endfor %}
     {%- if result.profiles|length < 1 %}
-    <tr><td colspan=8><div class='text-center'>
+    <tr style="background: #fff;"><td colspan=8><div class='text-center'>
       <br>
       <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
       <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
             title="{{_("Create a new Account")}}"
-            href="{{ U('/profiles/add/') }}"><button>
+            href="{{ U('/profiles/add/') }}"><button type=button class="button-secondary">
         <span class="icon icon-plus"></span> {{_("Add Account")}}
       </button></a></p>
     </div></td></tr>

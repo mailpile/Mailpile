@@ -41,6 +41,7 @@
         next: function(show) {
           $(pf + 'div.section').slideUp();
           $(pf + 'div.' + show).slideDown();
+          $(pf + '.fpa-detection-failed').hide();
           return false;
         },
         more: function(show) {
@@ -80,6 +81,20 @@
         },
         exclude: function(elem, s1, s2, s3) {
           if ($(elem).is(':checked')) {
+            if (s1) $(pf + 'input[name="' + s1 +'"]').removeAttr('checked');
+            if (s2) $(pf + 'input[name="' + s2 +'"]').removeAttr('checked');
+            if (s3) $(pf + 'input[name="' + s3 +'"]').removeAttr('checked');
+          }
+        },
+        require: function(elem, s1, s2, s3) {
+          if ($(elem).is(':checked')) {
+            if (s1) $(pf + 'input[name="' + s1 +'"]').prop('checked', true);
+            if (s2) $(pf + 'input[name="' + s2 +'"]').prop('checked', true);
+            if (s3) $(pf + 'input[name="' + s3 +'"]').prop('checked', true);
+          }
+        },
+        requiredby: function(elem, s1, s2, s3) {
+          if (!$(elem).is(':checked')) {
             if (s1) $(pf + 'input[name="' + s1 +'"]').removeAttr('checked');
             if (s2) $(pf + 'input[name="' + s2 +'"]').removeAttr('checked');
             if (s3) $(pf + 'input[name="' + s3 +'"]').removeAttr('checked');
@@ -132,12 +147,16 @@
               $(pf + 'div.fpa-detection-in-progress').slideUp();
               $(pf + 'div.fpa-network-settings').slideDown();
               $('.edit-provider-settings').hide();
-              var nxt = "profile-add-basics";
+              var nxt = undefined;
               var result = data.result[email];
-              if (result) {
-                nxt = _fpa.copy_email_settings(result) || nxt;
+              if (result) nxt = _fpa.copy_email_settings(result);
+              if (nxt) {
+                _fpa.next(nxt);
               }
-              _fpa.next(nxt);
+              else {
+                _fpa.next('profile-add-route');
+                $(pf + '.fpa-detection-failed').slideDown();
+              }
             }, function(error) {
               EventLog.unsubscribe(ev_source, watch_id);
             });
@@ -261,6 +280,10 @@
     </div>
 
     <div class="fpa-network-settings">
+      <p class="message paragraph-alert fpa-detection-failed hide">
+        <span class="icon-robot"></span> <b>{{_("Failed to detect settings, manual configuration required")}}!</b>
+        <span class="description" href=""></span>
+      </p>
       <p class="message paragraph-important"
          onclick='javascript:_fpa.next("profile-add-route");'>
         <span class="icon-outbox"></span> {{_("Sending Mail")}}
@@ -269,13 +292,13 @@
       <div class="section profile-add-route hide" style="position: relative;">
         <select class="right" name="route-protocol" style="width: auto;"
                 onchange="javascript:_fpa.select(this, 'route-settings');">
-          <option value="smtp" selected>SMTP</option>
+          <option value="smtp">SMTP</option>
           <option value="smtpssl">SMTP/SSL</option>
           <option value="smtptls">SMTP/STARTTLS</option>
           <option value="local">{{_("Local")}}</option>
-          <option value="none">{{_("None")}}</option>
+          <option value="none" selected>{{_("None")}}</option>
         </select>
-        <div class="route-settings smtp smtpssl smtptls">
+        <div class="route-settings smtp smtpssl smtptls hide">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <label>{{_("Host name")}}</label>
             <input type="text" name="smtp-host" value="" placeholder="mail.server.com">
@@ -301,14 +324,25 @@
           </div>
         </div>
         <div class="route-settings local hide">
+          <div style="margin-right: 0; width: 25em;">
+            <p><i>
+              {{_("Send mail using local Unix tools.")}}
+              {{_("Use this setting if you have a working mail server on this machine.")}}
+            </i></p>
+          </div>
           <div class="left" style="margin-right: 0; width: 29em;">
             <label>{{_("Shell command")}}</label>
             <input type="text" name="local-command" style="width: 100%;"
                    value="" placeholder="- {{_('Leave blank to autodetect')}} -">
           </div>
         </div>
-        <div class="route-settings none text-center hide" style="width: 70%;">
-          <br><br><i>{{_("No outgoing mail for this account.")}}</i><br><br>
+        <div class="route-settings none" style="width: 70%;">
+          <br>
+          <br>
+          <p class="text-center"><i>
+            {{_("No outgoing mail for this account.")}}
+          </i></p>
+          <br>
         </div>
         <br clear="both">
         <div style="position: absolute; right: 0; bottom: 1.5em;">
@@ -317,7 +351,7 @@
         </div>
         <br clear="both">
       </div>
-  
+
       <p class="message paragraph-important"
          onclick='javascript:_fpa.next("profile-add-source");'>
         <span class="icon-mailsource"></span> {{_("Receiving Mail")}}
@@ -327,16 +361,15 @@
         <select class="right" style="width: auto;"
                 onchange="javascript:_fpa.select(this, 'source-settings-{{rid}}');"
                 name="source-{{rid}}-protocol">
-          <option value="imap" selected>IMAP</option>
-          <option value="imapssl">IMAP/SSL</option>
+          <option value="imap">IMAP</option>
+          <option value="imap_ssl">IMAP/SSL</option>
           <option value="pop3">POP3</option>
-          <option value="pop3ssl">POP3/SSL</option>
+          <option value="pop3_ssl">POP3/SSL</option>
           <option value="spool">{{_("Mail spool")}}</option>
-          <option value="local">{{_("Files")}}</option>
-          <option value="none">{{_("None")}}</option>
+          <option value="none" selected>{{_("None")}}</option>
         </select>
-  
-        <div class="source-settings-{{rid}} imap imapssl pop3 pop3ssl">
+
+        <div class="source-settings-{{rid}} imap imap_ssl pop3 pop3ssl hide">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <label>{{_("Host name")}}</label>
             <input type="text" name="source-{{rid}}-host" value="" placeholder="mail.server.com">
@@ -380,7 +413,7 @@
               </span>
             </span>
 #}
-            <span class="source-settings-{{rid}} imap imapssl">
+            <span class="source-settings-{{rid}} imap imap_ssl">
               <br>
               <input type="checkbox" name="source-{{rid}}-auto-tags" value="yes">
               <span class="checkbox">
@@ -395,12 +428,7 @@
           </div>
         </div>
 
-        <div class="source-settings-{{rid}} local spool hide">
-          <div class="source-settings-{{rid}} local left" style="margin-right: 0; width: 29em;">
-            <label>{{_("File or folder")}}</label>
-            <input type="text" name="source-{{rid}}-local" style="width: 100%"
-                   value="" placeholder="/home/user/Mail/">
-          </div>
+        <div class="source-settings-{{rid}} spool hide">
           <div class="source-settings-{{rid}} spool left" style="margin-right: 0; width: 29em;">
             <p><i>
               {{_("Receive mail from local Unix mail spool.")}}
@@ -408,24 +436,31 @@
             </i></p>
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
-            <input type="checkbox" name="source-{{rid}}-copy-local" value="yes" checked>
+            <input type="checkbox" name="source-{{rid}}-copy-local" value="yes"
+                   onchange='javascript:_fpa.requiredby(this, "source-{{rid}}-delete-source");'
+                   checked>
             <span class="checkbox">
               {{_("Copy mail to Mailpile secure storage")}}
             </span><br>
-            <input type="checkbox" name="source-{{rid}}-delete-local" value="yes">
+            <input type="checkbox" name="source-{{rid}}-delete-source" value="yes"
+                   onchange='javascript:_fpa.require(this, "source-{{rid}}-copy-local");'>
             <span class="checkbox">
-              <span class="source-settings-{{rid}} local">
-                {{_("Delete from source location")}}</span>
-              <span class="source-settings-{{rid}} spool">
-                {{_("Delete from Unix mail spool")}}</span>
+              {{_("Delete from Unix mail spool")}}
             </span>
           </div>
         </div>
-  
-        <div class="source-settings-{{rid}} none text-center hide" style="width: 70%;">
-          <br><br><i>{{_("No incoming mail for this account.")}}</i><br><br>
+
+        <div class="source-settings-{{rid}} none" style="width: 70%;">
+          <br><br>
+          <p class="text-center"><i>
+            {{_("No incoming mail for this account.")}}</i>
+          </p>
+          <br><br>
+          <p style="position: absolute; padding-right: 2em; left: 0; bottom: 0;">
+            {{_("Note: Use the Browse to import local mailboxes later on.")}}
+          </p>
         </div>
-  
+
         <br clear="both">
         <div style="position: absolute; right: 0; bottom: 1.5em;">
           <button onclick='javascript:_fpa.next("profile-add-security");'
