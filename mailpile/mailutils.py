@@ -270,8 +270,9 @@ def PrepareMessage(config, msg,
             rcpts += [sender]
 
         # Add headers we require
-        if 'date' not in msg:
-            msg['Date'] = email.utils.formatdate()
+        while 'date' in msg:
+            del msg['date']
+        msg['Date'] = email.utils.formatdate()
 
         import mailpile.plugins
         plugins = mailpile.plugins.PluginManager()
