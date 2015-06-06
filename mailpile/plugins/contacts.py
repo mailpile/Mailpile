@@ -3,8 +3,10 @@ import random
 import time
 
 import mailpile.defaults
+from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
+from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
@@ -754,6 +756,8 @@ def ProfileVCard(parent):
         ORDER = ('Tagging', 3)
         VCARD = "profile"
 
+        DEFAULT_KEYTYPE = 'RSA2048'
+
         def _yn(self, val, default='no'):
             return (self.data.get(val, [default])[0][:2].lower()
                     in ('ye', '1', 'on', 'tr'))
@@ -779,9 +783,11 @@ def ProfileVCard(parent):
             if protocol == 'none':
                 return
             elif protocol == 'local':
+                route.name = '%s: %s' % (_("Local"), vcard.email)
                 route.command = self.data.get('local-command'
                                               ) or self._sendmail_command()
             elif protocol in ('smtp', 'smtptls', 'smtpssl'):
+                route.name = 'SMTP: %s' % vcard.email
                 for var in ('smtp-username', 'smtp-password',
                             'smtp-auth_type', 'smtp-host', 'smtp-port'):
                    rvar = var.split('-', 1)[1]
@@ -790,7 +796,6 @@ def ProfileVCard(parent):
                 raise ValueError(_('Unhandled outgoing mail protocol: %s'
                                    ) % protocol)
             route.protocol = protocol
-            route.name = vcard.email
             vcard.route = route_id
 
         def _get_mail_spool(self):
@@ -816,7 +821,6 @@ def ProfileVCard(parent):
                     source = config.sources.get(src_id, {})
                     config.sources[src_id] = source
                     source = config.sources[src_id]
-                    source.name = vcard.email
                     source.profile = vcard.random_uid
                     source.discovery.apply_tags = [vcard.tag]
                     source.discovery.create_tag = True
@@ -838,6 +842,7 @@ def ProfileVCard(parent):
                         mailbox_idx = config.sys.mailbox.append(path)
 
                     source = make_new_source()
+                    source.name = path
                     source.protocol = 'mbox'
                     for tag in config.get_tags(type='inbox'):
                         source.discovery.apply_tags.append(tag._key)
@@ -879,20 +884,71 @@ def ProfileVCard(parent):
                     for rvar in ('protocol', 'auth_type', 'host', 'port',
                                  'username', 'password'):
                         source[rvar] = self.data.get(prefix + rvar, [''])[0]
+                    source.name = '%s: %s / %s' % (source.protocol[:4].upper(),
+                                                   source.username,
+                                                   source.host)
 
                 else:
                     raise ValueError(_('Unhandled incoming mail protocol: %s'
                                        ) % protocol)
 
+        def _new_key_created(self, event, vcard_rid):
+            vcard = None
+            if vcard_rid:
+                vcard = self.session.config.vcards.get_vcard(vcard_rid)
+            if not self._key_generator.generated_key:
+                event.message = _('PGP key generation failed!')
+                event.data['keygen_failed'] = True
+            elif vcard_rid and vcard:
+                vcard.pgp_key = self._key_generator.generated_key
+                vcard.save()
+                event.message = _('The PGP key for %s is ready for use.'
+                                  ) % vcard.email
+            else:
+                event.message = _('PGP key generation is complete')
+
+            event.flags = event.COMPLETE
+            event.data['keygen_finished'] = int(time.time())
+            self.session.config.event_log.log_event(event)
+
+        def _create_new_key(self, vcard, keytype):
+            random_uid = vcard.random_uid
+            bits = int(keytype.replace('RSA', ''))
+            key_args = {
+                # FIXME: EC keys!
+                'bits': bits,
+                'name': vcard.fn,
+                'email': vcard.email,
+                'comment': ''
+            }
+            event = Event(source=self,
+                          message=_('Generating new %d bit PGP key. '
+                                    'This may take some time!') % bits,
+                          flags=Event.INCOMPLETE,
+                          data={'keygen_started': int(time.time()),
+                                'profile_id': random_uid},
+                          private_data=key_args)
+            self._key_generator = GnuPGKeyGenerator(
+               # FIXME: Passphrase handling is a problem here
+               sps=self.session.config.gnupg_passphrase,
+               variables=dict_merge(GnuPGKeyGenerator.VARIABLES, key_args),
+               on_complete=(random_uid,
+                            lambda: self._new_key_created(event, random_uid))
+            )
+            self._key_generator.start()
+            self.session.config.event_log.log_event(event)
+
         def _configure_security(self, vcard):
             openpgp_key = self.data.get('security-pgp-key', [''])[0]
             if openpgp_key:
-                # The key itself!
                 if openpgp_key.startswith('!CREATE'):
-                    key_type = openpgp_key[8:] or 'RSA2048'
-                    print 'FIXME! SHOULD CREATE: %s' % key_type
+                    key_type = openpgp_key[8:] or self.DEFAULT_KEYTYPE
+                    self._create_new_key(vcard, key_type)
                 else:
                     vcard.pgp_key = openpgp_key
+                    # FIXME: Schedule a background sync job which edits
+                    #        the key to add this Account as a UID, if it
+                    #        is not on the key already.
 
                 # Encryption policy rules
                 outg_auto = self._yn('security-best-effort-crypto')

@@ -130,3 +130,42 @@ $(document).on('click', '.notification-nag', function(e) {
 $(document).on('click', '#connection-down-hide', function() {
   $('#connection-down').fadeOut().remove();
 });
+
+
+/* Set up some default notifications by listening to the Event log */
+EventLog.subscribe('.*AddProfile', function(ev) {
+  console.log('AddProfile event: ' + ev.data.keygen_started);
+  if (ev.data.keygen_started > 0) {
+      ev.icon = 'icon-lock-closed';
+      var $icon = $('.profile-' + ev.data.profile_id + '-key.icon');
+      if (ev.data.keygen_finished > 0) {
+          $icon.removeClass('unconfigured');
+          $icon.removeClass('icon-clock').removeClass('icon-lock-open');
+          $icon.addClass('configured').addClass('icon-lock-closed');
+      }
+      else {
+          $icon.removeClass('configured').removeClass('icon-lock-closed');
+          $icon.addClass('unconfigured').addClass('icon-clock');
+      }
+      Mailpile.notification(ev);
+  }
+});
+EventLog.subscribe('.*mail_source.*', function(ev) {
+  var $src = $('.source-' + ev.data.id);
+  if ($src.length > 0) {
+    ev.icon = 'icon-mailsource';
+    Mailpile.notification(ev);
+
+    var $icon = $src.find('.icon');
+    if (ev.data.connection.error[0]) {
+      $icon.removeClass('configured').removeClass('unconfigured');
+      $icon.addClass('misconfigured');
+      $src.attr('title', $src.data('title') + '\n\n' +
+                         '{{_("Error")}}: ' +  ev.message);
+    }
+    else {
+      $icon.removeClass('misconfigured').removeClass('unconfigured');
+      $icon.addClass('configured');
+    }
+  }
+});
