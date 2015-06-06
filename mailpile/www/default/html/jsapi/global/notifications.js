@@ -1,4 +1,15 @@
 /* Notifications - UI notification at top of window */
+
+Mailpile.cancel_notification = function(not_id, $existing) {
+  // Cancel existing notification, if any
+  var $existing = $existing || $('#event-' + not_id);
+  if ($existing.length > 0) {
+    clearTimeout($existing.data('timeout_id'));
+    $existing.remove();
+  }
+};
+
+
 Mailpile.notification = function(result) {
 
   // Create CSS friend event_id OR fake-id
@@ -32,7 +43,12 @@ Mailpile.notification = function(result) {
     result.complete = 'hide';
   }
   if (result.action === undefined) {
-    result.action = 8000
+    if (result.flags == "c") {
+      result.action = 8000; // Event complete, timeout quickly
+    }
+    else {
+      result.action = 360000000; // 100 hours - awaite completion
+    }
   }
   if (result.icon === undefined) {
     result.icon = 'icon-inbox';
@@ -54,6 +70,7 @@ Mailpile.notification = function(result) {
   }
 
   // Show Notification
+  Mailpile.cancel_notification(result.event_id);
   var notification_template = _.template($('#template-notification-bubble').html());
   $('#notification-bubbles').prepend(notification_template(result));
   setTimeout(function() {
@@ -62,11 +79,12 @@ Mailpile.notification = function(result) {
 
   // If Not Nagify, default
   if (result.complete === 'hide' && result.type !== 'nagify') {
-    setTimeout(function() {
+    var to_id = setTimeout(function() {
       $('#event-' + result.event_id).fadeOut('normal', function() {
         $(this).remove();
       });
     }, result.action);
+    $('#event-' + result.event_id).data('timeout_id', to_id);
   }
   else if (result.complete == 'redirect') {
     setTimeout(function() {
@@ -82,9 +100,7 @@ $(document).on('click', '.notification-close', function() {
     var next_nag = new Date().getTime() + Mailpile.nagify;
     Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag });
   }
-  $(this).parent().fadeOut(function() {
-    $(this).remove();
-  });
+  Mailpile.cancel_notification('', $(this).parent());
 });
 
 
