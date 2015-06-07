@@ -52,12 +52,12 @@ try:
 except ImportError:
     import StringIO
 
+import mailpile.mail_source.imap_utf7
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
-from mailpile.mail_source.imap_utf7 import decode as utf7_decode
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 
@@ -676,7 +676,11 @@ class ImapMailSource(BaseMailSource):
 
     def _mailbox_name(self, path):
         # len('src:/') = 5
-        return utf7_decode(str(path[(5 + len(self.my_config._key)):]))
+        path = str(path[(5 + len(self.my_config._key)):])
+        try:
+            return path.decode('imap4-utf-7')
+        except:
+            return path
 
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
