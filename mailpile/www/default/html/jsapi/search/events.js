@@ -111,21 +111,3 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     show_settings();
   });
 })();
-
-
-/* Edit Tag (from search result view) */
-(function() {
-  $(document).on('click', '.bulk-action-edit_tag', function(e) {
-    var template = 'modal-edit-tag';
-    Mailpile.API.with_template(template, function(modal) {
-      mf = $('#modal-full').html(modal({
-        icons: Mailpile.UI.tag_icons_as_lis(),
-        colors: Mailpile.UI.tag_colors_as_lis()
-      }));
-      mf.modal(Mailpile.UI.ModalOptions);
-    });
-  });
-
-  /* FIXME */
-})();
-

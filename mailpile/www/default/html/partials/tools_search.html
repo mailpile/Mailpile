@@ -74,7 +74,7 @@
 ' -%}
 {%- set hard_coded_selection_actions = safe(search_actions_1 + search_actions_2 + search_actions_3 + search_actions_4) -%}
 
-{%- if 'in:' in result.search_terms|join(' ') %}
+{%- if 'in:' == result.search_terms[0][:3] %}
 {%-   set saveClass = 'hide' %}
 {%-   set editClass = '' %}
 {%- else %}
@@ -92,7 +92,8 @@
     'name': 'edit_tag',
     'icon': 'settings',
     'class': editClass,
-    'url': '#edit_tag',
+    'aclass': 'auto-modal',
+    'url': '/tags/edit.html?only=' + result.search_terms[0][3:],
     'text': _("Edit"),
     'description': _("Edit this tag")
 }] -%}

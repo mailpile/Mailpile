@@ -16,9 +16,9 @@
 {%- endif %}
   <ul class="left horizontal">
   {{ hard_coded_activities|safe }}{% for elem in activities %}
-    <li class="{{elem.class}} btn-activity-{{elem.name}}
+    <li class="btn-activity-{{elem.name}} {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a class="bulk-action-{{elem.name}}" href="{{ U(elem.url) }}" title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}} {{elem.aclass}}" href="{{ U(elem.url) }}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
       {%- elif elem.icon -%}
@@ -34,10 +34,10 @@
     }});
   </script>{% endif %}
   {%- for elem in display_refiners %}
-    <li class="{{elem.class}} btn-display-refiner-{{elem.name}}
+    <li class="btn-display-refiner-{{elem.name}} {{elem.class}}
         {%- if state.command_url|add_state_query_string(state) == url %} navigation-on{% endif %}">
       <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
-         title="{{elem.description}}">
+         class="{{elem.aclass}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
       {%- elif elem.icon -%}
@@ -55,10 +55,10 @@
   <ul class="right horizontal">
   {%- if display_modes|length > 1 %}
    {%- for elem in display_modes %}
-    <li class="{{elem.class}} btn-display-mode-{{elem.name}}
+    <li class="btn-display-mode-{{elem.name}} {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
       <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
-         title="{{elem.description}}">
+         title="{{elem.description}}" class="{{elem.aclass}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
       {%- elif elem.icon -%}
@@ -93,9 +93,10 @@
   {%- endif %}
   <ul class="horizontal right">
   {%- for elem in selection_actions %}
-    <li class="hide {{elem.class}} btn-selection-action-{{elem.name}}
+    <li class="btn-selection-action-{{elem.name}} hide {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a class="bulk-action-{{elem.name}}" href="#" title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}}" href="#"
+         title="{{elem.description}}" class="{{elem.aclass}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}" alt="{{elem.text}}">
       {%- elif elem.icon -%}

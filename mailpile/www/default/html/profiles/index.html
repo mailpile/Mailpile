@@ -25,6 +25,7 @@
 {%- if result.profiles|length > 0 %}
       </th><td width='1%'><span class="icon icon-new"></span>
       </td><td width='1%'><span class="icon icon-inbox"></span>
+      </td><td width='1%'><span class="icon icon-outbox"></span>
       </td><td><i>settings</i>
 {% else %}
       </td><td colspan=3 style='border: 0;'>
@@ -57,15 +58,17 @@
             title="{{_("Edit Profile")}}"
                     href="{{ U('/profiles/view/', profile_rid, '/edit.html') }}">
                    <span class="icon icon-user" style="color: #070;"></span>
-                 </a>
-               </td><td style='text-align: left;'>
-                 <a href="{{ U('/in/inbox/?qr=in:', p['x-mailpile-profile-tag']) }}">
-                   {{ p.fn }}
-                 </a>
-               </td><td style='text-align: left;'>{% for e in p.email %}
-                   {{ e.email }}{% if not loop.last %}<br>{% endif %}
-               {% endfor %}</td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
+         </a>
+       </td><td style='text-align: left;'>
+         <a href="{{ U('/in/inbox/?qr=in:', p['x-mailpile-profile-tag']) }}">
+           {{ p.fn }}
+         </a>
+       </td><td style='text-align: left;'>{% for e in p.email %}
+         {{ e.email }}{% if not loop.last %}<br>{% endif %}
+       {%- endfor %}
+       </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
+       </td><td><a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
        </td><td>
          <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
             title="{{_("Add new incoming mail source")}}"
@@ -90,7 +93,9 @@
          <a class="auto-modal" data-flags="reload" data-icon="icon-lock-closed"
             title="{{_("Security settings")}}"
             href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=security') }}">
-           <span class=" profile-{{profile_rid}}-key {% if not p.key %}un{% endif %}configured icon icon-lock-closed"></span>
+           <span class="profile-{{profile_rid}}-key
+                        {% if p.key %}configured icon icon-lock-closed
+                        {% else %}unconfigured icon icon-lock-open{% endif %}"></span>
          </a>
        </td><td>
          <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
@@ -121,7 +126,7 @@
         <a href="{{ U('/in/new/') }}">
           <span class="icon icon-new"></span> {{_("Unread Mail")}}
         </a>
-      </td><td colspan=4>
+      </td><td colspan=5>
         <a href="{{ U('/browse/') }}">
           <span class="icon icon-list"></span> {{_("Browse")}}
         </a>

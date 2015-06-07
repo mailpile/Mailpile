@@ -1,12 +1,18 @@
 /* Notifications - UI notification at top of window */
 
-Mailpile.cancel_notification = function(not_id, $existing) {
+Mailpile.cancel_notification = function(not_id, $existing, replace) {
   // Cancel existing notification, if any
   var $existing = $existing || $('#event-' + not_id);
   if ($existing.length > 0) {
     clearTimeout($existing.data('timeout_id'));
-    $existing.remove();
+    if (replace) {
+      return $existing;
+    }
+    else {
+      $existing.remove();
+    }
   }
+  return undefined;
 };
 
 
@@ -27,31 +33,34 @@ Mailpile.notification = function(result) {
     "warning" : "This here be a warning to you",
     "error"   : "You have discovered an error"
   }
-
-  if (result.message === undefined) {
-    result['message'] = default_messages[result.status];
+  if (result.message  === undefined) {
+    result.message = default_messages[result.status];
   }
 
   // Default Options
-  if (result.undo === undefined) {
-    result.undo = false;
-  }
-  if (result.type === undefined) {
-    result.type = 'notify';
-  }
-  if (result.complete === undefined) {
-    result.complete = 'hide';
-  }
-  if (result.action === undefined) {
-    if (result.flags == "c") {
-      result.action = 8000; // Event complete, timeout quickly
+  if (result.message2 === undefined) {
+    if (result.data && result.data.name) {
+      result.message2 = result.message;
+      result.message = result.data.name;
     }
     else {
-      result.action = 360000000; // 100 hours - awaite completion
+      result.message2 = '';
     }
   }
-  if (result.icon === undefined) {
-    result.icon = 'icon-inbox';
+  if (result.undo        === undefined) result.undo = false;
+  if (result.type        === undefined) result.type = 'notify';
+  if (result.complete    === undefined) result.complete = 'hide';
+  if (result.action      === undefined) result.action = '';
+  if (result.action_url  === undefined) result.action_url = '';
+  if (result.action_text === undefined) result.action_text = '';
+  if (result.icon        === undefined) result.icon = 'icon-inbox';
+  if (result.timeout     === undefined) {
+    if (result.flags == "c") {
+      result.timeout = 8000; // Event complete, timeout quickly
+    }
+    else {
+      result.timeout = 360000000; // 100 hours - awaite completion
+    }
   }
 
   // Undo & Icon
@@ -66,13 +75,18 @@ Mailpile.notification = function(result) {
 
   // If Undo, extend hide
   if (result.undo && result.complete === 'hide') {
-    result.action = 20000;
+    result.timeout = 20000;
   }
 
   // Show Notification
-  Mailpile.cancel_notification(result.event_id);
+  var $elem = Mailpile.cancel_notification(result.event_id, undefined, 'keep');
   var notification_template = _.template($('#template-notification-bubble').html());
-  $('#notification-bubbles').prepend(notification_template(result));
+  if ($elem) {
+      $elem.replaceWith(notification_template(result));
+  }
+  else {
+      $('#notification-bubbles').prepend(notification_template(result));
+  }
   setTimeout(function() {
     $('#event-' + result.event_id).fadeIn('fast');
   }, 250);
@@ -83,12 +97,12 @@ Mailpile.notification = function(result) {
       $('#event-' + result.event_id).fadeOut('normal', function() {
         $(this).remove();
       });
-    }, result.action);
+    }, result.timeout);
     $('#event-' + result.event_id).data('timeout_id', to_id);
   }
   else if (result.complete == 'redirect') {
     setTimeout(function() {
-      window.location.href = result.action 
+      window.location.href = result.action
     }, 4000);
   }
 };
@@ -157,7 +171,7 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
     Mailpile.notification(ev);
 
     var $icon = $src.find('.icon');
-    if (ev.data.connection.error[0]) {
+    if (ev.data.connection && ev.data.connection.error[0]) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
