@@ -468,7 +468,7 @@ def decrypt_and_parse_lines(fd, parser, config,
                     [line], fd,
                     name='decrypt_and_parse',
                     mep_key=symmetric_key,
-                    gpg_pass=(config.gnupg_passphrase.get_reader()
+                    gpg_pass=(config.passphrases['DEFAULT'].get_reader()
                               if config else None)) as pdsfd:
                 _parser(pdsfd)
                 pdsfd.verify(_raise=_raise)

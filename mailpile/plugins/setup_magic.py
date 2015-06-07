@@ -759,7 +759,7 @@ class SetupCrypto(TestableWebbable):
                 return
 
             editor = GnuPGKeyEditor(key_id, set_uids=uids,
-                                    sps=self.session.config.gnupg_passphrase,
+                                    sps=self.session.config.passphrases['DEFAULT'],
                                     deletes=max(10, 2*len(uids)))
 
             def start_editor(*unused_args):
@@ -825,7 +825,7 @@ class SetupCrypto(TestableWebbable):
                     if not chosen_key:
                         choose_key = '!CREATE'
                     results['updated_passphrase'] = True
-                    session.config.gnupg_passphrase.data = sps.data
+                    session.config.passphrases['DEFAULT'].data = sps.data
                     mailpile.auth.SetLoggedIn(self)
             except AssertionError:
                 error_info = (_('Invalid passphrase'), {
@@ -849,7 +849,7 @@ class SetupCrypto(TestableWebbable):
                             (Setup.KEY_CREATING_THREAD is None or
                              Setup.KEY_CREATING_THREAD.failed)):
                         gk = GnuPGKeyGenerator(
-                            sps=session.config.gnupg_passphrase,
+                            sps=session.config.passphrases['DEFAULT'],
                             on_complete=('notify',
                                          lambda: self.gpg_key_ready(gk)))
                         Setup.KEY_CREATING_THREAD = gk

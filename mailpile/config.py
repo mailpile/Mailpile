@@ -1250,7 +1250,9 @@ class ConfigManager(ConfigDict):
                 self.background.ui.debug(msg)
         self.command_cache = CommandCache(debug=cache_debug)
 
-        self.gnupg_passphrase = SecurePassphraseStorage()
+        self.passphrases = {
+            'DEFAULT': SecurePassphraseStorage(),
+        }
 
         self.jinja_env = Environment(
             loader=MailpileJinjaLoader(self),

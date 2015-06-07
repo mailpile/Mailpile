@@ -419,7 +419,7 @@ class GnuPG:
         if self.config:
             self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
-            self.passphrase = self.config.gnupg_passphrase.get_reader()
+            self.passphrase = self.config.passphrases['DEFAULT'].get_reader()
         else:
             self.passphrase = None
             self.homedir = GNUPG_HOMEDIR

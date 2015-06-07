@@ -117,6 +117,9 @@ CONFIG_RULES = {
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
     }, {}],
+    'secrets': [_('Secrets the user wants saved'), {
+        'password':        (_('A secret'), str, '')
+    }, {}],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),
         'protocol':        (_('Messaging protocol'),

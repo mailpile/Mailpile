@@ -6,6 +6,7 @@ import mailpile.defaults
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
+from mailpile.config import SecurePassphraseStorage
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -783,11 +784,11 @@ def ProfileVCard(parent):
             if protocol == 'none':
                 return
             elif protocol == 'local':
-                route.name = '%s: %s' % (_("Local"), vcard.email)
+                route.name = _("Local mail")
                 route.command = self.data.get('local-command'
                                               ) or self._sendmail_command()
             elif protocol in ('smtp', 'smtptls', 'smtpssl'):
-                route.name = 'SMTP: %s' % vcard.email
+                route.name = vcard.email
                 for var in ('smtp-username', 'smtp-password',
                             'smtp-auth_type', 'smtp-host', 'smtp-port'):
                    rvar = var.split('-', 1)[1]
@@ -877,6 +878,7 @@ def ProfileVCard(parent):
                     else:
                         disco.policy = 'ignore'
                         disco.local_copy = False
+                    disco.paths = ['/']
                     disco.guess_tags = True
                     disco.visible_tags = self._yn(prefix + 'auto-tags')
 
@@ -884,34 +886,64 @@ def ProfileVCard(parent):
                     for rvar in ('protocol', 'auth_type', 'host', 'port',
                                  'username', 'password'):
                         source[rvar] = self.data.get(prefix + rvar, [''])[0]
-                    source.name = '%s: %s / %s' % (source.protocol[:4].upper(),
-                                                   source.username,
-                                                   source.host)
+                    username = source.username
+                    if '@' not in username:
+                        username += '@%s' % source.host
+                    source.name = username
 
                 else:
                     raise ValueError(_('Unhandled incoming mail protocol: %s'
                                        ) % protocol)
 
-        def _new_key_created(self, event, vcard_rid):
+        def _new_key_created(self, event, vcard_rid, passphrase):
             vcard = None
+            fingerprint = self._key_generator.generated_key
             if vcard_rid:
                 vcard = self.session.config.vcards.get_vcard(vcard_rid)
-            if not self._key_generator.generated_key:
+            if not fingerprint:
                 event.message = _('PGP key generation failed!')
                 event.data['keygen_failed'] = True
             elif vcard_rid and vcard:
-                vcard.pgp_key = self._key_generator.generated_key
+                vcard.pgp_key = fingerprint
                 vcard.save()
                 event.message = _('The PGP key for %s is ready for use.'
                                   ) % vcard.email
             else:
                 event.message = _('PGP key generation is complete')
 
+            # Record the passphrase.
+            sps = SecurePassphraseStorage(passphrase=passphrase)
+            self.session.config.secrets[fingerprint] = {'password': passphrase}
+            self.session.config.passphrases[fingerprint] = sps
+            # FIXME: Toggle something that indicates we need a backup ASAP.
+            self._background_save(config=True)
+
             event.flags = event.COMPLETE
             event.data['keygen_finished'] = int(time.time())
             self.session.config.event_log.log_event(event)
 
+        def _create_passphrase(self):
+            # Generate passphrases based on random garbage.  This garbage
+            # does not need to be strongly random, because its security is
+            # derived from and relies on that of the global master key
+            # (which IS strongly random).
+            #
+            # Since we expect users may have to type these at some point we
+            # stick with lowercase letters & numbers, omitting 1 and l.
+            #
+            passphrase = ''
+            while len(passphrase) < 26:
+                passphrase += sha512b64('%s/%x-%x-%x'
+                                        % (self.session.config.master_key,
+                                          random.randint(0, 0xffffffff),
+                                          os.getpid(), time.time())
+                                        ).lower()
+                passphrase = passphrase.replace('l', '')
+                passphrase = passphrase.replace('1', '')
+            return passphrase[:26]  # 26 chars, ~128 bits
+
         def _create_new_key(self, vcard, keytype):
+            passphrase = self._create_passphrase()
             random_uid = vcard.random_uid
             bits = int(keytype.replace('RSA', ''))
             key_args = {
@@ -919,6 +951,7 @@ def ProfileVCard(parent):
                 'bits': bits,
                 'name': vcard.fn,
                 'email': vcard.email,
+                'passphrase': passphrase,
                 'comment': ''
             }
             event = Event(source=self,
@@ -930,10 +963,10 @@ def ProfileVCard(parent):
                           private_data=key_args)
             self._key_generator = GnuPGKeyGenerator(
                # FIXME: Passphrase handling is a problem here
-               sps=self.session.config.gnupg_passphrase,
                variables=dict_merge(GnuPGKeyGenerator.VARIABLES, key_args),
                on_complete=(random_uid,
-                            lambda: self._new_key_created(event, random_uid))
+                            lambda: self._new_key_created(event, random_uid,
+                                                          passphrase))
             )
             self._key_generator.start()
             self.session.config.event_log.log_event(event)
