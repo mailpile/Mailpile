@@ -41,14 +41,7 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         passphrase = 'this probably does not really overwrite :-( '
 
     assert(sps is not None)
-
-    # Note: Must use GnuPG without a config, otherwise bad things happen.
-    gpg = GnuPG(None, use_agent=False, debug=('gnupg' in config.sys.debug))
-    if gpg.is_available():
-        gpg.passphrase = sps.get_reader()
-        gpgr = config.prefs.gpg_recipient
-        gpgr = key or (gpgr if (gpgr not in (None, '', '!CREATE')) else None)
-        assert(gpg.sign('Sign This!', fromkey=gpgr)[0] == 0)
+    assert(config.load_master_key(sps))
 
     # Fun side effect: changing the passphrase invalidates the message cache
     import mailpile.mailutils
@@ -144,10 +137,8 @@ class Authenticate(Command):
                     sps = config.passphrases['DEFAULT']
                 else:
                     sps = VerifyAndStorePassphrase(config, passphrase=password)
-                if sps:
-                    # Store the varified passphrase
-                    config.passphrases['DEFAULT'].data = sps.data
 
+                if sps:
                     # Load the config and index, if necessary
                     config = self._config()
                     self._idx(wait=False)

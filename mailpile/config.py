@@ -61,10 +61,18 @@ class SecurePassphraseStorage(object):
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
     def __init__(self, passphrase=None):
+        self.generation = 0
         if passphrase is not None:
             self.set_passphrase(passphrase)
         else:
             self.data = None
+
+    def copy(self, src):
+        self.data = src.data
+        self.generation += 1
+
+    def is_set(self):
+        return (self.data is not None)
 
     def _passphrase_as_bytes(self, passphrase):
         try:
@@ -77,6 +85,7 @@ class SecurePassphraseStorage(object):
         # primitive in-memory obfuscation relying on how Python represents
         # small integers as globally shared objects. Better Than Nothing!
         self.data = self._passphrase_as_bytes(passphrase)
+        self.generation += 1
 
     def compare(self, passphrase):
         return (self.data is not None and
@@ -556,7 +565,7 @@ def _GPGKeyCheck(value):
     ValueError: Not a GPG key ID or fingerprint
     """
     value = value.replace(' ', '').replace('\t', '').strip()
-    if value == '!CREATE':
+    if value in ('!CREATE', '!PASSWORD'):
         return value
     try:
         if len(value) not in (8, 16, 40):
@@ -1221,7 +1230,7 @@ class ConfigManager(ConfigDict):
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
         self._master_key_ondisk = None
-        self._master_key_recipient = None
+        self._master_key_passgen = -1
 
         self.plugins = None
         self.background = None
@@ -1346,6 +1355,30 @@ class ConfigManager(ConfigDict):
         with self._lock:
             return self._unlocked_load(*args, **kwargs)
 
+    def load_master_key(self, passphrase, _raise=None):
+        keydata = []
+
+        if passphrase.is_set():
+            parser = lambda d: keydata.extend(d)
+            try:
+                with open(self.conf_key, 'rb') as fd:
+                    decrypt_and_parse_lines(fd, parser, self,
+                                            newlines=True,
+                                            passphrase=passphrase)
+            except IOError:
+                keydata = []
+
+        if keydata:
+            self.passphrases['DEFAULT'].copy(passphrase)
+            self.master_key = ''.join(keydata)
+            self._master_key_ondisk = self.master_key
+            self._master_key_passgen = self.passphrases['DEFAULT'].generation
+            return True
+        else:
+            if _raise is not None:
+                raise _raise('Failed to decrypt master key')
+            return False
+
     def _unlocked_load(self, session, filename=None, public=False):
         self._mkworkdir(session)
         if self.index:
@@ -1362,18 +1395,13 @@ class ConfigManager(ConfigDict):
         lines = []
         try:
             if os.path.exists(self.conf_key) and not public:
-                keydata = []
-                with open(self.conf_key, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, lambda d: keydata.extend(d),
-                                            self, newlines=True)
-                self.master_key = ''.join(keydata)
-                self._master_key_ondisk = self.master_key
-                self._master_key_recipient = self.prefs.gpg_recipient
+                self.load_master_key(self.passphrases['DEFAULT'],
+                                     _raise=IOError)
 
+            collector = lambda ll: lines.extend(ll)
             if os.path.exists(filename):
                 with open(filename, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll),
-                                            self)
+                    decrypt_and_parse_lines(fd, collector, self)
         except IOError:
             if public:
                 raise
@@ -1499,15 +1527,21 @@ class ConfigManager(ConfigDict):
         # We keep the master key in a file of its own and never delete
         # or overwrite master keys.
         want_renamed_keyfile = None
-        if (self._master_key_ondisk != self.master_key or
-               self._master_key_recipient != self.prefs.gpg_recipient):
+        master_passphrase = self.passphrases['DEFAULT']
+        if (self._master_key_passgen != master_passphrase.generation
+                or self._master_key_ondisk != self.master_key):
             if os.path.exists(keyfile):
                 want_renamed_keyfile = keyfile + ('.%x' % time.time())
         if want_renamed_keyfile or not os.path.exists(keyfile):
-            gpgr = self.prefs.get('gpg_recipient')
-            if self.master_key and gpgr != '!CREATE':
+            if self.master_key and master_passphrase.is_set():
+
+                # If there is no GPG recipient, use symmetric encryption.
+                gpgr = self.prefs.get('gpg_recipient', '').replace(',', ' ')
                 status, encrypted_key = GnuPG(self).encrypt(self.master_key,
-                                                            tokeys=[gpgr])
+                    tokeys=(gpgr.split()
+                            if (gpgr and gpgr not in ('!CREATE', '!PASSWORD'))
+                            else None))
+
                 if status == 0:
                     try:
                         with open(keyfile + '.new', 'wb') as fd:
@@ -1516,7 +1550,7 @@ class ConfigManager(ConfigDict):
                             os.rename(keyfile, want_renamed_keyfile)
                         os.rename(keyfile + '.new', keyfile)
                         self._master_key_ondisk = self.master_key
-                        self._master_key_recipient = self.prefs.gpg_recipient
+                        self._master_key_passgen = master_passphrase.generation
                     except:
                         if (want_renamed_keyfile and
                                 os.path.exists(want_renamed_keyfile)):

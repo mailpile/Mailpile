@@ -223,8 +223,8 @@ class UrlMap:
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
-        """Redirects to /in/inbox/ for now.  (FIXME)"""
-        destination = '%s/in/inbox/' % self.config.sys.http_path
+        """Redirects to /profiles/ for now.  (FIXME)"""
+        destination = '%s/profiles/' % self.config.sys.http_path
         return [UrlRedirect(self.session, 'redirect', arg=[destination])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
@@ -351,14 +351,14 @@ class UrlMap:
             ...
         UsageError: Not available for GET: bogus
 
-        The root currently just redirects to /in/inbox/:
+        This is the async version of the API.
         >>> urlmap.map(request, 'GET', '/async/0/search/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
-        The root currently just redirects to /in/inbox/:
+        The root currently just redirects to /profiles/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect...>, ('/in/inbox/',))
+        (<...UrlRedirect...>, ('/profiles/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})

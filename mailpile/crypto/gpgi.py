@@ -457,7 +457,6 @@ class GnuPG:
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.threads = {}
 
-        wtf = ' '.join(args)
         args = args[:] if args else []
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
@@ -500,6 +499,7 @@ class GnuPG:
                     c = self.passphrase.read(BLOCKSIZE)
                 proc.stdin.write('\n')
 
+            wtf = ' '.join(args)
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr)
@@ -758,18 +758,24 @@ class GnuPG:
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
-        action = ["--encrypt", "--yes", "--expert", "--trust-model", "always"]
+        if tokeys:
+            action = ["--encrypt", "--yes", "--expert",
+                      "--trust-model", "always"]
+            for r in tokeys:
+                action.append("--recipient")
+                action.append(r)
+            action.extend([])
+        else:
+            action = ["--symmetric", "--yes", "--expert"]
         if armor:
             action.append("--armor")
-        for r in tokeys:
-            action.append("--recipient")
-            action.append(r)
         if sign:
             action.append("--sign")
         if sign and fromkey:
             action.append("--local-user")
             action.append(fromkey)
-        retvals = self.run(action, gpg_input=data, send_passphrase=sign)
+        retvals = self.run(action, gpg_input=data,
+                           send_passphrase=(sign or not tokeys))
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,

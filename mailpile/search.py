@@ -11,6 +11,7 @@ from urllib import quote, unquote
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
+from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -314,6 +315,25 @@ class MailIndex(object):
                     self.TAGS[tid] = set()
                 self.TAGS[tid].add(msg_idx_pos)
 
+    def _maybe_encrypt(self, data):
+        gpgr = self.config.prefs.gpg_recipient
+        tokeys = ([gpgr]
+                  if gpgr not in (None, '', '!CREATE', '!PASSWORD')
+                  else None)
+        if tokeys:
+            stat, edata = GnuPG(self.config).encrypt(data, tokeys=tokeys)
+            if stat == 0:
+                return edata
+
+        elif self.config.master_key:
+            with EncryptingStreamer(self.config.master_key,
+                                    delimited=True) as es:
+                es.write(data)
+                return es.save(None)
+
+        return data
+
+
     def save_changes(self, session=None):
         self._save_lock.acquire()
         try:
@@ -342,13 +362,9 @@ class MailIndex(object):
                 self.EMAILS_SAVED = total
 
             # Unlocked, try to write this out
-            gpgr = self.config.prefs.gpg_recipient
-            gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
-            data = ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods])
-            if gpgr:
-                status, edata = GnuPG(self.config).encrypt(data, tokeys=[gpgr])
-                if status == 0:
-                    data = edata
+
+            data = self._maybe_encrypt(
+                ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods]))
             with open(self.config.mailindex_file(), 'a') as fd:
                 fd.write(data)
                 self._saved_changes += 1
@@ -387,15 +403,8 @@ class MailIndex(object):
             index_counter = len(self.INDEX)
             for i in range(0, index_counter):
                 data.append(self.INDEX[i] + '\n')
-            data = ''.join(data)
 
-            gpgr = self.config.prefs.gpg_recipient
-            gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
-            if gpgr:
-                status, edata = GnuPG(self.config).encrypt(data, tokeys=[gpgr])
-                if status == 0:
-                    data = edata
-
+            data = self._maybe_encrypt(''.join(data))
             with open(newfile, 'w') as fd:
                 fd.write(data)
 

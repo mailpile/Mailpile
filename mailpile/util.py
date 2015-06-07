@@ -447,9 +447,14 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8',
+                            passphrase=None,
                             _raise=IOError):
     import mailpile.crypto.streamer as cstrm
     symmetric_key = config and config.master_key or 'missing'
+    passphrase_reader = (passphrase.get_reader()
+                         if (passphrase is not None) else
+                         (config.passphrases['DEFAULT'].get_reader()
+                          if config else None))
 
     if not newlines:
         if decode:
@@ -468,13 +473,11 @@ def decrypt_and_parse_lines(fd, parser, config,
                     [line], fd,
                     name='decrypt_and_parse',
                     mep_key=symmetric_key,
-                    gpg_pass=(config.passphrases['DEFAULT'].get_reader()
-                              if config else None)) as pdsfd:
+                    gpg_pass=passphrase_reader) as pdsfd:
                 _parser(pdsfd)
                 pdsfd.verify(_raise=_raise)
         else:
             _parser([line])
-
 
 
 # This is a hack to deal with the fact that Windows sometimes won't

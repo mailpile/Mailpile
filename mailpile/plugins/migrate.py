@@ -54,14 +54,6 @@ def migrate_routes(session):
             session.config.routes[route_name] = route_dict
             session.config.prefs.default_messageroute = route_name
 
-    for profile in session.config.profiles:
-        if profile.get('route'):
-            route_dict = route_parse(profile.route)
-            if route_dict:
-                route_name = make_route_name(route_dict)
-                session.config.routes[route_name] = route_dict
-                profile.messageroute = route_name
-
     return True
 
 
@@ -166,39 +158,12 @@ def migrate_mailboxes(session):
     return True
 
 
-def migrate_profiles(session):
-    config, vcards = session.config, session.config.vcards
-
-    for profile in config.profiles:
-        if profile.email:
-            vcard = vcards.get_vcard(profile.email)
-            if vcard and vcard.email == profile.email:
-                vcards.deindex_vcard(vcard)
-            else:
-                vcard = MailpileVCard(
-                    VCardLine(name='EMAIL', value=profile.email, type='PREF'),
-                    VCardLine(name='FN', value=profile.name or profile.email))
-            vcard.kind = 'profile'
-            if profile.signature:
-                vcard.signature = profile.signature
-            if profile.messageroute:
-                vcard.route = profile.messageroute
-            vcards.add_vcards(vcard)
-
-    config.profiles = {}
-    return True
-
-
 def migrate_cleanup(session):
     config = session.config
 
     # Clean the autotaggers
     autotaggers = [t for t in config.prefs.autotag.values() if t.tagger]
     config.prefs.autotag = autotaggers
-
-    # Clean the profiles
-    profiles = [p for p in config.profiles.values() if p.email or p.name]
-    config.profiles = profiles
 
     # Clean the vcards:
     #   - Prefer vcards with valid key info
@@ -233,11 +198,10 @@ def migrate_cleanup(session):
 
 
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
-MIGRATIONS_AFTER_SETUP = [migrate_profiles, migrate_cleanup]
+MIGRATIONS_AFTER_SETUP = [migrate_cleanup]
 MIGRATIONS = {
     'routes': migrate_routes,
     'sources': migrate_mailboxes,
-    'profiles': migrate_profiles,
     'cleanup': migrate_cleanup
 }
 

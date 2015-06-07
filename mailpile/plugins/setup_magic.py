@@ -14,7 +14,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.plugins import PLUGINS
-from mailpile.plugins.contacts import AddProfile
+from mailpile.plugins.contacts import AddProfile, ListProfiles
 from mailpile.plugins.contacts import ListProfiles
 from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.tags import AddTag
@@ -262,83 +262,8 @@ class SetupMagic(Command):
             session.config.save()
             session.config.prepare_workers(session, daemons=want_daemons)
 
-    def setup_command(self, session, do_gpg_stuff=False):
-        do_gpg_stuff = do_gpg_stuff or ('do_gpg_stuff' in self.args)
-
-        # Stop the workers...
-        want_daemons = session.config.cron_worker is not None
-        session.config.stop_workers()
-
-        # Perform any required migrations
-        Migrate(session).run(before_setup=True, after_setup=False)
-
-        # Basic app config, tags, plugins, etc.
-        self.basic_app_config(session,
-                              save_and_update_workers=False,
-                              want_daemons=want_daemons)
-
-        # Assumption: If you already have secret keys, you want to
-        #             use the associated addresses for your e-mail.
-        #             If you don't already have secret keys, you should have
-        #             one made for you, if GnuPG is available.
-        #             If GnuPG is not available, you should be warned.
-        if do_gpg_stuff:
-            gnupg = GnuPG(None)
-            accepted_keys = []
-            if gnupg.is_available():
-                keys = gnupg.list_secret_keys()
-                cutoff = (datetime.date.today() + datetime.timedelta(days=365)
-                          ).strftime("%Y-%m-%d")
-                for key, details in keys.iteritems():
-                    # Ignore revoked/expired/disabled keys.
-                    revoked = details.get('revocation_date')
-                    expired = details.get('expiration_date')
-                    if (details.get('disabled') or
-                            (revoked and revoked <= cutoff) or
-                            (expired and expired <= cutoff)):
-                        continue
-
-                    accepted_keys.append(key)
-                    for uid in details["uids"]:
-                        if "email" not in uid or uid["email"] == "":
-                            continue
-
-                        if uid["email"] in [x["email"]
-                                            for x in session.config.profiles]:
-                            # Don't set up the same e-mail address twice.
-                            continue
-
-                        # FIXME: Add route discovery mechanism.
-                        profile = {
-                            "email": uid["email"],
-                            "name": uid["name"],
-                        }
-                        session.config.profiles.append(profile)
-                    if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
-                           and details["capabilities_map"]["encrypt"]):
-                        session.config.prefs.gpg_recipient = key
-                        session.ui.notify(_('Encrypting config to %s') % key)
-                    if session.config.prefs.crypto_policy == 'none':
-                        session.config.prefs.crypto_policy = 'openpgp-sign'
-
-                if len(accepted_keys) == 0:
-                    # FIXME: Start background process generating a key once a
-                    #        user has supplied a name and e-mail address.
-                    pass
-
-            else:
-                session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
-
-        # If we have a GPG key, but no master key, create it
-        self.make_master_key()
-
-        # Perform any required migrations
-        Migrate(session).run(before_setup=False, after_setup=True)
-
-        session.config.save()
-        session.config.prepare_workers(session, daemons=want_daemons)
-
-        return self._success(_('Performed initial Mailpile setup'))
+    def setup_command(self, session):
+        pass  # Overridden by children
 
     def make_master_key(self):
         session = self.session
@@ -657,26 +582,26 @@ class SetupWelcome(TestableWebbable):
             with BLOCK_HTTPD_LOCK, Idle_HTTPD(allowed=0):
                 self.basic_app_config(self.session)
 
-        # Next, if we have any secret GPG keys, extract all the e-mail
-        # addresses and create a profile for each one.
-        with BLOCK_HTTPD_LOCK, Idle_HTTPD(allowed=0):
-            SetupProfiles(self.session).auto_create_profiles()
+    def configure_language(self, session, config, language, save=True):
+        try:
+            i18n = lambda: ActivateTranslation(session, config, language)
+            if not self._testing_yes(i18n):
+                raise ValueError('Failed to configure i18n')
+            config.prefs.language = language
+            if save and not self._testing():
+                self._background_save(config=True)
+            return True
+        except ValueError:
+            return self._error(_('Invalid language: %s') % language)
 
     def setup_command(self, session):
         config = session.config
         if self.data.get('_method') == 'POST' or self._testing():
             language = self.data.get('language', [''])[0]
             if language:
-                try:
-                    i18n = lambda: ActivateTranslation(session, config,
-                                                       language)
-                    if not self._testing_yes(i18n):
-                        raise ValueError('Failed to configure i18n')
-                    config.prefs.language = language
-                    if not self._testing():
-                        self._background_save(config=True)
-                except ValueError:
-                    return self._error(_('Invalid language: %s') % language)
+                rv = self.configure_language(session, config, language)
+                if rv is not True:
+                    return rv
 
             config.slow_worker.add_unique_task(
                 session, 'Setup, Stage 1', lambda: self.bg_setup_stage_1())
@@ -684,6 +609,47 @@ class SetupWelcome(TestableWebbable):
         results = {
             'languages': ListTranslations(config),
             'language': config.prefs.language
+        }
+        return self._success(_('Welcome to Mailpile!'), results)
+
+
+class SetupPassword(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/password', None)
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
+        'existing': 'Old Mailpile password',
+        'password1': 'New Mailpile password',
+        'password2': 'Confirmation password'
+    })
+
+    def setup_command(self, session):
+        config = session.config
+        current_passphrase = config.passphrases['DEFAULT']
+        need_password = current_passphrase.is_set()
+        mismatch = done = False
+        if self.data.get('_method') == 'POST' or self._testing():
+
+            if need_password:
+                ex = self.data.get('existing', [''])[0]
+                if not current_passphrase.compare(ex):
+                    mismatch = True
+
+            if not mismatch:
+                p1 = self.data.get('password1', [''])[0]
+                p2 = self.data.get('password2', [''])[0]
+                if p1 and p2 and p1 == p2:
+                    config.passphrases['DEFAULT'].set_passphrase(p1)
+                    config.prefs.gpg_recipient = '!PASSWORD'
+                    self.make_master_key()
+                    self._background_save(config=True)
+                    done = True
+            else:
+                mismatch = True
+
+        results = {
+            'need_password': need_password,
+            'configured': done,
+            'mismatch': mismatch
         }
         return self._success(_('Welcome to Mailpile!'), results)
 
@@ -825,7 +791,7 @@ class SetupCrypto(TestableWebbable):
                     if not chosen_key:
                         choose_key = '!CREATE'
                     results['updated_passphrase'] = True
-                    session.config.passphrases['DEFAULT'].data = sps.data
+                    session.config.passphrases['DEFAULT'].copy(sps)
                     mailpile.auth.SetLoggedIn(self)
             except AssertionError:
                 error_info = (_('Invalid passphrase'), {
@@ -1129,12 +1095,13 @@ class SetupTestRoute(SetupProfiles):
                            result=route, info=error_info)
 
 
-class Setup(TestableWebbable):
+class Setup(SetupWelcome):
     """Enter setup flow"""
-    SYNOPSIS = (None, 'setup', 'setup', '[do_gpg_stuff]')
+    SYNOPSIS = (None, 'setup', 'setup', '')
 
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
+    HTTP_POST_VARS = TestableWebbable.HTTP_POST_VARS
     HTTP_CALLABLE = ('GET',)
     HTTP_AUTH_REQUIRED = True
 
@@ -1170,23 +1137,15 @@ class Setup(TestableWebbable):
             # Stage 0: Welcome: Choose app language
             ('language', lambda: config.prefs.language, SetupWelcome),
 
-            # Stage 1: Crypto: Configure our master key stuff
-            ('crypto', lambda: config.prefs.gpg_recipient, SetupCrypto),
+            # Stage 1: Basic security - a password
+            ('security', lambda: config.master_key, SetupPassword),
 
-            # Stage 2: Identity (via. single page install flow)
-            ('profiles', lambda: self._check_profiles(config), Setup),
-
-            # Stage 3: Routes (via. single page install flow)
-            ('routes', lambda: config.routes, Setup),
-
-            # Stage 4: Sources (via. single page install flow)
-            ('sources', lambda: config.sources, Setup),
-
-            # Stage 5: Is All Complete
-            ('complete', lambda: config.web.setup_complete, Setup),
-
-            # FIXME: Check for this too?
-            #(lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
+            # Stage 2-5: Legacy stuff, fake it
+            ('crypto',   lambda: True, SetupCrypto),
+            ('profiles', lambda: True, Setup),
+            ('routes',   lambda: True, Setup),
+            ('sources',  lambda: True, Setup),
+            ('complete', lambda: False, ListProfiles),
         ]
 
     @classmethod
@@ -1204,6 +1163,48 @@ class Setup(TestableWebbable):
 
         return default
 
+    def cli_setup_command(self, session):
+        # Stop the workers...
+        want_daemons = session.config.cron_worker is not None
+        session.config.stop_workers()
+
+        # Perform any required migrations
+        Migrate(session).run(before_setup=True, after_setup=False)
+
+        # Basic app config, tags, plugins, etc.
+        self.basic_app_config(session,
+                              save_and_update_workers=False,
+                              want_daemons=want_daemons)
+
+        # Set language from environment
+        if not session.config.prefs.language:
+            lang = os.getenv('LANG', '').split('.')[0] or 'en'
+            if self.configure_language(session, session.config, lang,
+                                       save=False) is True:
+                session.ui.notify(_('Language set to: %s') % lang)
+
+        # Ask the user for a password, if we don't have security already
+        if (not session.config.passphrases['DEFAULT'].is_set() and
+                not session.config.prefs.gpg_recipient):
+            p1 = session.ui.get_password(_('Choose a password for Mailpile: '))
+            if p1:
+                p2 = session.ui.get_password(_('Confirm password: '))
+            if p1 and p2 and p1 == p2:
+                session.config.passphrases['DEFAULT'].set_passphrase(p1)
+                session.config.prefs.gpg_recipient = '!PASSWORD'
+                self.make_master_key()
+            else:
+                session.ui.error(
+                    _('Passwords did not match! Please try again.'))
+
+        # Perform any required migrations
+        Migrate(session).run(before_setup=False, after_setup=True)
+
+        session.config.save()
+        session.config.prepare_workers(session, daemons=want_daemons)
+
+        return self._success(_('Performed initial Mailpile setup'))
+
     def setup_command(self, session):
         if '_method' in self.data:
             return self._success(_('Entering setup flow'), result=dict(
@@ -1211,13 +1212,14 @@ class Setup(TestableWebbable):
                  for c in self._CHECKPOINTS(session.config)
             )))
         else:
-            return SetupMagic.setup_command(self, session)
+            return self.cli_setup_command(session)
 
 
 _ = gettext
 _plugins.register_commands(SetupMagic,
                            SetupGetEmailSettings,
                            SetupWelcome,
+                           SetupPassword,
                            SetupCrypto,
                            SetupProfiles,
                            SetupConfigureKey,
