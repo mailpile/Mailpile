@@ -552,22 +552,20 @@ def dict_merge(*dicts):
     return final
 
 
-def play_nice_with_threads(sleep=True):
+def play_nice_with_threads(sleep=True, deadline=None):
     """
     Long-running batch jobs should call this now and then to pause
     their activities in case there are other threads that would like to
     run. Recent user activity increases the delay significantly, to
     hopefully make the app more responsive when it is in use.
     """
-    threads = threading.activeCount() - 3
-    if threads < 1:
+    if threading.activeCount() < 4:
         return 0
 
-    lc = 0
+    deadline = (time.time() + 1) if (deadline is None) else deadline
     while True:
-        activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
-        delay = (max(0, 0.002 * threads) +
-                 max(0, min(0.10, 0.400 * activity_threshold)))
+        activity_threshold = (180 - time.time() + LAST_USER_ACTIVITY) / 120
+        delay = max(0.001, min(0.1, 0.1 * activity_threshold))
         if not sleep:
             break
 
@@ -575,8 +573,9 @@ def play_nice_with_threads(sleep=True):
         # to release the GIL and let other threads run.
         time.sleep(delay)
 
-        lc += 1
-        if QUITTING or LIVE_USER_ACTIVITIES < 1 or lc > 10:
+        if QUITTING or LIVE_USER_ACTIVITIES < 1:
+            break
+        if time.time() > deadline:
             break
 
     return delay

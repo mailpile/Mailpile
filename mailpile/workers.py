@@ -155,6 +155,8 @@ class Cron(threading.Thread):
 
 class Worker(threading.Thread):
 
+    PAUSE_DEADLINE = 2
+
     def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
         self.daemon = mailpile.util.TESTING or daemon
@@ -218,6 +220,9 @@ class Worker(threading.Thread):
                 rv = True
         return rv
 
+    def _pause_for_user_activities(self):
+        play_nice_with_threads(deadline=time.time() + self.PAUSE_DEADLINE)
+
     def _keep_running(self, **ignored_kwargs):
         return (self.ALIVE and not mailpile.util.QUITTING)
 
@@ -228,9 +233,6 @@ class Worker(threading.Thread):
         if session:
             session.report_task_failed(name)
 
-    def _play_nice_with_threads(self):
-        play_nice_with_threads()
-
     def run(self):
         self.ALIVE = True
         while self._keep_running():
@@ -240,7 +242,6 @@ class Worker(threading.Thread):
                         return
                     self.LOCK.wait()
 
-            self._play_nice_with_threads()
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
                 if len(self.JOBS) < 0:
@@ -249,6 +250,8 @@ class Worker(threading.Thread):
                                      in self.JOBS_LATER if ts <= now)
                     self.JOBS_LATER = [(ts, snt) for ts, snt
                                        in self.JOBS_LATER if ts > now]
+
+            self._pause_for_user_activities()
             try:
                 self.last_run = time.time()
                 self.running = name
@@ -300,6 +303,14 @@ class Worker(threading.Thread):
 
 
 class ImportantWorker(Worker):
+
+    PAUSE_DEADLINE = 0.5
+
+    def _pause_for_user_activities(self):
+        # Our jobs are important, if we have too many we stop playing nice
+        if len(self.JOBS) < 10:
+            Worker._pause_for_user_activities(self)
+
     def _keep_running(self, _pass=1, locked=False):
         # This is a much more careful shutdown test, that refuses to
         # stop with jobs queued up and tries to compensate for potential
@@ -327,11 +338,6 @@ class ImportantWorker(Worker):
         # Important jobs!  Re-queue if they fail, it might be transient
         Worker._failed(self, session, name, task, e)
         self.add_unique_task(session, name, task)
-
-    def _play_nice_with_threads(self):
-        # Our jobs are important, if we have too many we stop playing nice
-        if len(self.JOBS) < 10:
-            play_nice_with_threads()
 
 
 class DumbWorker(Worker):
