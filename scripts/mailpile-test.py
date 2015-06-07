@@ -77,7 +77,8 @@ def say(stuff):
 
 def do_setup():
     # Set up initial tags and such
-    mp.setup('do_gpg_stuff')
+    mp.setup()
+    mp.rescan('vcards:gpg')
 
     # Setup GPG access credentials and TELL EVERYONE!
     config.sys.login_banner = 'Pssst! The password is: mailpile'
@@ -87,6 +88,7 @@ def do_setup():
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
     config.prefs.encrypt_index = True
+    config.prefs.index_encrypted = True
     config.prefs.inline_pgp = False
 
     # Configure our fake mail sending setup

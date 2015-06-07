@@ -407,24 +407,65 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, config, session=None, use_agent=False, debug=False):
+    LAST_KEY_USED = None  # This is a 1-value global cache
+
+    def __init__(self, config, session=None, use_agent=None, debug=False):
         global DEBUG_GNUPG
         self.available = None
-        self.gpgbinary = GPG_BINARY
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
         self.session = session
         self.config = config or (session and session.config) or None
-        self.use_agent = use_agent
         if self.config:
-            self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
-            self.passphrase = self.config.passphrases['DEFAULT'].get_reader()
+            self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
+            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY
+            self.passphrases = self.config.passphrases
+            self.passphrase = self.passphrases['DEFAULT'].get_reader()
+            self.use_agent = (use_agent if (use_agent is not None)
+                              else self.config.prefs.gpg_use_agent)
         else:
-            self.passphrase = None
             self.homedir = GNUPG_HOMEDIR
+            self.gpgbinary = GPG_BINARY
+            self.passphrases = None
+            self.passphrase = None
+            self.use_agent = use_agent
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
+
+    def prepare_passphrase(self, keyid, interactive=False):
+        """Search the Mailpile secrets for a usable passphrase."""
+        def _use(kid, sps):
+            self.passphrase = sps.get_reader()
+            GnuPG.LAST_KEY_USED = kid
+            return True
+
+        keyidL = keyid.lower()
+        if self.passphrases:
+            if keyid in self.passphrases:
+                return _use(keyid, self.passphrases[keyid])
+            if keyidL in self.passphrases:
+                return _use(keyidL, self.passphrases[keyidL])
+            for fprint in self.passphrases:
+                if fprint.endswith(keyid):
+                    return _use(fprint, self.passphrases[fprint])
+                if fprint.lower().endswith(keyidL):
+                    return _use(fprint, self.passphrases[fprint])
+
+        if self.config:
+            for sid in self.config.secrets.keys():
+                if sid.endswith(keyidL):
+                    from mailpile.config import SecurePassphraseStorage
+                    sps = SecurePassphraseStorage()
+                    sps.set_passphrase(self.config.secrets[sid].password)
+                    return _use(keyidL, sps)
+
+        if interactive:
+            # FIXME: Block and prompt user...
+            pass
+
+        print 'FIXME: MISSING PASSPHRASE FOR %s' % keyid
+        return False
 
     def _debug_all(self, msg):
         if self.session:
@@ -464,6 +505,9 @@ class GnuPG:
         args.insert(1, "--verbose")
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
+
+        # FIXME: We will need stronger stuff if this is to work with GnuGP
+        #        2.0 or above! Basically a custom config file via --options.
         if not self.use_agent:
             args.insert(1, "--no-use-agent")
 
@@ -477,6 +521,7 @@ class GnuPG:
 
             if self.passphrase and send_passphrase:
                 if self.use_agent:
+                    # We have a passphrase, override this setting!
                     args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=0")
 
@@ -708,10 +753,33 @@ class GnuPG:
         """
         if passphrase:
             self.passphrase = passphrase
-        action = ["--decrypt"]
-        retvals = self.run(action, gpg_input=data, outputfd=outputfd,
-                                   send_passphrase=True)
-        self.passphrase = None
+        elif GnuPG.LAST_KEY_USED:
+            # This is an opportunistic approach to passphrase usage... we
+            # just hope the passphrase we used last time will work again.
+            # If we are right, we are done. If we are wrong, the output
+            # will tell us which key IDs to look for in our secret stash.
+            self.prepare_passphrase(GnuPG.LAST_KEY_USED)
+
+        for tries in (1, 2):
+            retvals = self.run(["--decrypt"], gpg_input=data,
+                                              outputfd=outputfd,
+                                              send_passphrase=True)
+            if retvals[0] == 0:
+                break
+            elif tries == 1:
+                # Uh, oh, failed! Probably the wrong passphrase. Parse the
+                # gpg output for the keyid and try again if we have it.
+                keyid = None
+                for msg in retvals[1]['status']:
+                    if msg[0] == 'NEED_PASSPHRASE':
+                        if self.prepare_passphrase(msg[1]):
+                            keyid = msg[1]
+                            break
+                        if self.prepare_passphrase(msg[2]):
+                            keyid = msg[2]
+                            break
+                if not keyid:
+                    break
 
         if as_lines:
             as_lines = retvals[1]["stdout"]
@@ -774,6 +842,9 @@ class GnuPG:
         if sign and fromkey:
             action.append("--local-user")
             action.append(fromkey)
+        if fromkey:
+            self.prepare_passphrase(fromkey)
+
         retvals = self.run(action, gpg_input=data,
                            send_passphrase=(sign or not tokeys))
         return retvals[0], "".join(retvals[1]["stdout"])
@@ -788,6 +859,9 @@ class GnuPG:
         """
         if passphrase:
             self.passphrase = passphrase
+        elif fromkey:
+            self.prepare_passphrase(fromkey)
+
         if detatch and not clearsign:
             action = ["--detach-sign"]
         elif clearsign:
@@ -803,20 +877,6 @@ class GnuPG:
         retvals = self.run(action, gpg_input=data, send_passphrase=True)
         self.passphrase = None
         return retvals[0], "".join(retvals[1]["stdout"])
-
-    def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True,
-                     detatch=False, clearsign=True):
-        retval, signblock = self.sign(data, fromkey=fromkey, armor=armor,
-                                      detatch=detatch, clearsign=clearsign)
-        if detatch:
-            # TODO: Deal with detached signature.
-            retval, cryptblock = self.encrypt(data, tokeys=tokeys,
-                                              armor=armor)
-        else:
-            retval, cryptblock = self.encrypt(signblock, tokeys=tokeys,
-                                              armor=armor)
-
-        return cryptblock
 
     def sign_key(self, keyid, signingkey=None):
         action = ["--yes", "--sign-key", keyid]
@@ -981,6 +1041,7 @@ def GetKeys(gnupg, config, people):
     # Next, we go make sure all those keys are really in our keychain.
     fprints = all_keys.keys()
     for key in keys:
+        key = key.upper()
         if key.startswith('0x'):
             key = key[2:]
         if key not in fprints:
