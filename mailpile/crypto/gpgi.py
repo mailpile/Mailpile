@@ -403,7 +403,7 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    LAST_KEY_USED = None  # This is a 1-value global cache
+    LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
 
     def __init__(self, config, session=None, use_agent=None, debug=False):
         global DEBUG_GNUPG
@@ -461,6 +461,7 @@ class GnuPG:
             pass
 
         print 'FIXME: MISSING PASSPHRASE FOR %s' % keyid
+        self.passphrase = None  # This may allow use of the GnuPG agent
         return False
 
     def _debug_all(self, msg):
