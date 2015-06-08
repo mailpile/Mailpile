@@ -966,8 +966,7 @@ class MailpileVCard(SimpleVCard):
             try:
                 rid = self.get('x-mailpile-rid').value
             except IndexError:
-                crap = '%s %s' % (self.email, random.randint(0, 0x1fffffff))
-                rid = b64w(sha1b64(crap)).lower()[:12]
+                rid = randomish_uid()
                 self.add(VCardLine(name='x-mailpile-rid', value=rid))
         return rid
 

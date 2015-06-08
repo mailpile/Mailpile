@@ -240,7 +240,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         Generate a hashed token from the current timestamp
         and the server secret to avoid CSRF attacks
         """
-        ts = '%x' % int(time.time() / 60)
+        ts = '%x' % time.time()
         return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret,
                                                      ts]))))
 
@@ -462,27 +462,18 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
 
         # This hash includes the index ofuscation master key, which means
         # it should be very strongly unguessable.
-        self.secret = b64w(sha512b64(
-            '-'.join([str(x) for x in [session, time.time(),
-                                       random.randint(0, 0xfffffff),
-                                       session.config]])))
+        self.secret = okay_random(64, session.config.master_key)
 
         # Generate a new unguessable session cookie name on startup
         while not self.session_cookie:
-            rn = str(random.randint(0, 0xfffffff))
-            self.session_cookie = CleanText(sha512b64(self.secret, rn),
-                                            banned=CleanText.NONALNUM
-                                            ).clean[:8].lower()
+            self.session_cookie = okay_random(12, self.secret)
 
     def make_session_id(self, request):
         """Generate an unguessable and unauthenticated new session ID."""
         session_id = None
         while session_id in self.sessions or session_id is None:
-            session_id = b64w(sha1b64('%s %s %x %s' % (
-                self.secret,
-                request and request.headers,
-                random.randint(0, 0xffffffff),
-                time.time())))
+            session_id = okay_random(32, self.secret,
+                                     '%s' % (request and request.headers))
         return session_id
 
     def finish_request(self, request, client_address):

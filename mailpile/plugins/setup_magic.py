@@ -277,21 +277,20 @@ class SetupMagic(Command):
             # manually as part of data recovery, so we keep it reasonably
             # sized and devoid of confusing chars.
             #
-            # The strategy below should give about 281 bits of randomness:
+            # They okay_random() function uses os.urandom() and mixes with
+            # the seed data we provide (misc app state), as well as the
+            # current full-resolution time.  The output is suitable for use
+            # as a password (alphanumeric, avoiding O01l).
+            #
+            # It should give about 281 bits of randomness:
             #
             #   import math
             #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
             #
-            secret = ''
-            chars = 12 * 4
-            while len(secret) < chars:
-                secret = sha512b64(os.urandom(1024),
-                                   '%s' % session.config,
-                                   '%s' % time.time())
-                secret = CleanText(secret,
-                                   banned=CleanText.NONALNUM + 'O01l'
-                                   ).clean[:chars]
-            session.config.master_key = secret
+            session.config.master_key = okay_random(12 * 4,
+                                                    '%s' % session.config,
+                                                    '%s' % self.session,
+                                                    '%s' % self.data)
             if self._idx() and self._idx().INDEX:
                 session.ui.warning(_('Unable to obfuscate search index '
                                      'without losing data. Not indexing '

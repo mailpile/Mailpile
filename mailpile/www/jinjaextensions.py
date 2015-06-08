@@ -22,10 +22,6 @@ from mailpile.urlmap import UrlMap
 from mailpile.plugins import PluginManager
 
 
-RID_COUNTER = 0
-RID_COUNTER_LOCK = ConfigLock()
-
-
 class MailpileCommand(Extension):
     """Run Mailpile Commands, """
     tags = set(['mpcmd'])
@@ -37,7 +33,7 @@ class MailpileCommand(Extension):
         e.globals['mailpile'] = s._command
         e.globals['mailpile_render'] = s._command_render
         e.globals['U'] = s._url_path_fix
-        e.globals['make_rid'] = s._make_rid
+        e.globals['make_rid'] = randomish_uid
         e.globals['random'] = s._random
         e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
@@ -562,13 +558,6 @@ class MailpileCommand(Extension):
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
-
-    def _make_rid(self):
-        with RID_COUNTER_LOCK:
-            global RID_COUNTER
-            RID_COUNTER += 1
-            return ('%8.8x%3.3x%x'
-                    % (time.time(), random.randint(0, 0xfff), RID_COUNTER))
 
     def _random(self, sequence):
         return sequence[random.randint(0, len(sequence)-1)]

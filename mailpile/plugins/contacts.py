@@ -922,28 +922,9 @@ def ProfileVCard(parent):
             event.data['keygen_finished'] = int(time.time())
             self.session.config.event_log.log_event(event)
 
-        def _create_passphrase(self):
-            # Generate passphrases based on random garbage.  This garbage
-            # does not need to be strongly random, because its security is
-            # derived from and relies on that of the global master key
-            # (which IS strongly random).
-            #
-            # Since we expect users may have to type these at some point we
-            # stick with lowercase letters & numbers, omitting 1 and l.
-            #
-            passphrase = ''
-            while len(passphrase) < 26:
-                passphrase += sha512b64('%s/%x-%x-%x'
-                                        % (self.session.config.master_key,
-                                          random.randint(0, 0xffffffff),
-                                          os.getpid(), time.time())
-                                        ).lower()
-                passphrase = passphrase.replace('l', '')
-                passphrase = passphrase.replace('1', '')
-            return passphrase[:26]  # 26 chars, ~128 bits
-
         def _create_new_key(self, vcard, keytype):
-            passphrase = self._create_passphrase()
+            passphrase = okay_random(26, self.session.config.master_key
+                                     ).lower()
             random_uid = vcard.random_uid
             bits = int(keytype.replace('RSA', ''))
             key_args = {

@@ -7,6 +7,7 @@ import datetime
 import hashlib
 import inspect
 import locale
+import random
 import re
 import subprocess
 import os
@@ -36,6 +37,9 @@ TESTING = False
 QUITTING = False
 LAST_USER_ACTIVITY = 0
 LIVE_USER_ACTIVITIES = 0
+
+RID_COUNTER = 0
+RID_COUNTER_LOCK = threading.Lock()
 
 MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
@@ -339,6 +343,86 @@ def b36(number):
         number, i = divmod(number, 36)
         base36.append(B36_ALPHABET[i])
     return ''.join(reversed(base36))
+
+
+def string_to_intlist(text):
+    """Converts a string into an array of integers"""
+    try:
+        return [ord(c) for c in text.encode('utf-8')]
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return [ord(c) for c in text]
+
+
+def intlist_to_string(intlist):
+    chars = ''.join([chr(c) for c in intlist])
+    try:
+        return chars.decode('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return chars
+
+
+def randomish_uid():
+    """
+    Generate a weakly random unique ID. Might not actually be unique.
+    Leaks the time; uniqueness depends on time moving forward and not
+    being invoked too rapidly.
+    """
+    with RID_COUNTER_LOCK:
+        global RID_COUNTER
+        RID_COUNTER += 1
+        RID_COUNTER %= 0x1000
+        return '%3.3x%7.7x%x' % (random.randint(0, 0xfff),
+                                 time.time() // 16,
+                                 RID_COUNTER)
+
+
+def okay_random(length, *seeds):
+    """
+    Generate a psuedo-random string, mixing some seed data with os.urandom().
+    The mixing is "just in case" os.urandom() is lame for some unfathomable
+    reason. This is hopefully all overkill.
+    """
+    secret = ''
+    while len(secret) < length:
+        # Generate unpredictable bytes from the base64 alphabet
+        secret += sha512b64(os.urandom(128 + length * 2),
+                            '%s' % time.time(),
+                            '%x' % random.randint(0, 0xffffffff),
+                            *seeds)
+        # Strip confusing characters and truncate
+        secret = CleanText(secret, banned=CleanText.NONALNUM + 'O01l\n \t'
+                           ).clean[:length]
+    return secret
+
+
+def split_secret(secret, recipients):
+    while len(secret) < 10:
+        secret += '\x00'
+    as_bytes = string_to_intlist(secret)
+    parts = []
+    while len(parts) < recipients-1:
+        parts.append(string_to_intlist(os.urandom(len(as_bytes))))
+    last = []
+    parts.append(last)
+    for i in range(0, len(as_bytes)):
+        c = as_bytes[i]
+        for j in range(0, recipients-1):
+            c ^= parts[j][i]
+        last.append(c & 0xff)
+    return [':'.join(['%2.2x' % x for x in p]) for p in parts]
+
+
+def merge_secret(parts):
+    parts = [[int(c, 16) for c in p.split(':')] for p in parts]
+    secret = []
+    for i in range(0, len(parts[0])):
+        c = parts[0][i]
+        for j in range(1, len(parts)):
+            c ^= parts[j][i]
+        secret.append(c & 0xff)
+    while secret[-1] == 0:
+        secret[-1:] = []
+    return intlist_to_string(secret)
 
 
 def split_long_lines(text):
