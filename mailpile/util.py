@@ -477,20 +477,31 @@ def elapsed_datetime(timestamp):
         if hours_ago < 1:
             if minutes_ago < 3:
                 return _('now')
-            elif minutes_ago >= 3:
+            else:
                 return _('%d mins') % minutes_ago
         elif hours_ago < 2:
             return _('%d hour') % hours_ago
         else:
             return _('%d hours') % hours_ago
     elif days_ago < 2:
-        return _('%d day') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d day') % days_ago
     elif days_ago < 7:
-        return _('%d days') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d days') % days_ago
     elif days_ago < 366:
-        return ts.strftime("%b %d")
+        return _(ts.strftime("%b")) + ts.strftime(" %d")
     else:
-        return ts.strftime("%b %d %Y")
+        return _(ts.strftime("%b")) + ts.strftime(" %d %Y")
+
+_translate_these = [_('Monday'), _('Mon'), _('Tuesday'), _('Tue'),
+                    _('Wednesday'), _('Wed'), _('Thursday'), _('Thu'),
+                    _('Friday'), _('Fri'), _('Saturday'), _('Sat'),
+                    _('Sunday'), _('Sun'),
+                    _('January'), _('Jan'), _('February'), _('Feb'),
+                    _('March'), _('Mar'), _('April'), _('Apr'),
+                    _('May'), _('June'), _('Jun'),
+                    _('July'), _('Jul'), _('August'), _('Aug'),
+                    _('September'), _('Sep'), _('October'), _('Oct'),
+                    _('November'), _('Nov'), _('December'), _('Dec')]
 
 
 def friendly_datetime(timestamp):
