@@ -105,6 +105,7 @@ class CommandCache(object):
                 dirty = (req & self.dirty_set(after=a))
                 if (a + self._lag < now) and dirty:
                     if now < started + runtime:
+                        play_nice_with_threads()
                         co.session = ro.session = ss
                         ro = co.refresh()
                         if extend > 0:
@@ -115,7 +116,6 @@ class CommandCache(object):
                             if self.cache[fprint][-1] == a:
                                 self.cache[fprint] = [e, req, ss, co, ro, now]
                             refreshed.append(fprint)
-                        play_nice_with_threads()
                     else:
                         # Out of time, evict because otherwise it may be
                         # assumed to be up-to-date.

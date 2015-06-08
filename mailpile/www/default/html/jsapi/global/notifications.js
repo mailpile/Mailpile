@@ -158,7 +158,8 @@ EventLog.subscribe('.*AddProfile', function(ev) {
           $icon.addClass('configured').addClass('icon-lock-closed');
       }
       else {
-          $icon.removeClass('configured').removeClass('icon-lock-closed');
+          $icon.removeClass('configured');
+          $icon.removeClass('icon-lock-open').removeClass('icon-lock-closed');
           $icon.addClass('unconfigured').addClass('icon-clock');
       }
       Mailpile.notification(ev);

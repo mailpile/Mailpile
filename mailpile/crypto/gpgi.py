@@ -185,7 +185,7 @@ class GnuPGRecordParser:
     def parse_line(self, line):
         line = dict(zip(self.record_fields,
                         map(lambda s: s.replace("\\x3a", ":"),
-                        line.strip().split(":"))))
+                        stubborn_decode(line).strip().split(":"))))
         r = self.dispatch.get(line["record"], self.parse_unknown)
         r(line)
 
@@ -290,6 +290,18 @@ class GnuPGRecordParser:
 UID_PARSE_RE = "^([^\(\<]+?){0,1}( \((.+?)\)){0,1}( \<(.+?)\>){0,1}\s*$"
 
 
+def stubborn_decode(text):
+    if isinstance(text, unicode):
+        return text
+    try:
+        return text.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return text.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            return uidstr.decode("utf-8", "replace")
+
+
 def parse_uid(uidstr):
     matches = re.match(UID_PARSE_RE, uidstr)
     if matches:
@@ -302,22 +314,6 @@ def parse_uid(uidstr):
         else:
             email, name = "", uidstr
         comment = ""
-
-    try:
-        name = name.decode("utf-8")
-    except UnicodeDecodeError:
-        try:
-            name = name.decode("iso-8859-1")
-        except UnicodeDecodeError:
-            name = name.decode("utf-8", "replace")
-
-    try:
-        comment = comment.decode("utf-8")
-    except UnicodeDecodeError:
-        try:
-            comment = comment.decode("iso-8859-1")
-        except UnicodeDecodeError:
-            comment = comment.decode("utf-8", "replace")
 
     return email, name, comment
 
