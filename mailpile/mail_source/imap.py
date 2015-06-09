@@ -494,6 +494,7 @@ class ImapMailSource(BaseMailSource):
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.timeout = self.TIMEOUT_INITIAL
+        self.last_op = 0
         self.watching = -1
         self.capabilities = set()
         self.flag_cache = {}
@@ -537,12 +538,16 @@ class ImapMailSource(BaseMailSource):
         if conn:
             try:
                 with conn as c:
+                    now = time.time()
                     if (conn_id == self.conn_id and
-                            self.timed(c.noop)[0] == 'OK'):
+                            (now < self.last_op + 120 or
+                             self.timed(c.noop)[0] == 'OK')):
                         # Make the timeout longer, so we don't drop things
                         # on every hiccup and so downloads will be more
                         # efficient (chunk size relates to timeout).
                         self.timeout = self.TIMEOUT_LIVE
+                        if now >= self.last_op + 120:
+                            self.last_op = now
                         return conn
             except self.CONN_ERRORS + (AttributeError, ):
                 pass
@@ -690,6 +695,8 @@ class ImapMailSource(BaseMailSource):
     def _mailbox_name(self, path):
         # len('src:/') = 5
         path = str(path[(5 + len(self.my_config._key)):])
+        if path.startswith('INBOX.'):
+            path = path[6:]
         try:
             return path.decode('imap4-utf-7')
         except:
