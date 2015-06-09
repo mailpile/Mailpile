@@ -1802,8 +1802,11 @@ class CatFile(Command):
 
         for fn in files:
             with vfs.open(fn, 'r') as fd:
+                def errors(where):
+                    self.session.ui.error('Decrypt failed at %d' % where)
                 decrypt_and_parse_lines(fd, cb, self.session.config,
-                                        newlines=True, decode=None)
+                                        newlines=True, decode=None,
+                                        _raise=False, error_cb=errors)
 
         if tfd:
             tfd.close()

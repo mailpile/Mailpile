@@ -543,7 +543,7 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8',
                             passphrase=None,
-                            _raise=IOError):
+                            _raise=IOError, error_cb=None):
     import mailpile.crypto.streamer as cstrm
     symmetric_key = config and config.master_key or 'missing'
     passphrase_reader = (passphrase.get_reader()
@@ -570,7 +570,8 @@ def decrypt_and_parse_lines(fd, parser, config,
                     mep_key=symmetric_key,
                     gpg_pass=passphrase_reader) as pdsfd:
                 _parser(pdsfd)
-                pdsfd.verify(_raise=_raise)
+                if not pdsfd.verify(_raise=_raise) and error_cb:
+                    error_cb(fd.tell())
         else:
             _parser([line])
 

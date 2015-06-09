@@ -96,6 +96,10 @@ class SecurePassphraseStorage(object):
                 self.storage = sps
                 self.offset = 0
 
+            def seek(self, offset, whence=0):
+                assert(whence == 0)
+                self.offset = offset
+
             def read(self, ignored_bytecount=None):
                 one_byte = self.storage.read_byte_at(self.offset)
                 self.offset += 1

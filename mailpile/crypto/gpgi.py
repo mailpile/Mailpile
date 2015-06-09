@@ -535,6 +535,7 @@ class GnuPG:
             # be sent and the filehandle closed before anything else
             # interesting happens.
             if self.passphrase and send_passphrase:
+                self.passphrase.seek(0, 0)
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
                     proc.stdin.write(c)
