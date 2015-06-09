@@ -49,7 +49,8 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
+    <a class="item-subject" title="{{metadata.body.snippet}}"
+       href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
     <a href="{{ U('/search/dates:{{metadata.date}}') }}/">{{metadata.timestamp|elapsed_datetime}}</a>
