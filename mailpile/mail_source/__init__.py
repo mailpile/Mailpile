@@ -552,11 +552,12 @@ class BaseMailSource(threading.Thread):
             self.session.config.index.interrupt = reason
 
     def _process_new(self, mbx_key, mbx_cfg, mbox,
-                     msg, msg_ts, keywords, snippet):
+                     msg, msg_metadata_kws, msg_ts, keywords, snippet):
         # Here subclasses could use mbx_key, mbx_cfg or mbox to grab the
         # mailbox itself, in case it has metadata (like Maildir). The
         # default just looks at the Status: headers of the mail itself.
-        return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
+        return ProcessNew(self.session, msg, msg_metadata_kws, msg_ts,
+                          keywords, snippet)
 
     def _copy_new_messages(self, mbx_key, mbx_cfg, src,
                            stop_after=-1, scan_args=None):
@@ -607,6 +608,7 @@ class BaseMailSource(threading.Thread):
                 progress['copying_src_id'] = key
                 try:
                     data = src.get_bytes(key)
+                    mkws = src.get_metadata_kws(key)
                 except KeyError:
                     progress['key_errors'] = key_errors
                     key_errors.append(key)
@@ -614,7 +616,7 @@ class BaseMailSource(threading.Thread):
                     # individual message...
                     continue
 
-                loc_key = loc.add_from_source(key, data)
+                loc_key = loc.add_from_source(key, mkws, data)
                 self.event.data['counters']['copied_messages'] += 1
                 del progress['copying_src_id']
                 progress['copied_messages'] += 1
@@ -624,7 +626,8 @@ class BaseMailSource(threading.Thread):
                 # This forks off a scan job to index the message
                 config.index.scan_one_message(
                     session, mbx_key, loc, loc_key,
-                    wait=False, msg_data=data, **scan_args)
+                    wait=False, msg_data=data, msg_metadata_kws=mkws,
+                    **scan_args)
 
                 stop_after -= 1
                 if stop_after == 0:
@@ -675,9 +678,10 @@ class BaseMailSource(threading.Thread):
             with self._lock:
                 mbox = config.open_mailbox(session, mbx_key,
                                            prefer_local=False)
-            def process_new(msg, msg_ts, keywords, snippet):
+            def process_new(msg, msg_metadata_kws, msg_ts, keywords, snippet):
                 return self._process_new(mbx_key, mbx_cfg, mbox,
-                                         msg, msg_ts, keywords, snippet)
+                                         msg, msg_metadata_kws, msg_ts,
+                                         keywords, snippet)
             scan_mailbox_args = {
                 'process_new': (process_new if mbx_cfg.process_new else False),
                 'apply_tags': (apply_tags or []),
@@ -845,8 +849,11 @@ class BaseMailSource(threading.Thread):
             self.join()
 
 
-def ProcessNew(session, msg, msg_ts, keywords, snippet):
-    if 'r' in msg.get('status', '').lower():
+def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
+    if ('s:maildir' in msg_metadata_kws                  # Seen=read, maildir
+            or 'r:maildir' in msg_metadata_kws           # Replied, maildir
+            or 'r' in msg.get('status', '').lower()      # Read, mbox
+            or 'a' in msg.get('sx-tatus', '').lower()):  # PINE, answered
         return False
     keywords.update(['%s:in' % tag._key for tag in
                      session.config.get_tags(type='unread')])

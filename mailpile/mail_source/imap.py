@@ -435,6 +435,19 @@ class SharedImapMailbox(Mailbox):
     def get_msg_size(self, key):
         return long(self.get_info(key).get('RFC822.SIZE', 0))
 
+    def get_metadata_kws(self, key):
+        # Translate common IMAP flags into the maildir vocabulary
+        flags = [f.lower() for f in self.get_info(key).get('FLAGS', '')]
+        mkws = []
+        for char, flag in (('s', '\\seen'),
+                           ('r', '\\answered'),
+                           ('d', '\\draft'),
+                           ('f', '\\flagged'),
+                           ('t', '\\deleted')):
+           if flag in flags:
+               mkws.append('%s:maildir' % char)
+        return mkws
+
     def __contains__(self, key):
         try:
             self.get_info(key)
