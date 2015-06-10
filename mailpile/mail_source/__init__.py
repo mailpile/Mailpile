@@ -29,7 +29,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 300     # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 200     # Index at most this many new e-mails at once
     MAX_MAILBOXES = 100         # Max number of mailboxes we add
     MAX_PATHS = 5000            # Abort if asked to scan too many directories
 
@@ -381,8 +381,14 @@ class BaseMailSource(threading.Thread):
                     tags.add(tag._key)
         mbx_cfg.apply_tags = sorted(list(tags))
 
+    def _strip_file_extension(self, path):
+        return path.rsplit('.', 1)[0]
+
+    def _mailbox_path_split(self, path):
+        return ('/' in path) and path.split('/') or path.split('\\')
+
     def _mailbox_name(self, path):
-        return path.split('/')[-1]
+        return self._mailbox_path_split(path)[-1]
 
     def _create_local_mailbox(self, mbx_cfg, save=True):
         config = self.session.config
@@ -488,10 +494,11 @@ class BaseMailSource(threading.Thread):
 
     def _path_to_tagname(self, path):  # -> tag name
         """This converts a path to a tag name."""
-        path = self._mailbox_name(path).replace('/.', '/')
-        parts = ('/' in path) and path.split('/') or path.split('\\')
+        parts = self._mailbox_path_split(path)
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
-        tagname = parts.pop(-1).split('.')[0]
+        tagname = self._strip_file_extension(parts.pop(-1))
+        while tagname[:1] == '.':
+            tagname = tagname[1:]
         return re.sub(self.TAGNAME_STRIP_RE, '', tagname.replace('_', ' '))
 
     def _unique_tag_name(self, tagname):  # -> unused tag name
@@ -607,8 +614,8 @@ class BaseMailSource(threading.Thread):
                 session.ui.mark(_('Copying message: %s') % key)
                 progress['copying_src_id'] = key
                 try:
-                    data = src.get_bytes(key)
                     mkws = src.get_metadata_kws(key)
+                    data = src.get_bytes(key)
                 except KeyError:
                     progress['key_errors'] = key_errors
                     key_errors.append(key)
