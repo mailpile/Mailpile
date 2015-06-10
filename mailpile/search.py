@@ -741,17 +741,14 @@ class MailIndex(object):
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
-                if not lazy:
-                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
-                if (not lazy and
-                        msg_info[self.MSG_BODY] in self.MSG_BODY_UNSCANNED):
+                if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
-                    # Do not continue, fall through!
-                elif (ui % 317) == 0:
-                    session.ui.mark(parse_status(ui))
-                    continue
                 elif (ui % 129) == 0 and not deadline:
                     play_nice_with_threads()
+                if not lazy:
+                    msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
+                    msg_body = msg_info[self.MSG_BODY]
+                if lazy or msg_body not in self.MSG_BODY_UNSCANNED:
                     continue
             else:
                 session.ui.mark(parse_status(ui))
