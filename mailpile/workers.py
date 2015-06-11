@@ -260,6 +260,10 @@ class Worker(threading.Thread):
                     session.report_task_completed(name, task())
                 else:
                     task()
+            except (JobPostponingException), e:
+                session.ui.debug('Postponing: %s' % name)
+                self.add_task(session, name, task,
+                              after=time.time() + e.seconds)
             except (IOError, OSError), e:
                 self._failed(session, name, task, e)
                 time.sleep(1)

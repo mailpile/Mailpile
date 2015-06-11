@@ -19,7 +19,7 @@ from mailpile.commands import Rescan
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.eventlog import EventLog
+from mailpile.eventlog import EventLog, Event
 from mailpile.httpd import HttpWorker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -62,6 +62,7 @@ class SecurePassphraseStorage(object):
 
     def __init__(self, passphrase=None):
         self.generation = 0
+        self.expiration = -1
         if passphrase is not None:
             self.set_passphrase(passphrase)
         else:
@@ -82,6 +83,9 @@ class SecurePassphraseStorage(object):
         self.generation += 1
 
     def compare(self, passphrase):
+        if self.expiration > 0 and time.time() < self.expiration:
+            self.data = None
+            return False
         return (self.data is not None and
                 self.data == string_to_intlist(passphrase))
 
@@ -108,7 +112,10 @@ class SecurePassphraseStorage(object):
             def close(self):
                 pass
 
-        if self.data is not None:
+        if self.expiration > 0 and time.time() < self.expiration:
+            self.data = None
+            return None
+        elif self.data is not None:
             return SecurePassphraseReader(self)
         else:
             return None
@@ -1835,6 +1842,60 @@ class ConfigManager(ConfigDict):
             else:
                 local_id = FormatMbxId(local_id)
         return local_id, self.open_mailbox(session, local_id)
+
+    def get_passphrase(self, keyid,
+                       description=None, prompt=None, error=None,
+                       no_ask=False, no_cache=False):
+        if not no_cache:
+            keyidL = keyid.lower()
+            for sid in self.secrets.keys():
+                if sid.endswith(keyidL):
+                    secret = self.secrets[sid]
+                    if secret.policy == 'always-ask':
+                        no_cache = True
+                    elif secret.policy == 'fail':
+                        return False, None
+                    elif secret.policy != 'cache-only':
+                        sps = SecurePassphraseStorage(secret.password)
+                        return (keyidL, sps)
+
+        if not no_cache:
+            if keyid in self.passphrases:
+                return (keyid, self.passphrases[keyid])
+            if keyidL in self.passphrases:
+                return (keyidL, self.passphrases[keyidL])
+            for fprint in self.passphrases:
+                if fprint.endswith(keyid):
+                    return (fprint, self.passphrases[fprint])
+                if fprint.lower().endswith(keyidL):
+                    return (fprint, self.passphrases[fprint])
+
+        if not no_ask:
+            # This will either record details to the event of the currently
+            # running command/operation, or register a new event. This does
+            # not work as one might hope if ops cross a thread boundary...
+            ctx = thread_context()
+            if ctx and 'event' in ctx[-1]:
+                ev = ctx[-1]['event']
+            else:
+                ev = Event(message=prompt or _('Please enter your password'),
+                           source=self)
+
+            details = {'id': keyid}
+            if prompt: details['msg'] = prompt
+            if error: details['err'] = error
+            if description: details['dsc'] = description
+            if 'password_needed' in ev.private_data:
+                ev.private_data['password_needed'].append(details)
+            else:
+                ev.private_data['password_needed'] = [details]
+
+            ev.data['password_needed'] = True
+
+            # Post a password request to the event log...
+            self.event_log.log_event(ev)
+
+        return None, None
 
     def get_profile(self, email=None):
         find = email or self.prefs.get('default_email', None)

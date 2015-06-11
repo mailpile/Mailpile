@@ -158,6 +158,9 @@ class Command(object):
             for ui_key in [k for k in self.kwargs.keys()
                            if k.startswith('ui_')]:
                 rv[ui_key] = self.kwargs[ui_key]
+            ev = self.command_obj.event
+            if ev and ev.data.get('password_needed'):
+                rv['password_needed'] = ev.private_data['password_needed']
             return rv
 
         def as_csv(self, template=None, result=None):
@@ -547,6 +550,9 @@ class Command(object):
 
     def _run_sync(self, enable_cache, *args, **kwargs):
         try:
+            thread_context_push(command=self,
+                                event=self.event,
+                                session=self.session)
             self._starting()
             self._run_args = args
             self._run_kwargs = kwargs
@@ -584,6 +590,8 @@ class Command(object):
             self._error(self.FAILURE % {'name': self.name,
                                         'args': ' '.join(self.args)})
             return self._finishing(False)
+        finally:
+            thread_context_pop()
 
     def _run(self, *args, **kwargs):
         if self.run_async:

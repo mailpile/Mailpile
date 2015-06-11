@@ -53,6 +53,7 @@ $(document).on('click', '.auto-modal', function(e) {
   var title = elem.attr('title');
   var icon = elem.data('icon');
   var flags = elem.data('flags');
+  var header = elem.data('header');
   if (flags) {
     jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') + 'ui_flags=' + flags.replace(' ', '+');
   }
@@ -65,6 +66,7 @@ $(document).on('click', '.auto-modal', function(e) {
           data: data,
           icon: icon,
           title: title,
+          header: header,
           flags: flags
         }));
         mf.modal(Mailpile.UI.ModalOptions);

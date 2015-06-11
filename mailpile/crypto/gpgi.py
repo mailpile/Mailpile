@@ -72,17 +72,28 @@ class GnuPGResultParser:
         from mailpile.mailutils import ExtractEmailAndName
 
         # First pass, set some initial state.
+        locked, missing = [], []
         for data in retvals[1]["status"]:
             keyword = data[0].strip()  # The last keyword often ends in \n
 
-            if keyword == "DECRYPTION_FAILED":
-                missing = [x[1] for x in retvals[1]["status"]
-                           if x[0] == "NO_SECKEY"]
+            if keyword == 'NEED_PASSPHRASE':
+                locked += [data[2]]
+                encryption_info.part_status = "lockedkey"
+                encryption_info["locked_keys"] = list(set(locked))
+
+            elif keyword == 'GOOD_PASSPHRASE':
+                encryption_info["locked_keys"] = []
+
+            elif keyword == "DECRYPTION_FAILED":
+                missing += [x[1].strip() for x in retvals[1]["status"]
+                            if x[0] == "NO_SECKEY"]
                 if missing:
-                    encryption_info.part_status = "missingkey"
-                    encryption_info["missing_keys"] = missing
-                else:
-                    encryption_info.part_status = "error"
+                    encryption_info["missing_keys"] = list(set(missing))
+                if encryption_info.part_status != "lockedkey":
+                    if missing:
+                        encryption_info.part_status = "missingkey"
+                    else:
+                        encryption_info.part_status = "error"
 
             elif keyword == "DECRYPTION_OKAY":
                 encryption_info.part_status = "decrypted"
@@ -91,8 +102,8 @@ class GnuPGResultParser:
             elif keyword == "ENC_TO":
                 keylist = encryption_info.get("have_keys", [])
                 if data[0] not in keylist:
-                    keylist.append(data[1])
-                encryption_info["have_keys"] = keylist
+                    keylist.append(data[1].strip())
+                encryption_info["have_keys"] = list(set(keylist))
 
             elif signature_info.part_status == "none":
                 # Only one of these will ever be emitted per key, use
@@ -116,14 +127,13 @@ class GnuPGResultParser:
             keyword = data[0].strip()  # The last keyword often ends in \n
 
             if keyword == "NO_SECKEY":
+                keyid = data[1].strip()
                 if "missing_keys" not in encryption_info:
-                    encryption_info["missing_keys"] = [data[1]]
-                else:
-                    encryption_info["missing_keys"].append(data[1])
-                try:
-                    encryption_info["have_keys"].remove(data[1])
-                except (KeyError, ValueError):
-                    pass
+                    encryption_info["missing_keys"] = [keyid]
+                elif keyid not in encryption_info["missing_keys"]:
+                    encryption_info["missing_keys"].append(keyid)
+                while keyid in encryption_info["have_keys"]:
+                    encryption_info["have_keys"].remove(keyid)
 
             elif keyword == "VALIDSIG":
                 # FIXME: Determine trust level, between new, unverified,
@@ -405,7 +415,8 @@ class GnuPG:
 
     LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
 
-    def __init__(self, config, session=None, use_agent=None, debug=False):
+    def __init__(self, config,
+                 session=None, use_agent=None, debug=False):
         global DEBUG_GNUPG
         self.available = None
         self.outputfds = ["stdout", "stderr", "status"]
@@ -429,39 +440,26 @@ class GnuPG:
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
 
-    def prepare_passphrase(self, keyid, interactive=False):
-        """Search the Mailpile secrets for a usable passphrase."""
-        def _use(kid, sps):
-            self.passphrase = sps.get_reader()
+    def prepare_passphrase(self, keyid, signing=False, decrypting=False):
+        """Query the Mailpile secrets for a usable passphrase."""
+        def _use(kid, sps_reader):
+            self.passphrase = sps_reader
             GnuPG.LAST_KEY_USED = kid
             return True
 
-        keyidL = keyid.lower()
-        if self.passphrases:
-            if keyid in self.passphrases:
-                return _use(keyid, self.passphrases[keyid])
-            if keyidL in self.passphrases:
-                return _use(keyidL, self.passphrases[keyidL])
-            for fprint in self.passphrases:
-                if fprint.endswith(keyid):
-                    return _use(fprint, self.passphrases[fprint])
-                if fprint.lower().endswith(keyidL):
-                    return _use(fprint, self.passphrases[fprint])
-
         if self.config:
-            for sid in self.config.secrets.keys():
-                if sid.endswith(keyidL):
-                    from mailpile.config import SecurePassphraseStorage
-                    sps = SecurePassphraseStorage()
-                    sps.set_passphrase(self.config.secrets[sid].password)
-                    return _use(keyidL, sps)
+            message = []
+            if decrypting:
+                message.append(_("Your PGP key is needed for decrypting."))
+            if signing:
+                message.append(_("Your PGP key is needed for signing."))
+            match, sps = self.config.get_passphrase(keyid,
+                prompt=_('Unlock your encryption key'),
+                description=' '.join(message))
+            if match:
+                return _use(match, sps.get_reader())
 
-        if interactive:
-            # FIXME: Block and prompt user...
-            pass
-
-        print 'FIXME: MISSING PASSPHRASE FOR %s' % keyid
-        self.passphrase = None  # This may allow use of the GnuPG agent
+        self.passphrase = None  # This *may* allow use of the GnuPG agent
         return False
 
     def _debug_all(self, msg):
@@ -756,7 +754,7 @@ class GnuPG:
             # just hope the passphrase we used last time will work again.
             # If we are right, we are done. If we are wrong, the output
             # will tell us which key IDs to look for in our secret stash.
-            self.prepare_passphrase(GnuPG.LAST_KEY_USED)
+            self.prepare_passphrase(GnuPG.LAST_KEY_USED, decrypting=True)
 
         for tries in (1, 2):
             retvals = self.run(["--decrypt"], gpg_input=data,
@@ -770,10 +768,7 @@ class GnuPG:
                 keyid = None
                 for msg in retvals[1]['status']:
                     if msg[0] == 'NEED_PASSPHRASE':
-                        if self.prepare_passphrase(msg[1]):
-                            keyid = msg[1]
-                            break
-                        if self.prepare_passphrase(msg[2]):
+                        if self.prepare_passphrase(msg[2], decrypting=True):
                             keyid = msg[2]
                             break
                 if not keyid:
@@ -841,7 +836,7 @@ class GnuPG:
             action.append("--local-user")
             action.append(fromkey)
         if fromkey:
-            self.prepare_passphrase(fromkey)
+            self.prepare_passphrase(fromkey, signing=True)
 
         retvals = self.run(action, gpg_input=data,
                            send_passphrase=(sign or not tokeys))
@@ -858,7 +853,7 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         elif fromkey:
-            self.prepare_passphrase(fromkey)
+            self.prepare_passphrase(fromkey, signing=True)
 
         if detatch and not clearsign:
             action = ["--detach-sign"]

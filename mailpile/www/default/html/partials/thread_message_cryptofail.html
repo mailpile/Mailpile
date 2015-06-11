@@ -1,0 +1,31 @@
+{# This snippet expects the variable "failed_crypto" to be set to
+   either message.crypto.encryption or part.crypto.encryption ...
+#}
+{% set crypto = show_message_encryption(failed_crypto.status) %}
+<div class="thread-item-crypto-error text-center">
+  <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
+  <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
+  <p>{{ crypto.message }}</p>
+  <p>
+  {%- if failed_crypto.status in ("missingkey", "error") %}
+    <button class="message-crypto-action" data-mid="{{mid}}">
+      <span class="icon-key"></span> {{_("Send Your Encryption Key")}}
+    </button>
+  {%- else %}
+    {% if state.query_args.ui_key_auth %}
+      <p><b><i>{{_("Password incorrect?  Try again!")}}</i></b></p>
+    {% endif %}
+    <a href="{{ U('/settings/set/password/?id=', failed_crypto.locked_keys[0], '&ui_redirect_back=1') }}"
+       class="auto-modal" data-header="off">
+      <button class="message-crypto-pinentry" data-mid="{{mid}}">
+        <span class="icon-key"></span> {{_("Decrypt Message")}}
+      </button>
+    </a>
+  {%- endif %}
+  </p>
+{#### FIXME: hiding this in Beta Freeze
+  {% if part.crypto.encryption.missing_keys %}
+  <a href="#" class="message-crypto-investigate" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}">{{_("Investigate Message Further")}}</a>
+  {% endif %}
+####}
+</div>

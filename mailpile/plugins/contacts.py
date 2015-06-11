@@ -896,31 +896,30 @@ def ProfileVCard(parent):
                                        ) % protocol)
 
         def _new_key_created(self, event, vcard_rid, passphrase):
-            vcard = None
+            config = self.session.config
             fingerprint = self._key_generator.generated_key
-            if vcard_rid:
-                vcard = self.session.config.vcards.get_vcard(vcard_rid)
-            if not fingerprint:
+            if fingerprint:
+                vcard = vcard_rid and config.vcards.get_vcard(vcard_rid)
+                if vcard:
+                    vcard.pgp_key = fingerprint
+                    vcard.save()
+                    event.message = _('The PGP key for %s is ready for use.'
+                                      ) % vcard.email
+                else:
+                    event.message = _('PGP key generation is complete')
+
+                # Record the passphrase!
+                config.secrets[fingerprint] = {'password': passphrase}
+
+                # FIXME: Toggle something that indicates we need a backup ASAP.
+                self._background_save(config=True)
+            else:
                 event.message = _('PGP key generation failed!')
                 event.data['keygen_failed'] = True
-            elif vcard_rid and vcard:
-                vcard.pgp_key = fingerprint
-                vcard.save()
-                event.message = _('The PGP key for %s is ready for use.'
-                                  ) % vcard.email
-            else:
-                event.message = _('PGP key generation is complete')
-
-            # Record the passphrase.
-            sps = SecurePassphraseStorage(passphrase=passphrase)
-            self.session.config.secrets[fingerprint] = {'password': passphrase}
-            self.session.config.passphrases[fingerprint] = sps
-            # FIXME: Toggle something that indicates we need a backup ASAP.
-            self._background_save(config=True)
 
             event.flags = event.COMPLETE
             event.data['keygen_finished'] = int(time.time())
-            self.session.config.event_log.log_event(event)
+            config.event_log.log_event(event)
 
         def _create_new_key(self, vcard, keytype):
             passphrase = okay_random(26, self.session.config.master_key

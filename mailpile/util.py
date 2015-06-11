@@ -38,6 +38,8 @@ QUITTING = False
 LAST_USER_ACTIVITY = 0
 LIVE_USER_ACTIVITIES = 0
 
+THREAD_LOCAL = threading.local()
+
 RID_COUNTER = 0
 RID_COUNTER_LOCK = threading.Lock()
 
@@ -89,14 +91,15 @@ PROVISIONAL_URI_SCHEMES = set([
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
+
+##[ Lock debugging tools ]##################################################
+
 def WhereAmI(start=1):
     stack = inspect.stack()
     return '%s' % '->'.join(
         ['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
          for i in reversed(range(start, len(stack)-1))])
 
-
-##[ Lock debugging tools ]##################################################
 
 def _TracedLock(what, *a, **kw):
     lock = what(*a, **kw)
@@ -173,6 +176,10 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
+class JobPostponingException(Exception):
+    seconds = 300
+
+
 class MultiContext:
     def __init__(self, contexts):
         self.contexts = contexts or []
@@ -191,6 +198,21 @@ class MultiContext:
                 raised.append(e)
         if raised:
             raise raised[0]
+
+
+def thread_context_push(**kwargs):
+    if not hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context = []
+    THREAD_LOCAL.context.append(kwargs)
+
+
+def thread_context():
+    return THREAD_LOCAL.context if hasattr(THREAD_LOCAL, 'context') else []
+
+
+def thread_context_pop():
+    if hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context.pop(-1)
 
 
 def FixupForWith(obj):
@@ -395,8 +417,8 @@ def okay_random(length, *seeds):
     return secret
 
 
-def split_secret(secret, recipients):
-    while len(secret) < 10:
+def split_secret(secret, recipients, pad_to=24):
+    while len(secret) < pad_to:
         secret += '\x00'
     as_bytes = string_to_intlist(secret)
     parts = []
