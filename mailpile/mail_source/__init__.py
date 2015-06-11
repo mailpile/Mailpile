@@ -346,6 +346,9 @@ class BaseMailSource(threading.Thread):
         finally:
             self._state = ostate
 
+    def _default_policy(self, mbx_cfg):
+        return 'inherit'
+
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True):
         config = self.session.config
@@ -360,6 +363,7 @@ class BaseMailSource(threading.Thread):
             }
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
+        mbx_cfg.policy = policy or self._default_policy(mbx_cfg)
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
         if disco_cfg.guess_tags:
             self._guess_tags(mbx_cfg)

@@ -67,6 +67,12 @@ IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[^\\(\\)"\\s]+'
                         '|\\s+)')
 
+# These are mailbox names we avoid downloading (by default)
+BLACKLISTED_MAILBOXES = (
+    '[Gmail]/Important',
+    '[Gmail]/Starred',
+    'openpgp_keys'
+)
 
 class IMAP_IOError(IOError):
     pass
@@ -714,6 +720,12 @@ class ImapMailSource(BaseMailSource):
         if path.startswith('INBOX.'):
             return 'INBOX', '.'
         return '', '/'
+
+    def _default_policy(self, mbx_cfg):
+        if self._mailbox_path(self._path(mbx_cfg)) in BLACKLISTED_MAILBOXES:
+            return 'ignore'
+        else:
+            return 'inherit'
 
     def _strip_file_extension(self, mbx_path):
         return mbx_path  # Yes, a no-op :)
