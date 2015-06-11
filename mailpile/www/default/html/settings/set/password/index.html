@@ -5,12 +5,19 @@
 {%- else %}
 <div class="content-normal" style="max-width: 42em; position: relative">
 
+ {% if result.key or not result.keylist %}
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
+    {% if result.key %}
       <div class="vault-lock icon-lock-closed animated"></div>
+    {% else %}
+      <div class="vault-lock animated"></div>
+    {% endif %}
     </div>
   </div>
+ {% endif %}
 
+ {% if result.key or result.keylist %}
   <h1 class='text-center'>{{_("Mailpile Key Access")}}</h1>
 
   <form id="form-set-password" class="standard text-center"
@@ -18,7 +25,8 @@
 
     <select name="policy-ttl" class="text-center"
             onchange="javascript:_ssp.policy_changed(this);"
-            style="width: 42em; margin: 1px auto; border: 0; font-style: italic;">
+            {% if result.key %}style="width: 42em; margin: 1px auto; border: 0; font-style: italic;"
+            {% else %}style="width: 42em; margin: 10px auto;"{% endif %}>
       <option value="cache-only">{{_("Unlock Encryption Key")}}</option>
       <option value="cache-only:3600">{{_("Unlock Encryption Key")}} ({{_("1 hour")}})</option>
       <option value="cache-only:600">{{_("Unlock Encryption Key")}} ({{_("10 minutes")}})</option>
@@ -80,13 +88,6 @@
       {%- endif %}
     </ul>
 
-    {% if state.query_args.ui_redirect_back %}
-      <input type="hidden" class="current-url" name="redirect" value="">
-    {% elif not result.key %}
-      <input type="hidden" name="redirect"
-             value="{{ U('/settings/set/password/') }}">
-    {% endif %}
-
     <div class="ssp-unlock-key">
     <label>{{_("Your Password")}}</label>
       <div id="setup-passphrase-existing-confirm">
@@ -99,10 +100,24 @@
         </span>
       </div>
       <button class="button-primary" type="submit">{{_("Unlock Encryption Key")}}</button>
+
+    {% if state.query_args.ui_redirect_back %}
+      <input type="hidden" class="current-url" name="redirect" value="">
+    {% elif not result.key %}
+      <input type="hidden" name="redirect"
+             value="{{ U('/settings/set/password/') }}">
+      <p><i>
+         <br>
+         <b>WIP:</b> Password correctness is not checked immediately. This
+                     will be fixed later!                  
+      </i></p>
+    {% endif %}
+
     </div>
     <div class="ssp-lock-key hide">
       <button class="button-primary" type="submit">{{_("Lock Encryption Key")}}</button>
-    <div>
+    </div>
+
   </form>
 
   <script>
@@ -123,15 +138,30 @@
           if (val == 'fail' || val == 'forget') {
             $('.ssp-unlock-key').hide();
             $('.ssp-lock-key').show();
+            $('input[type=radio]').focus();
           }
           else {
             $('.ssp-unlock-key').show();
             $('.ssp-lock-key').hide();
+            $('input[type=password]').focus();
           }
-        }   
+        }
       }
+
     })();
+
+    setTimeout("$('input[type=password]').focus();", 250);
   </script>
+ {% else %}
+
+   <div class='text-center'>
+     <h3>{{_("No Keys Here!")}}</h3>
+     <p>
+       {{_("Encryption keys can be created during the account creation process.")}}
+     </p>
+   </div>
+
+ {% endif %}
 
 </div>
 {%- endif %}

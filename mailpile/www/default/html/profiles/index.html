@@ -8,11 +8,17 @@
 {%- endblock %}
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
 {%- block content %}<div id="page" class="content-normal">
-  <span style='float: right;'>
+  <div style='float: right;'>
     <select>
       <option>English</option>
     </select>
-  </span>
+{%- if result.profiles|length > 0 %}
+    <a href="{{ U('/settings/set/password/') }}" class="auto-modal"
+       title="{{_('Your Encryption Keys')}}" data-icon="icon-key">
+      <button class='button'><span class='icon icon-key'></span></button>
+    </a>
+{% endif %}
+  </div>
 
   <h1>
     <span class="icon icon-home"></span> Welcome Home [DEV: WIP]

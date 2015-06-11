@@ -30,8 +30,6 @@
 
   <h1><span class="icon-user"></span> {{_("Create a new Account")}}</h1>
 
-  <p>[DEV: Work in progress]</p>
-
   <script>
     var _fpa = (function() {
       var pf = '#form-profile-add ';
@@ -211,6 +209,7 @@
         }
       };
     })();
+    setTimeout("$('input[name=name]').focus();", 250);
   </script>
 
   <form id="form-profile-add" class="standard"
