@@ -74,10 +74,13 @@ $(document).on('click', '.compose-hide-field', function(e) {
 
 /* Compose - Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
-
   e.preventDefault();
-  var action = $(this).val();
-  var mid = $(this).parent().data('mid');
+  return Mailpile.Composer.SendMessage(this);
+});
+
+Mailpile.Composer.SendMessage = function(send_btn) {
+  var action = $(send_btn).val();
+  var mid = $(send_btn).parent().data('mid');
   var form_data = $('#form-compose-' + mid).serialize();
 
   if (action === 'send') {
@@ -110,15 +113,28 @@ $(document).on('click', '.compose-action', function(e) {
       else if (action === 'reply' && response.status === 'success') {
         Mailpile.Composer.Complete(response.result.thread_ids[0]);
       }
+      else if (response.status === 'error' && response.error.locked_keys) {
+        Mailpile.auto_modal({
+          url: '{{ U("/settings/set/password/?id=") }}' + response.error.locked_keys[0],
+          header: 'off',
+          callback: function(result) {
+            // Let's try that again!
+            Mailpile.Composer.SendMessage(send_btn);
+          }
+        });
+      }
       else {
         Mailpile.notification(response);
       }
     },
     error: function() {
-      Mailpile.notification({ status: 'error', message: 'Could not ' + action + ' your message'});
+      Mailpile.notification({
+        status: 'error',
+        message: 'Could not ' + action + ' your message'
+      });
     }
 	});
-});
+};
 
 
 /* Compose - Pick Send Date */

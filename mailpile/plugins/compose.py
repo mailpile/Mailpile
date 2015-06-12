@@ -7,6 +7,7 @@ import traceback
 
 from mailpile.commands import Command
 from mailpile.crypto.state import *
+from mailpile.crypto.mime import EncryptionFailureError, SignatureFailureError
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -837,6 +838,7 @@ class Sendit(CompositionCommand):
         # Process one at a time so we don't eat too much memory
         sent = []
         missing_keys = []
+        locked_keys = []
         for email in emails:
             events = []
             try:
@@ -872,16 +874,25 @@ class Sendit(CompositionCommand):
                     ev.flags = Event.COMPLETE
                     config.event_log.log_event(ev)
                 sent.append(email)
-            except KeyLookupError, kle:
-                # This is fatal, we don't retry
-                message = _('Missing keys %s') % kle.missing
+
+            # Encryption related failures are fatal, don't retry
+            except (KeyLookupError,
+                    EncryptionFailureError,
+                    SignatureFailureError), exc:
+                message = unicode(exc)
+                session.ui.warning(message)
+                if hasattr(exc, 'missing_keys'):
+                    missing_keys.extend(exc.missing)
+                if hasattr(exc, 'from_key'):
+                    # FIXME: We assume signature failures happen because
+                    # the key is locked. Are there any other reasons?
+                    locked_keys.append(exc.from_key)
                 for ev in events:
                     ev.flags = Event.COMPLETE
                     ev.message = message
                     config.event_log.log_event(ev)
-                session.ui.warning(message)
-                missing_keys.extend(kle.missing)
                 self._ignore_exception()
+
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
@@ -900,6 +911,8 @@ class Sendit(CompositionCommand):
 
         if missing_keys:
             self.error_info['missing_keys'] = missing_keys
+        if locked_keys:
+            self.error_info['locked_keys'] = locked_keys
         if sent:
             self._tag_sent(sent)
             self._tag_outbox(sent, untag=True)
@@ -954,6 +967,24 @@ class Update(CompositionCommand):
         except KeyLookupError, kle:
             return self._error(_('Missing encryption keys'),
                                info={'missing_keys': kle.missing})
+        except EncryptionFailureError, efe:
+            # This should never happen, should have been prevented at key
+            # lookup!
+            return self._error(_('Could not encrypt message'),
+                               info={'to_keys': efe.to_keys})
+        except SignatureFailureError, sfe:
+            # FIXME: We assume signature failures happen because
+            # the key is locked. Are there any other reasons?
+            return self._error(_('Could not sign message'),
+                               info={'locked_keys': [sfe.from_key]})
+
+
+class UpdateAndSendit(Update):
+    """Update message from an HTTP upload and move to outbox."""
+    SYNOPSIS = ('m', 'mail', 'message/update/send', None)
+
+    def command(self, create=True, outbox=True):
+        return Update.command(self, create=create, outbox=outbox)
 
 
 class UnThread(CompositionCommand):
@@ -979,14 +1010,6 @@ class UnThread(CompositionCommand):
                 _('Unthreaded %d messaages') % len(emails), emails)
         else:
             return self._error(_('Nothing to do!'))
-
-
-class UpdateAndSendit(Update):
-    """Update message from an HTTP upload and move to outbox."""
-    SYNOPSIS = ('m', 'mail', 'message/update/send', None)
-
-    def command(self, create=True, outbox=True):
-        return Update.command(self, create=create, outbox=outbox)
 
 
 class EmptyOutbox(Sendit):

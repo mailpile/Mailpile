@@ -45,33 +45,61 @@ $(document).on('click', 'span.checkbox, div.checkbox', function(e) {
   $(this).prev().trigger('click');
 });
 
-
-$(document).on('click', '.auto-modal', function(e) {
-  var elem = $(this);
-  var jhtml_url = Mailpile.API.jhtml_url(this.href);
-  var method = elem.data('method') || 'GET';
-  var title = elem.attr('title');
-  var icon = elem.data('icon');
-  var flags = elem.data('flags');
-  var header = elem.data('header');
-  if (flags) {
-    jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') + 'ui_flags=' + flags.replace(' ', '+');
+// FIXME: this is in the wrong place
+Mailpile.auto_modal = function(params) {
+  var jhtml_url = Mailpile.API.jhtml_url(params.url);
+  if (params.flags) {
+    jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') +
+                  'ui_flags=' + params.flags.replace(' ', '+');
   }
-  Mailpile.API.with_template('modal-auto', function(modal) {
+  return Mailpile.API.with_template('modal-auto', function(modal) {
     $.ajax({
       url: jhtml_url,
-      type: method,
+      type: params.method,
       success: function(data) {
         var mf = $('#modal-full').html(modal({
           data: data,
-          icon: icon,
-          title: title,
-          header: header,
-          flags: flags
+          icon: params.icon,
+          title: params.title,
+          header: params.header,
+          flags: params.flags
         }));
+        if (params.callback) {
+          // If there is a callback, we override the form's default behavior
+          // and use AJAX instead so our callback can handle the result.
+          mf.find('form').submit(function(ev) {
+            ev.preventDefault();
+            var url = mf.find('form').attr('action');
+            if ('{{ config.sys.http_path }}' != '') url = url.substring('{{ config.sys.http_path }}'.length);
+            url = '{{ config.sys.http_path }}/api/0' + url;
+            $.ajax({
+              type: "POST",
+              url: url,
+              data: mf.find('form').serialize(),
+              // FIXME: Errors are not handled at all here!
+              success: function(data) {
+                mf.modal('hide');
+                return params.callback(data);
+              }
+            });
+            return false;
+          });
+        }
         mf.modal(Mailpile.UI.ModalOptions);
       }
     });
-  }, undefined, flags);
+  }, undefined, params.flags);
+};
+
+$(document).on('click', '.auto-modal', function(e) {
+  var elem = $(this);
+  Mailpile.auto_modal({
+    url: this.href,
+    method: elem.data('method') || 'GET',
+    title: elem.attr('title'),
+    icon: elem.data('icon'),
+    flags: elem.data('flags'),
+    header: elem.data('header')
+  });
   return false;
 });

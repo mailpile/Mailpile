@@ -28,10 +28,13 @@
             {% if result.key %}style="width: 42em; margin: 1px auto; border: 0; font-style: italic;"
             {% else %}style="width: 42em; margin: 10px auto;"{% endif %}>
       <option value="cache-only">{{_("Unlock Encryption Key")}}</option>
-      <option value="cache-only:3600">{{_("Unlock Encryption Key")}} ({{_("1 hour")}})</option>
+      <option value="forget"></option>
       <option value="cache-only:600">{{_("Unlock Encryption Key")}} ({{_("10 minutes")}})</option>
+      <option value="cache-only:3600">{{_("Unlock Encryption Key")}} ({{_("1 hour")}})</option>
+      <option value="cache-only:43200">{{_("Unlock Encryption Key")}} ({{_("12 hours")}})</option>
+      <option value="forget"></option>
       <option value="store">{{_("Unlock Key and Remember Password")}}</option>
-      <option value="cache-only"></option>
+      <option value="forget"></option>
       <option value="forget">{{_("Lock Encryption Key")}}</option>
     </select>
     <ul class="radio-list add-bottom">
