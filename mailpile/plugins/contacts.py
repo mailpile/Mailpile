@@ -192,14 +192,16 @@ class AddVCard(VCardCommand):
     def _after_vcard_create(self, kind, vcard, state):
         pass
 
+    def _form_defaults(self):
+        return {'form': self.HTTP_POST_VARS}
+
     def command(self, recipients=False, quietly=False, internal=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
         if self.data.get('_method', 'not-http').upper() == 'GET':
-            return self._success(_('Add contacts here!'), {
-                'form': self.HTTP_POST_VARS
-            })
+            return self._success(_('Add contacts here!'),
+                                 self._form_defaults())
 
         if (len(args) > 2
                 and args[1] == '='
@@ -782,12 +784,17 @@ def ProfileVCard(parent):
             route = self.session.config.routes.get(route_id)
             protocol = self.data.get('route-protocol', ['none'])[0]
             if protocol == 'none':
+                if route:
+                    del self.session.config.routes[route_id]
+                vcard.route = ''
                 return
             elif protocol == 'local':
+                route.password = route.username = route.host = ''
                 route.name = _("Local mail")
-                route.command = self.data.get('local-command'
-                                              ) or self._sendmail_command()
+                route.command = self.data.get('local-command', [None]
+                                              )[0] or self._sendmail_command()
             elif protocol in ('smtp', 'smtptls', 'smtpssl'):
+                route.command = ''
                 route.name = vcard.email
                 for var in ('smtp-username', 'smtp-password',
                             'smtp-auth_type', 'smtp-host', 'smtp-port'):
@@ -822,11 +829,16 @@ def ProfileVCard(parent):
                     source = config.sources.get(src_id, {})
                     config.sources[src_id] = source
                     source = config.sources[src_id]
+                    source.host = ''
+                    source.password = ''
+                    source.username = ''
                     source.profile = vcard.random_uid
+                    source.enabled = self._yn(prefix + 'enabled')
                     source.discovery.apply_tags = [vcard.tag]
                     source.discovery.create_tag = True
                     source.discovery.process_new = True
-                    vcard.add_source(src_id)
+                    if src_id not in vcard.sources():
+                        vcard.add_source(src_id)
                     return source
 
                 if protocol == 'none':
@@ -880,7 +892,7 @@ def ProfileVCard(parent):
                         disco.local_copy = False
                     disco.paths = ['']
                     disco.guess_tags = True
-                    disco.visible_tags = self._yn(prefix + 'auto-tags')
+                    disco.visible_tags = self._yn(prefix + 'visible-tags')
 
                     # Connection settings
                     for rvar in ('protocol', 'auth_type', 'host', 'port',
@@ -1021,8 +1033,31 @@ class AddProfile(ProfileVCard(AddVCard)):
         'security-*': 'Security settings'
     })
 
-    def _before_vcard_create(self, kind, triplets):
-        route_id = self.data.get('route_id', [None])[0]
+    def _form_defaults(self):
+        new_src_id = randomish_uid();
+        return dict_merge(AddVCard._form_defaults(self), {
+            'new_src_id': new_src_id,
+            'source-NEW-protocol': 'none',
+            'source-NEW-leave-on-server': True,
+            'source-NEW-index-all-mail': True,
+            'source-NEW-force-starttls': False,
+            'source-NEW-visible-tags': False,
+            'source-NEW-copy-local': True,
+            'source-NEW-delete-source': False,
+            'security-best-effort-crypto': True,
+            'security-always-sign': False,
+            'security-always-encrypt': False,
+            'security-attach-keys': True,
+            'security-prefer-inline': True,
+            'security-openpgp-header-encrypt': False,
+            'security-openpgp-header-sign': True,
+            'security-openpgp-header-none': False,
+            'security-publish-to-keyserver': False
+        });
+
+    def _before_vcard_create(self, kind, triplets, vcard=None):
+        route_id = self.data.get('route_id',
+                                 [vcard and vcard.route or None])[0]
         if route_id:
             if route_id not in self.session.config.routes:
                 raise ValueError('Not a valid route ID: %s' % route_id)
@@ -1034,26 +1069,118 @@ class AddProfile(ProfileVCard(AddVCard)):
             'route_id': route_id
         }
 
-    def _after_vcard_create(self, kind, vcard, state):
+    def _update_vcard_from_post(self, vcard, state=None):
+        if not state:
+            # When editing, this doesn't run first, so we invoke it now.
+            state = self._before_vcard_create(vcard.kind, [], vcard=vcard)
+
         vcard.signature = self.data.get('signature', [''])[0]
+        vcard.email = self.data.get('email', [None])[0] or vcard.email
+        vcard.fn = self.data.get('name', [None])[0] or vcard.fn
 
-        with self.session.config._lock:
-            tags = self.session.config.tags
-            vcard.tag = tags.append({
-                'name': vcard.email,
-                'slug': '%8.8x' % time.time(),
-                'type': 'profile',
-                'icon': 'icon-user',
-                'flag_msg_only': True,
-                'label': False,
-                'display': 'invisible'
-            })
-            tags[vcard.tag].slug = 'account-%d' % len(tags)
+        if not vcard.tag:
+            with self.session.config._lock:
+                tags = self.session.config.tags
+                vcard.tag = tags.append({
+                    'name': vcard.email,
+                    'slug': '%8.8x' % time.time(),
+                    'type': 'profile',
+                    'icon': 'icon-user',
+                    'flag_msg_only': True,
+                    'label': False,
+                    'display': 'invisible'
+                })
+                tags[vcard.tag].slug = 'account-%d' % len(tags)
 
-        if state['route_id']:
-            self._configure_sending_route(vcard, state['route_id'])
+        route_id = state.get('route_id')
+        if route_id:
+            self._configure_sending_route(vcard, route_id)
+
         self._configure_mail_sources(vcard)
         self._configure_security(vcard)
+
+    def _after_vcard_create(self, kind, vcard, state):
+        self._update_vcard_from_post(vcard, state=state)
+
+
+class EditProfile(AddProfile):
+    """Edit a profile"""
+    SYNOPSIS = (None, None, 'profiles/edit', None)
+    HTTP_QUERY_VARS = dict_merge(AddProfile.HTTP_QUERY_VARS, {
+        'rid': 'update by x-mailpile-rid',
+    })
+
+    def _vcard_to_post_vars(self, vcard):
+        cp = vcard.crypto_policy or ''
+        cf = vcard.crypto_format or ''
+        pvars = {
+            'rid': vcard.random_uid,
+            'name': vcard.fn,
+            'email': vcard.email,
+            'password': '',
+            'route-protocol': 'none',
+            'source-NEW-protocol': 'none',
+            'security-pgp-key': vcard.pgp_key or '',
+            'security-best-effort-crypto': ('best-effort' in cp),
+            'security-always-sign': ('sign' in cp),
+            'security-always-encrypt': ('encrypt' in cp),
+            'security-attach-keys': ('send_keys' in cf),
+            'security-prefer-inline': ('prefer_inline' in cf),
+            'security-openpgp-header-encrypt': ('openpgp_header:E' in cf or
+                                                'openpgp_header:SE' in cf),
+            'security-openpgp-header-sign': ('openpgp_header:S' in cf or
+                                             'openpgp_header:ES' in cf),
+            'security-openpgp-header-none': ('openpgp_header:N' in cf),
+            'security-publish-to-keyserver': False
+        }
+        route = self.session.config.routes.get(vcard.route or 'ha ha ha')
+        if route:
+            pvars.update({
+                'route-protocol': route.protocol,
+                'route-host': route.host,
+                'route-port': route.port,
+                'route-username': route.username,
+                'route-password': route.password,
+                'route-auth_type': route.auth_type,
+                'local-command': route.command
+            })
+        pvars['sources'] = vcard.sources()
+        for sid in pvars['sources']:
+            prefix = 'source-%s-' % sid
+            source = self.session.config.sources.get(sid)   
+            disco = source.discovery
+            info = {}
+            for rvar in ('protocol', 'auth_type', 'host', 'port',
+                         'username', 'password'):
+                info[prefix + rvar] = source[rvar]
+            dp = disco.policy
+            info[prefix + 'leave-on-server'] = (dp not in 'move')
+            info[prefix + 'index-all-mail'] = (dp in ('move', 'sync', 'read')
+                                               and disco.local_copy)
+            info[prefix + 'visible-tags'] = disco.visible_tags
+            info[prefix + 'enabled'] = source.enabled
+            pvars.update(info)
+        return pvars
+
+    def command(self):
+        session, config = self.session, self.session.config
+      
+        # OK, fetch the VCard.
+        rids = self.data.get('rid', [])
+        assert(len(rids) == 1)
+        vcard = config.vcards.get_vcard(rids[0])
+        assert(vcard)
+
+        if self.data.get('_method') == 'POST':
+            self._update_vcard_from_post(vcard)
+            self._background_save(config=True)
+            vcard.save()
+            message = _('Account Updated!')
+        else:
+            message = _('Edit Account')
+
+        return self._success(message, dict_merge(
+            self._form_defaults(), self._vcard_to_post_vars(vcard)))
 
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):
@@ -1061,8 +1188,8 @@ class RemoveProfile(ProfileVCard(RemoveVCard)):
 
 
 class ListProfiles(ProfileVCard(ListVCards)):
-    SYNOPSIS = (None, 'profiles', 'profiles', '[--lines] [<terms>]')
     """Find profiles"""
+    SYNOPSIS = (None, 'profiles', 'profiles', '[--lines] [<terms>]')
 
 
 class ChooseFromAddress(Command):
@@ -1111,6 +1238,7 @@ _plugins.register_commands(VCard, AddVCard, RemoveVCard, ListVCards,
                            VCardAddLines, VCardRemoveLines)
 _plugins.register_commands(Contact, AddContact, RemoveContact, ListContacts,
                            AddressSearch)
-_plugins.register_commands(Profile, AddProfile, RemoveProfile, ListProfiles,
+_plugins.register_commands(Profile, AddProfile, EditProfile,
+                           RemoveProfile, ListProfiles,
                            ChooseFromAddress)
 _plugins.register_commands(ContactImport, ContactImporters)

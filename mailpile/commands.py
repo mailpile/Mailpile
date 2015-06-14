@@ -155,9 +155,9 @@ class Command(object):
             }
             if self.error_info:
                 rv['error'] = self.error_info
-            for ui_key in [k for k in self.kwargs.keys()
+            for ui_key in [k for k in self.command_obj.data.keys()
                            if k.startswith('ui_')]:
-                rv[ui_key] = self.kwargs[ui_key]
+                rv[ui_key] = self.command_obj.data[ui_key][0]
             ev = self.command_obj.event
             if ev and ev.data.get('password_needed'):
                 rv['password_needed'] = ev.private_data['password_needed']

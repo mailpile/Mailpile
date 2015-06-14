@@ -62,7 +62,7 @@
        </td><td width='1%'>
          <a class="auto-modal" data-flags="reload" data-icon="icon-user"
             title="{{_("Edit Profile")}}"
-                    href="{{ U('/profiles/view/', profile_rid, '/edit.html') }}">
+                    href="{{ U('/profiles/edit/?rid=', profile_rid) }}">
                    <span class="icon icon-user" style="color: #070;"></span>
          </a>
        </td><td style='text-align: left;'>
@@ -76,29 +76,31 @@
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
        </td><td><a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
        </td><td>
+         {%- if not (p['x-mailpile-profile-source'] or []) %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
             title="{{_("Add new incoming mail source")}}"
-            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=new-source') }}">
+            href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
            <span class="unconfigured icon icon-mailsource"></span>
          </a>
+         {%- endif %}
          {%- for ms in (p['x-mailpile-profile-source'] or []) %}
            {%- set source_id = ms['profile-source'] %}
            {%- set source = config.sources[source_id] %}
          <a class="source-{{source_id}} auto-modal" data-flags="reload" data-icon="icon-mailsource"
             data-title="{{ source.name }}" title="{{ source.name }}"
-            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=source-', source_id) }}">
+            href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
            <span class="configured icon icon-mailsource"></span>
          </a>
          {%- endfor %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-outbox"
             title="{{_("Configure outgoing mail")}}{% if route %} - {{ route.name }}{% endif %}"
-            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=route') }}">
+            href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=route') }}">
            <span class="{% if not route %}un{% endif %}configured icon icon-outbox"></span>
          </a>
       {# <span class="icon icon-groups" style="color: #aaa;"></span> #}
          <a class="auto-modal" data-flags="reload" data-icon="icon-lock-closed"
             title="{{_("Security settings")}}"
-            href="{{ U('/profiles/view/', profile_rid, '/edit.html?ui_open=security') }}">
+            href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=security') }}">
            <span class="profile-{{profile_rid}}-key
                         {% if p.key %}configured icon icon-lock-closed
                         {% else %}unconfigured icon icon-lock-open{% endif %}"></span>

@@ -1004,7 +1004,7 @@ class MailpileVCard(SimpleVCard):
         return (default, which_email)
 
     pgp_key = property(
-        lambda self: self._vcard_get('key').split(',')[-1],
+        lambda self: self._vcard_get('key', '').split(',')[-1],
         lambda self, v: self._vcard_set('key',
             'data:application/x-pgp-fingerprint,' + v))
 
