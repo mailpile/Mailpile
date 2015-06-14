@@ -618,7 +618,7 @@ class BaseMailSource(threading.Thread):
                 session.ui.mark(_('Copying message: %s') % key)
                 progress['copying_src_id'] = key
                 try:
-                    mkws = src.get_metadata_kws(key)
+                    mkws = src.get_metadata_keywords(key)
                     data = src.get_bytes(key)
                 except KeyError:
                     progress['key_errors'] = key_errors
