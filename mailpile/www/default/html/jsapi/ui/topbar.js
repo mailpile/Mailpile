@@ -51,9 +51,9 @@ $(document).on('blur', '#button-search-options', function(key) {
 
 
 /* Activities - Create New Blank Message */
-$(document).on('click', '#button-compose', function(e) {
+$(document).on('click', '.button-compose', function(e) {
 	e.preventDefault();
-  Mailpile.activities.compose();
+  Mailpile.activities.compose($(this).data('to'), $(this).data('from'));
 });
 
 

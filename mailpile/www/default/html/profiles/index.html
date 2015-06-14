@@ -9,9 +9,15 @@
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
 {%- block content %}<div id="page" class="content-normal">
   <div style='float: right;'>
+{#### FIXME: add language selection tool/button? 
     <select>
       <option>English</option>
     </select>
+####}
+    <a href="{{ U('/settings/set/remote/') }}" class="auto-modal"
+       title="{{_('Remote Access')}}" data-icon="icon-force-graph">
+      <button class='button'><span class='icon icon-force-graph'></span></button>
+    </a>
 {%- if result.profiles|length > 0 %}
     <a href="{{ U('/settings/set/password/') }}" class="auto-modal"
        title="{{_('Your Encryption Keys')}}" data-icon="icon-key">
@@ -54,8 +60,7 @@
     <tr valign="top" style="background: #fff;">
        <td width='1%'>
          {%- if route %}
-         <a data-post="from={{ p.email.0.email }}" data-action="/compose/"
-            class="auto-post" href="#">
+         <a data-from="{{ p.email.0.email }}" class="button-compose" href="#">
            <span class="icon icon-compose"></span>
          </a>
          {%- endif %}
@@ -78,7 +83,7 @@
        </td><td>
          {%- if not (p['x-mailpile-profile-source'] or []) %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
-            title="{{_("Add new incoming mail source")}}"
+            title="{{_('Configure incoming mail')}}"
             href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
            <span class="unconfigured icon icon-mailsource"></span>
          </a>
@@ -87,13 +92,14 @@
            {%- set source_id = ms['profile-source'] %}
            {%- set source = config.sources[source_id] %}
          <a class="source-{{source_id}} auto-modal" data-flags="reload" data-icon="icon-mailsource"
-            data-title="{{ source.name }}" title="{{ source.name }}"
+            data-title="{{_('Incoming mail:')}} {{source.name}}"
+            title="{{_('Incoming mail:')}} {{source.name}}"
             href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
            <span class="configured icon icon-mailsource"></span>
          </a>
          {%- endfor %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-outbox"
-            title="{{_("Configure outgoing mail")}}{% if route %} - {{ route.name }}{% endif %}"
+            title="{{_('Outgoing mail settings')}}"
             href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=route') }}">
            <span class="{% if not route %}un{% endif %}configured icon icon-outbox"></span>
          </a>
@@ -114,7 +120,13 @@
        </td>
     </tr>
     {%- endfor %}
-    {%- if result.profiles|length < 1 %}
+    {%- if result.loading %}
+    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+      <p style='margin: 1em; padding: 0;'>
+        <i>{{_("Still loading profiles and contacts, please wait...")}}</i>
+      </p>
+    </div></td></tr>
+    {%- elif result.profiles|length < 1 %}
     <tr style="background: #fff;"><td colspan=9><div class='text-center'>
       <br>
       <p><i>{{_("You have not configured any accounts yet.")}}</i></p>

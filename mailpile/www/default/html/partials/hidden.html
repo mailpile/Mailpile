@@ -287,8 +287,10 @@
       <span class="message"><%= message %></span><br>
       <% if (message2) { %>
       <span class="action"><%= message2 %>
-      <%   if (action_url) { %>
-        <a href="<%= action_url %>" data-event_id="<%= event_id %>" class="action notification-undo"><%= action_text %></a>
+      <%   if (action_js) { %>
+        - <a <%= action_js %> data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
+      <%   } else if (action_url) { %>
+        - <a href="<%= action_url %>" data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
       <%   } %>
       </span>
       <% } else if (type === 'nagify') { %>

@@ -27,7 +27,7 @@
   <script>
     var _fpa = (function() {
       var pf = '#form-profile-editor ';
-      var rid = '{{ new_src_id }}';
+      var new_src_id = '{{ new_src_id }}';
       var old = {password: '', username: ''};
       return {
         next: function(show) {
@@ -162,9 +162,9 @@
           var next = 0;
           if (result.routes && result.routes.length > 0) {
             var found = result.routes[0];
-            $("input[name='smtp-host']").val(found.host);
-            $("input[name='smtp-port']").val(found.port);
-            $("input[name='smtp-username']").val(found.username);
+            $("input[name='route-host']").val(found.host);
+            $("input[name='route-port']").val(found.port);
+            $("input[name='route-username']").val(found.username);
             var $s = $("select[name='route-protocol']");
             $s.find('option').prop('selected', false);
             $s.find("option[value='" + found.protocol + "']").prop('selected', true);
@@ -247,21 +247,25 @@
       <div class="basics new hide">
         <br><i>FIXME ... add signup with partners here!</i><br>
       </div>
-      <div class="more-basics left hide" style="width: 29em; padding: 0;">
+      <div class="more-basics left{%- if not result.rid %} hide{% endif %}" style="width: 29em; padding: 0;">
         <label>{{_("Signature")}}</label>
         <textarea placeholder="{{_("Everyone needs a unique, witty signature!")}}"
                   name="signature" style="width: 100%;"></textarea>
       </div>
       <br clear="both"><label>&nbsp;</label>
       <div style="position: absolute; text-align: right; right: 0; bottom: 1.5em;">
+        {%- if not result.rid %}
         <a class="more-basics-show" onclick="javascript:_fpa.more('more-basics');">
           {{_("Add custom signature")}} ...
         </a> &nbsp;&nbsp;
+        {% endif %}
+        {%- if not result.sources %}
         <input type="checkbox" class="fpa-autoconfig" value="yes"
                {%- if not result.rid %}checked{% endif %}>
         <span class="checkbox">
           {{ _("Detect settings") }}
         </span> &nbsp;
+        {% endif %}
         <button onclick='javascript:_fpa.basics_next();'
                 class="button-info" type="button">{{_("Next")}} ...</button>
       </div>
@@ -306,26 +310,26 @@
                     {%- if protocol not in ('smtp', 'smtpssl', 'smtptls') %} hide{% endif %}">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <label>{{_("Host name")}}</label>
-            <input type="text" name="smtp-host" value="{{ result['smtp-host'] }}" placeholder="mail.server.com">
+            <input type="text" name="route-host" value="{{ result['route-host'] }}" placeholder="mail.server.com">
           </div>
           <div class="left" style="margin-right: 0; width: 10em;">
             <label>{{_("Port number")}}</label>
-            <input type="text" name="smtp-port" value="{{ result['smtp-port'] }}" placeholder="25, 465 or 587">
+            <input type="text" name="route-port" value="{{ result['route-port'] }}" placeholder="25, 465 or 587">
           </div>
           <br clear="both">
           <div class="left" style="margin-right: 1em; width: 14em;">
             <small class="right fpa-username-copied hide">({{ _("copied") }})</small>
             <label>{{_("Username")}}</label>
-            <input type="text" name="smtp-username" class="fpa-username"
+            <input type="text" name="route-username" class="fpa-username"
                    onchange="javascript:_fpa.mark_copied(this, 'username');"
-                   value="{{ result['smtp-username'] }}" placeholder="you123">
+                   value="{{ result['route-username'] }}" placeholder="you123">
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
             <small class="right fpa-password-copied hide">({{ _("copied") }})</small>
             <label>{{_("Password")}}</label>
-            <input type="password" name="smtp-password" class="fpa-password"
+            <input type="password" name="route-password" class="fpa-password"
                    onchange="javascript:_fpa.mark_copied(this, 'password');"
-                   value="{{ result['smtp-password'] }}"
+                   value="{{ result['route-password'] }}"
                    placeholder="{{_('sssh!')}}">
           </div>
         </div>
@@ -339,8 +343,8 @@
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
             <label>{{_("Shell command")}}</label>
-            <input type="text" name="local-command" style="width: 100%;"
-                   value="{{ result['local-command'] }}"
+            <input type="text" name="route-command" style="width: 100%;"
+                   value="{{ result['route-command'] }}"
                    placeholder="- {{_('Leave blank to auto-detect')}} -">
           </div>
         </div>
@@ -576,7 +580,6 @@
           {%- set key = pgp_keys[fingerprint] -%}
           <option value="{{fingerprint}}" data-uids="{% for uid in key.uids %}{{ uid.email}} {% endfor %}"
                   {%- if fingerprint == result['security-pgp-key'] %} selected{% endif %}>
-            {{_("Use:")}}
             {{key.creation_date}}/{{key.keytype_name}}{{key.keysize}}:
             {{key.uid}}
           </option>{% endfor %}

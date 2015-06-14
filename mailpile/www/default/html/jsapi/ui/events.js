@@ -93,10 +93,11 @@ Mailpile.auto_modal = function(params) {
 
 $(document).on('click', '.auto-modal', function(e) {
   var elem = $(this);
+  var title = elem.data('title') || elem.attr('title');
   Mailpile.auto_modal({
     url: this.href,
     method: elem.data('method') || 'GET',
-    title: elem.attr('title'),
+    title: title,
     icon: elem.data('icon'),
     flags: elem.data('flags'),
     header: elem.data('header')

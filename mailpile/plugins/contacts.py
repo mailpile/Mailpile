@@ -456,6 +456,12 @@ class ListVCards(VCardCommand):
         else:
             offset = 0
 
+        # If we're loading, stall a bit but then report current state
+        loading, loaded = config.vcards.loading, config.vcards.loaded
+        if loading:
+            time.sleep(2)
+            loading, loaded = config.vcards.loading, config.vcards.loaded
+
         vcards = config.vcards.find_vcards(terms, kinds=kinds)
         total = len(vcards)
         vcards = vcards[offset:offset + count]
@@ -468,6 +474,8 @@ class ListVCards(VCardCommand):
                    'total': total,
                    'start': offset,
                    'end': offset + min(count, total - offset),
+                   'loading': loading,
+                   'loaded': loaded
                }))
 
 
@@ -791,13 +799,13 @@ def ProfileVCard(parent):
             elif protocol == 'local':
                 route.password = route.username = route.host = ''
                 route.name = _("Local mail")
-                route.command = self.data.get('local-command', [None]
+                route.command = self.data.get('route-command', [None]
                                               )[0] or self._sendmail_command()
             elif protocol in ('smtp', 'smtptls', 'smtpssl'):
                 route.command = ''
                 route.name = vcard.email
-                for var in ('smtp-username', 'smtp-password',
-                            'smtp-auth_type', 'smtp-host', 'smtp-port'):
+                for var in ('route-username', 'route-password',
+                            'route-auth_type', 'route-host', 'route-port'):
                    rvar = var.split('-', 1)[1]
                    route[rvar] = self.data.get(var, [''])[0]
             else:
@@ -826,8 +834,8 @@ def ProfileVCard(parent):
                 def make_new_source():
                     # This little dance makes sure source is actually a
                     # config section, not just an anonymous dict.
-                    source = config.sources.get(src_id, {})
-                    config.sources[src_id] = source
+                    if src_id not in config.sources:
+                        config.sources[src_id] = {}
                     source = config.sources[src_id]
                     source.host = ''
                     source.password = ''
@@ -973,45 +981,46 @@ def ProfileVCard(parent):
                     vcard.pgp_key = openpgp_key
                     # FIXME: Schedule a background sync job which edits
                     #        the key to add this Account as a UID, if it
-                    #        is not on the key already.
-
-                # Encryption policy rules
-                outg_auto = self._yn('security-best-effort-crypto')
-                outg_sig  = self._yn('security-always-sign')
-                outg_enc  = self._yn('security-always-encrypt')
-                if outg_enc and outg_sig:
-                    vcard.crypto_policy = 'openpgp-sign-encrypt'
-                elif outg_sig:
-                    vcard.crypto_policy = 'openpgp-sign'
-                elif outg_enc:
-                    vcard.crypto_policy = 'openpgp-encrypt'
-                elif outg_auto:
-                    vcard.crypto_policy = 'best-effort'
-                else:
-                    vcard.crypto_policy = 'none'
-
-                # Crypto formatting rules
-                pgp_keys     = self._yn('security-attach-keys')
-                pgp_inline   = self._yn('security-prefer-inline')
-                pgp_hdr_enc  = self._yn('security-openpgp-header-encrypt')
-                pgp_hdr_sig  = self._yn('security-openpgp-header-sign')
-                pgp_hdr_none = self._yn('security-openpgp-header-none')
-                pgp_hdr_both = pgp_hdr_enc and pgp_hdr_sig
-                if pgp_hdr_both:
-                    pgp_hdr_enc = pgp_hdr_sig = False
-                vcard.crypto_format = ''.join([
-                    'openpgp_header:SE+' if (pgp_hdr_both) else '',
-                    'openpgp_header:S+'  if (pgp_hdr_sig)  else '',
-                    'openpgp_header:E+'  if (pgp_hdr_enc)  else '',
-                    'openpgp_header:N+'  if (pgp_hdr_none) else '',
-                    'send_keys+'         if (pgp_keys)     else '',
-                    'prefer_inline'      if (pgp_inline)   else 'pgpmime'
-                ])
 
             else:
                 vcard.remove_all('key')
+
+            # Set the following even if we don't have a key, so they don't
+            # get lost if the user edits settings while a key is being
+            # generated - or if they just deselect a key temporarily.
+
+            # Encryption policy rules
+            outg_auto = self._yn('security-best-effort-crypto')
+            outg_sig  = self._yn('security-always-sign')
+            outg_enc  = self._yn('security-always-encrypt')
+            if outg_enc and outg_sig:
+                vcard.crypto_policy = 'openpgp-sign-encrypt'
+            elif outg_sig:
+                vcard.crypto_policy = 'openpgp-sign'
+            elif outg_enc:
+                vcard.crypto_policy = 'openpgp-encrypt'
+            elif outg_auto:
+                vcard.crypto_policy = 'best-effort'
+            else:
                 vcard.crypto_policy = 'none'
-                vcard.crypto_format = 'none'
+
+            # Crypto formatting rules
+            pgp_keys     = self._yn('security-attach-keys')
+            pgp_inline   = self._yn('security-prefer-inline')
+            pgp_hdr_enc  = self._yn('security-openpgp-header-encrypt')
+            pgp_hdr_sig  = self._yn('security-openpgp-header-sign')
+            pgp_hdr_none = self._yn('security-openpgp-header-none')
+            pgp_hdr_both = pgp_hdr_enc and pgp_hdr_sig
+            if pgp_hdr_both:
+                pgp_hdr_enc = pgp_hdr_sig = False
+            vcard.crypto_format = ''.join([
+                'openpgp_header:SE+' if (pgp_hdr_both) else '',
+                'openpgp_header:S+'  if (pgp_hdr_sig)  else '',
+                'openpgp_header:E+'  if (pgp_hdr_enc)  else '',
+                'openpgp_header:N+'  if (pgp_hdr_none) else '',
+                'send_keys+'         if (pgp_keys)     else '',
+                'prefer_inline'      if (pgp_inline)   else 'pgpmime'
+            ])
 
     return ProfileVCardCommand
 
@@ -1026,9 +1035,7 @@ class AddProfile(ProfileVCard(AddVCard)):
         'route_id': 'Route ID for sending mail',
 
         'signature': '.signature',
-        'route-protocol': 'Route type',
-        'smtp-*': 'SMTP settings',
-        'local-command': 'sendmail command',
+        'route-*': 'Route settings',
         'source-*': 'Source settings',
         'security-*': 'Security settings'
     })
@@ -1037,6 +1044,7 @@ class AddProfile(ProfileVCard(AddVCard)):
         new_src_id = randomish_uid();
         return dict_merge(AddVCard._form_defaults(self), {
             'new_src_id': new_src_id,
+            'route-protocol': 'none',
             'source-NEW-protocol': 'none',
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
@@ -1142,7 +1150,7 @@ class EditProfile(AddProfile):
                 'route-username': route.username,
                 'route-password': route.password,
                 'route-auth_type': route.auth_type,
-                'local-command': route.command
+                'route-command': route.command
             })
         pvars['sources'] = vcard.sources()
         for sid in pvars['sources']:
@@ -1166,21 +1174,19 @@ class EditProfile(AddProfile):
         session, config = self.session, self.session.config
       
         # OK, fetch the VCard.
-        rids = self.data.get('rid', [])
-        assert(len(rids) == 1)
-        vcard = config.vcards.get_vcard(rids[0])
+        assert('rid' in self.data and len(self.data['rid']) == 1)
+        vcard = config.vcards.get_vcard(self.data['rid'][0])
         assert(vcard)
 
         if self.data.get('_method') == 'POST':
             self._update_vcard_from_post(vcard)
             self._background_save(config=True)
             vcard.save()
-            message = _('Account Updated!')
+            return self._success(_('Account Updated!'),
+                                 self._vcard_to_post_vars(vcard))
         else:
-            message = _('Edit Account')
-
-        return self._success(message, dict_merge(
-            self._form_defaults(), self._vcard_to_post_vars(vcard)))
+            return self._success(_('Edit Account'), dict_merge(
+                 self._form_defaults(), self._vcard_to_post_vars(vcard)))
 
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):

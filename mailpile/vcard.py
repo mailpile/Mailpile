@@ -1168,6 +1168,7 @@ class VCardStore(dict):
         dict.__init__(self)
         self.config = config
         self.vcard_dir = vcard_dir
+        self.loading = False
         self.loaded = False
         self._lock = VCardRLock()
 
@@ -1200,11 +1201,11 @@ class VCardStore(dict):
                 del self[card.random_uid]
 
     def load_vcards(self, session=None):
-        if self.loaded:
+        if self.loaded or self.loading:
             return
         try:
             with self._lock:
-                self.loaded = True
+                self.loading = True
                 prfs = self.config.prefs
                 key_func = lambda: self.config.master_key
                 paths = [(fn, os.path.join(self.vcard_dir, fn))
@@ -1244,6 +1245,8 @@ class VCardStore(dict):
                                 import traceback
                                 traceback.print_exc()
                             session.ui.warning('Failed to load vcard %s' % fn)
+                self.loaded = True
+                self.loading = False
         except (OSError, IOError):
             pass
 
