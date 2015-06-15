@@ -80,6 +80,8 @@
      "tags": {{ tags_json|safe }}
     };
 
+{### DISABLED FOR NOW, PENDING A NEW BACKUP STRATEGY ####
+
     // Nagifications
     {% if show_nagification(config.web.nag_backup_key) %}
     Mailpile.notification({
@@ -89,7 +91,7 @@
       action: '{{ U('/settings/backup-keys.html') }}'
     });
     {% endif %}
-
+#}
     // HTML5 Browser Notifications
     if (Notification.permission == "granted") {
       $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")

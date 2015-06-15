@@ -1,9 +1,8 @@
 /* Activities */
-Mailpile.activities.compose = function(address) {
+Mailpile.activities.compose = function(to, from) {
   var compose_data = {};
-  if (address) {
-    compose_data = {to: address};
-  }
+  if (to) compose_data.to = to;
+  if (from) compose_data.from = from;
 	Mailpile.API.message_compose_post(compose_data, function(response) {
     if (response.status === 'success') {
       window.location.href = Mailpile.urls.message_draft + response.result.message_ids[0] + '/';

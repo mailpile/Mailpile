@@ -277,10 +277,16 @@ class MailIndex(object):
                 with open(self.config.mailindex_file(), 'r') as fd:
                     # We don't raise on errors, in case only some of the chunks
                     # are corrupt - we want to read the rest of them.
+                    errors = 0
+                    def warn(offset):
+                        if session:
+                            session.ui.error('WARNING: Failed to decrypt '
+                                             'block of index ending at %d'
+                                             % offset)
                     # FIXME: Differentiate between partial index and no index?
                     decrypt_and_parse_lines(fd, process_lines, self.config,
                                             newlines=True, decode=False,
-                                            _raise=False)
+                                            _raise=False, error_cb=warn)
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
@@ -735,17 +741,14 @@ class MailIndex(object):
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
-                if not lazy:
-                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
-                if (not lazy and
-                        msg_info[self.MSG_BODY] in self.MSG_BODY_UNSCANNED):
+                if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
-                    # Do not continue, fall through!
-                elif (ui % 317) == 0:
-                    session.ui.mark(parse_status(ui))
-                    continue
                 elif (ui % 129) == 0 and not deadline:
                     play_nice_with_threads()
+                if not lazy:
+                    msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
+                    msg_body = msg_info[self.MSG_BODY]
+                if lazy or msg_body not in self.MSG_BODY_UNSCANNED:
                     continue
             else:
                 session.ui.mark(parse_status(ui))
@@ -806,7 +809,8 @@ class MailIndex(object):
 
     def _real_scan_one(self, session,
                        mailbox_idx, mbox, msg_mbox_idx,
-                       msg_ptr=None, msg_data=None, last_date=None,
+                       msg_ptr=None, msg_data=None, msg_metadata_kws=None,
+                       last_date=None,
                        process_new=None, apply_tags=None, stop_after=None,
                        editable=False, event=None, progress=None,
                        lazy=False):
@@ -822,13 +826,16 @@ class MailIndex(object):
         try:
             if msg_data:
                 msg_fd = cStringIO.StringIO(msg_data)
+                msg_metadata_kws = msg_metadata_kws or []
             elif lazy:
                 msg_data = mbox.get_bytes(msg_mbox_idx, 10240)
                 msg_data = msg_data.split('\r\n\r\n')[0].split('\n\n')[0]
                 msg_fd = cStringIO.StringIO(msg_data)
                 msg_bytes = mbox.get_msg_size(msg_mbox_idx)
+                msg_metadata_kws = mbox.get_metadata_keywords(msg_mbox_idx)
             else:
                 msg_fd = mbox.get_file(msg_mbox_idx)
+                msg_metadata_kws = mbox.get_metadata_keywords(msg_mbox_idx)
 
             msg = ParseMessage(msg_fd,
                                pgpmime=session.config.prefs.index_encrypted,
@@ -846,13 +853,15 @@ class MailIndex(object):
 
         msg_id = self.get_msg_id(msg, msg_ptr)
         if msg_id in self.MSGIDS:
+            # FIXME: this prevents updates of the BODY_LAZY stuff...
             with self._lock:
                 self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
                 updated += 1
         else:
             lazy_body = self.MSG_BODY_LAZY if lazy else None
             msg_info = self._index_incoming_message(
-                session, msg_id, msg_ptr, msg_bytes, msg,
+                session, msg_id, msg_ptr, msg_bytes,
+                msg, msg_metadata_kws,
                 last_date + 1, mailbox_idx, process_new, apply_tags,
                 lazy_body)
             last_date = long(msg_info[self.MSG_DATE], 36)
@@ -899,7 +908,8 @@ class MailIndex(object):
     # FIXME: Finish merging this function with the one below it...
     def _extract_info_and_index(self, session, mailbox_idx,
                                 msg_mid, msg_id,
-                                msg_size, msg, default_date,
+                                msg_size, msg, msg_metadata_kws,
+                                default_date,
                                 **index_kwargs):
 
         msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
@@ -909,7 +919,7 @@ class MailIndex(object):
 
         filters = _plugins.get_filter_hooks([self.filter_keywords])
         kw, bi = self.index_message(session, msg_mid, msg_id,
-                                    msg, msg_size, msg_ts,
+                                    msg, msg_metadata_kws, msg_size, msg_ts,
                                     mailbox=mailbox_idx,
                                     compact=False,
                                     filter_hooks=filters,
@@ -925,7 +935,8 @@ class MailIndex(object):
         return (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags)
 
     def _index_incoming_message(self, session,
-                                msg_id, msg_ptr, msg_size, msg, default_date,
+                                msg_id, msg_ptr, msg_size,
+                                msg, msg_metadata_kws, default_date,
                                 mailbox_idx, process_new, apply_tags,
                                 lazy_body):
         if lazy_body:
@@ -948,7 +959,8 @@ class MailIndex(object):
             # Parse and index
             (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
              ) = self._extract_info_and_index(session, mailbox_idx,
-                                              msg_mid, msg_id, msg_size, msg,
+                                              msg_mid, msg_id, msg_size,
+                                              msg, msg_metadata_kws,
                                               default_date,
                                               process_new=process_new,
                                               apply_tags=apply_tags,
@@ -974,13 +986,15 @@ class MailIndex(object):
         msg_mid = email.msg_mid()
         msg_info = email.get_msg_info()
         msg_size = email.get_msg_size()
+        msg_metadata_kws = email.get_metadata_kws()
         msg_id = msg_info[self.MSG_ID]
         mailbox_idx = msg_info[self.MSG_PTRS].split(',')[0][:MBX_ID_LEN]
         default_date = long(msg_info[self.MSG_DATE], 36)
 
         (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
          ) = self._extract_info_and_index(session, mailbox_idx,
-                                          msg_mid, msg_id, msg_size, msg,
+                                          msg_mid, msg_id, msg_size,
+                                          msg, msg_metadata_kws,
                                           default_date,
                                           incoming=False)
         self.edit_msg_info(msg_info,
@@ -1351,7 +1365,8 @@ class MailIndex(object):
                               ).split('\n--')[0])
                 ).strip()
 
-    def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
+    def index_message(self, session, msg_mid, msg_id,
+                      msg, msg_metadata_kws, msg_size, msg_ts,
                       mailbox=None, compact=True, filter_hooks=None,
                       process_new=None, apply_tags=None, incoming=False):
         keywords, snippet = self.read_message(session,
@@ -1363,12 +1378,13 @@ class MailIndex(object):
         if apply_tags:
             keywords |= set(['%s:in' % tid for tid in apply_tags])
         if process_new:
-            process_new(msg, msg_ts, keywords, snippet)
+            process_new(msg, msg_metadata_kws, msg_ts, keywords, snippet)
         elif incoming:
             # This is the default behavior if the above are undefined.
             if process_new is None:
                 from mailpile.mail_source import ProcessNew
-                ProcessNew(session, msg, msg_ts, keywords, snippet)
+                ProcessNew(session, msg, msg_metadata_kws, msg_ts,
+                           keywords, snippet)
             if apply_tags is None:
                 keywords |= set(['%s:in' % tag._key for tag in
                                  self.config.get_tags(type='inbox')])

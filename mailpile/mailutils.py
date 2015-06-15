@@ -780,6 +780,10 @@ class Email(object):
             fd.seek(0, 2)
             return fd.tell()
 
+    def get_metadata_kws(self):
+        # FIXME: Track these somehow...
+        return []
+
     def _get_parsed_msg(self, pgpmime, update_cache=False):
         cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
                                         not self.ephemeral_mid) else None

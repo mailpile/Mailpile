@@ -168,19 +168,21 @@ EventLog.subscribe('.*AddProfile', function(ev) {
 EventLog.subscribe('.*mail_source.*', function(ev) {
   var $src = $('.source-' + ev.data.id);
   if ($src.length > 0) {
-    ev.icon = 'icon-mailsource';
-    Mailpile.notification(ev);
-
     var $icon = $src.find('.icon');
     if (ev.data.connection && ev.data.connection.error[0]) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
                          '{{_("Error")}}: ' +  ev.message);
+      ev.action_js = "onclick=\"javascript:$('.source-" + ev.data.id + "').click();\"";
+      ev.action_text = '{{_("edit settings")}}';
     }
     else {
       $icon.removeClass('misconfigured').removeClass('unconfigured');
       $icon.addClass('configured');
     }
+
+    ev.icon = 'icon-mailsource';
+    Mailpile.notification(ev);
   }
 });

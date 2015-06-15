@@ -629,6 +629,7 @@ class DecryptingStreamer(InputCoprocess):
                     and self.buffered.startswith(self.BEGIN_PGP)):
                 self.state = self.STATE_PGP_DATA
                 if self.gpg_pass:
+                    self.gpg_pass.seek(0, 0)
                     passphrase, c = [], self.gpg_pass.read(1)
                     while c != '':
                         passphrase.append(c)

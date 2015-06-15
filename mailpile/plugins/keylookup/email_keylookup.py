@@ -51,7 +51,7 @@ def _get_keydata(data):
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *
-                               round(len('%x' % m.modulus) / 0.256)))
+                               round(len('%x' % (m.modulus or 0)) / 0.256)))
                 validity = ('e'
                             if (0 < (int(m.expiration_time or 0)) < now)
                             else '')

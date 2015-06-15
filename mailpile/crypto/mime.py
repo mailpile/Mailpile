@@ -38,11 +38,15 @@ def MessageAsString(part, unixfrom=False):
 
 
 class EncryptionFailureError(ValueError):
-    pass
+    def __init__(self, message, to_keys):
+        ValueError.__init__(self, message)
+        self.to_keys = to_keys
 
 
 class SignatureFailureError(ValueError):
-    pass
+    def __init__(self, message, from_key):
+        ValueError.__init__(self, message)
+        self.from_key = from_key
 
 
 DEFAULT_CHARSETS = ['utf-8', 'iso-8859-1']
@@ -350,7 +354,7 @@ class MimeSigningWrapper(MimeWrapper):
                 self._update_crypto_status(self.container)
                 return self.container
 
-        raise SignatureFailureError(_('Failed to sign message!'))
+        raise SignatureFailureError(_('Failed to sign message!'), from_key)
 
 
 class MimeEncryptingWrapper(MimeWrapper):
@@ -412,4 +416,4 @@ class MimeEncryptingWrapper(MimeWrapper):
                 self._update_crypto_status(self.enc_data)
                 return self.container
 
-        raise EncryptionFailureError(_('Failed to encrypt message!'))
+        raise EncryptionFailureError(_('Failed to encrypt message!'), to_keys)

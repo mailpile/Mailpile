@@ -387,6 +387,18 @@ class MailpileCommand(Extension):
             _("Mixed Encrypted"),
             _("Part of this message were encrypted, but other parts were not "
               "encrypted")],
+        "lockedkey": [
+            "crypto-color-green",
+            "icon-lock-closed",
+            _("Locked Key"),
+            _("You have the encryption key to decrypt this message, "
+              "but the key itself is locked.")],
+        "mixed-lockedkey": [
+            "crypto-color-green",
+            "icon-lock-closed",
+            _("Mixed Locked Key"),
+            _("Parts of the message could not be decrypted because your "
+              "encryption key is locked.")],
         "missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
@@ -397,7 +409,7 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
-            _("Parts of the message were unable to be decrypted because you "
+            _("Parts of the message could not be decrypted because you "
               "are missing the private key. Perhaps it was encrypted to an "
               "old key you don't have anymore?")],
         "error": [

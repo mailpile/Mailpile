@@ -31,4 +31,4 @@ $PYTHON ./mp --set 'sys.debug = log http' \
              --www 'localhost:33433' \
              --interact
 
-[ "$1" != "--keep" ] && rm -rf "$MAILPILE_HOME"
+[ "$1" = "--cleanup" ] && rm -rf "$MAILPILE_HOME"

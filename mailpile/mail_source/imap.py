@@ -67,6 +67,12 @@ IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[^\\(\\)"\\s]+'
                         '|\\s+)')
 
+# These are mailbox names we avoid downloading (by default)
+BLACKLISTED_MAILBOXES = (
+    '[Gmail]/Important',
+    '[Gmail]/Starred',
+    'openpgp_keys'
+)
 
 class IMAP_IOError(IOError):
     pass
@@ -140,7 +146,7 @@ class SharedImapConn(threading.Thread):
         self._selected = None
 
         for meth in ('append', 'add', 'capability', 'fetch', 'noop',
-                     'list', 'login', 'search', 'uid'):
+                     'list', 'login', 'namespace', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
         self._update_name()
@@ -435,6 +441,19 @@ class SharedImapMailbox(Mailbox):
     def get_msg_size(self, key):
         return long(self.get_info(key).get('RFC822.SIZE', 0))
 
+    def get_metadata_keywords(self, key):
+        # Translate common IMAP flags into the maildir vocabulary
+        flags = [f.lower() for f in self.get_info(key).get('FLAGS', '')]
+        mkws = []
+        for char, flag in (('s', '\\seen'),
+                           ('r', '\\answered'),
+                           ('d', '\\draft'),
+                           ('f', '\\flagged'),
+                           ('t', '\\deleted')):
+           if flag in flags:
+               mkws.append('%s:maildir' % char)
+        return mkws
+
     def __contains__(self, key):
         try:
             self.get_info(key)
@@ -481,8 +500,10 @@ class ImapMailSource(BaseMailSource):
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.timeout = self.TIMEOUT_INITIAL
+        self.last_op = 0
         self.watching = -1
         self.capabilities = set()
+        self.namespaces = {'private': []}
         self.flag_cache = {}
         self.conn = None
         self.conn_id = ''
@@ -524,12 +545,16 @@ class ImapMailSource(BaseMailSource):
         if conn:
             try:
                 with conn as c:
+                    now = time.time()
                     if (conn_id == self.conn_id and
-                            self.timed(c.noop)[0] == 'OK'):
+                            (now < self.last_op + 120 or
+                             self.timed(c.noop)[0] == 'OK')):
                         # Make the timeout longer, so we don't drop things
                         # on every hiccup and so downloads will be more
                         # efficient (chunk size relates to timeout).
                         self.timeout = self.TIMEOUT_LIVE
+                        if now >= self.last_op + 120:
+                            self.last_op = now
                         return conn
             except self.CONN_ERRORS + (AttributeError, ):
                 pass
@@ -606,11 +631,23 @@ class ImapMailSource(BaseMailSource):
                 else:
                     self.conn = SharedImapConn(self.session, conn)
 
+                if 'NAMESPACE' in capabilities:
+                    ok, data = self.timed_imap(conn.namespace)
+                    if ok:
+                        prv, oth, shr = data
+                        self.namespaces = {
+                            'private': prv if (prv != 'NIL') else [],
+                            'others': oth if (oth != 'NIL') else [],
+                            'shared': shr if (shr != 'NIL') else []
+                        }
+
             if self.event:
                 self._log_status(_('Connected to IMAP server %s'
                                    ) % my_config.host)
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug('CONNECTED %s' % self.conn)
+                self.session.ui.debug('CAPABILITIES %s' % self.capabilities)
+                self.session.ui.debug('NAMESPACES %s' % self.namespaces)
 
             self.conn_id = conn_id
             ev['live'] = True
@@ -674,13 +711,44 @@ class ImapMailSource(BaseMailSource):
         else:
             self.event.data['mailbox_state'] = {mbx._key: uvex}
 
-    def _mailbox_name(self, path):
-        # len('src:/') = 5
-        path = str(path[(5 + len(self.my_config._key)):])
+    def _namespace_info(self, path):
+        for which, nslist in self.namespaces.iteritems():
+            for prefix, pathsep in nslist:
+                if path.startswith(prefix):
+                    return prefix, pathsep or '/'
+        # This is a hack for older servers that don't do NAMESPACE
+        if path.startswith('INBOX.'):
+            return 'INBOX', '.'
+        return '', '/'
+
+    def _default_policy(self, mbx_cfg):
+        if self._mailbox_path(self._path(mbx_cfg)) in BLACKLISTED_MAILBOXES:
+            return 'ignore'
+        else:
+            return 'inherit'
+
+    def _strip_file_extension(self, mbx_path):
+        return mbx_path  # Yes, a no-op :)
+
+    def _decode_path(self, path):
         try:
             return path.decode('imap4-utf-7')
         except:
             return path
+
+    def _mailbox_path(self, mbx_path):
+        # len('src:/') = 5
+        return str(mbx_path[(5 + len(self.my_config._key)):])
+
+    def _mailbox_path_split(self, mbx_path):
+        path = self._mailbox_path(mbx_path)
+        prefix, pathsep = self._namespace_info(path)
+        return [self._decode_path(p) for p in path.split(pathsep)]
+
+    def _mailbox_name(self, mbx_path):
+        path = self._mailbox_path(mbx_path)
+        prefix, pathsep = self._namespace_info(path)
+        return self._decode_path(path[len(prefix):])
 
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)

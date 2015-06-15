@@ -121,7 +121,10 @@ CONFIG_RULES = {
         'password':        (_('Salted and hashed password'), str, '')
     }, {}],
     'secrets': [_('Secrets the user wants saved'), {
-        'password':        (_('A secret'), str, '')
+        'password':        (_('A secret'), str, ''),
+        'policy':          (_('Security policy'),
+                            ["store", "cache-only", "fail"],
+                            'store')
     }, {}],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),

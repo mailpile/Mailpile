@@ -38,6 +38,8 @@ QUITTING = False
 LAST_USER_ACTIVITY = 0
 LIVE_USER_ACTIVITIES = 0
 
+THREAD_LOCAL = threading.local()
+
 RID_COUNTER = 0
 RID_COUNTER_LOCK = threading.Lock()
 
@@ -89,14 +91,15 @@ PROVISIONAL_URI_SCHEMES = set([
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
+
+##[ Lock debugging tools ]##################################################
+
 def WhereAmI(start=1):
     stack = inspect.stack()
     return '%s' % '->'.join(
         ['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
          for i in reversed(range(start, len(stack)-1))])
 
-
-##[ Lock debugging tools ]##################################################
 
 def _TracedLock(what, *a, **kw):
     lock = what(*a, **kw)
@@ -173,6 +176,10 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
+class JobPostponingException(Exception):
+    seconds = 300
+
+
 class MultiContext:
     def __init__(self, contexts):
         self.contexts = contexts or []
@@ -191,6 +198,21 @@ class MultiContext:
                 raised.append(e)
         if raised:
             raise raised[0]
+
+
+def thread_context_push(**kwargs):
+    if not hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context = []
+    THREAD_LOCAL.context.append(kwargs)
+
+
+def thread_context():
+    return THREAD_LOCAL.context if hasattr(THREAD_LOCAL, 'context') else []
+
+
+def thread_context_pop():
+    if hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context.pop(-1)
 
 
 def FixupForWith(obj):
@@ -395,8 +417,8 @@ def okay_random(length, *seeds):
     return secret
 
 
-def split_secret(secret, recipients):
-    while len(secret) < 10:
+def split_secret(secret, recipients, pad_to=24):
+    while len(secret) < pad_to:
         secret += '\x00'
     as_bytes = string_to_intlist(secret)
     parts = []
@@ -477,20 +499,31 @@ def elapsed_datetime(timestamp):
         if hours_ago < 1:
             if minutes_ago < 3:
                 return _('now')
-            elif minutes_ago >= 3:
+            else:
                 return _('%d mins') % minutes_ago
         elif hours_ago < 2:
             return _('%d hour') % hours_ago
         else:
             return _('%d hours') % hours_ago
     elif days_ago < 2:
-        return _('%d day') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d day') % days_ago
     elif days_ago < 7:
-        return _('%d days') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d days') % days_ago
     elif days_ago < 366:
-        return ts.strftime("%b %d")
+        return _(ts.strftime("%b")) + ts.strftime(" %d")
     else:
-        return ts.strftime("%b %d %Y")
+        return _(ts.strftime("%b")) + ts.strftime(" %d %Y")
+
+_translate_these = [_('Monday'), _('Mon'), _('Tuesday'), _('Tue'),
+                    _('Wednesday'), _('Wed'), _('Thursday'), _('Thu'),
+                    _('Friday'), _('Fri'), _('Saturday'), _('Sat'),
+                    _('Sunday'), _('Sun'),
+                    _('January'), _('Jan'), _('February'), _('Feb'),
+                    _('March'), _('Mar'), _('April'), _('Apr'),
+                    _('May'), _('June'), _('Jun'),
+                    _('July'), _('Jul'), _('August'), _('Aug'),
+                    _('September'), _('Sep'), _('October'), _('Oct'),
+                    _('November'), _('Nov'), _('December'), _('Dec')]
 
 
 def friendly_datetime(timestamp):
@@ -532,7 +565,7 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8',
                             passphrase=None,
-                            _raise=IOError):
+                            _raise=IOError, error_cb=None):
     import mailpile.crypto.streamer as cstrm
     symmetric_key = config and config.master_key or 'missing'
     passphrase_reader = (passphrase.get_reader()
@@ -559,7 +592,8 @@ def decrypt_and_parse_lines(fd, parser, config,
                     mep_key=symmetric_key,
                     gpg_pass=passphrase_reader) as pdsfd:
                 _parser(pdsfd)
-                pdsfd.verify(_raise=_raise)
+                if not pdsfd.verify(_raise=_raise) and error_cb:
+                    error_cb(fd.tell())
         else:
             _parser([line])
 

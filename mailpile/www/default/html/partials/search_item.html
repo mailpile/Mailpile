@@ -31,7 +31,7 @@
     </a>
   </td>
   <td class="subject">
-    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted') %}
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
     <span class="icon-lock-closed color-08-green"></span> 
     {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
     <span class="icon-lock-closed color-12-red"></span> 
@@ -49,7 +49,8 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
+    <a class="item-subject" title="{{metadata.body.snippet}}"
+       href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
     <a href="{{ U('/search/dates:{{metadata.date}}') }}/">{{metadata.timestamp|elapsed_datetime}}</a>

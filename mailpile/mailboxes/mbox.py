@@ -131,6 +131,13 @@ class MailpileMailbox(mailbox.mbox):
         except (IndexError, KeyError, IndexError, TypeError):
             return 0
 
+    def get_metadata_keywords(self, toc_id):
+        # In an mbox, all metadata is in the message headers.
+        return []
+
+    def set_metadata_keywords(self, *args, **kwargs):
+        pass
+
     def get_msg_cs(self, start, cs_size, max_length):
         with self._lock:
             if start is None:
