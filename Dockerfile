@@ -7,10 +7,10 @@ WORKDIR /Mailpile
 ADD . /Mailpile
 
 RUN	groupadd -r mailpile \
-&&	useradd -r -d /maipile-data -g mailpile mailpile
+&&	useradd -r -d /mailpile-data -g mailpile mailpile
 
-RUN chown -R mailpile:muilpile /Mailpile
-RUN chown -R mailpile:muilpile /mailpile-data
+RUN chown -R mailpile:mailpile /Mailpile
+RUN chown -R mailpile:mailpile /mailpile-data
 
 USER mailpile
 
