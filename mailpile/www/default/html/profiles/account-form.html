@@ -221,11 +221,13 @@
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">
+      {%- if not result.rid %}
       <select class="right" style="width: auto;"
               onchange="javascript:_fpa.select(this, 'basics');">
         <option value="old" selected>{{_("Existing Account")}}</option>
         <option value="new">{{_("New Address")}}</option>
       </select>
+      {% endif %}
       <div style="padding-right: 0em; width: 22em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%" value="{{ result.name }}" placeholder="Chelsea Manning">

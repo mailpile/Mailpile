@@ -1,0 +1,42 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Remote Access")}}{% endblock %}
+{% block content %}
+<div class="content-normal">
+<form id="form-remote-access" class="standard" method="POST"
+      style="position: relative; max-width: 60em;"
+      action="{{ U('/settings/remote.html') }}">
+  <h1><span class="icon-force-graph"></span> {{_("Remote Access")}}</h1>
+
+  <p>
+    {{_("You can configure your Mailpile to allow access over the web, much like cloud-based web-mail.")}}
+    {{_("Just remember not to turn the computer off or quit the application!")}}
+  </p>
+
+  <p class="message paragraph-important">
+    <span class="icon icon-force-graph"></span> {{_("Remote Access")}}
+  </p>
+  <div class="section ra-remote-access" style="position: relative;">
+    <select class="right" name="access-protocol" style="width: auto">
+      <option value="none">{{_("Disabled")}}</option>
+      <option value="pagekite">{{_("PageKite")}}</option>
+      <option value="tor">{{_("Tor")}}</option>
+      <option value="direct">{{_("Local LAN")}}</option>
+    </select>
+    <p class="text-center" style="margin: 0; padding: 1em;">
+      <i>WORK IN PROGRESS...</i>
+    </p>
+    <br clear="both">
+  </div>
+
+  <p class="message paragraph-important">
+    <span class="icon icon-lock-closed"></span> {{_("Passwords and Authentication")}}
+  </p>
+  <div class="section ra-authentication" style="position: relative;">
+    <p class="text-center" style="margin: 0; padding: 1em;">
+      <i>WORK IN PROGRESS...</i>
+    </p>
+    <br clear="both">
+  </div>
+
+</form></div>
+{% endblock %}

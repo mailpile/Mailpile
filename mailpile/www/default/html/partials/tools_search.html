@@ -95,7 +95,7 @@
     'aclass': 'auto-modal',
     'url': '/tags/edit.html?only=' + result.search_terms[0][3:],
     'text': _("Edit"),
-    'description': _("Edit this tag")
+    'description': _("Edit") + ': '  + result.search_terms[0][3:]
 }] -%}
 
 {%- set display_refiners = [{
