@@ -50,11 +50,7 @@ _plugins.register_config_section('tags', ["Tags", {
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
-    'parent': ['ID of parent tag, if any', 'str', ''],
-
-    # Outdated crap
-    'hides_flag': ['DEPRECATED', 'ignore', None],
-    'write_flag': ['DEPRECATED', 'ignore', None],
+    'parent': ['ID of parent tag, if any', 'str', '']
 }, {}])
 
 _plugins.register_config_section('filters', ["Filters", {
@@ -64,13 +60,6 @@ _plugins.register_config_section('filters', ["Filters", {
     'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
     'primary_tag': ['Tag dedicated to this filter', 'str', ''],
 }, {}])
-
-_plugins.register_config_variables('sys', {
-    'writable_tags': ['DEPRECATED', 'str', []],
-    'invisible_tags': ['DEPRECATED', 'str', []],
-})
-
-#INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides')
 
 
 def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):

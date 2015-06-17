@@ -7,25 +7,27 @@
   </style>
 {%- endblock %}
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
-{%- block content %}<div id="page" class="content-normal">
-  <div style='float: right;'>
-{#### FIXME: add language selection tool/button? 
-    <select>
-      <option>English</option>
-    </select>
-####}
-    <a href="{{ U('/settings/remote.html') }}" class="auto-modal"
-       title="{{_('Remote Access')}}" data-icon="icon-force-graph">
-      <button class='button'><span class='icon icon-force-graph'></span></button>
-    </a>
-{%- if result.profiles|length > 0 %}
-    <a href="{{ U('/settings/set/password/') }}" class="auto-modal"
-       title="{{_('Your Encryption Keys')}}" data-icon="icon-key">
-      <button class='button'><span class='icon icon-key'></span></button>
-    </a>
-{% endif %}
-  </div>
 
+{%- block contenttools %}
+{%- set activities = [{
+    'name': 'addprofile',
+    'icon': 'plus',
+    'aclass': 'auto-modal',
+    'url': U('/profiles/add/'),
+    'text': _("Add Account"),
+    'description': _("Create a new Account")
+},{
+    'name': 'keys',
+    'icon': 'key',
+    'aclass': 'auto-modal',
+    'url': U('/settings/set/password/'),
+    'text': _("Keys"),
+    'description': _("Manage Your Encryption Keys")
+}] %}
+{%- include("partials/tools_default.html") %}
+{%- endblock %}
+
+{%- block content %}<div id="page" class="content-normal">
   <h1>
     <span class="icon icon-home"></span> {{_("Welcome Home")}}
   </h1>
