@@ -1863,7 +1863,7 @@ class ConfigSet(Command):
             ops.append((section, '!CREATE_SECTION'))
 
         for var in self.data.keys():
-            if var in ('_section', '_method'):
+            if var in ('_section', '_method', 'context', 'csrf'):
                 continue
             sep = '/' if ('/' in (section+var)) else '.'
             svar = (section+sep+var) if section else var

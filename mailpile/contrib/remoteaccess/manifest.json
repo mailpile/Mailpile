@@ -1,0 +1,51 @@
+# This is a Mailpile plugin manifest, describing the `remoteaccess` plugin.
+{
+    "name": "remoteaccess",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": [],
+        "javascript": [],
+        "css": []
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {
+        "/settings/remote.html": {"file": "settings-remote.html"}
+    },
+
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
+    "config": {"sections": {
+        "remoteaccess": ["Remote Access settings", false, {
+            "pagekite":      ["PageKite settings", false, {
+                "enabled":   ["Enable PageKite remote access", "bool", false],
+                "kitename":  ["Name of public DNS", "str", ""],
+                "account":   ["Account login", "str", ""],
+                "password":  ["Kite secret", "str", ""],
+                "frontends": ["--frontends", "str", ""],
+                "dyndns":    ["--dyndns", "str", ""],
+                "xmlrpc":    ["XML-RPC server for signups", "url",
+                              "https://pagekite.net/xmlrpc/"]
+            }]
+        }]
+    }},
+
+    # These are our Python-related hooks
+    "commands": [
+    ],
+
+    # Hook into the UI
+    "user_interface": {
+        "activities": [
+            {
+                "context": ["/profiles/"],
+                "name": "remoteaccess",
+                "text": "Remote Access",
+                "icon": "force-graph",
+                "description": "Access your Mailpile over the Internet",
+                "aclass": "auto-modal",
+                "url": "/settings/remoteaccess/remote.html"
+            }
+        ]
+    }
+}
