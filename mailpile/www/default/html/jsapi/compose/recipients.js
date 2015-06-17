@@ -1,50 +1,56 @@
 /* Composer - Recipients */
 
 Mailpile.Composer.Recipients.AnalyzeAddress = function(address) {
-  var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
-
-  if (check) {
-    if (check[3]) {
-      return {"id": check[2], "fn": $.trim(check[1]), "address": check[2], "keys": [{ "fingerprint": check[3].substring(1) }], "flags": { "secure" : true } };
+  /* The Mailpile API guarantees consistent formatting of addresses, so
+     a simple regexp should generally work juuuust fine. However, we also
+     want to handle pasted or typed input. So we try the simple parse first,
+     and then get a bit more creative. */
+  var check = address.match(/^\s*([^<]*?)\s*<?([^\s<>]+@[^\s<>#]+)(#[a-zA-Z0-9]+)?>?\s*$/);
+  if (!check) {
+    var check2 = address.match(/^\s*([^\s]+)(@[^\s]+)\s*$/);
+    if (check2) {
+      check = [check2[0], check2[1], check2[1] + check2[2], false];
     }
-    return {"id": check[2], "fn": $.trim(check[1]), "address": check[2], "flags": { "secure" : false } };
-  } else {
-    return {"id": address, "fn": address, "address": address, "flags": { "secure" : false }};
+    else {
+      check = [address, address, address, false];
+    }
   }
+  var fn = $.trim(check[1] || check[2].substring(0, check[2].indexOf('@')));
+  if (fn.substring(0, 1) == '<') fn = fn.substring(1);
+  var parsed = {
+    "id": check[2],
+    "fn": fn,
+    "address": check[2],
+    "keys": [],
+    "flags": {"secure" : false}
+  };
+  if (check[3]) {
+    parsed["keys"] = [{"fingerprint": check[3].substring(1)}];
+    parsed["flags"] = {"secure" : true};
+  };
+  return parsed;
 };
 
 
 /* Composer - tokenize input field (to: cc: bcc:) */
 Mailpile.Composer.Recipients.Analyze = function(addresses) {
-
   var existing = [];
 
   // Is Valid & Has Multiple
   if (addresses) {
-
-    // FIXME: Only solves the comma specific issue. We should do a full RFC 2822 solution eventually.
+    // We know this simple strategy works, because the backend formats the
+    // address lines in a conisistent way.
     var multiple = addresses.split(/>, */);
-    var tail = '';
 
-    // Has Multiple
-    if (multiple.length > 1) {
-
-      $.each(multiple, function(key, value){
-        // Check for <
-        if (value.indexOf('<') > -1) {
-          tail = '>';
-        }
-        existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value + tail)); // Add back on the '>' since the split pulled it off.
-      });
-    } else {
-      if (multiple[0].indexOf('<') > -1) {
-        tail = '>';
+    $.each(multiple, function(key, value) {
+      if (value.indexOf('@') > -1) {
+        if (value.indexOf('<') == -1) value = value + ' <' + value;
+        if (value.indexOf('>') == -1) value = value + '>';
       }
-      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(multiple[0] + tail));
-    }
-
-    return existing;
+      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value));
+    });
   }
+  return existing;
 };
 
 
@@ -54,7 +60,6 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
   // Get MID
   var mid = $('#'+id).data('mid');
 
-  //
   $('#' + id).select2({
     id: function(object) {
       if (object.flags.secure) {
@@ -65,10 +70,12 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       if (object.fn !== "" && object.address !== object.fn) {
         return object.fn + ' <' + address + '>';
       } else {
-        return address;
+        return '<' + address + '>';
       }
     },
-    ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
+    ajax: {
+      // instead of writing the function to execute the request we use
+      // Select2's convenient helper
       url: Mailpile.api.contacts,
       quietMillis: 1,
       cache: true,
@@ -78,7 +85,8 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
           q: term
         };
       },
-      results: function(response, page) { // parse the results into the format expected by Select2
+      results: function(response, page) {
+        // Convert the results into the format expected by Select2
         return {
           results: response.result.addresses
         };
@@ -92,12 +100,7 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
     placeholder: 'Type to add contacts',
     maximumSelectionSize: 100,
     tokenSeparators: [", ", ";"],
-    createSearchChoice: function(term) {
-      // Check if we have an RFC5322 compliant e-mail address
-      if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
-        return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
-      }
-    },
+    createSearchChoice: Mailpile.Composer.Recipients.AnalyzeAddress,
     formatResult: function(state) {
       var avatar = '<span class="icon-user"></span>';
       var secure = '';
