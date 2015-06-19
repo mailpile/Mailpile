@@ -272,7 +272,7 @@ def PrepareMessage(config, msg,
         # Add headers we require
         while 'date' in msg:
             del msg['date']
-        msg['Date'] = email.utils.formatdate()
+        msg['Date'] = email.utils.formatdate(localtime=False)
 
         import mailpile.plugins
         plugins = mailpile.plugins.PluginManager()
@@ -400,7 +400,7 @@ class Email(object):
             raise NoFromAddressError()
 
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
-        msg['Date'] = email.utils.formatdate(msg_ts)
+        msg['Date'] = email.utils.formatdate(msg_ts, localtime=False)
         msg['Message-Id'] = msg_id or email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
