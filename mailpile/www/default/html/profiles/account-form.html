@@ -30,10 +30,29 @@
       var new_src_id = '{{ new_src_id }}';
       var old = {password: '', username: ''};
       return {
+        display: function(elem, disp) {
+          if (disp) { elem.show() } else { elem.hide() };
+        },
+        validate: function() {
+          var basic_problems = 0;
+          if ($(pf + 'input[name=name]').val() == "" ||
+              $(pf + 'input[name=email]').val().indexOf('@') < 0) {
+            basic_problems += 1;
+            $(pf + 'input[name=name], ' + pf + 'input[name=email]'
+              ).on('change', _fpa.validate);
+          }
+          // FIXME: Validate other things too, improve e-mail validation
+          //_fpa.display($('.fpa-basics-ok'), basic_problems < 1);
+          _fpa.display($('.fpa-basics-bad'), basic_problems > 0);
+          _fpa.display($('#fpa-submit'),
+                       (basic_problems < 1) && 
+                       (!$(pf + '.fpa-autoconfig').is(':checked')));
+        },
         next: function(show) {
           $(pf + 'div.section').slideUp();
           $(pf + 'div.' + show).slideDown();
           $(pf + '.fpa-detection-failed').hide();
+          _fpa.validate();
           return false;
         },
         more: function(show) {
@@ -143,6 +162,7 @@
               var result = data.result[email];
               if (result) nxt = _fpa.copy_email_settings(result);
               if (nxt) {
+                $(pf + '.fpa-autoconfig').prop('checked', false);
                 _fpa.next(nxt);
               }
               else {
@@ -217,7 +237,9 @@
     <p class="message paragraph-important"
        onclick='javascript:_fpa.next("profile-add-basics");'>
       <span class="icon-user"></span> {{_("Basic Details")}}
-      <span class="icon-checkmark right hide" style="padding: 5px; color: #5f5;"></span>
+      <span class="icon-signature-unknown fpa-basics-bad right hide" style="padding: 5px; color: #ff5;"
+            title="{{_('At least a name and e-mail are required!')}}"></span>
+      <span class="icon-checkmark fpa-basics-ok right hide" style="padding: 5px; color: #0d0;"></span>
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">
@@ -230,14 +252,15 @@
       {% endif %}
       <div style="padding-right: 0em; width: 22em;">
         <label>{{_("Name")}}</label>
-        <input type="text" name="name" style="width: 100%" value="{{ result.name }}" placeholder="Chelsea Manning">
+        <input type="text" name="name" style="width: 100%"
+               value="{{ result.name }}" placeholder="Chelsea Manning">
       </div>
       <div class="basics old">
         <div class="left" style="margin-right: 1em; width: 14em;">
           <label>{{_("E-mail")}}</label>
           <input type="text" name="email" class='fpa-email fpa-basic-username'
-                 placeholder="chelsea@manning.com"
-                 value="{{ result.email }}" onchange="javascript:_fpa.email_changed();">
+                 placeholder="chelsea@manning.com" value="{{ result.email }}"
+                 onchange="javascript:_fpa.email_changed();">
         </div>
         <div class="left" style="margin-right: 0; width: 14em;">
           <label>{{_("Password")}}</label>
@@ -269,7 +292,7 @@
         </span> &nbsp;
         {% endif %}
         <button onclick='javascript:_fpa.basics_next();'
-                class="button-info" type="button">{{_("Next")}} ...</button>
+                class="button button-secondary" type="button">{{_("Next")}} ...</button>
       </div>
       <br clear="both">
     </div>
@@ -292,7 +315,7 @@
       <p class="message paragraph-important"
          onclick='javascript:_fpa.next("profile-add-route");'>
         <span class="icon-outbox"></span> {{_("Sending Mail")}}
-        <span class="icon-checkmark right hide" style="padding: 5px; color: #5f5;"></span>
+        <span class="icon-checkmark fpa-route-ok right hide" style="padding: 5px; color: #4f4;"></span>
       </p>
       <div class="section profile-add-route {% if ui_open != 'route' %}hide{% endif %}"
            style="position: relative;">
@@ -362,7 +385,7 @@
         <br clear="both">
         <div style="position: absolute; right: 0; bottom: 1.5em;">
           <button onclick='javascript:_fpa.next("profile-add-source");'
-                  class="button-info" type="button">{{_("Next")}} ...</button>
+                  class="button button-secondary" type="button">{{_("Next")}} ...</button>
         </div>
         <br clear="both">
       </div>
@@ -536,7 +559,7 @@
           <span class="checkbox">{{ _("Add New") }} &nbsp; </span>
           {% endif %}
           <button onclick='javascript:_fpa.next("profile-add-security");'
-                  class="button-info" type="button">{{_("Next")}} ...</button>
+                  class="button button-secondary" type="button">{{_("Next")}} ...</button>
         </div>
         <br clear="both">
       </div>
@@ -553,14 +576,16 @@
       </p>
       <ul style="list-style: disc; margin-left: 2em;" class="docs"></ul>
       <p>
-        <a target=_blank class='edit-provider-settings button-secondary right'>
+        <a target=_blank class='edit-provider-settings button-secondary right'
+           onclick="javascript:$(this).removeClass('button-secondary').addClass('button-info');
+                               $('#fpa-gotit').removeClass('button-info').addClass('button-secondary');">
           <span class="icon-settings"></span> {{_("Enable IMAP")}}
         </a>
         <br clear="both">
       </p>
       <div style="position: absolute; left: 0; bottom: 0;">
         <button onclick='javascript:_fpa.next("profile-add-security");'
-                class="button-info" type="button">{{_("Got it")}} ...</button>
+                class="button-info" id="fpa-gotit" type="button">{{_("Got it")}} ...</button>
       </div>
     </div>
 
@@ -673,7 +698,7 @@
     </div>
 
     <br clear="both">
-    <button type="submit" class="button-primary right">
+    <button type="submit" id="fpa-submit" class="button-primary right{%- if not result.rid %} hide{% endif %}">
       <span class="icon {{ form_icon or "icon-plus"}}"></span>
       {{ form_action or _("Add")}}
     </button>
