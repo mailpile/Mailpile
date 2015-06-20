@@ -13,15 +13,20 @@
   <div id="setup-passphrase-chosen"
        class="{% if not result.configured %}hide{% endif %} text-center half-top">
     <h3 class="text-center">{{_("Mailpile Secured!")}}</h3>
-    <p class="text-center">{{_("Access to your Mailpile will now require this password. All settings and downloaded mail will now be encrypted, so even if someone steals your laptop they will not have access to your e-mail.")}}</p>
-    <p><a href="{{ config.sys.http_path }}/profiles/"
+    <p class="text-center">
+      {{_("Access to your Mailpile will now require this password.")}}
+    </p>
+    <p class="text-center">
+      {{_("All settings and downloaded mail will be encrypted, so even if someone steals your laptop they will not have access to your e-mail.")}}
+    </p>
+    <p><a href="{{ U("/profiles/") }}"
           class="button-primary">{{_("Start using Mailpile")}}</a></p>
   </div>
 
   {# Input form for choosing a password #}
   <div id="setup-passphrase-chooser"
        class="{% if result.configured %}hide{% endif %} text-center half-top">
-    <form method="POST" action="{{ config.sys.http_path }}/setup/password/"
+    <form method="POST" action="{{ U("/setup/password/") }}"
           id="form-setup-passphrase" class="standard text-center half-top">
 
     {% if result.need_password %}
@@ -48,14 +53,14 @@
         <input id="input-setup-passphrase" class="medium center"
                type="password" name="password1"
                autofocus autocorrect="off" autocapitalize="off" class="center"
-               placeholder="{{_("top secret super duper password")}}">
+               placeholder="{{_("very important secret password")}}">
       </span>
       <span id="validation-passphrase_confirm">
         <label class="validation-message">{{_("Confirm your password")}}</label>
         <input id="input-setup-passphrase_confirm" class="medium center"
                type="password" name="password2"
                autocorrect="off" autocapitalize="off" class="center"
-               placeholder="{{_("top secret super duper password")}}">
+               placeholder="{{_("very important secret password")}}">
       </span>
 
       <button id="btn-setup-passphrase" class="button-primary"
