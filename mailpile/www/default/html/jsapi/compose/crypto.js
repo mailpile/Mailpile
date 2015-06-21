@@ -113,14 +113,14 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid) {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-green');
     $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will be verifiable to reicpients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
     $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Verifiable")|escapejs}}');
+    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Signed")|escapejs}}');
     $('#compose-crypto-signature-' + mid).removeClass('none').addClass('signed bounce');
 
   } else if (status === 'none') {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-gray');
     $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")|escapejs}}');
     $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Unverifiable")|escapejs}}');
+    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Unsigned")|escapejs}}');
     $('#compose-crypto-signature-' + mid).removeClass('signed').addClass('none bounce');
 
   } else {
