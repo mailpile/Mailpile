@@ -4,16 +4,14 @@
   {% set form_title = _("Add Tag") %}
   {% set tag = {
     "tid": "",
-    "name": "Home, Work, Travel",
-    "slug": "home-work-travel",
+    "name": "",
+    "slug": "",
+    "type": "tag",
+    "label": "true",
     "label_color": "gray",
     "icon": "icon-tag",
     "display": "tag"
   } %}
+  {% set prefix = "" %}
   {% include("tags/form.html") %}
-<script>
-$(document).ready(function() {
-  Mailpile.Tags.init();
-});
-</script>
 {% endblock %}

@@ -13,16 +13,16 @@
         {{_("Saved Searches appear as Tags in the sidebar.")}}
         {{_("New matching messages will be tagged automatically as they arrive, but you can also add or remove messages by hand.")}}
       </p>
-      <p class="message paragraph-important ss-settings-title">
+      <p class="message paragraph-important modal-basic-settings-title">
         <span class="icon-settings"></span> {{_("Configure new Saved Search")}}</h4>
       </p>
-      <div class="save-search-settings">
+      <div class="modal-basic-settings">
         <div class="left">
           <div class="right">
-            <a class="icon-star ss-choose-icon" title='{{_("Change Icon")}}'></a>
-            <input type="hidden" class="ss-tag-icon" name="tag-icon" value="icon-star">
-            <a class="ss-choose-color" title='{{_("Change Color")}}'>{{_("Color")}}</a>
-            <input type="hidden" class="ss-tag-color" name="tag-color" value="black">
+            <a class="icon-star modal-open-choose-tag-icon" title='{{_("Change Icon")}}'></a>
+            <input type="hidden" class="choose-tag-icon" name="tag-icon" value="icon-star">
+            <a class="modal-open-choose-tag-color" title='{{_("Change Color")}}'>{{_("Color")}}</a>
+            <input type="hidden" class="choose-tag-color" name="tag-color" value="black">
           </div>
           <label>{{_("Save as")}} ...</label>
           <input type="text" name="comment" id='ss-comment' value="" placeholder="{{_("Tag Name")}}" class="input-medium">
@@ -40,18 +40,18 @@
         </ul>
         <br clear="both">
       </div>
-      <div class="save-search-choose-icon hide">
+      <div class="modal-choose-tag-icon hide">
         <p class="message paragraph-important">
           <span class="icon-settings"></span> {{_("Choose an Icon")}}</h4>
         </p>
-        <ul class="horizontal"><%= icons %></ul>
+        <ul class="horizontal tag-icons"></ul>
       </div>
-      <div class="save-search-choose-color hide">
+      <div class="modal-choose-tag-color hide">
         <p class="message paragraph-important">
           <span class="icon-settings"></span> {{_("Choose a Color")}}</h4>
         </p>
         <div class="text-center">
-          <ul class="horizontal"><%= colors %></ul>
+          <ul class="horizontal tag-colors"></ul>
         </div>
       </div>
     </div>

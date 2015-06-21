@@ -47,7 +47,7 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
 });
 
 
-/* Save Search */
+/* Save Search & Edit Tag */
 (function() {
   $(document).on('click', '.bulk-action-save_search', function(e) {
     var template = 'modal-save-search';
@@ -56,11 +56,7 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
       template = 'modal-save-mailbox';
     }
     Mailpile.API.with_template(template, function(modal) {
-      mf = $('#modal-full').html(modal({
-        terms: searchq,
-        icons: Mailpile.UI.tag_icons_as_lis(),
-        colors: Mailpile.UI.tag_colors_as_lis()
-      }));
+      mf = $('#modal-full').html(modal({ terms: searchq }));
       mf.find('#ss-search-terms').attr('value', searchq);
       mf.modal(Mailpile.UI.ModalOptions);
     });
@@ -80,34 +76,37 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     return false;
   });
   function show_settings() {
-    $('#modal-save-search .save-search-settings').show();
-    $('#modal-save-search .save-search-choose-icon').hide();
-    $('#modal-save-search .save-search-choose-color').hide();
-    $('#modal-save-search .ss-save-group').show();
+    $('#modal-full .modal-basic-settings').show();
+    $('#modal-full .modal-choose-tag-icon').hide();
+    $('#modal-full .modal-choose-tag-color').hide();
+    $('#modal-full .modal-save-group').show();
   };
-  $(document).on('click', '#modal-save-search .ss-settings-title', show_settings);
-  $(document).on('click', '#modal-save-search .ss-choose-color', function() {
-    $('#modal-save-search .ss-save-group').hide();
-    $('#modal-save-search .save-search-settings').hide();
-    $('#modal-save-search .save-search-choose-color').show();
+  $(document).on('click', '#modal-full .modal-basic-settings-title', show_settings);
+  $(document).on('click', '#modal-full .modal-open-choose-tag-color', function() {
+    $('#modal-full ul.tag-colors').html(Mailpile.UI.tag_colors_as_lis());
+    $('#modal-full .modal-save-group').hide();
+    $('#modal-full .modal-basic-settings').hide();
+    $('#modal-full .modal-choose-tag-color').show();
   }); 
-  $(document).on('click', '#modal-save-search .ss-choose-icon', function() {
-    $('#modal-save-search .ss-save-group').hide();
-    $('#modal-save-search .save-search-settings').hide();
-    $('#modal-save-search .save-search-choose-icon').show();
+  $(document).on('click', '#modal-full .modal-open-choose-tag-icon', function() {
+    $('#modal-full ul.tag-icons').html(Mailpile.UI.tag_icons_as_lis());
+    $('#modal-full .modal-save-group').hide();
+    $('#modal-full .modal-basic-settings').hide();
+    $('#modal-full .modal-choose-tag-icon').show();
   }); 
-  $(document).on('click', '#modal-save-search .modal-tag-icon-option', function() {
+  $(document).on('click', '#modal-full .modal-tag-icon-option', function() {
     var icon = $(this).data('icon');
-    $('#modal-save-search .ss-tag-icon').val(icon);
-    $('#modal-save-search .ss-choose-icon').removeClass().addClass('ss-choose-icon').addClass(icon);
+    $('#modal-full input.choose-tag-icon').val(icon);
+    $('#modal-full .modal-open-choose-tag-icon'
+      ).removeClass().addClass('modal-open-choose-tag-icon').addClass(icon);
     show_settings();
   });
-  $(document).on('click', '#modal-save-search .modal-tag-color-option', function() {
+  $(document).on('click', '#modal-full .modal-tag-color-option', function() {
     var name = $(this).data('name');
     var hex = $(this).data('hex');
-    $('#modal-save-search .ss-tag-color').val(name);
-    $('#modal-save-search .ss-choose-icon').css('color', hex);
-    $('#modal-save-search .ss-choose-color').css('color', hex);
+    $('#modal-full input.choose-tag-color').val(name);
+    $('#modal-full .modal-open-choose-tag-icon').css('color', hex);
+    $('#modal-full .modal-open-choose-tag-color').css('color', hex);
     show_settings();
   });
 })();

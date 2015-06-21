@@ -7,10 +7,6 @@
 {% block content %}
   {% set form_title = _("Edit Tag") %}
   {% set tag = result.tags.0 %}
+  {% set prefix = "tags." + tag.tid + "." %}
   {% include("tags/form.html") %}
-<script>
-$(document).ready(function() {
-  Mailpile.Tags.init();
-});
-</script>
 {% endblock %}

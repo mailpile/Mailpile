@@ -64,6 +64,9 @@ Mailpile.auto_modal = function(params) {
           header: params.header,
           flags: params.flags
         }));
+        if (params.reload && !params.callback) {
+          params.callback = function(data) { location.reload(true); };
+        }
         if (params.callback) {
           // If there is a callback, we override the form's default behavior
           // and use AJAX instead so our callback can handle the result.
@@ -100,7 +103,8 @@ $(document).on('click', '.auto-modal', function(e) {
     title: title,
     icon: elem.data('icon'),
     flags: elem.data('flags'),
-    header: elem.data('header')
+    header: elem.data('header'),
+    reload: elem.data('reload') || elem.hasClass('auto-modal-reload')
   });
   return false;
 });
