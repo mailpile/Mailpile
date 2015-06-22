@@ -1089,6 +1089,10 @@ class AddressInfo(dict):
         lambda self: self.get('keys'),
         lambda self, v: self.__setitem__('keys', v))
 
+    crypto_policy = property(
+        lambda self: self.get('crypto-policy'),
+        lambda self, v: self.__setitem__('crypto-policy', v))
+
     def __init__(self, addr, fn, vcard=None, rank=0, proto='smtp', keys=None):
         info = {
             'fn': fn,
@@ -1124,6 +1128,10 @@ class AddressInfo(dict):
         photos = vcard.get_all('photo')
         if photos:
             self['photo'] = photos[0].value
+
+        crypto_policy = vcard.crypto_policy
+        if crypto_policy:
+            self['crypto-policy'] = crypto_policy
 
         self['x-mailpile-rid'] = vcard.random_uid
         self['rank'] += base_rank + 25 * len(keys) + 5 * len(photos)

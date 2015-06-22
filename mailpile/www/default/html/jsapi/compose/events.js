@@ -9,24 +9,26 @@ $(document).on('click', '.compose-contact-find-keys', function() {
 
 
 $(document).on('click', '.compose-crypto-encryption', function() {
-
   var mid = $(this).data('mid');
   var status = $('#compose-encryption-' + mid).val();
+  var can = $('#compose-crypto-encryption-' + mid).data('can');
   var change = '';
 
   if (status === 'encrypt') {
     change = 'none';
-  } else {
-    var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
-    change = determine.state;
-
-    // Only show sometimes
-    if (_.indexOf(['cannot', 'none'], determine.state) > -1) {
-      Mailpile.UI.Modals.ComposerEncryptionHelper(mid, determine);
-    }
+  }
+  else if (status === 'cannot' && can) {
+    change = 'encrypt';
+  }
+  else if (status === 'cannot' || !can) {
+    change = 'cannot';
+    //Mailpile.UI.Modals.ComposerEncryptionHelper(mid, 'cannot');
+  }
+  else {
+    change = 'encrypt';
   }
 
-  Mailpile.Composer.Crypto.EncryptionToggle(change, mid);
+  Mailpile.Composer.Crypto.EncryptionToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Encryption();
 });
 
@@ -35,7 +37,7 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 $(document).on('click', '.compose-crypto-signature', function() {
 
   var mid = $(this).data('mid');
-  var status = Mailpile.Composer.Crypto.DetermineSignature(mid);
+  var status = $('#compose-signature-' + mid).val();
   var change = '';
 
   if (status === 'sign') {
@@ -44,7 +46,7 @@ $(document).on('click', '.compose-crypto-signature', function() {
     change = 'sign';
   }
   
-  Mailpile.Composer.Crypto.SignatureToggle(change, mid);
+  Mailpile.Composer.Crypto.SignatureToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Signature();
 });
 

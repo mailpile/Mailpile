@@ -18,31 +18,7 @@ CRYPTO_POLICIES = ['none', 'sign', 'encrypt', 'sign-encrypt',
 
 class CryptoPolicyBaseAction(Command):
     """ Base class for crypto policy commands """
-
-    def _search(self, email, terms):
-        return self._idx().search(self.session, ['from:' + email] + terms)
-
-    def _find_policy_based_on_mails(self, mail_idxs):
-        # FIXME: Unused, and very expensive. Check tags instead.
-        idx = self._idx()
-        for mail_idx in mail_idxs.as_set():
-            mail = Email(idx, mail_idx).get_msg()
-
-            if mail.encryption_info.get('status') != 'none':
-                return 'encrypt'
-            if mail.signature_info.get('status') != 'none':
-                return 'sign'
-
-        return 'none'
-
-    def _best_effort_policy(self, email):
-        # FIXME: Unused, but should be used in best-effort eval below.
-        mail_idxs = self._search(email, ['has:crypto'])
-
-        if mail_idxs:
-            return self._find_policy_based_on_mails(mail_idxs)
-        else:
-            return 'default'
+    pass
 
 
 class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
@@ -81,17 +57,45 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         return email, policy
 
 
-class CryptoPolicyForUsers(CryptoPolicyBaseAction):
+class CryptoPolicy(CryptoPolicyBaseAction):
     """Calculate the aggregate crypto policy for a set of users"""
     SYNOPSIS = (None, 'crypto_policy', 'crypto_policy', '[<emailaddresses>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET',)
+    HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
 
-    def command(self):
-        if len(self.args) < 1:
-            return self._error('Please provide at least one email address!')
+    @classmethod
+    def _vcard_policy(self, config, email):
+        vcard = config.vcards.get_vcard(email)
+        if vcard:
+            return (vcard, vcard.kind, email, vcard.crypto_policy or 'default')
+        return (None, None, email, 'default')
 
-        policies = [self._vcard_policy(email) for email in self.args]
+    @classmethod
+    def _encryption_ratio(self, session, idx, email):
+        # This method needs to return quickly, so we perform the more
+        # restrictive search first before calculating a proper ratio.
+        crypto = idx.search(session, ['from:' + email, 'has:crypto'])
+        if len(crypto) < 5:
+            return 0.0
+
+        # We also assume index order is roughly date order, which will
+        # only be true once users have used the app for a while...
+        recent = idx.search(session, ['from:' + email]).as_set()
+        recent = set(sorted(list(recent))[-25:])
+        crypto = crypto.as_set() & recent
+
+        return float(len(crypto)) / len(recent)
+
+    @classmethod
+    def crypto_policy(cls, session, idx, emails):
+        config = session.config
+        for i in range(0, len(emails)):
+            if '<' in emails[i]:
+                emails[i] = (emails[i].split('<', 1)[1]
+                                      .split('>', 1)[0]
+                                      .rsplit('#', 1)[0].strip())
+        policies = [cls._vcard_policy(config, e) for e in set(emails)]
         default = [(v, k, e, p) for v, k, e, p in policies if k == 'profile']
         default = default[0] if default else (None, None, None, 'best-effort')
 
@@ -106,47 +110,74 @@ class CryptoPolicyForUsers(CryptoPolicyBaseAction):
                 elif policy != cpol:
                     reason = _('Recipients have conflicting encryption policies.')
                     policy = 'conflict'
+        if policy == 'default':
+            policy = 'best-effort'
         if not reason:
             reason = _('The encryption policy for these recipients is: %s'
                        ) % policy
 
         # If we don't have a key ourselves, that limits our options...
-        if default[0] and not default[0].get_all('KEY'):
-            if policy in ('sign', 'sign-encrypt'):
-                reason = _('This account does not have an encryption key.')
-                policy = 'conflict'
-            elif policy in ('default', 'best-effort'):
-                reason = _('This account does not have an encryption key.')
-                policy = 'none'
+        if default[0]:
+            if default[0].get_all('KEY'):
+                can_sign = True
+                can_encrypt = None  # not False and not True
+            else:
+                can_sign = False
+                can_encrypt = False
+                if policy in ('sign', 'sign-encrypt', 'encrypt'):
+                    reason = _('This account does not have an encryption key.')
+                    policy = 'conflict'
+                elif policy in ('default', 'best-effort'):
+                    reason = _('This account does not have an encryption key.')
+                    policy = 'none'
+        else:
+            can_sign = False
+            can_encrypt = False
+        if can_encrypt is not False:
+            can_encrypt = len([1 for v, k, e, p in policies
+                               if not v or not v.get_all('KEY')]) == 0
+        if not can_encrypt and 'encrypt' in policy:
+            policy = 'conflict'
+            reason = _('Some recipients require encryption, but we do not have keys for everyone!')
 
         # If the policy is "best-effort", then we would like to sign and
         # encrypt if possible/safe. The bar for signing is lower.
         if policy == 'best-effort':
-            missing_keys = [1 for v, k, e, p in policies
-                            if not v or not v.get_all('KEY')]
-            if not missing_keys:
-                # FIXME: This is way too aggressive!
-                policy = 'sign-encrypt'
-                reason = _('Signing and encrypting because we have keys for everyone!')
-            else:
+            should_encrypt = can_encrypt
+            if should_encrypt:
+                for v, k, e, p in policies:
+                    if k and k == 'profile':
+                        pass
+                    elif cls._encryption_ratio(session, idx, e) < 0.8:
+                        should_encrypt = False
+                        break
+                if should_encrypt:
+                    policy = 'sign-encrypt'
+                    reason = _('Signing and encrypting because we have keys for everyone!')
+            if can_sign and not should_encrypt:
                 # FIXME: Should we check if anyone is using a lame MUA?
                 policy = 'sign'
-                reason = _('Signing, but cannot encrypt because we do not have keys for all recipients.')
+                if can_encrypt:
+                    reason = _('Signing, but will not encrypt because historic data is insufficient.')
+                else:
+                    reason = _('Signing, but cannot encrypt because we do not have keys for all recipients.')
 
-        result = {
+        return {
           'reason': reason,
+          'can-sign': can_sign,
+          'can-encrypt': can_encrypt,
           'crypto-policy': policy,
-          'addresses': [AddressInfo(e, vc.fn if vc else e, vcard=vc)
-                        for vc, k, e, p in policies if vc]
+          'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
+                             for vc, k, e, p in policies if vc])
         }
-        return self._success(reason, result=result)
 
-    def _vcard_policy(self, email):
-        vcard = self.session.config.vcards.get_vcard(email)
-        if vcard:
-            return (vcard, vcard.kind, email, vcard.crypto_policy)
-        return (None, None, email, 'default')
+    def command(self):
+        emails = list(self.args) + self.data.get('email', [])
+        if len(emails) < 1:
+            return self._error('Please provide at least one email address!')
+
+        result = self.crypto_policy(self.session, self._idx(), emails)
+        return self._success(result['reason'], result=result)
 
 
-_plugins.register_commands(CryptoPolicyForUsers,
-                           UpdateCryptoPolicyForUser)
+_plugins.register_commands(CryptoPolicy, UpdateCryptoPolicyForUser)

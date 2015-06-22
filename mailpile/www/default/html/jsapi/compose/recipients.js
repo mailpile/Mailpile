@@ -1,6 +1,6 @@
 /* Composer - Recipients */
 
-Mailpile.Composer.Recipients.AnalyzeAddress = function(address) {
+Mailpile.Composer.Recipients.AnalyzeAddress = function(address, preset) {
   /* The Mailpile API guarantees consistent formatting of addresses, so
      a simple regexp should generally work juuuust fine. However, we also
      want to handle pasted or typed input. So we try the simple parse first,
@@ -22,7 +22,7 @@ Mailpile.Composer.Recipients.AnalyzeAddress = function(address) {
     "fn": fn,
     "address": check[2],
     "keys": [],
-    "flags": {"secure" : false}
+    "flags": {"secure" : false, "manual": !preset}
   };
   if (check[3]) {
     parsed["keys"] = [{"fingerprint": check[3].substring(1)}];
@@ -47,7 +47,7 @@ Mailpile.Composer.Recipients.Analyze = function(addresses) {
         if (value.indexOf('<') == -1) value = value + ' <' + value;
         if (value.indexOf('>') == -1) value = value + '>';
       }
-      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value));
+      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value, true));
     });
   }
   return existing;
@@ -58,7 +58,7 @@ Mailpile.Composer.Recipients.Analyze = function(addresses) {
 Mailpile.Composer.Recipients.AddressField = function(id) {
 
   // Get MID
-  var mid = $('#'+id).data('mid');
+  var mid = $('#' + id).data('mid');
 
   $('#' + id).select2({
     id: function(object) {
@@ -117,12 +117,23 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
     },
     formatSelection: function(state, elem) {
 
-      // Add To Model
-      var contact_data = _.findWhere(Mailpile.instance.addresses, {address: state.address });
-      if (!contact_data) {
-        Mailpile.instance.addresses[Math.random().toString(16).substring(6)] = state;
-      } else {
-        state = contact_data;
+      // Update Model
+      var found = false;
+      for (i in Mailpile.instance.addresses) {
+        var contact_data = Mailpile.instance.addresses[i];
+        if (contact_data.address == state.address) {
+          if (state.flags.manual) {
+            state = Mailpile.instance.addresses[i];
+          }
+          else {
+            Mailpile.instance.addresses[i] = state;
+          }
+          found = i;
+        }
+      }
+      if (!found) {
+        found = Math.random().toString(16).substring(6);
+        Mailpile.instance.addresses[found] = state;
       }
 
       // Create HTML
@@ -148,18 +159,14 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
     selectOnBlur: true
 
   }).on('select2-selecting', function(e) {
-
-    /* On select update encryption state */
-    var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, e.val);
-    Mailpile.Composer.Crypto.EncryptionToggle(determine.state, mid);
-
     setTimeout(function() {
+      Mailpile.Composer.Crypto.UpdateEncryptionState(mid);
       Mailpile.Composer.Tooltips.ContactDetails();
-    }, 350);
-
+    }, 50);
   }).on('select2-removed', function(e) {
-    var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
-    Mailpile.Composer.Crypto.EncryptionToggle(determine.state, mid);
+    setTimeout(function() {
+      Mailpile.Composer.Crypto.UpdateEncryptionState(mid);
+    }, 50);
   });
 
   /* Check encryption state */

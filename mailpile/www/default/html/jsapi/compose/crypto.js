@@ -1,26 +1,57 @@
 /* Composer - Crypto */
 
-Mailpile.Composer.Crypto.LoadStates = function(mid) {
+Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
+  // Assemble all the recipient addresses, as well as our sending address
+  var emails = [$('#compose-from-selected-' + mid).find('.address').html()];
+  var fields = ['#compose-to-', '#compose-cc-', '#compose-bcc-'];
+  for (var i in fields) {
+    var rcpts = Mailpile.Composer.Recipients.Analyze($(fields[i] + mid).val());
+    for (var j in rcpts) {
+      emails.push(rcpts[j].address);
+    }
+  } 
+  // Ask the back-end for updated address-book info and an aggregate
+  // recommended crypto policy.
+  Mailpile.API.crypto_policy_get({email: emails}, function(response) {
+    var r = response.result;
+    $('#compose-crypto-encryption-' + mid).data('can', r['can-encrypt']);
+    $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);
+    if (emails.length > 1) {
+      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy']);
+    }
+    else {
+      Mailpile.Composer.Crypto.LoadStates(mid, 'none');
+    }
+    if (chain) chain(mid);
+  });
+};
 
-  var state = $('#compose-crypto-' + mid).val();
+
+Mailpile.Composer.Crypto.LoadStates = function(mid, state) {
+  state = state || $('#compose-crypto-' + mid).val();
+
   var signature = 'none';
-  var encryption = 'none';
-  var determine = Mailpile.Composer.Crypto.DetermineEncryption(mid, false);
-
-  // Use signature
   if (state.match(/sign/)) {
     signature = 'sign';
   }
+  Mailpile.Composer.Crypto.SignatureToggle(signature, mid);
 
-  // Use saved state or determine
+  var encryption = 'none';
   if (state.match(/encrypt/)) {
     encryption = 'encrypt';
-  } else {
-    encryption = determine.state;
   }
-
-  Mailpile.Composer.Crypto.SignatureToggle(signature, mid);
   Mailpile.Composer.Crypto.EncryptionToggle(encryption, mid);
+
+  // FIXME: We need to know if encryption or signing is REQUIRED, and
+  // disable or enable the send button based on that. The conflict state
+  // doesn't cover for when the user does illegal things manually.
+  if (state.match(/conflict/)) {
+    // FIXME: Need to replace button with an explanation!
+    $('#form-compose-' + mid + ' button[name=send]').hide();
+  }
+  else {
+    $('#form-compose-' + mid + ' button[name=send]').show();
+  }
 };
 
 
@@ -50,64 +81,8 @@ Mailpile.Composer.Crypto.SetState = function(mid) {
 };
 
 
-/* Compose - Determine possible crypto "signature" of a message */
-Mailpile.Composer.Crypto.DetermineSignature = function(mid) {
-
-  if ($('#compose-signature-' + mid).val() === '') {
-    if ($.inArray($('#compose-pgp').val(), ['openpgp-sign', 'openpgp-sign-encrypt']) > -1) {
-      var status = 'sign';
-    } else {
-      var status = 'none';
-    }
-  } else {
-    var status = $('#compose-signature-' + mid).val();
-  }
-
-  return status;
-};
-
-
-/* Compose - Determine possible crypto "encryption" of a message */
-Mailpile.Composer.Crypto.DetermineEncryption = function(mid, contact) {
-
-  var state = 'none';
-  var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
-  var recipients = addresses.split(/, */);
-  var unencryptables = [];    
-
-  if (contact) {
-    recipients.push(contact);
-  }
-
-  var count_total = 0;
-  var count_secure = 0;
-    
-  $.each(recipients, function(key, value){  
-    if (value) {
-      count_total++;
-      var check = Mailpile.Composer.Recipients.AnalyzeAddress(value);
-      // console.log(check);
-      if (check.flags.secure) {
-        count_secure++;
-      } else {
-        unencryptables.push(check);
-      }
-    }
-  });
-
-  if (count_secure === count_total && count_secure !== 0) {
-    state = 'encrypt';
-  }
-  else if (count_secure < count_total && count_secure > 0) {
-    state = 'cannot';
-  }
-
-  return { state: state, unencryptables: unencryptables };
-};
-
-
 /* Compose - Render crypto "signature" of a message */
-Mailpile.Composer.Crypto.SignatureToggle = function(status, mid) {
+Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
 
   if (status === 'sign') {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-green');
@@ -147,9 +122,16 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid) {
 
 
 /* Compose - Render crypto "encryption" of a message */
-Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid) {
+Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
+  var encryption = $('#compose-encryption-' + mid).val();
+  if (!manual && (status === 'none') && (encryption === 'encrypt') &&
+      !$('#compose-crypto-encryption-' + mid).data('can')) {
+    // If we were encrypting, but as a side-effect are no longer capable of
+    // doing so, then we go to the "cannot" state instead of "none".
+    status = 'cannot';
+  }
 
-  if (status == 'encrypt') {
+  if (status === 'encrypt') {
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-green');
     $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")|escapejs}}');
     $('#compose-crypto-encryption-' + mid).find('span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');

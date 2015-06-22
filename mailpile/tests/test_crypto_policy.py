@@ -16,24 +16,6 @@ class CryptoPolicyBaseTest(MailPileUnittest):
         return card
 
 
-class CryptoPolicyAutoSetAll(CryptoPolicyBaseTest):
-    def test_command_is_executable(self):
-        res = self.mp.crypto_policy_auto_set_all()
-        self.assertIsNotNone(res)
-
-    def test_vcard_gets_updated(self):
-        self._add_vcard('Signer', 'signer@test.local')
-        self._add_vcard('Encrypter', 'encrypter@test.local')
-
-        res = self.mp.crypto_policy_auto_set_all()
-
-        self.assertEqual({'signer@test.local', 'encrypter@test.local'}, res.as_dict()['result'])
-        signer_vcard = self.config.vcards.get_vcard('signer@test.local')
-        encrypter_vcard = self.config.vcards.get_vcard('encrypter@test.local')
-        self.assertEqual('sign', signer_vcard.get(VCARD_CRYPTO_POLICY).value)
-        self.assertEqual('encrypt', encrypter_vcard.get(VCARD_CRYPTO_POLICY).value)
-
-
 class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_args_are_checked(self):
         self.assertEqual('error', self.mp.crypto_policy_set().as_dict()['status'])
@@ -74,22 +56,21 @@ class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_no_email_provided(self):
         res = self.mp.crypto_policy().as_dict()
         self.assertEqual('error', res['status'])
-        self.assertEqual('Please provide a single email address!', res['message'])
 
     def test_no_msg_with_email_(self):
         res = self.mp.crypto_policy('undefined@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('none', res['result'])
+        self.assertEqual('sign', res['result']['crypto-policy'])
 
     def test_with_signed_email(self):
         res = self.mp.crypto_policy('signer@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('sign', res['result'])
+        self.assertEqual('sign', res['result']['crypto-policy'])
 
     def test_with_encrypted_email(self):
         res = self.mp.crypto_policy('encrypter@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('encrypt', res['result'])
+        self.assertEqual('encrypt', res['result']['crypto-policy'])
 
     def test_vcard_overrides_mail_history(self):
         vcard = self._add_vcard('Encrypter', 'encrypter@test.local')
@@ -98,4 +79,4 @@ class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
         res = self.mp.crypto_policy('encrypter@test.local').as_dict()
 
         self.assertEqual('success', res['status'])
-        self.assertEqual('sign', res['result'])
+        self.assertEqual('sign', res['result']['crypto-policy'])
