@@ -52,6 +52,8 @@
           $(pf + 'div.section').slideUp();
           $(pf + 'div.' + show).slideDown();
           $(pf + '.fpa-detection-failed').hide();
+          // Any navigation disables the auto-detection
+          $(pf + '.fpa-autoconfig').prop('checked', false);
           _fpa.validate();
           return false;
         },
@@ -162,7 +164,6 @@
               var result = data.result[email];
               if (result) nxt = _fpa.copy_email_settings(result);
               if (nxt) {
-                $(pf + '.fpa-autoconfig').prop('checked', false);
                 _fpa.next(nxt);
               }
               else {
