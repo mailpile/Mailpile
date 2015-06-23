@@ -1,5 +1,5 @@
 <div id="tags-settings" class="content-normal" style="position: relative; max-width: 42em;">
-<form xid="form-tag-add" class="standard" method="POST"
+<form class="standard" method="POST"
 {%- if state.command_url == "/tags/add/" %}
       action="{{ U('/tags/add/') }}"
 {%- else %}
@@ -58,7 +58,8 @@
         <li><input type="radio" name="{{prefix}}label" value="false" {% if not tag.label %}checked{% endif %}>
             <span class="checkbox">{{_("Hide from search results")}}</span></li>
       </ul>
-{%- if tag.type in ('tag', 'attribute', 'spam') %}
+
+{# ## FIXME ## %- if tag.type in ('tag', 'attribute', 'spam') %}
       <ul>
         <li title="
 {{- _("Enable to tag messages automatically, like spam.")}}
@@ -69,7 +70,7 @@
             (<a href="">help</a>)
         </li>
       </ul>
-{%- endif %}
+{%- endif % #}
     </div>
     <br clear="left">
 
@@ -89,10 +90,12 @@
   {%- if not tag.subtags %}
       <div>
         <label>{{_("Parent")}}</label>
-        <select name="{{prefix}}parent" id="data-tag-parent">
+        <select name="{{prefix}}parent">
           <option value="">-- {{_("None")}} --</option>
     {%- for ptag in mailpile("tags", "mode=tree").result.tags %}
-      {%- if ptag.display == "priority" or ptag.display == "tag" %}
+      {%- if (ptag.display == "priority" or ptag.display == "tag")
+             and ptag.slug != tag.slug
+             and not ptag.parent %}
           <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
       {%- endif %}    
     {%- endfor %}
@@ -155,7 +158,10 @@
     <button class="button-primary right" type="submit"><span class="icon-checked"></span> {{_("Save")}}</button>
 {%- endif %}
 {%- if state.command_url == "/tags/" and tag.type in ('tag', 'attribute') %}
-    <button type="submit" id="button-tag-delete" class="button-warning"><span class="icon-minus"></span> {{_("Delete Tag")}}</button>
+    <button class="button-warning" type="button" id="button-tag-delete"
+            data-slug="{{tag.slug}}" data-dismiss="modal" aria-hidden="true">
+      <span class="icon-minus"></span> {{_("Delete Tag")}}
+    </button>
 {%- endif %}
   </div>
 
