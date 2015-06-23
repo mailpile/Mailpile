@@ -3,27 +3,51 @@
 Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
   // Assemble all the recipient addresses, as well as our sending address
   var emails = [$('#compose-from-selected-' + mid).find('.address').html()];
-  var fields = ['#compose-to-', '#compose-cc-', '#compose-bcc-'];
-  for (var i in fields) {
-    var rcpts = Mailpile.Composer.Recipients.Analyze($(fields[i] + mid).val());
-    for (var j in rcpts) {
-      emails.push(rcpts[j].address);
-    }
-  } 
+  Mailpile.Composer.Recipients.GetAll(mid, function(rcpt) {
+    emails.push(rcpt.address);
+  });
   // Ask the back-end for updated address-book info and an aggregate
   // recommended crypto policy.
   Mailpile.API.crypto_policy_get({email: emails}, function(response) {
     var r = response.result;
+    // Record our capabilities: can we encrypt? Sign?
     $('#compose-crypto-encryption-' + mid).data('can', r['can-encrypt']);
     $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);
     if (emails.length > 1) {
+      // Update encrypt/sign icons
       Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy']);
+
+      // Embellish our recipients with data from the backend; in particular
+      // this adds the keys and avatars to things manually typed.
+      Mailpile.Composer.Recipients.WithToCcBcc(mid, function(field, rcpts) {
+        var changed = false;
+        for (var i in rcpts) {
+          var updated = r.addresses[rcpts[i].address];
+          if (updated) {
+            if (rcpts[i].fn.indexOf(' ') < 0) rcpts[i].fn = updated.fn;
+            rcpts[i].keys = updated.keys;
+            rcpts[i].flags = updated.flags;
+            rcpts[i].photo = updated.photo;
+            changed = true;
+          }
+        };
+        if (changed) Mailpile.Composer.Recipients.Update(mid, field, rcpts);
+      });
     }
     else {
       Mailpile.Composer.Crypto.LoadStates(mid, 'none');
     }
     if (chain) chain(mid);
   });
+};
+
+
+Mailpile.Composer.Crypto.Unencryptables = function(mid) {
+  var unencryptable = [];
+  Mailpile.Composer.Recipients.GetAll(mid, function(rcpt) {
+    if (!rcpt.flags.secure) unencryptable.push(rcpt);
+  });
+  return unencryptable;
 };
 
 

@@ -1,5 +1,31 @@
 /* Composer - Recipients */
 
+Mailpile.Composer.Recipients.Get = function(mid, which) {
+  var $elem = $('#compose-' + which + '-' + mid);
+  return Mailpile.Composer.Recipients.Analyze($elem.val());
+};
+
+
+Mailpile.Composer.Recipients.WithToCcBcc = function(mid, callback) {
+  var fields = ['to', 'cc', 'bcc'];
+  for (var i in fields) {
+    var rcpts = Mailpile.Composer.Recipients.Get(mid, fields[i]);
+    callback(fields[i], rcpts);
+  }
+};
+
+
+Mailpile.Composer.Recipients.GetAll = function(mid, filter) {
+  var recipients = [];
+  Mailpile.Composer.Recipients.WithToCcBcc(mid, function(field, rcpts) {
+    for (var j in rcpts) {
+      recipients.push(filter ? filter(rcpts[j]) : rcpts[j]);
+    }
+  });
+  return recipients;
+};
+
+
 Mailpile.Composer.Recipients.AnalyzeAddress = function(address, preset) {
   /* The Mailpile API guarantees consistent formatting of addresses, so
      a simple regexp should generally work juuuust fine. However, we also
@@ -54,6 +80,20 @@ Mailpile.Composer.Recipients.Analyze = function(addresses) {
 };
 
 
+Mailpile.Composer.Recipients.RecipientToAddress = function(object) {
+  if (object.flags.secure) {
+    address = object.address + '#' + object.keys[0].fingerprint;
+  } else {
+    address = object.address;
+  }
+  if (object.fn !== "" && object.address !== object.fn) {
+    return object.fn + ' <' + address + '>';
+  } else {
+    return '<' + address + '>';
+  }
+};
+
+
 /* Composer - instance of select2 */
 Mailpile.Composer.Recipients.AddressField = function(id) {
 
@@ -61,18 +101,7 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
   var mid = $('#' + id).data('mid');
 
   $('#' + id).select2({
-    id: function(object) {
-      if (object.flags.secure) {
-        address = object.address + '#' + object.keys[0].fingerprint;
-      } else {
-        address = object.address;
-      }
-      if (object.fn !== "" && object.address !== object.fn) {
-        return object.fn + ' <' + address + '>';
-      } else {
-        return '<' + address + '>';
-      }
-    },
+    id: Mailpile.Composer.Recipients.RecipientToAddress,
     ajax: {
       // instead of writing the function to execute the request we use
       // Select2's convenient helper
@@ -171,5 +200,10 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
 
   /* Check encryption state */
   $('#'+id).select2('data', Mailpile.Composer.Recipients.Analyze($('#' + id).val()));
+};
 
+Mailpile.Composer.Recipients.Update = function(mid, which, rcpts) {
+  var $elem = $('#compose-' + which + '-' + mid);
+  $elem.select2('data', rcpts);
+  Mailpile.Composer.Tooltips.ContactDetails();
 };

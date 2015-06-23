@@ -1,10 +1,7 @@
 /* Composer - Events */
 
 $(document).on('click', '.compose-contact-find-keys', function() {
-  var address = $(this).data('address');
-  Mailpile.UI.Modals.CryptoFindKeys({
-    query:address
-  });
+  Mailpile.UI.Modals.CryptoFindKeys({ query: $(this).data('address') });
 });
 
 
@@ -22,7 +19,10 @@ $(document).on('click', '.compose-crypto-encryption', function() {
   }
   else if (status === 'cannot' || !can) {
     change = 'cannot';
-    //Mailpile.UI.Modals.ComposerEncryptionHelper(mid, 'cannot');
+    Mailpile.UI.Modals.ComposerEncryptionHelper(mid, {
+      state: 'cannot',
+      unencryptables: Mailpile.Composer.Crypto.Unencryptables(mid)
+    });
   }
   else {
     change = 'encrypt';
@@ -33,7 +33,6 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 });
 
 
-/* Compose - Change Signature Status */
 $(document).on('click', '.compose-crypto-signature', function() {
 
   var mid = $(this).data('mid');
@@ -58,7 +57,7 @@ $(document).on('click', '.compose-show-field', function(e) {
   var mid = $(this).data('mid');
   $('#compose-' + field + '-html').show().removeClass('hide');
 
-  // Destroy select2
+  // Configure select2
   Mailpile.Composer.Recipients.AddressField('compose-' + field + '-' + mid);
 });
 
