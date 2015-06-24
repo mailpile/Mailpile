@@ -92,6 +92,7 @@ class EmailCryptoTxf(EmailTransform):
             if stage == 'headers' and visible.keys():
                 part = _AddCryptoState(MIMEText(visible.as_string(),
                                                 'rfc822-headers'))
+                part.set_param('memoryhole', 'v1,%s' % msg['Message-ID'])
                 part['Content-Disposition'] = 'inline'
                 del part['MIME-Version']
                 msg.attach(part)
@@ -99,6 +100,7 @@ class EmailCryptoTxf(EmailTransform):
             elif stage == 'payload' and invisible.keys():
                 part = _AddCryptoState(MIMEText(invisible.as_string(),
                                                 'rfc822-headers'))
+                part.set_param('memoryhole', 'v1,%s' % msg['Message-ID'])
                 part['Content-Disposition'
                      ] = 'attachment; filename=Secure_Headers.txt'
                 del part['MIME-Version']
