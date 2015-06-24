@@ -91,13 +91,18 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _score(self, key):
         return (1, _('Found key in local e-mail'))
 
-    def _lookup(self, address):
+    def _lookup(self, address, strict_email_match=False):
         results = {}
         terms = ['from:%s' % address, 'has:pgpkey', '+pgpkey:%s' % address]
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
             for key_data in self._get_keys(messageid):
+                if strict_email_match:
+                    match = [u for u in key_data.get('uids', [])
+                             if u['email'].lower() == address]
+                    if not match:
+                        continue
                 results[key_data["fingerprint"]] = copy.copy(key_data)
             if len(results) > 5 or time.time() > deadline:
                 break

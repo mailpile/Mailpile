@@ -102,7 +102,8 @@ def _normalize_key(key_info):
 
 
 def lookup_crypto_keys(session, address,
-                       event=None, allowremote=True, origins=None, get=None):
+                       event=None, strict_email_match=False, allowremote=True,
+                       origins=None, get=None):
     known_keys_list = GnuPG(session and session.config or None).list_keys()
     found_keys = {}
     ordered_keys = []
@@ -138,6 +139,7 @@ def lookup_crypto_keys(session, address,
             # but we have to watch out for the effects of timeouts.
             wanted = ungotten[:]
             results = RunTimed(timeout, h.lookup, address,
+                               strict_email_match=strict_email_match,
                                get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
         except (TimedOut, IOError, ValueError):
@@ -189,7 +191,8 @@ class KeyLookup(Command):
         '<address> [<allowremote>]')
     HTTP_CALLABLE = ('GET',)
     HTTP_QUERY_VARS = {
-        'address': 'The nick/address to find a encryption key for',
+        'email': 'The address to find a encryption key for (strict)',
+        'address': 'The nick or address to find a encryption key for (fuzzy)',
         'allowremote': 'Whether to permit remote key lookups (defaults to true)'
     }
 
@@ -199,8 +202,11 @@ class KeyLookup(Command):
         else:
             allowremote = self.data.get('allowremote', True)
 
+        email = " ".join(self.data.get('email', []))
         address = " ".join(self.data.get('address', self.args))
-        result = lookup_crypto_keys(self.session, address, event=self.event,
+        result = lookup_crypto_keys(self.session, email or address,
+                                    strict_email_match=email,
+                                    event=self.event,
                                     allowremote=allowremote)
         return self._success(_n('Found %d encryption key',
                                 'Found %d encryption keys', 
@@ -277,11 +283,11 @@ class LookupHandler:
         return (result and 0 < (len(result.get('imported', [])) +
                                 len(result.get('updated', []))))
 
-    def _lookup(self, address):
+    def _lookup(self, address, strict_email_match=False):
         raise NotImplemented("Subclass and override _lookup")
 
-    def lookup(self, address, get=None):
-        all_keys = self._lookup(address)
+    def lookup(self, address, strict_email_match=False, get=None):
+        all_keys = self._lookup(address, strict_email_match=strict_email_match)
         keys = {}
         for key_id, key_info in all_keys.iteritems():
             fprint = key_info.get('fingerprint', '')
@@ -322,13 +328,17 @@ class KeychainLookupHandler(LookupHandler):
     def _getkey(self, key):
         return False  # Already on keychain
 
-    def _lookup(self, address):
+    def _lookup(self, address, strict_email_match):
         address = address.lower()
         results = {}
         for key_id, key_info in self.known_keys.iteritems():
             for uid in key_info.get('uids', []):
-                if (address in uid.get('name', '').lower() or
-                        address in uid.get('email', '').lower()):
+                if strict_email_match:
+                    match = (address in uid.get('name', '').lower() or
+                             address in uid.get('email', '').lower())
+                else:
+                    match = (address == uid.get('email', '').lower())
+                if match:
                     results[key_id] = {}
                     for k in ('created', 'fingerprint', 'keysize',
                               'key_name', 'uids'):
@@ -349,8 +359,15 @@ class KeyserverLookupHandler(LookupHandler):
     def _score(self, key):
         return (1, _('Found encryption key in keyserver'))
 
-    def _lookup(self, address):
-        return self._gnupg().search_key(address)
+    def _lookup(self, address, strict_email_match=False):
+        results = self._gnupg().search_key(address)
+        if strict_email_match:
+            for key in results.keys():
+                match = [u for u in results[key].get('uids', [])
+                         if u['email'].lower() == address]
+                if not match:
+                    del results[key]
+        return results
 
     def _getkey(self, key):
         return self._gnupg().recv_key(key['fingerprint'])
