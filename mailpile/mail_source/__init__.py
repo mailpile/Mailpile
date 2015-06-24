@@ -248,7 +248,7 @@ class BaseMailSource(threading.Thread):
         if errors:
             status.append(_('Failed to process %d') % errors)
         if not status:
-            status.append(_('No new mail, no new mailboxes at %s'
+            status.append(_('No new mail at %s'
                             ) % datetime.datetime.today().strftime('%H:%M'))
 
         self._log_status(', '.join(status))
