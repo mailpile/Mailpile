@@ -1720,7 +1720,10 @@ class ListDir(Command):
 
         def lsf(f):
             afp = vfs.abspath(f)
-            info = {'name': f.display_basename(), 'path': afp}
+            info = {'icon': '',
+                    'name': f.display_basename(),
+                    'path': afp,
+                    'encoded': f.encoded()}
             try:
                 b = vfs.getsize(afp)
                 if b is not None:

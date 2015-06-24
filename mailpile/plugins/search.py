@@ -158,8 +158,10 @@ class Search(Command):
                     if arg.endswith(':'):
                         prefix = arg
                     elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                        if not arg.startswith('vfs:'):
+                            arg = arg.lower()
                         prefix = ''
-                        session.searched.append(arg.lower())
+                        session.searched.append(arg)
                     elif prefix and '@' in arg:
                         session.searched.append(prefix + arg.lower())
                     else:
@@ -183,6 +185,8 @@ class Search(Command):
             # Terms are reversed in the search engine...
             if term[:1] in ['-', '+']:
                 term = term[1:]
+                if term[:4] == 'vfs:':
+                    term = 'all:mail'
             term = ':'.join(reversed(term.split(':', 1)))
             return unicode(term)
         reqs = set(['!config'] +

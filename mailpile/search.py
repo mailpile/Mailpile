@@ -1614,12 +1614,39 @@ class MailIndex(object):
 
         # Choose how we are going to search
         if keywords is not None:
+            # Searching within pre-defined keywords
             def hits(term):
                 return [int(h, 36) for h in keywords.get(term, [])]
         else:
+            # Normal search
             def hits(term):
                 if term.endswith(':in'):
                     return self.TAGS.get(term.rsplit(':', 1)[0], [])
+
+                elif term.endswith(':vfs'):
+                    mailbox_path = FilePath(searchterms[0].split(':', 1)[1])
+                    session.ui.mark(_('Opening mailbox %s') % mailbox_path)
+                    try:
+                        # FIXME: This triggers indexing...
+                        mboxid, mbox = session.config.open_mailbox_path(
+                            session, mailbox_path, register=True)
+                    except (ValueError, IOError, OSError):
+                        return []
+
+                    self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
+                                      lambda s, i: mbox,
+                                      apply_tags=[], process_new=True,
+                                      reverse=True, lazy=True, deadline=10)
+                    results = []
+                    for tocid in mbox.keys():
+                        msg_ptr = mbox.get_msg_ptr(mboxid, tocid)
+                        if msg_ptr in self.PTRS:
+                            results.append(self.PTRS[msg_ptr])
+                        else:
+                            pass  # FIXME: Add minimal place-holder?
+
+                    return results
+
                 else:
                     session.ui.mark(_('Searching for %s') % term)
                     return [int(h, 36) for h
@@ -1661,7 +1688,8 @@ class MailIndex(object):
 
             r.append((op, []))
             rt = r[-1][1]
-            term = term.lower()
+            if not term.startswith('vfs:'):
+                term = term.lower()
 
             if ':' in term:
                 if term.startswith('in:'):

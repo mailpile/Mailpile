@@ -1224,7 +1224,7 @@ class ConfigManager(ConfigDict):
     def __init__(self, workdir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
-        self.workdir = workdir or self.DEFAULT_WORKDIR()
+        self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
         mailpile.vfs.register_handler(0000, MailpileVfsRoot(self))
 
@@ -1701,7 +1701,7 @@ class ConfigManager(ConfigDict):
                     pfn += '-R'
         except (KeyError, TypeError):
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
-        return mbx_id, src, mfn, pfn
+        return mbx_id, src, FilePath(mfn), pfn
 
     def save_mailbox(self, session, pfn, mbox):
         mbox.save(session,
@@ -1759,6 +1759,35 @@ class ConfigManager(ConfigDict):
                                                drop=clear, force_save=True),
                   unique=True)
 
+    def open_mailbox_path(self, session, path, register=False):
+        path = vfs.abspath(path)
+        mbox = mbx_mid = None
+        with self._lock:
+            for mid, mfn in self.sys.mailbox.iteritems():
+                if mfn[:4] != 'src:':
+                    if unicode(vfs.abspath(mfn)) == unicode(path):
+                        mbx_mid = mid
+                        break
+
+            # 2nd search wastes some cycles, but at least the code is clear
+            for sid, src in self.sources.iteritems():
+                for mid, info in src.mailbox.iteritems():
+                    if info.local and mbx_mid is None:
+                        if unicode(vfs.abspath(info.local)) == unicode(path):
+                            mbx_mid = mid
+                            break
+
+            if register and mbx_mid is None:
+                mbox = OpenMailbox(path.raw_fp, self, create=False)
+                mbx_mid = self.sys.mailbox.append(path.encoded())
+
+        if mbx_mid is not None:
+            mbx_mid = FormatMbxId(mbx_mid)
+            if mbox is None:
+                mbox = self.open_mailbox(session, mbx_mid, prefer_local=True)
+            return (mbx_mid, mbox)
+        raise ValueError('Not found')
+
     def open_mailbox(self, session, mailbox_id,
                      prefer_local=True, from_cache=False):
         mbx_id, src, mfn, pfn = self._mailbox_info(mailbox_id,
@@ -1795,9 +1824,9 @@ class ConfigManager(ConfigDict):
             editable = self.is_editable_mailbox(mbx_id)
             if src is not None:
                 msrc = self.mail_sources.get(src._key)
-                mbox = msrc.open_mailbox(mbx_id, mfn) if msrc else None
+                mbox = msrc.open_mailbox(mbx_id, mfn.raw_fp) if msrc else None
             if mbox is None:
-                mbox = OpenMailbox(mfn, self, create=editable)
+                mbox = OpenMailbox(mfn.raw_fp, self, create=editable)
             mbox.editable = editable
             mbox.is_local = prefer_local
 
