@@ -107,7 +107,9 @@ Mailpile.Composer.Crypto.SetState = function(mid) {
 
 /* Compose - Render crypto "signature" of a message */
 Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
-
+  if ($('#compose-crypto-signature-' + mid).data('can') === false) {
+    status = (status == 'cannot') ? status : 'none';
+  }
   if (status === 'sign') {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-green');
     $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will be verifiable to reicpients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
@@ -148,11 +150,14 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
 /* Compose - Render crypto "encryption" of a message */
 Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
   var encryption = $('#compose-encryption-' + mid).val();
-  if (!manual && (status === 'none') && (encryption === 'encrypt') &&
-      !$('#compose-crypto-encryption-' + mid).data('can')) {
+  var can = $('#compose-crypto-encryption-' + mid).data('can');
+  if (!manual && (status === 'none') && (encryption === 'encrypt') && !can) {
     // If we were encrypting, but as a side-effect are no longer capable of
     // doing so, then we go to the "cannot" state instead of "none".
     status = 'cannot';
+  }
+  else if (!can) {
+    status = (status == 'cannot') ? status : 'none';
   }
 
   if (status === 'encrypt') {

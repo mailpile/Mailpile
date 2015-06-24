@@ -2,9 +2,7 @@
 
 $(document).on('click', '.btn-crypto-search-key', function(e) {
   e.preventDefault();
-  Mailpile.UI.Modals.CryptoFindKeys({
-    query: ''
-  });
+  Mailpile.UI.Modals.CryptoFindKeys({ query: '' });
 });
 
 
@@ -17,10 +15,13 @@ $(document).on('click', '.btn-crypto-upload-key', function(e) {
 /* Crypto - show / hide details */
 $(document).on('click', '.searchkey-result-score', function(e) {
   var fingerprint = $(this).data('fingerprint');
-  if ($('#item-encryption-key-' + fingerprint).find('.searchkey-result-details').css('display') == 'none') {
-    $('#item-encryption-key-' + fingerprint).find('.searchkey-result-details').fadeIn();
-  } else {
-    $('#item-encryption-key-' + fingerprint).find('.searchkey-result-details').fadeOut();
+  var $details = $('#item-encryption-key-' + fingerprint
+                   ).find('.searchkey-result-details');
+  if ($details.css('display') == 'none') {
+    $details.fadeIn();
+  }
+  else {
+    $details.fadeOut();
   }
 });
 
@@ -63,7 +64,10 @@ $(document).on('click', '.crypto-show-hidden-keys', function(e) {
 /* Crypto - import key */
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
-  Mailpile.Crypto.Import.Key({ action: $(this).data('action'), fingerprint: $(this).data('fingerprint')});
+  Mailpile.Crypto.Import.Key({
+    action: $(this).data('action'),
+    fingerprint: $(this).data('fingerprint')
+  });
 });
 
 

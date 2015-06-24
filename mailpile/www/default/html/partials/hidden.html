@@ -182,10 +182,13 @@
       </a>
       <div class="searchkey-result-actions right">
         <% if (on_keychain) { %>
+        <i>{{_("This key is on your key chain.")}}</i>
+{#
         <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
           <option value="true" selected="selected">{{_("Use This Key")}}</option>
           <option value="false">{{_("Don't Use This Key")}}</option>
         </select>
+#}
         <% } else { %>
         <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
           <span class="icon-key"></span> {{_("Import Key")}}

@@ -51,6 +51,7 @@ Mailpile.notification = function(result) {
   if (result.type        === undefined) result.type = 'notify';
   if (result.complete    === undefined) result.complete = 'hide';
   if (result.action      === undefined) result.action = '';
+  if (result.action_js   === undefined) result.action_js = '';
   if (result.action_url  === undefined) result.action_url = '';
   if (result.action_text === undefined) result.action_text = '';
   if (result.icon        === undefined) result.icon = 'icon-inbox';

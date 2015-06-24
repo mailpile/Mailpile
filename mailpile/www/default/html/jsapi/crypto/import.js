@@ -2,13 +2,8 @@
 
 
 Mailpile.Crypto.Import.Key = function(import_data) {
-
-  console.log('here');
-  console.log(import_data);
   // Set Null
-  if (import_data.file === undefined) {
-    import_data.file = false;
-  }
+  if (import_data.file === undefined) import_data.file = false;
 
   // Show Processing UI feedback
   var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
@@ -16,20 +11,16 @@ Mailpile.Crypto.Import.Key = function(import_data) {
   $('#item-encryption-key-' + import_data.fingerprint).replaceWith(importing_html);
 
   // Lookup
-  var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: import_data.fingerprint});
+  var key_data = _.findWhere(Mailpile.crypto_keylookup,
+                             {fingerprints: import_data.fingerprint});
 
   Mailpile.API.crypto_keyimport_post(key_data, function(result) {
-
     if (result.status === 'success') {
-
+      var key_result;
       for (var key in result.result) {
         if (result.result[key].fingerprint === import_data.fingerprint) {
-          var key_result = result.result[key];
-
-          console.log(key_result);
-
-          // FIXME: kludgy
-          key_result['avatar'] = '{{ config.sys.http_path }}/static/img/avatar-default.png';
+          key_result = result.result[key];
+          key_result['avatar'] = '{{ U("/static/img/avatar-default.png") }}';
           key_result['uid'] = key_result.uids[0];
           key_result['action'] = 'hide-modal';
           key_result['on_keychain'] = true;
@@ -37,22 +28,19 @@ Mailpile.Crypto.Import.Key = function(import_data) {
         }
       }
 
-      var key_template = _.template($('#template-crypto-encryption-key').html());
-      var key_html = key_template(key_result);
+      console.log(key_result);
+      if (key_result) {
+        var key_template = _.template($('#template-crypto-encryption-key').html());
+        var key_html = key_template(key_result);
 
-      $('#item-encryption-key-' + import_data.fingerprint).replaceWith(key_html);
+        var $key_elem = $('#item-encryption-key-' + import_data.fingerprint);
+        var $events = $key_elem.closest('.has-keylookup-events');
+
+        $key_elem.replaceWith(key_html);
+        $events.trigger('keylookup:imported');
+      }
     }
-/*
-    if (result.status === 'success' && action === 'hide-modal') {
-      $('#modal-full').modal('hide');
-    }
-    else if (result.status === 'success' && action === 'hide-item') {
-      // FIXME: kludgy
-      $('#item-encryption-key-' + import_data.fingerprint).fadeOut();
-    }
-*/
   });
-
 };
 
 

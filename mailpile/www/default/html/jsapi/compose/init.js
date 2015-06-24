@@ -31,6 +31,13 @@ Mailpile.Composer.init = function(mid) {
   // Save Text Composing Objects (move to data model)
   Mailpile.Composer.Drafts[mid] = Mailpile.Composer.Model;
 
+  // Show Crypto Tooltips
+  Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {
+    Mailpile.Composer.Tooltips.Signature();
+    Mailpile.Composer.Tooltips.Encryption();
+    Mailpile.Composer.Tooltips.ContactDetails();
+  });
+
   // Initialize Attachments
   // FIXME: needs to be bound to unique ID that can be destroyed
   Mailpile.Composer.Attachments.Uploader({
@@ -39,12 +46,6 @@ Mailpile.Composer.init = function(mid) {
     mid: mid
   });
 
-  // Show Crypto Tooltips
-  Mailpile.Composer.Tooltips.Signature();
-  Mailpile.Composer.Tooltips.Encryption();
-  Mailpile.Composer.Tooltips.ContactDetails();
-
   // Body
   Mailpile.Composer.Body.Setup(mid);
-
 };

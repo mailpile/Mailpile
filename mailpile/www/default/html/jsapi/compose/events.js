@@ -1,7 +1,17 @@
 /* Composer - Events */
 
 $(document).on('click', '.compose-contact-find-keys', function() {
-  Mailpile.UI.Modals.CryptoFindKeys({ query: $(this).data('address') });
+  var $elem = $(this);
+  var mid = $elem.data('mid');
+  var email = $elem.data('address');
+  Mailpile.UI.Modals.CryptoFindKeys({
+    query: email,
+    strict: true,
+    imported: function() {
+      if (mid) Mailpile.Composer.Crypto.UpdateEncryptionState(mid);
+      $('#modal-full').modal('toggle');
+    }
+  });
 });
 
 
@@ -267,56 +277,56 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
 
 
 $(document).on('click', '.encryption-helper-find-key', function(e) {
-
-  e.preventDefault();
-  $('#encryption-helper-find-keys').find('.loading').fadeIn();
-
-  // Reset Model
-  Mailpile.crypto_keylookup = [];
-  
-  // Empty Previous Search
-  $('#encryption-helper-find-keys').find('ul.result').html('');
-
-  // Show Hidden Items
-  _.each($('#encryption-helper-missing-keys li.searchkey-result-item'), function(elem, key) {
-    $(elem).show();
-  });
-
-
-  // Data & Things
   var mid = $(this).data('mid');
   var address = $(this).attr('href');
+  Mailpile.crypto_keylookup = [];  // Reset Model
 
-  // Show & Hide
-  $('li[address="' + address + '"]').hide();
+  e.preventDefault();
+  
+  // Reset and show progress area...
+  //$('#encryption-helper-find-keys').find('ul.result').html('');
+  $('#encryption-helper-find-keys').find('.loading').fadeIn();
   $('#encryption-helper-find-keys').find('.color-01-gray-mid').html(address);
 
-  // Go Get Keys
-  Mailpile.Crypto.Find.Keys({
-    query: address,
-    container: '#encryption-helper-find-keys',
-    action: 'hide-item',
-    complete: function(status) {
+  // Hide the list of missing keys, since we don't really handle
+  // multiple searches at once.
+  $('#encryption-helper-missing-keys').slideUp('slow');
+  $('li[address="' + address + '"]').hide();
+  //$('#encryption-helper-missing-keys li.searchkey-result-item').show();
 
-      // Hide Loading
+  // Go Get Keys
+  var find_options = {
+    query: address,
+    strict: true,
+    container: '#encryption-helper-found-keys',
+    action: 'hide-item',
+    searched: function(status) {
+      // Hide loading animation
       $('#encryption-helper-find-keys').find('.loading').slideUp('fast');
 
-      // Show No Results
-      if (status === 'none') {
+      // If nothing was found, bring back the missing key list.
+      if (status === 'none' || status === 'error') {
+        $('#encryption-helper-missing-keys').slideDown();
         $('li[address="' + address + '"]').show();
-      } else {
-        
+      } 
+    },
+    imported: function() {
+      Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {
+        // If the updated state says we can encrypt, then we should make
+        // the interface all happy like!
+      });
+
+      if (false) {
         // Tally Total Missing Keys
         var count_missing = [];
-
-        // Check Items
         _.each($('#encryption-helper-missing-keys li.searchkey-result-item'), function(elem, key) {
           count_missing.push($(elem).css('display'));
         });
+        count_missing = _.indexOf(count_missing, 'list-item');
 
         // Show "Now Able To Encrypt" Message
-        console.log(_.indexOf(count_missing, 'list-item'));
-        if (_.indexOf(count_missing, 'list-item') == -1) {
+        console.log('Missing: ' + count_missing);
+        if (count_missing < 1) {
           console.log('yay, all have been searched & imported');
 
           // Positive Feedback
@@ -333,9 +343,23 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
           // Hide Missing
           $('#encryption-helper-missing-keys').fadeOut();
         }
-
+        else {
+          $('#encryption-helper-missing-keys').show();
+        }
       }
+    },
+    error: function() {
+      $('#encryption-helper-missing-keys').slideDown();
+      $('li[address="' + address + '"]').show();
     }
-  });  
+  };  
+  Mailpile.Crypto.Find.Keys(find_options);
+});
 
+
+$(document).on('click', '.modal-retry-encryption', function(e) {
+  var mid = $(this).data('mid');
+  Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {
+    $('#form-compose-' + mid + ' .compose-crypto-encryption').click();
+  });
 });
