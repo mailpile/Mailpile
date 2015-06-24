@@ -125,8 +125,8 @@ js:
                 |grep / \
                 |sed -e "s/[',]/ /g"` \
           >> mailpile/www/default/js/mailpile-min.js.tmp
-	uglify -s mailpile/www/default/js/mailpile-min.js.tmp \
-                  mailpile/www/default/js/mailpile-min.js
+	uglify -s `pwd`/mailpile/www/default/js/mailpile-min.js.tmp \
+               -o `pwd`/mailpile/www/default/js/libraries.min.js
 	@rm -f mailpile/www/default/js/mailpile-min.js.tmp
 
 less: less-compiler
