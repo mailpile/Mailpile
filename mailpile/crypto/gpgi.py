@@ -48,7 +48,8 @@ openpgp_algorithms = {1: _("RSA"),
                       3: _("RSA (sign only)"),
                       16: _("Elgamal (encrypt only)"),
                       17: _("DSA"),
-                      20: _("Elgamal (encrypt/sign) [COMPROMISED]")}
+                      20: _("Elgamal (encrypt/sign) [COMPROMISED]"),
+                      22: _("EdDSA")}
 # For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
 
@@ -201,7 +202,8 @@ class GnuPGRecordParser:
 
     def parse_pubkey(self, line):
         self.curkey = line["keyid"]
-        line["keytype_name"] = openpgp_algorithms[int(line["keytype"])]
+        line["keytype_name"] = openpgp_algorithms.get(int(line["keytype"]),
+                                                      'Unknown'),
         line["capabilities_map"] = {
             "encrypt": "E" in line["capabilities"],
             "sign": "S" in line["capabilities"],
@@ -235,7 +237,8 @@ class GnuPGRecordParser:
         subkey = {"id": line["keyid"],
                   "keysize": line["keysize"],
                   "creation_date": line["creation_date"],
-                  "keytype_name": openpgp_algorithms[int(line["keytype"])]}
+                  "keytype_name": openpgp_algorithms.get(int(line["keytype"]),
+                                                         'Unknown')}
         self.keys[self.curkey]["subkeys"].append(subkey)
 
     def parse_fingerprint(self, line):
@@ -918,7 +921,8 @@ class GnuPG:
                         validity += 'e'
                 results[curpub] = {
                     "created": datetime.fromtimestamp(int(line[4])),
-                    "keytype_name": openpgp_algorithms[int(line[2])],
+                    "keytype_name": openpgp_algorithms.get(int(line[2]),
+                                                           'Unknown'),
                     "keysize": line[3],
                     "validity": validity,
                     "uids": [],
