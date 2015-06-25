@@ -1268,7 +1268,11 @@ class MailIndex(object):
 
             if textpart:
                 # FIXME: Does this lowercase non-ASCII characters correctly?
-                keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
+                lines = [l for l in textpart.splitlines(True)
+                         if not l.startswith('>')
+                         and l[:4] not in ('----', '====', '____')]
+                keywords.extend(re.findall(WORD_REGEXP,
+                                           ''.join(lines).lower()))
 
                 # NOTE: As a side effect here, the cryptostate plugin will
                 #       add a 'crypto:has' keyword which we check for below
@@ -1277,7 +1281,7 @@ class MailIndex(object):
                     keywords.extend(kwe(self, msg, ctype, textpart))
 
                 if ctype == 'text/plain':
-                    snippet_text += textpart.strip() + '\n'
+                    snippet_text += ''.join(lines).strip() + '\n'
                 else:
                     snippet_html += textpart.strip() + '\n'
 
