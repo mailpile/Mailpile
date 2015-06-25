@@ -88,6 +88,7 @@ Detailed search keyword stats:
           (sample size: ~300k emails)
 
 """
+import binascii
 import hashlib
 import os
 import struct
@@ -269,11 +270,16 @@ class EncryptedRecordStore(_SimpleList):
     def load_record(self, pos):
         with self._lock:
             self._fd.seek(self._header_skip + pos * self._RECORD_BYTES)
-            encrypted = self._fd.read(self._RECORD_BYTES).decode('base64')
+            try:
+                encrypted = self._fd.read(self._RECORD_BYTES).decode('base64')
+            except (IOError, binascii.Error):
+                encrypted = ''
 
         if encrypted == '':
-            raise KeyError(pos)
-        assert(len(encrypted) == self._RECORD_SIZE)
+            raise KeyError('Failed to read at %s' % pos)
+        if (len(encrypted) != self._RECORD_SIZE):
+            raise KeyError('Incorrect record size %s at %s'
+                           % (len(encrypted), pos))
 
         iv, encrypted = encrypted[:16], encrypted[16:]
         plaintext, checksum = aes_cbc_decrypt(self._aes_key, iv, encrypted
@@ -288,10 +294,19 @@ class EncryptedRecordStore(_SimpleList):
         return plaintext
 
     def __getitem__(self, pos):
-        return self.load_record(pos)
+        try:
+            return self.load_record(pos)
+        except ValueError:
+            raise KeyError(pos)
 
     def __setitem__(self, pos, data):
         return self.save_record(pos, data)
+
+    def get(self, pos, default=None):
+        try:
+            return self[pos]
+        except KeyError:
+            return default
 
     def __len__(self):
         with self._lock:
@@ -500,7 +515,7 @@ class EncryptedDict(object):
         try:
             for inc in range(0, count):
                 rpos = (pos + inc) % len(keyset)
-                rval = keyset[rpos]
+                rval = keyset.get(rpos, self._UNUSED)
                 values.append((rpos, rval))
                 for w in want:
                     if rval.startswith(w):
@@ -543,7 +558,7 @@ class EncryptedDict(object):
                         return on_fail(self, kfi, keyset, pos, digest, value,
                                        records)
                     raise ValueError('Data too big for record')
-                rdata = keyset[rpos]
+                rdata = keyset.get(rpos, self._UNUSED)
                 if rdata.startswith(digest+'>'):
                     vpos = rdata[self._digest_size + 1:]
                     vpos = struct.unpack('<II', vpos)[0]
@@ -576,12 +591,12 @@ class EncryptedDict(object):
         if self._shard_ratio > 0:
             kfi, keyset = self._load_next_keys()
             rpos = self._try_save(kfi, keyset, pos, digest, value,
-                                  on_fail=on_faile)
+                                  on_fail=on_fail)
             if rpos is not None:
                 self.writes[kfi] += 1
                 return keyset, rpos
 
-        raise KeyError('Save failed')
+        raise KeyError('Save failed at %s' % pos)
 
     def save_record(self, key, value, on_fail=None):
         return self.save_digest_record(self._digest(key), value,
@@ -600,10 +615,13 @@ class EncryptedDict(object):
             pos, dlen = struct.unpack('<II', rdata[self._digest_size + 1:])
             return self._values[pos]
         else:
-            raise KeyError('Not found')
+            raise KeyError('Not found, decode failed')
 
     def __getitem__(self, key):
-        keyset, (rpos, rdata) = self.load_record(key)
+        try:
+            keyset, (rpos, rdata) = self.load_record(key)
+        except ValueError, msg:
+            raise KeyError('%s: %s' % (key, msg))
         return self.rdata_value(rdata)
 
     def get(self, key, default=None, **kwargs):
