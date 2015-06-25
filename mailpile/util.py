@@ -394,6 +394,24 @@ def intlist_to_string(intlist):
         return chars
 
 
+def intlist_to_bitmask(intlist):
+    if not intlist:
+        return str('\0')
+    bitmask = [0] * (max(intlist) // 8 + 1)
+    for r in intlist:
+        bitmask[r//8] |= 1 << (r % 8)
+    return ''.join(chr(b) for b in bitmask)
+
+
+def bitmask_to_intlist(bitmask):
+    results = []
+    for i in range(0, len(bitmask)):
+        v = ord(bitmask[i])
+        if v:
+            results += [(i * 8 + b) for b in range(0, 8) if v & (1 << b)]
+    return results
+
+
 def randomish_uid():
     """
     Generate a weakly random unique ID. Might not actually be unique.

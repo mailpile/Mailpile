@@ -5,6 +5,7 @@ import struct
 import threading
 import traceback
 import time
+import zlib
 
 import mailpile.util
 from mailpile.crypto.streamer import EncryptingStreamer
@@ -34,7 +35,6 @@ class EncryptedPostingLists(EncryptedDict):
     use of the underlying cache, read and write operations.
 
     FIXME/TODO:
-       * Test the benefit of bitmask compression to reduce PL size
        * Make it possible to remove hits
     """
     DEFAULT_DIGEST_SIZE = 12  # Let 96 hash bits suffice. This buys us space
@@ -116,19 +116,22 @@ class EncryptedPostingLists(EncryptedDict):
                                        bucket_size=self.INCOMING_BUCKET_SIZE,
                                        big_ratio=0, shard_ratio=0)
 
-    def _pack(self, hits, compress=False):
-        data = ''.join(struct.pack('<I', v) for v in hits)
-        # FIXME: Do the bitmask compression thing for longer lists?
-        return data
+    def _pack(self, hits):
+        if len(hits) > 10:
+            return '\xff\xff\xff\xff' + zlib.compress(intlist_to_bitmask(hits))
+        else:
+            return ''.join(struct.pack('<I', v) for v in hits)
 
     def _unpack(self, data):
-        # FIXME: Do the bitmask decompression thing?
-        return set(struct.unpack('<I', data[i:i+4])[0]
-                   for i in range(0, len(data), 4))
+        if len(data) > 13 and data[:4] == '\xff\xff\xff\xff':
+            return set(bitmask_to_intlist(zlib.decompress(data[4:])))
+        else:
+            return set(struct.unpack('<I', data[i:i+4])[0]
+                       for i in range(0, len(data), 4))
 
     def _flush_records(self, key,
                        edict, kfi, keyset, pos, digest, value, records):
-        vrpos = None
+        vrpos = rdig = None
         for rpos, rdata in records:
             if rdata != edict._UNUSED:
                 rdig = edict.rdata_digest(rdata)
@@ -149,7 +152,7 @@ class EncryptedPostingLists(EncryptedDict):
         if vrpos is not None:
             return vrpos
         else:
-            return self.save_digest_record(rdig, value)
+            return self.save_record(key, value)
 
     def __setitem__(self, key, value):
         if isinstance(value, (int,)):
