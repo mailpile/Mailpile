@@ -1,6 +1,8 @@
 import cStringIO
 import email
 import lxml.html
+import multiprocessing
+import os
 import re
 import rfc822
 import time
@@ -8,9 +10,11 @@ import threading
 import traceback
 from urllib import quote, unquote
 
+import Crypto.Random
+
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.records import EncryptedRecordStore
+from mailpile.crypto.records import EncryptedBlobStore, EncryptedRecordStore
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.i18n import gettext as _
@@ -133,6 +137,8 @@ class MailIndex(object):
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
         self._keywords = {}
+        self._keywords_queue = None
+        self._keywords_writer = None
         self._scanned = {}
         self._saved_changes = 0
         self._lock = SearchRLock()
@@ -205,6 +211,11 @@ class MailIndex(object):
         d = self.get_body(msg_info)
         msg_info[self.MSG_BODY] = self.encode_body(d, **kwargs)
 
+    def quit(self):
+        self._keywords_queue.put(False)
+        self._keywords_queue.close()
+        self._keywords_queue.join_thread()
+        
     def load(self, session=None):
         self.INDEX = []
         self.CACHE = {}
@@ -218,6 +229,12 @@ class MailIndex(object):
         session.ui.mark(_('Creating search keyword storage...'))
         self._keywords = EncryptedPostingLists(
             self.config.postinglists_prefix(), self.config.master_key)
+
+        kq = multiprocessing.Queue(25)
+        kp = multiprocessing.Process(target=self._kw_writer, args=(kq,))
+        kp.start()
+        self._keywords_queue = kq
+        self._keywords_writer = kp
 
         session.ui.mark(_('Creating metadata index storage...'))
         self.INDEX = EncryptedBlobStore(self.config.mailindex_records(),
@@ -1443,21 +1460,88 @@ class MailIndex(object):
         if 'keywords' in self.config.sys.debug:
             print 'KEYWORDS: %s' % keywords
 
-        session.ui.mark(_('Recording %d keywords for messaage %s')
-                        % (len(keywords), msg_mid))
-        msg_idx_pos = int(msg_mid, 36)
-        for word in keywords:
-            if (word.startswith('__') or
-                    # Tags are now handled outside the posting lists
-                    word.endswith(':tag') or word.endswith(':in')):
-                continue
-            try:
-                self._keywords[word.encode('utf-8')] = msg_idx_pos
-            except UnicodeEncodeError:
-                pass
+        self._keywords_queue.put((msg_mid, keywords))
+#       session.ui.mark(_('Recording %d keywords for messaage %s')
+#                       % (len(keywords), msg_mid))
+#       msg_idx_pos = int(msg_mid, 36)
+#       for word in keywords:
+#           if (word.startswith('__') or
+#                   # Tags are now handled outside the posting lists
+#                   word.endswith(':tag') or word.endswith(':in')):
+#               continue
+#           try:
+#               self._keywords_queue.put((word.encode('utf-8'), msg_idx_pos))
+#               #self._keywords[word.encode('utf-8')] = msg_idx_pos
+#           except UnicodeEncodeError:
+#               pass
 
         self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
         return keywords, snippet
+
+    def _kw_writer(self, queue):
+        import Queue
+        import signal
+        Crypto.Random.atfork()
+        try:
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            os.nice(10)
+        except:
+            pass
+
+        kwlists = {}
+        def _add(kw, mip):
+            try:
+                kw = kw.lower().encode('utf-8')
+            except UnicodeDecodeError:
+                kw = kw.encode('base64').strip('\n=')
+            if kw not in kwlists:
+                kwlists[kw] = [mip]
+            else:
+                kwlists[kw].append(mip)
+
+        loops = 0
+        quitting = False
+        while not quitting:
+            try:
+                job = queue.get(loops == 0)
+                if job is False:
+                    quitting = True
+                    raise Queue.Empty()
+
+                msg_mid, keywords = job
+                msg_idx_pos = int(msg_mid, 36)
+                for word in keywords:
+                    if (word.startswith('__') or
+                            word.endswith(':tag') or
+                            word.endswith(':in')):
+                        # Tags are handled elsewhere
+                        pass
+                    else:
+                        _add(word, msg_idx_pos)
+
+                loops += 1
+                if len(kwlists) > 2000 or loops > 25:
+                    raise Queue.Empty()
+
+            except Queue.Empty:
+                t0 = time.time()
+                count = len(kwlists)
+                failed = {}
+                for word, mids in kwlists.iteritems():
+                    try:
+                        self._keywords[word] = mids
+                    except (KeyError, IOError):
+                        traceback.print_exc()
+                        failed[word] = mids
+                elapsed = time.time() - t0
+                if count:
+                    print ('KWW %d/%d in %.1fs (%.3fs/kw), failed=%s'
+                           ) % (count, loops, elapsed, elapsed/count,
+                                len(failed))
+                kwlists = failed
+                loops = 0
+            except:
+                pass
 
     def get_msg_at_idx_pos(self, msg_idx):
         try:
@@ -1697,9 +1781,10 @@ class MailIndex(object):
                 else:
                     session.ui.mark(_('Searching for %s') % term)
                     try:
-                        return self._keywords.get(term.encode('utf-8'), set())
-                    except UnicodeEncodeError:
-                        return set()
+                        term = term.lower().encode('utf-8')
+                    except UnicodeDecodeError:
+                        term = term.encode('base64').strip('\n=')
+                    return self._keywords.get(term, set())
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:

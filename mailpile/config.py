@@ -2278,6 +2278,8 @@ class ConfigManager(ConfigDict):
 
         config.search_history.save(config)
         save_worker.quit(join=True)
+        if config.index:
+            config.index.quit()
 
         if config.sys.debug:
             # Hooray!
