@@ -47,7 +47,7 @@ class EncryptedPostingLists(EncryptedDict):
                               # our tables over time, so use small buckets for
                               # long-term storage.
 
-    INCOMING_BUCKET_SIZE = 5  # For incoming, we want to batch writes together
+    INCOMING_BUCKET_SIZE = 8  # For incoming, we want to batch writes together
                               # which happens best with larger buckets.
 
     # These numbers are based on analysis of the keyword data from
@@ -67,7 +67,7 @@ class EncryptedPostingLists(EncryptedDict):
     # 6561         2040       0.04%    0.04%  100.00%
 
     def __init__(self, base_fn, key,
-                 min_msgs=10000, max_msgs=1000000, cache_bytes=50*1024*1024,
+                 min_msgs=10000, max_msgs=1000000, cache_bytes=64*1024*1024,
                  overwrite=False):
 
         # How many hot-spots will we have at the max message size?
@@ -78,14 +78,14 @@ class EncryptedPostingLists(EncryptedDict):
         # OK, these values are now known
         self._cache_bytes = cache_bytes
         self._shard_ratio = 2.0
-        self._shard_size = max(self._hot_spot_count, cache_bytes // (2 * 66))
+        self._shard_size = max(self._hot_spot_count, cache_bytes // (4 * 66))
 
         # For incoming, we allocate 512 bytes of real disk space to each
-        # key and set the size of the incoming hash to be half our cache
+        # key and set the size of the incoming hash to be 3/4 our cache
         # budget. We assume the other half goes to whatever's hot in the
         # long term storage (obviously there is no guarantee).
         self._incoming_key_size = 0.75 * 256 - 72
-        self._incoming_shard_size = (cache_bytes // 256) // 2
+        self._incoming_shard_size = (3 * cache_bytes // 256) // 4
 
         # Assuming we use a bitmap, how big will a hot-spot get?
         self._hot_spot_value_size = (self._incoming_key_size + 72) // 25 - 72
@@ -131,11 +131,15 @@ class EncryptedPostingLists(EncryptedDict):
 
     def _flush_records(self, key,
                        edict, kfi, keyset, pos, digest, value, records):
-        vrpos = rdig = None
+        vrpos = rdig = unused = None
         for rpos, rdata in records:
-            if rdata != edict._UNUSED:
+            if rdata == edict._UNUSED:
+                unused = rpos
+            else:
                 rdig = edict.rdata_digest(rdata)
                 if rdig == digest:
+                    # In this case, our value already includes the rdata
+                    # so just overwrite.
                     vrpos, rval = rpos, value
                 else:
                     rval = edict.rdata_value(rdata)
@@ -143,16 +147,25 @@ class EncryptedPostingLists(EncryptedDict):
                 try:
                     i1, (i2, lts_rdata) = self.load_digest_record(rdig)
                     lts_val = self._unpack(self.rdata_value(lts_rdata))
+                    rval = self._pack(self._unpack(rval) | lts_val)
                 except KeyError:
-                    lts_val = set()
+                    pass
 
-                hits = self._pack(self._unpack(rval) | lts_val)
-                self.save_digest_record(rdig, hits)
+                self.save_digest_record(rdig, rval)
                 keyset[rpos] = edict._UNUSED
         if vrpos is not None:
             return vrpos
         else:
-            return self.save_record(key, value)
+            # If we get this far, then our data may have been too big to fit
+            # all along, so we just go directly to long term storage.
+            try:
+                i1, (i2, lts_rdata) = self.load_digest_record(digest)
+                lts_val = self._unpack(self.rdata_value(lts_rdata))
+                value = self._pack(self._unpack(value) | lts_val)
+            except KeyError:
+                pass
+            self.save_digest_record(digest, value)
+            return records[0][0]  # This is fake, but should be OK.
 
     def __setitem__(self, key, value):
         if isinstance(value, (int,)):

@@ -183,11 +183,13 @@ class EncryptedRecordStore(_SimpleList):
                                                     len(self._NEWLINE))
 
     def _parse_header(self):
-        self._fd.seek(0)
         try:
-            header = self._fd.read(len(self._HEADER % self._header_data) + 1024)
-            if not header:
-                return False
+            with self._lock:
+                self._fd.seek(0)
+                header = self._fd.read(len(self._HEADER % self._header_data)
+                                       + 1024)
+                if not header:
+                    return False
 
             if '\n' in header and self._NEWLINE not in header:
                 self._NEWLINE = '\n'
@@ -219,6 +221,7 @@ class EncryptedRecordStore(_SimpleList):
             header = self._HEADER % self._header_data
             self._fd.seek(0)
             self._fd.write(header)
+            self._fd.flush()
             self._header_skip = len(header)
 
     def close(self):
@@ -249,6 +252,10 @@ class EncryptedRecordStore(_SimpleList):
         elif len(data) > self._MAX_DATA_SIZE:
             raise ValueError('Data too big for record')
 
+        pos = int(pos)
+        if pos < 0:
+            raise KeyError('Negative record position')
+
         iv = self._iv(pos)
 
         # We're using MD5 as a checksum here to detect corruption.
@@ -256,9 +263,15 @@ class EncryptedRecordStore(_SimpleList):
 
         # We use the checksum as padding, where we are guaranteed by the
         # assertion above to have room for at least 6 nybbles of the MD5.
-        record = (data + ':' + cks + self._ZERO_RECORD)[:self._RECORD_SIZE]
+        record = (data + ':' + cks + self._ZERO_RECORD
+                  )[:self._RECORD_SIZE - len(iv)]
         encrypted = (iv + aes_cbc_encrypt(self._aes_key, iv, record)
                      ).encode('base64').replace('\n', '')
+
+        if len(encrypted) != self._RECORD_LINES * self._RECORD_LINE_BYTES:
+            raise AssertionError('%d: <%s> %s != %d*%d' %
+                                 (pos, encrypted, len(encrypted),
+                                  self._RECORD_LINES, self._RECORD_LINE_BYTES))
 
         with self._lock:
             self._fd.seek(self._header_skip + pos * self._RECORD_BYTES)
@@ -268,6 +281,10 @@ class EncryptedRecordStore(_SimpleList):
                 self._fd.write(self._NEWLINE)
 
     def load_record(self, pos):
+        pos = int(pos)
+        if pos < 0:
+            raise KeyError('Negative record position')
+
         with self._lock:
             self._fd.seek(self._header_skip + pos * self._RECORD_BYTES)
             try:
@@ -532,25 +549,30 @@ class EncryptedDict(object):
     def load_digest_record(self, digest, want=None):
         pos = self._offset(digest)
         if want is None:
-            # Search for the unused marker, as well as the digest...
-            want = [self._UNUSED]
+            want = []
         for kfi, keyset in enumerate(self._keys):
             records = self.load_records(kfi, keyset, self._bucket_size, pos,
                                         want=want+[digest])
             if records[-1][1].startswith(digest):
                 self.reads[kfi] += 1
                 return (keyset, records[-1])
-            elif records[-1][1] == self._UNUSED:
+            if [r for r in records if r[1] == self._UNUSED]:
                 # ...finding an unused marker means we can give up.
                 break
         raise KeyError('Not found')
 
     def _try_save(self, kfi, keyset, pos, digest, value, on_fail=None):
+        rpos = rdata = None
         records = self.load_records(kfi, keyset, self._bucket_size, pos,
-                                    want=[self._UNUSED, digest])
-        if (records[-1][1] == self._UNUSED or
-                records[-1][1].startswith(digest)):
+                                    want=[digest])
+        if records[-1][1].startswith(digest):
             rpos, rdata = records[-1]
+        else:
+            unused = [r for r in records if r[1] == self._UNUSED]
+            if unused:
+                rpos, rdata = unused[0]
+
+        if rpos is not None:
             record_data = ''.join([digest, '=', value])
             if len(record_data) > keyset._MAX_DATA_SIZE:
                 if self._values is None:
