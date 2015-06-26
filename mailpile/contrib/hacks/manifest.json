@@ -34,6 +34,14 @@
             "name": "hacks/metadata"
         },
         {
+            "class": "ViewKeywords",
+            "name": "hacks/keywords"
+        },
+        {
+            "class": "ViewHeaderPrint",
+            "name": "hacks/headerprint"
+        },
+        {
             "class": "Http",
             "name": "hacks/http"
         },

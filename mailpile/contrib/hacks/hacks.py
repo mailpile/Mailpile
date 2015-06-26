@@ -135,6 +135,41 @@ class ViewMetadata(Hacks):
             [self._explain(i) for i in self._choose_messages(self.args)])
 
 
+class ViewKeywords(Hacks):
+    """Display the keywords for a message"""
+    SYNOPSIS = (None, 'hacks/keywords', None, '[<message>]')
+
+    def _explain(self, i):
+        idx = self._idx()
+        info = idx.get_msg_at_idx_pos(i)
+        msg = Email(idx, i).get_msg()
+        return sorted(list(idx.read_message(
+            self.session,
+            info[idx.MSG_MID], info[idx.MSG_ID], msg,
+            long(info[idx.MSG_KB], 36) * 1024,
+            long(info[idx.MSG_DATE], 36))[0]))
+
+    def command(self):
+        return self._success(_('Displayed message keywords'),
+            [self._explain(i) for i in self._choose_messages(self.args)])
+
+
+class ViewHeaderPrint(Hacks):
+    """Display the HeaderPrint for a message"""
+    SYNOPSIS = (None, 'hacks/headerprint', None, '[<message>]')
+
+    def _explain(self, i):
+        msg = Email(self._idx(), i).get_msg()
+        return {
+            'headers': HeaderPrintHeaders(msg),
+            'headerprint': HeaderPrint(msg)
+        }
+
+    def command(self):
+        return self._success(_('Displayed message HeaderPrint'),
+            [self._explain(i) for i in self._choose_messages(self.args)])
+
+
 HACKS_SESSION_ID = None
 
 class Http(Hacks):
