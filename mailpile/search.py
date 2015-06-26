@@ -1511,23 +1511,32 @@ class MailIndex(object):
                 msg_mid, keywords = job
                 msg_idx_pos = int(msg_mid, 36)
                 for word in keywords:
-                    if (word.startswith('__') or
+                    if ((len(word) > 50 and '@' not in word) or  # Binary junk
+                            word.startswith('__') or
+                            # Tags are handled elsewhere:
                             word.endswith(':tag') or
                             word.endswith(':in')):
-                        # Tags are handled elsewhere
                         pass
                     else:
                         _add(word, msg_idx_pos)
 
+                # Trade-off alert; larger batches will make better use of
+                # cache locality, but delay data getting into the index and
+                # increasing our risk of data loss if the app crashes.
                 loops += 1
-                if len(kwlists) > 2000 or loops > 25:
+                if len(kwlists) > 3000 or loops > 40:
                     raise Queue.Empty()
 
             except Queue.Empty:
                 t0 = time.time()
-                count = len(kwlists)
                 failed = {}
-                for word, mids in kwlists.iteritems():
+                # Sorting the writes by location within the dict helps with
+                # cache locality, minimizing random seeks.
+                words = kwlists.keys()
+                words.sort(key=lambda k: self._keywords._offset_and_digest(k))
+                count = len(words)
+                for word in words:
+                    mids = kwlists[word]
                     try:
                         self._keywords[word] = mids
                     except (KeyError, IOError):
