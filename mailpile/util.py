@@ -47,21 +47,33 @@ MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
-                         ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
+                         ':\"|;`\'\\\<\>\?,\.\/\-]{2,}')
 
 PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                           ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
 
-STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'i', 'in', 'is', 'it',
-                'mailto', 'me',
-                'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
+# These next two variables are important for reducing hot-spots in the
+# search index and polluting it with spammy results. But adding too many
+# terms here makes searches fail, so we need to be careful. Also, the
+# spam classifier won't see these things. So again, careful...
+STOPLIST = set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'an', 'and', 'any', 'are', 'as', 'at',
+                'but', 'by', 'can', 'div', 'do', 'for', 'from',
+                'has', 'hello', 'hi', 'i', 'in', 'if', 'is', 'it',
+                'mailto', 'me', 'my',
+                'og', 'of', 'on', 'or', 'p', 're', 'span', 'so',
+                'that', 'the', 'this', 'td', 'to', 'tr',
+                'was', 'we', 'were', 'you'])
 
-BORING_HEADERS = ('received', 'date',
+BORING_HEADERS = ('received', 'received-spf', 'date',
                   'content-type', 'content-disposition', 'mime-version',
-                  'dkim-signature', 'domainkey-signature', 'received-spf')
+                  'list-archive', 'list-help', 'list-post',
+                  'list-subscribe', 'list-unsubscribe',
+                  'dkim-signature', 'domainkey-signature')
 
-EXPECTED_HEADERS = ('from', 'to', 'subject', 'date')
+# For the spam classifier, if these headers are missing a special
+# note is made of that in the message keywords.
+EXPECTED_HEADERS = ('from', 'to', 'subject', 'date', 'message-id')
 
 B64C_STRIP = '\r\n='
 

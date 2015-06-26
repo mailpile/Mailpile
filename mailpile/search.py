@@ -1320,11 +1320,13 @@ class MailIndex(object):
                                    self.hdr(msg, 'from').lower()))
         if mailbox:
             keywords.append('%s:mailbox' % FormatMbxId(mailbox).lower())
+
+        # This is a signal for the bayesian filters to discriminate by MUA.
         keywords.append('%s:hp' % HeaderPrint(msg))
 
         for key in msg.keys():
             key_lower = key.lower()
-            if key_lower not in BORING_HEADERS:
+            if key_lower not in BORING_HEADERS and key_lower[:2] != 'x-':
                 emails = ExtractEmails(self.hdr(msg, key).lower())
                 words = set(re.findall(WORD_REGEXP,
                                        self.hdr(msg, key).lower()))

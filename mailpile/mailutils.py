@@ -298,35 +298,32 @@ def PrepareMessage(config, msg,
     return (sender, rcpts, msg, events)
 
 
-MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
+MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject',
+               'message-id', 'reply-to', 'references', 'return-path',
                'mime-version', 'content-disposition', 'content-type',
-               'user-agent', 'list-id', 'list-subscribe', 'list-unsubscribe',
-               'x-ms-tnef-correlator', 'x-ms-has-attach')
-DULL_HEADERS = ('in-reply-to', 'references')
+               'content-language', 'content-description',
+               'user-agent', 'x-mailer',
+               'list-id', 'list-subscribe', 'list-unsubscribe', 'precedence',
+               'x-ms-tnef-correlator', 'x-ms-has-attach',
+               'x-mimeole', 'x-msmail-priority', 'x-priority',
+               'x-originating-ip', 'x-message-info',
+               'openpgp', 'x-openpgp')
+MUA_ID_HEADERS = ('x-mailer', 'user-agent', 'x-mimeole')
+DULL_HEADERS = ('in-reply-to', 'references', 'received')
 
 
 def HeaderPrintHeaders(message):
     """Extract message headers which identify the MUA."""
-    headers = [k for k, v in message.items()]
-
-    # The idea here, is that MTAs will probably either prepend or append
-    # headers, not insert them in the middle. So we strip things off the
-    # top and bottom of the header until we see something we are pretty
-    # comes from the MUA itself.
-    while headers and headers[0].lower() not in MUA_HEADERS:
-        headers.pop(0)
-    while headers and headers[-1].lower() not in MUA_HEADERS:
-        headers.pop(-1)
-
-    # Finally, we return the "non-dull" headers, the ones we think will
-    # uniquely identify this particular mailer and won't vary too much
-    # from message-to-message.
-    return [h for h in headers if h.lower() not in DULL_HEADERS]
+    headers = [k for k, v in message.items() if k.lower() in MUA_HEADERS]
+    for header in MUA_ID_HEADERS:
+        if message[header]:
+            headers.extend([header, message[header]])
+    return headers
 
 
 def HeaderPrint(message):
     """Generate a fingerprint from message headers which identifies the MUA."""
-    return b64w(sha1b64('\n'.join(HeaderPrintHeaders(message)))).lower()
+    return md5_hex('\n'.join(HeaderPrintHeaders(message)))
 
 
 class Email(object):
