@@ -15,6 +15,8 @@ import Crypto.Random
 import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.records import EncryptedBlobStore, EncryptedRecordStore
+from mailpile.crypto.records import EncryptedUnicodeStore
+from mailpile.crypto.records import EncryptedUnicodeDict, EncryptedIntDict
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.i18n import gettext as _
@@ -24,6 +26,7 @@ from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
+from mailpile.packing import StorageBackedSet, StorageBackedLongs
 from mailpile.postinglist import EncryptedPostingLists
 from mailpile.ui import *
 from mailpile.util import *
@@ -130,6 +133,7 @@ class MailIndex(object):
         self.INDEX_THR = []
         self.PTRS = {}
         self.TAGS = {}
+        self.TAG_STORE = []
         self.MSGIDS = {}
         self.EMAILS = []
         self.EMAIL_IDS = {}
@@ -212,34 +216,102 @@ class MailIndex(object):
         msg_info[self.MSG_BODY] = self.encode_body(d, **kwargs)
 
     def quit(self):
-        self._keywords_queue.put(False)
-        self._keywords_queue.close()
-        self._keywords_queue.join_thread()
-        
+        if self._keywords_queue:
+            self._keywords_queue.put(False)
+            self._keywords_queue.close()
+            self._keywords_queue.join_thread()
+            self._keywords_queue = None
+        for ts in self.TAGS.values():
+            try:
+                ts.save(maybe=True)
+            except AttributeError:
+                pass
+
     def load(self, session=None):
-        self.INDEX = []
-        self.CACHE = {}
-        self.PTRS = {}
-        self.MSGIDS = {}
-        self.EMAILS = []
-        self.EMAIL_IDS = {}
         CachedSearchResultSet.DropCaches()
+        config = self.config
+        if config.master_key:
+            with self._lock:
+                session.ui.mark(_('Creating search keyword storage...'))
+                self._keywords = EncryptedPostingLists(
+                    config.postinglists_prefix(), config.master_key)
+
+            kq = multiprocessing.Queue(25)
+            kp = multiprocessing.Process(target=self._kw_writer, args=(kq,))
+            kp.start()
+            self._keywords_queue = kq
+            self._keywords_writer = kp
+
+            with self._lock:
+                session.ui.mark(_('Creating metadata index storage...'))
+
+                self.INDEX = EncryptedBlobStore(
+                    config.mailindex_records(), config.master_key,
+                    max_bytes=450,
+                    overwrite=False)
+                self.PTRS = EncryptedIntDict(
+                    config.mailindex_records(which='ptr'), config.master_key,
+                    shard_size=50000,
+                    overwrite=False)
+                self.MSGIDS = EncryptedIntDict(
+                    config.mailindex_records(which='msgid'), config.master_key,
+                    shard_size=50000,
+                    overwrite=False)
+
+                self.INDEX_COUNT = EncryptedBlobStore(
+                    config.mailindex_records('count'), config.master_key,
+                    max_bytes=64000,
+                    overwrite=False)
+
+                self.INDEX_THR = StorageBackedLongs(self.INDEX_COUNT, 0)
+                self.INDEX_THR.interval = 120
+                for i, order in enumerate(self.SORT_ORDER_NAMES):
+                    l = StorageBackedLongs(self.INDEX_COUNT, i + 1)
+                    l.interval = 133 + (i * 13)
+                    self.INDEX_SORT[order] = l
+
+                self.EMAILS = EncryptedUnicodeStore(
+                    config.mailindex_records('email'), config.master_key,
+                    max_bytes=72,
+                    overwrite=False)
+                self.EMAIL_IDS = EncryptedIntDict(
+                    config.mailindex_records('eid'), config.master_key,
+                    shard_size=25000,
+                    overwrite=False)
+
+                self.TAG_STORE = EncryptedBlobStore(
+                    config.mailindex_records('tags'), config.master_key,
+                    max_bytes=72,
+                    overwrite=False)
+                for i in range(0, len(self.TAG_STORE)):
+                    tid = unicode(b36(i).lower())
+                    self.TAGS[tid] = StorageBackedSet(self.TAG_STORE, i)
+
+        session.ui.mark(_('Sorting your mail...'))
+        need_updating = set([])
+        for order in self.INDEX_SORT:
+            for msg_idx in range(0, len(self.INDEX)):
+                if (msg_idx >= len(self.INDEX_SORT[order]) or
+                        self.INDEX_SORT[order][msg_idx] == 0):
+                    need_updating.add(msg_idx)
+        if need_updating:
+            for msg_idx_pos in sorted(need_updating):
+                msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
+                self.update_msg_sorting(msg_idx_pos, msg_info)
+        # FIXME: Sanity-check and rebuild PTRS, MSGIDS and INDEX_THR too
+
+    def _create_backed_tag(self, tid):
+        tid = unicode(tid.lower())
+        if tid not in self.TAGS:
+            itid = int(tid, 36)
+            while itid > len(self.TAG_STORE):
+                self.TAG_STORE.append('')
+            self.TAGS[tid] = StorageBackedSet(self.TAG_STORE, itid)
+            print 'CREATED TAG: %s' % tid
+        return self.TAGS[tid]
+
+    def legacy_load(self, session=None):
         bogus_lines = []
-
-        session.ui.mark(_('Creating search keyword storage...'))
-        self._keywords = EncryptedPostingLists(
-            self.config.postinglists_prefix(), self.config.master_key)
-
-        kq = multiprocessing.Queue(25)
-        kp = multiprocessing.Process(target=self._kw_writer, args=(kq,))
-        kp.start()
-        self._keywords_queue = kq
-        self._keywords_writer = kp
-
-        session.ui.mark(_('Creating metadata index storage...'))
-        self.INDEX = EncryptedBlobStore(self.config.mailindex_records(),
-                                        self.config.master_key,
-                                        max_bytes=450, overwrite=False)
 
         def process_lines(lines):
             for line in lines:
@@ -343,9 +415,7 @@ class MailIndex(object):
             for tid in (set(self.TAGS.keys()) - tags):
                 self.TAGS[tid] -= set([msg_idx_pos])
             for tid in tags:
-                if tid not in self.TAGS:
-                    self.TAGS[tid] = set()
-                self.TAGS[tid].add(msg_idx_pos)
+                self._create_backed_tag(tid).add(msg_idx_pos)
 
     def _maybe_encrypt(self, data):
         gpgr = self.config.prefs.gpg_recipient
@@ -367,6 +437,7 @@ class MailIndex(object):
 
 
     def save_changes(self, session=None):
+        return  # FIXME
         self._save_lock.acquire()
         try:
             # In a locked section, check what needs to be done!
@@ -412,6 +483,7 @@ class MailIndex(object):
             self._save_lock.release()
 
     def save(self, session=None):
+        return  # FIXME
         try:
             self._save_lock.acquire()
             with self._lock:
@@ -715,9 +787,6 @@ class MailIndex(object):
                                 ) % (mailbox_idx, mailbox_fn, e),
                           error=True)
 
-        if len(self.PTRS.keys()) == 0:
-            self.update_ptrs_and_msgids(session)
-
         existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
@@ -766,13 +835,14 @@ class MailIndex(object):
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
-            if msg_ptr in self.PTRS:
+            msg_ptr_idx = self.PTRS.get(msg_ptr)
+            if msg_ptr_idx is not None:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
                 elif (ui % 129) == 0 and not deadline:
                     play_nice_with_threads()
                 if not lazy:
-                    msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
+                    msg_info = self.get_msg_at_idx_pos(msg_ptr_idx)
                     msg_body = msg_info[self.MSG_BODY]
                 if lazy or msg_body not in self.MSG_BODY_UNSCANNED:
                     continue
@@ -878,10 +948,11 @@ class MailIndex(object):
             return last_date, added, updated
 
         msg_id = self.get_msg_id(msg, msg_ptr)
-        if msg_id in self.MSGIDS:
+        msg_id_ptr = self.MSGIDS.get(msg_id)
+        if msg_id_ptr is not None:
             # FIXME: this prevents updates of the BODY_LAZY stuff...
             with self._lock:
-                self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
+                self._update_location(session, msg_id_ptr, msg_ptr)
                 updated += 1
         else:
             lazy_body = self.MSG_BODY_LAZY if lazy else None
@@ -1144,10 +1215,12 @@ class MailIndex(object):
 
     def _add_email(self, email, name=None, eid=None):
         if eid is None:
-            eid = len(self.EMAILS)
-            self.EMAILS.append('')
-        self.EMAILS[eid] = '%s (%s)' % (email, name or email)
-        self.EMAIL_IDS[email.lower()] = eid
+            with self._lock:
+                eid = len(self.EMAILS)
+                self.EMAILS.append('')
+        with self._lock:
+            self.EMAILS[eid] = '%s (%s)' % (email, name or email)
+            self.EMAIL_IDS[email.lower()] = eid
         # FIXME: This needs to get written out...
         return eid
 
@@ -1556,8 +1629,12 @@ class MailIndex(object):
         try:
             rv = self.CACHE.get(msg_idx)
             if rv is None:
-                if len(self.CACHE) > 1000:
-                    self.CACHE = {}
+                if len(self.CACHE) > 5000:
+                    # Cache is precious, don't always discard it willy-nilly
+                    keepers = [k for k in self.CACHE if k > msg_idx-250]
+                    if len(keepers) > 5000:
+                        keepers = keepers[:2500]
+                    self.CACHE = dict((k, self.CACHE[k]) for k in keepers)
                 rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
             if len(rv) != self.MSG_FIELDS_V2:
                 raise ValueError()
@@ -1567,7 +1644,13 @@ class MailIndex(object):
 
     def update_msg_sorting(self, msg_idx, msg_info):
         for order, sorter in self.SORT_ORDERS.iteritems():
-            self.INDEX_SORT[order][msg_idx] = sorter(self, msg_info)
+            rank = sorter(self, msg_info)
+            while len(self.INDEX_SORT[order]) < msg_idx:
+                self.INDEX_SORT[order].append(0)
+            if msg_idx == len(self.INDEX_SORT[order]):
+                self.INDEX_SORT[order].append(rank)
+            else:
+                self.INDEX_SORT[order][msg_idx] = rank
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info, original_line=None):
         with self._lock:
@@ -1666,7 +1749,7 @@ class MailIndex(object):
             if tag_id in self.TAGS:
                 self.TAGS[tag_id] |= eids
             elif eids:
-                self.TAGS[tag_id] = eids
+                self._create_backed_tag(tag_id).update(eids)
         try:
             self.config.command_cache.mark_dirty(
                 [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
@@ -1761,7 +1844,7 @@ class MailIndex(object):
             # Normal search
             def hits(term):
                 if term.endswith(':in'):
-                    return self.TAGS.get(term.rsplit(':', 1)[0], [])
+                    return set(self.TAGS.get(term.rsplit(':', 1)[0], []))
 
                 elif term.endswith(':vfs'):
                     mailbox_path = FilePath(searchterms[0].split(':', 1)[1])
@@ -1780,8 +1863,9 @@ class MailIndex(object):
                     results = []
                     for tocid in mbox.keys():
                         msg_ptr = mbox.get_msg_ptr(mboxid, tocid)
-                        if msg_ptr in self.PTRS:
-                            results.append(self.PTRS[msg_ptr])
+                        msg_ptr_idx = self.PTRS.get(msg_ptr)
+                        if msg_ptr_idx is not None:
+                            results.append(msg_ptr_idx)
                         else:
                             pass  # FIXME: Add minimal place-holder?
 
@@ -1931,20 +2015,20 @@ class MailIndex(object):
         return ts
 
     FRESHNESS_SORT_BOOST = (5 * 24 * 3600)
+    SORT_ORDER_NAMES = ('freshness', 'date', 'from', 'subject')
     SORT_ORDERS = {
         'freshness': _freshness_sorter,
         'date': lambda s, mi: long(mi[s.MSG_DATE], 36),
-# FIXME: The following are disabled for now for being memory hogs
-#       'from': lambda s, mi: s.mi[s.MSG_FROM]),
-#       'subject': lambda s, mi: s.mi[s.MSG_SUBJECT]),
+        'from': lambda s, mi: string_to_rank(mi[s.MSG_FROM]),
+        'subject': lambda s, mi: string_to_rank(mi[s.MSG_SUBJECT]),
     }
 
     def _prepare_sorting(self):
         self._sort_freshness_tags = [tag._key for tag in
                                      self.config.get_tags(type='unread')]
-        self.INDEX_SORT = {}
         for order, sorter in self.SORT_ORDERS.iteritems():
-            self.INDEX_SORT[order] = []
+            if order not in self.INDEX:
+                self.INDEX_SORT[order] = []
 
     def sort_results(self, session, results, how):
         if not results:

@@ -182,7 +182,7 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
         }
         if subtags:
             for subtag in subtags:
-                messages |= cfg.index.TAGS.get(subtag._key, set())
+                messages.update(cfg.index.TAGS.get(subtag._key, set()))
             info['stats'].update({
                 'sum_all': len(messages),
                 'sum_new': len(messages & unread),
@@ -538,11 +538,11 @@ class ListTags(TagCommand):
 
         unread_messages = set()
         for tag in self.session.config.get_tags(type='unread'):
-            unread_messages |= idx.TAGS.get(tag._key, set())
+            unread_messages.update(idx.TAGS.get(tag._key, set()))
 
         excluded_messages = set()
         for tag in self.session.config.get_tags(flag_hides=True):
-            excluded_messages |= idx.TAGS.get(tag._key, set())
+            excluded_messages.update(idx.TAGS.get(tag._key, set()))
 
         mode = search.get('mode', 'default')
         if 'mode' in search:

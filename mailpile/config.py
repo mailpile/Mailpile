@@ -2022,8 +2022,11 @@ class ConfigManager(ConfigDict):
     def mailindex_file(self):
         return os.path.join(self.workdir, 'mailpile.idx')
 
-    def mailindex_records(self):
-        return os.path.join(self.workdir, 'metadata.dat')
+    def mailindex_records(self, which='metadata'):
+        d = os.path.join(self.workdir, 'metadata')
+        if not os.path.exists(d):
+            os.mkdir(d)
+        return os.path.join(d, '%s.dat' % which)
 
     def mailpile_path(self, path):
         base = (self.workdir + os.sep).replace(os.sep+os.sep, os.sep)
