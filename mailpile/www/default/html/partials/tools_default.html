@@ -82,6 +82,8 @@
 {%- if not tools_all_in_bulk_actions %}
 <div class="bulk-actions clearfix">
 {%- endif %}
+  <div class="bulk-actions-hints text-center"
+       style='position: absolute; width: 85%;'></div>
   {%- if not tools_disable_checkbox %}
   <div id="bulk-actions-message" class="left"
        data-bulk_selected="{{_("messages selected")}}"

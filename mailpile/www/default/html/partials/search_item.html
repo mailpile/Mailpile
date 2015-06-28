@@ -16,7 +16,22 @@
 %}{%    set msg_url = metadata.urls.thread
 %}{%  endif
 %}
-<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}" data-state="normal" data-mid="{{mid}}">
+<tr id="pile-message-{{mid}}"
+    class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}"
+    data-state="normal"
+{%- if metadata.body.list and
+       ('list:' + metadata.body.list) not in state.query_args.q %}
+    data-context-hint="{{ _('View e-mail from this mailing list') }}"
+    data-context-icon="groups"
+    data-context-url="{{ U('/search/?q=list:', metadata.body.list) }}"
+{%- else %}
+  {%- if ('from:' + from.address) not in state.query_args.q %}
+    data-context-hint="{{ _('Search for e-mail from:') }} {{metadata.from.fn}}"
+    data-context-icon="user"
+    data-context-url="{{ U('/search/?q=from:', from.address) }}"
+  {%- endif %}
+{%- endif %}
+    data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
     <a href="{{msg_url}}"><img src="{{ show_avatar(from) }}"></a>
@@ -53,7 +68,7 @@
        href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
-    <a href="{{ U('/search/dates:{{metadata.date}}') }}/">{{metadata.timestamp|elapsed_datetime}}</a>
+    <a href="{{ U('/search/?q=dates:', metadata.date) }}/">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
   <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">
