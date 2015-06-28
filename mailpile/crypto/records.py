@@ -425,6 +425,17 @@ class EncryptedBlobStore(_SimpleList):
             self._big_shard = None
 
 
+class EncryptedUnicodeStore(EncryptedBlobStore):
+    """
+    An EncryptedBlobStore that only works with unicode data.
+    """
+    def __setitem__(self, pos, data):
+        return EncryptedBlobStore.__setitem__(self, pos, data.encode('utf-8'))
+
+    def __getitem__(self, pos):
+        return EncryptedBlobStore.__getitem__(self, pos).decode('utf-8')
+
+
 class EncryptedDict(object):
     """
     This is a variable-sized, sharded AES encrypted dict. It uses
@@ -440,13 +451,17 @@ class EncryptedDict(object):
     DEFAULT_BUCKET_SIZE = 5
     DEFAULT_DIGEST_SIZE = 16  # 128 bit hashes
     _UNUSED = '\0U'
+    _DELETED = '\0D'
 
     MIN_KEY_BYTES = (48 - 16 - 7 - 1)  # Magic number, smallest possible
                                        # key record size.
 
+    DEFAULT_KEY_BYTES  = (48 - 16 - 7 - 1) + 1*48  # 2 lines per record
+    DEFAULT_DATA_BYTES = (48 - 16 - 7 - 1) + 8*48  # 9 lines ber record
+
     def __init__(self, base_fn, key,
-                 key_bytes=72,    # 2 base64 lines per record
-                 data_bytes=408,  # 9 base64 lines per record
+                 key_bytes=None,
+                 data_bytes=None,
                  big_ratio=5,
                  shard_size=100000, min_shards=1, shard_ratio=2.0,
                  bucket_size=None,
@@ -454,9 +469,11 @@ class EncryptedDict(object):
                  overwrite=False):
         self._base_fn = base_fn
         self._key = key
-        self._key_bytes = key_bytes
+        self._key_bytes = key_bytes or self.DEFAULT_KEY_BYTES
+        self._data_bytes = (self.DEFAULT_DATA_BYTES
+                            if (data_bytes is None) else data_bytes)
+
         self._shard_ratio = shard_ratio  # Growth ratio when expanding
-        self._data_bytes = data_bytes
         self._shard_size = max(int(shard_size), 1024)
         self._big_ratio = float(big_ratio)
         self._bucket_size = bucket_size or self.DEFAULT_BUCKET_SIZE
@@ -568,7 +585,8 @@ class EncryptedDict(object):
         if records[-1][1].startswith(digest):
             rpos, rdata = records[-1]
         else:
-            unused = [r for r in records if r[1] == self._UNUSED]
+            unused = [r for r in records
+                      if r[1] in (self._UNUSED, self._DELETED)]
             if unused:
                 rpos, rdata = unused[0]
 
@@ -627,6 +645,28 @@ class EncryptedDict(object):
     def __setitem__(self, key, value):
         self.save_record(key, value)
 
+    def __contains__(self, key):
+        try:
+            keyset, (rpos, rdata) = self.load_record(key)
+            return True
+        except (KeyError, ValueError, IndexError):
+            return False
+
+    def __delitem__(self, key):
+        try:
+            keyset, (rpos, rdata) = self.load_record(key)
+            keyset[rpos] = self._DELETED
+        except (KeyError, ValueError):
+            pass
+
+    def values(self):
+        for keyset in self._keys:
+            for val in keyset:
+                try:
+                    yield self.rdata_value(val)
+                except (KeyError, ValueError, IndexError):
+                    pass
+
     def rdata_digest(self, rdata):
         return rdata[:self._digest_size]
 
@@ -659,8 +699,64 @@ class EncryptedDict(object):
             self._keys = []
 
 
+class EncryptedUnicodeDict(EncryptedDict):
+    """
+    EncryptedDict which only deals in unicode values.
+    """
+    def save_record(self, key, value):
+        value = value.encode('utf-8')
+        return EncryptedDict.save_record(self, key, value)
+
+    def rdata_value(self, rdata):
+        value = EncryptedDict.rdata_value(self, rdata)
+        return value.decode('utf-8')
+
+
+class EncryptedIntDict(EncryptedDict):
+    """
+    EncryptedDict which only deals in signed 64-bit int values.
+    This also adds a working keys() function.
+    """
+    DATA_FORMAT = '<q'
+    DATA_BYTES = struct.calcsize(DATA_FORMAT)
+
+    def keys(self):
+        for keyset in self._keys:
+            for val in keyset:
+                try:
+                    yield EncryptedDict.rdata_value(self, val
+                                                    )[8:].decode('utf-8')
+                except (KeyError, ValueError, IndexError, UnicodeDecodeError):
+                    pass
+
+    def save_record(self, key, value):
+        value = (struct.pack(self.DATA_FORMAT, long(value))
+                 + key.encode('utf-8'))
+        return EncryptedDict.save_record(self, key, value)
+
+    def rdata_value(self, rdata):
+        value = EncryptedDict.rdata_value(self, rdata)
+        return long(struct.unpack(self.DATA_FORMAT, value[:self.DATA_BYTES]
+                                  )[0])
+
+
 if __name__ == '__main__':
     import random
+
+    print 'Creating EncryptedDict...'
+    eid = EncryptedIntDict('/tmp/test.aes', 'this is my secret key',
+                           shard_size=25, overwrite=True)
+    eid['hello'] = 99
+    assert('hello' in eid)
+    assert(eid['hello'] == 99)
+    try:
+        eid['hello'] = 'world'
+        assert('That should have failed')
+    except (ValueError, struct.error):
+        pass
+    assert(list(eid.keys()) == ['hello'])
+    assert(list(eid.values()) == [99L])
+
     for size in (16, 50, 100, 200, 400, 800, 1600):
         er = EncryptedBlobStore('/tmp/tmp.aes', 'this is my secret key',
                                 max_bytes=size, overwrite=True)
@@ -739,4 +835,5 @@ if __name__ == '__main__':
     done = time.time()
     print ('10k dict reads in %.2f (%.8f s/op)\n -- reads=%s lf=%s'
            % (done - t0, (done - t0) / count, ed.reads, ed.load_factor))
+
 
