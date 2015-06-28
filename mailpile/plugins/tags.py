@@ -31,6 +31,7 @@ _plugins.register_config_section('tags', ["Tags", {
         'profile', 'mailbox',                         # Accounts, Mailboxes
         'drafts', 'blank', 'outbox', 'sent',          # composing and sending
         'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags
+        'rescan', 'schedule',                         # re-scheduling tags
         'trash', 'spam'                               # junk mail tags
     ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', 'bool', False],

@@ -181,6 +181,23 @@ class SetupMagic(Command):
                    'flag_msg_only': True},
         'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible',
                    'flag_msg_only': True},
+        # These are used internally for scheduling things...
+        'mp_rescan': {'type': 'rescan', 'label': False,
+                      'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_0': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_1': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_2': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_3': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_4': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_5': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
+        'mp_day_6': {'type': 'schedule', 'label': False,
+                     'display': 'invisible', 'flag_msg_only': True},
     }
 
     def basic_app_config(self, session,
