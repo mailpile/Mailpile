@@ -378,6 +378,20 @@ def b36(number):
     return ''.join(reversed(base36))
 
 
+def string_to_rank(text, maxint=sys.maxint):
+    """
+    Approximate lexographical order with an int. It's accurate near
+    the front of the string, but gets fuzzy towards letter 10.
+    """
+    rs = CleanText(text, banned=CleanText.NONALNUM).clean.lower()
+    rank = 0.0
+    frac = 1.0
+    for pos in range(0, min(15, len(rs))):
+        rank += frac * (int(rs[pos], 36) / (36.0 + 0.09 * pos))
+        frac *= 1.0 / (36-pos)
+    return long(rank * (maxint - 100)) + min(100, len(text))
+
+
 def string_to_intlist(text):
     """Converts a string into an array of integers"""
     try:
