@@ -12,6 +12,7 @@ from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.crypto.records import EncryptedDict
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.packing import PackIntSet, UnpackIntSet
 from mailpile.util import *
 
 
@@ -80,7 +81,7 @@ class EncryptedPostingLists(EncryptedDict):
         self._shard_ratio = 2.0
         self._shard_size = max(self._hot_spot_count, cache_bytes // (4 * 66))
 
-        # For incoming, we allocate 512 bytes of real disk space to each
+        # For incoming, we allocate 256 bytes of real disk space to each
         # key and set the size of the incoming hash to be 3/4 our cache
         # budget. We assume the other half goes to whatever's hot in the
         # long term storage (obviously there is no guarantee).
@@ -116,19 +117,6 @@ class EncryptedPostingLists(EncryptedDict):
                                        bucket_size=self.INCOMING_BUCKET_SIZE,
                                        big_ratio=0, shard_ratio=0)
 
-    def _pack(self, hits):
-        if len(hits) > 10:
-            return '\xff\xff\xff\xff' + zlib.compress(intlist_to_bitmask(hits))
-        else:
-            return ''.join(struct.pack('<I', v) for v in hits)
-
-    def _unpack(self, data):
-        if len(data) > 13 and data[:4] == '\xff\xff\xff\xff':
-            return set(bitmask_to_intlist(zlib.decompress(data[4:])))
-        else:
-            return set(struct.unpack('<I', data[i:i+4])[0]
-                       for i in range(0, len(data), 4))
-
     def _flush_records(self, key,
                        edict, kfi, keyset, pos, digest, value, records):
         vrpos = rdig = unused = None
@@ -146,8 +134,8 @@ class EncryptedPostingLists(EncryptedDict):
 
                 try:
                     i1, (i2, lts_rdata) = self.load_digest_record(rdig)
-                    lts_val = self._unpack(self.rdata_value(lts_rdata))
-                    rval = self._pack(self._unpack(rval) | lts_val)
+                    lts_val = UnpackIntSet(self.rdata_value(lts_rdata))
+                    rval = PackIntSet(UnpackIntSet(rval) | lts_val)
                 except KeyError:
                     pass
 
@@ -160,8 +148,8 @@ class EncryptedPostingLists(EncryptedDict):
             # all along, so we just go directly to long term storage.
             try:
                 i1, (i2, lts_rdata) = self.load_digest_record(digest)
-                lts_val = self._unpack(self.rdata_value(lts_rdata))
-                value = self._pack(self._unpack(value) | lts_val)
+                lts_val = UnpackIntSet(self.rdata_value(lts_rdata))
+                value = PackIntSet(UnpackIntSet(value) | lts_val)
             except KeyError:
                 pass
             self.save_digest_record(digest, value)
@@ -175,7 +163,7 @@ class EncryptedPostingLists(EncryptedDict):
         else:
             assert(isinstance(value, (set,)))
         with self._lock:
-            data = self._pack(self.get(key, set(), lts=False) | value)
+            data = PackIntSet(self.get(key, set(), lts=False) | value)
             self._incoming.save_record(
                 key, data, on_fail=lambda *a: self._flush_records(key, *a))
 
@@ -183,10 +171,10 @@ class EncryptedPostingLists(EncryptedDict):
         rv = set()
         with self._lock:
             if incoming:
-                rv |= self._unpack(self._incoming.get(key, ''))
+                rv |= UnpackIntSet(self._incoming.get(key, ''))
             if lts:
                 try:
-                    rv |= self._unpack(EncryptedDict.__getitem__(self, key))
+                    rv |= UnpackIntSet(EncryptedDict.__getitem__(self, key))
                 except KeyError:
                     pass
         if len(rv) < 1:
