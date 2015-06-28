@@ -55,33 +55,35 @@ class StorageBackedData(object):
     def _pack(self, data): raise NotImplemented()
     def _unpack(self, data): raise NotImplemented()
 
-    def _load(self):
+    def load(self):
         try:
             self._obj = self._unpack(self._storage[self._skey])
         except (KeyError, IndexError):
             self._obj = self._unpack('')
 
-    def _save(self, maybe=False):
+    def save(self, maybe=False):
         if not maybe or self.dirty:
             self._storage[self._skey] = self._pack(self._obj)
             self.dirty = False
+
+    def _dirty_maybe_save(self):
+        self.dirty = True
+        if self.auto_save:
+            if (self.interval < 1 or
+                    self.last_save < time.time() - self.interval):
+                self.save()
 
     def _r(self, method, *args, **kwargs):
         return getattr(self._obj, method)(*args, **kwargs)
 
     def _w(self, method, *args, **kwargs):
         rv = getattr(self._obj, method)(*args, **kwargs)
-        self.dirty = True
-        if self.auto_save:
-            if (self.interval < 1 or
-                    self.last_save < time.time() - self.interval):
-                self._save()
+        self._maybe_save()
         return rv
 
     def _iw(self, method, *args, **kwargs):
         self._obj = getattr(self._obj, method)(*args, **kwargs)
-        if self.auto_save:
-            self._save()
+        self._maybe_save()
         return self
  
     def __and__(s, *a, **kw): return s._r('__and__', *a, **kw)
