@@ -155,6 +155,10 @@ def ExtractEmails(string, strip_keys=True):
                 w = w[1:]
             while endcrap.search(w):
                 w = w[:-1]
+            if w.startswith('mailto:'):
+                w = w[7:]
+                if '?' in w:
+                    w = w.split('?')[0]
             if strip_keys and '#' in w[atpos:]:
                 w = w[:atpos] + w[atpos:].split('#', 1)[0]
             # E-mail addresses are only allowed to contain ASCII

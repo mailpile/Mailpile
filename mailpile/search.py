@@ -1214,6 +1214,29 @@ class MailIndex(object):
                 else:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
+    def _list_header_keywords(self, val_lower):
+        """Extracts IDs and such from <...> in list-headers."""
+        words = []
+        for word in val_lower.replace(',', ' ').split():
+            if not word:
+                continue
+            elif word[:5] == '<http':
+                continue  # We just ignore web URLs for now
+            elif (len(word) > 65) and ('+' in word) and ('@' in word):
+                continue  # Ignore very long plussed addresses
+            elif word[-1:] == '>':
+                if word[:8] == '<mailto:':
+                    word = word[8:-1]
+                    if '?' in word:
+                        word = word.split('?')[0]
+                elif word[:1] == '<':
+                    word = word[1:-1]
+                else:
+                    continue
+                words.append(word)
+                words.extend(re.findall(WORD_REGEXP, word))
+        return set(words)
+
     def read_message(self, session,
                      msg_mid, msg_id, msg, msg_size, msg_ts,
                      mailbox=None):
@@ -1327,15 +1350,24 @@ class MailIndex(object):
         for key in msg.keys():
             key_lower = key.lower()
             if key_lower not in BORING_HEADERS and key_lower[:2] != 'x-':
-                emails = ExtractEmails(self.hdr(msg, key).lower())
-                words = set(re.findall(WORD_REGEXP,
-                                       self.hdr(msg, key).lower()))
+                val_lower = self.hdr(msg, key).lower()
+                if key_lower[:5] == 'list-':
+                    key_lower = 'list'
+                    words = self._list_header_keywords(val_lower)
+                    emails = []
+                else:
+                    words = set(re.findall(WORD_REGEXP, val_lower))
+                    emails = ExtractEmails(val_lower)
+
+                # Strip some common crap off; stop-words and robotic emails.
                 words -= STOPLIST
+                emails = [e for e in emails if
+                          (len(e) < 40) or ('+' not in e and '/' not in e)]
+
                 keywords.extend(['%s:%s' % (t, key_lower) for t in words])
                 keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
                 keywords.extend(['%s:email' % e for e in emails])
-                if 'list' in key_lower:
-                    keywords.extend(['%s:list' % t for t in words])
+
         for key in EXPECTED_HEADERS:
             if not msg[key]:
                 keywords.append('%s:missing' % key)
