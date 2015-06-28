@@ -1,4 +1,5 @@
 Mailpile.bulk_actions_update_ui = function() {
+  Mailpile.hide_message_hints();
   if (Mailpile.messages_cache.length > 0) {
     var message = ('<span id="bulk-actions-selected-count">' +
                      Mailpile.bulk_cache_human_length('messages_cache') +
@@ -25,6 +26,7 @@ Mailpile.bulk_actions_update_ui = function() {
     }
     else {
       message += $('#bulk-actions-message').data('bulk_selected');
+      if (Mailpile.messages_cache.length == 1) Mailpile.show_message_hints();
     }
     $('#bulk-actions-message').html(message);
     Mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
@@ -34,6 +36,30 @@ Mailpile.bulk_actions_update_ui = function() {
     $('#bulk-actions-message').html(message);
     Mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
   }
+};
+
+
+Mailpile.hide_message_hints = function() {
+  $('div.bulk-actions-hints').html('');
+};
+
+
+Mailpile.show_message_hints = function() {
+  $.each(Mailpile.messages_cache, function(key, mid) {
+    if (mid != '!all') {
+      var $elem = $('#pile-message-' + mid);
+      var hint = $elem.data('context-hint');
+      if (hint) {
+        var icon = $elem.data('context-icon');
+        var url = $elem.data('context-url');
+        var html = '';
+        if (icon) html += '<span class="icon icon-' + icon + '"></span> ';
+        html += hint;
+        if (url) html = '<a href="' + url + '">' + html + '</a>';
+        $('div.bulk-actions-hints').html(html);
+      }
+    }
+  });
 };
 
 

@@ -1313,7 +1313,7 @@ class MailIndex(object):
                 else:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-    def _list_header_keywords(self, val_lower):
+    def _list_header_keywords(self, hdr, val_lower, body_info):
         """Extracts IDs and such from <...> in list-headers."""
         words = []
         for word in val_lower.replace(',', ' ').split():
@@ -1332,6 +1332,9 @@ class MailIndex(object):
                     word = word[1:-1]
                 else:
                     continue
+                if ((hdr == 'list-post') or
+                        (hdr == 'list-id' and 'list' not in body_info)):
+                    body_info['list'] = word
                 words.append(word)
                 words.extend(re.findall(WORD_REGEXP, word))
         return set(words)
@@ -1451,9 +1454,10 @@ class MailIndex(object):
             if key_lower not in BORING_HEADERS and key_lower[:2] != 'x-':
                 val_lower = self.hdr(msg, key).lower()
                 if key_lower[:5] == 'list-':
-                    key_lower = 'list'
-                    words = self._list_header_keywords(val_lower)
+                    words = self._list_header_keywords(key_lower, val_lower,
+                                                       body_info)
                     emails = []
+                    key_lower = 'list'
                 else:
                     words = set(re.findall(WORD_REGEXP, val_lower))
                     emails = ExtractEmails(val_lower)
