@@ -78,12 +78,12 @@ class StorageBackedData(object):
 
     def _w(self, method, *args, **kwargs):
         rv = getattr(self._obj, method)(*args, **kwargs)
-        self._maybe_save()
+        self._dirty_maybe_save()
         return rv
 
     def _iw(self, method, *args, **kwargs):
         self._obj = getattr(self._obj, method)(*args, **kwargs)
-        self._maybe_save()
+        self._dirty_maybe_save()
         return self
  
     def __and__(s, *a, **kw): return s._r('__and__', *a, **kw)
