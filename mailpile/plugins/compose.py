@@ -431,7 +431,8 @@ class Reply(RelativeCompose):
                                             force_name=True)
 
         def addresses(addrs, exclude=[]):
-            alist = [from_ai.address] + [a.address for a in exclude]
+            alist = [from_ai.address] if (from_ai) else []
+            alist += [a.address for a in exclude]
             return [merge_contact(a) for a in addrs
                     if a.address not in alist
                     and not a.address.startswith('noreply@')
@@ -439,8 +440,9 @@ class Reply(RelativeCompose):
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
-        if len([e for e in ref_from if e.address == from_ai.address]
-               ) == len(ref_from):
+        if (from_ai and
+               len([e for e in ref_from
+                    if e and e.address == from_ai.address]) == len(ref_from)):
             if ref_to:
                 result['to'] = addresses(ref_to)
             if ref_cc:
