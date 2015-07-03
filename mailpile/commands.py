@@ -1664,23 +1664,29 @@ class GpgCommand(Command):
     ORDER = ('Internals', 4)
     IS_USER_ACTIVITY = True
 
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            return '%s' % self.message
+
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
 
         # FIXME: For this to work anywhere but in a terminal, we'll need
         #        to somehow pipe input to/from GPG in a more sane way.
 
-        from mailpile.crypto.gpgi import GPG_BINARY
+        binary, rv = self._gnupg().gpgbinary, '(unknown)'
         with self.session.ui.term:
             try:
                 self.session.ui.block()
-                os.system(' '.join([GPG_BINARY] + args))
+                rv = os.system(' '.join([binary] + args))
                 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
                 PGPKeysImportAsVCards(self.session).run()
             except:
                 self.session.ui.unblock()
 
-        return self._success(_("That was fun!"))
+        return self._success(_("That was fun!") + ' ' +
+                             _("%s returned: %s") % (binary, rv),
+                             result={'binary': binary, 'returned': rv})
 
 
 class ListDir(Command):
