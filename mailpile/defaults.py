@@ -1,13 +1,12 @@
-APPVER = "0.4.4"
+APPVER = "0.4.5"
 ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
                for searching and                   <https://www.mailpile.is/>
            organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file COPYING.md for details.
+Free Software Foundation. See the file COPYING.md for details.
 """
 #############################################################################
 import os
