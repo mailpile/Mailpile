@@ -1508,6 +1508,54 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
+    def _save_master_key(self, keyfile):
+        if not self.master_key:
+            return False
+
+        # We keep the master key in a file of its own and never delete
+        # or overwrite master keys.
+        want_renamed_keyfile = None
+        master_passphrase = self.passphrases['DEFAULT']
+        if (self._master_key_passgen != master_passphrase.generation
+                or self._master_key_ondisk != self.master_key):
+            if os.path.exists(keyfile):
+                want_renamed_keyfile = keyfile + ('.%x' % time.time())
+
+        if not want_renamed_keyfile and os.path.exists(keyfile):
+            # Key file exists, nothing needs to be changed. Happy!
+            return True
+
+        # Figure out whether we are encrypting to a GPG key, or using
+        # symmetric encryption (with the 'DEFAULT' passphrase).
+        gpgr = self.prefs.get('gpg_recipient', '').replace(',', ' ')
+        tokeys = (gpgr.split()
+                  if (gpgr and gpgr not in ('!CREATE', '!PASSWORD'))
+                  else None)
+
+        if not tokeys and not master_passphrase.is_set():
+            # Without recipients or a passphrase, we cannot save!
+            return False
+
+        status, encrypted_key = GnuPG(self).encrypt(self.master_key,
+                                                    tokeys=tokeys)
+        if status == 0:
+            try:
+                with open(keyfile + '.new', 'wb') as fd:
+                    fd.write(encrypted_key)
+                if want_renamed_keyfile:
+                    os.rename(keyfile, want_renamed_keyfile)
+                os.rename(keyfile + '.new', keyfile)
+                self._master_key_ondisk = self.master_key
+                self._master_key_passgen = master_passphrase.generation
+                return True
+            except:
+                if (want_renamed_keyfile and
+                        os.path.exists(want_renamed_keyfile)):
+                    os.rename(want_renamed_keyfile, keyfile)
+                raise
+
+        return False
+
     def _unlocked_save(self, session=None):
         if not self.loaded_config:
             return
@@ -1519,48 +1567,14 @@ class ConfigManager(ConfigDict):
         self._mkworkdir(None)
         self.timestamp = int(time.time())
 
-        # FIXME: The master key is actually prefs.obfuscate.index still...
-        if not self.master_key:
-            self.master_key = self.prefs.obfuscate_index
-
         if session:
             if 'log' in self.sys.debug:
                 self.event_log.ui_watch(session.ui)
             else:
                 self.event_log.ui_unwatch(session.ui)
 
-        # We keep the master key in a file of its own and never delete
-        # or overwrite master keys.
-        want_renamed_keyfile = None
-        master_passphrase = self.passphrases['DEFAULT']
-        if (self._master_key_passgen != master_passphrase.generation
-                or self._master_key_ondisk != self.master_key):
-            if os.path.exists(keyfile):
-                want_renamed_keyfile = keyfile + ('.%x' % time.time())
-        if want_renamed_keyfile or not os.path.exists(keyfile):
-            if self.master_key and master_passphrase.is_set():
-
-                # If there is no GPG recipient, use symmetric encryption.
-                gpgr = self.prefs.get('gpg_recipient', '').replace(',', ' ')
-                status, encrypted_key = GnuPG(self).encrypt(self.master_key,
-                    tokeys=(gpgr.split()
-                            if (gpgr and gpgr not in ('!CREATE', '!PASSWORD'))
-                            else None))
-
-                if status == 0:
-                    try:
-                        with open(keyfile + '.new', 'wb') as fd:
-                            fd.write(encrypted_key)
-                        if want_renamed_keyfile:
-                            os.rename(keyfile, want_renamed_keyfile)
-                        os.rename(keyfile + '.new', keyfile)
-                        self._master_key_ondisk = self.master_key
-                        self._master_key_passgen = master_passphrase.generation
-                    except:
-                        if (want_renamed_keyfile and
-                                os.path.exists(want_renamed_keyfile)):
-                            os.rename(want_renamed_keyfile, keyfile)
-                        raise
+        # Save the master key if necessary (and possible)
+        master_key_saved = self._save_master_key(keyfile)
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
@@ -1570,7 +1584,7 @@ class ConfigManager(ConfigDict):
                          for i in range(0, len(config_bytes), 4096))
 
         from mailpile.crypto.streamer import EncryptingStreamer
-        if self.master_key:
+        if self.master_key and master_key_saved:
             subj = self.mailpile_path(self.conffile)
             with EncryptingStreamer(self.master_key,
                                     dir=self.tempfile_dir(),
@@ -1580,6 +1594,8 @@ class ConfigManager(ConfigDict):
                     fd.write(chunk)
                 fd.save(newfile)
         else:
+            # This may result in us writing the master key out in the
+            # clear, but that is better than losing data. :-(
             with open(newfile, 'wb') as fd:
                 for chunk in config_chunks:
                     fd.write(chunk)

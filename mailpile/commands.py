@@ -1838,7 +1838,8 @@ class CatFile(Command):
 
 class ConfigSet(Command):
     """Change a setting"""
-    SYNOPSIS = ('S', 'set', 'settings/set', '<section.variable> <value>')
+    SYNOPSIS = ('S', 'set', 'settings/set',
+                '[--force] <section.variable> <value>')
     ORDER = ('Config', 1)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
@@ -1885,8 +1886,12 @@ class ConfigSet(Command):
             else:
                 raise ValueError(_('Invalid section or variable: %s') % var)
 
-        if self.args:
-            arg = ' '.join(self.args)
+        force = False
+        if args:
+            arg = ' '.join(args)
+            if arg.startswith('--force '):
+                force = True
+                arg = arg[8:]
             if '=' in arg:
                 # Backwards compatiblity with the old 'var = value' syntax.
                 var, value = [s.strip() for s in arg.split('=', 1)]
@@ -1895,11 +1900,18 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        if force and self.data.get('_method', 'CLI') != 'CLI':
+            raise ValueError('The --force flag only works on the CLI')
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = {}
             for path, value in ops:
+                if path == 'master_key' and not force:
+                    if config.master_key:
+                        raise ValueError('I refuse to change the master key!')
+
                 value = value.strip()
                 if value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):
                     value = json.loads(value)
@@ -1940,6 +1952,7 @@ class ConfigAdd(Command):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         config = self.session.config
+        args = list(self.args)
         ops = []
 
         if config.sys.lockdown:
@@ -1950,8 +1963,8 @@ class ConfigAdd(Command):
             if parts[0] in config.rules:
                 ops.append((var, self.data[var][0]))
 
-        if self.args:
-            arg = ' '.join(self.args)
+        if args:
+            arg = ' '.join(args)
             if '=' in arg:
                 # Backwards compatible with the old 'var = value' syntax.
                 var, value = [s.strip() for s in arg.split('=', 1)]
@@ -2015,8 +2028,12 @@ class ConfigUnset(Command):
             updated = []
             vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
+                if v == 'master_key':
+                    if config.master_key:
+                        raise ValueError('I refuse to change the master key!')
                 cfg, vn = config.walk(v, parent=True)
                 unset(cfg, vn)
+                updated.append(v)
 
         if updated:
             self._background_save(config=True)
