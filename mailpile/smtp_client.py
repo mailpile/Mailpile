@@ -236,10 +236,10 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 sys.stderr.write(_('SMTP connection to: %s:%s as %s\n'
                                    ) % (host, port, user or '(anon)'))
 
-            server = (smtp_ssl and SMTP_SSL or SMTP
-                      )(local_hostname='mailpile.local', timeout=25)
-
-            def sm_startup():
+            serverbox = [None]
+            def sm_connect_server():
+                server = (smtp_ssl and SMTP_SSL or SMTP
+                          )(local_hostname='mailpile.local', timeout=25)
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
                 if smtp_ssl or sendmail[:7] in ('smtorp', 'smtptls'):
@@ -248,7 +248,10 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     conn_needs = [ConnBroker.OUTGOING_SMTP]
                 with ConnBroker.context(need=conn_needs) as ctx:
                     server.connect(host, int(port))
+                return server
 
+            def sm_startup():
+                server = sm_connect_server()
                 if not smtp_ssl:
                     # We always try to enable TLS, even if the user just
                     # requested plain-text smtp.  But we only throw errors
@@ -258,6 +261,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     except:
                         if sendmail.startswith('smtptls'):
                             raise InsecureSmtpError()
+                        else:
+                            server = sm_connect_server()
+                serverbox[0] = server
 
                 if user and pwd:
                     try:
@@ -284,17 +290,20 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     fail(_('Server rejected DATA: %s %s') % (rcode, rmsg))
 
             def sm_write(data):
+                server = serverbox[0]
                 for line in data.splitlines(True):
                     if line.startswith('.'):
                         server.send('.')
                     server.send(line)
 
             def sm_close():
+                server = serverbox[0]
                 server.send('\r\n.\r\n')
                 smtp_do_or_die(_('Error spooling mail'),
                                events, server.getreply)
 
             def sm_cleanup():
+                server = serverbox[0]
                 if hasattr(server, 'sock'):
                     server.close()
         else:
