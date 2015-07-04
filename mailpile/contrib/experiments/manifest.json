@@ -17,6 +17,8 @@
         "variables": {
             "prefs": {
                 "experiment_dkg_hdrs": ["Enable DKG-style encrypted headers",
+                                        "bool", "False"],
+                "experiment_para_kws": ["Make paragraphs searchable by hash",
                                         "bool", "False"]
             }
         }
@@ -25,6 +27,10 @@
     "email_transforms": {
         "outgoing_crypto": [{"priority": 10, "class": "EmailCryptoTxf"}],
         "incoming_crypto": [{"priority": 990, "class": "EmailCryptoTxf"}]
+    },
+
+    "keyword_extractors": {
+        "text": ["paragraph_id_extractor"]
     },
 
     # These are our Python-related hooks
