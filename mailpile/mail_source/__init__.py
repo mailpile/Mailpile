@@ -8,6 +8,7 @@ import traceback
 import time
 
 import mailpile.util
+import mailpile.vfs
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -36,6 +37,70 @@ class BaseMailSource(threading.Thread):
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.BaseMailSource'
 
+
+    class MailSourceVfs(MailpileVfsBase):
+        """Generic VFS layer for this mail source."""
+        def __init__(self, config, source, *args, **kwargs):
+            MailpileVfsBase.__init__(self, *args, **kwargs)
+            self.config = config
+            self.source = source
+            self.root = FilePath('/src:%s' % self.source.my_config._key)
+
+        def _get_mbox_id(self, path):
+            return path[len(self.root.raw_fp)+1:]
+
+        def Handles(self, path):
+            path = FilePath(path)
+            return (self.root == path or
+                    path.raw_fp.startswith(self.root.raw_fp))
+
+        def glob_(self, *args, **kwargs):
+            return self.listdir_(*args, **kwargs)
+
+        def listdir_(self, where, **kwargs):
+            return [m for m in self.source.my_config.mailbox.keys()]
+
+        def open_(self, fp, *args, **kwargs):
+            raise IOError('Cannot open Mail Source entries (yet)')
+
+        def abspath_(self, path):
+            if not path.startswith(self.root.raw_fp):
+                path = self.root.join(path).raw_fp
+            if path == self.root:
+                return path
+            try:
+                mbox_id = self._get_mbox_id(path)
+                return self.config.sys.mailbox[mbox_id]
+            except (ValueError, KeyError, IndexError):
+                raise OSError('Not found: %s' % path)
+
+        def isdir_(self, fp):
+            return (self.root == fp)
+
+        def ismailsource_(self, fp):
+            return (self.root == fp)
+
+        def mailbox_type_(self, fp, config):
+            return False if (fp == self.root) else 'source'  # Fixme
+
+        def getsize_(self, path):
+            return None
+
+        def display_name_(self, path, config):
+            if (self.root == path):
+                return (self.source.my_config.name or
+                        self.source.my_config._key)
+            try:
+                mbox_id = self._get_mbox_id(path)
+                return self.source.my_config.mailbox[mbox_id].name
+            except (ValueError, KeyError, IndexError):
+                raise OSError('Not found: %s' % path)
+
+        def exists_(self, fp):
+            return ((self.root == fp) or
+                    (fp[len(self.root)+1:] in self.source.my_config.mailbox))
+
+
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
         self.daemon = mailpile.util.TESTING
@@ -56,6 +121,8 @@ class BaseMailSource(threading.Thread):
         self._last_rescan_completed = False
         self._last_rescan_failed = False
         self._last_saved = time.time()  # Saving right away would be silly
+        ms_vfs = self.MailSourceVfs(session.config, self)
+        mailpile.vfs.register_handler(5000, ms_vfs)
 
     def __str__(self):
         rv = ': '.join([threading.Thread.__str__(self), self._state])

@@ -33,7 +33,7 @@ from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
-from mailpile.vfs import vfs
+from mailpile.vfs import vfs, FilePath
 
 
 class Command(object):
@@ -1698,14 +1698,19 @@ class ListDir(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            if self.result:
+            if self.result and self.result['entries']:
                 lines = []
-                for i in self.result:
-                    lines.append(('%12.12s %s%s%s'
-                                  ) % (i.get('bytes', ''),
+                for i in self.result['entries']:
+                    sz = i.get('bytes')
+                    dn = i['display_name']
+                    dp = '' if (i['display_path'].endswith(dn)
+                                ) else i['display_path']
+                    dn += '/' if i.get('flag_directory') else ''
+                    lines.append(('%12.12s %s%-20s %s'
+                                  ) % ('' if (sz is None) else sz,
+                                       '>' if i.get('flag_mailsource') else
                                        '*' if i.get('flag_mailbox') else ' ',
-                                       i['name'],
-                                       '/' if i.get('flag_directory') else ''))
+                                       dn, dp))
                 return '\n'.join(lines)
             else:
                 return _('Nothing Found')
@@ -1725,21 +1730,11 @@ class ListDir(Command):
             args = ['.']
 
         def lsf(f):
-            afp = vfs.abspath(f)
-            info = {'icon': '',
-                    'name': f.display_basename(),
-                    'path': afp,
-                    'encoded': f.encoded()}
-            try:
-                b = vfs.getsize(afp)
-                if b is not None:
-                    info['bytes'] = b
-                info.update(dict(('flag_%s' % unicode(k).lower(), True)
-                                 for k in
-                                 vfs.getflags(afp, self.session.config)))
-                return info
-            except (OSError, IOError):
-                return info
+            info = vfs.getinfo(f, self.session.config)
+            info['icon'] = ''
+            for k in info.get('flags', []):
+                info['flag_%s' % unicode(k).lower().replace('.', '_')] = True
+            return info
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
                     if '-a' in flags or f.raw_fp[:1] != '.']
@@ -1757,12 +1752,34 @@ class ListDir(Command):
                         else:
                             file_list.append(lsf(p))
             except (OSError, IOError, UnicodeDecodeError), e:
+                traceback.print_exc()
                 return self._error(_('Failed to list: %s') % e)
 
-        file_list.sort(key=lambda i: i['name'].lower())
+        id_src_map = self.session.config.find_mboxids_and_sources_by_path(
+            *[unicode(f['path']) for f in file_list])
+        for info in file_list:
+            path = unicode(info['path'])
+            mid_src = id_src_map.get(path)
+            if mid_src:
+                mid, src = mid_src
+                if src:
+                    info['source'] = src._key
+                if src and src.mailbox[mid].primary_tag:
+                    tid = src.mailbox[mid].primary_tag
+                    info['tag'] = self.session.config.tags[tid].slug
+                    info['icon'] = self.session.config.tags[tid].icon
+            elif info.get('flag_mailsource'):
+                if path.startswith('/src:'):
+                    info['source'] = path[5:]
+
+        file_list.sort(key=lambda i: i['display_path'].lower())
         return self._success(_('Listed %d files or directories'
                                ) % len(file_list),
-                             result=file_list)
+                             result={
+            'path': args[0] if (len(args) == 1) else args,
+            'name': vfs.display_name(args[0], self.session.config),
+            'entries': file_list
+        })
 
 
 class ChangeDir(ListDir):
