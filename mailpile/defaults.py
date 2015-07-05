@@ -99,6 +99,8 @@ CONFIG_RULES = {
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),
+        'line_length':     (_('Target line length, <40 disables reflow'),
+                            int, 65),
         'always_bcc_self': (_('Always BCC self on outgoing mail'), bool, True),
         'default_messageroute': (_('Default outgoing mail route'), str,    ''),
         'language':       p(_('User interface language'), str,             ''),

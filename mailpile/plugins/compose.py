@@ -476,8 +476,11 @@ class Reply(RelativeCompose):
                               if p['type'] in cls._TEXT_PARTTYPES
                               and p['data']])
             if quoted:
+                target_width = session.config.prefs.line_length
+                if target_width > 40:
+                    quoted = reflow_text(quoted, target_width=target_width-2)
                 text = ((_('%s wrote:') % t['headers_lc']['from']) + '\n' +
-                        split_long_lines(quoted))
+                        quoted)
                 msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
 
         if not ephemeral:

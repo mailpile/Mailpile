@@ -662,8 +662,9 @@ class Email(object):
 
             # Copy the message text
             new_body = newmsg.get_payload().decode('utf-8')
-            if final:
-                new_body = split_long_lines(new_body)
+            target_width = self.config.prefs.line_length
+            if target_width >= 40 and 'x-mp-internal-no-reflow' not in newmsg:
+                new_body = reflow_text(new_body, target_width=target_width)
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
