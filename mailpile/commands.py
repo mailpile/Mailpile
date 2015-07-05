@@ -2417,7 +2417,7 @@ class Help(Command):
         def variables_as_text(self):
             text = []
             for group in self.result['variables']:
-                text.append(group['name'])
+                text.append('%s (%s.*)' % (group['name'], group['category']))
                 for var in group['variables']:
                     sep = ('=' in var['type']) and ': ' or ' = '
                     text.append(('  %-35s %s'
@@ -2555,15 +2555,21 @@ class HelpVars(Help):
     def command(self):
         config = self.session.config.rules
         result = []
-        categories = ["sys", "prefs", "profiles"]
+        categories = ["sys", "prefs"]
         for cat in categories:
             variables = []
             what = config[cat]
             if isinstance(what[2], dict):
                 for ii, i in what[2].iteritems():
+                    stype = (
+                        _('(subsection)') if isinstance(i[1], dict) else
+                        '|'.join(i[1]) if isinstance(i[1], (list, tuple)) else
+                         str(i[1]))
+                    if '<type' in stype:
+                        stype = stype.replace('<type ', '')[1:-2]
                     variables.append({
                         'var': ii,
-                        'type': str(i[1]),
+                        'type': stype,
                         'desc': i[0]
                     })
             variables.sort(key=lambda k: k['var'])
