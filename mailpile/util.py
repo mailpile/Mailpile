@@ -71,6 +71,26 @@ BORING_HEADERS = ('received', 'received-spf', 'date',
 # note is made of that in the message keywords.
 EXPECTED_HEADERS = ('from', 'to', 'subject', 'date', 'message-id')
 
+# Different attachment types we create keywords for during indexing
+ATT_EXTS = {
+    'audio': ['aiff', 'aac', 'mid', 'midi', 'mp3', 'mp2', '3gp', 'wav'],
+    'code': ['c', 'cpp', 'c++', 'css', 'cxx',
+             'h', 'hpp', 'h++', 'html', 'hxx', 'py', 'php', 'pl', 'rb',
+             'java', 'js', 'xml'],
+    'crypto': ['asc', 'pgp', 'key'],
+    'data': ['cfg', 'csv', 'gz', 'json', 'log', 'sql', 'rss', 'tar',
+             'tgz', 'vcf', 'xls', 'xlsx'],
+    'document': ['csv', 'doc', 'docx', 'htm', 'html', 'md',
+                 'odt', 'ods', 'odp', 'ps', 'pdf', 'ppt', 'pptx', 'psd',
+                 'txt', 'xls', 'xlsx', 'xml'],
+    'font': ['eot', 'otf', 'pfa', 'pfb', 'gsf', 'pcf', 'ttf', 'woff'],
+    'image': ['bmp', 'eps', 'gif', 'ico', 'jpeg', 'jpg',
+              'png', 'ps', 'psd', 'svg', 'svgz', 'tiff', 'xpm'],
+    'video': ['avi', 'divx'],
+}
+ATT_EXTS['media'] = (ATT_EXTS['audio'] + ATT_EXTS['font'] +
+                     ATT_EXTS['image'] + ATT_EXTS['video'])
+
 B64C_STRIP = '\r\n='
 
 B64C_TRANSLATE = string.maketrans('/', '_')

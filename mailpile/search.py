@@ -1290,6 +1290,9 @@ class MailIndex(object):
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
                                  in re.findall(WORD_REGEXP, att.lower())])
+                for kw, ext_list in ATT_EXTS.iteritems():
+                    if att.lower().rsplit('.', 1)[-1] in ext_list:
+                        keywords.append('%s:has' % kw)
                 textpart = (textpart or '') + ' ' + att
 
             if textpart:
