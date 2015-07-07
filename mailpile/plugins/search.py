@@ -60,8 +60,9 @@ class Search(Command):
                     return unicode(self.result)
                 elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
-                else:
+                elif hasattr(self.result, 'as_text'):
                     return self.result.as_text()
+                return _('Unprintable results')
             else:
                 return _('No results')
 
