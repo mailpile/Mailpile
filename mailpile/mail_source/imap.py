@@ -265,8 +265,9 @@ class SharedImapConn(threading.Thread):
             raise self._conn.abort('socket error: %s' % val)
 
     def quit(self):
-        self._conn = None
-        self._update_name()
+        with self._lock:
+            self._conn = None
+            self._update_name()
 
     def run(self):
         # FIXME: Do IDLE stuff if requested.
@@ -530,7 +531,6 @@ class ImapMailSource(BaseMailSource):
                 return BaseMailSource.MailSourceVfs.getflags_(self, fp, cfg)
             flags = [flag.lower().replace('\\', '') for flag in
                      self.source._cache_flags(self._imap_path(fp)) or []]
-            print 'FLAGS FOR %s = %s' % (fp, flags)
             if not ('hasnochildren' in flags or 'noinferiors' in flags):
                 flags.append('Directory')
             if not ('noselect' in flags):
@@ -587,13 +587,14 @@ class ImapMailSource(BaseMailSource):
                                   ('host', 'port', 'password', 'username')]))
 
     def close(self):
-        if self.conn:
-            self.event.data['connection'] = {
-                'live': False,
-                'error': [False, _('Nothing is wrong')]
-            }
-            self.conn.quit()
-            self.conn = None
+        with self._lock:
+            if self.conn:
+                self.event.data['connection'] = {
+                    'live': False,
+                    'error': [False, _('Nothing is wrong')]
+                }
+                self.conn.quit()
+                self.conn = None
 
     def open(self, conn_cls=None, throw=False):
         conn = self.conn
@@ -827,7 +828,6 @@ class ImapMailSource(BaseMailSource):
     def _cache_flags(self, path, flags=None):
         path = self._fmt_path(path)
         if flags is not None:
-            print 'CACHED %s = %s' % (path, flags)
             self.flag_cache[path] = flags
         return self.flag_cache.get(path)
 
