@@ -39,7 +39,10 @@
 {%- if result.profiles|length > 0 %}
       </th><td width='1%'><span class="icon icon-new"></span>
       </td><td width='1%'><span class="icon icon-logo" style='font-size: 1.3em;'></span>
-      </td><td width='1%'><span class="icon icon-outbox"></span>
+      </td><td width='1%'>
+{%- if config.version >= '0.6.0' %}
+        <span class="icon icon-outbox"></span>
+{%- endif %}
       </td><td><i>settings</i>
 {% else %}
       </td><td colspan=3 style='border: 0;'>
@@ -81,7 +84,10 @@
        {%- endfor %}
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
-       </td><td><a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
+       </td><td>
+{%- if config.version >= '0.6.0' %}
+          <a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
+{%- endif %}
        </td><td>
          {%- if not (p['x-mailpile-profile-source'] or []) %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
@@ -114,12 +120,14 @@
                         {% else %}unconfigured icon icon-lock-open{% endif %}"></span>
          </a>
        </td><td>
+{%- if config.version >= '0.6.0' %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
             title="{{_("Delete or disable account")}}"
             onclick="javascript:alert('This does not work yet, sorry!');"
             href="{{ U('/profiles/remove/?ui_profile=', profile_rid) }}">
            <span class="icon icon-trash" style="color: #750;"></span>
          </a>
+{%- endif %}
        </td>
     </tr>
     {%- endfor %}

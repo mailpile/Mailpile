@@ -64,9 +64,11 @@
   <nav id='sidebar-user-contacts'>
   </nav>
   <nav id="sidebar-bottom">
+{%- if config.version >= '0.6.0' %}
     <a style='float: right' href="{{ U('/contacts/') }}" id="button-sidebar-people" title="{{_("Contacts")}}">
       <span class="icon icon-groups"></span>
     </a>
+{%- endif %}
     <a style='float: left' class="auto-modal auto-modal-reload"
        data-icon="icon-tag"
        href="{{ U('/tags/add/') }}" title="{{_("Add Tag")}}">
