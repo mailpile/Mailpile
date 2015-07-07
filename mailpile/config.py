@@ -1226,7 +1226,9 @@ class ConfigManager(ConfigDict):
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
-        mailpile.vfs.register_handler(0000, MailpileVfsRoot(self))
+
+        self.vfs_root = MailpileVfsRoot(self)
+        mailpile.vfs.register_handler(0000, self.vfs_root)
 
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
@@ -1480,9 +1482,8 @@ class ConfigManager(ConfigDict):
                                                            mode='rw',
                                                            mkdir=True))
 
-        # FIXME: The master key is actually prefs.obfuscate.index still...
-        if not self.master_key:
-            self.master_key = self.prefs.obfuscate_index
+        # Recreate VFS root in case new things have been found
+        self.vfs_root.rescan()
 
         self.loaded_config = True
 
@@ -1616,6 +1617,9 @@ class ConfigManager(ConfigDict):
             # Enable translations
             mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
 
+            # Recreate VFS root in case new things have been configured
+            self.vfs_root.rescan()
+
             # Prepare workers
             self.prepare_workers(daemons=self.daemons_started())
             delay = 1
@@ -1632,10 +1636,14 @@ class ConfigManager(ConfigDict):
         return None
 
     def get_mailboxes(self, standalone=True, mail_sources=False):
-        mailboxes = [(FormatMbxId(k),
-                      self.sys.mailbox[k],
-                      self._find_mail_source(k))
-                     for k in self.sys.mailbox.keys()]
+        try:
+            mailboxes = [(FormatMbxId(k),
+                          self.sys.mailbox[k],
+                          self._find_mail_source(k))
+                          for k in self.sys.mailbox.keys()]
+        except (AttributeError):
+            # Config not loaded, nothing to see here
+            return []
 
         if not standalone:
             mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
@@ -1775,23 +1783,38 @@ class ConfigManager(ConfigDict):
                                                drop=clear, force_save=True),
                   unique=True)
 
+    def find_mboxids_and_sources_by_path(self, *paths):
+        def _au(p):
+            return unicode(p if (p[:4] == 'src:') else vfs.abspath(p))
+        abs_paths = dict((_au(p), [p]) for p in paths)
+        with self._lock:
+            for sid, src in self.sources.iteritems():
+                for mid, info in src.mailbox.iteritems():
+                    if info.local:
+                        umfn = _au(info.local)
+                        if umfn not in abs_paths:
+                            umfn = _au(self.sys.mailbox[mid])
+                        if umfn in abs_paths:
+                            abs_paths[umfn].append((mid, src))
+
+            for mid, mfn in self.sys.mailbox.iteritems():
+                umfn = _au(mfn)
+                if umfn in abs_paths:
+                    if umfn[:4] == u'src:':
+                        src = self.sources.get(umfn[4:].split('/')[0])
+                    else:
+                        src = None
+                    abs_paths[umfn].append((mid, src))
+
+        return dict((p[0], p[1]) for p in abs_paths.values() if p[1:])
+
     def open_mailbox_path(self, session, path, register=False):
         path = vfs.abspath(path)
         mbox = mbx_mid = None
         with self._lock:
-            for mid, mfn in self.sys.mailbox.iteritems():
-                if mfn[:4] != 'src:':
-                    if unicode(vfs.abspath(mfn)) == unicode(path):
-                        mbx_mid = mid
-                        break
-
-            # 2nd search wastes some cycles, but at least the code is clear
-            for sid, src in self.sources.iteritems():
-                for mid, info in src.mailbox.iteritems():
-                    if info.local and mbx_mid is None:
-                        if unicode(vfs.abspath(info.local)) == unicode(path):
-                            mbx_mid = mid
-                            break
+            msmap = self.find_mboxids_and_sources_by_path(unicode(path))
+            if path in msmap:
+                mbx_mid, mbx_src = msmap[path]
 
             if register and mbx_mid is None:
                 mbox = OpenMailbox(path.raw_fp, self, create=False)
