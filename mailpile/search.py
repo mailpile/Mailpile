@@ -1389,6 +1389,9 @@ class MailIndex(object):
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
                                  in re.findall(WORD_REGEXP, att.lower())])
+                for kw, ext_list in ATT_EXTS.iteritems():
+                    if att.lower().rsplit('.', 1)[-1] in ext_list:
+                        keywords.append('%s:has' % kw)
                 textpart = (textpart or '') + ' ' + att
 
             if textpart:
@@ -1449,8 +1452,11 @@ class MailIndex(object):
         # This is a signal for the bayesian filters to discriminate by MUA.
         keywords.append('%s:hp' % HeaderPrint(msg))
 
+        is_list = False
         for key in msg.keys():
             key_lower = key.lower()
+            if key_lower.startswith('list-'):
+                is_list = True
             if key_lower not in BORING_HEADERS and key_lower[:2] != 'x-':
                 val_lower = self.hdr(msg, key).lower()
                 if key_lower[:5] == 'list-':
@@ -1470,6 +1476,20 @@ class MailIndex(object):
                 keywords.extend(['%s:%s' % (t, key_lower) for t in words])
                 keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
                 keywords.extend(['%s:email' % e for e in emails])
+
+        # Personal mail: not from lists or common robots?
+        msg_from = msg.get('from', '').lower()
+        reply_to = msg.get('reply-to', '').lower()
+        if not (is_list
+                or 'robot@' in msg_from or 'notifications@' in msg_from
+                or 'noreply' in msg_from.replace('-', '')
+                or 'noreply' in reply_to.replace('-', '')
+                or 'billing@' in msg_from or 'itinerary@' in msg_from
+                or 'root@' in msg_from or 'mailer-daemon@' in msg_from
+                or 'cron@' in msg_from or 'postmaster@' in msg_from
+                or 'logwatch@' in msg_from
+                or 'feedback-id' in msg):
+            keywords.extend(['personal:is'])
 
         for key in EXPECTED_HEADERS:
             if not msg[key]:

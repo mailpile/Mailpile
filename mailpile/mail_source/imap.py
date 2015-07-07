@@ -60,6 +60,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
+from mailpile.vfs import FilePath
 
 
 IMAP_TOKEN = re.compile('("[^"]*"'
@@ -264,8 +265,9 @@ class SharedImapConn(threading.Thread):
             raise self._conn.abort('socket error: %s' % val)
 
     def quit(self):
-        self._conn = None
-        self._update_name()
+        with self._lock:
+            self._conn = None
+            self._update_name()
 
     def run(self):
         # FIXME: Do IDLE stuff if requested.
@@ -497,6 +499,60 @@ class ImapMailSource(BaseMailSource):
     TIMEOUT_LIVE = 60
     CONN_ERRORS = (IOError, IMAP_IOError, IMAP4.error, TimedOut)
 
+
+    class MailSourceVfs(BaseMailSource.MailSourceVfs):
+        """Expose the IMAP tree to the VFS layer."""
+        def _imap_path(self, path):
+            if path[:1] == '/':
+                path = path[1:]
+            return path[len(self.root.raw_fp):]
+
+        def _imap(self, *args, **kwargs):
+            return self.source.timed_imap(*args, **kwargs)
+
+        def listdir_(self, where, **kwargs):
+            results = []
+            path = self._imap_path(where)
+            prefix, pathsep = self.source._namespace_info(path)
+            with self.source.open() as conn:
+                if path:
+                    ok, data = self._imap(conn.list, path + pathsep, '%')
+                else:
+                    ok, data = self._imap(conn.list, '', '%')
+                while ok and len(data) >= 3:
+                    (flags, sep, path), data[:3] = data[:3], []
+                    flags = [f.lower() for f in flags]
+                    self.source._cache_flags(path, flags)
+                    results.append('/' + self.source._fmt_path(path))
+            return results
+
+        def getflags_(self, fp, cfg):
+            if self.root == fp:
+                return BaseMailSource.MailSourceVfs.getflags_(self, fp, cfg)
+            flags = [flag.lower().replace('\\', '') for flag in
+                     self.source._cache_flags(self._imap_path(fp)) or []]
+            if not ('hasnochildren' in flags or 'noinferiors' in flags):
+                flags.append('Directory')
+            if not ('noselect' in flags):
+                flags.append('Mailbox')
+            return flags
+
+        def abspath_(self, fp):
+            return fp
+
+        def display_name_(self, fp, config):
+            return FilePath(fp).display_basename()
+
+        def isdir_(self, fp):
+            if self.root == fp:
+                return True
+            flags = self.source._cache_flags(self._imap_path(fp)) or []
+            return not ('hasnochildren' in flags or 'noinferiors' in flags)
+
+        def getsize_(self, path):
+            return None
+
+
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.timeout = self.TIMEOUT_INITIAL
@@ -531,13 +587,14 @@ class ImapMailSource(BaseMailSource):
                                   ('host', 'port', 'password', 'username')]))
 
     def close(self):
-        if self.conn:
-            self.event.data['connection'] = {
-                'live': False,
-                'error': [False, _('Nothing is wrong')]
-            }
-            self.conn.quit()
-            self.conn = None
+        with self._lock:
+            if self.conn:
+                self.event.data['connection'] = {
+                    'live': False,
+                    'error': [False, _('Nothing is wrong')]
+                }
+                self.conn.quit()
+                self.conn = None
 
     def open(self, conn_cls=None, throw=False):
         conn = self.conn
@@ -768,6 +825,12 @@ class ImapMailSource(BaseMailSource):
             mbx = self.take_over_mailbox(idx)
         return len(discovered)
 
+    def _cache_flags(self, path, flags=None):
+        path = self._fmt_path(path)
+        if flags is not None:
+            self.flag_cache[path] = flags
+        return self.flag_cache.get(path)
+
     def _walk_mailbox_path(self, conn, prefix):
         """
         Walks the IMAP path recursively and returns a list of all found
@@ -783,7 +846,7 @@ class ImapMailSource(BaseMailSource):
                 if '\\noselect' not in flags:
                     # We cache the flags for this mailbox, they may tell
                     # use useful things about what kind of mailbox it is.
-                    self.flag_cache[self._fmt_path(path)] = flags
+                    self._cache_flags(path, flags)
                     mboxes.append(self._fmt_path(path))
                 if '\\haschildren' in flags:
                     subtrees.append('%s%s' % (path, sep))

@@ -178,8 +178,11 @@
         "fast": [{"interval": 5, "class": "TickJob"}],
         "slow": [{"interval": 15, "class": "TickJob"}]
     },
-    "keyword_extractors": [
-    ],
+    "keyword_extractors": {
+        "meta": [],
+        "text": [],
+        "data": []
+    },
     "search_terms": [
     ],
     "filters": {

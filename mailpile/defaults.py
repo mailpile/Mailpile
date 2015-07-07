@@ -1,13 +1,12 @@
-APPVER = "0.4.4"
+APPVER = "0.4.5"
 ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
                for searching and                   <https://www.mailpile.is/>
            organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file COPYING.md for details.
+Free Software Foundation. See the file COPYING.md for details.
 """
 #############################################################################
 import os
@@ -26,7 +25,7 @@ _ = lambda string: string
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), False, APPVER],
+    'version': [_('Mailpile program version'), str, APPVER],
     'homedir': [_('Location of Mailpile data'), False, '(unset)'],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),
@@ -100,6 +99,8 @@ CONFIG_RULES = {
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),
+        'line_length':     (_('Target line length, <40 disables reflow'),
+                            int, 65),
         'always_bcc_self': (_('Always BCC self on outgoing mail'), bool, True),
         'default_messageroute': (_('Default outgoing mail route'), str,    ''),
         'language':       p(_('User interface language'), str,             ''),

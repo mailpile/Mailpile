@@ -24,7 +24,7 @@ class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_policies_are_validated(self):
         self._add_vcard('Test', 'test@test.local')
 
-        for policy in ['default', 'none', 'sign', 'encrypt']:
+        for policy in ['default', 'none', 'sign', 'sign-encrypt', 'encrypt', 'default']:
             self.assertEqual('success', self.mp.crypto_policy_set('test@test.local', policy).as_dict()['status'])
 
         for policy in ['anything', 'else']:
@@ -44,13 +44,6 @@ class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
             self.mp.crypto_policy_set('test@test.local', policy)
             self.assertEqual(policy, vcard.get(VCARD_CRYPTO_POLICY).value)
 
-    def test_default_policy_removes_vcard_line(self):
-        vcard = self._add_vcard('Test', 'test@test.local')
-        vcard.add(VCardLine(name=VCARD_CRYPTO_POLICY, value='sign'))
-
-        self.mp.crypto_policy_set('test@test.local', 'default')
-        self.assertEqual(0, len(vcard.get_all(VCARD_CRYPTO_POLICY)))
-
 
 class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_no_email_provided(self):
@@ -60,12 +53,12 @@ class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_no_msg_with_email_(self):
         res = self.mp.crypto_policy('undefined@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('sign', res['result']['crypto-policy'])
+        self.assertEqual('best-effort', res['result']['crypto-policy'])
 
     def test_with_signed_email(self):
         res = self.mp.crypto_policy('signer@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('sign', res['result']['crypto-policy'])
+        self.assertEqual('best-effort', res['result']['crypto-policy'])
 
     def test_with_encrypted_email(self):
         res = self.mp.crypto_policy('encrypter@test.local').as_dict()

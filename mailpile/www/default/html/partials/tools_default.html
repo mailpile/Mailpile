@@ -2,6 +2,12 @@
 {%- set display_refiners = (display_refiners or []) + get_ui_elements('display_refiners', state) -%}
 {%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', state) -%}
 {%- set selection_actions = (selection_actions or []) + get_ui_elements('selection_actions', state) -%}
+{%- if selection_initial_prompt %}
+  {%- set have_initial_prompt = True %}
+{%- else %}
+  {%- set selection_initial_prompt = _('Click item or checkbox to select') %}
+  {%- set have_initial_prompt = False %}
+{%- endif %}
 
 {%- if tools_all_in_bulk_actions %}
 <div class="bulk-actions clearfix">
@@ -9,6 +15,7 @@
 
 {%- if (activities or display_refiners or display_modes or
         hard_coded_activities or
+        have_initial_prompt or
         hard_coded_display_refiners or
         hard_coded_display_modes) %}
 {%- if not tools_all_in_bulk_actions %}
@@ -78,21 +85,20 @@
 </nav>
 {%- endif %}
 {%- endif %}
-{%- if selection_actions or hard_coded_selection_actions %}
+{%- if selection_actions or hard_coded_selection_actions or have_initial_prompt %}
 {%- if not tools_all_in_bulk_actions %}
 <div class="bulk-actions clearfix">
 {%- endif %}
-  <div class="bulk-actions-hints text-center"
-       style='position: absolute; width: 85%;'></div>
-  {%- if not tools_disable_checkbox %}
+  {%- if have_initial_prompt or not tools_disable_checkbox %}
   <div id="bulk-actions-message" class="left"
        data-bulk_selected="{{_("messages selected")}}"
        data-select_all="{{_("messages selected, click to select all matching this search")}}"
        data-unselect_all="{{_("Entire search selected, click to undo")}}"
-       data-bulk_selected_none="{{_('Click item or checkbox to select')}}">
-    {{_('Click item or checkbox to select')}}
+       data-bulk_selected_none="{{ selection_initial_prompt }}">
+    {{ selection_initial_prompt }}
   </div>
   {%- endif %}
+  <div class="bulk-actions-hints" style='display: inline-block;'></div>
   <ul class="horizontal right">
   {%- for elem in selection_actions %}
     <li class="btn-selection-action-{{elem.name}} hide {{elem.class}}

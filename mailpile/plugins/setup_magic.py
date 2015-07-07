@@ -1,7 +1,8 @@
+import copy
+import datetime
 import os
 import random
 import sys
-import datetime
 from urllib import urlencode
 from urllib2 import urlopen
 from lxml import objectify
@@ -125,43 +126,39 @@ class SetupMagic(Command):
         # These are magical tags that perform searches and show
         # messages in contextual views.
         'Conversations': {
-            'type': 'tag',
+            'type': 'replied',
             'icon': 'icon-forum',
+            'label': False,
             'label_color': '05-blue-light',
-            'search_terms': 'in:mp_rpl',
             'name': _('Conversations'),
-            'template': 'conversations',
             'display_order': 1001,
         },
         'Photos': {
-            'type': 'tag',
+            'type': 'search',
             'icon': 'icon-photos',
+            'label': False,
             'label_color': '08-green',
-            'search_terms': 'att:jpg to:me',
             'name': _('Photos'),
-            'template': 'photos',
             'display_order': 1002,
+            '_filters': ['att:jpg is:personal'],
         },
-        'Files': {
-            'type': 'tag',
+        'Documents': {
+            'type': 'search',
             'icon': 'icon-document',
+            'label': False,
             'label_color': '06-blue',
-            'search_terms': 'has:attachment to:me',
-            'name': _('Files'),
-            'template': 'files',
+            'name': _('Documents'),
             'display_order': 1003,
+            '_filters': ['has:document is:personal'],
         },
-        'Links': {
-            'type': 'tag',
-            'icon': 'icon-links',
-            'label_color': '12-red',
-            'search_terms': 'http to:me',
-            'name': _('Links'),
-            'display_order': 1004,
-        },
+        # These are placeholder tags that perform searches - these are
+        # generally to be avoided as they break the user expectation of
+        # how tags behave. A normal tag + filter is almost always the
+        # right choice!
         'All Mail': {
-            'type': 'tag',
+            'type': 'search',
             'icon': 'icon-logo',
+            'label': False,
             'label_color': '06-blue',
             'search_terms': 'all:mail',
             'name': _('All Mail'),
@@ -208,11 +205,40 @@ class SetupMagic(Command):
 
         # Create standard tags and filters
         created = []
-        for t in self.TAGS:
-            if not session.config.get_tag_id(t):
+        for t, tag_settings in self.TAGS.iteritems():
+            tag_settings = copy.copy(tag_settings)
+
+            tid = session.config.get_tag_id(t)
+            if not tid:
                 AddTag(session, arg=[t]).run(save=False)
+                tid = session.config.get_tag_id(t)
                 created.append(t)
-            session.config.get_tag(t).update(self.TAGS[t])
+            tag_info = session.config.tags[tid]
+            assert(tid)
+
+            # Delete any old filters...
+            old_fids = [f for f, v in session.config.filters.iteritems()
+                        if v.primary_tag == tid]
+            if old_fids:
+                session.config.filter_delete(*old_fids)
+
+            # Create new ones?
+            tag_filters = tag_settings.get('_filters', [])
+            for search in tag_filters:
+                session.config.filters.append({
+                    'type': 'system',
+                    'terms': search,
+                    'tags': '+%s' % tid,
+                    'primary_tag': tid,
+                    'comment': t
+                })
+            if tag_filters:
+                del tag_settings['_filters']
+            for k in ('magic_terms', 'search_terms', 'search_order'):
+                if k in tag_info:
+                    del tag_info[k]
+            tag_info.update(tag_settings)
+
         for stype, statuses in (('sig', SignatureInfo.STATUSES),
                                 ('enc', EncryptionInfo.STATUSES)):
             for status in statuses:

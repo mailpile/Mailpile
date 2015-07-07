@@ -49,9 +49,6 @@ DEFAULT_PORT = 33411
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;`\'\\\<\>\?,\.\/\-]{2,}')
 
-PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
-                          ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
-
 # These next two variables are important for reducing hot-spots in the
 # search index and polluting it with spammy results. But adding too many
 # terms here makes searches fail, so we need to be careful. Also, the
@@ -73,6 +70,26 @@ BORING_HEADERS = ('received', 'received-spf', 'date',
 # For the spam classifier, if these headers are missing a special
 # note is made of that in the message keywords.
 EXPECTED_HEADERS = ('from', 'to', 'subject', 'date', 'message-id')
+
+# Different attachment types we create keywords for during indexing
+ATT_EXTS = {
+    'audio': ['aiff', 'aac', 'mid', 'midi', 'mp3', 'mp2', '3gp', 'wav'],
+    'code': ['c', 'cpp', 'c++', 'css', 'cxx',
+             'h', 'hpp', 'h++', 'html', 'hxx', 'py', 'php', 'pl', 'rb',
+             'java', 'js', 'xml'],
+    'crypto': ['asc', 'pgp', 'key'],
+    'data': ['cfg', 'csv', 'gz', 'json', 'log', 'sql', 'rss', 'tar',
+             'tgz', 'vcf', 'xls', 'xlsx'],
+    'document': ['csv', 'doc', 'docx', 'htm', 'html', 'md',
+                 'odt', 'ods', 'odp', 'ps', 'pdf', 'ppt', 'pptx', 'psd',
+                 'txt', 'xls', 'xlsx', 'xml'],
+    'font': ['eot', 'otf', 'pfa', 'pfb', 'gsf', 'pcf', 'ttf', 'woff'],
+    'image': ['bmp', 'eps', 'gif', 'ico', 'jpeg', 'jpg',
+              'png', 'ps', 'psd', 'svg', 'svgz', 'tiff', 'xpm'],
+    'video': ['avi', 'divx'],
+}
+ATT_EXTS['media'] = (ATT_EXTS['audio'] + ATT_EXTS['font'] +
+                     ATT_EXTS['image'] + ATT_EXTS['video'])
 
 B64C_STRIP = '\r\n='
 
@@ -490,42 +507,65 @@ def merge_secret(parts):
     return intlist_to_string(secret)
 
 
-def split_long_lines(text):
+REFLOW_PROSE_START = re.compile(r'\S*\w+')
+REFLOW_NONBLANK = re.compile(r'\S')
+
+def reflow_text(text, quoting=False, target_width=65):
     """
-    Split long lines of text into shorter ones, ignoring ascii art.
+    Reflow text so lines are roughly of a uniform length suitable for
+    reading or replying. Tries to detect whether the text has already
+    been manually formatted and preserve unmodified in such cases.
 
     >>> test_string = (('abcd efgh ijkl mnop ' + ('q' * 72) + ' ') * 2)[:-1]
-    >>> print split_long_lines(test_string)
+    >>> print reflow_text(test_string)
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
-    >>> print split_long_lines('> ' + ('q' * 72))
+    >>> print reflow_text('> ' + ('q' * 72))
     > qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     The function should be stable:
 
-    >>> split_long_lines(test_string) == split_long_lines(
-    ...                                    split_long_lines(test_string))
+    >>> reflow_text(test_string) == reflow_text(reflow_text(test_string))
     True
     """
-    lines = text.splitlines()
-    for i in range(0, len(lines)):
-        buffered, done = [], False
-        while (not done and
-               len(lines[i]) > 72 and
-               re.match(PROSE_REGEXP, lines[i])):
-            n = re.sub(RE_LONG_LINE_SPLITTER, '\\1\n', lines[i], 1
-                       ).split('\n')
-            if len(n) == 1:
-                done = True
-            else:
-                buffered.append(n[0])
-                lines[i] = n[1]
-        if buffered:
-            lines[i] = '\n'.join(buffered + [lines[i]])
-    return '\n'.join(lines)
+    if quoting:
+        target_width -= 2
+    inlines = text.splitlines()
+    outlines = []
+    def line_length(l, word):
+        return sum(len(w) for w in l) + len(l) + len(word)
+    while inlines:
+        thisline = inlines.pop(0)
+        if (re.match(REFLOW_PROSE_START, thisline)
+                and not thisline.endswith('  ')
+                and len(thisline) > target_width-10):
+            # This line looks like the beginning of a paragraph, go get
+            # the rest of the paragraph for reflowing...
+            para = thisline.strip().split()
+            while (inlines
+                    and not inlines[0].endswith('  ')
+                    and re.match(REFLOW_PROSE_START, inlines[0])):
+                para += inlines.pop(0).strip().split()
+
+            # Once we have the full paragraph, reflow using target width
+            paralines = [[]]
+            for word in para:
+               if line_length(paralines[-1], word) <= target_width:
+                   paralines[-1].append(word)
+               elif 0 == len(paralines[-1]):
+                   paralines[-1].append(word)
+               else:
+                   paralines.append([word])
+            outlines.extend([' '.join(l) for l in paralines])
+
+        else:
+            # Not a paragraph, just preserve this line unchanged
+            outlines.append(thisline)
+
+    return '\n'.join(outlines)
 
 
 def elapsed_datetime(timestamp):

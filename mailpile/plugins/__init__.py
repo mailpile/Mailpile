@@ -398,6 +398,17 @@ class PluginManager(object):
                 name = '%3.3d_%s' % (int(item.get('priority', 999)), full_name)
                 reg(name, self._get_class(full_name, item['class']))
 
+        # Register search keyword extractors
+        s = self
+        for which, reg in (
+            ('meta', s.register_meta_kw_extractor),
+            ('text', s.register_text_kw_extractor),
+            ('data', s.register_data_kw_extractor)
+        ):
+            for item in manifest_path('keyword_extractors', which):
+                reg('%s.%s' % (full_name, item),
+                    self._get_class(full_name, item))
+
         # Register contact/vcard hooks
         for which, reg in (
             ('importers', self.register_vcard_importers),

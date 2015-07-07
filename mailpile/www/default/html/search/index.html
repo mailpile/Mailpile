@@ -35,12 +35,38 @@
   </div>
   {% else %}
   <div id="pile-empty" class="clearfix add-bottom text-center">
-    <h3 class="add-top">{{_("No Results Found")}} :)</h3>
-    <p>{{_("It seems your Mailpile does not contain any messages, tags or contacts for the search")}}:</p>
+
+  {%- if 'in:spam' in result.search_terms %}
+    <h3 class="add-top">{{_("No Spam Found, Hooray!")}}</h3>
+  {%- elif 'in:inbox' in result.search_terms %}
+    <h3 class="add-top">{{_("Inbox zero? Impressive!")}}</h3>
+  {%- else %}
+    <h3 class="add-top">{{_("Nothing Happened.")}}</h3>
+    <p>{{_("It seems your Mailpile does not contain any messages for the search")}}:</p>
     <p id="pile-empty-search-terms">"{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{% endfor %}"</p>
+  {%- endif %}
+
+    <br>
     <p>{{_("Here are some other options for you")}}:</p>
-    <p><a href="{{ config.sys.http_path }}/help/" id="pile-empty-search-terms-help" class="button-primary"><span class="icon-help"></span> {{_("Learn To Search Smarter")}}</a></p>
-    <p class="add-bottom"><a href="#" id="btn-pile-empty-search-web" class="button-primary"><span class="icon-search"></span> {{_("Search The Web For People")}}</a></p>
+    <p>
+      <a href="{{ U('/browse/') }}" class="button-primary">
+        <span class="icon-list"></span>
+        {{_("Browse for mailboxes")}}
+      </a>
+      &nbsp;
+      <a href="#" class="button-compose button-primary">
+        <span class="icon-compose"></span>
+        {{_("Compose a message")}}
+      </a>
+    </p>
+    <p class="add-bottom">
+      <a href="{{ U('/help/searching/') }}" id="pile-empty-search-terms-help"
+           class="button-secondary">
+         <span class="icon-help"></span>
+         {{_("Search Tips & Tricks")}}
+      </a>
+    </p>
+
   </div>
   {% endif %}
 {% else %}

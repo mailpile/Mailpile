@@ -244,6 +244,7 @@
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">
+{%- if config.version >= '0.6.0' %}
       {%- if not result.rid %}
       <select class="right" style="width: auto;"
               onchange="javascript:_fpa.select(this, 'basics');">
@@ -251,6 +252,7 @@
         <option value="new">{{_("New Address")}}</option>
       </select>
       {% endif %}
+{%- endif %}
       <div style="padding-right: 0em; width: 22em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%"
@@ -448,11 +450,16 @@
                    placeholder="{{_('sssh!')}}">
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
+{%- if config.version >= '0.6.0' %}
             <input type="checkbox" name="source-{{ new_rid }}-leave-on-server" value="yes"
                    {% if result['source-' + rid + '-leave-on-server'] %}checked{% endif %}>
             <span class="checkbox">
               {{_("Leave mail on server")}}
             </span><br>
+{%- else %}
+            <input type="hidden" name="source-{{ new_rid }}-leave-on-server"
+                   value="yes">
+{%- endif %}
 
             <input type="checkbox" name="source-{{ new_rid }}-index-all-mail" value="yes"
                    {% if result['source-' + rid + '-index-all-mail'] %}checked{% endif %}>
@@ -501,12 +508,14 @@
             <span class="checkbox">
               {{_("Copy mail to Mailpile secure storage")}}
             </span><br>
+{%- if config.version >= '0.6.0' %}
             <input type="checkbox" name="source-{{ new_rid }}-delete-source" value="yes"
                    onchange='javascript:_fpa.require(this, "source-{{ new_rid }}-copy-local");'
                    {% if result['source-' + rid + '-delete-source'] %}checked{% endif %}>
             <span class="checkbox">
               {{_("Delete from Unix mail spool")}}
             </span>
+{%- endif %}
           </div>
         </div>
 

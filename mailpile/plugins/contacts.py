@@ -818,10 +818,10 @@ def ProfileVCard(parent):
             path = os.getenv('MAIL') or None
             user = os.getenv('USER')
             if user and not path:
-                if os.path.exists('/var/mail'):
-                    path = '/var/mail/%s' % user
                 if os.path.exists('/var/spool/mail'):
-                    path = '/var/spool/mail/%s' % user
+                    path = os.path.normpath('/var/spool/mail/%s' % user)
+                if os.path.exists('/var/mail'):
+                    path = os.path.normpath('/var/mail/%s' % user)
             return path
 
         def _configure_mail_sources(self, vcard):
@@ -863,7 +863,7 @@ def ProfileVCard(parent):
                         mailbox_idx = config.sys.mailbox.append(path)
 
                     source = make_new_source()
-                    source.name = path
+                    source.name = _('Unix mailboxes')
                     source.protocol = 'mbox'
                     for tag in config.get_tags(type='inbox'):
                         source.discovery.apply_tags.append(tag._key)

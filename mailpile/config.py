@@ -1226,7 +1226,9 @@ class ConfigManager(ConfigDict):
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
-        mailpile.vfs.register_handler(0000, MailpileVfsRoot(self))
+
+        self.vfs_root = MailpileVfsRoot(self)
+        mailpile.vfs.register_handler(0000, self.vfs_root)
 
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
@@ -1480,9 +1482,8 @@ class ConfigManager(ConfigDict):
                                                            mode='rw',
                                                            mkdir=True))
 
-        # FIXME: The master key is actually prefs.obfuscate.index still...
-        if not self.master_key:
-            self.master_key = self.prefs.obfuscate_index
+        # Recreate VFS root in case new things have been found
+        self.vfs_root.rescan()
 
         self.loaded_config = True
 
@@ -1508,6 +1509,54 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
+    def _save_master_key(self, keyfile):
+        if not self.master_key:
+            return False
+
+        # We keep the master key in a file of its own and never delete
+        # or overwrite master keys.
+        want_renamed_keyfile = None
+        master_passphrase = self.passphrases['DEFAULT']
+        if (self._master_key_passgen != master_passphrase.generation
+                or self._master_key_ondisk != self.master_key):
+            if os.path.exists(keyfile):
+                want_renamed_keyfile = keyfile + ('.%x' % time.time())
+
+        if not want_renamed_keyfile and os.path.exists(keyfile):
+            # Key file exists, nothing needs to be changed. Happy!
+            return True
+
+        # Figure out whether we are encrypting to a GPG key, or using
+        # symmetric encryption (with the 'DEFAULT' passphrase).
+        gpgr = self.prefs.get('gpg_recipient', '').replace(',', ' ')
+        tokeys = (gpgr.split()
+                  if (gpgr and gpgr not in ('!CREATE', '!PASSWORD'))
+                  else None)
+
+        if not tokeys and not master_passphrase.is_set():
+            # Without recipients or a passphrase, we cannot save!
+            return False
+
+        status, encrypted_key = GnuPG(self).encrypt(self.master_key,
+                                                    tokeys=tokeys)
+        if status == 0:
+            try:
+                with open(keyfile + '.new', 'wb') as fd:
+                    fd.write(encrypted_key)
+                if want_renamed_keyfile:
+                    os.rename(keyfile, want_renamed_keyfile)
+                os.rename(keyfile + '.new', keyfile)
+                self._master_key_ondisk = self.master_key
+                self._master_key_passgen = master_passphrase.generation
+                return True
+            except:
+                if (want_renamed_keyfile and
+                        os.path.exists(want_renamed_keyfile)):
+                    os.rename(want_renamed_keyfile, keyfile)
+                raise
+
+        return False
+
     def _unlocked_save(self, session=None):
         if not self.loaded_config:
             return
@@ -1519,48 +1568,14 @@ class ConfigManager(ConfigDict):
         self._mkworkdir(None)
         self.timestamp = int(time.time())
 
-        # FIXME: The master key is actually prefs.obfuscate.index still...
-        if not self.master_key:
-            self.master_key = self.prefs.obfuscate_index
-
         if session:
             if 'log' in self.sys.debug:
                 self.event_log.ui_watch(session.ui)
             else:
                 self.event_log.ui_unwatch(session.ui)
 
-        # We keep the master key in a file of its own and never delete
-        # or overwrite master keys.
-        want_renamed_keyfile = None
-        master_passphrase = self.passphrases['DEFAULT']
-        if (self._master_key_passgen != master_passphrase.generation
-                or self._master_key_ondisk != self.master_key):
-            if os.path.exists(keyfile):
-                want_renamed_keyfile = keyfile + ('.%x' % time.time())
-        if want_renamed_keyfile or not os.path.exists(keyfile):
-            if self.master_key and master_passphrase.is_set():
-
-                # If there is no GPG recipient, use symmetric encryption.
-                gpgr = self.prefs.get('gpg_recipient', '').replace(',', ' ')
-                status, encrypted_key = GnuPG(self).encrypt(self.master_key,
-                    tokeys=(gpgr.split()
-                            if (gpgr and gpgr not in ('!CREATE', '!PASSWORD'))
-                            else None))
-
-                if status == 0:
-                    try:
-                        with open(keyfile + '.new', 'wb') as fd:
-                            fd.write(encrypted_key)
-                        if want_renamed_keyfile:
-                            os.rename(keyfile, want_renamed_keyfile)
-                        os.rename(keyfile + '.new', keyfile)
-                        self._master_key_ondisk = self.master_key
-                        self._master_key_passgen = master_passphrase.generation
-                    except:
-                        if (want_renamed_keyfile and
-                                os.path.exists(want_renamed_keyfile)):
-                            os.rename(want_renamed_keyfile, keyfile)
-                        raise
+        # Save the master key if necessary (and possible)
+        master_key_saved = self._save_master_key(keyfile)
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
@@ -1570,7 +1585,7 @@ class ConfigManager(ConfigDict):
                          for i in range(0, len(config_bytes), 4096))
 
         from mailpile.crypto.streamer import EncryptingStreamer
-        if self.master_key:
+        if self.master_key and master_key_saved:
             subj = self.mailpile_path(self.conffile)
             with EncryptingStreamer(self.master_key,
                                     dir=self.tempfile_dir(),
@@ -1580,6 +1595,8 @@ class ConfigManager(ConfigDict):
                     fd.write(chunk)
                 fd.save(newfile)
         else:
+            # This may result in us writing the master key out in the
+            # clear, but that is better than losing data. :-(
             with open(newfile, 'wb') as fd:
                 for chunk in config_chunks:
                     fd.write(chunk)
@@ -1600,6 +1617,9 @@ class ConfigManager(ConfigDict):
             # Enable translations
             mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
 
+            # Recreate VFS root in case new things have been configured
+            self.vfs_root.rescan()
+
             # Prepare workers
             self.prepare_workers(daemons=self.daemons_started())
             delay = 1
@@ -1616,10 +1636,14 @@ class ConfigManager(ConfigDict):
         return None
 
     def get_mailboxes(self, standalone=True, mail_sources=False):
-        mailboxes = [(FormatMbxId(k),
-                      self.sys.mailbox[k],
-                      self._find_mail_source(k))
-                     for k in self.sys.mailbox.keys()]
+        try:
+            mailboxes = [(FormatMbxId(k),
+                          self.sys.mailbox[k],
+                          self._find_mail_source(k))
+                          for k in self.sys.mailbox.keys()]
+        except (AttributeError):
+            # Config not loaded, nothing to see here
+            return []
 
         if not standalone:
             mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
@@ -1759,23 +1783,38 @@ class ConfigManager(ConfigDict):
                                                drop=clear, force_save=True),
                   unique=True)
 
+    def find_mboxids_and_sources_by_path(self, *paths):
+        def _au(p):
+            return unicode(p if (p[:4] == 'src:') else vfs.abspath(p))
+        abs_paths = dict((_au(p), [p]) for p in paths)
+        with self._lock:
+            for sid, src in self.sources.iteritems():
+                for mid, info in src.mailbox.iteritems():
+                    if info.local:
+                        umfn = _au(info.local)
+                        if umfn not in abs_paths:
+                            umfn = _au(self.sys.mailbox[mid])
+                        if umfn in abs_paths:
+                            abs_paths[umfn].append((mid, src))
+
+            for mid, mfn in self.sys.mailbox.iteritems():
+                umfn = _au(mfn)
+                if umfn in abs_paths:
+                    if umfn[:4] == u'src:':
+                        src = self.sources.get(umfn[4:].split('/')[0])
+                    else:
+                        src = None
+                    abs_paths[umfn].append((mid, src))
+
+        return dict((p[0], p[1]) for p in abs_paths.values() if p[1:])
+
     def open_mailbox_path(self, session, path, register=False):
         path = vfs.abspath(path)
         mbox = mbx_mid = None
         with self._lock:
-            for mid, mfn in self.sys.mailbox.iteritems():
-                if mfn[:4] != 'src:':
-                    if unicode(vfs.abspath(mfn)) == unicode(path):
-                        mbx_mid = mid
-                        break
-
-            # 2nd search wastes some cycles, but at least the code is clear
-            for sid, src in self.sources.iteritems():
-                for mid, info in src.mailbox.iteritems():
-                    if info.local and mbx_mid is None:
-                        if unicode(vfs.abspath(info.local)) == unicode(path):
-                            mbx_mid = mid
-                            break
+            msmap = self.find_mboxids_and_sources_by_path(unicode(path))
+            if path in msmap:
+                mbx_mid, mbx_src = msmap[path]
 
             if register and mbx_mid is None:
                 mbox = OpenMailbox(path.raw_fp, self, create=False)

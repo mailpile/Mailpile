@@ -1,5 +1,6 @@
 import mailpile.config
 from mailpile.commands import Command
+from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_source.mbox import MboxMailSource
@@ -240,6 +241,8 @@ class Migrate(Command):
             except:
                 self._ignore_exception()
                 err += 1
+
+        self.session.config.version = APPVER  # We've migrated to this!
 
         self._background_save(config=True)
         return self._success(_('Performed %d migrations, failed %d.'

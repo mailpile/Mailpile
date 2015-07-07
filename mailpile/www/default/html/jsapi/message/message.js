@@ -64,8 +64,12 @@ Mailpile.Message.ShowPlain = function(mid) {
 /* Message -  */
 $(document).on('click', '.message-action-reply', function() {
   var mid = $(this).data('mid');
-  Mailpile.API.message_reply_post({mid: mid, _output: 'composer.jhtml'}, function(result) {
-
+  Mailpile.API.message_reply_post({
+    mid: mid,
+    reply_all: 'True',
+    _output: 'composer.jhtml'
+  },
+  function(result) {
     $('#message-' + mid).append(result.result);
     var new_mid = $('#message-' + mid).find('.form-compose').data('mid');
     $('#compose-details-' + new_mid).hide();

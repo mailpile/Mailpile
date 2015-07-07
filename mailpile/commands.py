@@ -32,7 +32,7 @@ from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
-from mailpile.vfs import vfs
+from mailpile.vfs import vfs, FilePath
 
 
 class Command(object):
@@ -1652,23 +1652,29 @@ class GpgCommand(Command):
     ORDER = ('Internals', 4)
     IS_USER_ACTIVITY = True
 
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            return '%s' % self.message
+
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
 
         # FIXME: For this to work anywhere but in a terminal, we'll need
         #        to somehow pipe input to/from GPG in a more sane way.
 
-        from mailpile.crypto.gpgi import GPG_BINARY
+        binary, rv = self._gnupg().gpgbinary, '(unknown)'
         with self.session.ui.term:
             try:
                 self.session.ui.block()
-                os.system(' '.join([GPG_BINARY] + args))
+                rv = os.system(' '.join([binary] + args))
                 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
                 PGPKeysImportAsVCards(self.session).run()
             except:
                 self.session.ui.unblock()
 
-        return self._success(_("That was fun!"))
+        return self._success(_("That was fun!") + ' ' +
+                             _("%s returned: %s") % (binary, rv),
+                             result={'binary': binary, 'returned': rv})
 
 
 class ListDir(Command):
@@ -1680,14 +1686,19 @@ class ListDir(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            if self.result:
+            if self.result and self.result['entries']:
                 lines = []
-                for i in self.result:
-                    lines.append(('%12.12s %s%s%s'
-                                  ) % (i.get('bytes', ''),
+                for i in self.result['entries']:
+                    sz = i.get('bytes')
+                    dn = i['display_name']
+                    dp = '' if (i['display_path'].endswith(dn)
+                                ) else i['display_path']
+                    dn += '/' if i.get('flag_directory') else ''
+                    lines.append(('%12.12s %s%-20s %s'
+                                  ) % ('' if (sz is None) else sz,
+                                       '>' if i.get('flag_mailsource') else
                                        '*' if i.get('flag_mailbox') else ' ',
-                                       i['name'],
-                                       '/' if i.get('flag_directory') else ''))
+                                       dn, dp))
                 return '\n'.join(lines)
             else:
                 return _('Nothing Found')
@@ -1707,21 +1718,11 @@ class ListDir(Command):
             args = ['.']
 
         def lsf(f):
-            afp = vfs.abspath(f)
-            info = {'icon': '',
-                    'name': f.display_basename(),
-                    'path': afp,
-                    'encoded': f.encoded()}
-            try:
-                b = vfs.getsize(afp)
-                if b is not None:
-                    info['bytes'] = b
-                info.update(dict(('flag_%s' % unicode(k).lower(), True)
-                                 for k in
-                                 vfs.getflags(afp, self.session.config)))
-                return info
-            except (OSError, IOError):
-                return info
+            info = vfs.getinfo(f, self.session.config)
+            info['icon'] = ''
+            for k in info.get('flags', []):
+                info['flag_%s' % unicode(k).lower().replace('.', '_')] = True
+            return info
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
                     if '-a' in flags or f.raw_fp[:1] != '.']
@@ -1739,12 +1740,34 @@ class ListDir(Command):
                         else:
                             file_list.append(lsf(p))
             except (OSError, IOError, UnicodeDecodeError), e:
+                traceback.print_exc()
                 return self._error(_('Failed to list: %s') % e)
 
-        file_list.sort(key=lambda i: i['name'].lower())
+        id_src_map = self.session.config.find_mboxids_and_sources_by_path(
+            *[unicode(f['path']) for f in file_list])
+        for info in file_list:
+            path = unicode(info['path'])
+            mid_src = id_src_map.get(path)
+            if mid_src:
+                mid, src = mid_src
+                if src:
+                    info['source'] = src._key
+                if src and src.mailbox[mid].primary_tag:
+                    tid = src.mailbox[mid].primary_tag
+                    info['tag'] = self.session.config.tags[tid].slug
+                    info['icon'] = self.session.config.tags[tid].icon
+            elif info.get('flag_mailsource'):
+                if path.startswith('/src:'):
+                    info['source'] = path[5:]
+
+        file_list.sort(key=lambda i: i['display_path'].lower())
         return self._success(_('Listed %d files or directories'
                                ) % len(file_list),
-                             result=file_list)
+                             result={
+            'path': args[0] if (len(args) == 1) else args,
+            'name': vfs.display_name(args[0], self.session.config),
+            'entries': file_list
+        })
 
 
 class ChangeDir(ListDir):
@@ -1820,7 +1843,8 @@ class CatFile(Command):
 
 class ConfigSet(Command):
     """Change a setting"""
-    SYNOPSIS = ('S', 'set', 'settings/set', '<section.variable> <value>')
+    SYNOPSIS = ('S', 'set', 'settings/set',
+                '[--force] <section.variable> <value>')
     ORDER = ('Config', 1)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
@@ -1867,8 +1891,12 @@ class ConfigSet(Command):
             else:
                 raise ValueError(_('Invalid section or variable: %s') % var)
 
-        if self.args:
-            arg = ' '.join(self.args)
+        force = False
+        if args:
+            arg = ' '.join(args)
+            if arg.startswith('--force '):
+                force = True
+                arg = arg[8:]
             if '=' in arg:
                 # Backwards compatiblity with the old 'var = value' syntax.
                 var, value = [s.strip() for s in arg.split('=', 1)]
@@ -1877,11 +1905,18 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        if force and self.data.get('_method', 'CLI') != 'CLI':
+            raise ValueError('The --force flag only works on the CLI')
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = {}
             for path, value in ops:
+                if path == 'master_key' and not force:
+                    if config.master_key:
+                        raise ValueError('I refuse to change the master key!')
+
                 value = value.strip()
                 if value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):
                     value = json.loads(value)
@@ -1922,6 +1957,7 @@ class ConfigAdd(Command):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         config = self.session.config
+        args = list(self.args)
         ops = []
 
         if config.sys.lockdown:
@@ -1932,8 +1968,8 @@ class ConfigAdd(Command):
             if parts[0] in config.rules:
                 ops.append((var, self.data[var][0]))
 
-        if self.args:
-            arg = ' '.join(self.args)
+        if args:
+            arg = ' '.join(args)
             if '=' in arg:
                 # Backwards compatible with the old 'var = value' syntax.
                 var, value = [s.strip() for s in arg.split('=', 1)]
@@ -1997,8 +2033,12 @@ class ConfigUnset(Command):
             updated = []
             vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
+                if v == 'master_key':
+                    if config.master_key:
+                        raise ValueError('I refuse to change the master key!')
                 cfg, vn = config.walk(v, parent=True)
                 unset(cfg, vn)
+                updated.append(v)
 
         if updated:
             self._background_save(config=True)
@@ -2382,7 +2422,7 @@ class Help(Command):
         def variables_as_text(self):
             text = []
             for group in self.result['variables']:
-                text.append(group['name'])
+                text.append('%s (%s.*)' % (group['name'], group['category']))
                 for var in group['variables']:
                     sep = ('=' in var['type']) and ': ' or ' = '
                     text.append(('  %-35s %s'
@@ -2520,15 +2560,21 @@ class HelpVars(Help):
     def command(self):
         config = self.session.config.rules
         result = []
-        categories = ["sys", "prefs", "profiles"]
+        categories = ["sys", "prefs"]
         for cat in categories:
             variables = []
             what = config[cat]
             if isinstance(what[2], dict):
                 for ii, i in what[2].iteritems():
+                    stype = (
+                        _('(subsection)') if isinstance(i[1], dict) else
+                        '|'.join(i[1]) if isinstance(i[1], (list, tuple)) else
+                         str(i[1]))
+                    if '<type' in stype:
+                        stype = stype.replace('<type ', '')[1:-2]
                     variables.append({
                         'var': ii,
-                        'type': str(i[1]),
+                        'type': stype,
                         'desc': i[0]
                     })
             variables.sort(key=lambda k: k['var'])

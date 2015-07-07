@@ -16,7 +16,10 @@ Mailpile.Search.init = function() {
   }
 
   var search = ($('#search-query').attr('value') + ' ');
-  if (search.match(/^\s*in:\S+\s*$/)) {
+  if (search.match(/^\s*all:mail\s*$/)) {
+    $('.btn-activity-save_search, .btn-activity-edit_tag').remove();
+  }
+  else if (search.match(/^\s*in:\S+\s*$/)) {
     $('.btn-activity-save_search').remove();
   }
   else {
