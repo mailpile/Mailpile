@@ -26,7 +26,7 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Functional attributes
     'type': ['Tag type', [
-        'tag', 'group', 'attribute', 'unread', 'inbox',
+        'tag', 'group', 'attribute', 'unread', 'inbox', 'search',
         # Maybe TODO: 'folder', 'shadow',
         'profile', 'mailbox',                         # Accounts, Mailboxes
         'drafts', 'blank', 'outbox', 'sent',          # composing and sending
@@ -81,7 +81,7 @@ def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):
     return flist
 
 
-def MoveFilter(cfg, filter_id, filter_new_id):
+def FilterMove(cfg, filter_id, filter_new_id):
     def swap(f1, f2):
         tmp = cfg.filters[f1]
         cfg.filters[f1] = cfg.filters[f2]
@@ -94,6 +94,18 @@ def MoveFilter(cfg, filter_id, filter_new_id):
     elif ffrm < fto:
         for fid in range(ffrm, fto):
             swap(b36(fid), b36(fid + 1))
+
+
+def FilterDelete(cfg, *filter_ids):
+    filter_ids = list(filter_ids)
+    filter_ids.sort(key=lambda fid: int(fid, 36))
+    filters = cfg.filters
+    for fid in reversed(filter_ids):
+        lastid = b36(len(filters)-1).lower()
+        if fid <= lastid:
+            if lastid != fid:
+                cfg.filter_move(fid, lastid)
+            del filters[lastid]
 
 
 def GetTags(cfg, tn=None, default=None, **kwargs):
@@ -199,7 +211,8 @@ mailpile.config.ConfigManager.get_tags = GetTags
 mailpile.config.ConfigManager.get_tag_id = GetTagID
 mailpile.config.ConfigManager.get_tag_info = GetTagInfo
 mailpile.config.ConfigManager.get_filters = GetFilters
-mailpile.config.ConfigManager.filter_move = MoveFilter
+mailpile.config.ConfigManager.filter_move = FilterMove
+mailpile.config.ConfigManager.filter_delete = FilterDelete
 
 
 ##[ Commands ]################################################################
@@ -816,27 +829,21 @@ class DeleteFilter(FilterCommand):
         if len(self.args) < 1:
             raise UsageError('Delete what?')
 
-        removed = 0
-        filters = config.get('filter', {})
-        filter_terms = config.get('filter_terms', {})
         args = list(self.args)
-        for fid in self.args:
-            if fid not in filters:
-                match = [f for f in filters if filter_terms[f] == fid]
-                if match:
-                    args.remove(fid)
-                    args.extend(match)
+        args.sort(key=lambda fid: int(fid, 36))
 
-        for fid in args:
-            if (config.parse_unset(session, 'filter:%s' % fid)
-                    and config.parse_unset(session, 'filter_tags:%s' % fid)
-                    and config.parse_unset(session, 'filter_terms:%s' % fid)):
+        filter_keys = config.get('filters', {}).keys()
+        removed = 0
+        for fid in reversed(args):
+            if fid in filter_keys:
+                self.session.config.filter_delete(fid)
                 removed += 1
             else:
                 session.ui.warning('Failed to remove %s' % fid)
         if removed:
             self.finish()
-        return True
+
+        return self._success(_('Removed %d filter(s)') % removed)
 
 
 class ListFilters(Command):
