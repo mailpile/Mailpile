@@ -1875,9 +1875,18 @@ class ConfigSet(Command):
 
         config = self.session.config
         args = list(self.args)
+        arg = ' '.join(args)
         ops = []
+        on_cli = (self.data.get('_method', 'CLI') == 'CLI')
+        force = False
 
-        if config.sys.lockdown:
+        if arg.startswith('--force '):
+            if not on_cli:
+                raise ValueError('The --force flag only works on the CLI')
+            force = True
+            arg = arg[8:]
+
+        if config.sys.lockdown and not force:
             return self._error(_('In lockdown, doing nothing.'))
 
         if not config.loaded_config:
@@ -1903,12 +1912,7 @@ class ConfigSet(Command):
             else:
                 raise ValueError(_('Invalid section or variable: %s') % var)
 
-        force = False
         if args:
-            arg = ' '.join(args)
-            if arg.startswith('--force '):
-                force = True
-                arg = arg[8:]
             if '=' in arg:
                 # Backwards compatiblity with the old 'var = value' syntax.
                 var, value = [s.strip() for s in arg.split('=', 1)]
@@ -1916,9 +1920,6 @@ class ConfigSet(Command):
             else:
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
-
-        if force and self.data.get('_method', 'CLI') != 'CLI':
-            raise ValueError('The --force flag only works on the CLI')
 
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
