@@ -43,7 +43,7 @@ import os
 import re
 import socket
 import traceback
-from imaplib import IMAP4, IMAP4_SSL, CRLF
+from imaplib import IMAP4_SSL, CRLF
 from mailbox import Mailbox, Message
 from urllib import quote, unquote
 
@@ -61,7 +61,7 @@ from mailpile.mail_source import BaseMailSource
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 from mailpile.vfs import FilePath
-
+from imap_starttls import IMAP4
 
 IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[\\(\\)]'
@@ -652,16 +652,15 @@ class ImapMailSource(BaseMailSource):
             conn.debug = ('imaplib' in self.session.config.sys.debug
                           ) and 4 or 0
 
+            if not want_ssl:
+              if my_config.force_starttls:
+                  conn.starttls()
+
             ok, data = self.timed_imap(conn.capability)
             if ok:
                 capabilities = set(' '.join(data).upper().split())
             else:
                 capabilities = set()
-
-            #if 'STARTTLS' in capabilities and not want_ssl:
-            #
-            # FIXME: We need to send a STARTTLS and do a switcheroo where
-            #        the connection gets encrypted.
 
             try:
                 ok, data = self.timed_imap(conn.login,
