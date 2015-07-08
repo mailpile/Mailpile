@@ -147,6 +147,9 @@ class GPGKeyReceive(Command):
     HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         keyid = self.data.get("keyid", self.args)
         res = []
         for key in keyid:
@@ -173,6 +176,9 @@ class GPGKeyImport(Command):
     }
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         key_files = self.data.get("key_file", []) + [a for a in self.args
                                                      if not '://' in a]
         key_urls = self.data.get("key_url", []) + [a for a in self.args
@@ -256,6 +262,9 @@ class GPGKeyImportFromMail(Search):
             return ""
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
         if args and args[-1][0] == "#":

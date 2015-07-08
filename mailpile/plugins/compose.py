@@ -345,6 +345,9 @@ class Compose(CompositionCommand):
                 ephemeral)
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if 'mid' in self.data:
             return self._error(_('Please use update for editing messages'))
 
@@ -516,8 +519,10 @@ class Reply(RelativeCompose):
                 ephemeral)
 
     def command(self):
-        session, config, idx = self.session, self.session.config, self._idx()
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('Please use update for editing messages'))
 
+        session, config, idx = self.session, self.session.config, self._idx()
         reply_all = False
         ephemeral = False
         args = list(self.args)
@@ -617,6 +622,9 @@ class Forward(RelativeCompose):
         return email, ephemeral
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
 
         with_atts = False
@@ -671,6 +679,9 @@ class Attach(CompositionCommand):
     }
 
     def command(self, emails=None):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, idx = self.session, self._idx()
         args = list(self.args)
 
@@ -744,6 +755,9 @@ class UnAttach(CompositionCommand):
     }
 
     def command(self, emails=None):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, idx = self.session, self._idx()
         args = list(self.args)
         atts = []
@@ -811,11 +825,11 @@ class Sendit(CompositionCommand):
     EVENT_SOURCE = 'mailpile.plugins.compose.Sendit'
 
     def command(self, emails=None):
-        session, config, idx = self.session, self.session.config, self._idx()
-        args = list(self.args)
-
         if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
+
+        session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
         bounce_to = []
         while args and '@' in args[-1]:
@@ -941,6 +955,9 @@ class Update(CompositionCommand):
                                 Attach.HTTP_POST_VARS)
 
     def command(self, create=True, outbox=False):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
         email_updates = self._get_email_updates(idx,
                                                 create=create,
@@ -999,6 +1016,9 @@ class UnThread(CompositionCommand):
     HTTP_POST_VARS = {'mid': 'message-id'}
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
 
         # Message IDs can come from post data
@@ -1027,6 +1047,9 @@ class EmptyOutbox(Sendit):
         cls(session).run()
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         cfg, idx = self.session.config, self.session.config.index
         if not idx:
             return self._error(_('The index is not ready yet'))

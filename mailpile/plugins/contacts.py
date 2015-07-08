@@ -196,6 +196,9 @@ class AddVCard(VCardCommand):
         return {'form': self.HTTP_POST_VARS}
 
     def command(self, recipients=False, quietly=False, internal=False):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
@@ -287,6 +290,9 @@ class RemoveVCard(VCardCommand):
     }
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
         removed = []
         for handle in (list(self.args) +
@@ -325,6 +331,9 @@ class VCardAddLines(VCardCommand):
     }
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
 
         if self.args:
@@ -390,6 +399,9 @@ class VCardRemoveLines(VCardCommand):
     HTTP_CALLABLE = ('POST', 'UPDATE')
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
         handle, line_ids = self.args[0], self.args[1:]
         vcard = config.vcards.get_vcard(handle)
@@ -557,6 +569,9 @@ class ContactImport(Command):
     HTTP_CALLABLE = ('GET', )
 
     def command(self, format, terms=None, **kwargs):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
 
         if not format in PluginManager.CONTACT_IMPORTERS.keys():
@@ -1171,6 +1186,9 @@ class EditProfile(AddProfile):
         return pvars
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
       
         # OK, fetch the VCard.

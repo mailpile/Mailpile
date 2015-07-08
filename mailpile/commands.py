@@ -2113,6 +2113,9 @@ class ConfigPrint(Command):
         list_all = not self.data.get('short', ['-short' in args])[0]
         sanitize = not self.data.get('secrets', ['-secrets' in args])[0]
 
+        if config.sys.lockdown:
+            sanitize = True
+
         # FIXME: Shouldn't we suppress critical variables as well?
         key_types = ['public', 'critical']
         access_denied = False
@@ -2276,6 +2279,9 @@ class Pipe(Command):
     IS_USER_ACTIVITY = True
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if '--' in self.args:
             dashdash = self.args.index('--')
             target = self.args[0:dashdash]
@@ -2364,9 +2370,13 @@ class TrustingQQQ(Command):
     SYNOPSIS = (None, "trustingqqq", None, None)
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         # FIXME: This is a hack to allow Windows deployments to shut
         #        down cleanly. Eventually this will take an argument
         #        specifying a random token that the launcher chooses.
+
         Quit.HTTP_AUTH_REQUIRED = False
         return self._success('OK, anybody can quit!')
 

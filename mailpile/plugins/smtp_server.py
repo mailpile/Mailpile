@@ -206,6 +206,9 @@ class HashCash(Command):
     HTTP_CALLABLE = ()
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         bits, challenge = int(self.args[0]), self.args[1]
         expected = 2 ** bits
         def marker(counter):

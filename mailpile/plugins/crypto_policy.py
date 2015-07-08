@@ -29,6 +29,9 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
     HTTP_QUERY_VARS = {'email': 'contact email', 'policy': 'new policy'}
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         email, policy = self._parse_args()
 
         if policy not in CRYPTO_POLICIES:

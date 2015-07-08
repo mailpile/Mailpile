@@ -260,6 +260,9 @@ class PGPKeysImportAsVCards(Command):
     }
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
 
         selectors = [a for a in self.args if not a.startswith('-')]
