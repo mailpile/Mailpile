@@ -715,11 +715,12 @@ class MailIndex(object):
 
         # Figure out which messages exist at all (so we can remove
         # stale pointers later on).
-        for ui in range(0, len(messages)):
-            msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
-            existing_ptrs.add(msg_ptr)
-            if (ui % 317) == 0 and not deadline:
-                play_nice_with_threads()
+        if not lazy:
+            for ui in range(0, len(messages)):
+                msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
+                existing_ptrs.add(msg_ptr)
+                if (ui % 317) == 0 and not deadline:
+                    play_nice_with_threads()
 
         added = updated = 0
         last_date = long(start_time)
@@ -773,12 +774,13 @@ class MailIndex(object):
             added += a
             updated += u
 
-        with self._lock:
-            for msg_ptr in self.PTRS.keys():
-                if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
-                        msg_ptr not in existing_ptrs):
-                    self._remove_location(session, msg_ptr)
-                    updated += 1
+        if not lazy:
+            with self._lock:
+                for msg_ptr in self.PTRS.keys():
+                    if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
+                            msg_ptr not in existing_ptrs):
+                        self._remove_location(session, msg_ptr)
+                        updated += 1
         progress.update({
             'added': added,
             'updated': updated,
@@ -1663,16 +1665,35 @@ class MailIndex(object):
         results.extend(hits('%s:in' % tag_id))
         return results
 
+    def _vfs_hits(self, session, searchterms):
+        mailbox_path = FilePath(searchterms[0].split(':', 1)[1])
+        session.ui.mark(_('Opening mailbox %s') % mailbox_path)
+        try:
+            # FIXME: This triggers indexing...
+            mboxid, mbox = session.config.open_mailbox_path(
+                session, mailbox_path, register=True)
+        except (ValueError, IOError, OSError):
+            return []
+
+        self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
+                          lambda s, i: mbox,
+                          apply_tags=[], process_new=True,
+                          reverse=True, lazy=True, deadline=10)
+        results = []
+        for tocid in mbox.keys():
+            msg_ptr_idx = self.PTRS.get(mbox.get_msg_ptr(mboxid, tocid))
+            if msg_ptr_idx is not None:
+                results.append(msg_ptr_idx)
+            else:
+                pass  # FIXME: Add minimal place-holder?
+
+        return results
+
     def search(self, session, searchterms,
                keywords=None, order=None, recursion=0, context=None):
-        # Stash the raw search terms, decide if this is cached or not
+        # Stash the raw search terms
         raw_terms = searchterms[:]
-        if keywords is None:
-            srs = CachedSearchResultSet(self, raw_terms)
-            if len(srs) > 0:
-                return srs
-        else:
-            srs = SearchResultSet(self, raw_terms, [], [])
+        is_vfs = False
 
         # Choose how we are going to search
         if keywords is not None:
@@ -1686,28 +1707,7 @@ class MailIndex(object):
                     return self.TAGS.get(term.rsplit(':', 1)[0], [])
 
                 elif term.endswith(':vfs'):
-                    mailbox_path = FilePath(searchterms[0].split(':', 1)[1])
-                    session.ui.mark(_('Opening mailbox %s') % mailbox_path)
-                    try:
-                        # FIXME: This triggers indexing...
-                        mboxid, mbox = session.config.open_mailbox_path(
-                            session, mailbox_path, register=True)
-                    except (ValueError, IOError, OSError):
-                        return []
-
-                    self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
-                                      lambda s, i: mbox,
-                                      apply_tags=[], process_new=True,
-                                      reverse=True, lazy=True, deadline=10)
-                    results = []
-                    for tocid in mbox.keys():
-                        msg_ptr = mbox.get_msg_ptr(mboxid, tocid)
-                        if msg_ptr in self.PTRS:
-                            results.append(self.PTRS[msg_ptr])
-                        else:
-                            pass  # FIXME: Add minimal place-holder?
-
-                    return results
+                    return self._vfs_hits(session, searchterms)
 
                 else:
                     session.ui.mark(_('Searching for %s') % term)
@@ -1752,6 +1752,8 @@ class MailIndex(object):
             rt = r[-1][1]
             if not term.startswith('vfs:'):
                 term = term.lower()
+            else:
+                is_vfs = True
 
             if ':' in term:
                 if term.startswith('in:'):
@@ -1830,6 +1832,14 @@ class MailIndex(object):
                                  ['+%s' % e for e in exclude_terms[1:]])
             # Recursing to pull the excluded terms from cache as well
             exclude = self.search(session, exclude_terms).as_set()
+
+        # Decide if this is cached or not
+        if keywords is None and not is_vfs:
+            srs = CachedSearchResultSet(self, raw_terms)
+            if len(srs) > 0:
+                return srs
+        else:
+            srs = SearchResultSet(self, raw_terms, [], [])
 
         srs.set_results(results, exclude)
         if session:

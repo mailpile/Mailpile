@@ -186,8 +186,8 @@ class Search(Command):
             # Terms are reversed in the search engine...
             if term[:1] in ['-', '+']:
                 term = term[1:]
-                if term[:4] == 'vfs:':
-                    term = 'all:mail'
+            if term[:4] == 'vfs:':
+                raise ValueError('VFS searches are not cached')
             term = ':'.join(reversed(term.split(':', 1)))
             return unicode(term)
         reqs = set(['!config'] +

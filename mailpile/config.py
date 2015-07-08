@@ -1628,7 +1628,13 @@ class ConfigManager(ConfigDict):
                 delay += 2
         self.command_cache.mark_dirty([u'!config'])
 
-    def _find_mail_source(self, mbx_id):
+    def _find_mail_source(self, mbx_id, path=None):
+        if path:
+            path = FilePath(path).raw_fp
+            if path[:5] == '/src:':
+                return self.sources[path[5:].split('/')[0]]
+            if path[:4] == 'src:':
+                return self.sources[path[4:].split('/')[0]]
         for src in self.sources.values():
             # Note: we cannot test 'mbx_id in ...' because of case sensitivity.
             if src.mailbox[FormatMbxId(mbx_id)] is not None:
@@ -1716,14 +1722,15 @@ class ConfigManager(ConfigDict):
         try:
             with self._lock:
                 mbx_id = FormatMbxId(mailbox_id)
-                src = self._find_mail_source(mailbox_id)
                 mfn = self.sys.mailbox[mbx_id]
+                src = self._find_mail_source(mailbox_id, path=mfn)
                 pfn = 'pickled-mailbox.%s' % mbx_id.lower()
-                if prefer_local:
+                if prefer_local and src and src.mailbox[mbx_id] is not None:
                     mfn = src and src.mailbox[mbx_id].local or mfn
                 else:
                     pfn += '-R'
         except (KeyError, TypeError):
+            traceback.print_exc()
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
         return mbx_id, src, FilePath(mfn), pfn
 
@@ -1785,7 +1792,9 @@ class ConfigManager(ConfigDict):
 
     def find_mboxids_and_sources_by_path(self, *paths):
         def _au(p):
-            return unicode(p if (p[:4] == 'src:') else vfs.abspath(p))
+            return unicode(p[1:] if (p[:5] == '/src:') else
+                           p if (p[:4] == 'src:') else
+                           vfs.abspath(p))
         abs_paths = dict((_au(p), [p]) for p in paths)
         with self._lock:
             for sid, src in self.sources.iteritems():
@@ -1810,15 +1819,22 @@ class ConfigManager(ConfigDict):
 
     def open_mailbox_path(self, session, path, register=False):
         path = vfs.abspath(path)
-        mbox = mbx_mid = None
+        mbox = mbx_mid = mbx_src = None
         with self._lock:
             msmap = self.find_mboxids_and_sources_by_path(unicode(path))
-            if path in msmap:
-                mbx_mid, mbx_src = msmap[path]
+            if msmap:
+                mbx_mid, mbx_src = list(msmap.values())[0]
 
             if register and mbx_mid is None:
-                mbox = OpenMailbox(path.raw_fp, self, create=False)
-                mbx_mid = self.sys.mailbox.append(path.encoded())
+                if path.raw_fp.startswith('/src:'):
+                    path = FilePath(path.raw_fp[1:])
+                    msrc_id = path.raw_fp[4:].split('/')[0]
+                    msrc = self.mail_sources.get(msrc_id)
+                    if msrc:
+                        mbox = msrc.open_mailbox(None, path.raw_fp)
+                else:
+                    mbox = OpenMailbox(path.raw_fp, self, create=False)
+                mbx_mid = self.sys.mailbox.append(unicode(path))
 
         if mbx_mid is not None:
             mbx_mid = FormatMbxId(mbx_mid)
