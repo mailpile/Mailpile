@@ -1343,7 +1343,8 @@ class Rescan(Command):
                         self._ignore_exception()
                         count = -1
                     if count < 0:
-                        session.ui.warning(_('Failed to rescan: %s') % fpath)
+                        session.ui.warning(_('Failed to rescan: %s') %
+                                           FilePath(fpath).display())
                     elif count > 0:
                         msg_count += count
                         mbox_count += 1
