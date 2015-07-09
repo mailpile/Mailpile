@@ -515,6 +515,8 @@ class ImapMailSource(BaseMailSource):
             path = self._imap_path(where)
             prefix, pathsep = self.source._namespace_info(path)
             with self.source.open() as conn:
+                if not conn:
+                    raise socket.error(_('Not connected to IMAP server.'))
                 if path:
                     ok, data = self._imap(conn.list, path + pathsep, '%')
                 else:

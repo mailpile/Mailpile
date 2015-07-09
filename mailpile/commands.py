@@ -1762,7 +1762,9 @@ class ListDir(Command):
                             file_list.extend(ls(p))
                         else:
                             file_list.append(lsf(p))
-            except (OSError, IOError, UnicodeDecodeError), e:
+            except (socket.error, socket.gaierror), e:
+                return self._error(_('Network error: %s') % e)
+            except (OSError, IOError, UnicodeDecodeError, socket.error), e:
                 traceback.print_exc()
                 return self._error(_('Failed to list: %s') % e)
 

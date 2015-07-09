@@ -97,12 +97,13 @@ class ViewMetadata(Hacks):
     SYNOPSIS = (None, 'hacks/metadata', None, '[<message>]')
 
     def _explain(self, i):
-        idx = self._idx()
+        idx, cfg = self._idx(), self.session.config
         info = idx.get_msg_at_idx_pos(i)
-        ptags = [self.session.config.get_tag(t) or t
+        ptags = [cfg.get_tag(t) or t
                  for t in info[idx.MSG_TAGS].split(',') if t]
         ptags = [t.name for t in ptags if hasattr(t, 'name')]
-        pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
+        pptrs = ['%s -> %s' % (cfg.sys.mailbox.get(p[:MBX_ID_LEN],
+                                                   p[:MBX_ID_LEN] + '?'),
                                p[MBX_ID_LEN:])
                  for p in info[idx.MSG_PTRS].split(',') if p]
         to = idx.expand_to_list(info)

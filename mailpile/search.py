@@ -1675,6 +1675,7 @@ class MailIndex(object):
         except (ValueError, IOError, OSError):
             return []
 
+        # FIXME: Create an event so the UI can report on progress.
         self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
                           lambda s, i: mbox,
                           apply_tags=[], process_new=True,

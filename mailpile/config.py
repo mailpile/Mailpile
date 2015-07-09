@@ -992,6 +992,12 @@ class ConfigList(RuledContainer(list)):
                 pass
         return key
 
+    def get(self, key, default=None):
+        try:
+            return list.__getitem__(self, self.__fixkey__(key))
+        except IndexError:
+            return default
+
     def __getitem__(self, key):
         return list.__getitem__(self, self.__fixkey__(key))
 

@@ -1,5 +1,7 @@
 {% extends "layouts/" + render_mode + ".html" %}
-{%- if result.path == '/' %}
+{%- if not result %}
+  {% set page_title = message %}
+{%- elif result.path == '/' %}
   {% set page_title = _("Browsing folders and mailboxes") %}
 {%- else %}
   {% set page_title = _("Browsing") + ": " + result.name  %}
@@ -115,45 +117,52 @@
 
 
 {% block content %}
-{%- set loops = [] %}
-{%- for attr, titl, icn, link in (
-    ('flag_mailpile',  'Mailpile',  'star',       True),
-    ('flag_mailbox',   'Mailboxes', 'inbox',      True),
-    ('flag_directory', 'Folders',   'news',       True),
-    ('flag_files',     'Files',     'document',   True)) %}
-  {%- set oloop_first = loop.first %}
-  {%- for info in result.entries|selectattr(attr) %}
-    {%- if loop.first %}
-      {%- do loops.append(info.display_name) %}
-      <div class='{{ attr }} container rectangles-container center'>
-        <div style="display: inline-block">
-          <h2><span class='icon-{{ icn }}'></span> {{ titl }}</h2>
-        </div>
-        <div style="display: inline-block; margin: 25px;">{{ help(attr) }}</div>
-        <div class="clearfix"></div>
-    {%- endif %}
-        <div class="rectangles-outer">
-          <div class="rectangles-inner">
-            {%- set _url = browse_url(attr, info) %}
-            <a class="browse-item-icon left" {%- if link %} href="{{ _url }}"{% endif %}>
-              {{ box_icon(attr, info, icn) }} &nbsp;
-            </a>
-{#          <input type="checkbox" class="browse-item-checkbox right"> #}
-            {{ settings(attr, info) }}
-            <div style='display: inline-block; overflow: hidden; margin: 0; padding: 0;'>
-              <a class="browse-item-name" title='{{ info.display_path }}'
-                 {%- if link %} href="{{ _url }}"{% endif %}>
-                {{ info.display_name }}
+{% if result %}
+  {%- set loops = [] %}
+  {%- for attr, titl, icn, link in (
+      ('flag_mailpile',  'Mailpile',  'star',       True),
+      ('flag_mailbox',   'Mailboxes', 'inbox',      True),
+      ('flag_directory', 'Folders',   'news',       True),
+      ('flag_files',     'Files',     'document',   True)) %}
+    {%- set oloop_first = loop.first %}
+    {%- for info in result.entries|selectattr(attr) %}
+      {%- if loop.first %}
+        {%- do loops.append(info.display_name) %}
+        <div class='{{ attr }} container rectangles-container center'>
+          <div style="display: inline-block">
+            <h2><span class='icon-{{ icn }}'></span> {{ titl }}</h2>
+          </div>
+          <div style="display: inline-block; margin: 25px;">{{ help(attr) }}</div>
+          <div class="clearfix"></div>
+      {%- endif %}
+          <div class="rectangles-outer">
+            <div class="rectangles-inner">
+              {%- set _url = browse_url(attr, info) %}
+              <a class="browse-item-icon left" {%- if link %} href="{{ _url }}"{% endif %}>
+                {{ box_icon(attr, info, icn) }} &nbsp;
               </a>
-              <br><span style='position: absolute'>
-                {{ details(attr, info) }}
-              </span>
+  {#          <input type="checkbox" class="browse-item-checkbox right"> #}
+              {{ settings(attr, info) }}
+              <div style='display: absolute; overflow: hidden; margin: 0; padding: 0;'>
+                <a class="browse-item-name" title='{{ info.display_path }}'
+                   {%- if link %} href="{{ _url }}"{% endif %}>
+                  {{ info.display_name }}
+                </a>
+                <br><span style='position: absolute'>
+                  {{ details(attr, info) }}
+                </span>
+              </div>
             </div>
           </div>
+      {%- if loop.last %}
         </div>
-    {%- if loop.last %}
-      </div>
-    {%- endif %}
+      {%- endif %}
+    {%- endfor %}
   {%- endfor %}
-{%- endfor %}
+{%- else %}
+  <div class='container rectangles-container'>
+    <h2>{{ page_title }}</h2>
+    {# FIXME: Suggest troubleshooting tips for networking-related errors #}
+  </div>
+{%- endif %}
 {% endblock %}
