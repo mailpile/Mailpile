@@ -1148,7 +1148,7 @@ class Load(Command):
 class Rescan(Command):
     """Add new messages to index"""
     SYNOPSIS = (None, 'rescan', 'rescan',
-                '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]')
+                '[full|vcards|vcards:<src>|sources|mailboxes|both|mailbox:<id>|<msgs>]')
     ORDER = ('Internals', 2)
     LOG_PROGRESS = True
 
@@ -1157,7 +1157,7 @@ class Rescan(Command):
         'which': '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]'
     }
 
-    def command(self, slowly=False):
+    def command(self, slowly=False, cron=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
         if 'which' in self.data:
@@ -1170,8 +1170,9 @@ class Rescan(Command):
         if args and args[0].lower().startswith('vcards'):
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session, args[0]))
-        elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
-                                          'editable'):
+        elif args and (args[0].lower() in ('both', 'mailboxes', 'sources',
+                                           'editable') or
+                       args[0].lower().startswith('mailbox:')):
             which = args[0].lower()
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
@@ -1212,7 +1213,9 @@ class Rescan(Command):
             try:
                 results = {}
                 results.update(self._rescan_vcards(session, 'vcards'))
-                results.update(self._rescan_mailboxes(session))
+                if not cron:
+                    results.update(self._rescan_mailboxes(session,
+                                                          which='sources'))
 
                 self.event.data.update(results)
                 self.session.config.event_log.log_event(self.event)
@@ -1313,6 +1316,11 @@ class Rescan(Command):
             session.ui.mark(_('Rescanning: %s') % which)
 
             self._run_rescan_command(session)
+            if which.startswith('mailbox:'):
+                only = which.split(':')[1]
+                which = 'mailboxes'
+            else:
+                only = None
 
             msg_count = 1
             if which in ('both', 'mailboxes', 'editable'):
@@ -1325,6 +1333,8 @@ class Rescan(Command):
                     if mailpile.util.QUITTING:
                         break
                     if fpath == '/dev/null':
+                        continue
+                    if only and (only != fpath) and (only != fid):
                         continue
                     try:
                         session.ui.mark(_('Rescanning: %s %s')
