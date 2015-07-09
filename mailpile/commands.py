@@ -1764,7 +1764,7 @@ class ListDir(Command):
                 mid, src = mid_src
                 if src:
                     info['source'] = src._key
-                if src and src.mailbox[mid].primary_tag:
+                if src and src.mailbox[mid] and src.mailbox[mid].primary_tag:
                     tid = src.mailbox[mid].primary_tag
                     info['tag'] = self.session.config.tags[tid].slug
                     info['icon'] = self.session.config.tags[tid].icon
