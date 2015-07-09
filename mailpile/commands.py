@@ -1926,9 +1926,11 @@ class ConfigSet(Command):
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = {}
             for path, value in ops:
-                if path == 'master_key' and not force:
-                    if config.master_key:
-                        raise ValueError('I refuse to change the master key!')
+                if not force:
+                    if path == 'master_key' and config.master_key:
+                        raise ValueError('Need --force to change master key.')
+                    if path == 'sys.http_no_auth':
+                        raise ValueError('Need --force to change auth policy.')
 
                 value = value.strip()
                 if value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):

@@ -363,9 +363,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         try:
             try:
+                need_auth = not (mailpile.util.TESTING or
+                                 session.config.sys.http_no_auth)
                 commands = UrlMap(session).map(
                     self, method, path, query_data, post_data,
-                    authenticate=(not mailpile.util.TESTING))
+                    authenticate=need_auth)
             except UsageError:
                 if (not path.endswith('/') and
                         not session.config.sys.debug and

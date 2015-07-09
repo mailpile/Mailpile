@@ -36,6 +36,7 @@ CONFIG_RULES = {
                            'hostname', 'localhost'),
         'http_port':     p(_('Listening port for web UI'), int,         33411),
         'http_path':     p(_('HTTP path of web UI'), 'webroot',            ''),
+        'http_no_auth':  X(_('Disable HTTP authentication'),      bool, False),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
         'snippet_max':    (_('Max length of metadata snippets'), int,     250),
