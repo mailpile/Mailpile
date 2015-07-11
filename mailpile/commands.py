@@ -1325,9 +1325,9 @@ class Rescan(Command):
             msg_count = 1
             if which in ('both', 'mailboxes', 'editable'):
                 if which == 'editable':
-                    mailboxes = config.get_mailboxes(mail_sources=True)
+                    mailboxes = config.get_mailboxes(with_mail_source=True)
                 else:
-                    mailboxes = config.get_mailboxes(mail_sources=False)
+                    mailboxes = config.get_mailboxes(with_mail_source=False)
 
                 for fid, fpath, sc in mailboxes:
                     if mailpile.util.QUITTING:

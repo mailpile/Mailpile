@@ -410,6 +410,7 @@
                               ('pop3', 'POP3'),
                               ('pop3_ssl', 'POP3/SSL'),
                               ('spool', _("Mail spool")),
+                              ('local', _("Local files")),
                               ('none', _("None"))) %}
            {%- if rid != new_rid or val[:4] == protocol[:4] %}
             <option value="{{val}}"{%- if val == protocol %}
@@ -519,6 +520,34 @@
           </div>
         </div>
 
+        <div class="source-settings-{{ new_rid }} none local
+             {%- if protocol not in ('none', 'local') %} hide{% endif %}"
+             style="width: 70%;">
+          <div class="source-settings-{{ new_rid }} none left
+               {%- if protocol[:4] != 'none' %} hide{% endif %}"
+               style="margin-right: 0; width: 29em;">
+            <br><br>
+            <p class="text-center"><i>
+            {%- if result.sources %}
+              {{_("Choose a protocol for the new mail source...")}}
+            {%- else %}
+              {{_("No incoming mail for this account.")}}
+            {%- endif %}
+            </i></p>
+            <br>
+          </div>
+          <div class="source-settings-{{ new_rid }} local left
+               {%- if protocol != 'local' %} hide{% endif %}"
+               style="margin-right: 0; width: 29em;">
+            <p><i>
+              {{_("Use this setting if you would like Mailpile to read e-mails already downloaded by Thunderbird, Mac Mail or another local application on this machine.")}}
+            </i></p>
+            <p>
+              {{_("Use the Browse tool to import local mailboxes later on.")}}
+            </p>
+          </div>
+        </div>
+
         {%- if rid == new_rid %}
         <div class="source-settings-{{ new_rid }}
                     imap imap_ssl pop3 pop3_ssl local spool
@@ -534,25 +563,9 @@
         {% else %}
         <input type="hidden" name="source-{{ new_rid }}-enabled" value="yes">
         {% endif %}
-
-        <div class="source-settings-{{ new_rid }} none
-             {%- if protocol[:4] != 'none' %} hide{% endif %}"
-             style="width: 70%;">
-          <br><br>
-          <p class="text-center"><i>
-          {%- if result.sources %}
-            {{_("Choose a protocol for the new mail source...")}}
-          {%- else %}
-            {{_("No incoming mail for this account.")}}
-          {%- endif %}
-          </i></p>
-          <br><br>
-          <p style="position: absolute; font-size: 0.9em; padding-right: 2em; left: 0; bottom: 0;">
-            {{_("Note: Use the Browse tool to import local mailboxes later on.")}}
-          </p>
-        </div>
 {%- endmacro %}
         {%- for sid in result.sources %}
+
           {%- if not loop.first %}<br clear="both"><hr style="margin: 1em 0 5px 0;">{% endif %}
           {{- source_editor(sid, sid) }}
         {%- endfor %}
@@ -625,13 +638,17 @@
           <option {% if not result['security-pgp-key'] %}selected {% endif -%}
                   value="">{{_("Disable encryption for this account")}}</option>
         </select>
-        <div class="security-opt any text-right" style="margin: -13px 0 13px 0;">
+        <div class="security-opt any text-right
+             {%- if not result['security-pgp-key'] %} hide{% endif %}"
+             style="margin: -13px 0 13px 0;">
           <a class="more-crypto-show" onclick="javascript:_fpa.more('more-crypto');">
             {{_("Show too many encryption settings")}}
           </a>
         </div>
       </div>
-      <div class="security-opt any left" style="margin-right: 0; width: 29em;">
+      <div class="security-opt any left
+           {%- if not result['security-pgp-key'] %} hide{% endif %}"
+           style="margin-right: 0; width: 29em;">
         <input type="checkbox" name="security-best-effort-crypto" value="yes"
                onchange='javascript:_fpa.exclude(this, "security-always-sign", "security-always-encrypt");'
                {% if result['security-best-effort-crypto'] %}checked{% endif %}>

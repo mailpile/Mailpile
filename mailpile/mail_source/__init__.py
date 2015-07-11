@@ -19,7 +19,7 @@ from mailpile.vfs import MailpileVFS as vfs
 from mailpile.vfs import FilePath, MailpileVfsBase
 
 
-__all__ = ['mbox', 'maildir', 'imap']
+__all__ = ['local', 'imap', 'pop3']
 
 
 class BaseMailSource(threading.Thread):
@@ -417,7 +417,8 @@ class BaseMailSource(threading.Thread):
         return 'inherit'
 
     def take_over_mailbox(self, mailbox_idx,
-                          policy=None, create_local=None, save=True):
+                          policy=None, create_local=None, save=True,
+                          apply_tags=None):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
@@ -430,6 +431,8 @@ class BaseMailSource(threading.Thread):
             }
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
+            if apply_tags:
+                mbx_cfg.apply_tags.extend(apply_tags)
         mbx_cfg.policy = policy or self._default_policy(mbx_cfg)
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
         if disco_cfg.guess_tags:
@@ -941,12 +944,9 @@ def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
 def MailSource(session, my_config):
     # FIXME: check the plugin and instanciate the right kind of mail source
     #        for this config section.
-    if my_config.protocol in ('mbox',):
-        from mailpile.mail_source.mbox import MboxMailSource
-        return MboxMailSource(session, my_config)
-    elif my_config.protocol in ('maildir',):
-        from mailpile.mail_source.maildir import MaildirMailSource
-        return MaildirMailSource(session, my_config)
+    if my_config.protocol in ('mbox', 'maildir', 'local'):
+        from mailpile.mail_source.local import LocalMailSource
+        return LocalMailSource(session, my_config)
     elif my_config.protocol in ('imap', 'imap_ssl'):
         from mailpile.mail_source.imap import ImapMailSource
         return ImapMailSource(session, my_config)

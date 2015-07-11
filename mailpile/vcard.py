@@ -1044,6 +1044,30 @@ class MailpileVCard(SimpleVCard):
                 return
         self.add(VCardLine(name='x-mailpile-profile-source', value=source_id))
 
+    def get_source_by_proto(self, protocol, create=False, name=None):
+        my_rid = self.random_uid
+        source = None
+        for src_id, src in self.config.sources.iteritems():
+            if src.profile == my_rid and src.protocol == protocol:
+                if not name or src.name == name:
+                    source = src
+                    break
+
+        if source is None:
+            if not create:
+                return None
+            new_src_id = create if (create is not True) else randomish_uid()
+            if new_src_id not in self.config.sources:
+                self.config.sources[new_src_id] = {}
+            source = self.config.sources[new_src_id]
+            source.name = name or ''
+            source.protocol = protocol
+            source.profile = my_rid
+            if self.tag:
+                source.discovery.apply_tags = [self.tag]
+
+        return source
+
     def sources(self):
         sources = []
         for vcl in self.get_all('x-mailpile-profile-source'):

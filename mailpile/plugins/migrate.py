@@ -3,8 +3,7 @@ from mailpile.commands import Command
 from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mail_source.mbox import MboxMailSource
-from mailpile.mail_source.maildir import MaildirMailSource
+from mailpile.mail_source.local import LocalMailSource
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
@@ -61,6 +60,9 @@ def migrate_routes(session):
 def migrate_mailboxes(session):
     config = session.config
 
+    # FIXME: This should be using mailpile.vfs.FilePath
+    # FIXME: Link new mail sources to a profile... any profile?
+
     def _common_path(paths):
         common_head, junk = os.path.split(paths[0])
         for path in paths:
@@ -77,9 +79,7 @@ def migrate_mailboxes(session):
                     head, junk = os.path.split(path)
         return common_head
 
-    mboxes = []
-    maildirs = []
-    macmaildirs = []
+    mailboxes = []
     thunderbird = []
 
     spam_tids = [tag._key for tag in config.get_tags(type='spam')]
@@ -87,22 +87,14 @@ def migrate_mailboxes(session):
     inbox_tids = [tag._key for tag in config.get_tags(type='inbox')]
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
-    for mbx_id, path, src in config.get_mailboxes():
-        if (path == '/dev/null' or
-                path.startswith('src:') or
-                src is not None or
+    for mbx_id, path, src in config.get_mailboxes(with_mail_source=False):
+        if (path.startswith('src:') or
                 config.is_editable_mailbox(mbx_id)):
             continue
-        elif os.path.exists(os.path.join(path, 'Info.plist')):
-            macmaildirs.append((mbx_id, path))
-        elif os.path.isdir(path):
-            maildirs.append((mbx_id, path))
         elif 'thunderbird' in path.lower():
             thunderbird.append((mbx_id, path))
         else:
-            mboxes.append((mbx_id, path))
-
-    # macmail: library/mail/v2
+            mailboxes.append((mbx_id, path))
 
     if thunderbird:
         # Create basic mail source...
@@ -115,7 +107,7 @@ def migrate_mailboxes(session):
 
         config.sources.tbird.discovery.policy = 'read'
         config.sources.tbird.discovery.process_new = True
-        tbird_src = MboxMailSource(session, config.sources.tbird)
+        tbird_src = LocalMailSource(session, config.sources.tbird)
 
         # Configure discovery policy?
         root = _common_path([path for mbx_id, path in thunderbird])
@@ -136,9 +128,8 @@ def migrate_mailboxes(session):
 
         tbird_src.my_config.discovery.policy = 'unknown'
 
-    for name, mailboxes, proto, description, cls in (
-        ('mboxes', mboxes, 'mbox', 'Unix mbox files', MboxMailSource),
-        ('maildirs', maildirs, 'maildir', 'Maildirs', MaildirMailSource),
+    for name, proto, description, cls in (
+        ('mboxes', 'local', 'Local mailboxes', LocalMailSource),
     ):
         if mailboxes:
             # Create basic mail source...

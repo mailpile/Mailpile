@@ -85,9 +85,11 @@ class VCardCommand(Command):
             l.append(VCardLine(name='note', value=note))
         if self.KIND in VCardStore.KINDS_PEOPLE:
             return MailpileVCard(VCardLine(name='email',
-                                           value=handle, type='pref'), *l)
+                                           value=handle, type='pref'), *l,
+                                 config=self.session.config)
         else:
-            return MailpileVCard(VCardLine(name='nickname', value=handle), *l)
+            return MailpileVCard(VCardLine(name='nickname', value=handle), *l,
+                                 config=self.session.config)
 
     def _valid_vcard_handle(self, vc_handle):
         return (vc_handle and '@' in vc_handle[1:])
@@ -846,26 +848,32 @@ def ProfileVCard(parent):
             for src_id in sources:
                 prefix = 'source-%s-' % src_id
                 protocol = self.data.get(prefix + 'protocol', ['none'])[0]
+                def configure_source(source):
+                    source.host = ''
+                    source.password = ''
+                    source.username = ''
+                    source.enabled = self._yn(prefix + 'enabled')
+                    source.discovery.create_tag = True
+                    source.discovery.process_new = True
+                    if src_id not in vcard.sources():
+                        vcard.add_source(source._key)
+                    return source
                 def make_new_source():
                     # This little dance makes sure source is actually a
                     # config section, not just an anonymous dict.
                     if src_id not in config.sources:
                         config.sources[src_id] = {}
                     source = config.sources[src_id]
-                    source.host = ''
-                    source.password = ''
-                    source.username = ''
                     source.profile = vcard.random_uid
-                    source.enabled = self._yn(prefix + 'enabled')
                     source.discovery.apply_tags = [vcard.tag]
-                    source.discovery.create_tag = True
-                    source.discovery.process_new = True
-                    if src_id not in vcard.sources():
-                        vcard.add_source(src_id)
-                    return source
+                    return configure_source(source)
 
                 if protocol == 'none':
                     pass
+
+                elif protocol == 'local':
+                    source = configure_source(vcard.get_source_by_proto(
+                        'local', create=src_id, name=_('Local mailboxes')))
 
                 elif protocol == 'spool':
                     path = self._get_mail_spool()
@@ -877,16 +885,15 @@ def ProfileVCard(parent):
                     else:
                         mailbox_idx = config.sys.mailbox.append(path)
 
-                    source = make_new_source()
-                    source.name = _('Unix mailboxes')
-                    source.protocol = 'mbox'
-                    for tag in config.get_tags(type='inbox'):
-                        source.discovery.apply_tags.append(tag._key)
+                    source = configure_source(vcard.get_source_by_proto(
+                        'local', create=src_id, name=_('Local mailboxes')))
+                    src_id = source._key
 
                     # We need to communicate with the source below,
                     # so we save config to trigger instanciation.
                     self._background_save(config=True, wait=True)
 
+                    inbox = [t._key for t in config.get_tags(type='inbox')]
                     local_copy = self._yn(prefix + 'copy-local')
                     if self._yn(prefix + 'delete-source'):
                         policy = 'move'
@@ -897,6 +904,7 @@ def ProfileVCard(parent):
                     src_obj.take_over_mailbox(mailbox_idx,
                                               policy=policy,
                                               create_local=local_copy,
+                                              apply_tags=inbox,
                                               save=False)
 
                 elif protocol in ('imap', 'imap_ssl', 'pop3', 'pop3_ssl'):

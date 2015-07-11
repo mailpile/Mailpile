@@ -1647,27 +1647,31 @@ class ConfigManager(ConfigDict):
                 return src
         return None
 
-    def get_mailboxes(self, standalone=True, mail_sources=False):
+    def get_mailboxes(self, with_mail_source=None,
+                            mail_source_locals=False):
         try:
             mailboxes = [(FormatMbxId(k),
                           self.sys.mailbox[k],
                           self._find_mail_source(k))
-                          for k in self.sys.mailbox.keys()]
+                          for k in self.sys.mailbox.keys()
+                          if self.sys.mailbox[k] != '/dev/null']
         except (AttributeError):
             # Config not loaded, nothing to see here
             return []
 
-        if not standalone:
+        if with_mail_source is True:
             mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
+        elif with_mail_source is False:
+            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
+        else:
+            pass  # All mailboxes, with or without mail sources
 
-        if mail_sources:
+        if mail_source_locals:
             for i in range(0, len(mailboxes)):
                 mid, path, src = mailboxes[i]
                 mailboxes[i] = (mid,
                                 src and src.mailbox[mid].local or path,
                                 src)
-        else:
-            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
 
         mailboxes.sort()
         return mailboxes
@@ -1920,7 +1924,7 @@ class ConfigManager(ConfigDict):
             mbx._decryption_key_func = lambda: self.master_key
             mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
                                                 self.master_key)
-            return path, mbx
+            return FilePath(path), mbx
 
     def open_local_mailbox(self, session):
         with self._lock:

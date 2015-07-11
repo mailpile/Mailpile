@@ -158,10 +158,12 @@
           <span class="icon icon-new"></span> {{_("Unread Mail")}}
         </a>
       </td><td colspan=5>
+{%- if result.profiles|length > 0 %}
         <a href="{{ U('/browse/') }}">
           <span class="icon icon-list"></span> {{_("Browse")}}
         </a>
         &nbsp;&nbsp;
+{%- endif %}
         <a class="auto-modal" data-flags="reload" data-icon="icon-user"
            title="{{_("Create a new Account")}}"
            href="{{ U('/profiles/add/') }}">

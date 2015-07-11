@@ -339,8 +339,9 @@ class MailpileVfsRoot(MailpileVfsBase):
         """
         user_home = os.path.expanduser('~')
         for mbx_id, path, ms in self.config.get_mailboxes():
-            if (path[:4] != 'src:' and
-                    not os.path.normpath(path).startswith(user_home)):
+            path = FilePath(path)
+            if (path.raw_fp[:4] != 'src:' and
+                    not vfs.abspath(path).startswith(user_home)):
                 path = FilePath(os.path.normpath(path))
                 if not [e for e in self.entries if self.entries[e][0] == path]:
                     self.entries[mbx_id] = (path, path.display_basename())
@@ -359,6 +360,8 @@ class MailpileVfsRoot(MailpileVfsBase):
     def _entries(self):
         e = copy.copy(self.entries)
         for msid, msobj in self.config.mail_sources.iteritems():
+            if not msobj.my_config.enabled:
+                continue
             e['msrc.%s' % msid] = (FilePath('/src:%s' % msid), msobj.name,
                                    'MailSource')
         return e
