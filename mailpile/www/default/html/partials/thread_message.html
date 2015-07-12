@@ -109,7 +109,7 @@
         {% endif %}
         {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
         <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
-          <div class="preview" style="background-image: U('{{ U('/message/download/preview/=', mid, '/part:', att.count, '/') }}');"></div>
+          <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/part:', att.count, '/') }}');"></div>
         </a>
         {% elif type == "keys" %}
         {% do special_text_parts.append("pgp-key") %}
