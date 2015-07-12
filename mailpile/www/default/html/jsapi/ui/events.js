@@ -52,6 +52,7 @@ Mailpile.auto_modal = function(params) {
     jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') +
                   'ui_flags=' + params.flags.replace(' ', '+');
   }
+  $('#modal-full').modal('hide');
   return Mailpile.API.with_template('modal-auto', function(modal) {
     $.ajax({
       url: jhtml_url,

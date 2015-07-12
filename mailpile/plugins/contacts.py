@@ -880,7 +880,7 @@ def ProfileVCard(parent):
 
                 elif protocol == 'local':
                     source = configure_source(vcard.get_source_by_proto(
-                        'local', create=src_id, name=_('Local mailboxes')))
+                        'local', create=src_id))
 
                 elif protocol == 'spool':
                     path = self._get_mail_spool()
@@ -893,7 +893,7 @@ def ProfileVCard(parent):
                         mailbox_idx = config.sys.mailbox.append(path)
 
                     source = configure_source(vcard.get_source_by_proto(
-                        'local', create=src_id, name=_('Local mailboxes')))
+                        'local', create=src_id))
                     src_id = source._key
 
                     # We need to communicate with the source below,

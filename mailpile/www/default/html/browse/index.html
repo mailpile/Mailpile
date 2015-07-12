@@ -79,7 +79,7 @@
     {%- if info.tag %}
       {%- set _url = U('/tags/edit.html?only=', info.tag) -%}
     {%- else %}
-      {%- set _url = '#mailbox-settings' -%}
+      {%- set _url = U('/settings/mailbox/?path=', info.encoded) -%}
     {%- endif %}
   {%- elif info.flag_mailsource and info.source -%}
     {%- set _url = U('/profiles/edit/?rid=', config.sources[info.source].profile, '&ui_open=sources') -%}

@@ -2171,66 +2171,176 @@ class ConfigPrint(Command):
             return self._success(_('Displayed settings'), result=result)
 
 
-class AddMailboxes(Command):
-    """Add one or more mailboxes"""
-    SYNOPSIS = ('A', 'add', None, '<path/to/mailbox>')
+class ConfigureMailboxes(Command):
+    """
+    Add one or more mailboxes.
+
+    If not account is specified, the mailbox is only assigned an ID for use
+    in the metadata index.
+
+    If an account is specified, the mailbox will be assigned to that account
+    and configured for automatic indexing.
+    """
+    SYNOPSIS = ('A', 'add', 'settings/mailbox',
+                '[--recurse] [account@email] <path/to/mailbox>')
     ORDER = ('Config', 4)
-    SPLIT_ARG = False
-    HTTP_CALLABLE = ('POST', 'UPDATE')
     IS_USER_ACTIVITY = True
+    HTTP_CALLABLE = ('GET', 'POST', 'UPDATE')
+    HTTP_QUERY_VARS = {
+        'path': 'Path to mailbox',
+        'profile': 'Profile/account ID or e-mail',
+        'recurse': 'y/n: search subdirectories?',
+        'apply_tags': 'Mailbox tags',
+        'auto_index': 'Account e-mail or ID',
+        'tag_visible': 'Make new tags visible in sidebar',
+        'local_copy': 'Make local copy of mail'
+    }
 
     MAX_PATHS = 50000
+
+    def _truthy(self, var, default='n'):
+        return (self.data.get(var, [default])[0].lower()
+                in ('y', 'yes', 'true', 'on'))
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         session, config = self.session, self.session.config
-        adding = []
-        existing = config.sys.mailbox
         paths = list(self.args)
+        recurse = False
 
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
+        # Parse arguments from the web
+        paths += self.data.get('path', [])
+        account_id = self.data.get('profile', [None])[0]
+        recurse = self._truthy('recurse', default='n')
+
+        apply_tags = self.data.get('apply_tags', [])
+        if self.data.get('_method', 'CLI') == 'POST':
+            auto_index = self._truthy('auto_index', default='n')
+            tag_visible = self._truthy('tag_visible', default='n')
+            local_copy = self._truthy('local_copy', default='n')
+        else:
+            auto_index = True
+            tag_visible = False
+            local_copy = None
+
+        # Recursion requested on CLI?
+        if paths and paths[0] == '--recurse':
+            recurse = paths.pop(0)
+
+        # Are we linking these mailboxes to a particular account?
+        if (not account_id and
+                paths and '@' in paths[0] and paths[0][:1] != '/'):
+            account_id = paths.pop(0)
+        account = account_id and config.vcards.get_vcard(account_id)
+        if account_id and (not account or account.kind != 'profile'):
+            return self._error(_('Account not found: %s') % account_id)
+
+        # Turn raw paths into FilePath objects
+        paths = [FilePath(p) for p in paths]
+        opaths = paths[:]
+
+        # Get a list of existing mailboxes...
+        existing = {}
+        existing.update(dict((FilePath(p).encoded(), (FilePath(p), _id, src))
+                             for _id, p, src in
+                             config.get_mailboxes(mail_source_locals=False)))
+        existing.update(dict((FilePath(p).encoded(), (FilePath(p), _id, src))
+                             for _id, p, src in
+                             config.get_mailboxes(mail_source_locals=True)))
+
+        # Figure out which mailboxes the user is asking us to add...
+        adding = []
+        configure = []
         try:
             while paths:
-                raw_fn = paths.pop(0)
-                fn = os.path.normpath(os.path.expanduser(raw_fn))
-                fn = os.path.abspath(fn)
-                if raw_fn in existing or fn in existing:
-                    session.ui.warning('Already in the pile: %s' % raw_fn)
-                elif raw_fn.startswith("imap://"):
-                    adding.append(raw_fn)
-                elif IsMailbox(fn, config):
-                    adding.append(raw_fn)
-                elif vfs.exists(fn) and vfs.isdir(fn):
-                        session.ui.mark('Scanning %s for mailboxes' % fn)
-                        try:
-                            for f in [f for f in os.listdir(fn)
-                                      if not f.startswith('.')]:
-                                paths.append(vfs.path_join(fn, f))
-                                if len(paths) > self.MAX_PATHS:
-                                    return self._error(_('Too many files'))
-                        except OSError:
-                            if raw_fn in self.args:
-                                return self._error(_('Failed to read: %s'
-                                                     ) % raw_fn)
-                elif raw_fn in self.args:
-                    return self._error(_('No such file or directory: %s'
-                                         ) % raw_fn)
+                fn = paths.pop(0)
+                fn_display = fn.display()
+                einfo = existing.get(fn.encoded())
+                if fn.raw_fp.startswith("src:"):
+                    configure.append((fn, einfo))
+                elif einfo:
+                    configure.append((fn, einfo))
+                    if not account:
+                        session.ui.warning('Already in the pile: %s'
+                                           % fn_display)
+                elif IsMailbox(fn.raw_fp, config):
+                    adding.append(fn)
+                elif recurse and vfs.exists(fn) and vfs.isdir(fn):
+                    session.ui.mark('Scanning %s for mailboxes' % fn_display)
+                    try:
+                        for f in [f for f in vfs.listdir(fn)
+                                  if not f.raw_fp.startswith('.')]:
+                            paths.append(vfs.path_join(fn, f))
+                            if len(paths) > self.MAX_PATHS:
+                                return self._error(_('Too many files'))
+                    except OSError:
+                        if fn in opaths:
+                            return self._error(_('Failed to read: %s'
+                                                 ) % fn_display)
+                elif fn in opaths:
+                    return self._error(_('Not a mailbox: %s') % fn_display)
         except KeyboardInterrupt:
             return self._error(_('User aborted'))
 
+        has_source = (len(configure) > 0)
+        if local_copy is None:
+            local_copy = has_source  # No source; probably already local
+
+        if self.data.get('_method', 'CLI') == 'GET':
+            return self._success(_('Add and configure mailboxes'), result={
+                'profile': account_id,
+                'apply_tags': apply_tags,
+                'auto_index': auto_index,
+                'tag_visible': tag_visible,
+                'local_copy': local_copy,
+                'has_source': has_source,
+                'adding': adding,
+                'configure': configure
+            })
+
         added = {}
+        configured = {}
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             for arg in adding:
-                added[config.sys.mailbox.append(arg)] = arg
-        if added:
+                mbox_id = config.sys.mailbox.append(arg)
+                added[mbox_id] = arg
+                if account:
+                    configure.append((arg, (FilePath(arg), mbox_id, None)))
+
+            def _get_source(path, einfo):
+                if einfo and einfo[2]:
+                    return einfo[2]
+                if (path.raw_fp.startswith('src:') or
+                        path.raw_fp.startswith('/src:')):
+                    src_id = path.raw_fp.split(':')[1].split('/')[0]
+                    return config.sources[src_id]
+                return account.get_source_by_proto('local', create=True)
+
+            for path, einfo in configure:
+                mbox_id = einfo[1]
+                source_cfg = _get_source(path, einfo)
+                source_obj = config.mail_sources[source_cfg._key]
+                policy = 'read' if auto_index else 'ignore'
+                source_obj.take_over_mailbox(mbox_id,
+                                             policy=policy,
+                                             create_local=local_copy,
+                                             apply_tags=apply_tags,
+                                             visible_tags=tag_visible,
+                                             save=False)
+                configured[mbox_id] = path
+
+        if added or configured:
             self._background_save(config=True)
-            return self._success(_('Added %d mailboxes') % len(added),
-                                 result={'added': added})
+            return self._success(_('Configured %d mailboxes'
+                                   ) % max(len(added), len(configured)),
+                                 result={'added': added,
+                                         'configured': configured})
         else:
             return self._success(_('Nothing was added'))
 
@@ -2690,8 +2800,8 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
-    GpgCommand, ListDir, ChangeDir, CatFile,
-    WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
+    GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
+    ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Cached, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]

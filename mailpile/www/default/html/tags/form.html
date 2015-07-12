@@ -97,7 +97,7 @@
              and ptag.slug != tag.slug
              and not ptag.parent %}
           <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
-      {%- endif %}    
+      {%- endif %}
     {%- endfor %}
         </select>
       </div>
@@ -105,15 +105,24 @@
 {%- endif %}
 
 {%- if tag.subtags %}
-      <h3 class="add-top">{{_("Subtags")}}</h3>
+      <br clear="both"><h3 class="add-top">{{_("Subtags")}}</h3>
       <ul class="items grouped">
   {%- for sub in tag.subtags %}
         <li class="grouped">
-          <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} <a href="{{ config.sys.http_path }}/tags/edit.html?only={{sub.slug}}" class="right"><span class="icon-settings"></span> {{_("Settings")}}</a>
+          <a href="{{ sub.url }}">
+            <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span>
+          {{sub.name}}
+          </a>
+          <a href="{{ U('/tags/edit.html?only=', sub.slug) }}"
+             title='Edit: {{ sub.name }}'
+             class="auto-modal auto-modal-reload right">
+            <span class="icon-settings"></span> {{_("Settings")}}
+          </a>
         </li>
   {%- endfor %}
       </ul>
 {%- endif %}
+
     </div>
   </div>
   <div class="modal-choose-tag-icon hide">
@@ -131,6 +140,37 @@
       <ul class="horizontal tag-colors"></ul>
     </div>
   </div>
+
+{%- for src_id, source in config.sources.iteritems() %}
+  {%- for mbx_id, settings in source.mailbox.iteritems() %}
+    {%- if settings.primary_tag == tag.tid %}
+  <br clear="both">
+  <p class="message paragraph-important modal-mailbox-settings-title">
+    <span class="icon-mailsource"></span> {{_("Mailbox settings")}}:
+    {{ config.sys.mailbox[mbx_id] }}
+  </p>
+  <div class="modal-mailbox-settings">
+
+    <div class="right">
+      <ul>
+        <li><input type="radio"
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
+                   {% if settings.policy != 'ignore' -%}
+                   value="{{settings.policy}}" checked
+                   {% else %}value="read"{% endif %}>
+            <span class="checkbox">{{_("Add messages to search engine")}}</span></li>
+        <li><input type="radio" value="ignore"
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
+                   {% if settings.policy == "ignore" %}checked{% endif %}>
+            <span class="checkbox">{{_("Stop adding messages to search engine")}}</span></li>
+      </ul>
+    </div>
+
+  </div>
+    {%- endif %}
+  {%- endfor %}
+{%- endfor %}
+
 
 {################ FIXME - THIS IS THE FUN STUFF!  #####################
 

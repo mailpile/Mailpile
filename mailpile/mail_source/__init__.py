@@ -418,7 +418,7 @@ class BaseMailSource(threading.Thread):
 
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True,
-                          apply_tags=None):
+                          apply_tags=None, visible_tags=None):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
@@ -437,7 +437,7 @@ class BaseMailSource(threading.Thread):
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
         if disco_cfg.guess_tags:
             self._guess_tags(mbx_cfg)
-        self._create_primary_tag(mbx_cfg, save=False)
+        self._create_primary_tag(mbx_cfg, save=False, visible=visible_tags)
         self._create_local_mailbox(mbx_cfg, save=False)
         if save:
             self._save_config()
@@ -513,7 +513,7 @@ class BaseMailSource(threading.Thread):
         else:
             return None
 
-    def _create_primary_tag(self, mbx_cfg, save=True):
+    def _create_primary_tag(self, mbx_cfg, visible=None, save=True):
         config = self.session.config
         if mbx_cfg.primary_tag and (mbx_cfg.primary_tag in config.tags):
             return
@@ -545,14 +545,15 @@ class BaseMailSource(threading.Thread):
                     # clutter. Yes?
                     try:
                         tag = config.tags[tid]
-                        if tag.label:
+                        if tag and tag.label:
                             as_label = False
                     except (KeyError, ValueError):
                         pass
                 mbx_cfg.primary_tag = self._create_tag(
                     mbx_cfg.primary_tag,
                     use_existing=False,
-                    visible=disco_cfg.visible_tags,
+                    visible=(disco_cfg.visible_tags if (visible is None)
+                             else visible),
                     label=as_label,
                     slug='mailbox-%s' % mbx_cfg._key,
                     unique=False,
@@ -625,6 +626,8 @@ class BaseMailSource(threading.Thread):
                 'icon': icon or 'icon-tag',
                 'display': 'tag' if visible else 'invisible',
             })
+            if parent and visible:
+                self.session.config.tags[parent].display = 'tag'
         return tag_id
 
     def interrupt_rescan(self, reason):

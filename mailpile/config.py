@@ -1812,12 +1812,13 @@ class ConfigManager(ConfigDict):
         with self._lock:
             for sid, src in self.sources.iteritems():
                 for mid, info in src.mailbox.iteritems():
+                    umfn = _au(self.sys.mailbox[mid])
+                    if umfn in abs_paths:
+                        abs_paths[umfn].append((mid, src))
                     if info.local:
-                        umfn = _au(info.local)
-                        if umfn not in abs_paths:
-                            umfn = _au(self.sys.mailbox[mid])
-                        if umfn in abs_paths:
-                            abs_paths[umfn].append((mid, src))
+                        lmfn = _au(info.local)
+                        if lmfn in abs_paths:
+                            abs_paths[lmfn].append((mid, src))
 
             for mid, mfn in self.sys.mailbox.iteritems():
                 umfn = _au(mfn)

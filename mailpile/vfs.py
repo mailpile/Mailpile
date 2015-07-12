@@ -342,7 +342,7 @@ class MailpileVfsRoot(MailpileVfsBase):
             path = FilePath(path)
             if (path.raw_fp[:4] != 'src:' and
                     not vfs.abspath(path).startswith(user_home)):
-                path = FilePath(os.path.normpath(path))
+                path = FilePath(os.path.normpath(path.raw_fp))
                 if not [e for e in self.entries if self.entries[e][0] == path]:
                     self.entries[mbx_id] = (path, path.display_basename())
 

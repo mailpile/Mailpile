@@ -53,13 +53,19 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     var template = 'modal-save-search';
     var searchq = ($('#search-query').attr('value') + ' ');
     if (searchq.match(/vfs:/g)) {
-      template = 'modal-save-mailbox';
+      Mailpile.auto_modal({
+        url: '{{ U("/settings/mailbox/?path=") }}' + searchq.substring(4),
+        method: 'GET',
+        reload: true
+      });
     }
-    Mailpile.API.with_template(template, function(modal) {
-      mf = $('#modal-full').html(modal({ terms: searchq }));
-      mf.find('#ss-search-terms').attr('value', searchq);
-      mf.modal(Mailpile.UI.ModalOptions);
-    });
+    else {
+      Mailpile.API.with_template(template, function(modal) {
+        mf = $('#modal-full').html(modal({ terms: searchq }));
+        mf.find('#ss-search-terms').attr('value', searchq);
+        mf.modal(Mailpile.UI.ModalOptions);
+      });
+    }
   });
   $(document).on('click', '#modal-save-search .ss-save', function() {
     if ($('#modal-save-search #ss-comment').val() != '') {
