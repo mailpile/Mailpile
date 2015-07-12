@@ -44,15 +44,25 @@
         <span class="icon icon-outbox"></span>
 {%- endif %}
       </td><td><i>settings</i>
-{% else %}
+{%- else %}
       </td><td colspan=3 style='border: 0;'>
-{% endif %}
+{%- endif %}
       </td><td width='1%' style='border: 0;'>
       </td>
     </tr>
+    {%- if result.loading or not result.loaded %}
+    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+      <p style='margin: 1em; padding: 0;'>
+        <i>{{_("Still loading profiles and contacts, please wait...")}}</i>
+      </p>
+      <script type='text/javascript'>
+        setTimeout('window.location.href=window.location.href', 5000);
+      </script>
+    </div></td></tr>
+    {%- elif result.rids %}
     {%- for profile_rid in result.rids %}
      {%- set p = result.profiles[result.rids[profile_rid]] %}
-     {%- if 'x-mailpile-profile-tag' in p %}
+     {%- if 'x-mailpile-profile-tag' in p and p['x-mailpile-profile-tag'] in config.tags %}
        {%- set t = mailpile('tags', config.tags[p['x-mailpile-profile-tag']].slug).result.tags.0 %}
      {%- else %}
        {%- set t = {'stats': {'new': '', 'all': ''}} %}
@@ -131,12 +141,6 @@
        </td>
     </tr>
     {%- endfor %}
-    {%- if result.loading %}
-    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
-      <p style='margin: 1em; padding: 0;'>
-        <i>{{_("Still loading profiles and contacts, please wait...")}}</i>
-      </p>
-    </div></td></tr>
     {%- elif result.profiles|length < 1 %}
     <tr style="background: #fff;"><td colspan=9><div class='text-center'>
       <br>

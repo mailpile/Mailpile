@@ -1479,10 +1479,6 @@ class ConfigManager(ConfigDict):
         else:
             self.event_log.ui_unwatch(session.ui)
 
-        # Load Search History
-        self.search_history = SearchHistory.Load(self,
-                                                 merge=self.search_history)
-
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
@@ -1491,7 +1487,14 @@ class ConfigManager(ConfigDict):
         # Recreate VFS root in case new things have been found
         self.vfs_root.rescan()
 
+        # Load Search History
+        self.search_history = SearchHistory.Load(self,
+                                                 merge=self.search_history)
+
         self.loaded_config = True
+
+        # Trigger background-loads of everything
+        Rescan(session, 'rescan')._idx(wait=False)
 
     def reset_rules_from_source(self):
         with self._lock:

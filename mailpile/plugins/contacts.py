@@ -138,6 +138,7 @@ class VCard(VCardCommand):
     KIND = ''
 
     def command(self, save=True):
+        self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
         vcards = []
         for email in self.args:
@@ -201,7 +202,8 @@ class AddVCard(VCardCommand):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
-        session, config, idx = self.session, self.session.config, self._idx()
+        idx = self._idx()  # Make sure VCards are all loaded
+        session, config = self.session, self.session.config
         args = list(self.args)
 
         if self.data.get('_method', 'not-http').upper() == 'GET':
@@ -295,6 +297,7 @@ class RemoveVCard(VCardCommand):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
+        idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
         removed = []
         for handle in (list(self.args) +
@@ -336,6 +339,7 @@ class VCardAddLines(VCardCommand):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
+        idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
         if self.args:
@@ -404,7 +408,9 @@ class VCardRemoveLines(VCardCommand):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
+        idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
+
         handle, line_ids = self.args[0], self.args[1:]
         vcard = config.vcards.get_vcard(handle)
         if not vcard:
@@ -574,6 +580,7 @@ class ContactImport(Command):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
+        idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
         if not format in PluginManager.CONTACT_IMPORTERS.keys():
@@ -1198,6 +1205,7 @@ class EditProfile(AddProfile):
         if (self.session.config.sys.lockdown or 0) > 1:
             return self._error(_('In lockdown, doing nothing.'))
 
+        idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
       
         # OK, fetch the VCard.

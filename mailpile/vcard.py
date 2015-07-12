@@ -1233,54 +1233,58 @@ class VCardStore(dict):
                 del self[card.random_uid]
 
     def load_vcards(self, session=None):
-        if self.loaded or self.loading:
-            return
+        with self._lock:
+            if self.loaded or self.loading:
+                return
+            self.loaded = False
+            self.loading = True
+
         try:
-            with self._lock:
-                self.loading = True
-                prfs = self.config.prefs
-                key_func = lambda: self.config.master_key
-                paths = [(fn, os.path.join(self.vcard_dir, fn))
-                         for fn in os.listdir(self.vcard_dir)
-                         if fn.endswith('.vcf')]
-                # Due to the way the eclipsing cleaner works, we want to
-                # load the most interesting VCards first - so we sort by
-                # size as a rough approximation of that.
-                paths.sort(key=lambda k: -os.path.getsize(k[1]))
-                for fn, path in paths:
-                    if mailpile.util.QUITTING:
-                        return
+            prfs = self.config.prefs
+            key_func = lambda: self.config.master_key
+            paths = [(fn, os.path.join(self.vcard_dir, fn))
+                     for fn in os.listdir(self.vcard_dir)
+                     if fn.endswith('.vcf')]
+
+            # Due to the way the eclipsing cleaner works, we want to
+            # load the most interesting VCards first - so we sort by
+            # size as a rough approximation of that.
+            paths.sort(key=lambda k: -os.path.getsize(k[1]))
+            for fn, path in paths:
+                if mailpile.util.QUITTING:
+                    return
+                try:
+                    c = MailpileVCard(config=self.config)
+                    c.load(path, config=self.config)
                     try:
-                        c = MailpileVCard(config=self.config)
-                        c.load(path, config=self.config)
-                        try:
-                            def ccb(key, card):
-                               if session:
-                                   session.ui.error('DISABLING %s, eclipses %s'
-                                                    % (path, key))
-                               os.rename(path, path + '.bak')
-                               raise ValueError('Eclipsing')
-                            self.index_vcard(c, collision_callback=ccb)
+                        def ccb(key, card):
                             if session:
-                                session.ui.mark('Loaded %s from %s'
-                                                % (c.email, fn))
-                        except ValueError:
-                            pass
-                    except KeyboardInterrupt:
-                        raise
-                    except ValueError:
-                        if fn.startswith('tmp'):
-                            safe_remove(os.path.join(self.vcard_dir, fn))
-                    except:
+                                session.ui.error('DISABLING %s, eclipses %s'
+                                                 % (path, key))
+                            os.rename(path, path + '.bak')
+                            raise ValueError('Eclipsing')
+                        self.index_vcard(c, collision_callback=ccb)
                         if session:
-                            if 'vcard' in self.config.sys.debug:
-                                import traceback
-                                traceback.print_exc()
-                            session.ui.warning('Failed to load vcard %s' % fn)
-                self.loaded = True
-                self.loading = False
+                            session.ui.mark('Loaded %s from %s'
+                                            % (c.email, fn))
+                    except ValueError:
+                        pass
+                except KeyboardInterrupt:
+                    raise
+                except ValueError:
+                    if fn.startswith('tmp'):
+                        safe_remove(os.path.join(self.vcard_dir, fn))
+                except:
+                    if session:
+                        if 'vcard' in self.config.sys.debug:
+                            import traceback
+                            traceback.print_exc()
+                        session.ui.warning('Failed to load vcard %s' % fn)
+            self.loaded = True
         except (OSError, IOError):
             pass
+        finally:
+            self.loading = False
 
     def get_vcard(self, email):
         return self.get(email.lower(), None)
