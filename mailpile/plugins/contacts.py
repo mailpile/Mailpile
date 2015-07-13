@@ -916,6 +916,7 @@ def ProfileVCard(parent):
 
                 elif protocol in ('imap', 'imap_ssl', 'pop3', 'pop3_ssl'):
                     source = make_new_source()
+                    source.force_starttls = self._yn(prefix + 'force-starttls')
 
                     # Discovery policy
                     disco = source.discovery
@@ -1079,7 +1080,7 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-protocol': 'none',
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
-            'source-NEW-force-starttls': False,
+            'source-NEW-force-starttls': True,
             'source-NEW-visible-tags': False,
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
@@ -1198,6 +1199,8 @@ class EditProfile(AddProfile):
                                                and disco.local_copy)
             info[prefix + 'visible-tags'] = disco.visible_tags
             info[prefix + 'enabled'] = source.enabled
+            info[prefix + 'force-starttls'] = source.force_starttls
+
             pvars.update(info)
         return pvars
 

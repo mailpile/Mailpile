@@ -157,6 +157,7 @@ CONFIG_RULES = {
         'auth_type':       (_('Authentication scheme'), str, 'password'),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
+        'force_starttls':  (_('STARTTLS'), bool, True),
         'keepalive':       (_('Keep server connections alive'), bool, False),
         'discovery':       (_('Mailbox discovery policy'), False, {
             'paths':       (_('Paths to watch for new mailboxes'), 'bin', []),
