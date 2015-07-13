@@ -145,7 +145,9 @@ CONFIG_RULES = {
         'profile':         (_('Profile this source belongs to'), str, ''),
         'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mail source protocol'),
-                            ["local", "imap", "imap_ssl", "pop3", "pop3_ssl",
+                            ["local",
+                             "imap", "imap_ssl", "imap_tls",
+                             "pop3", "pop3_ssl",
                              # These are all obsolete, handled as local:
                              "mbox", "maildir", "macmaildir", "gmvault"],
                             ''),

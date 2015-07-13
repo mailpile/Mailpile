@@ -950,7 +950,7 @@ def MailSource(session, my_config):
     if my_config.protocol in ('mbox', 'maildir', 'local'):
         from mailpile.mail_source.local import LocalMailSource
         return LocalMailSource(session, my_config)
-    elif my_config.protocol in ('imap', 'imap_ssl'):
+    elif my_config.protocol in ('imap', 'imap_ssl', 'imap_tls'):
         from mailpile.mail_source.imap import ImapMailSource
         return ImapMailSource(session, my_config)
     elif my_config.protocol in ('pop3', 'pop3_ssl'):
