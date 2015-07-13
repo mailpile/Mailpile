@@ -413,7 +413,9 @@
                               ('local', _("Local files")),
                               ('none', _("None"))) %}
            {%- if rid != new_rid or val[:4] == protocol[:4] %}
-            <option value="{{val}}"{%- if val == protocol %}
+            <option value="{{val}}"
+                    {%- if val == protocol or
+                           (val == "imap" and protocol == "imap_tls") %}
                     selected{% endif %}>{{txt}}</option>
            {%- endif %}
           {%- endfor %}
@@ -468,10 +470,14 @@
               {{_("Download all mail and add to search engine")}}
             </span>
 
-            <span class="source-settings-{{ new_rid }} imap">
+            <span class="source-settings-{{ new_rid }}
+                         {%- if protocol not in ('imap', 'imap_tls') %} hide{% endif %}
+                         imap">
               <br>
               <input type="checkbox" name="source-{{ new_rid }}-force-starttls" value="yes"
-                     {% if result['source-' + rid + '-force-starttls'] %}checked{% endif %}>
+                     {% if result['source-' + rid + '-force-starttls'] or
+                           result['source-' + rid + '-protocol'] == 'imap_tls'
+                           %}checked{% endif %}>
               <span class="checkbox">
                 {{_("Require STARTTLS encryption")}}
               </span>

@@ -914,9 +914,9 @@ def ProfileVCard(parent):
                                               apply_tags=inbox,
                                               save=False)
 
-                elif protocol in ('imap', 'imap_ssl', 'pop3', 'pop3_ssl'):
+                elif protocol in ('imap', 'imap_ssl', 'imap_tls',
+                                  'pop3', 'pop3_ssl'):
                     source = make_new_source()
-                    source.force_starttls = self._yn(prefix + 'force-starttls')
 
                     # Discovery policy
                     disco = source.discovery
@@ -938,6 +938,9 @@ def ProfileVCard(parent):
                     for rvar in ('protocol', 'auth_type', 'host', 'port',
                                  'username', 'password'):
                         source[rvar] = self.data.get(prefix + rvar, [''])[0]
+                    if (self._yn(prefix + 'force-starttls')
+                            and source.protocol == 'imap'):
+                        source.protocol = 'imap_tls'
                     username = source.username
                     if '@' not in username:
                         username += '@%s' % source.host
@@ -1080,7 +1083,7 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-protocol': 'none',
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
-            'source-NEW-force-starttls': True,
+            'source-NEW-force-starttls': False,
             'source-NEW-visible-tags': False,
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
@@ -1199,7 +1202,11 @@ class EditProfile(AddProfile):
                                                and disco.local_copy)
             info[prefix + 'visible-tags'] = disco.visible_tags
             info[prefix + 'enabled'] = source.enabled
-            info[prefix + 'force-starttls'] = source.force_starttls
+            if source.protocol == 'imap_tls':
+                info[prefix + 'protocol'] = 'imap'
+                info[prefix + 'force-starttls'] = True
+            else:
+                info[prefix + 'force-starttls'] = False
 
             pvars.update(info)
         return pvars

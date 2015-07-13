@@ -58,10 +58,10 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
+from mailpile.mail_source.imap_starttls import IMAP4
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 from mailpile.vfs import FilePath
-from imap_starttls import IMAP4
 
 IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[\\(\\)]'
@@ -97,6 +97,8 @@ def _parse_imap(reply):
     >>> _parse_imap(('BAD', ['Sorry']))
     (False, ['Sorry'])
     """
+    if not reply or len(reply) < 2:
+        return False, []
     stack = []
     pdata = []
     for dline in reply[1]:
@@ -644,6 +646,7 @@ class ImapMailSource(BaseMailSource):
         # If we are given a conn class, use that - this allows mocks for
         # testing.
         if not conn_cls:
+            req_stls = (my_config.protocol == 'imap_tls')
             want_ssl = (my_config.protocol == 'imap_ssl')
             conn_cls = IMAP4_SSL if want_ssl else IMAP4
 
@@ -655,15 +658,26 @@ class ImapMailSource(BaseMailSource):
             conn.debug = ('imaplib' in self.session.config.sys.debug
                           ) and 4 or 0
 
-            if not want_ssl:
-              if my_config.force_starttls:
-                  conn.starttls()
-
             ok, data = self.timed_imap(conn.capability)
             if ok:
                 capabilities = set(' '.join(data).upper().split())
             else:
                 capabilities = set()
+
+            if req_stls or ('STARTTLS' in capabilities and not want_ssl):
+                try:
+                    ok, data = self.timed_imap(conn.starttls)
+                    if ok:
+                        # Fetch capabilities again after STARTTLS
+                        ok, data = self.timed_imap(conn.capability)
+                        capabilities = set(' '.join(data).upper().split())
+                except (IMAP4.error, IOError, socket.error):
+                    ok = False
+                if not ok:
+                    ev['error'] = ['protocol', _('Failed to STARTTLS')]
+                    if throw:
+                        raise throw(ev['error'][1])
+                    return WithaBool(False)
 
             try:
                 ok, data = self.timed_imap(conn.login,
@@ -674,7 +688,7 @@ class ImapMailSource(BaseMailSource):
             if not ok:
                 ev['error'] = ['auth', _('Invalid username or password')]
                 if throw:
-                    raise throw(event.data['conn_error'])
+                    raise throw(ev['error'][1])
                 return WithaBool(False)
 
             with self._lock:

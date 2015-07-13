@@ -145,7 +145,9 @@ CONFIG_RULES = {
         'profile':         (_('Profile this source belongs to'), str, ''),
         'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mail source protocol'),
-                            ["local", "imap", "imap_ssl", "pop3", "pop3_ssl",
+                            ["local",
+                             "imap", "imap_ssl", "imap_tls",
+                             "pop3", "pop3_ssl",
                              # These are all obsolete, handled as local:
                              "mbox", "maildir", "macmaildir", "gmvault"],
                             ''),
@@ -157,7 +159,6 @@ CONFIG_RULES = {
         'auth_type':       (_('Authentication scheme'), str, 'password'),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
-        'force_starttls':  (_('STARTTLS'), bool, True),
         'keepalive':       (_('Keep server connections alive'), bool, False),
         'discovery':       (_('Mailbox discovery policy'), False, {
             'paths':       (_('Paths to watch for new mailboxes'), 'bin', []),
