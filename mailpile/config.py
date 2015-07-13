@@ -2150,7 +2150,10 @@ class ConfigManager(ConfigDict):
             idx = MailIndex(self)
             idx.load(session)
             self.index = idx
-            self.index_check.release()
+            try:
+                self.index_check.release()
+            except:
+                pass
             return idx
 
     def get_tor_socket(self):
