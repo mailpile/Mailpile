@@ -143,7 +143,7 @@
 
 {%- for src_id, source in config.sources.iteritems() %}
   {%- for mbx_id, settings in source.mailbox.iteritems() %}
-    {%- if settings.primary_tag == tag.tid %}
+    {%- if tag.tid and settings.primary_tag == tag.tid %}
   <br clear="both">
   <p class="message paragraph-important modal-mailbox-settings-title">
     <span class="icon-mailsource"></span> {{_("Mailbox settings")}}:
