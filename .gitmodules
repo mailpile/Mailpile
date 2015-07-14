@@ -2,3 +2,6 @@
 	path = doc
 	url = https://github.com/pagekite/Mailpile.wiki.git
 	branch = master
+[submodule "mailpile/contrib/print"]
+	path = mailpile/contrib/print
+	url = https://github.com/mailpile/Mailpile-print.git

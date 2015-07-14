@@ -1,7 +1,7 @@
 # Recipes for stuff
 export PYTHONPATH := .
 
-all:	alltests docs web compilemessages
+all:	submodules alltests docs web compilemessages
 
 dev:
 	@echo export PYTHONPATH=`pwd`
@@ -59,9 +59,11 @@ debian-dev:
 	which bower >/dev/null || sudo npm install -g bower
 	which uglify >/dev/null || sudo npm install -g uglify
 
-docs:
-	@test -d doc || \
-           git submodule update --remote
+
+submodules:
+	git submodule update --remote
+
+docs: submodules
 	@python2 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
 	@ls -l doc/URLS.md
 	@python2 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
