@@ -23,7 +23,8 @@ class CryptoPolicyBaseAction(Command):
 
 class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
     """ Update crypto policy for a single user """
-    SYNOPSIS = (None, 'crypto_policy/set', 'crypto_policy/set', '<email address> none|sign|encrypt|sign-encrypt|default')
+    SYNOPSIS = (None, 'crypto_policy/set', 'crypto_policy/set',
+                '<email address> none|sign|encrypt|sign-encrypt|default')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST',)
     HTTP_QUERY_VARS = {'email': 'contact email', 'policy': 'new policy'}
@@ -35,7 +36,8 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         email, policy = self._parse_args()
 
         if policy not in CRYPTO_POLICIES:
-            return self._error('Policy has to be one of %s' % '|'.join(CRYPTO_POLICIES))
+            return self._error('Policy has to be one of %s' %
+                               '|'.join(CRYPTO_POLICIES))
 
         vcard = self.session.config.vcards.get_vcard(email)
         if vcard:

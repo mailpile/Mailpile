@@ -77,6 +77,7 @@ alltests: clean pytests
 	@chmod go-rwx mailpile/tests/data/gpg-keyring
 	@DISPLAY= python2 scripts/mailpile-test.py || true
 	@DISPLAY= nosetests
+	@git checkout mailpile/tests/data/
 
 pytests:
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap

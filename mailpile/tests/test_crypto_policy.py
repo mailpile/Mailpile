@@ -12,26 +12,31 @@ class CryptoPolicyBaseTest(MailPileUnittest):
     def _add_vcard(self, full_name, email):
         card = MailpileVCard(VCardLine(name='fn', value=full_name),
                              VCardLine(name='email', value=email))
-        self.config.vcards.index_vcard(card)
+        self.config.vcards.add_vcards(card)
         return card
 
 
 class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_args_are_checked(self):
-        self.assertEqual('error', self.mp.crypto_policy_set().as_dict()['status'])
-        self.assertEqual('error', self.mp.crypto_policy_set('one arg').as_dict()['status'])
+        self.assertEqual('error',
+            self.mp.crypto_policy_set().as_dict()['status'])
+        self.assertEqual('error',
+            self.mp.crypto_policy_set('one arg').as_dict()['status'])
 
     def test_policies_are_validated(self):
         self._add_vcard('Test', 'test@test.local')
 
-        for policy in ['default', 'none', 'sign', 'sign-encrypt', 'encrypt', 'default']:
-            self.assertEqual('success', self.mp.crypto_policy_set('test@test.local', policy).as_dict()['status'])
+        for policy in ['default', 'none', 'sign', 'sign-encrypt',
+                       'encrypt', 'best-effort']:
+            r = self.mp.crypto_policy_set('test@test.local', policy)
+            print '%s' % r.as_dict()
+            self.assertEqual('success', r.as_dict()['status'])
 
         for policy in ['anything', 'else']:
-            res = self.mp.crypto_policy_set('test@test.local', policy).as_dict()
-            self.assertEqual('error', res['status'])
-            self.assertEqual('Policy has to be one of none|sign|encrypt|sign-encrypt|default',
-                             res['message'])
+            r = self.mp.crypto_policy_set('test@test.local', policy).as_dict()
+            self.assertEqual('error', r['status'])
+            self.assertEqual('Policy has to be one of none|sign|encrypt'
+                             '|sign-encrypt|best-effort|default', r['message'])
 
     def test_vcard_has_to_exist(self):
         res = self.mp.crypto_policy_set('test@test.local', 'sign').as_dict()
@@ -63,7 +68,7 @@ class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_with_encrypted_email(self):
         res = self.mp.crypto_policy('encrypter@test.local').as_dict()
         self.assertEqual('success', res['status'])
-        self.assertEqual('encrypt', res['result']['crypto-policy'])
+        self.assertEqual('best-effort', res['result']['crypto-policy'])
 
     def test_vcard_overrides_mail_history(self):
         vcard = self._add_vcard('Encrypter', 'encrypter@test.local')

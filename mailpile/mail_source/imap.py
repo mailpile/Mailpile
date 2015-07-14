@@ -649,6 +649,8 @@ class ImapMailSource(BaseMailSource):
             req_stls = (my_config.protocol == 'imap_tls')
             want_ssl = (my_config.protocol == 'imap_ssl')
             conn_cls = IMAP4_SSL if want_ssl else IMAP4
+        else:
+            req_stls = want_ssl = False
 
         try:
             def mkconn():

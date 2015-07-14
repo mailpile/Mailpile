@@ -25,8 +25,7 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-from mailpile.mail_source.mbox import MboxMailSource
-from mailpile.mail_source.maildir import MaildirMailSource
+from mailpile.mail_source.local import LocalMailSource
 from mailpile import Mailpile
 
 
@@ -133,7 +132,7 @@ def test_vcards():
 
 def test_load_save_rescan():
     say("Testing load/save/rescan")
-    mp.rescan()
+    mp.rescan('mailboxes')
 
     # Save and load the index, just for kicks
     messages = len(mp._config.index.INDEX)
@@ -148,7 +147,7 @@ def test_load_save_rescan():
     # verify that the move-detection code actually works.
     os.system('rm -f %s/Maildir/*/*' % mailpile_home)
     mp.add(os.path.join(mailpile_home, 'Maildir2'))
-    mp.rescan()
+    mp.rescan('mailboxes')
 
     # Search for things, there should be exactly one match for each.
     mp.order('rev-date')
