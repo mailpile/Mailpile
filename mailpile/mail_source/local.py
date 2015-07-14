@@ -60,7 +60,7 @@ class LocalMailSource(BaseMailSource):
             for sub in ('cur', 'new', 'tmp', 'Info.plist', 'wervd.ver'):
                 if sub == 'Info.plist':
                     sub_path = self._get_macmaildir_data(mbx_path)
-                    if sub_path is None:
+                    if not sub_path:
                         continue
                 else:
                     sub_path = os.path.join(mbx_path, sub)
