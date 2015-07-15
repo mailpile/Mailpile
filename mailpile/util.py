@@ -686,7 +686,7 @@ def backup_file(filename, backups=5, min_age_delta=0):
 
 def json_helper(obj):
     try:
-        return str(obj)
+        return unicode(obj)
     except:
         return "COMPLEXBLOB"
 
