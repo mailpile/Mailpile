@@ -317,7 +317,8 @@ class MailpileVfsRoot(MailpileVfsBase):
 #           'config': (FilePath('/Config$'), _('Settings')),
         }
         self._discover_mail_spool()
-        self._discover_thunderbird()
+# FIXME: enable post beta III
+#       self._discover_thunderbird()
         self._discover_local_mailboxes()
 
     def _discover_mail_spool(self):

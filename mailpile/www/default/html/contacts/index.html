@@ -14,14 +14,22 @@
     {% if contact.email %}
     <div class="rectangles-outer" id="contact-card-{{contact.email.0.email}}">
       <div class="rectangles-inner">
-        <a class="contact-card-avatar left" href="{{ U('/contacts/view/', contact.email.0.email, '/') }}">
+        <a class="contact-card-avatar left"
+{%- if config.version >= '0.6.0' %}
+           href="{{ U('/contacts/view/', contact.email.0.email, '/') }}"
+{%- endif %}
+           >
           {% if contact.photo %}
           <img src="{{ U(contact.photo.0.photo) }}">
           {% elif contact.email %}
           <img src="{{ U('/static/img/avatar-default.png') }}">
           {% endif %}
         </a>
-        <a class="contact-card-name" href="{{ U('/contacts/view/', contact.email.0.email, '/') }}">
+        <a class="contact-card-name"
+{%- if config.version >= '0.6.0' %}
+           href="{{ U('/contacts/view/', contact.email.0.email, '/') }}"
+{%- endif %}
+           >
           {% if contact.fn|length > 24 %}
           {{contact.fn[:24]}}
           {% else %}

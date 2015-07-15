@@ -125,14 +125,15 @@ class SetupMagic(Command):
         },
         # These are magical tags that perform searches and show
         # messages in contextual views.
-        'Conversations': {
-            'type': 'replied',
-            'icon': 'icon-forum',
-            'label': False,
-            'label_color': '05-blue-light',
-            'name': _('Conversations'),
-            'display_order': 1001,
-        },
+# FIXME: This is a good idea, but not quite ready to ship.
+#       'Conversations': {
+#           'type': 'replied',
+#           'icon': 'icon-forum',
+#           'label': False,
+#           'label_color': '05-blue-light',
+#           'name': _('Conversations'),
+#           'display_order': 1001,
+#       },
         'Photos': {
             'type': 'search',
             'icon': 'icon-photos',

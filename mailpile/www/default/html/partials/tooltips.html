@@ -10,12 +10,24 @@
 <script id="tooltip-contact-details" type="text/template">
   <div class="user clearfix half-bottom">
     <% if (photo) { %>
-    <a class="avatar" href="{{ U('/contacts/view/<%= address %>/') }}" target="_blank"><img src="<%= photo %>"></a>
+    <a class="avatar"
+{%- if config.version >= '0.6.0' %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       target="_blank"><img src="<%= photo %>"></a>
     <% } else { %>
-    <a href="{{ U('/contacts/view/<%= address %>/') }}" target="_blank"><span class="icon-user"></span></a>
+    <a target="_blank"
+{%- if config.version >= '0.6.0' %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       ><span class="icon-user"></span></a>
     <% } %>
     <div class="name">
-      <a href="{{ U('/contacts/view/<%= address %>/') }}" target="_blank"><%= fn %></a>
+      <a target="_blank"
+{%- if config.version >= '0.6.0' %}
+         href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+         ><%= fn %></a>
       <span class="address"><%= address %></span>
     </div>
   </div>

@@ -1,3 +1,5 @@
+{%- if config.version >= '0.6.0' %}
+
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
@@ -13,6 +15,7 @@ $(document).on('click', '.show-thread-tags', function() {
  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
+{% endif %}
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.thread-message-metadata-details-toggle', function() {

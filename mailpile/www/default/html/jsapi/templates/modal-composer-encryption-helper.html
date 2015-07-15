@@ -20,8 +20,11 @@
           <li id="item-encryption-key-" address="<%= recipient.address %>"
               class="searchkey-result-item animated fadeIn">
             <div class="clearfix">
-              <div href="{{ U('/contacts/view/') }}<%= recipient.address %>/"
-                   class="avatar" target="_blank">
+              <div class="avatar"
+{%- if config.version >= '0.6.0' %}
+                   href="{{ U('/contacts/view/') }}<%= recipient.address %>/"
+{%- endif %}
+                   target="_blank">
                 <img src="{{ U('/static/img/avatar-default.png') }}">
               </div>
               <div class="name">

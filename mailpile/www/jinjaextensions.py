@@ -493,6 +493,8 @@ class MailpileCommand(Extension):
         }
 
     def _contact_url(self, person):
+        if self.env.session.config.version < '0.6.0':  # FIXME
+            return '#'
         if 'contact' in person['flags']:
             url = ("%s/contacts/view/%s/"
                    % (self.env.session.config.sys.http_path,

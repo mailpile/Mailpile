@@ -131,6 +131,7 @@
             }
             if (!found) {
               $(pf + '.fpa-pgp-key-default').prop('selected', true);
+              _fpa.select($('.fpa-pgp-key'), 'security-opt');
             }
           });
           _fpa.copy_basic('username');
