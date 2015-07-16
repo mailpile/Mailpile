@@ -1066,6 +1066,9 @@ class MailpileVCard(SimpleVCard):
             if self.tag:
                 source.discovery.apply_tags = [self.tag]
 
+            # This starts the source thread as as side-effect
+            self.config.save()
+
         return source
 
     def sources(self):
