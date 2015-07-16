@@ -64,7 +64,7 @@ class DemoVCardImporter(VCardImporter):
         #
         if not self.config.active:
             return []
-        return [SimpleVCard(
+        return [MailpileVCard(
             VCardLine(name='fn', value=self.config.name),
             VCardLine(name='email', value=self.config.email)
         )]

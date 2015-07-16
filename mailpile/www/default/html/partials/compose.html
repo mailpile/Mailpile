@@ -67,7 +67,7 @@
               <a href="#" data-mid="{{mid}}" data-aid="{{att.aid}}" class="compose-attachment-remove">
                 <span class="icon-circle-x"></span>
               </a>
-              <div class="preview" style="background-image: url('/message/download/preview/={{mid}}/{{att.aid}}/');"></div>
+              <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/', att.aid, '/') }}');"></div>
             </div>
             {% else %}
             <div class="attachment">
@@ -75,7 +75,7 @@
                 <span class="icon-circle-x"></span>
               </a>
               <div class="preview">
-                <span class="icon-mime" type="{{att.mimetype}}"></span> 
+                <span class="icon-mime" type="{{att.mimetype}}"></span>
                 {% set file_parts = att.filename.split(".") %}
                 {% set file_parts_length = file_parts|length %}
                 <span class="extension">{{ file_parts[file_parts_length - 1] }}</span>
@@ -142,7 +142,7 @@
               {% if from.photo %}
               <span class="avatar"><img src="{{from.photo}}"></span>
               {% else %}
-              <span class="avatar"><img src="/static/img/avatar-default-white.png"></span>
+              <span class="avatar"><img src="{{ U('/static/img/avatar-default-white.png') }}"></span>
               {% endif %}
               <span class="name">{{from.fn}}</span>
               <span class="address">{{from.address}}</span>
@@ -153,27 +153,37 @@
           </div>
           <ul class="dropdown-menu">
           {% set emails = profiles.emails|sort %}
+          {% set found = [] %}
           {% if from.address not in emails %}
             {% set emails = [from.address] + emails %}
           {% endif %}
           {% for profile_email in emails %}
             {% set profile = (profile_email in profiles.emails)
                              and profiles.profiles[profiles.emails[profile_email]]
-                             or {'fn': from.fn} %}
+                             or {'fn': from.fn} -%}
+            {%- if profile['x-mailpile-profile-route'] -%}
             <li role="presentation">
               <a href="#" class="compose-from" data-mid="{{mid}}">
                 <span class="avatar">
                 {% if profile.photo %}
                 <img src="{{profile.photo[0].photo}}">
                 {% else %}
-                <img src="/static/img/avatar-default-white.png">
+                <img src="{{ U('/static/img/avatar-default-white.png') }}">
                 {% endif %}
                 </span>
                 <span class="name">{{profile.fn}}</span>
                 <span class="address">{{ profile_email }}</span>
               </a>
             </li>
+            {%- do found.append(profile) -%}{%- endif %}
           {% endfor %}
+          {% if found|length == 0 %}
+            <li role="presentation">
+              <a target='_blank' href="{{ U('/setup/#profiles') }}">
+                No usable profiles found, click to check your settings!
+              </a>
+            </li>
+          {% endif %}
           </ul>
         </div>
       </div>
@@ -183,7 +193,7 @@
         </button>
         <button class="compose-action button-secondary" type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}" alt="{{_("Send")}}">
           <span class="icon-sent"></span> {{_("Send")}}
-        </button>        
+        </button>
       </div>
     </div>
     <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">

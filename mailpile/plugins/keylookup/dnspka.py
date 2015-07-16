@@ -32,7 +32,7 @@ class DNSPKALookupHandler(LookupHandler):
     def _score(self, key):
         return (9, _('Found key in DNSPKA'))
 
-    def _lookup(self, address):
+    def _lookup(self, address, strict_email_match=True):
         """
         >>> from mailpile.crypto.dnspka import *
         >>> d = DNSPKALookup()
@@ -43,7 +43,7 @@ class DNSPKALookupHandler(LookupHandler):
             return {}
         dom = address.replace("@", "._pka.")
         result = self.req.req(dom)
-        for res in result.answers:
+        for res in (result.answers if result else []):
             if res["typename"] != "TXT":
                 continue
             for entry in res["data"]:

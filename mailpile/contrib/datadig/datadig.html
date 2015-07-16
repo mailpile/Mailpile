@@ -1,0 +1,20 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{% if result %}
+  <table id="datadig-results" class="{{ config.web.display_density }}">
+    <tbody>
+    {% for row in result %}
+      <tr class="result" data-mid="{{row[0]}}">
+      {% for col in row %}
+        <td>{{col}}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="add-top add-bottom text-center">
+    <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
+  </div>
+{% endif %}
+{% endblock %}

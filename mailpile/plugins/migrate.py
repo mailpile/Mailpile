@@ -1,9 +1,9 @@
 import mailpile.config
 from mailpile.commands import Command
+from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mail_source.mbox import MboxMailSource
-from mailpile.mail_source.maildir import MaildirMailSource
+from mailpile.mail_source.local import LocalMailSource
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
@@ -54,19 +54,14 @@ def migrate_routes(session):
             session.config.routes[route_name] = route_dict
             session.config.prefs.default_messageroute = route_name
 
-    for profile in session.config.profiles:
-        if profile.get('route'):
-            route_dict = route_parse(profile.route)
-            if route_dict:
-                route_name = make_route_name(route_dict)
-                session.config.routes[route_name] = route_dict
-                profile.messageroute = route_name
-
     return True
 
 
 def migrate_mailboxes(session):
     config = session.config
+
+    # FIXME: This should be using mailpile.vfs.FilePath
+    # FIXME: Link new mail sources to a profile... any profile?
 
     def _common_path(paths):
         common_head, junk = os.path.split(paths[0])
@@ -84,9 +79,7 @@ def migrate_mailboxes(session):
                     head, junk = os.path.split(path)
         return common_head
 
-    mboxes = []
-    maildirs = []
-    macmaildirs = []
+    mailboxes = []
     thunderbird = []
 
     spam_tids = [tag._key for tag in config.get_tags(type='spam')]
@@ -94,22 +87,14 @@ def migrate_mailboxes(session):
     inbox_tids = [tag._key for tag in config.get_tags(type='inbox')]
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
-    for mbx_id, path, src in config.get_mailboxes():
-        if (path == '/dev/null' or
-                path.startswith('src:') or
-                src is not None or
+    for mbx_id, path, src in config.get_mailboxes(with_mail_source=False):
+        if (path.startswith('src:') or
                 config.is_editable_mailbox(mbx_id)):
             continue
-        elif os.path.exists(os.path.join(path, 'Info.plist')):
-            macmaildirs.append((mbx_id, path))
-        elif os.path.isdir(path):
-            maildirs.append((mbx_id, path))
         elif 'thunderbird' in path.lower():
             thunderbird.append((mbx_id, path))
         else:
-            mboxes.append((mbx_id, path))
-
-    # macmail: library/mail/v2
+            mailboxes.append((mbx_id, path))
 
     if thunderbird:
         # Create basic mail source...
@@ -122,7 +107,7 @@ def migrate_mailboxes(session):
 
         config.sources.tbird.discovery.policy = 'read'
         config.sources.tbird.discovery.process_new = True
-        tbird_src = MboxMailSource(session, config.sources.tbird)
+        tbird_src = LocalMailSource(session, config.sources.tbird)
 
         # Configure discovery policy?
         root = _common_path([path for mbx_id, path in thunderbird])
@@ -143,9 +128,8 @@ def migrate_mailboxes(session):
 
         tbird_src.my_config.discovery.policy = 'unknown'
 
-    for name, mailboxes, proto, description, cls in (
-        ('mboxes', mboxes, 'mbox', 'Unix mbox files', MboxMailSource),
-        ('maildirs', maildirs, 'maildir', 'Maildirs', MaildirMailSource),
+    for name, proto, description, cls in (
+        ('mboxes', 'local', 'Local mailboxes', LocalMailSource),
     ):
         if mailboxes:
             # Create basic mail source...
@@ -166,39 +150,12 @@ def migrate_mailboxes(session):
     return True
 
 
-def migrate_profiles(session):
-    config, vcards = session.config, session.config.vcards
-
-    for profile in config.profiles:
-        if profile.email:
-            vcard = vcards.get_vcard(profile.email)
-            if vcard and vcard.email == profile.email:
-                vcards.deindex_vcard(vcard)
-            else:
-                vcard = MailpileVCard(
-                    VCardLine(name='EMAIL', value=profile.email, type='PREF'),
-                    VCardLine(name='FN', value=profile.name or profile.email))
-            vcard.kind = 'profile'
-            if profile.signature:
-                vcard.signature = profile.signature
-            if profile.messageroute:
-                vcard.route = profile.messageroute
-            vcards.add_vcards(vcard)
-
-    config.profiles = {}
-    return True
-
-
 def migrate_cleanup(session):
     config = session.config
 
     # Clean the autotaggers
     autotaggers = [t for t in config.prefs.autotag.values() if t.tagger]
     config.prefs.autotag = autotaggers
-
-    # Clean the profiles
-    profiles = [p for p in config.profiles.values() if p.email or p.name]
-    config.profiles = profiles
 
     # Clean the vcards:
     #   - Prefer vcards with valid key info
@@ -233,11 +190,10 @@ def migrate_cleanup(session):
 
 
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
-MIGRATIONS_AFTER_SETUP = [migrate_profiles, migrate_cleanup]
+MIGRATIONS_AFTER_SETUP = [migrate_cleanup]
 MIGRATIONS = {
     'routes': migrate_routes,
     'sources': migrate_mailboxes,
-    'profiles': migrate_profiles,
     'cleanup': migrate_cleanup
 }
 
@@ -276,6 +232,8 @@ class Migrate(Command):
             except:
                 self._ignore_exception()
                 err += 1
+
+        self.session.config.version = APPVER  # We've migrated to this!
 
         self._background_save(config=True)
         return self._success(_('Performed %d migrations, failed %d.'

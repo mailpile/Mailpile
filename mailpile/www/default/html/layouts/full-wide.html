@@ -11,7 +11,8 @@
 <body>
 {% include("partials/topbar.html") %}
 <div id="content-wide"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
-  {% block content %}{{results}}{% endblock %}
+  {%- block contenttools %}{% endblock %}
+  {%- block content %}{{results}}{% endblock %}
 </div></div>
 {% include("partials/hidden.html") %}
 {% include("partials/helpers.html") %}

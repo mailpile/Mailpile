@@ -2,7 +2,7 @@
 # current theme, skin and active plugins.
 #
 import mailpile.config
-from mailpile.commands import Command
+from mailpile.commands import Command, RenderPage
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -26,8 +26,7 @@ _plugins = PluginManager(builtin=__file__)
 
 ##[ Commands ]################################################################
 
-
-class JsApi(Command):
+class JsApi(RenderPage):
     """Output API bindings, plugin code and CSS as CSS or Javascript"""
     SYNOPSIS = (None, None, 'jsapi', None)
     ORDER = ('Internals', 0)
@@ -55,15 +54,17 @@ class JsApi(Command):
                 sorted(config.sys.plugins))
 
     def command(self, save=True, auto=False):
-        session, config = self.session, self.session.config
-
-        urlmap = UrlMap(session)
         res = {
             'api_methods': [],
             'javascript_classes': [],
             'css_files': []
         }
+        if self.args:
+            # Short-circuit if we're serving templates...
+            return self._success(_('Serving up API content'), result=res)
 
+        session, config = self.session, self.session.config
+        urlmap = UrlMap(session)
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
             for cmd in urlmap._api_commands(method, strict=True):
                 cmdinfo = {

@@ -5,7 +5,7 @@
   {% set encryption_status = [message.crypto.encryption.status] %}
   {% set signature_status = [message.crypto.signature.status] %}
   <div class="thread-message-body">
-    {# If no text_part, show html_part }
+{#### If no text_part, show html_part }
     {% if not message.text_parts %}
       {% for part in message.html_parts %}
       {% if part.data %}
@@ -15,7 +15,8 @@
       <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
       {% endif %}
       {% endfor %}
-    {% endif #}
+    {% endif
+#####}
     {% if message.text_parts %}
       {% set special_text_parts = [] %}
       {% set last_part = message.text_parts|length - 1 %}
@@ -51,24 +52,14 @@
             <div class="thread-item-crypto-line left"></div>
           </div>
           {% endif %}
-          {% autoescape false %}  
+          {% autoescape false %}
           {% set part_text = part.data|nice_text|e|urlize|fix_urls(40, url_danger) %}
           {% if part.type in ("text", "pgpsignedtext") %}
             <div class="thread-item-text">{{ part_text }}</div>
           {% elif part.type in ("pgptext",) %}
-            {% if part.crypto.encryption.status in ("missingkey", "error") %}
-            {% set crypto = show_message_encryption(part.crypto.encryption.status) %}
-            <div class="thread-item-crypto-error text-center">
-              <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
-              <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
-              <p>{{ crypto.message }}</p>
-              <p><button class="message-crypto-action" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}"><span class="icon-key"></span> {{_("Send Your Encryption Key")}}</button></p>
-              <!-- FIXME: Make a "crypto.suggestion" attribute in show_message_encryption() that performs further investigation.. -->
-              {# FIXME: hiding this in Beta Freeze
-              {% if part.crypto.encryption.missing_keys %}
-              <a href="#" class="message-crypto-investigate" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}">{{_("Investigate Message Further")}}</a>
-              {% endif %} #}
-            </div>
+            {% if part.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
+              {%- set failed_crypto = part.crypto.encryption %}
+              {%- include("partials/thread_message_cryptofail.html") %}
             {% else %}
             <div class="thread-item-text">{{ part_text }}</div>
             {% endif %}
@@ -97,8 +88,13 @@
           {% endautoescape %}
         {% endif %}
       {% endfor %}
-    {% elif not message.attachments %}
-    <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+    {% else %}
+      {% if message.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
+        {%- set failed_crypto = message.crypto.encryption %}
+        {%- include("partials/thread_message_cryptofail.html") %}
+      {% elif not message.attachments %}
+      <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+      {% endif %}
     {% endif %}
     {% if message.attachments %}
     <div class="thread-message-attachments">
@@ -112,15 +108,15 @@
         {% set filename = _("Untitled") %}
         {% endif %}
         {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
-        <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
-          <div class="preview" style="background-image: url('/message/download/preview/={{ mid }}/part:{{ att.count }}/');"></div>
+        <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
+          <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/part:', att.count, '/') }}');"></div>
         </a>
         {% elif type == "keys" %}
         {% do special_text_parts.append("pgp-key") %}
         {% else %}
-        <a href="/message/download/={{mid}}/part:{{att.count}}/" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
+        <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
           <div class="preview">
-            <span class="icon-mime" type="{{att.mimetype}}"></span> 
+            <span class="icon-mime" type="{{att.mimetype}}"></span>
             {% set file_parts = filename.split(".") %}
             {% set file_parts_length = file_parts|length %}
             {% if filename != _("Untitled") %}

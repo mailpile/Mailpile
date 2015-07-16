@@ -9,9 +9,9 @@
 mp-virtualenv
 .idea
 .*deps
+.tox
 mailpile.egg-info/
 mailpile-tmp.py
-mailpile/www/default/config.codekit
 mailpile/www/default/plugins/
 mailpile/tests/data/tmp
 mailpile/tests/data/gpg-keyring/random_seed

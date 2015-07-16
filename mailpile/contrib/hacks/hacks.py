@@ -97,12 +97,13 @@ class ViewMetadata(Hacks):
     SYNOPSIS = (None, 'hacks/metadata', None, '[<message>]')
 
     def _explain(self, i):
-        idx = self._idx()
+        idx, cfg = self._idx(), self.session.config
         info = idx.get_msg_at_idx_pos(i)
-        ptags = [self.session.config.get_tag(t) or t
+        ptags = [cfg.get_tag(t) or t
                  for t in info[idx.MSG_TAGS].split(',') if t]
         ptags = [t.name for t in ptags if hasattr(t, 'name')]
-        pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
+        pptrs = ['%s -> %s' % (cfg.sys.mailbox.get(p[:MBX_ID_LEN],
+                                                   p[:MBX_ID_LEN] + '?'),
                                p[MBX_ID_LEN:])
                  for p in info[idx.MSG_PTRS].split(',') if p]
         to = idx.expand_to_list(info)
@@ -132,6 +133,41 @@ class ViewMetadata(Hacks):
 
     def command(self):
         return self._success(_('Displayed raw metadata'),
+            [self._explain(i) for i in self._choose_messages(self.args)])
+
+
+class ViewKeywords(Hacks):
+    """Display the keywords for a message"""
+    SYNOPSIS = (None, 'hacks/keywords', None, '[<message>]')
+
+    def _explain(self, i):
+        idx = self._idx()
+        info = idx.get_msg_at_idx_pos(i)
+        msg = Email(idx, i).get_msg()
+        return sorted(list(idx.read_message(
+            self.session,
+            info[idx.MSG_MID], info[idx.MSG_ID], msg,
+            long(info[idx.MSG_KB], 36) * 1024,
+            long(info[idx.MSG_DATE], 36))[0]))
+
+    def command(self):
+        return self._success(_('Displayed message keywords'),
+            [self._explain(i) for i in self._choose_messages(self.args)])
+
+
+class ViewHeaderPrint(Hacks):
+    """Display the HeaderPrint for a message"""
+    SYNOPSIS = (None, 'hacks/headerprint', None, '[<message>]')
+
+    def _explain(self, i):
+        msg = Email(self._idx(), i).get_msg()
+        return {
+            'headers': HeaderPrintHeaders(msg),
+            'headerprint': HeaderPrint(msg)
+        }
+
+    def command(self):
+        return self._success(_('Displayed message HeaderPrint'),
             [self._explain(i) for i in self._choose_messages(self.args)])
 
 
@@ -190,7 +226,8 @@ class Http(Hacks):
         try:
             uo = URLopener()
             uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
-            with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP]):
+            with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP],
+                                         oneshot=True):
                 if method == 'POST':
                     (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
                 else:

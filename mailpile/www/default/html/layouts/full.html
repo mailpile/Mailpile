@@ -4,7 +4,7 @@
 <!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name or _("Somebody")}}'s mailpile</title>
   {% include("partials/head.html") %}
   {% block head %}{% endblock %}
 </head>
@@ -13,7 +13,8 @@
 {% include("partials/sidebar.html") %}
 <div id="content" class="clearfix">
   <div id="content-tools">
-  {% if result %}
+{% block contenttools %}
+ {% if result %}
   {% if command == "search" %}
     {% include("partials/tools_search.html") %}
   {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
@@ -27,7 +28,8 @@
   {% else %}
     {% include("partials/tools_default.html") %}
   {% endif %}
-  {% endif %}
+ {% endif %}
+{% endblock %}
   </div>
   <div id="content-view"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
     {% block content %}{{results}}{% endblock %}

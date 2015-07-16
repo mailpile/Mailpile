@@ -23,12 +23,12 @@ else
     PYTHON=python2.7
 fi
 
-rm -rf "$MAILPILE_HOME"
-mkdir "$MAILPILE_HOME"
+[ "$1" != "--keep" ] && rm -rf "$MAILPILE_HOME"
+mkdir -p "$MAILPILE_HOME"
 chmod 700 "$MAILPILE_HOME"
 
 $PYTHON ./mp --set 'sys.debug = log http' \
              --www 'localhost:33433' \
              --interact
 
-rm -rf "$MAILPILE_HOME"
+[ "$1" = "--cleanup" ] && rm -rf "$MAILPILE_HOME"

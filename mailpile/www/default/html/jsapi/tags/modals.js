@@ -1,12 +1,10 @@
 /* Modals - Tags */
 
 Mailpile.UI.Modals.TagAdd = function(add_tag_data) {
-  var add_tag_template = _.template($('#modal-add-tag').html());
-  var add_tag_html = add_tag_template(add_tag_data);
-  $('#modal-full').html(add_tag_html);
-
-  // Show Modal
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.API.with_template('modal-add-tag', function(modal) {
+    $('#modal-full').html(modal(add_tag_data));
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  });
 };
 
 

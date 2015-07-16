@@ -112,6 +112,7 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
       text: function(e, api) {
         $target = $(e.target);
         var address = $target.data('address');
+        var mid = $target.closest('form.form-compose').data('mid');
 
         if ($target.hasClass('select2-search-choice')) {
           address = $target.find('.compose-choice-name').data('address');
@@ -125,6 +126,7 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
 
         var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
         if (contact_data) {
+          contact_data['mid'] = mid;
 
           if (contact_data.photo === undefined) {
             contact_data.photo = '';

@@ -1,0 +1,13 @@
+<div data-flags="<%= flags %>" class="modal-dialog">
+ <div class="modal-content">
+  <% if (header != "off") { %>
+   <div class="modal-header">
+     <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+     <h4 class="modal-title"><span class="<%= icon %>"></span>
+       <% print((title) ? title : data.message) %>
+     </h4>
+   </div>
+  <% } %>
+   <div class="modal-body clearfix"><%= data.result %></div>
+ </div>
+</div>

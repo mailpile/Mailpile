@@ -10,18 +10,35 @@
 <script id="tooltip-contact-details" type="text/template">
   <div class="user clearfix half-bottom">
     <% if (photo) { %>
-    <a class="avatar" href="/contacts/view/<%= address %>/" target="_blank"><img src="<%= photo %>"></a>
+    <a class="avatar"
+{%- if config.version >= '0.6.0' %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       target="_blank"><img src="<%= photo %>"></a>
     <% } else { %>
-    <a href="/contacts/view/<%= address %>/" target="_blank"><span class="icon-user"></span></a>
+    <a target="_blank"
+{%- if config.version >= '0.6.0' %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       ><span class="icon-user"></span></a>
     <% } %>
     <div class="name">
-      <a href="/contacts/view/<%= address %>/" target="_blank"><%= fn %></a>
+      <a target="_blank"
+{%- if config.version >= '0.6.0' %}
+         href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+         ><%= fn %></a>
       <span class="address"><%= address %></span>
     </div>
   </div>
   <p class="half-bottom text-center">
-    <a href="#" data-address="<%= address %>" class="compose-contact-find-keys"><span class="icon-key"></span>
-    <% if (flags.secure) { %>{{_("Show Encryption Keys")}}<% } else { %>{{_("Find Encryption Keys")}}<% } %>
+    <a href="#" data-address="<%= address %>" data-mid="<%= mid %>"
+       class="compose-contact-find-keys"><span class="icon-key"></span>
+    <% if (flags.secure) { %>
+      {{_("Show Encryption Keys")}}
+    <% } else { %>
+      {{_("Find Encryption Keys")}}
+    <% } %>
     </a>
   </p>
 </script>
@@ -31,8 +48,8 @@
   <ul>
     <% _.each(tag.subtag_ids, function(stid, key) { var subtag = _.findWhere(Mailpile.instance.tags, {tid: stid}); %>
     <li class="clearfix">
-      <a href="/in/<%= subtag.slug %>/" style="color: <%= subtag.label_color %>" class="left"><span class="<%= subtag.icon %>"></span> <%= subtag.name %></a> 
-      <a class="right link-detail" href="/tags/edit.html?only=<%= subtag.slug %>"><span class="icon-settings"></span></a>
+      <a href="{{ U('/in/<%= subtag.slug %>/') }}" style="color: <%= subtag.label_color %>" class="left"><span class="<%= subtag.icon %>"></span> <%= subtag.name %></a>
+      <a class="right link-detail" href="{{ U('/tags/edit.html?only=<%= subtag.slug %>') }}"><span class="icon-settings"></span></a>
     </li>
     <% }); %>
   </ul>

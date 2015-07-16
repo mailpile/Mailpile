@@ -1,7 +1,7 @@
 {%- set hard_coded_activities = safe('
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" title="' + _("Search and import encryption keys") + '" href="#">
-        <span class="navigation-icon icon-key"></span> ' + _("Find Encryption Keys") + '
+        <span class="navigation-icon icon-key"></span> ' + _("Import Encryption Keys") + '
       </a>
       <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
         <li role="presentation">
@@ -14,6 +14,13 @@
             <span class="icon-upload"></span> ' + _("Upload Key") + '
           </a>
         </li>
+        <!-- FIXME: https://github.com/mailpile/Mailpile/issues/1225
+        <li role="presentation">
+          <a class="btn-crypto-url-key" href="#">
+            <span class="icon-links"></span> ' + _("Import from URL") + '
+          </a>
+        </li>
+        -->
         <li role="presentation" class="divider"></li>
         <li role="presentation">
           <a class="btn-helper" data-helper="what-is-encryption-key" href="#">

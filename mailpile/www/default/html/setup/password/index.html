@@ -1,0 +1,73 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
+{% block content %}
+
+<div id="setup-passphrase" class="setup-box setup-box-medium add-top half-bottom animated fadeIn">
+  <div id="identity-vault-lock" class="vault-lock-outer">
+    <div class="vault-lock-inner">
+      <div class="vault-lock icon-lock-closed animated"></div>
+    </div>
+  </div>
+
+  {# Password chosen, hooray! #}
+  <div id="setup-passphrase-chosen"
+       class="{% if not result.configured %}hide{% endif %} text-center half-top">
+    <h3 class="text-center">{{_("Mailpile Secured!")}}</h3>
+    <p class="text-center">
+      {{_("Access to your Mailpile will now require this password.")}}
+    </p>
+    <p class="text-center">
+      {{_("All settings and downloaded mail will be encrypted, so even if someone steals your laptop they will not have access to your e-mail.")}}
+    </p>
+    <p><a href="{{ U("/profiles/") }}"
+          class="button-primary">{{_("Start using Mailpile")}}</a></p>
+  </div>
+
+  {# Input form for choosing a password #}
+  <div id="setup-passphrase-chooser"
+       class="{% if result.configured %}hide{% endif %} text-center half-top">
+    <form method="POST" action="{{ U("/setup/password/") }}"
+          id="form-setup-passphrase" class="standard text-center half-top">
+
+    {% if result.need_password %}
+      <h3 class="text-center">{{_("Change your password")}}</h3>
+      <span id="validation-passphrase">
+        <label class="validation-message">{{_("Authenticate")}}</label>
+        <span class="validation-message"></span>
+        <input id="input-setup-passphrase" class="medium center"
+               type="password" name="existing"
+               autofocus autocorrect="off" autocapitalize="off" class="center"
+               placeholder="{{_("your current password")}}">
+      </span>
+      <label class="validation-message">{{_("Choose a password")}}</label>
+    {% else %}
+      <h3 class="text-center">{{_("Choose a password")}}</h3>
+      <p class="text-center">
+        {{_("Your password should be something really hard to guess but memorable.")}}<br>
+        {{_("This password will be used to unlock your Mailpile.")}}
+      </p>
+    {% endif %}
+
+      <span id="validation-passphrase">
+        <span class="validation-message"></span>
+        <input id="input-setup-passphrase" class="medium center"
+               type="password" name="password1"
+               autofocus autocorrect="off" autocapitalize="off" class="center"
+               placeholder="{{_("very important secret password")}}">
+      </span>
+      <span id="validation-passphrase_confirm">
+        <label class="validation-message">{{_("Confirm your password")}}</label>
+        <input id="input-setup-passphrase_confirm" class="medium center"
+               type="password" name="password2"
+               autocorrect="off" autocapitalize="off" class="center"
+               placeholder="{{_("very important secret password")}}">
+      </span>
+
+      <button id="btn-setup-passphrase" class="button-primary"
+              type="submit">{{_("Set Password")}}</button>
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}

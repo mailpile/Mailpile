@@ -240,7 +240,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         Generate a hashed token from the current timestamp
         and the server secret to avoid CSRF attacks
         """
-        ts = '%x' % int(time.time() / 60)
+        ts = '%x' % time.time()
         return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret,
                                                      ts]))))
 
@@ -306,12 +306,19 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.session, config = self.server.session, self.server.session.config
         server_session = self.server.session
 
+        # Debugging...
         if 'httpdata' in config.sys.debug:
             self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
 
-        # Static things!
+        # Path manipulation...
         if path == '/favicon.ico':
-            path = '/static/favicon.ico'
+            path = '%s/static/favicon.ico' % (config.sys.http_path or '')
+        if config.sys.http_path:
+            if not path.startswith(config.sys.http_path):
+                self.send_full_response(_("File not found (invalid path)"),
+                                        code=404, mimetype='text/plain')
+                return None
+            path = path[len(config.sys.http_path):]
         if path.startswith('/_/'):
             path = path[2:]
         if path.startswith('/static/'):
@@ -356,9 +363,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         try:
             try:
+                need_auth = not (mailpile.util.TESTING or
+                                 session.config.sys.http_no_auth)
                 commands = UrlMap(session).map(
                     self, method, path, query_data, post_data,
-                    authenticate=(not mailpile.util.TESTING))
+                    authenticate=need_auth)
             except UsageError:
                 if (not path.endswith('/') and
                         not session.config.sys.debug and
@@ -443,37 +452,30 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def __init__(self, session, sspec, handler):
-        SimpleXMLRPCServer.__init__(self, sspec, handler)
+        SimpleXMLRPCServer.__init__(self, sspec[:2], handler)
         self.daemon_threads = True
         self.session = session
         self.sessions = {}
         self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
+        self.sspec = (sspec[0] or 'localhost',
+                      self.socket.getsockname()[1],
+                      sspec[2])
 
         # This hash includes the index ofuscation master key, which means
         # it should be very strongly unguessable.
-        self.secret = b64w(sha512b64(
-            '-'.join([str(x) for x in [session, time.time(),
-                                       random.randint(0, 0xfffffff),
-                                       session.config]])))
+        self.secret = okay_random(64, session.config.master_key)
 
         # Generate a new unguessable session cookie name on startup
         while not self.session_cookie:
-            rn = str(random.randint(0, 0xfffffff))
-            self.session_cookie = CleanText(sha512b64(self.secret, rn),
-                                            banned=CleanText.NONALNUM
-                                            ).clean[:8].lower()
+            self.session_cookie = okay_random(12, self.secret)
 
     def make_session_id(self, request):
         """Generate an unguessable and unauthenticated new session ID."""
         session_id = None
         while session_id in self.sessions or session_id is None:
-            session_id = b64w(sha1b64('%s %s %x %s' % (
-                self.secret,
-                request and request.headers,
-                random.randint(0, 0xffffffff),
-                time.time())))
+            session_id = okay_random(32, self.secret,
+                                     '%s' % (request and request.headers))
         return session_id
 
     def finish_request(self, request, client_address):

@@ -25,45 +25,45 @@
     <ul>
       <li class="notification">
         <a href="#">
-          <img src="/static/img/avatar-default.png">
+          <img src="{{ U('/static/img/avatar-default.png') }}">
           <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
           <span class="icon-tag"></span> The <strong> Mailpile</strong> tag was applied to <strong>400 messages</strong>
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
-          <img src="/static/img/avatar-default.png">
+          <img src="{{ U('/static/img/avatar-default.png') }}">
           <strong>You</strong> sent <strong>5 tormail</strong> to various people
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
           <span class="icon-inbox"></span> <strong>16 new messages</strong> have been downloaded to <strong>Inbox</strong>
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
           <span class="icon-groups"></span> <strong>You</strong> added 5 people to group <strong>Group</strong>
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
           <span class="icon-inbox"></span> <strong>3 new messages</strong> have been downloaded to <strong>Bills & Banking</strong>
-        </a>                    
+        </a>
       </li>
       <li class="notification">
         <a href="#">
           <span class="icon-tag"></span> The <strong>Friends</strong> tag was applied to <strong>51 messages</strong>
-        </a>                    
+        </a>
       </li>
     </ul>
     </div>
     <div class="notifications-bottom">
-      <a href="/eventlog/">{{_("All Notifications")}}</a>
+      <a href="{{ U('/eventlog/') }}">{{_("All Notifications")}}</a>
     </div>
   </div>
 </script>
@@ -172,16 +172,23 @@
           data-fingerprint="<%= fingerprint %>"
           data-score_reason="<%= score_reason %>"
           data-score_stars="<%= score_stars %>">
+        <% if (score > 0) { %>
         <% for (i = 0; i < Math.abs(score_stars); i++) { %>
         <span class="icon-star <%= score_color %>"></span>
+        <% } %>
+        <% } else { %>
+        <span class="icon-signature-revoked <%= score_color %>"></span> <em>{{_("Don't use this key")}}</em>
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
         <% if (on_keychain) { %>
+        <i>{{_("This key is on your key chain.")}}</i>
+{#
         <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
           <option value="true" selected="selected">{{_("Use This Key")}}</option>
           <option value="false">{{_("Don't Use This Key")}}</option>
         </select>
+#}
         <% } else { %>
         <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
           <span class="icon-key"></span> {{_("Import Key")}}
@@ -228,6 +235,18 @@
 </script>
 
 
+<script id="template-search-keyserver-show-hidden" type="text/template">
+  <li class="text-center remove-bottom">
+    <a href="#" class="crypto-show-hidden-keys">
+      <span class="icon-signature-revoked color-12-red"></span> {{_("Show Hidden Encryption Keys")}}
+    </a>
+    <div class="half-top">
+      <em class="text-detail">{{_("Hidden keys are either revoked or expired and should not be used")}}</em>
+    </div>
+  </li>
+</script>
+
+
 <script id="template-search-tags-link" type="text/template">
   <span class="pile-message-tag color-<%= label_color %>" id="pile-message-tag-<%= tid %>-<%= mid %>" data-tid="<%= tid %>" data-mid="<%= mid %>">
     <span class="pile-message-tag-icon <%= icon %>"></span>
@@ -266,10 +285,18 @@
 
 <script id="template-notification-bubble" type="text/template">
   <div id="event-<%= event_id %>" class="notification-bubble <%= status %> hide">
-    <span class="icon <%= icon %>"></span> 
+    <span class="icon <%= icon %>"></span>
     <span class="text">
-      <span class="message"><%= message %></span><br> 
-      <% if (type === 'nagify') { %>
+      <span class="message"><%= message %></span><br>
+      <% if (message2) { %>
+      <span class="action"><%= message2 %>
+      <%   if (action_js) { %>
+        - <a <%= action_js %> data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
+      <%   } else if (action_url) { %>
+        - <a href="<%= action_url %>" data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
+      <%   } %>
+      </span>
+      <% } else if (type === 'nagify') { %>
       <span class="action">{{"Want to"}} <a href="<%= action %>" data-event_id="<%= event_id %>" class="action notification-nag">{{_("do it now?")}}</a></span>
       <% } else if (undo) { %>
       <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo">{{_("undo")}}</a></span>
@@ -328,10 +355,18 @@
 <script id="template-contact-list-item" type="text/template">
   <div class="rectangles-outer" id="contact-card-<%= email %>">
     <div class="rectangles-inner">
-      <a class="contact-card-avatar left" href="/contacts/view/<%= email %>/">
-        <img src="/static/img/avatar-default.png">
+      <a class="contact-card-avatar left"
+{%- if config.version >= '0.6.0' %}
+         href="{{ U('/contacts/view/<%= email %>/') }}"
+{%- endif %}
+         >
+        <img src="{{ U('/static/img/avatar-default.png') }}">
       </a>
-      <a class="contact-card-name" href="/contacts/view/<%= email %>/">
+      <a class="contact-card-name"
+{%- if config.version >= '0.6.0' %}
+         href="{{ U('/contacts/view/<%= email %>/') }}"
+{%- endif %}
+         >
         <%= fn %>
       </a>
       <input type="checkbox" class="contact-card-checkbox right">

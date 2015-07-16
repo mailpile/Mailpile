@@ -7,6 +7,7 @@ import datetime
 import hashlib
 import inspect
 import locale
+import random
 import re
 import subprocess
 import os
@@ -37,25 +38,58 @@ QUITTING = False
 LAST_USER_ACTIVITY = 0
 LIVE_USER_ACTIVITIES = 0
 
+THREAD_LOCAL = threading.local()
+
+RID_COUNTER = 0
+RID_COUNTER_LOCK = threading.Lock()
+
 MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
-                         ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
+                         ':\"|;`\'\\\<\>\?,\.\/\-]{2,}')
 
-PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
-                          ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
+# These next two variables are important for reducing hot-spots in the
+# search index and polluting it with spammy results. But adding too many
+# terms here makes searches fail, so we need to be careful. Also, the
+# spam classifier won't see these things. So again, careful...
+STOPLIST = set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'an', 'and', 'any', 'are', 'as', 'at',
+                'but', 'by', 'can', 'div', 'do', 'for', 'from',
+                'has', 'hello', 'hi', 'i', 'in', 'if', 'is', 'it',
+                'mailto', 'me', 'my',
+                'og', 'of', 'on', 'or', 'p', 're', 'span', 'so',
+                'that', 'the', 'this', 'td', 'to', 'tr',
+                'was', 'we', 'were', 'you'])
 
-STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'i', 'in', 'is', 'it',
-                'mailto', 'me',
-                'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
-
-BORING_HEADERS = ('received', 'date',
+BORING_HEADERS = ('received', 'received-spf', 'date',
                   'content-type', 'content-disposition', 'mime-version',
-                  'dkim-signature', 'domainkey-signature', 'received-spf')
+                  'list-archive', 'list-help', 'list-unsubscribe',
+                  'dkim-signature', 'domainkey-signature')
 
-EXPECTED_HEADERS = ('from', 'to', 'subject', 'date')
+# For the spam classifier, if these headers are missing a special
+# note is made of that in the message keywords.
+EXPECTED_HEADERS = ('from', 'to', 'subject', 'date', 'message-id')
+
+# Different attachment types we create keywords for during indexing
+ATT_EXTS = {
+    'audio': ['aiff', 'aac', 'mid', 'midi', 'mp3', 'mp2', '3gp', 'wav'],
+    'code': ['c', 'cpp', 'c++', 'css', 'cxx',
+             'h', 'hpp', 'h++', 'html', 'hxx', 'py', 'php', 'pl', 'rb',
+             'java', 'js', 'xml'],
+    'crypto': ['asc', 'pgp', 'key'],
+    'data': ['cfg', 'csv', 'gz', 'json', 'log', 'sql', 'rss', 'tar',
+             'tgz', 'vcf', 'xls', 'xlsx'],
+    'document': ['csv', 'doc', 'docx', 'htm', 'html', 'md',
+                 'odt', 'ods', 'odp', 'ps', 'pdf', 'ppt', 'pptx', 'psd',
+                 'txt', 'xls', 'xlsx', 'xml'],
+    'font': ['eot', 'otf', 'pfa', 'pfb', 'gsf', 'pcf', 'ttf', 'woff'],
+    'image': ['bmp', 'eps', 'gif', 'ico', 'jpeg', 'jpg',
+              'png', 'ps', 'psd', 'svg', 'svgz', 'tiff', 'xpm'],
+    'video': ['avi', 'divx'],
+}
+ATT_EXTS['media'] = (ATT_EXTS['audio'] + ATT_EXTS['font'] +
+                     ATT_EXTS['image'] + ATT_EXTS['video'])
 
 B64C_STRIP = '\r\n='
 
@@ -85,14 +119,15 @@ PROVISIONAL_URI_SCHEMES = set([
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
+
+##[ Lock debugging tools ]##################################################
+
 def WhereAmI(start=1):
     stack = inspect.stack()
     return '%s' % '->'.join(
         ['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
          for i in reversed(range(start, len(stack)-1))])
 
-
-##[ Lock debugging tools ]##################################################
 
 def _TracedLock(what, *a, **kw):
     lock = what(*a, **kw)
@@ -169,6 +204,10 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
+class JobPostponingException(Exception):
+    seconds = 300
+
+
 class MultiContext:
     def __init__(self, contexts):
         self.contexts = contexts or []
@@ -187,6 +226,21 @@ class MultiContext:
                 raised.append(e)
         if raised:
             raise raised[0]
+
+
+def thread_context_push(**kwargs):
+    if not hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context = []
+    THREAD_LOCAL.context.append(kwargs)
+
+
+def thread_context():
+    return THREAD_LOCAL.context if hasattr(THREAD_LOCAL, 'context') else []
+
+
+def thread_context_pop():
+    if hasattr(THREAD_LOCAL, 'context'):
+        THREAD_LOCAL.context.pop(-1)
 
 
 def FixupForWith(obj):
@@ -341,42 +395,145 @@ def b36(number):
     return ''.join(reversed(base36))
 
 
-def split_long_lines(text):
+def string_to_intlist(text):
+    """Converts a string into an array of integers"""
+    try:
+        return [ord(c) for c in text.encode('utf-8')]
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return [ord(c) for c in text]
+
+
+def intlist_to_string(intlist):
+    chars = ''.join([chr(c) for c in intlist])
+    try:
+        return chars.decode('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return chars
+
+
+def randomish_uid():
     """
-    Split long lines of text into shorter ones, ignoring ascii art.
+    Generate a weakly random unique ID. Might not actually be unique.
+    Leaks the time; uniqueness depends on time moving forward and not
+    being invoked too rapidly.
+    """
+    with RID_COUNTER_LOCK:
+        global RID_COUNTER
+        RID_COUNTER += 1
+        RID_COUNTER %= 0x1000
+        return '%3.3x%7.7x%x' % (random.randint(0, 0xfff),
+                                 time.time() // 16,
+                                 RID_COUNTER)
+
+
+def okay_random(length, *seeds):
+    """
+    Generate a psuedo-random string, mixing some seed data with os.urandom().
+    The mixing is "just in case" os.urandom() is lame for some unfathomable
+    reason. This is hopefully all overkill.
+    """
+    secret = ''
+    while len(secret) < length:
+        # Generate unpredictable bytes from the base64 alphabet
+        secret += sha512b64(os.urandom(128 + length * 2),
+                            '%s' % time.time(),
+                            '%x' % random.randint(0, 0xffffffff),
+                            *seeds)
+        # Strip confusing characters and truncate
+        secret = CleanText(secret, banned=CleanText.NONALNUM + 'O01l\n \t'
+                           ).clean[:length]
+    return secret
+
+
+def split_secret(secret, recipients, pad_to=24):
+    while len(secret) < pad_to:
+        secret += '\x00'
+    as_bytes = string_to_intlist(secret)
+    parts = []
+    while len(parts) < recipients-1:
+        parts.append(string_to_intlist(os.urandom(len(as_bytes))))
+    last = []
+    parts.append(last)
+    for i in range(0, len(as_bytes)):
+        c = as_bytes[i]
+        for j in range(0, recipients-1):
+            c ^= parts[j][i]
+        last.append(c & 0xff)
+    return [':'.join(['%2.2x' % x for x in p]) for p in parts]
+
+
+def merge_secret(parts):
+    parts = [[int(c, 16) for c in p.split(':')] for p in parts]
+    secret = []
+    for i in range(0, len(parts[0])):
+        c = parts[0][i]
+        for j in range(1, len(parts)):
+            c ^= parts[j][i]
+        secret.append(c & 0xff)
+    while secret[-1] == 0:
+        secret[-1:] = []
+    return intlist_to_string(secret)
+
+
+REFLOW_PROSE_START = re.compile(r'\S*\w+')
+REFLOW_NONBLANK = re.compile(r'\S')
+
+def reflow_text(text, quoting=False, target_width=65):
+    """
+    Reflow text so lines are roughly of a uniform length suitable for
+    reading or replying. Tries to detect whether the text has already
+    been manually formatted and preserve unmodified in such cases.
 
     >>> test_string = (('abcd efgh ijkl mnop ' + ('q' * 72) + ' ') * 2)[:-1]
-    >>> print split_long_lines(test_string)
+    >>> print reflow_text(test_string)
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
-    >>> print split_long_lines('> ' + ('q' * 72))
+    >>> print reflow_text('> ' + ('q' * 72))
     > qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     The function should be stable:
 
-    >>> split_long_lines(test_string) == split_long_lines(
-    ...                                    split_long_lines(test_string))
+    >>> reflow_text(test_string) == reflow_text(reflow_text(test_string))
     True
     """
-    lines = text.splitlines()
-    for i in range(0, len(lines)):
-        buffered, done = [], False
-        while (not done and
-               len(lines[i]) > 72 and
-               re.match(PROSE_REGEXP, lines[i])):
-            n = re.sub(RE_LONG_LINE_SPLITTER, '\\1\n', lines[i], 1
-                       ).split('\n')
-            if len(n) == 1:
-                done = True
-            else:
-                buffered.append(n[0])
-                lines[i] = n[1]
-        if buffered:
-            lines[i] = '\n'.join(buffered + [lines[i]])
-    return '\n'.join(lines)
+    if quoting:
+        target_width -= 2
+    inlines = text.splitlines()
+    outlines = []
+    def line_length(l, word):
+        return sum(len(w) for w in l) + len(l) + len(word)
+    while inlines:
+        thisline = inlines.pop(0)
+        if (re.match(REFLOW_PROSE_START, thisline)
+                and not thisline.endswith('  ')
+                and len(thisline) > target_width-10):
+            # This line looks like the beginning of a paragraph, go get
+            # the rest of the paragraph for reflowing...
+            para = thisline.strip().split()
+            while (inlines
+                    and not inlines[0].endswith('  ')
+                    and re.match(REFLOW_PROSE_START, inlines[0])):
+                para += inlines.pop(0).strip().split()
+
+            # Once we have the full paragraph, reflow using target width
+            paralines = [[]]
+            for word in para:
+               if line_length(paralines[-1], word) <= target_width:
+                   paralines[-1].append(word)
+               elif 0 == len(paralines[-1]):
+                   paralines[-1].append(word)
+               else:
+                   paralines.append([word])
+            outlines.extend([' '.join(l) for l in paralines])
+
+        else:
+            # Not a paragraph, just preserve this line unchanged
+            outlines.append(thisline)
+
+    return '\n'.join(outlines)
 
 
 def elapsed_datetime(timestamp):
@@ -393,20 +550,31 @@ def elapsed_datetime(timestamp):
         if hours_ago < 1:
             if minutes_ago < 3:
                 return _('now')
-            elif minutes_ago >= 3:
+            else:
                 return _('%d mins') % minutes_ago
         elif hours_ago < 2:
             return _('%d hour') % hours_ago
         else:
             return _('%d hours') % hours_ago
     elif days_ago < 2:
-        return _('%d day') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d day') % days_ago
     elif days_ago < 7:
-        return _('%d days') % days_ago
+        return _(ts.strftime('%A'))  #return _('%d days') % days_ago
     elif days_ago < 366:
-        return ts.strftime("%b %d")
+        return _(ts.strftime("%b")) + ts.strftime(" %d")
     else:
-        return ts.strftime("%b %d %Y")
+        return _(ts.strftime("%b")) + ts.strftime(" %d %Y")
+
+_translate_these = [_('Monday'), _('Mon'), _('Tuesday'), _('Tue'),
+                    _('Wednesday'), _('Wed'), _('Thursday'), _('Thu'),
+                    _('Friday'), _('Fri'), _('Saturday'), _('Sat'),
+                    _('Sunday'), _('Sun'),
+                    _('January'), _('Jan'), _('February'), _('Feb'),
+                    _('March'), _('Mar'), _('April'), _('Apr'),
+                    _('May'), _('June'), _('Jun'),
+                    _('July'), _('Jul'), _('August'), _('Aug'),
+                    _('September'), _('Sep'), _('October'), _('Oct'),
+                    _('November'), _('Nov'), _('December'), _('Dec')]
 
 
 def friendly_datetime(timestamp):
@@ -447,9 +615,14 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8',
-                            _raise=IOError):
+                            passphrase=None,
+                            _raise=IOError, error_cb=None):
     import mailpile.crypto.streamer as cstrm
     symmetric_key = config and config.master_key or 'missing'
+    passphrase_reader = (passphrase.get_reader()
+                         if (passphrase is not None) else
+                         (config.passphrases['DEFAULT'].get_reader()
+                          if config else None))
 
     if not newlines:
         if decode:
@@ -468,13 +641,12 @@ def decrypt_and_parse_lines(fd, parser, config,
                     [line], fd,
                     name='decrypt_and_parse',
                     mep_key=symmetric_key,
-                    gpg_pass=(config.gnupg_passphrase.get_reader()
-                              if config else None)) as pdsfd:
+                    gpg_pass=passphrase_reader) as pdsfd:
                 _parser(pdsfd)
-                pdsfd.verify(_raise=_raise)
+                if not pdsfd.verify(_raise=_raise) and error_cb:
+                    error_cb(fd.tell())
         else:
             _parser([line])
-
 
 
 # This is a hack to deal with the fact that Windows sometimes won't
@@ -513,9 +685,10 @@ def backup_file(filename, backups=5, min_age_delta=0):
 
 
 def json_helper(obj):
-    if isinstance(obj, datetime.datetime):
-        return str(obj)
-
+    try:
+        return unicode(obj)
+    except:
+        return "COMPLEXBLOB"
 
 class GpgWriter(object):
     def __init__(self, gpg):
@@ -551,22 +724,20 @@ def dict_merge(*dicts):
     return final
 
 
-def play_nice_with_threads(sleep=True):
+def play_nice_with_threads(sleep=True, deadline=None):
     """
     Long-running batch jobs should call this now and then to pause
     their activities in case there are other threads that would like to
     run. Recent user activity increases the delay significantly, to
     hopefully make the app more responsive when it is in use.
     """
-    threads = threading.activeCount() - 3
-    if threads < 1:
+    if threading.activeCount() < 4:
         return 0
 
-    lc = 0
+    deadline = (time.time() + 1) if (deadline is None) else deadline
     while True:
-        activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
-        delay = (max(0, 0.002 * threads) +
-                 max(0, min(0.10, 0.400 * activity_threshold)))
+        activity_threshold = (180 - time.time() + LAST_USER_ACTIVITY) / 120
+        delay = max(0.001, min(0.1, 0.1 * activity_threshold))
         if not sleep:
             break
 
@@ -574,8 +745,9 @@ def play_nice_with_threads(sleep=True):
         # to release the GIL and let other threads run.
         time.sleep(delay)
 
-        lc += 1
-        if QUITTING or LIVE_USER_ACTIVITIES < 1 or lc > 10:
+        if QUITTING or LIVE_USER_ACTIVITIES < 1:
+            break
+        if time.time() > deadline:
             break
 
     return delay
@@ -667,6 +839,11 @@ class CleanText:
                                         set(range(ord('0'), ord('9') + 1)) -
                                         set(range(ord('a'), ord('z') + 1)) -
                                         set([ord('_')]))])
+    NONPATH = ''.join([chr(c) for c in (set(range(32, 127)) -
+                                        set(range(ord('0'), ord('9') + 1)) -
+                                        set(range(ord('a'), ord('z') + 1)) -
+                                        set(range(ord('A'), ord('Z') + 1)) -
+                                        set([ord('_'), ord('/')]))])
 
     def __init__(self, text, banned='', replace=''):
         self.clean = str("".join([i if (((ord(i) > 31 and ord(i) < 127) or

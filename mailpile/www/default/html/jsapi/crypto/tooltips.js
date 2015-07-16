@@ -5,7 +5,7 @@ Mailpile.Crypto.Tooltips.KeyScore = function() {
     content: {
       title: false,
       text: function(event, api) {
-        return $(this).data('score_reason') + '<small>{{_("Click For Details")}}</small>';
+        return $(this).data('score_reason') + '<small>{{_("Click For Details")|escapejs}}</small>';
       }
     },
     style: {

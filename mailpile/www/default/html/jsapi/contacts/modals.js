@@ -4,10 +4,11 @@ Mailpile.UI.Modals.ContactAdd = function() {
   $('.sub-navigation ul li').removeClass('navigation-on');
   $(this).addClass('navigation-on');
 
-  var modal_data = { name: '', address: '', extras: '' };
-  var modal_template = _.template($("#modal-contact-add").html());
-  $('#modal-full').html(modal_template(modal_data));
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.API.with_template('modal-contact-add', function(modal) {
+    var modal_data = { name: '', address: '', extras: '' };
+    $('#modal-full').html(modal(modal_data));
+    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  });
 };
 
 

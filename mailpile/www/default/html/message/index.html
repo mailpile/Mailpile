@@ -49,7 +49,7 @@
     <div id="message-{{ mid }}" class="thread-snippet {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
-      {% if metadata.crypto.encryption in ("missingkey", "error", "mixed-missingkey", "mixed-error") %}
+      {% if metadata.crypto.encryption in ("lockedkey", "missingkey", "error", "mixed-lockedkey", "mixed-missingkey", "mixed-error") %}
       <div class="thread-item-text"><em>{{_("Unable to see message preview")}}</em></div>
       {% else %}
       <div class="thread-item-text">{{ metadata.body.snippet }}</div>

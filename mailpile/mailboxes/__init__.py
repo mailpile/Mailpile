@@ -37,7 +37,7 @@ def IsMailbox(fn, config):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
             if mbox_cls.parse_path(config, fn):
-                return True
+                return (True, mbox_cls)
         except KeyboardInterrupt:
             raise
         except:
@@ -118,9 +118,10 @@ def UnorderedPicklable(parent, editable=False):
                                         % (self, fn))
                     pickler(self, fn)
 
-        def add_from_source(self, source_id, *args, **kwargs):
+        def add_from_source(self, source_id, metadata_kws, *args, **kwargs):
             with self._lock:
                 key = self.add(*args, **kwargs)
+                self.set_metadata_keywords(key, metadata_kws)
                 self.source_map[source_id] = key
             return key
 
@@ -143,13 +144,21 @@ def UnorderedPicklable(parent, editable=False):
                 fd.seek(0, 2)
                 return fd.tell()
 
-        def get_bytes(self, toc_id):
+        def get_bytes(self, toc_id, *args):
             with self._lock:
-                return self.get_file(toc_id).read()
+                return self.get_file(toc_id).read(*args)
 
         def get_string(self, *args, **kwargs):
             with self._lock:
                 return parent.get_string(self, *args, **kwargs)
+
+        def get_metadata_keywords(self, toc_id):
+            # Subclasses should translate whatever internal metadata they
+            # have into mailpile keywords describing message metadata
+            return []
+
+        def set_metadata_keywords(self, toc_id, kws):
+            pass
 
         def remove(self, *args, **kwargs):
             with self._lock:

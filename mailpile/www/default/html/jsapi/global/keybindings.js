@@ -7,13 +7,17 @@ Mailpile.keybinding_move_message = function(add_tag) {
     delete_tags.push('new');
 
     // Add / Delete
-    Mailpile.API.tag_post({ add: add_tag,del: delete_tags, mid: Mailpile.messages_cache}, function(result) {
+    Mailpile.API.tag_post({ add: add_tag,
+                            del: delete_tags,
+                            mid: Mailpile.messages_cache }, function(result) {
 
       Mailpile.notification(result);
 
       // Update Pile View
       $.each(Mailpile.messages_cache, function(key, mid) {
-        $('#pile-message-' + mid).fadeOut('fast');
+        if (mid != '!all') {
+          $('#pile-message-' + mid).fadeOut('fast');
+        }
       });
 
       // Empty Bulk Cache

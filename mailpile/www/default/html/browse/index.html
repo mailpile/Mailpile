@@ -1,0 +1,168 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{%- if not result %}
+  {% set page_title = message %}
+{%- elif result.path == '/' %}
+  {% set page_title = _("Browsing folders and mailboxes") %}
+{%- else %}
+  {% set page_title = _("Browsing") + ": " + result.name  %}
+{%- endif %}
+{% block title %}{{page_title}}{% endblock %}
+
+{% block contenttools %}
+{%- set activities = [{
+  'name': 'parent-folder',
+  'url': '../',
+  'text': _("Parent"),
+  'description': _("Open Parent Folder"),
+  'icon': 'upload'
+}] -%}
+{# }, {
+  'name': 'folder_add',
+  'url': '#folder-add',
+  'text': _("Add Folder"),
+  'description': _("Create a new folder"),
+  'icon': 'plus'
+}, {
+  'name': 'mailbox_add',
+  'url': '#mailbox-add',
+  'text': _("Add Mailbox"),
+  'description': _("Create a new mailbox"),
+  'icon': 'plus'
+}] #}
+{%- set tools_disable_checkbox = True -%}
+{%- set selection_initial_prompt = page_title -%}
+{%- include("partials/tools_default.html") -%}
+{% endblock %}
+
+{%- macro help(attr) -%}
+  {% if attr == 'flag_mailpile' %}
+    <p class='help help-{{ attr }}'>
+      These are Mailpile-specific data.
+    </p>
+  {% elif attr == 'flag_directory' %}
+    <p class='help help-{{ attr }}'>
+      {{_("Browse local or remote folders for mailboxes to add to your pile.")}}
+    </p>
+  {% elif attr == 'flag_mailbox' %}
+    <p class='help help-{{ attr }}'>
+      {{_("These are mailboxes recognized by Mailpile.")}}
+      {{_("Click to view mailbox contents or change settings.")}}
+    </p>
+  {% elif attr == 'flag_files' %}
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro browse_url(attr, info) -%}
+  {%- if attr == 'flag_mailbox' -%}
+    {{- U('/search/?q=vfs:', info.encoded) -}} 
+  {%- else -%}
+    {{- U('/browse', info.path, '/') -}}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro box_icon(attr, info, icn) -%}
+  {%- if info.icon -%}
+    {%- if '-' in info.icon -%}
+      <span class='icon {{info.icon}}'></span>
+    {%- else %}
+      <img src="{{ U(info.icon) }}">
+    {%- endif %}
+  {%- else -%}
+    <span class='icon-{{ icn }}'></span>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro settings(attr, info, icn) -%}
+  {%- if info.settings  -%}
+    {%- set _url = info.settings -%}
+  {%- elif attr == 'flag_mailbox' -%}
+    {%- if info.tag %}
+      {%- set _url = U('/tags/edit.html?only=', info.tag) -%}
+    {%- else %}
+      {%- set _url = U('/settings/mailbox/?path=', info.encoded) -%}
+    {%- endif %}
+  {%- elif info.flag_mailsource and info.source -%}
+    {%- set _url = U('/profiles/edit/?rid=', config.sources[info.source].profile, '&ui_open=sources') -%}
+  {%- else %}
+    {%- set _url = '' %}
+  {%- endif -%}
+  {%- if _url -%}
+    <div class="right">
+      <a class='browse-item-settings link-detail auto-modal auto-modal-reload right'
+         data-icon="icon-settings"
+         href="{{ U(_url) }}" title='{{_("Settings")}}: {{info.display_name}}'>
+        <span class='icon-settings'></span>
+      </a>
+    </div>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro details(attr, info) -%}
+  {%- if info.source %}
+    {%- set src = config.sources[info.source] %}
+  {%- else %}
+    {%- set src = False %}
+  {%- endif %}
+  {%- if info.display_info -%}
+    {{ info.display_info }}
+  {%- else %}
+    {%- if attr == 'flag_mailbox' -%}
+      {% if info.bytes %}{{ info.bytes|friendly_bytes }}{%- endif %}
+      {% if src %}{{ src.protocol }}{%- endif %}
+    {%- elif info.flag_mailsource and src.host %}
+      {{ src.protocol|upper }} {{ src.host }}
+    {%- endif %}
+  {%- endif -%}
+{%- endmacro -%}
+
+
+{% block content %}
+{% if result %}
+  {%- set loops = [] %}
+  {%- for attr, titl, icn, link in (
+      ('flag_mailpile',  'Mailpile',  'star',       True),
+      ('flag_mailbox',   'Mailboxes', 'inbox',      True),
+      ('flag_directory', 'Folders',   'news',       True),
+      ('flag_files',     'Files',     'document',   True)) %}
+    {%- set oloop_first = loop.first %}
+    {%- for info in result.entries|selectattr(attr) %}
+      {%- if loop.first %}
+        {%- do loops.append(info.display_name) %}
+        <div class='{{ attr }} container rectangles-container center'>
+          <div style="display: inline-block">
+            <h2><span class='icon-{{ icn }}'></span> {{ titl }}</h2>
+          </div>
+          <div style="display: inline-block; margin: 25px;">{{ help(attr) }}</div>
+          <div class="clearfix"></div>
+      {%- endif %}
+          <div class="rectangles-outer">
+            <div class="rectangles-inner">
+              {%- set _url = browse_url(attr, info) %}
+              <a class="browse-item-icon left" {%- if link %} href="{{ _url }}"{% endif %}>
+                {{ box_icon(attr, info, icn) }} &nbsp;
+              </a>
+  {#          <input type="checkbox" class="browse-item-checkbox right"> #}
+              {{ settings(attr, info) }}
+              <div style='display: absolute; overflow: hidden; margin: 0; padding: 0;'>
+                <a class="browse-item-name" title='{{ info.display_path }}'
+                   {%- if link %} href="{{ _url }}"{% endif %}>
+                  {{ info.display_name }}
+                </a>
+                <br><span style='position: absolute'>
+                  {{ details(attr, info) }}
+                </span>
+              </div>
+            </div>
+          </div>
+      {%- if loop.last %}
+        </div>
+      {%- endif %}
+    {%- endfor %}
+  {%- endfor %}
+{%- else %}
+  <div class='container rectangles-container'>
+    <h2>{{ page_title }}</h2>
+    {# FIXME: Suggest troubleshooting tips for networking-related errors #}
+  </div>
+{%- endif %}
+{% endblock %}

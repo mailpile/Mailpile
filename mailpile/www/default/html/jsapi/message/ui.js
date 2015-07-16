@@ -14,11 +14,12 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
       }
     },
     error: function() {
-      Mailpile.notification({status: 'error', message: 'Could not retrieve message'});
+      Mailpile.notification({status: 'error', message: '{{_("Could not retrieve message")|escapejs}}' });
     }
   });
 
-};
+}
+;
 
 
 Mailpile.UI.Message.ScrollToMessage = function() {

@@ -26,14 +26,16 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Functional attributes
     'type': ['Tag type', [
-        'tag', 'group', 'attribute', 'unread', 'inbox',
+        'tag', 'group', 'attribute', 'unread', 'inbox', 'search',
         # Maybe TODO: 'folder', 'shadow',
+        'profile', 'mailbox',                         # Accounts, Mailboxes
         'drafts', 'blank', 'outbox', 'sent',          # composing and sending
         'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags
         'trash', 'spam'                               # junk mail tags
     ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', 'bool', False],
     'flag_editable': ['Mark tagged messages as editable?', 'bool', False],
+    'flag_msg_only': ['Never apply to entire conversations', 'bool', False],
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
@@ -48,11 +50,7 @@ _plugins.register_config_section('tags', ["Tags", {
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
-    'parent': ['ID of parent tag, if any', 'str', ''],
-
-    # Outdated crap
-    'hides_flag': ['DEPRECATED', 'ignore', None],
-    'write_flag': ['DEPRECATED', 'ignore', None],
+    'parent': ['ID of parent tag, if any', 'str', '']
 }, {}])
 
 _plugins.register_config_section('filters', ["Filters", {
@@ -60,14 +58,8 @@ _plugins.register_config_section('filters', ["Filters", {
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
     'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
+    'primary_tag': ['Tag dedicated to this filter', 'str', ''],
 }, {}])
-
-_plugins.register_config_variables('sys', {
-    'writable_tags': ['DEPRECATED', 'str', []],
-    'invisible_tags': ['DEPRECATED', 'str', []],
-})
-
-#INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides')
 
 
 def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):
@@ -89,7 +81,7 @@ def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):
     return flist
 
 
-def MoveFilter(cfg, filter_id, filter_new_id):
+def FilterMove(cfg, filter_id, filter_new_id):
     def swap(f1, f2):
         tmp = cfg.filters[f1]
         cfg.filters[f1] = cfg.filters[f2]
@@ -102,6 +94,18 @@ def MoveFilter(cfg, filter_id, filter_new_id):
     elif ffrm < fto:
         for fid in range(ffrm, fto):
             swap(b36(fid), b36(fid + 1))
+
+
+def FilterDelete(cfg, *filter_ids):
+    filter_ids = list(filter_ids)
+    filter_ids.sort(key=lambda fid: int(fid, 36))
+    filters = cfg.filters
+    for fid in reversed(filter_ids):
+        lastid = b36(len(filters)-1).lower()
+        if fid <= lastid:
+            if lastid != fid:
+                cfg.filter_move(fid, lastid)
+            del filters[lastid]
 
 
 def GetTags(cfg, tn=None, default=None, **kwargs):
@@ -207,7 +211,8 @@ mailpile.config.ConfigManager.get_tags = GetTags
 mailpile.config.ConfigManager.get_tag_id = GetTagID
 mailpile.config.ConfigManager.get_tag_info = GetTagInfo
 mailpile.config.ConfigManager.get_filters = GetFilters
-mailpile.config.ConfigManager.filter_move = MoveFilter
+mailpile.config.ConfigManager.filter_move = FilterMove
+mailpile.config.ConfigManager.filter_delete = FilterDelete
 
 
 ##[ Commands ]################################################################
@@ -230,13 +235,15 @@ class TagCommand(Command):
 
 class Tag(TagCommand):
     """Add or remove tags on a set of messages"""
-    SYNOPSIS = (None, 'tag', 'tag', '<[+|-]tags> <msgs>')
+    SYNOPSIS = (None, 'tag', 'tag', '[--conversations|--messages] '
+                                    '<[+|-]tags> <msgs>')
     ORDER = ('Tagging', 0)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
         'mid': 'message-ids',
         'add': 'tags',
         'del': 'tags',
+        'conversations': '[yes|no|auto]',
         'context': 'search context, for tagging relative results'
     }
 
@@ -255,8 +262,12 @@ class Tag(TagCommand):
                 what.append('Untagged ' +
                             ', '.join([k['name'] for k, ids
                                        in self.result['untagged']]))
-            return '%s (%d messages)' % (', '.join(what),
-                                         len(self.result['msg_ids']))
+            count = len(self.result['msg_ids'])
+            whats = ', '.join(what)
+            convs = (_n('%d conversation', '%d conversation', count)
+                     if self.result.get('conversations') else
+                     _n('%d message', '%d messages', count)) % count
+            return '%s (%s)' % (whats, convs)
 
     def _get_ops_and_msgids(self, words):
         # If we are asked to both add and remove a tag, we do neither as
@@ -265,28 +276,49 @@ class Tag(TagCommand):
         adding = set(self.data.get('add', []))
         ops = (['-%s' % t for t in (deling-adding) if t] +
                ['+%s' % t for t in (adding-deling) if t])
+        conversations = {'yes': True, 'no': False, 'auto': None
+                         }[self.data.get('conversations',
+                                         ['auto'])[0].lower()]
         if 'mid' in self.data:
-            msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
+            words = ['=%s' % m for m in self.data['mid']]
         else:
-            while words and words[0][0] in ('-', '+'):
-                ops.append(words.pop(0))
-            msg_ids = self._choose_messages(words)
-        return ops, msg_ids
+            while words and words[0][:1] in ('-', '+'):
+                op = words.pop(0)
+                if op in ('--conversations', '--messages'):
+                    conversations = True if (op[:3] == '--c') else False
+                else:
+                    ops.append(op)
+        msg_ids = self._choose_messages(words)
+        return ops, msg_ids, conversations
 
-    def _do_tagging(self, ops, msg_ids, save=True, auto=False):
+    def _do_tagging(self, ops, msg_ids, conversations, save=True, auto=False):
         idx = self._idx()
         rv = {
+            'conversations': False,
             'msg_ids': [b36(i) for i in msg_ids],
             'tagged': [],
             'untagged': []
         }
+
         for op in ops:
             tag = self.session.config.get_tag(op[1:])
             if tag:
+                # FIXME: This should depend on more factors!
+                #    - Tags should have metadata about default scope
+                if conversations is None:
+                    conversation = ('flat' not in (self.session.order or ''))
+                    if (tag.flag_msg_only or
+                            tag.flag_editable or
+                            tag.type == 'attribute'):
+                        conversation = False
+                else:
+                    conversation = conversations
+                if conversation:
+                    rv['conversations'] = True
+
                 tag_id = tag._key
                 tag = tag.copy()
                 tag["tid"] = tag_id
-                conversation = ('flat' not in (self.session.order or ''))
                 if op[0] == '-':
                     removed = idx.remove_tag(self.session, tag_id,
                                              msg_idxs=msg_ids,
@@ -306,14 +338,27 @@ class Tag(TagCommand):
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
-        self.event.data['undo'] = _("Untag %d messages") % len(msg_ids)
+        if rv['conversations']:
+            undo_msg = _n('Untag %d conversation',
+                          'Untag %d conversations',
+                          len(msg_ids)) % len(msg_ids)
+            done_msg = _n('Tagged %d conversation',
+                          'Tagged %d conversations',
+                          len(msg_ids)) % len(msg_ids)
+        else:
+            undo_msg = _n('Untag %d message',
+                          'Untag %d messages', len(msg_ids)) % len(msg_ids)
+            done_msg = _n('Tagged %d message',
+                          'Tagged %d messages', len(msg_ids)) % len(msg_ids)
+
+        self.event.data['undo'] = undo_msg
         self.event.private_data['undo'] = {
             'tagged': [[t['tid'], mids] for t, mids in rv['tagged']],
             'untagged': [[t['tid'], mids] for t, mids in rv['untagged']],
         }
 
         self.finish(save=save)
-        return self._success(_('Tagged %d messages') % len(msg_ids), rv)
+        return self._success(done_msg, rv)
 
     @classmethod
     def Undo(cls, undo, event):
@@ -336,6 +381,9 @@ class Tag(TagCommand):
         return undo._success(_('Undid tagging operation'), rv)
 
     def command(self, **kwargs):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         return self._do_tagging(*self._get_ops_and_msgids(list(self.args)),
                                 **kwargs)
 
@@ -345,9 +393,12 @@ class TagLater(Tag):
     SYNOPSIS = (None, 'tag/later', 'tag/later', '<seconds> <[+|-]tags> <msgs>')
 
     def command(self, **kwargs):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         args = list(self.args)
         seconds = args.pop(0)
-        ops, msg_ids = self._get_ops_and_msgids(args)
+        ops, msg_ids, conversations = self._get_ops_and_msgids(args)
         # FIXME: Schedule event!
         return self._success(_('Scheduled %d messages for future tagging')
                              % len(msg_ids), {
@@ -361,6 +412,9 @@ class TagTemporarily(Tag):
     SYNOPSIS = (None, 'tag/tmp', 'tag/tmp', '<seconds> <[+|-]tags> <msgs>')
 
     def command(self, **kwargs):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         args = list(self.args)
         seconds = args.pop(0)
         rv = self._do_tagging(*self._get_ops_and_msgids(args), **kwargs)
@@ -399,6 +453,9 @@ class AddTag(TagCommand):
                     ', '.join([k['name'] for k in self.result['added']]))
 
     def command(self, save=True):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         config = self.session.config
 
         if self.data.get('_method', 'not-http').upper() == 'GET':
@@ -589,6 +646,9 @@ class DeleteTag(TagCommand):
                     ', '.join([k['name'] for k in self.result['removed']]))
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
         clean_session = mailpile.ui.Session(config)
         clean_session.ui = session.ui
@@ -633,36 +693,74 @@ class FilterCommand(Command):
 
 class Filter(FilterCommand):
     """Add auto-tag rule for current search or terms"""
-    SYNOPSIS = (None, 'filter', None, '[new|read] [notag] [=<mid>] '
-                                      '[<terms>] [+<tag>] [-<tag>] '
-                                      '[<comment>]')
+    SYNOPSIS = (None, 'filter', 'filter', '[new|read] [notag|maketag] [=<mid>] '
+                                          '[<terms>] [+<tag>] [-<tag>] '
+                                          '[<comment>]')
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = {
+        'comment': '...',
+        'terms': '...',
+        'add-tag': 'tag,tag,tag,... or !CREATE',
+        'del-tag': 'tag,tag,tag,... ',
+        'mark-read': 'yes or no',
+        'skip-inbox': 'yes or no',
+        'never-spam': 'yes or no',
+        'create-tag': 'yes or no',
+        'tag-icon': 'icon',
+        'tag-color': 'color',
+        'replace': 'filter ID'
+    }
+
+    def _truthy(self, var):
+        return (self.data.get(var, ['n'])[0][:1].lower()
+                in ('y', 't', 'o', '1'))
 
     def command(self, save=True):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
         args = list(self.args)
 
         flags = []
-        while args and args[0] in ('add', 'set', 'new', 'read', 'notag'):
+        while args and args[0] in ('add', 'set', 'new', 'read',
+                                   'notag', 'maketag'):
             flags.append(args.pop(0))
+        if self._truthy('create-tag'):
+            flags.append('maketag')
 
-        if args and args[0] and args[0][0] == '=':
+        if args and args[0][:1] == '=':
             filter_id = args.pop(0)[1:]
         else:
-            filter_id = None
+            filter_id = self.data.get('replace', [None])[0] or None
 
-        if args and args[0] and args[0][0] == '@':
+        if args and args[0][:1] == '@':
             filter_type = args.pop(0)[1:]
         else:
             filter_type = FILTER_TYPES[0]
+
+        # Convert HTTP variable tag ops...
+        for tag in self.data.get('add-tag', []):
+            args.append('+%s' % tag)
+        for tag in self.data.get('del-tag', []):
+            args.append('-%s' % tag)
+        if self._truthy('mark-read'):
+            args.append('-new')
+        if self._truthy('skip-inbox'):
+            args.append('-inbox')
+        if self._truthy('never-spam'):
+            args.append('-spam')
 
         auto_tag = False
         if 'read' in flags:
             terms = ['@read']
         elif 'new' in flags:
             terms = ['*']
-        elif args[0] and args[0][0] not in ('-', '+'):
+        elif self.data.get('terms', [''])[0]:
+            terms = self.data['terms'][0].strip().split()
+            auto_tag = True
+        elif args and args[0][:1] not in ('-', '+'):
             terms = []
             while args and args[0][0] not in ('-', '+'):
                 terms.append(args.pop(0))
@@ -670,13 +768,33 @@ class Filter(FilterCommand):
             terms = session.searched
             auto_tag = True
 
-        if not terms or (len(args) < 1):
+        tag_ops = []
+        while args and args[0][0] in ('-', '+'):
+            tag_ops.append(args.pop(0))
+
+        comment = self.data.get('comment', [None])[0] or ' '.join(args)
+
+        if filter_id:
+            primary_tag = config.filters[filter_id].primary_tag or None
+        else:
+            primary_tag = None
+
+        if primary_tag is None and 'maketag' in flags:
+            if not comment:
+                raise UsageError(_('Need tag name'))
+            result = AddTag(session, arg=[comment]).run(save=False).result
+            primary_tag = result['added'][0]['tid']
+
+        if not terms or (len(tag_ops) < 1):
             raise UsageError(_('Need flags and search terms or a hook'))
 
         tags, tids = [], []
-        while args and args[0][0] in ('-', '+'):
-            tag = args.pop(0)
-            tid = config.get_tag_id(tag[1:])
+        for tag in tag_ops:
+            if tag[1:] == '!PRIMARY':
+                tid = primary_tag
+                tag = tag[0] + tid
+            else:
+                tid = config.get_tag_id(tag[1:])
             if tid is not None:
                 tags.append(tag)
                 tids.append(tag[0] + tid)
@@ -691,7 +809,8 @@ class Filter(FilterCommand):
                 raise UsageError()
 
         filter_dict = {
-            'comment': ' '.join(args),
+            'primary_tag': primary_tag,
+            'comment': comment,
             'terms': ' '.join(terms),
             'tags': ' '.join(tids),
             'type': filter_type
@@ -699,10 +818,22 @@ class Filter(FilterCommand):
         if filter_id:
             config.filters[filter_id] = filter_dict
         else:
-            config.filters.append(filter_dict)
+            filter_id = config.filters.append(filter_dict)
+
+        if 'maketag' in flags and primary_tag and primary_tag in config.tags:
+            tag_icon = self.data.get('tag-icon', [None])[0]
+            tag_color = self.data.get('tag-color', [None])[0]
+            if tag_icon:
+                config.tags[primary_tag].icon = tag_icon
+            if tag_color:
+                config.tags[primary_tag].label_color = tag_color
+            config.tags[primary_tag].name = comment
+            config.tags[primary_tag].slug = 'saved-search-%s' % filter_id
 
         self.finish(save=save)
-        return True
+
+        filter_dict['id'] = filter_id
+        return self._success(_('Added new filter'), result=filter_dict)
 
 
 class DeleteFilter(FilterCommand):
@@ -712,31 +843,28 @@ class DeleteFilter(FilterCommand):
     HTTP_CALLABLE = ('POST', 'DELETE')
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config = self.session, self.session.config
         if len(self.args) < 1:
             raise UsageError('Delete what?')
 
-        removed = 0
-        filters = config.get('filter', {})
-        filter_terms = config.get('filter_terms', {})
         args = list(self.args)
-        for fid in self.args:
-            if fid not in filters:
-                match = [f for f in filters if filter_terms[f] == fid]
-                if match:
-                    args.remove(fid)
-                    args.extend(match)
+        args.sort(key=lambda fid: int(fid, 36))
 
-        for fid in args:
-            if (config.parse_unset(session, 'filter:%s' % fid)
-                    and config.parse_unset(session, 'filter_tags:%s' % fid)
-                    and config.parse_unset(session, 'filter_terms:%s' % fid)):
+        filter_keys = config.get('filters', {}).keys()
+        removed = 0
+        for fid in reversed(args):
+            if fid in filter_keys:
+                self.session.config.filter_delete(fid)
                 removed += 1
             else:
                 session.ui.warning('Failed to remove %s' % fid)
         if removed:
             self.finish()
-        return True
+
+        return self._success(_('Removed %d filter(s)') % removed)
 
 
 class ListFilters(Command):
@@ -812,6 +940,9 @@ class MoveFilter(ListFilters):
     HTTP_CALLABLE = ('POST', 'UPDATE')
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         self.session.config.filter_move(self.args[0], self.args[1])
         self._background_save(config=True)
         return ListFilters.command(self, want_fid=self.args[1])

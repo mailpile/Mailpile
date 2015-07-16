@@ -42,7 +42,7 @@
     width: 12px;
     height: 100%;
     display: table-cell;
-    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
+    background: url('../img/draggable-pattern.png'), rgba(255,255,255,1);
     opacity: 0.3;
     filter:alpha(opacity=30);
   }
@@ -235,6 +235,15 @@
     color: @grayDark;
   }
 
+  .thread-item-details a.outbox {
+    background: @grayMid;
+    padding: 2px 5px;
+    border-radius: @base-border-radius;
+    font-size: 11px;
+    font-weight: bold;
+    color: @white;
+  }
+
   .feedback-expand {
     display: none;
     color: @gray;
@@ -373,6 +382,10 @@
     font-size: inherit;
     line-height: inherit;
   }
+
+  .thread-item-text a:hover {
+    color: @blueDark;
+  }
 	
   .thread-item-quote,
   .thread-item-quote-text {
@@ -382,6 +395,16 @@
     .font-style-item-text();
     color: lighten(@black, 30%);
    }
+
+  .thread-item-quote a,
+  .thread-item-quote a:visited {
+    color: lighten(@black, 40%);
+  }
+  
+  .thread-item-quote a:hover {
+    color: @grayDark;
+  }
+
 
   .thread-item-signature {
     margin-left: 20px;
@@ -426,6 +449,10 @@
   ul.thread-message-actions li.action ul.dropdown-menu li {
     display: block;
     float: none;
+  }
+
+  ul.thread-message-actions li.action ul.dropdown-menu li.hide {
+    display: none;
   }
 
 	a.thread-message-actions-quote {

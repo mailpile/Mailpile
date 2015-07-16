@@ -1,0 +1,42 @@
+# This is a Mailpile plugin manifest, describing the `datadig` plugin.
+#
+{
+    "name": "datadig",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "description": "Poor-man's data-mining: extract tabular (spreadsheet) data from e-mail.",
+
+    "config": {},
+    "code": {
+        "python": ["datadig.py"],
+        "javascript": ["datadig.js"]
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {
+        "/datadig/": {"file": "datadig.html"},
+        "/jsapi/templates/datadig-modal.html": {"file": "datadig-modal.html"}
+    },
+
+    "user_interface": {
+        # Actions that can be performed on selected items
+        "selection_actions": [
+            {
+                "context": ["/search/"],
+                "name": "datadig",
+                "text": "CSV Data",
+                "description": "Extract tables of data from selected messages",
+                "icon": "spreadsheet"
+            }
+        ]
+    },
+
+    # These are our Python-related hooks
+    "commands": [
+        {
+            # Native API commands (controllers)
+            "class": "dataDigCommand",
+            "url": "datadig",
+            "name": "datadig"
+        }
+    ]
+}

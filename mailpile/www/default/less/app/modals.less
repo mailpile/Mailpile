@@ -140,8 +140,15 @@
 
   .searchkey-result-score {
     padding: 5px 3px 0 3px;
+    font-weight: normal;
   }
 
   .searchkey-result-score:hover {
     opacity: 0.60;
+  }
+
+  .searchkey-result-score:hover em,
+  .searchkey-result-score:active em,
+  .searchkey-result-score:visited em {
+    color: @grayDark;
   }

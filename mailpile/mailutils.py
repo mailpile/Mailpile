@@ -28,9 +28,6 @@ from urllib import quote, unquote
 from datetime import datetime, timedelta
 
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
-from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
-from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
@@ -158,6 +155,10 @@ def ExtractEmails(string, strip_keys=True):
                 w = w[1:]
             while endcrap.search(w):
                 w = w[:-1]
+            if w.startswith('mailto:'):
+                w = w[7:]
+                if '?' in w:
+                    w = w.split('?')[0]
             if strip_keys and '#' in w[atpos:]:
                 w = w[:atpos] + w[atpos:].split('#', 1)[0]
             # E-mail addresses are only allowed to contain ASCII
@@ -179,21 +180,32 @@ def ExtractEmailAndName(string):
     return email, (name or email)
 
 
-def CleanMessage(config, msg):
-    replacements = []
+def CleanHeaders(msg, copy_all=True, tombstones=False):
+    clean_headers = []
     for key, value in msg.items():
         lkey = key.lower()
 
         # Remove headers we don't want to expose
         if (lkey.startswith('x-mp-internal-') or
                 lkey in ('bcc', 'encryption', 'attach-pgp-pubkey')):
-            replacements.append((key, None))
+            if tombstones:
+                clean_headers.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
-        elif lkey in ('to', 'from', 'cc'):
+        elif lkey in ('from', 'to', 'cc', 'reply-to'):
             if '#' in value:
-                replacements.append((key, re.sub(
+                clean_headers.append((key, re.sub(
                     r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
+            elif copy_all:
+                clean_headers.append((key, value))
+        elif copy_all:
+            clean_headers.append((key, value))
+
+    return clean_headers
+
+
+def CleanMessage(config, msg):
+    replacements = CleanHeaders(msg, copy_all=False, tombstones=True)
 
     for key, val in replacements:
         del msg[key]
@@ -204,21 +216,24 @@ def CleanMessage(config, msg):
     return msg
 
 
-def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
+def PrepareMessage(config, msg,
+                   sender=None, rcpts=None, events=None, bounce=False):
     msg = copy.deepcopy(msg)
 
     # Short circuit if this message has already been prepared.
-    if 'x-mp-internal-sender' in msg and 'x-mp-internal-rcpts' in msg:
+    if ('x-mp-internal-sender' in msg and
+            'x-mp-internal-rcpts' in msg and
+            not bounce):
         return (sender or msg['x-mp-internal-sender'],
                 rcpts or [r.strip()
                           for r in msg['x-mp-internal-rcpts'].split(',')],
                 msg,
                 events)
 
-    attach_pgp_pubkey = 'no'
-    attached_pubkey = False
-    crypto_policy = config.prefs.crypto_policy.lower()
+    crypto_policy = 'default'
     rcpts = rcpts or []
+    if bounce:
+        assert(len(rcpts) > 0)
 
     # Iterate through headers to figure out what we want to do...
     need_rcpts = not rcpts
@@ -227,9 +242,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         if lhdr == 'from':
             sender = sender or val
         elif lhdr == 'encryption':
-            crypto_policy = val.lower()
-        elif lhdr == 'attach-pgp-pubkey':
-            attach_pgp_pubkey = val.lower()
+            crypto_policy = val
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
             rcpts += ExtractEmails(val, strip_keys=False)
 
@@ -240,130 +253,81 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         raise NoRecipientError()
 
     # Are we encrypting? Signing?
+    crypto_policy = crypto_policy.lower()
     if crypto_policy == 'default':
-        crypto_policy = config.prefs.crypto_policy
+        crypto_policy = config.prefs.crypto_policy.lower()
 
-    # This is the BCC hack that Brennan hates!
-    if config.prefs.always_bcc_self:
-        rcpts += [sender]
-
+    # FIXME: This makes mistakes sometimes
     sender = ExtractEmails(sender, strip_keys=False)[0]
-    sender_keyid = None
-    if config.prefs.openpgp_header:
-        try:
-            gnupg = GnuPG(config)
-            seckeys = dict([(uid["email"], fp) for fp, key
-                            in gnupg.list_secret_keys().iteritems()
-                            if key["capabilities_map"].get("encrypt")
-                            and key["capabilities_map"].get("sign")
-                            for uid in key["uids"]])
-            sender_keyid = seckeys.get(sender)
-        except (KeyError, TypeError, IndexError, ValueError):
-            traceback.print_exc()
 
-    rcpts, rr = [sender], rcpts
+    # Extract just the e-mail addresses from the RCPT list, make unique
+    rcpts, rr = [], rcpts
     for r in rr:
         for e in ExtractEmails(r, strip_keys=False):
             if e not in rcpts:
                 rcpts.append(e)
 
-    # Add headers we require
-    if 'date' not in msg:
-        msg['Date'] = email.utils.formatdate()
+    # Bouncing disables all transformations, including crypto.
+    if not bounce:
+        # This is the BCC hack that Brennan hates!
+        if config.prefs.always_bcc_self and sender not in rcpts:
+            rcpts += [sender]
 
-    if sender_keyid and config.prefs.openpgp_header:
-        msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
-                                                   config.prefs.openpgp_header)
+        # Add headers we require
+        while 'date' in msg:
+            del msg['date']
+        msg['Date'] = email.utils.formatdate(localtime=False)
 
-    # Do we want to attach a key to outgoing messages?
-    if attach_pgp_pubkey in ['yes', 'true']:
-        g = GnuPG(config)
-        keys = g.address_to_keys(ExtractEmails(sender)[0])
-        for fp, key in keys.iteritems():
-            if not any(key["capabilities_map"].values()):
-                continue
-            # We should never really hit this more than once. But if we do, it
-            # should still be fine.
-            keyid = key["keyid"]
-            data = g.get_pubkey(keyid)
+        import mailpile.plugins
+        plugins = mailpile.plugins.PluginManager()
 
-            try:
-                from_name = key["uids"][0]["name"]
-                filename = _('Encryption key for %s.asc') % from_name
-            except:
-                filename = _('My encryption key.asc')
+        # Perform pluggable content transformations
+        sender, rcpts, msg, junk = plugins.outgoing_email_content_transform(
+            config, sender, rcpts, msg)
 
-            att = MIMEBase('application', 'pgp-keys')
-            att.set_payload(data)
-            encoders.encode_base64(att)
-            del att['MIME-Version']
-            att.add_header('Content-Id', MakeContentID())
-            att.add_header('Content-Disposition', 'attachment',
-                           filename=filename)
-            att.signature_info = SignatureInfo(parent=msg.signature_info)
-            att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
-            msg.attach(att)
-            attached_pubkey = True
+        # Perform pluggable encryption transformations
+        sender, rcpts, msg, matched = plugins.outgoing_email_crypto_transform(
+            config, sender, rcpts, msg,
+            crypto_policy=crypto_policy,
+            prefer_inline=config.prefs.inline_pgp,
+            cleaner=lambda m: CleanMessage(config, m))
 
-    # Should be 'openpgp', but there is no point in being precise
-    if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
-        wrapper = None
-        if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
-            wrapper = OpenPGPMimeSignEncryptWrapper
-        elif 'sign' in crypto_policy:
-            wrapper = OpenPGPMimeSigningWrapper
-        elif 'encrypt' in crypto_policy:
-            wrapper = OpenPGPMimeEncryptingWrapper
-        elif 'none' not in crypto_policy:
+        if crypto_policy and (crypto_policy != 'none') and not matched:
             raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
-        if wrapper:
-            cpi = config.prefs.inline_pgp
-            msg = wrapper(config,
-                          sender=sender,
-                          cleaner=lambda m: CleanMessage(config, m),
-                          recipients=rcpts
-                          ).wrap(msg, prefer_inline=cpi)
-    elif crypto_policy and crypto_policy != 'none':
-        raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
-    if attached_pubkey:
-        msg['x-mp-internal-pubkeys-attached'] = "Yes"
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
     return (sender, rcpts, msg, events)
 
 
-MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
+MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject',
+               'message-id', 'reply-to', 'references', 'return-path',
                'mime-version', 'content-disposition', 'content-type',
-               'user-agent', 'list-id', 'list-subscribe', 'list-unsubscribe',
-               'x-ms-tnef-correlator', 'x-ms-has-attach')
-DULL_HEADERS = ('in-reply-to', 'references')
+               'content-language', 'content-description',
+               'user-agent', 'x-mailer',
+               'list-id', 'list-subscribe', 'list-unsubscribe', 'precedence',
+               'x-ms-tnef-correlator', 'x-ms-has-attach',
+               'x-mimeole', 'x-msmail-priority', 'x-priority',
+               'x-originating-ip', 'x-message-info',
+               'openpgp', 'x-openpgp')
+MUA_ID_HEADERS = ('x-mailer', 'user-agent', 'x-mimeole')
+DULL_HEADERS = ('in-reply-to', 'references', 'received')
 
 
 def HeaderPrintHeaders(message):
     """Extract message headers which identify the MUA."""
-    headers = [k for k, v in message.items()]
-
-    # The idea here, is that MTAs will probably either prepend or append
-    # headers, not insert them in the middle. So we strip things off the
-    # top and bottom of the header until we see something we are pretty
-    # comes from the MUA itself.
-    while headers and headers[0].lower() not in MUA_HEADERS:
-        headers.pop(0)
-    while headers and headers[-1].lower() not in MUA_HEADERS:
-        headers.pop(-1)
-
-    # Finally, we return the "non-dull" headers, the ones we think will
-    # uniquely identify this particular mailer and won't vary too much
-    # from message-to-message.
-    return [h for h in headers if h.lower() not in DULL_HEADERS]
+    headers = [k for k, v in message.items() if k.lower() in MUA_HEADERS]
+    for header in MUA_ID_HEADERS:
+        if message[header]:
+            headers.extend([header, message[header]])
+    return headers
 
 
 def HeaderPrint(message):
     """Generate a fingerprint from message headers which identifies the MUA."""
-    return b64w(sha1b64('\n'.join(HeaderPrintHeaders(message)))).lower()
+    return md5_hex('\n'.join(HeaderPrintHeaders(message)))
 
 
 class Email(object):
@@ -437,7 +401,7 @@ class Email(object):
             raise NoFromAddressError()
 
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
-        msg['Date'] = email.utils.formatdate(msg_ts)
+        msg['Date'] = email.utils.formatdate(msg_ts, localtime=False)
         msg['Message-Id'] = msg_id or email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
@@ -489,7 +453,7 @@ class Email(object):
             for addr in addrs:
                 vcard = idx.config.vcards.get(addr)
                 if vcard != None:
-                    lastdate = vcard.gpgshared
+                    lastdate = vcard.pgp_key_shared
                     if lastdate:
                         try:
                             dates.append(datetime.fromtimestamp(float(lastdate)))
@@ -698,8 +662,9 @@ class Email(object):
 
             # Copy the message text
             new_body = newmsg.get_payload().decode('utf-8')
-            if final:
-                new_body = split_long_lines(new_body)
+            target_width = self.config.prefs.line_length
+            if target_width >= 40 and 'x-mp-internal-no-reflow' not in newmsg:
+                new_body = reflow_text(new_body, target_width=target_width)
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
@@ -816,6 +781,10 @@ class Email(object):
         with fd:
             fd.seek(0, 2)
             return fd.tell()
+
+    def get_metadata_kws(self):
+        # FIXME: Track these somehow...
+        return []
 
     def _get_parsed_msg(self, pgpmime, update_cache=False):
         cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
@@ -1170,8 +1139,8 @@ class Email(object):
                 pass
 
             count += 1
-            if (part.get('content-disposition', 'inline') == 'inline'
-                    and mimetype in ('text/plain', 'text/html')):
+            if (part.get('content-disposition', 'inline')[:6] == 'inline'
+                    and mimetype.startswith('text/')):
                 payload, charset = self.decode_payload(part)
                 start = payload[:100].strip()
 
@@ -1632,7 +1601,7 @@ class AddressHeaderParser(list):
                                                _raise=_raise)
                 return self
             except ValueError:
-                if _pass == 3 and _raise:
+                if _pass == '3' and _raise:
                     raise
         return self
 

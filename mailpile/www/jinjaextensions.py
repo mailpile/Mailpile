@@ -1,10 +1,12 @@
 import copy
 import datetime
 import hashlib
+import random
 import re
 import urllib
 import json
 import shlex
+import time
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string
@@ -30,6 +32,10 @@ class MailpileCommand(Extension):
         s = self
         e.globals['mailpile'] = s._command
         e.globals['mailpile_render'] = s._command_render
+        e.globals['U'] = s._url_path_fix
+        e.globals['make_rid'] = randomish_uid
+        e.globals['random'] = s._random
+        e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
         e.globals['regex_replace'] = s._regex_replace
         e.filters['regex_replace'] = s._regex_replace
@@ -81,6 +87,7 @@ class MailpileCommand(Extension):
         # Make a function-version of the safe command
         e.globals['safe'] = s._safe
         e.filters['json'] = s._json
+        e.filters['escapejs'] = s._escapejs
 
         # Strip trailing blank lines from email
         e.globals['nice_text'] = s._nice_text
@@ -142,7 +149,8 @@ class MailpileCommand(Extension):
             ui.render_mode = how
             ui.display_result(Action(self.env.session, command, args,
                                      data=kwargs))
-            return ui.render_response(config)
+            rv = ui.render_response(config)
+            return (rv[0], rv[1].strip())
         finally:
             self.env.session.ui = old_ui
 
@@ -215,7 +223,8 @@ class MailpileCommand(Extension):
         if "photo" in contact:
             photo = contact['photo']
         else:
-            photo = '/static/img/avatar-default.png'
+            photo = ('%s/static/img/avatar-default.png'
+                     % self.env.session.config.sys.http_path)
         return photo
 
     def _navigation_on(self, search_tag_ids, on_tid):
@@ -378,6 +387,18 @@ class MailpileCommand(Extension):
             _("Mixed Encrypted"),
             _("Part of this message were encrypted, but other parts were not "
               "encrypted")],
+        "lockedkey": [
+            "crypto-color-green",
+            "icon-lock-closed",
+            _("Locked Key"),
+            _("You have the encryption key to decrypt this message, "
+              "but the key itself is locked.")],
+        "mixed-lockedkey": [
+            "crypto-color-green",
+            "icon-lock-closed",
+            _("Mixed Locked Key"),
+            _("Parts of the message could not be decrypted because your "
+              "encryption key is locked.")],
         "missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
@@ -388,7 +409,7 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
-            _("Parts of the message were unable to be decrypted because you "
+            _("Parts of the message could not be decrypted because you "
               "are missing the private key. Perhaps it was encrypted to an "
               "old key you don't have anymore?")],
         "error": [
@@ -471,12 +492,15 @@ class MailpileCommand(Extension):
             'message': message
         }
 
-    @classmethod
     def _contact_url(self, person):
+        if self.env.session.config.version < '0.6.0':  # FIXME
+            return '#'
         if 'contact' in person['flags']:
-            url = "/contacts/view/" + person['address'] + "/"
+            url = ("%s/contacts/view/%s/"
+                   % (self.env.session.config.sys.http_path,
+                      person['address']))
         else:
-            url = "/#add-contact"
+            url = "%s/#add-contact" % self.env.session.config.sys.http_path
         return url
 
     def _contact_name(self, person):
@@ -549,6 +573,17 @@ class MailpileCommand(Extension):
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
 
+    def _random(self, sequence):
+        return sequence[random.randint(0, len(sequence)-1)]
+
+    def _url_path_fix(self, *urlparts):
+        url = ''.join([unicode(p) for p in urlparts])
+        if url[:1] in ('/', ):
+            http_path = self.env.session.config.sys.http_path or ''
+            if not url.startswith(http_path):
+                url = http_path + url
+        return self._safe(url)
+
     def _urlencode(self, s):
         if type(s) == 'Markup':
             s = s.unescape()
@@ -567,6 +602,27 @@ class MailpileCommand(Extension):
         json = json.replace('<', '\\x3c')
         json = json.replace('&', '\\x26')
         return json
+
+    _JS_ESCAPES = (
+            ('\\', '\\x5c'),
+            ('\'', '\\x27'),
+            ('"', '\\x22'),
+            ('>', '\\x3e'),
+            ('<', '\\x3c'),
+            ('&', '\\x26'),
+            ('=', '\\x3d'),
+            ('-', '\\x2d'),
+            (';', '\\x3b'),
+    )
+
+    def _escapejs(self, value):
+        """ Hex encodes some characters for use in JavaScript strings.
+
+        Lightly inspired from https://github.com/django/django/blame/ebc773ada3e4f40cf5084268387b873d7fe22e8b/django/utils/html.py#L63
+        """
+        for bad, good in self._JS_ESCAPES:
+            value = value.replace(bad, good)
+        return self._safe(value)
 
     @classmethod
     def _nice_text(self, text):

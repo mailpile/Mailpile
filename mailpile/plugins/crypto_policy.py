@@ -1,7 +1,7 @@
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.vcard import VCardLine
+from mailpile.vcard import VCardLine, AddressInfo
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 
@@ -10,110 +10,39 @@ _plugins = PluginManager(builtin=__file__)
 
 
 VCARD_CRYPTO_POLICY = 'X-MAILPILE-CRYPTO-POLICY'
-CRYPTO_POLICIES = ['none', 'sign', 'encrypt', 'sign-encrypt', 'default']
+CRYPTO_POLICIES = ['none', 'sign', 'encrypt', 'sign-encrypt',
+                   'best-effort', 'default']
+
 
 ##[ Commands ]################################################################
 
 class CryptoPolicyBaseAction(Command):
     """ Base class for crypto policy commands """
-
-    def _get_keywords(self, e):
-        idx = self._idx()
-        mid = e.msg_mid()
-        kws, snippet = idx.read_message(
-            self.session,
-            mid,
-            e.get_msg_info(field=idx.MSG_ID),
-            e.get_msg(),
-            e.get_msg_size(),
-            int(e.get_msg_info(field=idx.MSG_DATE), 36))
-        return kws
-
-    def _search(self, email):
-        idx = self._idx()
-        return idx.search(self.session,
-                          ['to:' + email, 'has:crypto', 'has:pgp'],
-                          order='date')
-
-    def _find_policy_based_on_mails(self, mail_idxs):
-        idx = self._idx()
-        for mail_idx in mail_idxs.as_set():
-            mail = Email(idx, mail_idx).get_msg()
-
-            if mail.encryption_info.get('status') != 'none':
-                return 'encrypt'
-            if mail.signature_info.get('status') != 'none':
-                return 'sign'
-
-        return 'none'
-
-    def _find_policy(self, email):
-        mail_idxs = self._search(email)
-
-        if mail_idxs:
-            return self._find_policy_based_on_mails(mail_idxs)
-        else:
-            return 'none'
-
-    def _update_vcard(self, vcard, policy):
-        if 'default' == policy:
-            for line in vcard.get_all(VCARD_CRYPTO_POLICY):
-                vcard.remove(line.line_id)
-        else:
-            if len(vcard.get_all(VCARD_CRYPTO_POLICY)) > 0:
-                vcard.get(VCARD_CRYPTO_POLICY).value = policy
-            else:
-                vcard.add(VCardLine(name=VCARD_CRYPTO_POLICY, value=policy))
-
-
-class AutoDiscoverCryptoPolicy(CryptoPolicyBaseAction):
-    """ Auto discovers crypto policy for all known contacts """
-    SYNOPSIS = (None, 'crypto_policy/auto_set_all', None, None)
-    ORDER = ('AutoDiscover', 0)
-
-    def _set_crypto_policy(self, email, policy):
-        if policy != 'none':
-            vcard = self.session.config.vcards.get_vcard(email)
-            if vcard:
-                self._update_vcard(vcard, policy)
-                self.session.ui.mark('policy for %s will be %s' % (email, policy))
-                return True
-            else:
-                self.session.ui.mark('skipped setting policy for %s to policy,  no vcard entry found' % email)
-        return False
-
-    def _update_crypto_state(self, email):
-        policy = self._find_policy(email)
-
-        return self._set_crypto_policy(email, policy)
-
-    def command(self):
-        idx = self._idx()
-
-        updated = set()
-        for email in idx.EMAIL_IDS:
-            if self._update_crypto_state(email):
-                updated.add(email)
-
-        return self._success(_('Discovered crypto policy'), result=updated)
+    pass
 
 
 class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
     """ Update crypto policy for a single user """
-    SYNOPSIS = (None, 'crypto_policy/set', 'crypto_policy/set', '<email address> none|sign|encrypt|sign-encrypt|default')
+    SYNOPSIS = (None, 'crypto_policy/set', 'crypto_policy/set',
+                '<email address> none|sign|encrypt|sign-encrypt|default')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST',)
     HTTP_QUERY_VARS = {'email': 'contact email', 'policy': 'new policy'}
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         email, policy = self._parse_args()
 
         if policy not in CRYPTO_POLICIES:
-            return self._error('Policy has to be one of %s' % '|'.join(CRYPTO_POLICIES))
+            return self._error('Policy has to be one of %s' %
+                               '|'.join(CRYPTO_POLICIES))
 
         vcard = self.session.config.vcards.get_vcard(email)
         if vcard:
-            self._update_vcard(vcard, policy)
+            vcard.crypto_policy = policy
+            vcard.save()
             return self._success(_('Set crypto policy for %s to %s'
                                    ) % (email, policy),
                                  result={'email': email, 'policy:': policy})
@@ -133,30 +62,127 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         return email, policy
 
 
-class CryptoPolicyForUser(CryptoPolicyBaseAction):
-    """ Retrieve the current crypto policy for a user """
+class CryptoPolicy(CryptoPolicyBaseAction):
+    """Calculate the aggregate crypto policy for a set of users"""
     SYNOPSIS = (None, 'crypto_policy', 'crypto_policy', '[<emailaddresses>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET',)
+    HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
+
+    @classmethod
+    def _vcard_policy(self, config, email):
+        vcard = config.vcards.get_vcard(email)
+        if vcard:
+            return (vcard, vcard.kind, email, vcard.crypto_policy or 'default')
+        return (None, None, email, 'default')
+
+    @classmethod
+    def _encryption_ratio(self, session, idx, email):
+        # This method needs to return quickly, so we perform the more
+        # restrictive search first before calculating a proper ratio.
+        crypto = idx.search(session, ['from:' + email, 'has:crypto'])
+        if len(crypto) < 5:
+            return 0.0
+
+        # We also assume index order is roughly date order, which will
+        # only be true once users have used the app for a while...
+        recent = idx.search(session, ['from:' + email]).as_set()
+        recent = set(sorted(list(recent))[-25:])
+        crypto = crypto.as_set() & recent
+
+        return float(len(crypto)) / len(recent)
+
+    @classmethod
+    def crypto_policy(cls, session, idx, emails):
+        config = session.config
+        for i in range(0, len(emails)):
+            if '<' in emails[i]:
+                emails[i] = (emails[i].split('<', 1)[1]
+                                      .split('>', 1)[0]
+                                      .rsplit('#', 1)[0].strip())
+        policies = [cls._vcard_policy(config, e) for e in set(emails)]
+        default = [(v, k, e, p) for v, k, e, p in policies if k == 'profile']
+        default = default[0] if default else (None, None, None, 'best-effort')
+
+        # Try and merge all the user policies into one. This may lead
+        # to conflicts which cannot be resolved.
+        policy = default[-1]
+        reason = None
+        for vc, kind, email, cpol in policies:
+            if cpol and cpol not in ('default', 'best-effort'):
+                if policy in ('default', 'best-effort'):
+                    policy = cpol
+                elif policy != cpol:
+                    reason = _('Recipients have conflicting encryption policies.')
+                    policy = 'conflict'
+        if policy == 'default':
+            policy = 'best-effort'
+        if not reason:
+            reason = _('The encryption policy for these recipients is: %s'
+                       ) % policy
+
+        # If we don't have a key ourselves, that limits our options...
+        if default[0]:
+            if default[0].get_all('KEY'):
+                can_sign = True
+                can_encrypt = None  # not False and not True
+            else:
+                can_sign = False
+                can_encrypt = False
+                if policy in ('sign', 'sign-encrypt', 'encrypt'):
+                    reason = _('This account does not have an encryption key.')
+                    policy = 'conflict'
+                elif policy in ('default', 'best-effort'):
+                    reason = _('This account does not have an encryption key.')
+                    policy = 'none'
+        else:
+            can_sign = False
+            can_encrypt = False
+        if can_encrypt is not False:
+            can_encrypt = len([1 for v, k, e, p in policies
+                               if not v or not v.get_all('KEY')]) == 0
+        if not can_encrypt and 'encrypt' in policy:
+            policy = 'conflict'
+            reason = _('Some recipients require encryption, but we do not have keys for everyone!')
+
+        # If the policy is "best-effort", then we would like to sign and
+        # encrypt if possible/safe. The bar for signing is lower.
+        if policy == 'best-effort':
+            should_encrypt = can_encrypt
+            if should_encrypt:
+                for v, k, e, p in policies:
+                    if k and k == 'profile':
+                        pass
+                    elif cls._encryption_ratio(session, idx, e) < 0.8:
+                        should_encrypt = False
+                        break
+                if should_encrypt:
+                    policy = 'sign-encrypt'
+                    reason = _('Signing and encrypting because we have keys for everyone!')
+            if can_sign and not should_encrypt:
+                # FIXME: Should we check if anyone is using a lame MUA?
+                policy = 'sign'
+                if can_encrypt:
+                    reason = _('Signing, but will not encrypt because historic data is insufficient.')
+                else:
+                    reason = _('Signing, but cannot encrypt because we do not have keys for all recipients.')
+
+        return {
+          'reason': reason,
+          'can-sign': can_sign,
+          'can-encrypt': can_encrypt,
+          'crypto-policy': policy,
+          'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
+                             for vc, k, e, p in policies if vc])
+        }
 
     def command(self):
-        if len(self.args) != 1:
-            return self._error('Please provide a single email address!')
+        emails = list(self.args) + self.data.get('email', [])
+        if len(emails) < 1:
+            return self._error('Please provide at least one email address!')
 
-        email = self.args[0]
-        policy = self._vcard_policy(email) or self._find_policy(email)
-
-        return self._success(_('Crypto policy for %s is %s') % (email, policy),
-                             result=policy)
-
-    def _vcard_policy(self, email):
-        vcard = self.session.config.vcards.get_vcard(email)
-        if vcard and len(vcard.get_all(VCARD_CRYPTO_POLICY)) > 0:
-            return vcard.get(VCARD_CRYPTO_POLICY).value
-        else:
-            return None
+        result = self.crypto_policy(self.session, self._idx(), emails)
+        return self._success(result['reason'], result=result)
 
 
-_plugins.register_commands(AutoDiscoverCryptoPolicy,
-                           CryptoPolicyForUser,
-                           UpdateCryptoPolicyForUser)
+_plugins.register_commands(CryptoPolicy, UpdateCryptoPolicyForUser)

@@ -12,6 +12,7 @@ from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
+from mailpile.vfs import vfs, FilePath
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -59,8 +60,9 @@ class Search(Command):
                     return unicode(self.result)
                 elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
-                else:
+                elif hasattr(self.result, 'as_text'):
                     return self.result.as_text()
+                return _('Unprintable results')
             else:
                 return _('No results')
 
@@ -157,8 +159,10 @@ class Search(Command):
                     if arg.endswith(':'):
                         prefix = arg
                     elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                        if not arg.startswith('vfs:'):
+                            arg = arg.lower()
                         prefix = ''
-                        session.searched.append(arg.lower())
+                        session.searched.append(arg)
                     elif prefix and '@' in arg:
                         session.searched.append(prefix + arg.lower())
                     else:
@@ -182,6 +186,8 @@ class Search(Command):
             # Terms are reversed in the search engine...
             if term[:1] in ['-', '+']:
                 term = term[1:]
+            if term[:4] == 'vfs:':
+                raise ValueError('VFS searches are not cached')
             term = ':'.join(reversed(term.split(':', 1)))
             return unicode(term)
         reqs = set(['!config'] +
@@ -443,12 +449,17 @@ def mailbox_search(config, idx, term, hits):
     except ValueError:
         mbox_id = None
 
-    mailboxes = [m for m in config.sys.mailbox.keys()
-                 if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
+    mailboxes = []
+    for m in config.sys.mailbox.keys():
+        fn = FilePath(config.sys.mailbox[m]).display().lower()
+        if (mbox_id == m) or word in fn:
+            mailboxes.append(m)
+
     rt = []
     for mbox_id in mailboxes:
         mbox_id = FormatMbxId(mbox_id)
         rt.extend(hits('%s:mailbox' % mbox_id))
+
     return rt
 
 

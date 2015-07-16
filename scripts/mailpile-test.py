@@ -25,8 +25,7 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-from mailpile.mail_source.mbox import MboxMailSource
-from mailpile.mail_source.maildir import MaildirMailSource
+from mailpile.mail_source.local import LocalMailSource
 from mailpile import Mailpile
 
 
@@ -52,6 +51,7 @@ if '-v' not in sys.argv:
 
 cfg.plugins.load('demos', process_manifest=True)
 cfg.plugins.load('hacks', process_manifest=True)
+cfg.plugins.load('experiments', process_manifest=True)
 cfg.plugins.load('smtp_server', process_manifest=True)
 
 
@@ -76,7 +76,8 @@ def say(stuff):
 
 def do_setup():
     # Set up initial tags and such
-    mp.setup('do_gpg_stuff')
+    mp.setup()
+    mp.rescan('vcards:gpg')
 
     # Setup GPG access credentials and TELL EVERYONE!
     config.sys.login_banner = 'Pssst! The password is: mailpile'
@@ -86,6 +87,7 @@ def do_setup():
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
     config.prefs.encrypt_index = True
+    config.prefs.index_encrypted = True
     config.prefs.inline_pgp = False
 
     # Configure our fake mail sending setup
@@ -130,7 +132,7 @@ def test_vcards():
 
 def test_load_save_rescan():
     say("Testing load/save/rescan")
-    mp.rescan()
+    mp.rescan('mailboxes')
 
     # Save and load the index, just for kicks
     messages = len(mp._config.index.INDEX)
@@ -145,7 +147,7 @@ def test_load_save_rescan():
     # verify that the move-detection code actually works.
     os.system('rm -f %s/Maildir/*/*' % mailpile_home)
     mp.add(os.path.join(mailpile_home, 'Maildir2'))
-    mp.rescan()
+    mp.rescan('mailboxes')
 
     # Search for things, there should be exactly one match for each.
     mp.order('rev-date')

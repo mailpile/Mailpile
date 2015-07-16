@@ -10,6 +10,7 @@
       </div>
     </div>
     <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(from)}}">
+{%- if config.version >= '0.6.0' %}
       {% if not from.flags.contact and not from.flags.profile: %}
       <li role="presentation">
         <a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#">
@@ -18,18 +19,19 @@
       </li>
       {% else %}
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="/contacts/view/{{from.address}}/">
+        <a role="menuitem" tabindex="-1" href="{{ U('/contacts/view/', from.address, '/') }}">
           <span class="icon-user"></span> {{_("View Profile")}}
         </a>
       </li>
       {% endif %}
+{%- endif %}
       <li role="presentation">
         <a role="menuitem" tabindex="-1" href="mailto:{{from.address}}">
           <span class="icon-compose"></span> {{_("Compose New")}}
         </a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
+        <a role="menuitem" tabindex="-1" href="{{ U('/search/?q=from:', from.address) }}">
           <span class="icon-search"></span> {{_("Search Messages")}}
         </a>
       </li>
@@ -45,6 +47,9 @@
       {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}<span class="icon-new"></span>{% endif %}{% endfor %}
       {{ metadata.timestamp|friendly_datetime }} {{ metadata.timestamp|friendly_time }}
     </a>
+    {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].type == "outbox" %}
+    <a href="{{result.data.tags[tid].url}}" class="outbox"><span class="icon-outbox"></span> {{result.data.tags[tid].name}}</a>
+    {% endif %}{% endfor %}
     {% set signature = show_message_signature(metadata.crypto.signature) %}
     {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
     <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
@@ -95,7 +100,7 @@
   <ul class="clearfix">
     <li>{{_("View:")}}</li>
     <li><a href="#" class="thread-message-toggle-html" data-mid="{{mid}}" data-state="plain">{{_("HTML")}}</a></li>
-    <li><a href="/thread/={{mid}}/as.json" target="_blank">{{_("JSON")}}</a></li>
-    <li><a href="/message/raw/={{mid}}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+    <li><a href="{{ U('/thread/=', mid, '/as.json') }}" target="_blank">{{_("JSON")}}</a></li>
+    <li><a href="{{ U('/message/raw/=', mid, '/as.text') }}" target="_blank">{{_("Raw Source")}}</a></li>
   </ul>
 </div>

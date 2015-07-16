@@ -131,6 +131,9 @@ class Cancel(Command):
     IS_USER_ACTIVITY = False
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if self.args and 'all' in self.args:
             events = self.session.config.event_log.events()
         else:
@@ -161,6 +164,9 @@ class Undo(Command):
     IS_USER_ACTIVITY = False
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         event_id = (self.data.get('event_id', [None])[0]
                     or (self.args and self.args[0])
                     or (self.session.last_event_id))

@@ -1,0 +1,159 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Remote Access")}}{% endblock %}
+{% block content %}
+<div class="content-normal">
+<form id="form-remote-access" class="standard" method="POST"
+      style="position: relative; max-width: 60em;"
+      action="{{ U('/settings/remote.html') }}">
+  <h1><span class="icon-force-graph"></span> {{_("Remote Access")}}</h1>
+
+  <script>
+    var _rac = (function() {
+      return {
+        section: function(which, sub) {
+          $('.section').slideUp();
+          $('.section.'+which).slideDown();
+          _rac.subsection(sub || 'main');
+          return false;
+        },
+        subsection: function(which) {
+          $('.subsection').slideUp();
+          $('.subsection.'+which).slideDown();
+          return false;
+        }
+      };
+    })();
+  </script>
+
+  <p class="message paragraph-important"
+     onclick="javascript:_rac.section('ra-remote-access');">
+    <span class="icon icon-force-graph"></span> {{_("Remote Access")}}
+  </p>
+  <div class="section ra-remote-access" style="position: relative;">
+    <table style="margin: 5px 0;">
+      <tr>
+        <th></th>
+        <th width="40%">method</th>
+        <th width="50%">address</th>
+        <th></th>
+      </tr>
+      <tr onclick="javascript:return _rac.section('ra-pagekite');">
+        <td><input type="checkbox"></td>
+        <td>PageKite Relay</td>
+        {%- if result.pagekite and result.pagekite.kitename %}
+        <td><a href="https://{{ result.pagekite.kitename }}{{ settings.http_path }}/"
+               class="pagekite kitename">{{ result.pagekite.kitename }}</a></td>
+        {%- else %}
+        <td><a href="#" class="pagekite kitename"><i>yourname</i>.my.mailpile.is</a></td>
+        {%- endif %}
+        <td><span class="icon icon-x"></span></td>
+      </tr>
+      <tr onclick="javascript:return _rac.section('tor');">
+        <td><input type="checkbox"></td>
+        <td>Tor Hidden Service</td>
+        <td><a><i>1234567890abcdef</i>.onion</a></td>
+        <td><span class="icon icon-x"></span></td>
+      </tr>
+      <tr onclick="javascript:return _rac.section('direct');">
+        <td><input type="checkbox"></td>
+        <td>Direct Access</td>
+        <td><a>10.0.0.1</a></td>
+        <td><span class="icon icon-x"></span></td>
+      </tr>
+    </table>
+    <p class="text-center" style="margin: 1em 0;">
+      <button onclick="javascript:return _rac.section('ra-pagekite', 'signup');"
+              class="button button-secondary">Sign up for <i>my.mailpile.is</i></button>
+    </p>
+    <p>
+      {{_("You can configure your Mailpile to allow access over the network, making it your own personal web-mail service.")}}
+      {{_("Different methods have different security properties, costs, pros and cons.")}}
+      {{_("Tick the boxes to explore and configure each one.")}}
+    </p>
+  </div>
+
+  <div class="section ra-pagekite hide" style="position: relative;">
+    <p class="message paragraph-important"
+       onclick="javascript:_rac.section('ra-pagekite');">
+      <span class="icon icon-settings"></span> {{_("PageKite settings")}}
+    </p>
+    <p>
+      {{_("PageKite uses an in-the-cloud relay to make your local Mailpile accessible over the Internet.")}}
+      {{_("Traffic is encrypted end-to-end so the relay cannot see your mail.")}}
+    </p>
+    <div class="subsection main">
+      <p class="text-center">
+        <button onclick="javascript:return _rac.subsection('configure');"
+                class="buttin">I have PageKite</button> &nbsp;
+        <button onclick="javascript:return _rac.subsection('signup');"
+                class="button button-secondary">Sign up for <i>my.mailpile.is</i></button>
+      </p>
+      <p>
+        {{_("Techies can run their own relays, but there is also an affordable public relay provided by the people behind Mailpile.")}}
+        {{_("Using the Mailpile relay supports ongoing development.")}}
+      </p>
+    </div>
+    <div class="subsection signup" style="position: relative;">
+      <div class="left" style="width: 10em; margin-right: 1em;">
+        <label>E-mail</label>
+        <select class="signup-email">
+          <option>foo@klaki.net</option>
+          <option>bar@klaki.net</option>
+        </select>
+      </div>
+      <div>
+        <label>Username</label>
+        <input type="text" class="signup-username" placeholder="username"
+               style="display: inline; width: 7em; text-align: right;"> <b>.my.mailpile.is</b>
+      </div>
+      <label>Payment plan</label>
+      <ul>
+        <li><input type="radio" name="plan" value="benefactor">
+            <span class="checkbox"><b>{{_("Benefactor")}}:</b> {{_("$20 USD/month for yourself while sponsoring 10 freebies")}}</span></li>
+        <li><input type="radio" name="plan" value="activist">
+            <span class="checkbox"><b>{{_("Activist")}}:</b> {{_("$6 USD/month for yourself while sponsoring 2 freebies")}}</span></li>
+        <li><input type="radio" name="plan" value="backer">
+            <span class="checkbox"><b>{{_("Backer")}}:</b> {{_("Free trial month, then $3 USD/month")}}</span></li>
+        <li><input type="radio" name="plan" value="freebie">
+            <span class="checkbox"><b>{{_("Freebie")}}:</b> {{_("Sponsored by community, limited availability")}}</span></li>
+      </ul>
+      <div>
+        <button onclick="javascript:return _rac.pagekite_signup();"
+                style="position: absolute; right: 0; bottom: 0;"
+                class="button button-secondary">Sign up!</button>
+        <p style="width: 28em;"><i>
+          {{_("Using the Mailpile relay supports ongoing development.")}}
+        </i></p>
+      </div>
+    </div>
+    <div class="subsection configure">
+      <p class="text-center" style="margin: 0; padding: 1em;">
+        <i>CONFIG: WORK IN PROGRESS...</i>
+      </p>
+    </div>
+  </div>
+
+  <p class="message paragraph-important"
+     onclick="javascript:_rac.section('ra-authentication');">
+    <span class="icon icon-lock-closed"></span> {{_("Passwords and Authentication")}}
+  </p>
+  <div class="section ra-authentication hide" style="position: relative;">
+    <p class="text-center" style="margin: 0; padding: 1em;">
+      <i>WORK IN PROGRESS...</i>
+    </p>
+    <br clear="both">
+  </div>
+
+  <div class="right">
+    <button class="button button-primary">
+      <span class="icon icon-checkmark"></span> {{_("Save")}}
+    </button>
+  </div>
+  <p style="width: 28em;">
+    <b>WARNING:</b>
+    This is all EXPERIMENTAL and probably still INSECURE.
+    We're working on it!
+  </p>
+
+</form></div>
+{% endblock %}

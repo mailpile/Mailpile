@@ -7,6 +7,7 @@ import traceback
 
 from mailpile.commands import Command
 from mailpile.crypto.state import *
+from mailpile.crypto.mime import EncryptionFailureError, SignatureFailureError
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -344,6 +345,9 @@ class Compose(CompositionCommand):
                 ephemeral)
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if 'mid' in self.data:
             return self._error(_('Please use update for editing messages'))
 
@@ -430,7 +434,8 @@ class Reply(RelativeCompose):
                                             force_name=True)
 
         def addresses(addrs, exclude=[]):
-            alist = [from_ai.address] + [a.address for a in exclude]
+            alist = [from_ai.address] if (from_ai) else []
+            alist += [a.address for a in exclude]
             return [merge_contact(a) for a in addrs
                     if a.address not in alist
                     and not a.address.startswith('noreply@')
@@ -438,8 +443,9 @@ class Reply(RelativeCompose):
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
-        if len([e for e in ref_from if e.address == from_ai.address]
-               ) == len(ref_from):
+        if (from_ai and
+               len([e for e in ref_from
+                    if e and e.address == from_ai.address]) == len(ref_from)):
             if ref_to:
                 result['to'] = addresses(ref_to)
             if ref_cc:
@@ -473,8 +479,11 @@ class Reply(RelativeCompose):
                               if p['type'] in cls._TEXT_PARTTYPES
                               and p['data']])
             if quoted:
+                target_width = session.config.prefs.line_length
+                if target_width > 40:
+                    quoted = reflow_text(quoted, target_width=target_width-2)
                 text = ((_('%s wrote:') % t['headers_lc']['from']) + '\n' +
-                        split_long_lines(quoted))
+                        quoted)
                 msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
 
         if not ephemeral:
@@ -510,8 +519,10 @@ class Reply(RelativeCompose):
                 ephemeral)
 
     def command(self):
-        session, config, idx = self.session, self.session.config, self._idx()
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('Please use update for editing messages'))
 
+        session, config, idx = self.session, self.session.config, self._idx()
         reply_all = False
         ephemeral = False
         args = list(self.args)
@@ -611,6 +622,9 @@ class Forward(RelativeCompose):
         return email, ephemeral
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
 
         with_atts = False
@@ -665,6 +679,9 @@ class Attach(CompositionCommand):
     }
 
     def command(self, emails=None):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, idx = self.session, self._idx()
         args = list(self.args)
 
@@ -738,6 +755,9 @@ class UnAttach(CompositionCommand):
     }
 
     def command(self, emails=None):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, idx = self.session, self._idx()
         args = list(self.args)
         atts = []
@@ -796,7 +816,8 @@ class Sendit(CompositionCommand):
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
         'mid': 'metadata-ID',
-        'to': 'recipients'
+        'to': 'recipients',
+        'from': 'sender e-mail'
     }
 
     # We set our events' source class explicitly, so subclasses don't
@@ -804,11 +825,11 @@ class Sendit(CompositionCommand):
     EVENT_SOURCE = 'mailpile.plugins.compose.Sendit'
 
     def command(self, emails=None):
-        session, config, idx = self.session, self.session.config, self._idx()
-        args = list(self.args)
-
         if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
+
+        session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
         bounce_to = []
         while args and '@' in args[-1]:
@@ -817,6 +838,10 @@ class Sendit(CompositionCommand):
                      self.data.get('cc', []) +
                      self.data.get('bcc', [])):
             bounce_to.extend(ExtractEmails(rcpt))
+
+        sender = self.data.get('from', [None])[0]
+        if not sender and bounce_to:
+            sender = idx.config.get_profile().get('email', None)
 
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
@@ -832,6 +857,7 @@ class Sendit(CompositionCommand):
         # Process one at a time so we don't eat too much memory
         sent = []
         missing_keys = []
+        locked_keys = []
         for email in emails:
             events = []
             try:
@@ -859,22 +885,33 @@ class Sendit(CompositionCommand):
 
                 SendMail(session, msg_mid,
                          [PrepareMessage(config, email.get_msg(pgpmime=False),
+                                         sender=sender,
                                          rcpts=(bounce_to or None),
+                                         bounce=(True if bounce_to else False),
                                          events=events)])
                 for ev in events:
                     ev.flags = Event.COMPLETE
                     config.event_log.log_event(ev)
                 sent.append(email)
-            except KeyLookupError, kle:
-                # This is fatal, we don't retry
-                message = _('Missing keys %s') % kle.missing
+
+            # Encryption related failures are fatal, don't retry
+            except (KeyLookupError,
+                    EncryptionFailureError,
+                    SignatureFailureError), exc:
+                message = unicode(exc)
+                session.ui.warning(message)
+                if hasattr(exc, 'missing_keys'):
+                    missing_keys.extend(exc.missing)
+                if hasattr(exc, 'from_key'):
+                    # FIXME: We assume signature failures happen because
+                    # the key is locked. Are there any other reasons?
+                    locked_keys.append(exc.from_key)
                 for ev in events:
                     ev.flags = Event.COMPLETE
                     ev.message = message
                     config.event_log.log_event(ev)
-                session.ui.warning(message)
-                missing_keys.extend(kle.missing)
                 self._ignore_exception()
+
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
@@ -893,6 +930,8 @@ class Sendit(CompositionCommand):
 
         if missing_keys:
             self.error_info['missing_keys'] = missing_keys
+        if locked_keys:
+            self.error_info['locked_keys'] = locked_keys
         if sent:
             self._tag_sent(sent)
             self._tag_outbox(sent, untag=True)
@@ -916,6 +955,9 @@ class Update(CompositionCommand):
                                 Attach.HTTP_POST_VARS)
 
     def command(self, create=True, outbox=False):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
         email_updates = self._get_email_updates(idx,
                                                 create=create,
@@ -947,6 +989,24 @@ class Update(CompositionCommand):
         except KeyLookupError, kle:
             return self._error(_('Missing encryption keys'),
                                info={'missing_keys': kle.missing})
+        except EncryptionFailureError, efe:
+            # This should never happen, should have been prevented at key
+            # lookup!
+            return self._error(_('Could not encrypt message'),
+                               info={'to_keys': efe.to_keys})
+        except SignatureFailureError, sfe:
+            # FIXME: We assume signature failures happen because
+            # the key is locked. Are there any other reasons?
+            return self._error(_('Could not sign message'),
+                               info={'locked_keys': [sfe.from_key]})
+
+
+class UpdateAndSendit(Update):
+    """Update message from an HTTP upload and move to outbox."""
+    SYNOPSIS = ('m', 'mail', 'message/update/send', None)
+
+    def command(self, create=True, outbox=True):
+        return Update.command(self, create=create, outbox=outbox)
 
 
 class UnThread(CompositionCommand):
@@ -956,6 +1016,9 @@ class UnThread(CompositionCommand):
     HTTP_POST_VARS = {'mid': 'message-id'}
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         session, config, idx = self.session, self.session.config, self._idx()
 
         # Message IDs can come from post data
@@ -974,14 +1037,6 @@ class UnThread(CompositionCommand):
             return self._error(_('Nothing to do!'))
 
 
-class UpdateAndSendit(Update):
-    """Update message from an HTTP upload and move to outbox."""
-    SYNOPSIS = ('m', 'mail', 'message/update/send', None)
-
-    def command(self, create=True, outbox=True):
-        return Update.command(self, create=create, outbox=outbox)
-
-
 class EmptyOutbox(Sendit):
     """Try to empty the outbox."""
     SYNOPSIS = (None, 'sendmail', None, None)
@@ -992,6 +1047,9 @@ class EmptyOutbox(Sendit):
         cls(session).run()
 
     def command(self):
+        if (self.session.config.sys.lockdown or 0) > 1:
+            return self._error(_('In lockdown, doing nothing.'))
+
         cfg, idx = self.session.config, self.session.config.index
         if not idx:
             return self._error(_('The index is not ready yet'))

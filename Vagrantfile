@@ -12,5 +12,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.synced_folder '.', '/srv/Mailpile'
   config.vm.network :forwarded_port, guest: 33411, host: 33411
+  config.vm.network :forwarded_port, guest: 8888, host: 8888
   config.vm.provision :shell, :path => 'scripts/vagrant_bootstrap.sh'
 end

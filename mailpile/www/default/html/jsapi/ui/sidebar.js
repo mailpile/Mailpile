@@ -74,8 +74,9 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
     opacity: 1,
     helper: function(event) {
       var count = '';
-      if (Mailpile.messages_cache.length > 1) {
-        count = ' to (' + Mailpile.messages_cache.length + ')';
+      if (Mailpile.messages_cache.length >= 1) {
+        count = (' {{_("to")|escapejs}} (' +
+                 Mailpile.bulk_cache_human_length("messages_cache") + ')');
       }
 
       var tag = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });
@@ -118,15 +119,18 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
         var tags_delete = Mailpile.instance.search_tag_ids;
       }
   
-      Mailpile.API.tag_post({ add: tid, del: tags_delete, mid: Mailpile.messages_cache}, function(result) {
-  
+      Mailpile.API.tag_post({ add: tid,
+                              del: tags_delete,
+                              mid: Mailpile.messages_cache}, function(result) {
         // Show
         Mailpile.notification(result);
   
         // Update Pile View
         if (Mailpile.instance.state.command_url == '/search/') {
           $.each(Mailpile.messages_cache, function(key, mid) {
-            $('#pile-message-' + mid).fadeOut('fast');
+            if (mid != '!all') {
+              $('#pile-message-' + mid).fadeOut('fast');
+            }
           });
 
           // Empty Bulk Cache

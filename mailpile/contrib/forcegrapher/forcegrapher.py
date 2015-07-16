@@ -1,8 +1,9 @@
 import datetime
 import re
 import time
-from gettext import gettext as _
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
 from mailpile.mailutils import Email, ExtractEmails
 from mailpile.search import MailIndex
@@ -14,12 +15,11 @@ from mailpile.plugins.search import Search
 class Graph(Search):
     """Get a graph of the network in the current search results."""
     ORDER = ('Searching', 1)
-    SYNOPSIS = (None, 'getgraph', 'getgraph', '<terms>')
     HTTP_CALLABLE = ('GET', )
     UI_CONTEXT = "search"
 
     def command(self, search=None):
-        session, idx, start, num = self._do_search(search=search)
+        session, idx = self._do_search(search=search)
 
         nodes = []
         links = []
@@ -76,13 +76,5 @@ class Graph(Search):
         res["searched"] = session.searched
         if "limit_hit" not in res:
             res["limit_hit"] = False
-        return res
 
-
-# mailpile.plugins.register_display_mode("search", "graph",
-#                                       "mailpile.results_graph();",
-#                                       "Graph",
-#                                       url="#", icon="graph")
-#mailpile.plugins.register_asset("javascript", "js/libraries/d3.v3.min.js")
-#mailpile.plugins.register_asset("javascript", "plugins/forcegrapher/forcegrapher.js")
-#mailpile.plugins.register_asset("content-view_block", "forcegrapher/search.html")
+        return self._success(_('Generated graph view'), res)

@@ -1,3 +1,5 @@
+{%- if config.version >= '0.6.0' %}
+
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
@@ -13,6 +15,7 @@ $(document).on('click', '.show-thread-tags', function() {
  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
+{% endif %}
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.thread-message-metadata-details-toggle', function() {
@@ -58,7 +61,7 @@ $(document).on('click', '.thread-message-toggle-html', function(e) {
   var mid = $(this).data('mid');
   if (state === 'plain') {
     $(this).data('state', 'html');
-    $(this).html('{{_("Plain Text")}}');
+    $(this).html('{{_("Plain Text")|escapejs}}');
     Mailpile.Message.ShowHTML(mid);
   } else {
     $(this).data('state', 'plain');

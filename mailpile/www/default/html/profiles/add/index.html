@@ -1,0 +1,12 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block title %}{{_("Add Account")}}{% endblock %}
+{%- block content %}
+{%- if result.form %}
+<div class="content-normal" style="max-width: 42em">
+  <h1><span class="icon-user"></span> {{_("Create a new Account")}}</h1>
+  {% include "profiles/account-form.html" %}
+</div>
+{%- else %}
+  {{ mailpile('http/redirect', U('/profiles/')) }}
+{%- endif %}
+{%- endblock %}

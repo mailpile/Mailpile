@@ -32,6 +32,7 @@ class GravatarImporter(VCardImporter):
     SHORT_NAME = 'gravatar'
     CONFIG_RULES = {
         'active': [_('Enable this importer'), bool, True],
+        'anonymous': [_('Require anonymity for use'), bool, True],
         'interval': [_('Minimum days between refreshing'), 'int', 7],
         'batch': [_('Max batch size per update'), 'int', 30],
         'default': [_('Default thumbnail style'), str, 'retro'],
@@ -66,7 +67,10 @@ class GravatarImporter(VCardImporter):
         return want
 
     def _get(self, url):
-        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]) as context:
+        conn_need, conn_reject = [ConnBroker.OUTGOING_HTTP], []
+        if self.config.anonymous:
+            conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
+        with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
             self.session.ui.mark('Getting: %s' % url)
             return urlopen(url, data=None, timeout=3).read()
 

@@ -11,13 +11,14 @@
 ###############################################################################
 import datetime
 import getpass
+import json
 import os
 import random
 import re
 import sys
 import tempfile
+import time
 import traceback
-import json
 import urllib
 from collections import defaultdict
 from json import JSONEncoder
@@ -168,6 +169,7 @@ class Completer(object):
 class UserInteraction:
     """Log the progress and performance of individual operations"""
     MAX_BUFFER_LEN = 150
+    JSON_WRAP_TYPES = ('jhtml', 'jjs', 'jtxt', 'jcss', 'jxml', 'jrss')
 
     LOG_URGENT = 0
     LOG_RESULT = 5
@@ -180,8 +182,8 @@ class UserInteraction:
 
     LOG_PREFIX = ''
 
+
     def __init__(self, config, log_parent=None, log_prefix=None):
-        self.log_parent = log_parent
         self.log_buffer = []
         self.log_buffering = 0
         self.log_level = self.LOG_ALL
@@ -199,6 +201,15 @@ class UserInteraction:
             'even_odd': 'odd',
             'mailpile_size': 0
         }
+
+        # Short-circuit and avoid infinite recursion in parent logging.
+        self.log_parent = log_parent
+        recurse = 0
+        while self.log_parent and self.log_parent.log_parent:
+            self.log_parent = self.log_parent.log_parent
+            recurse += 1
+            if recurse > 10:
+                self.log_parent = None
 
     # Logging
 
@@ -331,7 +342,7 @@ class UserInteraction:
         return elapsed
 
     # Higher level command-related methods
-    def _display_result(self, result):
+    def _display_result(self, ttype, result):
         with self.term:
             sys.stdout.write(unicode(result).encode('utf-8').rstrip())
             sys.stdout.write('\n')
@@ -346,21 +357,50 @@ class UserInteraction:
     def finish_command(self, cmd):
         self.pop_marks(name=cmd)
 
+    def _parse_render_mode(self):
+        # Split out the template/type and rendering mode
+        if '!' in self.render_mode:
+            ttype, mode = self.render_mode.split('!')
+        else:
+            ttype, mode = self.render_mode, None
+
+        # Figure out whether a template has been requested, or if we
+        # are using the default "as.foo" template. Assume :content if
+        # people request a .jfoo, unless otherwise specified.
+        if ttype.split('.')[-1].lower() in self.JSON_WRAP_TYPES:
+            parts = ttype.split('.')
+            parts[-1] = parts[-1][1:]
+            ttype = '.'.join(parts)
+            wrap_in_json = True
+            mode = mode or 'content'
+        else:
+            wrap_in_json = False
+
+        # Figure out which template we're really asking for...
+        if '.' in ttype:
+            template = ttype
+            ttype = ttype.split('.')[1]
+        else:
+            template = 'as.' + ttype
+
+        return ttype.lower(), mode, wrap_in_json, template
+
     def display_result(self, result):
         """Render command result objects to the user"""
-        if self.render_mode == 'json':
-            return self._display_result(result.as_('json'))
-        for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
-            if self.render_mode.endswith(suffix):
-                jsuffix = 'j' + suffix
-                if self.render_mode in (suffix, jsuffix):
-                    template = 'as.' + suffix
-                else:
-                    template = self.render_mode.replace('.' + jsuffix,
-                                                        '.' + suffix)
-                return self._display_result(
-                    result.as_template(suffix, template=template))
-        return self._display_result(unicode(result))
+        if self.render_mode in ('json', 'as.json'):
+            return self._display_result('json', result.as_('json'))
+        if self.render_mode in ('text', 'as.text'):
+            return self._display_result('text', unicode(result))
+        if self.render_mode in ('csv', 'as.csv'):
+            return self._display_result('csv', result.as_csv())
+
+        ttype, mode, wrap_in_json, template = self._parse_render_mode()
+        rendering = result.as_template(ttype,
+                                       mode=mode,
+                                       wrap_in_json=wrap_in_json,
+                                       template=template)
+
+        return self._display_result(ttype, rendering)
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -405,9 +445,8 @@ class UserInteraction:
                 if isinstance(obj, (list, dict, str, unicode,
                                     int, float, bool, type(None))):
                     return JSONEncoder.default(self, obj)
-                if isinstance(obj, datetime.datetime):
-                    return str(obj)
-                return "COMPLEXBLOB"
+                else:
+                    return json_helper(obj)
 
         return json.dumps(data, indent=1, cls=NoFailEncoder,
                                 sort_keys=True, allow_nan=False)
@@ -499,7 +538,8 @@ class UserInteraction:
                 raise NotEditableError(_('Message %s is not editable')
                                        % e.msg_mid())
 
-        sep = '-' * 79 + '\n'
+        sep = '%s(%8.8x%3.3x)-\n' % ('-' * 68, time.time(),
+                                     random.randint(0, 0xfff))
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 
         tf = tempfile.NamedTemporaryFile()
@@ -551,8 +591,8 @@ class HttpUserInteraction(UserInteraction):
         self._debug_log(text, level)
         self.logged.append((level, text))
 
-    def _display_result(self, result):
-        self.results.append(result)
+    def _display_result(self, ttype, result):
+        self.results.append((ttype, result))
 
     # Stream raw data to the client on open_for_data
     def open_for_data(self, name_fmt=None, attributes={}):
@@ -562,41 +602,38 @@ class HttpUserInteraction(UserInteraction):
         if config.sys.debug:
             return '%s\n%s' % (
                 '\n'.join([l[1] for l in self.logged]),
-                ('\n%s\n' % ('=' * 79)).join(self.results)
+                ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
             )
         else:
-            return ('\n%s\n' % ('=' * 79)).join(self.results)
+            return ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
 
-    def _render_single_response(self, config):
-        if len(self.results) == 1:
-            return self.results[0]
-        if len(self.results) > 1:
-            raise Exception(_('FIXME: Multiple results, OMG WTF'))
-        return ""
+    def _ttype_to_mimetype(self, ttype, result):
+        return ({
+            'css': 'text/css',
+            'csv': 'text/csv',
+            'js': 'text/javascript',
+            'json': 'application/json',
+            'html': 'text/html',
+            'rss': 'application/rss+xml',
+            'text': 'text/plain',
+            'txt': 'text/plain',
+            'xml': 'application/xml'
+        }.get(ttype.lower(), 'text/plain'), result)
 
     def render_response(self, config):
-        if (self.render_mode == 'json' or
-                self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
-                                                    'jrss', 'jtxt', 'jxml')):
+        ttype, mode, wrap_in_json, template = self._parse_render_mode()
+        if (ttype == 'json' or wrap_in_json):
             if len(self.results) == 1:
-                return ('application/json', self.results[0])
+                data = self.results[0][1]
             else:
-                return ('application/json', '[%s]' % ','.join(self.results))
-        elif self.render_mode.endswith('html'):
-            return ('text/html', self._render_single_response(config))
-        elif self.render_mode.endswith('js'):
-            return ('text/javascript', self._render_single_response(config))
-        elif self.render_mode.endswith('css'):
-            return ('text/css', self._render_single_response(config))
-        elif self.render_mode.endswith('txt'):
-            return ('text/plain', self._render_single_response(config))
-        elif self.render_mode.endswith('rss'):
-            return ('application/rss+xml',
-                    self._render_single_response(config))
-        elif self.render_mode.endswith('xml'):
-            return ('application/xml', self._render_single_response(config))
+                data = '[%s]' % ','.join(r for t, r in self.results)
+            return ('application/json', data)
         else:
-            return ('text/plain', self._render_text_responses(config))
+            if len(self.results) == 1:
+                return self._ttype_to_mimetype(*self.results[0])
+            if len(self.results) > 1:
+               raise Exception(_('FIXME: Multiple results, OMG WTF'))
+            return ""
 
     def edit_messages(self, session, emails):
         return False
@@ -618,7 +655,7 @@ class SilentInteraction(UserInteraction):
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
         self._debug_log(text, level)
 
-    def _display_result(self, result):
+    def _display_result(self, ttype, result):
         return result
 
     def edit_messages(self, session, emails):
@@ -630,7 +667,7 @@ class CapturingUserInteraction(UserInteraction):
         mailpile.ui.UserInteraction.__init__(self, config)
         self.captured = ''
 
-    def _display_result(self, result):
+    def _display_result(self, ttype, result):
         self.captured = unicode(result)
 
 

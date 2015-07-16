@@ -1,0 +1,46 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Help Mailpile Grow")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-donate"></span> {{_("Help Mailpile Grow")}}</h1>
+  <p>
+    {{_("Mailpile is a created by a diverse community of people and organizations who care about freedom and privacy.") }}
+    {{_("Please join our community and contribute in any way you can!")}}
+    <a target=_blank href="https://www.mailpile.is/thank-you/">{{_("Thank you!")}}</a>
+  </p>
+
+  <h4>{{_("Become a backer")}}
+    <a class="button-warning right" href="https://www.mailpile.is/donate/">
+      <span class="icon-donate"></span> {{_("Donate")}}
+    </a>
+  </h4>
+  <p>
+    {{_("Employing people to work on Mailpile full time is the fastest way to improve the software.")}}
+    {{_("Although the software is (and will always be) free, salaries still cost money and your support matters.")}}
+    {{_("If you contribute $23 USD or more, you get access to our community voting platform, where you can have a say in the future direction of the project:")}}
+    <a target=_blank href="https://www.mailpile.is/roadmap/">www.mailpile.is/roadmap/</a>
+  </p>
+
+  <h4>{{_("Tell your friends")}}
+  </h4>
+  <p>
+    {{_("If you like Mailpile, please tell people about it!")}}
+    {{_("Tweet, share, link, write articles and blog posts, act out dramatic tutorials on Youtube, make movies...")}}
+    {{_("Let us know what you create, so we can share the best content with the rest of the community.")}}
+    {{_("We are:")}}
+    <a target=_blank href="https://twitter.com/MailpileTeam">@MailpileTeam</a>,
+    <a href="mailto:team@mailpile.is">team@mailpile.is</a>
+  </p>
+
+
+  <h4>{{_("Geek out!")}}</h4>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li><a href="bugs.html">{{_("If you like breaking things, you can find and report bugs.")}}</a></li>
+    <li><a target=_blank href="https://www.transifex.com/projects/p/mailpile/">{{_("If you are fluent in an interesting language, you can help translate.")}}</a></li>
+    <li><a target=_blank href="https://github.com/mailpile/Mailpile">{{_("If you are a hacker, you can contribute code.")}}</a></li>
+    <li><a target=_blank href="https://www.mailpile.is/partners/">{{_("If you provide e-mail services, you can become a partner.")}}</a></li>
+  </li>
+
+</div>
+{% endblock %}

@@ -309,9 +309,17 @@ class ChecksummingStreamer(OutputCoprocess):
     def save(self, filename, finish=True, mode='wb'):
         if finish:
             self.finish()
-        exists = os.path.exists(filename)
+
+        # If no filename, return contents to caller
+        if filename is None:
+            if not self.saved:
+                safe_remove(self.temppath)
+                self.saved = True
+            self.tempfile.seek(0, 0)
+            return self.tempfile.read()
 
         # 1st save just renames the tempfile
+        exists = os.path.exists(filename)
         if (not self.saved and
                 (('a' not in mode) or not exists)):
             try:
@@ -621,6 +629,7 @@ class DecryptingStreamer(InputCoprocess):
                     and self.buffered.startswith(self.BEGIN_PGP)):
                 self.state = self.STATE_PGP_DATA
                 if self.gpg_pass:
+                    self.gpg_pass.seek(0, 0)
                     passphrase, c = [], self.gpg_pass.read(1)
                     while c != '':
                         passphrase.append(c)

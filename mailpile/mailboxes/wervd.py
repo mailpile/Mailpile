@@ -15,6 +15,7 @@ from mailpile.util import safe_remove
 class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     """A Maildir class that supports pickling and a few mailpile specifics."""
     supported_platform = None
+    colon = '!'  # Works on both Windows and Unix
 
     @classmethod
     def parse_path(cls, config, fn, create=False):
@@ -25,7 +26,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                   os.path.exists(os.path.join(fn, 'wervd.ver'))) or
                  (create and not os.path.exists(fn)))):
             return (fn, )
-        raise ValueError('Not a Maildir: %s' % fn)
+        raise ValueError('Not a Mailpile Maildir: %s' % fn)
 
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
@@ -70,6 +71,27 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def get_file(self, key):
         with self._lock:
             return StringIO.StringIO(self.get_string(key))
+
+    def get_metadata_keywords(self, toc_id):
+        subdir, name = os.path.split(self._lookup(toc_id))
+        if self.colon in name:
+            flags = name.split(self.colon)[-1]
+            if flags[:2] == '2,':
+                return ['%s:maildir' % c for c in flags[2:]]
+        return []
+
+    def set_metadata_keywords(self, toc_id, kws):
+        with self._lock:
+            old_fpath = self._lookup(toc_id)
+            new_fpath = old_fpath.rsplit(self.colon, 1)[0]
+
+            flags = ''.join(sorted([k[0] for k in kws]))
+            if flags:
+                new_fpath += '%s2,%s' % (self.colon, flags)
+                if new_fpath != old_fpath:
+                    os.rename(os.path.join(self._path, old_fpath),
+                              os.path.join(self._path, new_fpath))
+                    self._toc[toc_id] = new_fpath
 
     def add(self, message, copies=1):
         """Add message and return assigned key."""

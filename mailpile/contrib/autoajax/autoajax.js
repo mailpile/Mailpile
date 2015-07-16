@@ -11,38 +11,13 @@
 
 var update_using_jhtml;
 var prepare_new_content;
-var jhtml_url = function(original_url) {
-    var new_url = original_url;
-    var html = new_url.indexOf('.html');
-    if (html != -1) {
-        new_url = (new_url.slice(0, html+1) + 'j' +
-                   new_url.slice(html+1));
-    }
-    else {
-        var qs = new_url.indexOf('?');
-        if (qs != -1) {
-            new_url = (new_url.slice(0, qs) + 'as.jhtml' +
-                       new_url.slice(qs));
-        }
-        else {
-            var anch = new_url.indexOf('#');
-            if (anch != -1) {
-                new_url = (new_url.slice(0, anch) + 'as.jhtml' +
-                           new_url.slice(anch));
-            }
-            else {
-                new_url += 'as.jhtml';
-            }
-        }
-    }
-    return new_url;
-};
 
 prepare_new_content = function(selector) {
     $(selector).find('a').each(function(idx, elem) {
         var url = $(elem).attr('href');
         // FIXME: Should we add some majick to avoid dup click handlers?
         if (url && ((url.indexOf('/in/') == 0) ||
+                    (url.indexOf('/browse/') == 0) ||
                     (url.indexOf('/search/') == 0))) {
             $(elem).click(function(ev) {
                 if (update_using_jhtml(url)) ev.preventDefault();
@@ -52,11 +27,12 @@ prepare_new_content = function(selector) {
 };
 
 update_using_jhtml = function(original_url) {
-    if (Mailpile.instance['command'] == 'search') {
+    if ((Mailpile.instance['command'] == 'search') ||
+            (Mailpile.instance['command'] == 'ls')) {
         var cv = $('#content-view');
         cv.hide();
         return $.ajax({
-            url: jhtml_url(original_url),
+            url: Mailpile.API.jhtml_url(original_url),
             type: 'GET',
             success: function(data) {
                 cv.html(data['result']).fadeIn('fast');

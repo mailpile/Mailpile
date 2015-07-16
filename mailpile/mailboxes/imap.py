@@ -57,7 +57,7 @@ class IMAPMailbox(Mailbox):
         """Return a Message representation or raise a KeyError."""
         return Message(self._get(key))
 
-    def get_bytes(self, key):
+    def get_bytes(self, key, *args):
         """Return a byte string representation or raise a KeyError."""
         raise NotImplementedError('Method must be implemented by subclass')
 

@@ -76,14 +76,12 @@ Contributors:
 - Brennan Novak (<https://brennannovak.com/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Lots more, run `git shortlog -s` for a list! (Or see the list
-  [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
+  [on GitHub](https://github.com/pagekite/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
 backers](https://www.mailpile.is/#community).
 
 This program is free software: you can redistribute it and/or modify it
-under the terms of either the GNU Affero General Public License as
-published by the Free Software Foundation or the Apache License 2.0 as
-published by the Apache Software Foundation. See the file `COPYING.md`
-for details.
+under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation. See the file `COPYING.md`for details.
 

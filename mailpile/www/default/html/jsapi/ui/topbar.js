@@ -11,7 +11,7 @@ $(document).on('submit', '#form-search', function(e) {
     var more_check = search_query.substring(3, 999).split(' ');
     if (!more_check[1]) {
       e.preventDefault();
-      window.location.href = '/in/' + $.trim(search_query.substring(3, 999)) + '/';
+      window.location.href = '{{ config.sys.http_path }}/in/' + $.trim(search_query.substring(3, 999)) + '/';
     }
   }
   else if (search_query.substring(0, 9) === 'contacts:') {
@@ -22,7 +22,7 @@ $(document).on('submit', '#form-search', function(e) {
   }
   else if (search_query.substring(0, 5) === 'tags:') {
     e.preventDefault();
-    $.getJSON("/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
+    $.getJSON("{{ config.sys.http_path }}/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
   	  $("#content-wide").html(data.result);
     });
   }
@@ -51,9 +51,9 @@ $(document).on('blur', '#button-search-options', function(key) {
 
 
 /* Activities - Create New Blank Message */
-$(document).on('click', '#button-compose', function(e) {
+$(document).on('click', '.button-compose', function(e) {
 	e.preventDefault();
-  Mailpile.activities.compose();
+  Mailpile.activities.compose($(this).data('to'), $(this).data('from'));
 });
 
 
@@ -62,6 +62,3 @@ $(document).on('mouseover', '#button-settings', function() {
   // FIXME: crap, this makes the links in the dropdown note fire... something obnoxious in Bootstrap causes it :(
   // $('#settings-menu').dropdown('toggle');
 });
-
-
-

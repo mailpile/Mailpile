@@ -10,10 +10,20 @@ Mailpile.Search.init = function() {
   Mailpile.UI.Search.Dropable('#pile-results tr', 'a.sidebar-tag');
   Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'td.draggable');
 
-
   // Render Display Size
   if (!localStorage.getItem('view_size')) {
     localStorage.setItem('view_size', Mailpile.config.web.display_density);
+  }
+
+  var search = ($('#search-query').attr('value') + ' ');
+  if (search.match(/^\s*all:mail\s*$/)) {
+    $('.btn-activity-save_search, .btn-activity-edit_tag').remove();
+  }
+  else if (search.match(/^\s*in:\S+\s*$/)) {
+    $('.btn-activity-save_search').remove();
+  }
+  else {
+    $('.btn-activity-edit_tag').remove();
   }
 
   Mailpile.pile_display(localStorage.getItem('view_size'));
@@ -52,7 +62,7 @@ Mailpile.Search.init = function() {
       if (Notification.permission == "granted") {
         new Notification(ev.data.messages + "{{_(' new messages received')}}", { 
             body:'{{_("Your pile is growing...")}}',
-            icon:'/static/img/logo-color.png', 
+            icon:'{{ config.sys.http_path }}/static/img/logo-color.png', 
           }  
         )
       }

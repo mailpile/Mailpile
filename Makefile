@@ -1,7 +1,7 @@
 # Recipes for stuff
 export PYTHONPATH := .
 
-all:	alltests docs web compilemessages
+all:	submodules alltests docs web compilemessages
 
 dev:
 	@echo export PYTHONPATH=`pwd`
@@ -59,9 +59,11 @@ debian-dev:
 	which bower >/dev/null || sudo npm install -g bower
 	which uglify >/dev/null || sudo npm install -g uglify
 
-docs:
-	@test -d doc || \
-           git submodule update --remote
+
+submodules:
+	git submodule update --remote
+
+docs: submodules
 	@python2 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
 	@ls -l doc/URLS.md
 	@python2 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
@@ -75,6 +77,7 @@ alltests: clean pytests
 	@chmod go-rwx mailpile/tests/data/gpg-keyring
 	@DISPLAY= python2 scripts/mailpile-test.py || true
 	@DISPLAY= nosetests
+	@git checkout mailpile/tests/data/
 
 pytests:
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
@@ -125,8 +128,8 @@ js:
                 |grep / \
                 |sed -e "s/[',]/ /g"` \
           >> mailpile/www/default/js/mailpile-min.js.tmp
-	uglify -s mailpile/www/default/js/mailpile-min.js.tmp \
-                  mailpile/www/default/js/mailpile-min.js
+	uglify -s `pwd`/mailpile/www/default/js/mailpile-min.js.tmp \
+               -o `pwd`/mailpile/www/default/js/libraries.min.js
 	@rm -f mailpile/www/default/js/mailpile-min.js.tmp
 
 less: less-compiler

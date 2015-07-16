@@ -48,6 +48,7 @@ def _initialize_mailpile_for_testing(workdir, test_data):
 
     mailpile.util.TESTING = True
     config.sys.http_port = random.randint(33500, 34000)
+#   config.sys.debug = 'log'
 
     mp = mailpile.Mailpile(session=session)
     session.config.plugins.load('demos')
@@ -61,7 +62,7 @@ def _initialize_mailpile_for_testing(workdir, test_data):
         session.config.get_tag(t).update(TAGS[t])
 
     mp.add(test_data)
-    mp.rescan()
+    mp.rescan('mailboxes')
 
     return mp, session, config, ui
 

@@ -22,13 +22,25 @@ from mailpile.util import *
 # These are the plugins we ship/import by default
 __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
     'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
     'keylookup'
 ]
 PLUGINS = __all__
+
+
+class EmailTransform(object):
+    """Base class for e-mail transforms"""
+    def __init__(self, config):
+        self.config = config
+
+    def TransformIncoming(self, *args, **kwargs):
+        return list(args[:]) + [False]
+
+    def TransformOutgoing(self, *args, **kwargs):
+        return list(args[:]) + [False, True]
 
 
 class PluginError(Exception):
@@ -56,6 +68,10 @@ class PluginManager(object):
     WANTED = [
         'gui'
     ]
+    # Plugins that have been renamed from past releases
+    RENAMED = {
+        'crypto_utils': 'crypto_gnupg'
+    }
     DISCOVERED = {}
     LOADED = []
 
@@ -112,7 +128,7 @@ class PluginManager(object):
                         assert(manifest.get('name') == subdir)
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
-                except (ValueError):
+                except (ValueError, AssertionError):
                     print 'Bad manifest: %s' % manifest_filename
                 except (OSError, IOError):
                     pass
@@ -121,6 +137,9 @@ class PluginManager(object):
 
     def available(self):
         return self.BUILTIN[:] + self.DISCOVERED.keys()
+
+    def loadable(self):
+        return self.BUILTIN[:] + self.RENAMED.keys() + self.DISCOVERED.keys()
 
     def _import(self, full_name, full_path):
         # create parents as necessary
@@ -210,7 +229,8 @@ class PluginManager(object):
                 _, manifest = self.DISCOVERED[plugin_name]
 
                 if sys.modules.has_key(package):
-                    for method_name in self._mf_path(manifest, 'lifecycle', 'shutdown'):
+                    for method_name in self._mf_path(manifest,
+                                                     'lifecycle', 'shutdown'):
                         method = self._get_method(package, method_name)
                         method(self.config)
             except:
@@ -366,15 +386,37 @@ class PluginManager(object):
                 else:
                     print 'FIXME: Un-routable URL in manifest %s' % url
 
+        # Register email content/crypto hooks
+        s = self
+        for which, reg in (
+            ('outgoing_content', s.register_outgoing_email_content_transform),
+            ('outgoing_crypto', s.register_outgoing_email_crypto_transform),
+            ('incoming_crypto', s.register_incoming_email_crypto_transform),
+            ('incoming_content', s.register_incoming_email_content_transform)
+        ):
+            for item in manifest_path('email_transforms', which):
+                name = '%3.3d_%s' % (int(item.get('priority', 999)), full_name)
+                reg(name, self._get_class(full_name, item['class']))
+
+        # Register search keyword extractors
+        s = self
+        for which, reg in (
+            ('meta', s.register_meta_kw_extractor),
+            ('text', s.register_text_kw_extractor),
+            ('data', s.register_data_kw_extractor)
+        ):
+            for item in manifest_path('keyword_extractors', which):
+                reg('%s.%s' % (full_name, item),
+                    self._get_class(full_name, item))
+
         # Register contact/vcard hooks
-        for importer in manifest_path('contacts', 'importers'):
-            self.register_vcard_importers(self._get_class(full_name, importer))
-        for exporter in manifest_path('contacts', 'exporters'):
-            self.register_contact_exporters(self._get_class(full_name,
-                                                            exporter))
-        for context in manifest_path('contacts', 'context'):
-            self.register_contact_context_providers(self._get_class(full_name,
-                                                                    context))
+        for which, reg in (
+            ('importers', self.register_vcard_importers),
+            ('exporters', self.register_contact_exporters),
+            ('context', self.register_contact_context_providers)
+        ):
+            for item in manifest_path('contacts', which):
+                reg(self._get_class(full_name, item))
 
         # Register periodic jobs
         def reg_job(info, spd, register):
@@ -426,6 +468,11 @@ class PluginManager(object):
             print ('FIXME: Deprecated use of %s at %s (issue #547)'
                    ) % (stack[1][3], where)
 
+    def _rhtf(self, kw_hash, term, function):
+        if term in kw_hash:
+            raise PluginError('Already registered: %s' % term)
+        kw_hash[term] = function
+
 
     ##[ Pluggable configuration ]#############################################
 
@@ -458,28 +505,77 @@ class PluginManager(object):
             dest[rname] = rules
 
 
+    ##[ Pluggable message transformations ]###################################
+
+    INCOMING_EMAIL_ENCRYPTION = {}
+    INCOMING_EMAIL_CONTENT = {}
+    OUTGOING_EMAIL_CONTENT = {}
+    OUTGOING_EMAIL_ENCRYPTION = {}
+
+    def _txf_in(self, transforms, config, msg, kwargs):
+        matched = 0
+        for name in sorted(transforms.keys()):
+            txf = transforms[name](config)
+            msg, match, cont = txf.TransformIncoming(msg, **kwargs)
+            if match:
+                matched += 1
+            if not cont:
+                break
+        return msg, matched
+
+    def _txf_out(self, transforms, cfg, s, r, msg, kwa):
+        matched = 0
+        for name in sorted(transforms.keys()):
+            txf = transforms[name](cfg)
+            s, r, msg, match, cont = txf.TransformOutgoing(s, r, msg, **kwa)
+            if match:
+                matched += 1
+            if not cont:
+                break
+        return s, r, msg, matched
+
+    def incoming_email_crypto_transform(self, cfg, msg, **kwa):
+        return self._txf_in(self.INCOMING_EMAIL_ENCRYPTION, cfg, msg, kwa)
+
+    def incoming_email_content_transform(self, config, msg, **kwa):
+        return self._txf_in(self.INCOMING_EMAIL_CONTENT, config, msg, kwa)
+
+    def outgoing_email_content_transform(self, cfg, s, r, m, **kwa):
+        return self._txf_out(self.OUTGOING_EMAIL_CONTENT, cfg, s, r, m, kwa)
+
+    def outgoing_email_crypto_transform(self, cfg, s, r, m, **kwa):
+        return self._txf_out(self.OUTGOING_EMAIL_ENCRYPTION, cfg, s, r, m, kwa)
+
+    def register_incoming_email_crypto_transform(self, name, transform):
+        return self._rhtf(self.INCOMING_EMAIL_ENCRYPTION, name, transform)
+
+    def register_incoming_email_content_transform(self, name, transform):
+        return self._rhtf(self.INCOMING_EMAIL_CONTENT, name, transform)
+
+    def register_outgoing_email_content_transform(self, name, transform):
+        return self._rhtf(self.OUTGOING_EMAIL_CONTENT, name, transform)
+
+    def register_outgoing_email_crypto_transform(self, name, transform):
+        return self._rhtf(self.OUTGOING_EMAIL_ENCRYPTION, name, transform)
+
+
     ##[ Pluggable keyword extractors ]########################################
 
     DATA_KW_EXTRACTORS = {}
     TEXT_KW_EXTRACTORS = {}
     META_KW_EXTRACTORS = {}
 
-    def _rkwe(self, kw_hash, term, function):
-        if term in kw_hash:
-            raise PluginError('Already registered: %s' % term)
-        kw_hash[term] = function
-
     def register_data_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.DATA_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.DATA_KW_EXTRACTORS, term, function)
 
     def register_text_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.TEXT_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.TEXT_KW_EXTRACTORS, term, function)
 
     def register_meta_kw_extractor(self, term, function):
         self._compat_check()
-        return self._rkwe(self.META_KW_EXTRACTORS, term, function)
+        return self._rhtf(self.META_KW_EXTRACTORS, term, function)
 
     def get_data_kw_extractors(self):
         self._compat_check(strict=False)

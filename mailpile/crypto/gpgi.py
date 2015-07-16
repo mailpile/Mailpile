@@ -21,7 +21,10 @@ from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
 
 
-DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
+DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
+                      "hkp://subset.pool.sks-keyservers.net"]
+DEFAULT_KEYSERVER_OPTIONS = ['ca-cert-file=%s' % __file__]
+
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 GPG_BINARY = 'gpg'
@@ -45,7 +48,8 @@ openpgp_algorithms = {1: _("RSA"),
                       3: _("RSA (sign only)"),
                       16: _("Elgamal (encrypt only)"),
                       17: _("DSA"),
-                      20: _("Elgamal (encrypt/sign) [COMPROMISED]")}
+                      20: _("Elgamal (encrypt/sign) [COMPROMISED]"),
+                      22: _("EdDSA")}
 # For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
 
@@ -69,17 +73,28 @@ class GnuPGResultParser:
         from mailpile.mailutils import ExtractEmailAndName
 
         # First pass, set some initial state.
+        locked, missing = [], []
         for data in retvals[1]["status"]:
             keyword = data[0].strip()  # The last keyword often ends in \n
 
-            if keyword == "DECRYPTION_FAILED":
-                missing = [x[1] for x in retvals[1]["status"]
-                           if x[0] == "NO_SECKEY"]
+            if keyword == 'NEED_PASSPHRASE':
+                locked += [data[2]]
+                encryption_info.part_status = "lockedkey"
+                encryption_info["locked_keys"] = list(set(locked))
+
+            elif keyword == 'GOOD_PASSPHRASE':
+                encryption_info["locked_keys"] = []
+
+            elif keyword == "DECRYPTION_FAILED":
+                missing += [x[1].strip() for x in retvals[1]["status"]
+                            if x[0] == "NO_SECKEY"]
                 if missing:
-                    encryption_info.part_status = "missingkey"
-                    encryption_info["missing_keys"] = missing
-                else:
-                    encryption_info.part_status = "error"
+                    encryption_info["missing_keys"] = list(set(missing))
+                if encryption_info.part_status != "lockedkey":
+                    if missing:
+                        encryption_info.part_status = "missingkey"
+                    else:
+                        encryption_info.part_status = "error"
 
             elif keyword == "DECRYPTION_OKAY":
                 encryption_info.part_status = "decrypted"
@@ -88,8 +103,8 @@ class GnuPGResultParser:
             elif keyword == "ENC_TO":
                 keylist = encryption_info.get("have_keys", [])
                 if data[0] not in keylist:
-                    keylist.append(data[1])
-                encryption_info["have_keys"] = keylist
+                    keylist.append(data[1].strip())
+                encryption_info["have_keys"] = list(set(keylist))
 
             elif signature_info.part_status == "none":
                 # Only one of these will ever be emitted per key, use
@@ -113,14 +128,13 @@ class GnuPGResultParser:
             keyword = data[0].strip()  # The last keyword often ends in \n
 
             if keyword == "NO_SECKEY":
+                keyid = data[1].strip()
                 if "missing_keys" not in encryption_info:
-                    encryption_info["missing_keys"] = [data[1]]
-                else:
-                    encryption_info["missing_keys"].append(data[1])
-                try:
-                    encryption_info["have_keys"].remove(data[1])
-                except (KeyError, ValueError):
-                    pass
+                    encryption_info["missing_keys"] = [keyid]
+                elif keyid not in encryption_info["missing_keys"]:
+                    encryption_info["missing_keys"].append(keyid)
+                while keyid in encryption_info["have_keys"]:
+                    encryption_info["have_keys"].remove(keyid)
 
             elif keyword == "VALIDSIG":
                 # FIXME: Determine trust level, between new, unverified,
@@ -164,13 +178,13 @@ class GnuPGRecordParser:
                               "capabilities", "flag", "sn", "hashtype",
                               "curve"]
         self.record_types = ["pub", "sub", "ssb", "fpr", "uat", "sec", "tru",
-                             "sig", "rev", "uid", "gpg"]
+                             "sig", "rev", "uid", "gpg", "rvk"]
         self.record_parsers = [self.parse_pubkey, self.parse_subkey,
                                self.parse_subkey, self.parse_fingerprint,
                                self.parse_userattribute, self.parse_privkey,
                                self.parse_trust, self.parse_signature,
                                self.parse_revoke, self.parse_uidline,
-                               self.parse_none]
+                               self.parse_none, self.parse_revocation_key]
 
         self.dispatch = dict(zip(self.record_types, self.record_parsers))
 
@@ -180,13 +194,16 @@ class GnuPGRecordParser:
         return self.keys
 
     def parse_line(self, line):
-        line = dict(zip(self.record_fields, map(lambda s: s.replace("\\x3a", ":"), line.strip().split(":"))))
+        line = dict(zip(self.record_fields,
+                        map(lambda s: s.replace("\\x3a", ":"),
+                        stubborn_decode(line).strip().split(":"))))
         r = self.dispatch.get(line["record"], self.parse_unknown)
         r(line)
 
     def parse_pubkey(self, line):
         self.curkey = line["keyid"]
-        line["keytype_name"] = openpgp_algorithms[int(line["keytype"])]
+        line["keytype_name"] = openpgp_algorithms.get(int(line["keytype"]),
+                                                      'Unknown'),
         line["capabilities_map"] = {
             "encrypt": "E" in line["capabilities"],
             "sign": "S" in line["capabilities"],
@@ -199,6 +216,17 @@ class GnuPGRecordParser:
         line["subkeys"] = []
         line["uids"] = []
 
+        for ts in ('expiration_date', 'creation_date'):
+            if line.get(ts) and '-' not in line[ts]:
+               try:
+                   unixtime = int(line[ts])
+                   if unixtime > 946684800:  # 2000-01-01
+                       dt = datetime.fromtimestamp(unixtime)
+                       line[ts] = dt.strftime('%Y-%m-%d')
+               except ValueError:
+                   line[ts+'_unparsed'] = line[ts]
+                   line[ts] = '1970-01-01'
+
         if line["record"] == "sec":
             line["secret"] = True
 
@@ -209,7 +237,8 @@ class GnuPGRecordParser:
         subkey = {"id": line["keyid"],
                   "keysize": line["keysize"],
                   "creation_date": line["creation_date"],
-                  "keytype_name": openpgp_algorithms[int(line["keytype"])]}
+                  "keytype_name": openpgp_algorithms.get(int(line["keytype"]),
+                                                         'Unknown')}
         self.keys[self.curkey]["subkeys"].append(subkey)
 
     def parse_fingerprint(self, line):
@@ -259,17 +288,31 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
-        # FIXME: should set revocation_date (checked in existing code)
-        print line
+        pass  # FIXME
+
+    def parse_revocation_key(self, line):
+        pass  # FIXME
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % line[0]
+        print "Unknown line with code '%s'" % (line,)
 
     def parse_none(line):
         pass
 
 
 UID_PARSE_RE = "^([^\(\<]+?){0,1}( \((.+?)\)){0,1}( \<(.+?)\>){0,1}\s*$"
+
+
+def stubborn_decode(text):
+    if isinstance(text, unicode):
+        return text
+    try:
+        return text.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return text.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            return uidstr.decode("utf-8", "replace")
 
 
 def parse_uid(uidstr):
@@ -284,22 +327,6 @@ def parse_uid(uidstr):
         else:
             email, name = "", uidstr
         comment = ""
-
-    try:
-        name = name.decode("utf-8")
-    except UnicodeDecodeError:
-        try:
-            name = name.decode("iso-8859-1")
-        except UnicodeDecodeError:
-            name = name.decode("utf-8", "replace")
-
-    try:
-        comment = comment.decode("utf-8")
-    except UnicodeDecodeError:
-        try:
-            comment = comment.decode("iso-8859-1")
-        except UnicodeDecodeError:
-            comment = comment.decode("utf-8", "replace")
 
     return email, name, comment
 
@@ -389,24 +416,54 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, config, session=None, use_agent=False, debug=False):
+    LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
+
+    def __init__(self, config,
+                 session=None, use_agent=None, debug=False):
         global DEBUG_GNUPG
         self.available = None
-        self.gpgbinary = GPG_BINARY
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
         self.session = session
         self.config = config or (session and session.config) or None
-        self.use_agent = use_agent
         if self.config:
-            self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
-            self.passphrase = self.config.gnupg_passphrase.get_reader()
+            self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
+            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY
+            self.passphrases = self.config.passphrases
+            self.passphrase = self.passphrases['DEFAULT'].get_reader()
+            self.use_agent = (use_agent if (use_agent is not None)
+                              else self.config.prefs.gpg_use_agent)
         else:
-            self.passphrase = None
             self.homedir = GNUPG_HOMEDIR
+            self.gpgbinary = GPG_BINARY
+            self.passphrases = None
+            self.passphrase = None
+            self.use_agent = use_agent
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
+
+    def prepare_passphrase(self, keyid, signing=False, decrypting=False):
+        """Query the Mailpile secrets for a usable passphrase."""
+        def _use(kid, sps_reader):
+            self.passphrase = sps_reader
+            GnuPG.LAST_KEY_USED = kid
+            return True
+
+        if self.config:
+            message = []
+            if decrypting:
+                message.append(_("Your PGP key is needed for decrypting."))
+            if signing:
+                message.append(_("Your PGP key is needed for signing."))
+            match, sps = self.config.get_passphrase(keyid,
+                prompt=_('Unlock your encryption key'),
+                description=' '.join(message))
+            if match:
+                return _use(match, sps.get_reader())
+
+        self.passphrase = None  # This *may* allow use of the GnuPG agent
+        return False
 
     def _debug_all(self, msg):
         if self.session:
@@ -439,7 +496,6 @@ class GnuPG:
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.threads = {}
 
-        wtf = ' '.join(args)
         args = args[:] if args else []
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
@@ -447,6 +503,9 @@ class GnuPG:
         args.insert(1, "--verbose")
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
+
+        # FIXME: We will need stronger stuff if this is to work with GnuGP
+        #        2.0 or above! Basically a custom config file via --options.
         if not self.use_agent:
             args.insert(1, "--no-use-agent")
 
@@ -460,6 +519,7 @@ class GnuPG:
 
             if self.passphrase and send_passphrase:
                 if self.use_agent:
+                    # We have a passphrase, override this setting!
                     args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=0")
 
@@ -476,12 +536,14 @@ class GnuPG:
             # be sent and the filehandle closed before anything else
             # interesting happens.
             if self.passphrase and send_passphrase:
+                self.passphrase.seek(0, 0)
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
                     proc.stdin.write(c)
                     c = self.passphrase.read(BLOCKSIZE)
                 proc.stdin.write('\n')
 
+            wtf = ' '.join(args)
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr)
@@ -555,16 +617,21 @@ class GnuPG:
         rlp = GnuPGRecordParser()
         return rlp.parse(keylist)
 
-    def list_keys(self):
+    def list_keys(self, selectors=None):
         """
         >>> g = GnuPG(None)
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--fingerprint", "--list-keys"])
+        list_keys = ["--fingerprint"]
+        for sel in selectors or []:
+            list_keys += ["--list-keys", sel]
+        if not selectors:
+            list_keys += ["--list-keys"]
+        retvals = self.run(list_keys)
         return self.parse_keylist(retvals[1]["stdout"])
 
-    def list_secret_keys(self):
+    def list_secret_keys(self, selectors=None):
         #
         # Note: The "." parameter that is passed is to work around a bug
         #       in GnuPG < 2.1, where --list-secret-keys does not list
@@ -585,14 +652,12 @@ class GnuPG:
         #       BRE: Put --fingerprint at the front and added selectors
         #            for the worlds MOST POPULAR LETTERS!  Yaaay!
         #
-        retvals = self.run(["--fingerprint",
-                            "--list-secret-keys", ".",
-                            "--list-secret-keys", "a",
-                            "--list-secret-keys", "e",
-                            "--list-secret-keys", "i",
-                            "--list-secret-keys", "p",
-                            "--list-secret-keys", "t",
-                            "--list-secret-keys", "k"])
+        if not selectors:
+            selectors = [".", "a", "e", "i", "p", "t", "k"]
+        list_keys = ["--fingerprint"]
+        for sel in selectors:
+            list_keys += ["--list-secret-keys", sel]
+        retvals = self.run(list_keys)
         secret_keys = self.parse_keylist(retvals[1]["stdout"])
 
         # Another unfortunate thing GPG does, is it hides the disabled
@@ -628,7 +693,7 @@ class GnuPG:
             if x[0] == "IMPORTED":
                 res["imported"].append({
                     "fingerprint": x[1],
-                    "username": x[2]
+                    "username": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_OK":
                 reasons = {
@@ -642,7 +707,7 @@ class GnuPG:
                 res["updated"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2],
+                    "fingerprint": x[2].rstrip(),
                 })
             elif x[0] == "IMPORT_PROBLEM":
                 reasons = {
@@ -655,7 +720,7 @@ class GnuPG:
                 res["failed"].append({
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
-                    "fingerprint": x[2]
+                    "fingerprint": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_RES":
                 res["results"] = {
@@ -672,7 +737,7 @@ class GnuPG:
                     "sec_imported": int(x[11]),
                     "sec_dups": int(x[12]),
                     "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14]),
+                    "not_imported": int(x[14].rstrip()),
                 }
         return res
 
@@ -687,10 +752,30 @@ class GnuPG:
         """
         if passphrase:
             self.passphrase = passphrase
-        action = ["--decrypt"]
-        retvals = self.run(action, gpg_input=data, outputfd=outputfd,
-                                   send_passphrase=True)
-        self.passphrase = None
+        elif GnuPG.LAST_KEY_USED:
+            # This is an opportunistic approach to passphrase usage... we
+            # just hope the passphrase we used last time will work again.
+            # If we are right, we are done. If we are wrong, the output
+            # will tell us which key IDs to look for in our secret stash.
+            self.prepare_passphrase(GnuPG.LAST_KEY_USED, decrypting=True)
+
+        for tries in (1, 2):
+            retvals = self.run(["--decrypt"], gpg_input=data,
+                                              outputfd=outputfd,
+                                              send_passphrase=True)
+            if retvals[0] == 0:
+                break
+            elif tries == 1:
+                # Uh, oh, failed! Probably the wrong passphrase. Parse the
+                # gpg output for the keyid and try again if we have it.
+                keyid = None
+                for msg in retvals[1]['status']:
+                    if msg[0] == 'NEED_PASSPHRASE':
+                        if self.prepare_passphrase(msg[2], decrypting=True):
+                            keyid = msg[2]
+                            break
+                if not keyid:
+                    break
 
         if as_lines:
             as_lines = retvals[1]["stdout"]
@@ -737,18 +822,27 @@ class GnuPG:
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
-        action = ["--encrypt", "--yes", "--expert", "--trust-model", "always"]
+        if tokeys:
+            action = ["--encrypt", "--yes", "--expert",
+                      "--trust-model", "always"]
+            for r in tokeys:
+                action.append("--recipient")
+                action.append(r)
+            action.extend([])
+        else:
+            action = ["--symmetric", "--yes", "--expert"]
         if armor:
             action.append("--armor")
-        for r in tokeys:
-            action.append("--recipient")
-            action.append(r)
         if sign:
             action.append("--sign")
         if sign and fromkey:
             action.append("--local-user")
             action.append(fromkey)
-        retvals = self.run(action, gpg_input=data, send_passphrase=sign)
+        if fromkey:
+            self.prepare_passphrase(fromkey, signing=True)
+
+        retvals = self.run(action, gpg_input=data,
+                           send_passphrase=(sign or not tokeys))
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
@@ -761,6 +855,9 @@ class GnuPG:
         """
         if passphrase:
             self.passphrase = passphrase
+        elif fromkey:
+            self.prepare_passphrase(fromkey, signing=True)
+
         if detatch and not clearsign:
             action = ["--detach-sign"]
         elif clearsign:
@@ -777,20 +874,6 @@ class GnuPG:
         self.passphrase = None
         return retvals[0], "".join(retvals[1]["stdout"])
 
-    def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True,
-                     detatch=False, clearsign=True):
-        retval, signblock = self.sign(data, fromkey=fromkey, armor=armor,
-                                      detatch=detatch, clearsign=clearsign)
-        if detatch:
-            # TODO: Deal with detached signature.
-            retval, cryptblock = self.encrypt(data, tokeys=tokeys,
-                                              armor=armor)
-        else:
-            retval, cryptblock = self.encrypt(signblock, tokeys=tokeys,
-                                              armor=armor)
-
-        return cryptblock
-
     def sign_key(self, keyid, signingkey=None):
         action = ["--yes", "--sign-key", keyid]
         if signingkey:
@@ -799,17 +882,33 @@ class GnuPG:
         retvals = self.run(action, send_passphrase=True)
         return retvals
 
-    def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
+    def recv_key(self, keyid,
+                 keyservers=DEFAULT_KEYSERVERS,
+                 keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--recv-key', self._escape_hex_keyid_term(keyid)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
         return self._parse_import(retvals[1]["status"])
 
-    def search_key(self, term, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver,
-                            '--fingerprint',
-                            '--search-key', self._escape_hex_keyid_term(term)]
-                            )[1]["stdout"]
+    def search_key(self, term,
+                   keyservers=DEFAULT_KEYSERVERS,
+                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--fingerprint',
+                   '--search-key', self._escape_hex_keyid_term(term)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
         results = {}
-        lines = [x.strip().split(":") for x in retvals]
+        lines = [x.strip().split(":") for x in retvals[1]["stdout"]]
         curpub = None
         for line in lines:
             if line[0] == "info":
@@ -822,7 +921,8 @@ class GnuPG:
                         validity += 'e'
                 results[curpub] = {
                     "created": datetime.fromtimestamp(int(line[4])),
-                    "keytype_name": openpgp_algorithms[int(line[2])],
+                    "keytype_name": openpgp_algorithms.get(int(line[2]),
+                                                           'Unknown'),
                     "keysize": line[3],
                     "validity": validity,
                     "uids": [],
@@ -843,7 +943,7 @@ class GnuPG:
 
     def address_to_keys(self, address):
         res = {}
-        keys = self.list_keys()
+        keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
             if any([x["email"] == address for x in props["uids"]]):
                 res[key] = props
@@ -896,6 +996,7 @@ class GnuPG:
 def GetKeys(gnupg, config, people):
     keys = []
     missing = []
+    ambig = []
 
     # First, we go to the contact database and get a list of keys.
     for person in set(people):
@@ -904,35 +1005,56 @@ def GetKeys(gnupg, config, people):
         else:
             vcard = config.vcards.get_vcard(person)
             if vcard:
-                # FIXME: Rather than get_all, we should give the vcard the
-                #        option of providing us with its favorite key.
+                # It is the VCard's job to give us the best key first.
                 lines = [vcl for vcl in vcard.get_all('KEY')
                          if vcl.value.startswith('data:application'
                                                  '/x-pgp-fingerprint,')]
-                if len(lines) == 1:
+                if len(lines) > 0:
                     keys.append(lines[0].value.split(',', 1)[1])
                 else:
                     missing.append(person)
             else:
                 missing.append(person)
 
-    # FIXME: This doesn't really feel scalable...
-    all_keys = gnupg.list_keys()
-    for key_id, key in all_keys.iteritems():
-        for uid in key.get("uids", []):
-            if uid.get("email", None) in missing:
-                missing.remove(uid["email"])
-                keys.append(key_id)
+    # Load key data from gnupg for use below
+    if keys:
+        all_keys = gnupg.list_keys(selectors=keys)
+    else:
+        all_keys = {}
+
+    if missing:
+        # Keys are missing, so we try to just search the keychain
+        all_keys.update(gnupg.list_keys(selectors=missing))
+        found = []
+        for key_id, key in all_keys.iteritems():
+            for uid in key.get("uids", []):
+                if uid.get("email", None) in missing:
+                    missing.remove(uid["email"])
+                    found.append(uid["email"])
+                    keys.append(key_id)
+                elif uid.get("email", None) in found:
+                    ambig.append(uid["email"])
 
     # Next, we go make sure all those keys are really in our keychain.
     fprints = all_keys.keys()
     for key in keys:
-        if key not in keys and key not in fprints:
-            missing.append(key)
+        key = key.upper()
+        if key.startswith('0x'):
+            key = key[2:]
+        if key not in fprints:
+            match = [k for k in fprints if k.endswith(key)]
+            if len(match) == 0:
+                missing.append(key)
+            elif len(match) > 1:
+                ambig.append(key)
 
     if missing:
-        raise KeyLookupError(_('Keys missing or ambiguous for %s'
+        raise KeyLookupError(_('Keys missing for %s'
                                ) % ', '.join(missing), missing)
+    elif ambig:
+        ambig = list(set(ambig))
+        raise KeyLookupError(_('Keys ambiguous for %s'
+                               ) % ', '.join(ambig), ambig)
     return keys
 
 
@@ -1217,3 +1339,40 @@ class GnuPGKeyEditor(GnuPGExpectScript):
 
     def gpg_args(self):
         return ['--no-use-agent', '--edit-key', self.keyid]
+
+
+## Include the SKS keyserver certificate here ##
+KEYSERVER_CERTIFICATE="""
+-----BEGIN CERTIFICATE-----
+MIIFizCCA3OgAwIBAgIJAK9zyLTPn4CPMA0GCSqGSIb3DQEBBQUAMFwxCzAJBgNV
+BAYTAk5PMQ0wCwYDVQQIDARPc2xvMR4wHAYDVQQKDBVza3Mta2V5c2VydmVycy5u
+ZXQgQ0ExHjAcBgNVBAMMFXNrcy1rZXlzZXJ2ZXJzLm5ldCBDQTAeFw0xMjEwMDkw
+MDMzMzdaFw0yMjEwMDcwMDMzMzdaMFwxCzAJBgNVBAYTAk5PMQ0wCwYDVQQIDARP
+c2xvMR4wHAYDVQQKDBVza3Mta2V5c2VydmVycy5uZXQgQ0ExHjAcBgNVBAMMFXNr
+cy1rZXlzZXJ2ZXJzLm5ldCBDQTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoC
+ggIBANdsWy4PXWNUCkS3L//nrd0GqN3dVwoBGZ6w94Tw2jPDPifegwxQozFXkG6I
+6A4TK1CJLXPvfz0UP0aBYyPmTNadDinaB9T4jIwd4rnxl+59GiEmqkN3IfPsv5Jj
+MkKUmJnvOT0DEVlEaO1UZIwx5WpfprB3mR81/qm4XkAgmYrmgnLXd/pJDAMk7y1F
+45b5zWofiD5l677lplcIPRbFhpJ6kDTODXh/XEdtF71EAeaOdEGOvyGDmCO0GWqS
+FDkMMPTlieLA/0rgFTcz4xwUYj/cD5e0ZBuSkYsYFAU3hd1cGfBue0cPZaQH2HYx
+Qk4zXD8S3F4690fRhr+tki5gyG6JDR67aKp3BIGLqm7f45WkX1hYp+YXywmEziM4
+aSbGYhx8hoFGfq9UcfPEvp2aoc8u5sdqjDslhyUzM1v3m3ZGbhwEOnVjljY6JJLx
+MxagxnZZSAY424ZZ3t71E/Mn27dm2w+xFRuoy8JEjv1d+BT3eChM5KaNwrj0IO/y
+u8kFIgWYA1vZ/15qMT+tyJTfyrNVV/7Df7TNeWyNqjJ5rBmt0M6NpHG7CrUSkBy9
+p8JhimgjP5r0FlEkgg+lyD+V79H98gQfVgP3pbJICz0SpBQf2F/2tyS4rLm+49rP
+fcOajiXEuyhpcmzgusAj/1FjrtlynH1r9mnNaX4e+rLWzvU5AgMBAAGjUDBOMB0G
+A1UdDgQWBBTkwyoJFGfYTVISTpM8E+igjdq28zAfBgNVHSMEGDAWgBTkwyoJFGfY
+TVISTpM8E+igjdq28zAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4ICAQAR
+OXnYwu3g1ZjHyley3fZI5aLPsaE17cOImVTehC8DcIphm2HOMR/hYTTL+V0G4P+u
+gH+6xeRLKSHMHZTtSBIa6GDL03434y9CBuwGvAFCMU2GV8w92/Z7apkAhdLToZA/
+X/iWP2jeaVJhxgEcH8uPrnSlqoPBcKC9PrgUzQYfSZJkLmB+3jEa3HKruy1abJP5
+gAdQvwvcPpvYRnIzUc9fZODsVmlHVFBCl2dlu/iHh2h4GmL4Da2rRkUMlbVTdioB
+UYIvMycdOkpH5wJftzw7cpjsudGas0PARDXCFfGyKhwBRFY7Xp7lbjtU5Rz0Gc04
+lPrhDf0pFE98Aw4jJRpFeWMjpXUEaG1cq7D641RpgcMfPFvOHY47rvDTS7XJOaUT
+BwRjmDt896s6vMDcaG/uXJbQjuzmmx3W2Idyh3s5SI0GTHb0IwMKYb4eBUIpQOnB
+cE77VnCYqKvN1NVYAqhWjXbY7XasZvszCRcOG+W3FqNaHOK/n/0ueb0uijdLan+U
+f4p1bjbAox8eAOQS/8a3bzkJzdyBNUKGx1BIK2IBL9bn/HravSDOiNRSnZ/R3l9G
+ZauX0tu7IIDlRCILXSyeazu0aj/vdT3YFQXPcvt5Fkf5wiNTo53f72/jYEJd6qph
+WrpoKqrwGwTpRUCMhYIUt65hsTxCiJJ5nKe39h46sg==
+-----END CERTIFICATE-----
+"""

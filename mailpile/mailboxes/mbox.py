@@ -131,6 +131,13 @@ class MailpileMailbox(mailbox.mbox):
         except (IndexError, KeyError, IndexError, TypeError):
             return 0
 
+    def get_metadata_keywords(self, toc_id):
+        # In an mbox, all metadata is in the message headers.
+        return []
+
+    def set_metadata_keywords(self, *args, **kwargs):
+        pass
+
     def get_msg_cs(self, start, cs_size, max_length):
         with self._lock:
             if start is None:
@@ -175,8 +182,8 @@ class MailpileMailbox(mailbox.mbox):
         # multiple PartialFile objects in flight at once.
         return mailbox._PartialFile(self._get_fd(), start, start + length)
 
-    def get_bytes(self, toc_id):
-        return self.get_file(toc_id).read()
+    def get_bytes(self, toc_id, *args):
+        return self.get_file(toc_id).read(*args)
 
 
 mailpile.mailboxes.register(90, MailpileMailbox)

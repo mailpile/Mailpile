@@ -1,0 +1,14 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block title %}{{_("Edit Account")}}{% endblock %}
+{%- block content %}
+{%- if result.form %}
+<div class="content-normal" style="max-width: 42em">
+  <h1><span class="icon-user"></span> {{_("Edit your Account")}}</h1>
+  {% set form_icon = "icon-checkmark" %}
+  {% set form_action = _("Save") %}
+  {% include "profiles/account-form.html" %}
+</div>
+{%- else %}
+  {{ mailpile('http/redirect', U('/profiles/')) }}
+{%- endif %}
+{%- endblock %}
