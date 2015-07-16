@@ -660,8 +660,10 @@
                {% if result['security-best-effort-crypto'] %}checked{% endif %}>
         <span class="checkbox">
           {{_("Best-effort digital signatures and encryption")}}
+{%- if config.version >= '0.6.0' %}
           (<a class='auto-help' href="{{ U('/help/crypto-policy.html') }}"
               target=_blank>details</a>)
+{%- endif %}
         </span><br>
 
         <div class="more-crypto hide">
@@ -700,8 +702,10 @@
                  {% if result['security-openpgp-header-encrypt'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Signal a preference for encrypted mail")}}
+{%- if config.version >= '0.6.0' %}
             (<a class='auto-help' href="{{ U('/help/crypto-signaling.html') }}"
                 target=_blank>details</a>)
+{%- endif %}
           </span><br>
 
           <input type="checkbox" name="security-openpgp-header-sign" value="yes"
