@@ -2328,7 +2328,7 @@ class ConfigureMailboxes(Command):
             for path, einfo in configure:
                 mbox_id = einfo[1]
                 source_cfg = _get_source(path, einfo)
-                source_obj = config.mail_sources[source_cfg._key]
+                source_obj = config.get_mail_source(source_cfg._key)
                 policy = 'read' if auto_index else 'ignore'
                 source_obj.take_over_mailbox(mbox_id,
                                              policy=policy,
