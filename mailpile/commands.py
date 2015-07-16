@@ -1364,9 +1364,10 @@ class Rescan(Command):
                 ocount = msg_count - 1
                 while ocount != msg_count:
                     ocount = msg_count
-                    sources = config.mail_sources.values()
-                    sources.sort(key=lambda k: random.randint(0, 100))
-                    for src in sources:
+                    src_ids = config.sources.keys()
+                    src_ids.sort(key=lambda k: random.randint(0, 100))
+                    for src_id in src_ids:
+                        src = config.get_mail_source(src_id, start=True)
                         if mailpile.util.QUITTING:
                             ocount = msg_count
                             break
