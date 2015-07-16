@@ -2255,6 +2255,7 @@ class ConfigureMailboxes(Command):
         # Figure out which mailboxes the user is asking us to add...
         adding = []
         configure = []
+        has_source = False
         try:
             while paths:
                 fn = paths.pop(0)
@@ -2262,7 +2263,10 @@ class ConfigureMailboxes(Command):
                 einfo = existing.get(fn.encoded())
                 if fn.raw_fp.startswith("src:"):
                     configure.append((fn, einfo))
+                    has_source = True
                 elif einfo:
+                    if einfo[2]:
+                        has_source = True
                     configure.append((fn, einfo))
                     if not account:
                         session.ui.warning('Already in the pile: %s'
@@ -2286,7 +2290,6 @@ class ConfigureMailboxes(Command):
         except KeyboardInterrupt:
             return self._error(_('User aborted'))
 
-        has_source = (len(configure) > 0)
         if local_copy is None:
             local_copy = has_source  # No source; probably already local
 

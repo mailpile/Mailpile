@@ -547,6 +547,7 @@ class MailIndex(object):
 
         msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+        return msg_info
 
     def _parse_date(self, date_hdr):
         """Parse a Date: or Received: header into a unix timestamp."""
@@ -749,7 +750,7 @@ class MailIndex(object):
                 if not lazy:
                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
                     msg_body = msg_info[self.MSG_BODY]
-                if lazy or msg_body not in self.MSG_BODY_UNSCANNED:
+                if lazy or (msg_body not in self.MSG_BODY_UNSCANNED):
                     continue
             else:
                 session.ui.mark(parse_status(ui))
@@ -853,19 +854,24 @@ class MailIndex(object):
                                 ) % (mailbox_idx, msg_mbox_idx))
             return last_date, added, updated
 
+        msg_snippet = msg_info = None
         msg_id = self.get_msg_id(msg, msg_ptr)
         if msg_id in self.MSGIDS:
-            # FIXME: this prevents updates of the BODY_LAZY stuff...
             with self._lock:
-                self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
+                msg_info = self._update_location(session,
+                                                 self.MSGIDS[msg_id],
+                                                 msg_ptr)
+                msg_snippet = msg_info[self.MSG_BODY]
                 updated += 1
-        else:
+
+        rescan_body = (not lazy) and msg_snippet in self.MSG_BODY_UNSCANNED
+        if rescan_body or msg_id not in self.MSGIDS:
             lazy_body = self.MSG_BODY_LAZY if lazy else None
             msg_info = self._index_incoming_message(
                 session, msg_id, msg_ptr, msg_bytes,
                 msg, msg_metadata_kws,
                 last_date + 1, mailbox_idx, process_new, apply_tags,
-                lazy_body)
+                lazy_body, msg_info)
             last_date = long(msg_info[self.MSG_DATE], 36)
             added += 1
 
@@ -940,7 +946,7 @@ class MailIndex(object):
                                 msg_id, msg_ptr, msg_size,
                                 msg, msg_metadata_kws, default_date,
                                 mailbox_idx, process_new, apply_tags,
-                                lazy_body):
+                                lazy_body, msg_info):
         if lazy_body:
             msg_ts = self._extract_date_ts(session, 'new', msg_id, msg,
                                            default_date)
@@ -951,12 +957,17 @@ class MailIndex(object):
                 lazy_body, [])
 
         else:
-            # First, add the message to the index so we can index terms to
-            # the right MID.
-            msg_idx_pos, msg_info = self.add_new_msg(
-                msg_ptr, msg_id, default_date, self.hdr(msg, 'from'), [], [],
-                msg_size, _('(processing message ...)'), '', [])
-            msg_mid = b36(msg_idx_pos)
+            # If necessary, add the message to the index so we can index
+            # terms to the right MID.
+            if msg_info:
+                msg_mid = msg_info[self.MSG_MID]
+                msg_idx_pos = int(msg_mid, 36)
+            else:
+                msg_idx_pos, msg_info = self.add_new_msg(
+                    msg_ptr, msg_id, default_date,
+                    self.hdr(msg, 'from'), [], [],
+                    msg_size, _('(processing message ...)'), '', [])
+                msg_mid = b36(msg_idx_pos)
 
             # Parse and index
             (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags

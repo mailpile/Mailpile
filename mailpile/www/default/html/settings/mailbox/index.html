@@ -15,7 +15,7 @@
     {%- for path in result.adding %}
       <input type="hidden" name="path" value="{{ path }}"> {{ path }}
     {%- endfor %}
-    {%- for path in result.configure %}
+    {%- for path, info in result.configure %}
       <input type="hidden" name="path" value="{{ path }}"> {{ path }}
     {%- endfor %}
   </p>
