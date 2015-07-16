@@ -2179,6 +2179,19 @@ class ConfigManager(ConfigDict):
         return ((which or config.save_worker)
                 not in (None, config.dumb_worker))
 
+    def get_mail_source(config, src_id, start=False):
+        ms_thread = config.mail_sources.get(src_id)
+        if (ms_thread and not ms_thread.isAlive()):
+            ms_thread = None
+        if not ms_thread:
+            from mailpile.mail_source import MailSource
+            src_config = config.sources[src_id]
+            ms_thread = MailSource(config.background, src_config)
+            if start:
+                config.mail_sources[src_id] = ms_thread
+                ms_thread.start()
+        return ms_thread
+
     def _unlocked_prepare_workers(config, session=None,
                                   daemons=False, httpd_spec=None):
         # Make sure we have a silent background session
@@ -2210,18 +2223,11 @@ class ConfigManager(ConfigDict):
 
         # Start the other workers
         if daemons:
-            for src_id, src_config in config.sources.iteritems():
-                ms_thread = config.mail_sources.get(src_id)
-                if (ms_thread and not ms_thread.isAlive()):
-                    ms_thread = None
-                if not ms_thread:
-                    from mailpile.mail_source import MailSource
-                    try:
-                        ms = MailSource(config.background, src_config)
-                        config.mail_sources[src_id] = ms
-                        ms.start()
-                    except ValueError:
-                        pass
+            for src_id in config.sources.keys():
+                try:
+                    config.get_mail_source(src_id, start=True)
+                except (ValueError, KeyError):
+                    pass
 
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', config.background)
