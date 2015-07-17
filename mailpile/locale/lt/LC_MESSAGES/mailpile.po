@@ -3,25 +3,23 @@
 # This file is distributed under the same license as the mailpile project.
 #
 # Translators:
-# brodul <brodul@gmx.com>, 2013
-# bungabunga, 2014
-# Dražen M. <drazen@ubuntu.si>, 2013,2015
+# Moo, 2014-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2015-07-17 01:30+0000\n"
-"PO-Revision-Date: 2015-03-16 22:07+0000\n"
-"Last-Translator: Dražen M. <drazen@ubuntu.si>\n"
-"Language-Team: Slovenian (Slovenia) (http://www.transifex.com/p/mailpile/"
-"language/sl_SI/)\n"
-"Language: sl_SI\n"
+"PO-Revision-Date: 2015-05-16 11:52+0000\n"
+"Last-Translator: Moo\n"
+"Language-Team: Lithuanian (http://www.transifex.com/p/mailpile/language/"
+"lt/)\n"
+"Language: lt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
+"%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: mailpile/app.py:73
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
@@ -48,13 +46,14 @@ msgid "Invalid passphrase, please try again"
 msgstr ""
 
 #: mailpile/auth.py:174
+#, fuzzy
 msgid "Incorrect username or password"
-msgstr ""
+msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
 #: mailpile/auth.py:186
 #, fuzzy
 msgid "Your password: "
-msgstr "Geslo"
+msgstr "Slaptažodis"
 
 #: mailpile/auth.py:194 mailpile/commands.py:578
 #: mailpile/www/default/html/auth/login/index.html:2
@@ -69,11 +68,12 @@ msgstr ""
 #: mailpile/auth.py:223
 #, fuzzy
 msgid "No session found!"
-msgstr "Ni rezultatov iskanja"
+msgstr "Nerasta jokių nustatymų"
 
 #: mailpile/auth.py:279
+#, fuzzy
 msgid "Enter your password"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/auth.py:297
 msgid "Password forgotten!"
@@ -84,8 +84,9 @@ msgid "Password will never be stored"
 msgstr ""
 
 #: mailpile/auth.py:310
+#, fuzzy
 msgid "Enter your password:"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/auth.py:320
 msgid "Password stored permanently"
@@ -96,8 +97,9 @@ msgid "Password stored temporarily"
 msgstr ""
 
 #: mailpile/auth.py:332
+#, fuzzy
 msgid "Invalid password policy!"
-msgstr ""
+msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
 #: mailpile/command_cache.py:132
 msgid "New results are available"
@@ -105,15 +107,15 @@ msgstr ""
 
 #: mailpile/commands.py:120
 msgid "OK"
-msgstr "OK"
+msgstr "Gerai"
 
 #: mailpile/commands.py:120
 msgid "Failed"
-msgstr "Ni uspelo"
+msgstr "Nepavyko"
 
 #: mailpile/commands.py:242
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Nepavyko išanalizuoti argumento"
 
 #: mailpile/commands.py:283
 #, python-format
@@ -123,26 +125,26 @@ msgstr ""
 #: mailpile/commands.py:383 mailpile/commands.py:388
 #, fuzzy
 msgid "No results to choose from!"
-msgstr "Ni rezultatov iskanja"
+msgstr "Rezultatų nerasta"
 
 #: mailpile/commands.py:395
 #, python-format
 msgid "No such ID: %s"
-msgstr ""
+msgstr "Nėra tokio ID: %s"
 
 #: mailpile/commands.py:401 mailpile/commands.py:408 mailpile/commands.py:414
 #, python-format
 msgid "What message is %s?"
-msgstr "Katero sporočilo je %s?"
+msgstr ""
 
 #: mailpile/commands.py:422
 #, python-format
 msgid "%s error: %s"
-msgstr "%s napaka: %s"
+msgstr "%s klaida: %s"
 
 #: mailpile/commands.py:524
 msgid "Generating result"
-msgstr ""
+msgstr "Kuriamas rezultatas"
 
 #: mailpile/commands.py:569
 #, python-format
@@ -150,8 +152,9 @@ msgid "Using pre-cached result object %s"
 msgstr ""
 
 #: mailpile/commands.py:580 mailpile/mail_source/__init__.py:202
+#, fuzzy
 msgid "Shutting down"
-msgstr ""
+msgstr "Stabdoma..."
 
 #: mailpile/commands.py:900
 #, python-format
@@ -161,7 +164,7 @@ msgstr ""
 #: mailpile/commands.py:905
 #, python-format
 msgid "Search: %s"
-msgstr "Iskanje: %s"
+msgstr "Paieška: %s"
 
 #: mailpile/commands.py:1140
 msgid "Loaded metadata index"
@@ -169,7 +172,7 @@ msgstr ""
 
 #: mailpile/commands.py:1142
 msgid "Failed to loaded metadata index"
-msgstr ""
+msgstr "Nepavyko įkelti meta duomenų indekso"
 
 #: mailpile/commands.py:1171
 msgid "Rescanned vcards"
@@ -187,7 +190,7 @@ msgstr ""
 #: mailpile/commands.py:1205
 #, python-format
 msgid "Indexed %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr ""
 
 #: mailpile/commands.py:1211
 msgid "Rescan already in progress"
@@ -211,7 +214,7 @@ msgstr ""
 #: mailpile/commands.py:1260
 #, python-format
 msgid "Running: %s"
-msgstr "Se izvaja: %s"
+msgstr "Vykdoma: %s"
 
 #: mailpile/commands.py:1286
 #, python-format
@@ -234,24 +237,25 @@ msgstr ""
 
 #: mailpile/commands.py:1384
 msgid "Nothing changed"
-msgstr " Brez sprememb"
+msgstr "Niekas nepasikeitė"
 
 #: mailpile/commands.py:1412
 msgid "Optimized search engine"
-msgstr "Optimiziran iskalnik"
+msgstr ""
 
 #: mailpile/commands.py:1414 mailpile/mail_source/__init__.py:634
 msgid "Aborted"
-msgstr "Prekinjeno"
+msgstr "Nutraukta"
 
 #: mailpile/commands.py:1452
+#, fuzzy
 msgid "Launching Mailpile"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/commands.py:1489
-#, python-format
+#, fuzzy, python-format
 msgid "Moved the web server to %s"
-msgstr ""
+msgstr "Prisijungta prie IMAP serverio %s"
 
 #: mailpile/commands.py:1492
 #, python-format
@@ -261,7 +265,7 @@ msgstr ""
 #: mailpile/commands.py:1495
 #, fuzzy
 msgid "Failed to started the web server"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Nepavyko pridėti failų"
 
 #: mailpile/commands.py:1508
 #, python-format
@@ -276,7 +280,7 @@ msgstr ""
 #: mailpile/commands.py:1570 mailpile/commands.py:1576
 #: mailpile/commands.py:1585 mailpile/commands.py:1728
 msgid "Nothing Found"
-msgstr "Ni rezultatov"
+msgstr "Nieko Nerasta"
 
 #: mailpile/commands.py:1669
 msgid "Listed events, threads, and locks"
@@ -285,12 +289,12 @@ msgstr ""
 #: mailpile/commands.py:1699 mailpile/contrib/hacks/hacks.py:92
 #: mailpile/plugins/eventlog.py:205
 msgid "That was fun!"
-msgstr ""
+msgstr "Buvo smagu!"
 
 #: mailpile/commands.py:1700
 #, fuzzy, python-format
 msgid "%s returned: %s"
-msgstr "%s napaka: %s"
+msgstr "%s klaida: %s"
 
 #: mailpile/commands.py:1739 mailpile/commands.py:1810
 #: mailpile/commands.py:1838 mailpile/commands.py:1904
@@ -323,27 +327,27 @@ msgstr ""
 #: mailpile/commands.py:1767
 #, fuzzy, python-format
 msgid "Network error: %s"
-msgstr "%s napaka: %s"
+msgstr "%s klaida: %s"
 
 #: mailpile/commands.py:1770
 #, fuzzy, python-format
 msgid "Failed to list: %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Nepavyko išsiųsti %s"
 
 #: mailpile/commands.py:1790
-#, python-format
+#, fuzzy, python-format
 msgid "Listed %d files or directories"
-msgstr ""
+msgstr "Nėra tokio failo ar katalogo: %s"
 
 #: mailpile/commands.py:1816
 #, python-format
 msgid "Failed to change directories: %s"
-msgstr ""
+msgstr "Nepavyko pakeisti katalogų: %s"
 
 #: mailpile/commands.py:1844
 #, python-format
 msgid "That file already exists: %s"
-msgstr ""
+msgstr "Tas failas jau yra: %s"
 
 #: mailpile/commands.py:1861
 #, python-format
@@ -362,56 +366,56 @@ msgstr ""
 #: mailpile/commands.py:1927
 #, fuzzy, python-format
 msgid "Invalid section or variable: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Neteisingas kompiuterio vardas: %s"
 
 #: mailpile/commands.py:1970 mailpile/commands.py:2025
 msgid "Updated your settings"
-msgstr "Nastavitve so bile posodobljene"
+msgstr ""
 
 #: mailpile/commands.py:2075
 msgid "Reset to default values"
-msgstr ""
+msgstr "Atstatyti į pradines reikšmes"
 
 #: mailpile/commands.py:2165
 msgid "Invalid keys"
-msgstr "Neveljavni ključi"
+msgstr "Neteisingi raktai"
 
 #: mailpile/commands.py:2172
 msgid "Displayed settings"
-msgstr "Prikazane nastavitve"
+msgstr ""
 
 #: mailpile/commands.py:2241
-#, python-format
+#, fuzzy, python-format
 msgid "Account not found: %s"
-msgstr ""
+msgstr "Papildinys neįkeltas: %s"
 
 #: mailpile/commands.py:2284
 msgid "Too many files"
-msgstr "Preveč datotek"
+msgstr "Per daug failų"
 
 #: mailpile/commands.py:2287
 #, python-format
 msgid "Failed to read: %s"
-msgstr ""
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/commands.py:2290
 #, fuzzy, python-format
 msgid "Not a mailbox: %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Nėra tokios pašto dėžutės: %s"
 
 #: mailpile/commands.py:2298
 #, fuzzy
 msgid "Add and configure mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Pridėta %d pašto dėžučių"
 
 #: mailpile/commands.py:2344
 #, fuzzy, python-format
 msgid "Configured %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Pridėta %d pašto dėžučių"
 
 #: mailpile/commands.py:2349
 msgid "Nothing was added"
-msgstr "Nič ni bilo dodano"
+msgstr "Nieko nepridėta"
 
 #: mailpile/commands.py:2398
 #, python-format
@@ -421,20 +425,24 @@ msgstr ""
 #: mailpile/commands.py:2494 mailpile/commands.py:2534
 #: mailpile/contrib/gui/gui.py:130
 msgid "Shutting down..."
-msgstr ""
+msgstr "Stabdoma..."
 
 #: mailpile/commands.py:2553
 #, python-format
 msgid "The Web interface address is: %s"
-msgstr "Naslov spletnega vmesnika: %s"
+msgstr "Žiniatinklio sąsajos adresas yra: %s"
 
 #: mailpile/commands.py:2556
+#, fuzzy
 msgid "The Web interface is disabled, type `www` to turn it on."
-msgstr ""
+msgstr "Žiniatinklio sąsaja yra išjungta."
 
 #: mailpile/commands.py:2562
+#, fuzzy
 msgid "Type `help` for instructions or `quit` to quit."
 msgstr ""
+"Norėdami pamatyti instrukcijas įveskite `help` arba spauskite <Ctrl-d>, "
+"norėdami baigti."
 
 #: mailpile/commands.py:2564
 msgid "Long running operations can be aborted by pressing: <CTRL-C>"
@@ -451,17 +459,17 @@ msgstr ""
 
 #: mailpile/commands.py:2589
 msgid "Commands:"
-msgstr "Ukazi:"
+msgstr "Komandos:"
 
 #: mailpile/commands.py:2623
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr "Oznake: (uporabi oznako kot ukaz za prikaz označenih sporočil)"
+msgstr ""
 
 #: mailpile/commands.py:2632 mailpile/www/jinjaextensions.py:261
 #: mailpile/www/jinjaextensions.py:418
 #: mailpile/www/default/html/jsapi/global/notifications.js:177
 msgid "Error"
-msgstr "Napaka"
+msgstr "Klaida"
 
 #: mailpile/commands.py:2661 mailpile/commands.py:2689
 msgid "Displayed help"
@@ -469,7 +477,7 @@ msgstr ""
 
 #: mailpile/commands.py:2666
 msgid "Unknown command"
-msgstr "Neznan ukaz"
+msgstr "Nežinoma komanda"
 
 #: mailpile/commands.py:2722
 msgid "(subsection)"
@@ -486,7 +494,7 @@ msgstr ""
 #: mailpile/commands.py:2801
 #, python-format
 msgid "Unknown command: %s"
-msgstr "Neznan ukaz: %s"
+msgstr "Nežinoma komanda: %s"
 
 #: mailpile/config.py:273
 msgid "true"
@@ -494,11 +502,11 @@ msgstr ""
 
 #: mailpile/config.py:273
 msgid "yes"
-msgstr "da"
+msgstr "taip"
 
 #: mailpile/config.py:273
 msgid "on"
-msgstr ""
+msgstr "įjungta"
 
 #: mailpile/config.py:276
 msgid "false"
@@ -506,16 +514,16 @@ msgstr ""
 
 #: mailpile/config.py:276
 msgid "no"
-msgstr ""
+msgstr "ne"
 
 #: mailpile/config.py:276
 msgid "off"
-msgstr ""
+msgstr "išjungta"
 
 #: mailpile/config.py:278
 #, python-format
 msgid "Invalid boolean: %s"
-msgstr ""
+msgstr "Neteisingas loginis: %s"
 
 #: mailpile/config.py:301
 #, python-format
@@ -523,39 +531,39 @@ msgid "Invalid URL slug: %s"
 msgstr ""
 
 #: mailpile/config.py:325
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid message delivery protocol: %s"
-msgstr ""
+msgstr "Neteisingas laiško tipas: %s"
 
 #: mailpile/config.py:387
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Neteisingas kompiuterio vardas: %s"
 
 #: mailpile/config.py:434
 #, python-format
 msgid "File/directory does not exist: %s"
-msgstr "Datoteka/mapa ne obstaja: %s"
+msgstr "Failo/katalogo nėra: %s"
 
 #: mailpile/config.py:473
 #, python-format
 msgid "Not a file: %s"
-msgstr "Ni datoteka: %s"
+msgstr "Nėra failas: %s"
 
 #: mailpile/config.py:491
 #, python-format
 msgid "Not a directory: %s"
-msgstr "Ni mapa: %s"
+msgstr "Nėra katalogas: %s"
 
 #: mailpile/config.py:529
 #, fuzzy, python-format
 msgid "Not a valid url: %s"
-msgstr "Ni datoteka: %s"
+msgstr "Nėra failas: %s"
 
 #: mailpile/config.py:541
 #, fuzzy, python-format
 msgid "Not a valid email: %s"
-msgstr "Ni datoteka: %s"
+msgstr "Nėra failas: %s"
 
 #: mailpile/config.py:577 mailpile/config.py:579 mailpile/config.py:584
 msgid "Not a GPG key ID or fingerprint"
@@ -563,12 +571,12 @@ msgstr ""
 
 #: mailpile/config.py:720
 msgid "Please override this method"
-msgstr ""
+msgstr "Prašome nustelbti šį metodą"
 
 #: mailpile/config.py:753
 #, python-format
 msgid "Only lists or dictionaries can contain dictionary values (key %s)."
-msgstr ""
+msgstr "Tik sąrašuose ar žodynuose gali būti žodyno reikšmės (raktas %s)."
 
 #: mailpile/config.py:763
 #, python-format
@@ -583,12 +591,12 @@ msgstr ""
 #: mailpile/config.py:781
 #, python-format
 msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
-msgstr ""
+msgstr "Neteisingas tipas \"%s\" raktui \"%s\" (reikšmė: %s)"
 
 #: mailpile/config.py:797
 #, python-format
 msgid "Invalid key for %s: %s"
-msgstr "Neveljavni ključ za %s: %s"
+msgstr ""
 
 #: mailpile/config.py:827
 #, python-format
@@ -598,17 +606,17 @@ msgstr ""
 #: mailpile/config.py:900
 #, python-format
 msgid "Modifying %s/%s is not allowed"
-msgstr "Spreminjanje %s/%s ni dovoljeno"
+msgstr "%s/%s modifikavimas nėra leidžiamas"
 
 #: mailpile/config.py:904 mailpile/config.py:917
 #, python-format
 msgid "Invalid value for %s/%s: %s"
-msgstr "Neveljavna vrednost za %s/%s: %s"
+msgstr ""
 
 #: mailpile/config.py:920
 #, python-format
 msgid "Unknown constraint for %s/%s: %s"
-msgstr "Neznana omejitev za %s/%s: %s"
+msgstr ""
 
 #: mailpile/config.py:1144
 msgid "Cannot append to fixed dict"
@@ -617,12 +625,12 @@ msgstr ""
 #: mailpile/config.py:1293
 #, python-format
 msgid "Creating: %s"
-msgstr "Ustvarjanje: %s"
+msgstr "Kuriama: %s"
 
 #: mailpile/config.py:1350
 #, python-format
 msgid "Invalid (%s): section %s does not exist"
-msgstr "Neveljavno (%s): oddelek %s ne obstaja"
+msgstr ""
 
 #: mailpile/config.py:1361
 #, python-format
@@ -632,39 +640,41 @@ msgstr ""
 #: mailpile/config.py:1511
 #, python-format
 msgid "Loading plugin: %s"
-msgstr ""
+msgstr "Įkeliamas papildinys: %s"
 
 #: mailpile/config.py:1513
 msgid "Processing manifests"
-msgstr ""
+msgstr "Apdorojami manifestai"
 
 #: mailpile/config.py:1747
 #, python-format
 msgid "No such mailbox: %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Nėra tokios pašto dėžutės: %s"
 
 #: mailpile/config.py:1872
 #, python-format
 msgid "%s: Updating: %s"
-msgstr "%s: Posodabljam: %s"
+msgstr "%s: Atnaujinama: %s"
 
 #: mailpile/config.py:1891
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: Odpiranje: %s (lahko traja nekaj časa)"
+msgstr "%s: Atidaroma: %s (gali šiek tiek užtrukti)"
 
 #: mailpile/config.py:1979
+#, fuzzy
 msgid "Please enter your password"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/config.py:2000
 msgid "Sent using Mailpile, Free Software from www.mailpile.is"
-msgstr "Poslano z Mailpile, prosto programsko opremo iz www.mailpile.is"
+msgstr ""
+"Išsiųsta, naudojant Mailpile, Laisvą Programinę Įrangą iš www.mailpile.is"
 
 #: mailpile/config.py:2041
-#, fuzzy, python-format
+#, python-format
 msgid "Route %s for %s does not exist."
-msgstr "Neveljavno (%s): oddelek %s ne obstaja"
+msgstr ""
 
 #: mailpile/config.py:2167
 msgid "Parent paths are not allowed"
@@ -672,16 +682,16 @@ msgstr ""
 
 #: mailpile/defaults.py:28
 msgid "Mailpile program version"
-msgstr "Različica Mailpile"
+msgstr "Mailpile programos versija"
 
 #: mailpile/defaults.py:29
 #, fuzzy
 msgid "Location of Mailpile data"
-msgstr "Mesto kartic vcard"
+msgstr "Įvykių žurnalo vieta"
 
 #: mailpile/defaults.py:30
 msgid "Configuration timestamp"
-msgstr "Časovni žig konfiguracije"
+msgstr "Konfigūracijos laiko žyma"
 
 #: mailpile/defaults.py:31
 msgid "Master symmetric encryption key"
@@ -689,11 +699,11 @@ msgstr ""
 
 #: mailpile/defaults.py:32
 msgid "Technical system settings"
-msgstr "Tehnične nastavitve sistema"
+msgstr "Techniniai sistemos nustatymai"
 
 #: mailpile/defaults.py:33
 msgid "Max files kept open at once"
-msgstr "Največje število odprtih datotek"
+msgstr ""
 
 #: mailpile/defaults.py:34
 msgid "History length (lines, <0=no save)"
@@ -701,11 +711,11 @@ msgstr ""
 
 #: mailpile/defaults.py:35
 msgid "Listening host for web UI"
-msgstr "Gostitelj za poslušanje za spletni vmesnik"
+msgstr ""
 
 #: mailpile/defaults.py:37
 msgid "Listening port for web UI"
-msgstr "Vrata za poslušanje za spletni vmesnik"
+msgstr ""
 
 #: mailpile/defaults.py:38
 msgid "HTTP path of web UI"
@@ -721,7 +731,7 @@ msgstr ""
 
 #: mailpile/defaults.py:41
 msgid "Max results we sort \"well\""
-msgstr "Največje število \"dobro\" razvrščenih rezultatov"
+msgstr ""
 
 #: mailpile/defaults.py:42
 msgid "Max length of metadata snippets"
@@ -729,11 +739,11 @@ msgstr ""
 
 #: mailpile/defaults.py:43
 msgid "Debugging flags"
-msgstr "Zastavice za razhroščevanje"
+msgstr "Derinimo vėliavėlės"
 
 #: mailpile/defaults.py:44
 msgid "Host:port of PGP keyserver"
-msgstr "Naslov:vrata strežnika s ključi PGP"
+msgstr ""
 
 #: mailpile/defaults.py:46
 msgid "Override the home directory of GnuPG"
@@ -745,11 +755,11 @@ msgstr ""
 
 #: mailpile/defaults.py:50
 msgid "Local read/write Maildir"
-msgstr "Krajevni poštni predal za branje/pisanje"
+msgstr ""
 
 #: mailpile/defaults.py:51
 msgid "Metadata index file"
-msgstr ""
+msgstr "Meta duomenų indekso failas"
 
 #: mailpile/defaults.py:52
 msgid "Search index directory"
@@ -757,7 +767,7 @@ msgstr ""
 
 #: mailpile/defaults.py:53
 msgid "Mailboxes we index"
-msgstr "Zabeleženi poštni predali"
+msgstr ""
 
 #: mailpile/defaults.py:54
 msgid "Plugins to load on startup"
@@ -769,15 +779,15 @@ msgstr ""
 
 #: mailpile/defaults.py:57
 msgid "Default theme"
-msgstr "Privzeta tema"
+msgstr "Numatytoji tema"
 
 #: mailpile/defaults.py:59
 msgid "Location of vcards"
-msgstr "Mesto kartic vcard"
+msgstr ""
 
 #: mailpile/defaults.py:60
 msgid "Location of event log"
-msgstr ""
+msgstr "Įvykių žurnalo vieta"
 
 #: mailpile/defaults.py:62
 msgid "Demo mode, disallow changes"
@@ -790,7 +800,7 @@ msgstr ""
 #: mailpile/defaults.py:64
 #, fuzzy
 msgid "Proxy settings"
-msgstr "Nastavitve"
+msgstr "Nerasta jokių nustatymų"
 
 #: mailpile/defaults.py:65
 msgid "Proxy protocol"
@@ -803,7 +813,7 @@ msgstr ""
 #: mailpile/defaults.py:69 mailpile/defaults.py:136 mailpile/defaults.py:157
 #: mailpile/www/default/html/jsapi/setup/sources.js:32
 msgid "User name"
-msgstr ""
+msgstr "Naudotojo vardas"
 
 #: mailpile/defaults.py:70 mailpile/defaults.py:137 mailpile/defaults.py:158
 #: mailpile/www/default/html/jsapi/setup/sending.js:25
@@ -816,7 +826,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_settings.html:16
 #: mailpile/www/default/html/setup/partials/sources_settings.html:57
 msgid "Password"
-msgstr "Geslo"
+msgstr "Slaptažodis"
 
 #: mailpile/defaults.py:71 mailpile/defaults.py:140 mailpile/defaults.py:160
 #: mailpile/www/default/html/jsapi/setup/sources.js:40
@@ -830,15 +840,15 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_settings.html:24
 #: mailpile/www/default/html/setup/partials/sources_settings.html:78
 msgid "Port"
-msgstr "Vrata"
+msgstr "Prievadas"
 
 #: mailpile/defaults.py:75
 msgid "User preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Naudotojo nuostatos"
 
 #: mailpile/defaults.py:76
 msgid "Search results per page"
-msgstr "Število zadetkov na stran"
+msgstr "Paieškos rezultatų viename puslapyje"
 
 #: mailpile/defaults.py:77
 msgid "Misc. data refresh frequency"
@@ -854,11 +864,11 @@ msgstr ""
 
 #: mailpile/defaults.py:80
 msgid "Inline PGP signatures or attached"
-msgstr "Medvrstični podpis PGP ali podpis v priponki"
+msgstr ""
 
 #: mailpile/defaults.py:82
 msgid "Encrypt local data to ..."
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Užšifruoti vietinius duomenis į ..."
 
 #: mailpile/defaults.py:83
 msgid "Attach public key to outgoing messages?"
@@ -870,7 +880,7 @@ msgstr ""
 
 #: mailpile/defaults.py:88
 msgid "Default encryption policy for outgoing mail"
-msgstr ""
+msgstr "Numatytoji išsiunčiamo pašto šifravimo politika"
 
 #: mailpile/defaults.py:90
 msgid "Use inline PGP when possible"
@@ -878,7 +888,7 @@ msgstr ""
 
 #: mailpile/defaults.py:91
 msgid "Default sort order"
-msgstr "Privzeto pravilo razvrščanja"
+msgstr "Numatytoji rikiavimo tvarka"
 
 #: mailpile/defaults.py:92
 msgid "Key to use to scramble the index"
@@ -886,12 +896,12 @@ msgstr ""
 
 #: mailpile/defaults.py:93
 msgid "Make encrypted content searchable"
-msgstr "Ustvari možnost iskanja po šifriranih vsebinah"
+msgstr ""
 
 #: mailpile/defaults.py:95
 #, fuzzy
 msgid "Encrypt locally stored mail"
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Užšifruoti vietinius duomenis į ..."
 
 #: mailpile/defaults.py:96
 msgid "Encrypt the local search index"
@@ -902,13 +912,14 @@ msgid "Encrypt the contact database"
 msgstr ""
 
 #: mailpile/defaults.py:98
+#, fuzzy
 msgid "Encrypt the event log"
-msgstr ""
+msgstr "Įvykių žurnalo vieta"
 
 #: mailpile/defaults.py:99
 #, fuzzy
 msgid "Encrypt misc. local data"
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Užšifruoti vietinius duomenis į ..."
 
 #: mailpile/defaults.py:100
 msgid "Command run before rescanning"
@@ -916,11 +927,11 @@ msgstr ""
 
 #: mailpile/defaults.py:101
 msgid "Default outgoing e-mail address"
-msgstr "Privzeti odhodni naslov"
+msgstr ""
 
 #: mailpile/defaults.py:102 mailpile/defaults.py:106
 msgid "Default outgoing mail route"
-msgstr "Privzeta odhodna pot"
+msgstr ""
 
 #: mailpile/defaults.py:103
 msgid "Target line length, <40 disables reflow"
@@ -932,19 +943,19 @@ msgstr ""
 
 #: mailpile/defaults.py:107
 msgid "User interface language"
-msgstr "Jezik uporabniškega vmesnika"
+msgstr "Naudotojo sąsajos kalba"
 
 #: mailpile/defaults.py:108
 msgid "VCard import/export settings"
-msgstr "Nastavitve uvoza/izvoza kartic vCard"
+msgstr ""
 
 #: mailpile/defaults.py:109
 msgid "VCard import settings"
-msgstr "Nastavitve uvoza kartic vCard"
+msgstr ""
 
 #: mailpile/defaults.py:110
 msgid "VCard export settings"
-msgstr "Nastavitve izvoza kartic vCard"
+msgstr ""
 
 #: mailpile/defaults.py:111
 msgid "VCard context helper settings"
@@ -953,7 +964,7 @@ msgstr ""
 #: mailpile/defaults.py:114
 #, fuzzy
 msgid "Web Interface Preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Naudotojo nuostatos"
 
 #: mailpile/defaults.py:115
 msgid "User completed setup experience"
@@ -966,7 +977,7 @@ msgstr ""
 #: mailpile/defaults.py:117
 #, fuzzy
 msgid "Quote replies to messages"
-msgstr "Sporočila so bila označena"
+msgstr "Ištrinti Laiškai"
 
 #: mailpile/defaults.py:118
 msgid "Nag user to backup their key"
@@ -985,8 +996,9 @@ msgid "Credentials allowed to access Mailpile"
 msgstr ""
 
 #: mailpile/defaults.py:123
+#, fuzzy
 msgid "Salted and hashed password"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/defaults.py:125
 msgid "Secrets the user wants saved"
@@ -997,8 +1009,9 @@ msgid "A secret"
 msgstr ""
 
 #: mailpile/defaults.py:127
+#, fuzzy
 msgid "Security policy"
-msgstr ""
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/defaults.py:131
 msgid "Outgoing message routes"
@@ -1010,7 +1023,7 @@ msgstr ""
 
 #: mailpile/defaults.py:133
 msgid "Messaging protocol"
-msgstr ""
+msgstr "Laiškų perdavimo protokolas"
 
 #: mailpile/defaults.py:138 mailpile/defaults.py:159
 msgid "Authentication scheme"
@@ -1020,7 +1033,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sending.js:28
 #: mailpile/www/default/html/profiles/account-form.html:374
 msgid "Shell command"
-msgstr ""
+msgstr "Apvalkalo komanda"
 
 #: mailpile/defaults.py:143
 msgid "Incoming message sources"
@@ -1039,8 +1052,9 @@ msgid "Is this mail source enabled?"
 msgstr ""
 
 #: mailpile/defaults.py:147
+#, fuzzy
 msgid "Mail source protocol"
-msgstr ""
+msgstr "Laiškų perdavimo protokolas"
 
 #: mailpile/defaults.py:154
 msgid "Shell command run before syncing"
@@ -1053,7 +1067,7 @@ msgstr ""
 #: mailpile/defaults.py:156
 #: mailpile/www/default/html/jsapi/setup/sources.js:53
 msgid "How frequently to check for mail"
-msgstr ""
+msgstr "Kaip dažnai tikrinti paštą"
 
 #: mailpile/defaults.py:162
 msgid "Keep server connections alive"
@@ -1076,11 +1090,12 @@ msgstr ""
 #: mailpile/defaults.py:168
 #: mailpile/www/default/html/jsapi/setup/sources.js:69
 msgid "Copy mail to a local mailbox?"
-msgstr ""
+msgstr "Kopijuoti paštą į vietinę pašto dėžutę?"
 
 #: mailpile/defaults.py:169
+#, fuzzy
 msgid "Parent tag for mailbox tags"
-msgstr ""
+msgstr "Sukurti kiekvienai pašto dėžutei žymę?"
 
 #: mailpile/defaults.py:170
 msgid "Guess which local tags match"
@@ -1089,7 +1104,7 @@ msgstr ""
 #: mailpile/defaults.py:171
 #: mailpile/www/default/html/jsapi/setup/sources.js:73
 msgid "Create a tag for each mailbox?"
-msgstr ""
+msgstr "Sukurti kiekvienai pašto dėžutei žymę?"
 
 #: mailpile/defaults.py:172
 msgid "Make tags visible by default?"
@@ -1103,11 +1118,11 @@ msgstr ""
 #: mailpile/defaults.py:174 mailpile/defaults.py:185
 #: mailpile/www/default/html/jsapi/setup/sources.js:81
 msgid "Tags applied to messages"
-msgstr "Sporočila so bila označena"
+msgstr ""
 
 #: mailpile/defaults.py:176
 msgid "Mailboxes"
-msgstr ""
+msgstr "Pašto dėžutės"
 
 #: mailpile/defaults.py:177
 msgid "The name of this mailbox"
@@ -1123,7 +1138,7 @@ msgstr ""
 
 #: mailpile/defaults.py:182
 msgid "Local mailbox path"
-msgstr ""
+msgstr "Vietinės pašto dėžutės kelias"
 
 #: mailpile/defaults.py:183
 msgid "Is a source of new mail"
@@ -1135,19 +1150,19 @@ msgstr ""
 
 #: mailpile/httpd.py:250
 msgid "XMLRPC has been disabled for now."
-msgstr "XMLRPC je trenutno onemogočen."
+msgstr ""
 
 #: mailpile/httpd.py:272
 msgid "OMG, input too big"
-msgstr "OMB, vnos je prevelik"
+msgstr "OHO, įvestis pernelyg didelė"
 
 #: mailpile/httpd.py:275
 msgid "Unknown content-type"
-msgstr "Neznana vrsta vsebine"
+msgstr "Nežinomas turinio tipas"
 
 #: mailpile/httpd.py:281
 msgid "Internal Error"
-msgstr "Notranja Napaka"
+msgstr "Vidinė Klaida"
 
 #: mailpile/httpd.py:318
 msgid "File not found (invalid path)"
@@ -1159,12 +1174,12 @@ msgstr ""
 
 #: mailpile/httpd.py:429 mailpile/mail_source/__init__.py:301
 msgid "Internal error"
-msgstr "Notranja napaka"
+msgstr "Vidinė klaida"
 
 #: mailpile/i18n.py:132
-#, python-format
+#, fuzzy, python-format
 msgid "Loaded language %s"
-msgstr ""
+msgstr "Įkelti papildiniai: %s"
 
 #: mailpile/mailutils.py:46
 #, python-format
@@ -1174,7 +1189,7 @@ msgstr ""
 #: mailpile/mailutils.py:296
 #, fuzzy, python-format
 msgid "Unknown crypto policy: %s"
-msgstr "Neznan vrstni red razvrščanja: %s"
+msgstr "Nežinoma rikiavimo tvarka: %s"
 
 #: mailpile/mailutils.py:632 mailpile/mailutils.py:710
 #: mailpile/mailutils.py:915 mailpile/mailutils.py:925
@@ -1183,31 +1198,31 @@ msgstr ""
 
 #: mailpile/mailutils.py:853
 msgid "Message not found?"
-msgstr "Sporočilo ni bilo najdeno?"
+msgstr "Laiškas nerastas?"
 
 #: mailpile/mailutils.py:972
 #, python-format
 msgid "Extracted attachment %s"
-msgstr "Razširjena priloga %s"
+msgstr ""
 
 #: mailpile/mailutils.py:985
 #, python-format
 msgid "Wrote preview to: %s"
-msgstr "Predogled zapisan v: %s"
+msgstr ""
 
 #: mailpile/mailutils.py:987
 msgid "Failed to generate thumbnail"
-msgstr "Spodletelo ustvarjanje sličice"
+msgstr "Nepavyko sukurti miniatiūros"
 
 #: mailpile/mailutils.py:993
 #, python-format
 msgid "Wrote attachment to: %s"
-msgstr "Priloga zapisana v: %s"
+msgstr ""
 
 #: mailpile/mailutils.py:998
 #, python-format
 msgid "No attachments found for: %s"
-msgstr "Ni bila najdena nobena priloga za: %s"
+msgstr ""
 
 #: mailpile/mailutils.py:1050
 msgid "(Invalid HTML suppressed)"
@@ -1215,7 +1230,7 @@ msgstr ""
 
 #: mailpile/mailutils.py:1230
 msgid "[Binary data suppressed]\n"
-msgstr ""
+msgstr "[Dvejetainiai duomenys nuslopinti]\n"
 
 #: mailpile/postinglist.py:37
 #, python-format
@@ -1233,11 +1248,11 @@ msgstr ""
 #: mailpile/search.py:170
 #, fuzzy
 msgid "(deleted)"
-msgstr "Izbriši"
+msgstr "Ištrinti"
 
 #: mailpile/search.py:257 mailpile/search.py:273
 msgid "Loading metadata index..."
-msgstr ""
+msgstr "Įkeliamas meta duomenų indeksas..."
 
 #: mailpile/search.py:265
 msgid "Your metadata index is either too old, too new or corrupt!"
@@ -1245,12 +1260,12 @@ msgstr ""
 
 #: mailpile/search.py:269
 msgid "Corrupt data in metadata index! Trying to cope..."
-msgstr ""
+msgstr "Sugadinti duomenys meta duomenų indekse! Bandoma sutvarkyti..."
 
 #: mailpile/search.py:292
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr ""
+msgstr "Meta duomenų indeksas nerastas: %s"
 
 #: mailpile/search.py:295
 msgid "Loading global posting list..."
@@ -1263,7 +1278,7 @@ msgstr ""
 
 #: mailpile/search.py:360
 msgid "Saving metadata index changes..."
-msgstr ""
+msgstr "Išsaugomi meta duomenų indekso pakeitimai..."
 
 #: mailpile/search.py:379
 msgid "Saved metadata index changes"
@@ -1271,11 +1286,11 @@ msgstr ""
 
 #: mailpile/search.py:396
 msgid "Saving metadata index..."
-msgstr ""
+msgstr "Išsaugomas meta duomenų indeksas..."
 
 #: mailpile/search.py:423
 msgid "Saved metadata index"
-msgstr ""
+msgstr "Meta duomenų indeksas išsaugotas"
 
 #: mailpile/search.py:434
 msgid "Updating high level indexes"
@@ -1299,22 +1314,22 @@ msgstr ""
 #: mailpile/search.py:631
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
-msgstr "OPOZORILO: Ni ustreznega IDja sporočila za %s"
+msgstr ""
 
 #: mailpile/search.py:680
 #, python-format
 msgid "%s: Skipped: %s"
-msgstr "%s: Preskočeno: %s"
+msgstr ""
 
 #: mailpile/search.py:683
 #, python-format
 msgid "%s: Checking: %s"
-msgstr "%s: Preverjanje: %s"
+msgstr ""
 
 #: mailpile/search.py:689
 #, python-format
 msgid "%s: Error opening: %s (%s)"
-msgstr "%s: Napaka pri odpiranju: %s (%s)"
+msgstr ""
 
 #: mailpile/search.py:700
 #, python-format
@@ -1329,7 +1344,7 @@ msgstr ""
 #: mailpile/search.py:705
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
-msgstr "%s: Branje vaše pošte: %d%% (%d/%d sporočil)"
+msgstr ""
 
 #: mailpile/search.py:734
 #, python-format
@@ -1343,7 +1358,7 @@ msgstr ""
 
 #: mailpile/search.py:969
 msgid "(processing message ...)"
-msgstr ""
+msgstr "(apdorojamas laiškas ...)"
 
 #: mailpile/search.py:1289
 #, python-format
@@ -1358,7 +1373,7 @@ msgstr ""
 #: mailpile/search.py:1725
 #, python-format
 msgid "Searching for %s"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/search.py:1754
 #, python-format
@@ -1371,12 +1386,12 @@ msgstr ""
 
 #: mailpile/search.py:1925
 msgid "Please tell team@mailpile.is !"
-msgstr "Povejte na team@mailpile.is !"
+msgstr "Prašome pranešti team@mailpile.is !"
 
 #: mailpile/search.py:1934
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Neznan vrstni red razvrščanja: %s"
+msgstr "Nežinoma rikiavimo tvarka: %s"
 
 #: mailpile/search.py:1939
 msgid "Sort failed, sorting badly. Partial index?"
@@ -1384,7 +1399,7 @@ msgstr ""
 
 #: mailpile/search.py:1947
 msgid "Collapsing conversations..."
-msgstr ""
+msgstr "Suskleidžiami pokalbiai..."
 
 #: mailpile/smtp_client.py:187
 #, python-format
@@ -1394,7 +1409,7 @@ msgstr ""
 #: mailpile/smtp_client.py:193
 #, python-format
 msgid "Connecting to %s"
-msgstr "Povezujem se na %s"
+msgstr "Jungiamasi prie %s"
 
 #: mailpile/smtp_client.py:206
 #, python-format
@@ -1407,13 +1422,14 @@ msgid "SMTP connection to: %s:%s as %s\n"
 msgstr ""
 
 #: mailpile/smtp_client.py:273
+#, fuzzy
 msgid "Bad character in username or password"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/smtp_client.py:277 mailpile/mail_source/imap.py:691
 #: mailpile/mail_source/pop3.py:87
 msgid "Invalid username or password"
-msgstr ""
+msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
 #: mailpile/smtp_client.py:280
 msgid "Sender rejected by SMTP server"
@@ -1422,7 +1438,7 @@ msgstr ""
 #: mailpile/smtp_client.py:288
 #, python-format
 msgid "Server rejected recpient: %s"
-msgstr ""
+msgstr "Serveris atmetė gavėją: %s"
 
 #: mailpile/smtp_client.py:291
 #, python-format
@@ -1440,26 +1456,26 @@ msgstr ""
 
 #: mailpile/smtp_client.py:323
 msgid "Preparing message..."
-msgstr "Pripravljam sporočilo ..."
+msgstr "Ruošiamas laiškas..."
 
 #: mailpile/smtp_client.py:329
 msgid "Quitting"
-msgstr ""
+msgstr "Baigiama"
 
 #: mailpile/ui.py:314
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
-msgstr "Poteklo: %.3fs (%s)"
+msgstr ""
 
 #: mailpile/ui.py:320
-#, fuzzy, python-format
+#, python-format
 msgid "Elapsed: %.3fs"
-msgstr "Poteklo: %.3fs (%s)"
+msgstr ""
 
 #: mailpile/ui.py:501 mailpile/ui.py:516
 #, fuzzy
 msgid "Template not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Laiškas nerastas"
 
 #: mailpile/ui.py:508 mailpile/ui.py:523
 msgid "Template error"
@@ -1480,12 +1496,12 @@ msgstr ""
 
 #: mailpile/util.py:552
 msgid "now"
-msgstr ""
+msgstr "dabar"
 
 #: mailpile/util.py:554
 #, python-format
 msgid "%d mins"
-msgstr ""
+msgstr "%d min."
 
 #: mailpile/util.py:556
 #, python-format
@@ -1502,8 +1518,9 @@ msgid "Monday"
 msgstr ""
 
 #: mailpile/util.py:568
+#, fuzzy
 msgid "Mon"
-msgstr ""
+msgstr "įjungta"
 
 #: mailpile/util.py:568
 msgid "Tuesday"
@@ -1558,8 +1575,9 @@ msgid "January"
 msgstr ""
 
 #: mailpile/util.py:572
+#, fuzzy
 msgid "Jan"
-msgstr ""
+msgstr "ir"
 
 #: mailpile/util.py:572
 msgid "February"
@@ -1570,9 +1588,8 @@ msgid "Feb"
 msgstr ""
 
 #: mailpile/util.py:573
-#, fuzzy
 msgid "March"
-msgstr "Išči"
+msgstr ""
 
 #: mailpile/util.py:573
 msgid "Mar"
@@ -1652,23 +1669,24 @@ msgid "Line number %s is out of range"
 msgstr ""
 
 #: mailpile/vcard.py:1494
+#, fuzzy
 msgid "Generating new VCards"
-msgstr ""
+msgstr "Kuriamas rezultatas"
 
 #: mailpile/vcard.py:1501
-#, fuzzy, python-format
+#, python-format
 msgid "Merging %s"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/vcard.py:1531
 #, fuzzy, python-format
 msgid "Failed to merge VCard %s into %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/vcard.py:1547
 #, fuzzy, python-format
 msgid "Failed to create new VCard for %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/vcard.py:1555
 #, python-format
@@ -1678,20 +1696,21 @@ msgstr ""
 #: mailpile/vfs.py:316
 #, fuzzy
 msgid "My Files"
-msgstr "Datoteke"
+msgstr "Failai"
 
 #: mailpile/vfs.py:332
 msgid "Unix mail spool"
 msgstr ""
 
 #: mailpile/vfs.py:384
+#, fuzzy
 msgid "Mailpile VFS"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/contrib/datadig/datadig.py:36
 #, fuzzy
 msgid "Nothing Happened"
-msgstr " Brez sprememb"
+msgstr "Niekas nepasikeitė"
 
 #: mailpile/contrib/datadig/datadig.py:127
 #: mailpile/contrib/datadig/datadig.py:130
@@ -1700,17 +1719,17 @@ msgid "Digging into =%s"
 msgstr ""
 
 #: mailpile/contrib/datadig/datadig.py:138
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d rows in %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr ""
 
 #: mailpile/contrib/demos/demos.py:45
 msgid "Demo Contacts"
-msgstr "Vzročni stiki"
+msgstr ""
 
 #: mailpile/contrib/demos/demos.py:46
 msgid "This is the demo importer"
-msgstr "To je vzorčni uvoznik"
+msgstr ""
 
 #: mailpile/contrib/demos/demos.py:49
 msgid "Activate demo importer"
@@ -1718,11 +1737,11 @@ msgstr ""
 
 #: mailpile/contrib/demos/demos.py:50
 msgid "Contact name"
-msgstr "Ime stika"
+msgstr "Kontakto vardas"
 
 #: mailpile/contrib/demos/demos.py:51
 msgid "Contact email"
-msgstr "E-pošta stika"
+msgstr "Kontakto el. paštas"
 
 #: mailpile/contrib/demos/demos.py:112
 msgid "I refuse to work with empty or gross data"
@@ -1737,22 +1756,24 @@ msgid "Generated graph view"
 msgstr ""
 
 #: mailpile/contrib/gui/gui.py:76
+#, fuzzy
 msgid "Starting up ..."
-msgstr ""
+msgstr "Stabdoma..."
 
 #: mailpile/contrib/gui/gui.py:79
 #, fuzzy
 msgid "Open Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Mailpile"
 
 #: mailpile/contrib/gui/gui.py:84
+#, fuzzy
 msgid "Quit"
-msgstr ""
+msgstr "Baigiama"
 
 #: mailpile/contrib/gui/gui.py:137
 #, fuzzy, python-format
 msgid "%d messages"
-msgstr "Poslano %d sporočil"
+msgstr "Laiškų nėra!"
 
 #: mailpile/contrib/hacks/hacks.py:60
 msgid "Tried to fix metadata index"
@@ -1760,62 +1781,60 @@ msgstr ""
 
 #: mailpile/contrib/hacks/hacks.py:135
 msgid "Displayed raw metadata"
-msgstr "Prikazani neobdelani meta-podatki"
+msgstr ""
 
 #: mailpile/contrib/hacks/hacks.py:154
-#, fuzzy
 msgid "Displayed message keywords"
-msgstr "Prikazano sporočil: %d"
+msgstr ""
 
 #: mailpile/contrib/hacks/hacks.py:170
-#, fuzzy
 msgid "Displayed message HeaderPrint"
-msgstr "Prikazano sporočil: %d"
+msgstr ""
 
 #: mailpile/contrib/i18nhelper/i18nhelper.py:19
 #, fuzzy
 msgid "Nothing recently translated"
-msgstr " Brez sprememb"
+msgstr "Niekas nepasikeitė"
 
 #: mailpile/crypto/gpgi.py:35
 msgid "Trust not calculated"
-msgstr "Zaupanje ni izračunano"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:36
 msgid "Unknown trust"
-msgstr "Neznano zaupanje"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:37
 msgid "Undefined trust"
-msgstr "Nedoločeno zaupanje"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:38
 msgid "Never trust"
-msgstr "Nikoli ne zaupaj"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:39
 msgid "Marginally trust"
-msgstr "Delno zaupanje"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:40
 msgid "Full trust"
-msgstr "Polno zaupanje"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:41
 msgid "Ultimate trust"
-msgstr "Popolno zaupanje"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:42
 msgid "Expired key, not trusted"
-msgstr "Potekel ključ, ni vreden zaupanja"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:43
 msgid "Disabled key, not trusted"
-msgstr "Onemogočen ključ, ni vreden zaupanja"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:44
 msgid "Revoked key, not trusted"
-msgstr "Preklican ključ, ni vreden zaupanja"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:46
 msgid "RSA"
@@ -1823,15 +1842,15 @@ msgstr "RSA"
 
 #: mailpile/crypto/gpgi.py:47
 msgid "RSA (encrypt only)"
-msgstr "RSA (zgolj šifriraj)"
+msgstr "RSA (tik užšifruoti)"
 
 #: mailpile/crypto/gpgi.py:48
 msgid "RSA (sign only)"
-msgstr "RSA (zgolj podpiši)"
+msgstr "RSA (tik pasirašyti)"
 
 #: mailpile/crypto/gpgi.py:49
 msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (zgolj šifriraj)"
+msgstr "Elgamal (tik užšifruoti)"
 
 #: mailpile/crypto/gpgi.py:50
 msgid "DSA"
@@ -1839,7 +1858,7 @@ msgstr "DSA"
 
 #: mailpile/crypto/gpgi.py:51
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (šifriraj/podpiši) [OGROŽEN]"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:52
 msgid "EdDSA"
@@ -1858,9 +1877,9 @@ msgid "Unlock your encryption key"
 msgstr ""
 
 #: mailpile/crypto/gpgi.py:1052
-#, fuzzy, python-format
+#, python-format
 msgid "Keys missing for %s"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1056
 #, python-format
@@ -1869,12 +1888,12 @@ msgstr ""
 
 #: mailpile/crypto/mime.py:357
 msgid "Failed to sign message!"
-msgstr ""
+msgstr "Nepavyko pasirašyti laiško!"
 
 #: mailpile/crypto/mime.py:419
 #, fuzzy
 msgid "Failed to encrypt message!"
-msgstr "Dodajanje sporočila neuspešno"
+msgstr "Nepavyko pasirašyti laiško!"
 
 #: mailpile/mail_source/__init__.py:147
 msgid "Starting up"
@@ -1882,33 +1901,34 @@ msgstr ""
 
 #: mailpile/mail_source/__init__.py:149
 #: mailpile/www/default/html/setup/partials/sources_settings.html:2
+#, fuzzy
 msgid "Mail Source"
-msgstr ""
+msgstr "Pašto dėžutės"
 
 #: mailpile/mail_source/__init__.py:201
 #, python-format
 msgid "Interrupted: %s"
-msgstr ""
+msgstr "Pertraukta: %s"
 
 #: mailpile/mail_source/__init__.py:312
 #, fuzzy, python-format
 msgid "Discovered %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Pridėta %d pašto dėžučių"
 
 #: mailpile/mail_source/__init__.py:314
 #, fuzzy, python-format
 msgid "Processed %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Pridėta %d pašto dėžučių"
 
 #: mailpile/mail_source/__init__.py:316
 #, fuzzy, python-format
 msgid "Failed to process %d"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/mail_source/__init__.py:318
 #, fuzzy, python-format
 msgid "No new mail at %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Nėra tokios pašto dėžutės: %s"
 
 #: mailpile/mail_source/__init__.py:359
 msgid "Checking for new mailboxes"
@@ -1922,12 +1942,12 @@ msgstr ""
 #: mailpile/mail_source/__init__.py:501
 #, fuzzy, python-format
 msgid "Mail: %s"
-msgstr "Ni datoteka: %s"
+msgstr "Nėra failas: %s"
 
 #: mailpile/mail_source/__init__.py:691
 #, fuzzy, python-format
 msgid "Copying message: %s"
-msgstr "Pošiljam sporočilo"
+msgstr "Siunčiamas laiškas"
 
 #: mailpile/mail_source/__init__.py:783
 #, python-format
@@ -1935,9 +1955,9 @@ msgid "Copying up to %d e-mails from %s"
 msgstr ""
 
 #: mailpile/mail_source/__init__.py:794
-#, fuzzy, python-format
+#, python-format
 msgid "Updating search engine for %s"
-msgstr "Optimiziran iskalnik"
+msgstr ""
 
 #: mailpile/mail_source/__init__.py:875
 msgid "Internal error!  Sleeping..."
@@ -1945,7 +1965,7 @@ msgstr ""
 
 #: mailpile/mail_source/__init__.py:886 mailpile/mail_source/__init__.py:929
 msgid "Shut down"
-msgstr ""
+msgstr "Stabdyti"
 
 #: mailpile/mail_source/__init__.py:959
 #, python-format
@@ -1954,11 +1974,11 @@ msgstr ""
 
 #: mailpile/mail_source/imap.py:344
 msgid "Failed to add message"
-msgstr "Dodajanje sporočila neuspešno"
+msgstr "Nepavyko pridėti laiško"
 
 #: mailpile/mail_source/imap.py:350
 msgid "Failed to remove message"
-msgstr ""
+msgstr "Nepavyko pašalinti laiško"
 
 #: mailpile/mail_source/imap.py:370
 msgid "Mailbox is out of sync"
@@ -1974,14 +1994,15 @@ msgid "Failed to list mailbox contents"
 msgstr ""
 
 #: mailpile/mail_source/imap.py:521
+#, fuzzy
 msgid "Not connected to IMAP server."
-msgstr ""
+msgstr "Prisijungta prie IMAP serverio %s"
 
 #: mailpile/mail_source/imap.py:598 mailpile/mail_source/imap.py:639
 #: mailpile/mail_source/pop3.py:49 mailpile/mail_source/pop3.py:76
 #, fuzzy
 msgid "Nothing is wrong"
-msgstr "Ni rezultatov"
+msgstr "Nieko Nerasta"
 
 #: mailpile/mail_source/imap.py:679
 msgid "Failed to STARTTLS"
@@ -1990,7 +2011,7 @@ msgstr ""
 #: mailpile/mail_source/imap.py:719
 #, python-format
 msgid "Connected to IMAP server %s"
-msgstr ""
+msgstr "Prisijungta prie IMAP serverio %s"
 
 #: mailpile/mail_source/imap.py:733
 msgid "Connection timed out"
@@ -1998,16 +2019,16 @@ msgstr ""
 
 #: mailpile/mail_source/imap.py:737
 msgid "An IMAP protocol error occurred"
-msgstr ""
+msgstr "Įvyko IMAP protokolo klaida"
 
 #: mailpile/mail_source/imap.py:741 mailpile/mail_source/pop3.py:89
 msgid "A network error occurred"
-msgstr ""
+msgstr "Įvyko tinklo klaida"
 
 #: mailpile/mail_source/local.py:18
 #, fuzzy
 msgid "Local mailboxes"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Vietinės pašto dėžutės kelias"
 
 #: mailpile/mail_source/local.py:39
 #, python-format
@@ -2026,11 +2047,11 @@ msgstr ""
 
 #: mailpile/mailboxes/mbox.py:144 mailpile/mailboxes/mbox.py:149
 msgid "No data found"
-msgstr "Ni bilo najdenih podatkov"
+msgstr "Duomenų nerasta"
 
 #: mailpile/mailboxes/mbox.py:178
 msgid "Message not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Laiškas nerastas"
 
 #: mailpile/mailboxes/wervd.py:123
 msgid "Could not find a filename for the message."
@@ -2039,7 +2060,7 @@ msgstr ""
 #: mailpile/mailboxes/wervd.py:143
 #, python-format
 msgid "Invalid message type: %s"
-msgstr ""
+msgstr "Neteisingas laiško tipas: %s"
 
 #: mailpile/mailboxes/wervd.py:146
 msgid "Mailbox messages are immutable"
@@ -2081,22 +2102,22 @@ msgstr ""
 #: mailpile/plugins/autotag.py:310
 #, python-format
 msgid "Unknown tag: %s"
-msgstr ""
+msgstr "Nežinoma žymė: %s"
 
 #: mailpile/plugins/autotag.py:326
 #, python-format
 msgid "Classified %d messages"
-msgstr "Razvrščenih sporočil: %d"
+msgstr ""
 
 #: mailpile/plugins/autotag.py:361
 #, python-format
 msgid "Auto-tagged %d messages"
-msgstr "Avto-označenih sporočil: %d"
+msgstr ""
 
 #: mailpile/plugins/compose.py:42
 #, python-format
 msgid "Sent: %s"
-msgstr "Poslano: %s"
+msgstr ""
 
 #: mailpile/plugins/compose.py:188
 msgid "Cannot update from multiple files"
@@ -2118,7 +2139,7 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:302
 msgid "No messages!"
-msgstr "Ni sporočil!"
+msgstr "Laiškų nėra!"
 
 #: mailpile/plugins/compose.py:309
 #, python-format
@@ -2132,7 +2153,7 @@ msgstr ""
 #: mailpile/plugins/compose.py:485
 #, python-format
 msgid "%s wrote:"
-msgstr ""
+msgstr "%s rašė:"
 
 #: mailpile/plugins/compose.py:498
 #, python-format
@@ -2146,7 +2167,7 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:552
 msgid "You must configure a From address first."
-msgstr "Najprej morate izpolni ti polje \"Od\""
+msgstr ""
 
 #: mailpile/plugins/compose.py:561 mailpile/plugins/compose.py:665
 msgid "No message found"
@@ -2158,11 +2179,11 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:706
 msgid "No files found"
-msgstr "Ne najdem nobenih datotek"
+msgstr "Failų nerasta"
 
 #: mailpile/plugins/compose.py:713 mailpile/plugins/compose.py:777
 msgid "No messages selected"
-msgstr "Ni izbranih sporočil"
+msgstr ""
 
 #: mailpile/plugins/compose.py:728 mailpile/plugins/compose.py:793
 #, python-format
@@ -2175,9 +2196,9 @@ msgid "Error attaching to %s"
 msgstr ""
 
 #: mailpile/plugins/compose.py:734
-#, fuzzy, python-format
+#, python-format
 msgid "Attached %s to %d messages, failed %d"
-msgstr "Avto-označenih sporočil: %d"
+msgstr ""
 
 #: mailpile/plugins/compose.py:737
 #, python-format
@@ -2195,35 +2216,35 @@ msgid "Removed %s from %d messages, failed %d"
 msgstr ""
 
 #: mailpile/plugins/compose.py:802
-#, fuzzy, python-format
+#, python-format
 msgid "Removed %s from %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr ""
 
 #: mailpile/plugins/compose.py:883
 msgid "Sending message"
-msgstr "Pošiljam sporočilo"
+msgstr "Siunčiamas laiškas"
 
 #: mailpile/plugins/compose.py:918
 #, python-format
 msgid "Failed to send %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Nepavyko išsiųsti %s"
 
 #: mailpile/plugins/compose.py:943
 #, python-format
 msgid "Sent %d messages"
-msgstr "Poslano %d sporočil"
+msgstr ""
 
 #: mailpile/plugins/compose.py:945
 msgid "Nothing was sent"
-msgstr "Nič ni bilo poslano"
+msgstr "Nieko nebuvo išsiųsta"
 
 #: mailpile/plugins/compose.py:967 mailpile/plugins/compose.py:1037
 msgid "Nothing to do!"
-msgstr ""
+msgstr "Nėra ką atlikti!"
 
 #: mailpile/plugins/compose.py:971
 msgid "Failed to attach files"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Nepavyko pridėti failų"
 
 #: mailpile/plugins/compose.py:977
 #, python-format
@@ -2241,7 +2262,7 @@ msgstr ""
 #: mailpile/plugins/compose.py:1000
 #, fuzzy
 msgid "Could not sign message"
-msgstr "Prikazano eno samo sporočilo"
+msgstr "Nepavyko pasirašyti laiško!"
 
 #: mailpile/plugins/compose.py:1035
 #, python-format
@@ -2258,7 +2279,7 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:1071
 msgid "Delay between attempts to send mail"
-msgstr "Odlog med poskusi pošiljanja sporočila "
+msgstr "Delsa tarp pašto siuntimo bandymų"
 
 #: mailpile/plugins/contacts.py:56
 msgid "(BASE64 ENCODED DATA)"
@@ -2271,12 +2292,12 @@ msgstr ""
 
 #: mailpile/plugins/contacts.py:210
 msgid "Add contacts here!"
-msgstr ""
+msgstr "Pridėkite kontaktus čia!"
 
 #: mailpile/plugins/contacts.py:281
 #, python-format
 msgid "Added %d contacts"
-msgstr "Dodano stikov: %d"
+msgstr ""
 
 #: mailpile/plugins/contacts.py:312
 #, python-format
@@ -2290,12 +2311,12 @@ msgstr ""
 
 #: mailpile/plugins/contacts.py:317
 msgid "No contacts found"
-msgstr ""
+msgstr "Kontaktų nerasta"
 
 #: mailpile/plugins/contacts.py:385
 #, python-format
 msgid "Added %d lines"
-msgstr "Dodano vrstic: %d"
+msgstr ""
 
 #: mailpile/plugins/contacts.py:395
 #, python-format
@@ -2331,27 +2352,27 @@ msgstr ""
 
 #: mailpile/plugins/contacts.py:771
 msgid "Searched for addresses"
-msgstr "Poiskano med naslovi"
+msgstr ""
 
 #: mailpile/plugins/contacts.py:825
 #, fuzzy
 msgid "Local mail"
-msgstr "E-pošta stika"
+msgstr "Vietinės pašto dėžutės kelias"
 
 #: mailpile/plugins/contacts.py:836
-#, fuzzy, python-format
+#, python-format
 msgid "Unhandled outgoing mail protocol: %s"
-msgstr "Privzeta odhodna pot"
+msgstr ""
 
 #: mailpile/plugins/contacts.py:888
 #, fuzzy
 msgid "Mail spool not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Laiškas nerastas"
 
 #: mailpile/plugins/contacts.py:891
-#, python-format
+#, fuzzy, python-format
 msgid "Already configured: %s"
-msgstr ""
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/plugins/contacts.py:950
 #, python-format
@@ -2379,7 +2400,7 @@ msgstr ""
 #: mailpile/plugins/contacts.py:1230
 #, fuzzy
 msgid "Account Updated!"
-msgstr "Ime računa"
+msgstr "Paskyros pavadinimas"
 
 #: mailpile/plugins/contacts.py:1233
 #: mailpile/www/default/html/profiles/edit/index.html:2
@@ -2388,7 +2409,7 @@ msgstr ""
 
 #: mailpile/plugins/contacts.py:1281
 msgid "Choosing from address"
-msgstr "Izbiram med naslovi"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:69
 #, python-format
@@ -2402,7 +2423,7 @@ msgstr ""
 #: mailpile/plugins/crypto_gnupg.py:132 mailpile/plugins/search.py:67
 #: mailpile/plugins/vcard_gnupg.py:229
 msgid "No results"
-msgstr ""
+msgstr "Jokių rezultatų"
 
 #: mailpile/plugins/crypto_gnupg.py:208
 #, python-format
@@ -2426,7 +2447,7 @@ msgstr ""
 #: mailpile/plugins/crypto_gnupg.py:443
 #, fuzzy, python-format
 msgid "Run: %s"
-msgstr "Se izvaja: %s"
+msgstr "Vykdoma: %s"
 
 #: mailpile/plugins/crypto_gnupg.py:418
 #, python-format
@@ -2446,9 +2467,8 @@ msgid "This key's passphrase will be used to log in to Mailpile"
 msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:432
-#, fuzzy
 msgid "Revoke bad keys:"
-msgstr "Preklican ključ, ni vreden zaupanja"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:434
 msgid "Say yes to the first question, follow the instructions"
@@ -2468,9 +2488,8 @@ msgid "You can search for %s to find such people"
 msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:442
-#, fuzzy
 msgid "Disable bad keys:"
-msgstr "Onemogočen ključ, ni vreden zaupanja"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:444 mailpile/plugins/crypto_gnupg.py:445
 #, python-format
@@ -2537,9 +2556,9 @@ msgid "Sanity checked: %d keys in GPG keyring, %d profiles"
 msgstr ""
 
 #: mailpile/plugins/crypto_policy.py:46
-#, python-format
+#, fuzzy, python-format
 msgid "Set crypto policy for %s to %s"
-msgstr ""
+msgstr "Numatytoji išsiunčiamo pašto šifravimo politika"
 
 #: mailpile/plugins/crypto_policy.py:50
 #, python-format
@@ -2555,9 +2574,9 @@ msgid "Recipients have conflicting encryption policies."
 msgstr ""
 
 #: mailpile/plugins/crypto_policy.py:121
-#, python-format
+#, fuzzy, python-format
 msgid "The encryption policy for these recipients is: %s"
-msgstr ""
+msgstr "Numatytoji išsiunčiamo pašto šifravimo politika"
 
 #: mailpile/plugins/crypto_policy.py:133 mailpile/plugins/crypto_policy.py:136
 msgid "This account does not have an encryption key."
@@ -2603,7 +2622,7 @@ msgstr ""
 #: mailpile/plugins/eventlog.py:183
 #, fuzzy, python-format
 msgid "Event %s not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Laiškas nerastas"
 
 #: mailpile/plugins/eventlog.py:194
 msgid "Watching logs: Press CTRL-C to return to the CLI"
@@ -2612,7 +2631,7 @@ msgstr ""
 #: mailpile/plugins/exporters.py:94
 #, fuzzy
 msgid "Parent directory does not exist."
-msgstr "Datoteka/mapa ne obstaja: %s"
+msgstr "Failo/katalogo nėra: %s"
 
 #: mailpile/plugins/exporters.py:96
 msgid "Is the disk full? Are permissions lacking?"
@@ -2621,12 +2640,12 @@ msgstr ""
 #: mailpile/plugins/exporters.py:97
 #, fuzzy, python-format
 msgid "Failed to create mailbox: %s"
-msgstr "Spodletelo ustvarjanje sličice"
+msgstr "Nepavyko perskaityti: %s"
 
 #: mailpile/plugins/exporters.py:105
 #, fuzzy, python-format
 msgid "Exporting message =%s ..."
-msgstr "Pripravljam sporočilo ..."
+msgstr "Ruošiamas laiškas..."
 
 #: mailpile/plugins/exporters.py:109
 #, python-format
@@ -2636,7 +2655,7 @@ msgstr ""
 #: mailpile/plugins/exporters.py:142
 #, python-format
 msgid "Exported %d messages to %s"
-msgstr "%d sporočil izvoženih v %s"
+msgstr ""
 
 #: mailpile/plugins/html_magic.py:64
 msgid "Serving up API content"
@@ -2678,31 +2697,32 @@ msgstr ""
 #: mailpile/plugins/plugins.py:59
 #, python-format
 msgid "Failed to load plugin: %s"
-msgstr ""
+msgstr "Nepavyko įkelti papildinio: %s"
 
 #: mailpile/plugins/plugins.py:63
 #, python-format
 msgid "Loaded plugins: %s"
-msgstr ""
+msgstr "Įkelti papildiniai: %s"
 
 #: mailpile/plugins/plugins.py:82
 #, python-format
 msgid "Required plugins can not be disabled: %s"
-msgstr ""
+msgstr "Reikalingi papildiniai negali būti išjungti: %s"
 
 #: mailpile/plugins/plugins.py:85
 #, python-format
 msgid "Plugin not loaded: %s"
-msgstr ""
+msgstr "Papildinys neįkeltas: %s"
 
 #: mailpile/plugins/plugins.py:92
 #, python-format
 msgid "Disabled plugins: %s (restart required)"
-msgstr ""
+msgstr "Išjungti papildiniai: %s (reikalingas paleidimas iš naujo)"
 
 #: mailpile/plugins/search.py:65
+#, fuzzy
 msgid "Unprintable results"
-msgstr ""
+msgstr "Kuriamas rezultatas"
 
 #: mailpile/plugins/search.py:136
 #, python-format
@@ -2721,19 +2741,19 @@ msgstr ""
 
 #: mailpile/plugins/search.py:230
 msgid "You must perform a search before requesting the next page."
-msgstr "Preden zahtevate naslednjo stran morate izvesti iskanje."
+msgstr ""
 
 #: mailpile/plugins/search.py:233
 msgid "Displayed next page of results."
-msgstr "Prikazana naslednja stran rezultatov."
+msgstr ""
 
 #: mailpile/plugins/search.py:249
 msgid "You must perform a search before requesting the previous page."
-msgstr "Preden zahtevate prejšnjo stran morate izvesti iskanje."
+msgstr ""
 
 #: mailpile/plugins/search.py:252
 msgid "Displayed previous page of results."
-msgstr "Prikazana prejšnja stran rezultatov."
+msgstr ""
 
 #: mailpile/plugins/search.py:268
 #, python-format
@@ -2747,20 +2767,20 @@ msgstr ""
 
 #: mailpile/plugins/search.py:360
 msgid "Displayed a single message"
-msgstr "Prikazano eno samo sporočilo"
+msgstr ""
 
 #: mailpile/plugins/search.py:364
 #, python-format
 msgid "Displayed %d messages"
-msgstr "Prikazano sporočil: %d"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:52
 msgid "New"
-msgstr "Novo"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:60
 msgid "Inbox"
-msgstr "Poštni predal"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:67
 msgid "Blank"
@@ -2768,7 +2788,7 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:77
 msgid "Drafts"
-msgstr "Osnutki"
+msgstr "Juodraščiai"
 
 #: mailpile/plugins/setup_magic.py:86
 msgid "Outbox"
@@ -2776,15 +2796,15 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:95
 msgid "Sent"
-msgstr "Poslano"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:104
 msgid "Spam"
-msgstr "Spam"
+msgstr "Brukalas"
 
 #: mailpile/plugins/setup_magic.py:110
 msgid "MaybeSpam"
-msgstr "MogočeSpam"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:115
 msgid "Ham"
@@ -2792,20 +2812,20 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:124
 msgid "Trash"
-msgstr "Smeti"
+msgstr "Šiukšlinė"
 
 #: mailpile/plugins/setup_magic.py:142
 msgid "Photos"
-msgstr "Fotografije"
+msgstr "Nuotraukos"
 
 #: mailpile/plugins/setup_magic.py:151
 #, fuzzy
 msgid "Documents"
-msgstr "Priponke"
+msgstr "Priedai"
 
 #: mailpile/plugins/setup_magic.py:165
 msgid "All Mail"
-msgstr "Vsa pošta"
+msgstr ""
 
 #: mailpile/plugins/setup_magic.py:241
 msgid "Created default tags"
@@ -2860,62 +2880,62 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:591
 msgid "No settings found"
-msgstr ""
+msgstr "Nerasta jokių nustatymų"
 
 #: mailpile/plugins/setup_magic.py:621
 #, fuzzy, python-format
 msgid "Invalid language: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Neteisingas loginis: %s"
 
 #: mailpile/plugins/setup_magic.py:639 mailpile/plugins/setup_magic.py:680
 #: mailpile/www/default/html/setup/welcome/index.html:2
 msgid "Welcome to Mailpile!"
-msgstr ""
+msgstr "Sveiki Atvykę į Mailpile!"
 
 #: mailpile/plugins/setup_magic.py:788
 #, fuzzy
 msgid "Invalid key"
-msgstr "Neveljavni ključi"
+msgstr "Neteisingi raktai"
 
 #: mailpile/plugins/setup_magic.py:823
 #, fuzzy
 msgid "Invalid passphrase"
-msgstr "Neveljavni ključi"
+msgstr "Neteisingi raktai"
 
 #: mailpile/plugins/setup_magic.py:867
 #, fuzzy
 msgid "Invalid preference"
-msgstr "Uporabniške nastavitve"
+msgstr "Naudotojo nuostatos"
 
 #: mailpile/plugins/setup_magic.py:896
 #, fuzzy
 msgid "Updated crypto preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Naudotojo nuostatos"
 
 #: mailpile/plugins/setup_magic.py:898
 #, fuzzy
 msgid "Configure crypto preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Naudotojo nuostatos"
 
 #: mailpile/plugins/setup_magic.py:1008
 #, fuzzy
 msgid "Failed to add profile"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Nepavyko pridėti failų"
 
 #: mailpile/plugins/setup_magic.py:1029
 #, fuzzy
 msgid "Your profiles"
-msgstr "Vaši profili"
+msgstr "Jūsų Profiliai"
 
 #: mailpile/plugins/setup_magic.py:1055
 #, fuzzy
 msgid "Configuring a key"
-msgstr "Časovni žig konfiguracije"
+msgstr "Konfigūracijos laiko žyma"
 
 #: mailpile/plugins/setup_magic.py:1099
 #, fuzzy
 msgid "Unknown error"
-msgstr "Neznano zaupanje"
+msgstr "Nežinoma komanda"
 
 #: mailpile/plugins/setup_magic.py:1107
 msgid "Route is working"
@@ -2924,7 +2944,7 @@ msgstr ""
 #: mailpile/plugins/setup_magic.py:1110
 #, fuzzy
 msgid "Invalid command"
-msgstr "Neznan ukaz"
+msgstr "Neteisingas loginis: %s"
 
 #: mailpile/plugins/setup_magic.py:1120
 msgid "Route is not working"
@@ -2968,8 +2988,9 @@ msgid "Listening port for SMTP daemon"
 msgstr ""
 
 #: mailpile/plugins/tags.py:189
+#, fuzzy
 msgid "name"
-msgstr ""
+msgstr "Naudotojo vardas"
 
 #: mailpile/plugins/tags.py:381
 msgid "Undid tagging operation"
@@ -2978,16 +2999,16 @@ msgstr ""
 #: mailpile/plugins/tags.py:403
 #, python-format
 msgid "Scheduled %d messages for future tagging"
-msgstr "Sporočila določena za označbo: %d"
+msgstr ""
 
 #: mailpile/plugins/tags.py:462
 msgid "Add tags here!"
-msgstr "Tu dodaj oznake!"
+msgstr ""
 
 #: mailpile/plugins/tags.py:509
 #, python-format
 msgid "Added %d tags"
-msgstr "Dodano oznak: %d"
+msgstr ""
 
 #: mailpile/plugins/tags.py:622
 #, python-format
@@ -3013,9 +3034,8 @@ msgid "No such tag: %s"
 msgstr ""
 
 #: mailpile/plugins/tags.py:836
-#, fuzzy
 msgid "Added new filter"
-msgstr "Dodano vrstic: %d"
+msgstr ""
 
 #: mailpile/plugins/tags.py:867
 #, python-format
@@ -3024,7 +3044,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gnupg.py:21
 msgid "Import contacts from GnuPG keyring"
-msgstr "Uvozi stike iz zbirke ključev GnuPG"
+msgstr ""
 
 #: mailpile/plugins/vcard_gnupg.py:24 mailpile/plugins/vcard_gravatar.py:34
 msgid "Enable this importer"
@@ -3032,7 +3052,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gnupg.py:25
 msgid "Location of keyring"
-msgstr "Mesto zbirke ključev"
+msgstr "Raktinės vieta"
 
 #: mailpile/plugins/vcard_gnupg.py:246
 #, python-format
@@ -3040,9 +3060,9 @@ msgid "Extracted %d VCards from GPG keychain"
 msgstr ""
 
 #: mailpile/plugins/vcard_gnupg.py:282
-#, fuzzy, python-format
+#, python-format
 msgid "Imported %d VCards from GPG keychain"
-msgstr "Uvozi stike iz zbirke ključev GnuPG"
+msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:31
 msgid "Import contact info from a Gravatar server"
@@ -3062,7 +3082,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:38
 msgid "Default thumbnail style"
-msgstr ""
+msgstr "Numatytasis miniatiūrų stilius"
 
 #: mailpile/plugins/vcard_gravatar.py:39
 msgid "Preferred thumbnail rating"
@@ -3074,7 +3094,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:42
 msgid "Gravatar server URL"
-msgstr ""
+msgstr "Gravatar serverio URL"
 
 #: mailpile/plugins/vcard_mork.py:43
 msgid "Location of Mork database"
@@ -3121,9 +3141,9 @@ msgid "Anonymous"
 msgstr ""
 
 #: mailpile/plugins/keylookup/__init__.py:126
-#, fuzzy, python-format
+#, python-format
 msgid "Searching for encryption keys in: %s"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/plugins/keylookup/__init__.py:326
 msgid "Found encryption key in keychain"
@@ -3144,7 +3164,7 @@ msgstr ""
 #: mailpile/plugins/keylookup/email_keylookup.py:78
 #, fuzzy
 msgid "E-mail keys"
-msgstr "E-poštni naslov"
+msgstr "El. pašto adresas"
 
 #: mailpile/plugins/keylookup/email_keylookup.py:92
 msgid "Found key in local e-mail"
@@ -3169,17 +3189,19 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:255
 msgid "Not Signed"
-msgstr "Ni podpisano"
+msgstr "Nepasirašytas"
 
 #: mailpile/www/jinjaextensions.py:256
 msgid ""
 "This message contains no signature, which means it could have come from "
 "anyone, not necessarily the real sender"
 msgstr ""
+"Šiame laiške nėra parašo, o tai reiškia, kad jis galėjo atvykti iš bet kur, "
+"nebūtinai nuo tikrojo siuntėjo"
 
 #: mailpile/www/jinjaextensions.py:262
 msgid "There was a weird error with this signature"
-msgstr ""
+msgstr "Su šiuo parašu įvyko keista klaida"
 
 #: mailpile/www/jinjaextensions.py:266 mailpile/www/jinjaextensions.py:423
 msgid "Mixed Error"
@@ -3187,15 +3209,15 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:267
 msgid "Parts of this message have a signature with a weird error"
-msgstr ""
+msgstr "Šio laiško dalys turi parašą su keista klaida"
 
 #: mailpile/www/jinjaextensions.py:271
 msgid "Invalid"
-msgstr ""
+msgstr "Neteisingas"
 
 #: mailpile/www/jinjaextensions.py:272
 msgid "The signature was invalid or bad"
-msgstr ""
+msgstr "Parašas buvo neteisingas arba blogas"
 
 #: mailpile/www/jinjaextensions.py:276
 msgid "Mixed Invalid"
@@ -3226,7 +3248,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:294
 msgid "Expired"
-msgstr ""
+msgstr "Nebegaliojantis"
 
 #: mailpile/www/jinjaextensions.py:295
 msgid "The signature was made with an expired key"
@@ -3256,7 +3278,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:317
 msgid "Unverified"
-msgstr ""
+msgstr "Nepatvirtintas"
 
 #: mailpile/www/jinjaextensions.py:318
 msgid "The signature was good but it came from a key that is not verified yet"
@@ -3272,7 +3294,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:328
 msgid "Verified"
-msgstr ""
+msgstr "Patvirtintas"
 
 #: mailpile/www/jinjaextensions.py:329
 msgid "The signature was good and came from a verified key, w00t!"
@@ -3292,20 +3314,20 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:376
 msgid "Not Encrypted"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/jinjaextensions.py:377
 msgid ""
 "This message was not encrypted. It may have been intercepted and read by an "
 "unauthorized party"
 msgstr ""
-"To sporočilo ni šifrirano. Lahko je bilo prestreženo in prebrano s strani "
-"nepooblaščene osebe."
+"Šis laiškas nebuvo užšifruotas. Jis galėjo būti perimtas ir perskaitytas "
+"trečiųjų asmenų"
 
 #: mailpile/www/jinjaextensions.py:382
 #: mailpile/www/default/html/jsapi/compose/crypto.js:167
 msgid "Encrypted"
-msgstr "Šifrirano"
+msgstr "Užšifruotas"
 
 #: mailpile/www/jinjaextensions.py:383
 msgid "This message was encrypted, great job being secure"
@@ -3317,7 +3339,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:388
 msgid "Part of this message were encrypted, but other parts were not encrypted"
-msgstr "Del tega sporočila je šifriran, drugi deli pa ne,"
+msgstr ""
 
 #: mailpile/www/jinjaextensions.py:393
 msgid "Locked Key"
@@ -3334,45 +3356,38 @@ msgid "Mixed Locked Key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:400
-#, fuzzy
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr "Del tega sporočila je šifriran, drugi deli pa ne,"
+msgstr ""
 
 #: mailpile/www/jinjaextensions.py:405
 msgid "Missing Key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:406
-#, fuzzy
 msgid ""
 "You don't have the encryption key to decrypt this message, perhaps it was "
 "encrypted to an old key you don't have anymore?"
 msgstr ""
-"Delov sporočila ni bilo mogoče dešifrirati, ker nimate ustreznega zasebnega "
-"ključa. Morda je bilo šifrirano s starim ključem, ki ga več ne posedujete?"
 
 #: mailpile/www/jinjaextensions.py:411
 msgid "Mixed Missing Key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:412
-#, fuzzy
 msgid ""
 "Parts of the message could not be decrypted because you are missing the "
 "private key. Perhaps it was encrypted to an old key you don't have anymore?"
 msgstr ""
-"Delov sporočila ni bilo mogoče dešifrirati, ker nimate ustreznega zasebnega "
-"ključa. Morda je bilo šifrirano s starim ključem, ki ga več ne posedujete?"
 
 #: mailpile/www/jinjaextensions.py:419
 msgid "We failed to decrypt message and are unsure why."
-msgstr ""
+msgstr "Mums nepavyko iššifruoti laiško ir nesame tikri kodėl."
 
 #: mailpile/www/jinjaextensions.py:424
 msgid "We failed to decrypt parts of this message and are unsure why"
-msgstr ""
+msgstr "Mums nepavyko iššifruoti šio laiško dalių ir nesame tikri kodėl"
 
 #: mailpile/www/jinjaextensions.py:457 mailpile/www/jinjaextensions.py:462
 msgid "Automatic"
@@ -3403,7 +3418,7 @@ msgstr ""
 #: mailpile/www/jinjaextensions.py:472
 #, fuzzy
 msgid "Only Encrypt"
-msgstr "Šifrirano"
+msgstr "Užšifruotas"
 
 #: mailpile/www/jinjaextensions.py:473
 msgid "Messages will only be encrypted but not signed by your encryption key"
@@ -3422,6 +3437,8 @@ msgid ""
 "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
 "Are you sure you want to continue?\\n"
 msgstr ""
+"Mailpile saugos patarimas: \\n\\n  O, ne! Ši svetainė gali būti pavojinga!"
+"\\n  Ar tikrai norite tęsti?\\n"
 
 #: mailpile/www/jinjaextensions.py:645
 msgid "No Subject"
@@ -3429,11 +3446,11 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:664
 msgid "and"
-msgstr ""
+msgstr "ir"
 
 #: mailpile/www/jinjaextensions.py:664
 msgid "others"
-msgstr "drugi"
+msgstr ""
 
 #: mailpile/www/jinjaextensions.py:824
 msgid "No Fingerprint"
@@ -3444,8 +3461,9 @@ msgid "To Log In Please Enter"
 msgstr ""
 
 #: mailpile/www/default/html/auth/shared.html:30
+#, fuzzy
 msgid "Your Passphrase"
-msgstr ""
+msgstr "Jūsų Laiškas..."
 
 #: mailpile/www/default/html/auth/shared.html:34
 msgid "Oops, wrong passphrase. Try again?"
@@ -3461,7 +3479,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/tools_contacts.html:37
 #: mailpile/www/default/html/partials/topbar.html:39
 msgid "Contacts"
-msgstr "Stiki"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/index.html:43
 msgid "No Contact Info"
@@ -3470,7 +3488,7 @@ msgstr ""
 #: mailpile/www/default/html/contacts/index.html:49
 #, fuzzy
 msgid "No Contacts Found"
-msgstr "Vzročni stiki"
+msgstr "Kontaktų nerasta"
 
 #: mailpile/www/default/html/contacts/index.html:50
 msgid ""
@@ -3483,7 +3501,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_list.html:12
 #: mailpile/www/default/html/setup/partials/sources_list.html:13
 msgid "Previous"
-msgstr "Nazaj"
+msgstr "Ankstesnis"
 
 #: mailpile/www/default/html/contacts/index.html:61
 #: mailpile/www/default/html/profiles/account-form.html:299
@@ -3496,28 +3514,28 @@ msgstr "Nazaj"
 #: mailpile/www/default/html/setup/partials/profiles_list.html:14
 #: mailpile/www/default/html/setup/partials/sources_list.html:15
 msgid "Next"
-msgstr "Naprej"
+msgstr "Kitas"
 
 #: mailpile/www/default/html/contacts/index.html:63
 #: mailpile/www/default/html/search/index.html:27
 msgid "of"
-msgstr "od"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/index.html:63
 #: mailpile/www/default/html/search/index.html:29
 msgid "1 Conversation"
-msgstr "1 pogovor"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/index.html:63
 msgid "No results found"
-msgstr "Ni rezultatov iskanja"
+msgstr "Rezultatų nerasta"
 
 #: mailpile/www/default/html/contacts/add/index.html:2
 #: mailpile/www/default/html/jsapi/templates/modal-contact-add.html:6
 #: mailpile/www/default/html/partials/thread_metadata.html:17
 #: mailpile/www/default/html/partials/tools_contacts.html:43
 msgid "Add Contact"
-msgstr "Dodaj stik"
+msgstr "Pridėti Kontaktą"
 
 #: mailpile/www/default/html/contacts/add/index.html:9
 #: mailpile/www/default/html/jsapi/templates/modal-add-tag.html:9
@@ -3527,14 +3545,14 @@ msgstr "Dodaj stik"
 #: mailpile/www/default/html/settings/index.html:4
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:6
 msgid "Name"
-msgstr "Ime"
+msgstr "Vardas"
 
 #: mailpile/www/default/html/contacts/add/index.html:11
 #: mailpile/www/default/html/jsapi/templates/modal-contact-add.html:13
 #: mailpile/www/default/html/partials/hidden.html:104
 #: mailpile/www/default/html/profiles/account-form.html:264
 msgid "E-mail"
-msgstr "E-pošta"
+msgstr "El. paštas"
 
 #: mailpile/www/default/html/contacts/add/index.html:16
 #: mailpile/www/default/html/jsapi/setup/profiles.js:5
@@ -3551,11 +3569,11 @@ msgstr "E-pošta"
 #: mailpile/www/default/html/profiles/account-form.html:740
 #: mailpile/www/default/html/tags/form.html:196
 msgid "Add"
-msgstr "Dodaj"
+msgstr "Pridėti"
 
 #: mailpile/www/default/html/contacts/import/index.html:2
 msgid "Import Contacts"
-msgstr "Uvozi stike"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/view/index.html:2
 #: mailpile/www/default/html/contacts/view/index.html:9
@@ -3567,23 +3585,23 @@ msgstr ""
 
 #: mailpile/www/default/html/contacts/view/index.html:21
 msgid "Hey that's you"
-msgstr ""
+msgstr "Ei, tai jūs"
 
 #: mailpile/www/default/html/contacts/view/index.html:32
 #: mailpile/www/default/html/partials/topbar.html:35
 msgid "Compose"
-msgstr "Sestavljanje"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/view/index.html:33
 #: mailpile/www/default/html/jsapi/templates/modal-search-keyservers.html:15
 #: mailpile/www/default/html/partials/topbar.html:17
 #: mailpile/www/default/html/partials/topbar.html:25
 msgid "Search"
-msgstr "Išči"
+msgstr ""
 
 #: mailpile/www/default/html/contacts/view/index.html:41
 msgid "Security & Keys"
-msgstr ""
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/www/default/html/contacts/view/index.html:84
 msgid "messages when communicating with"
@@ -3594,6 +3612,8 @@ msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
 msgstr ""
+"Jūs neturite šio kontakto šifravimo raktų. Norint saugiai bendrauti, jums "
+"reikia šifravimo raktų."
 
 #: mailpile/www/default/html/contacts/view/index.html:94
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -3608,12 +3628,12 @@ msgstr ""
 #: mailpile/www/default/html/contacts/view/index.html:120
 #: mailpile/www/default/html/search/index.html:27
 msgid "Conversations"
-msgstr "Pogovori"
+msgstr "Pokalbiai"
 
 #: mailpile/www/default/html/contacts/view/index.html:146
 #, fuzzy
 msgid "No Conversations"
-msgstr "Pogovori"
+msgstr "Pokalbiai"
 
 #: mailpile/www/default/html/eventlog/index.html:13
 msgid "No Events Found"
@@ -3623,7 +3643,7 @@ msgstr ""
 #: mailpile/www/default/html/help/index.html:15
 #: mailpile/www/default/html/partials/tools_tags.html:16
 msgid "Filters"
-msgstr ""
+msgstr "Filtrai"
 
 #: mailpile/www/default/html/filter/list/index.html:30
 #: mailpile/www/default/html/jsapi/setup/profiles.js:84
@@ -3652,11 +3672,12 @@ msgstr ""
 #: mailpile/www/default/html/settings/index.html:72
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:15
 msgid "Delete"
-msgstr "Izbriši"
+msgstr "Ištrinti"
 
 #: mailpile/www/default/html/filter/list/index.html:37
+#, fuzzy
 msgid "No Filters Exist"
-msgstr ""
+msgstr "Filtrai"
 
 #: mailpile/www/default/html/filter/list/index.html:38
 msgid ""
@@ -3675,7 +3696,7 @@ msgstr ""
 #: mailpile/www/default/html/help/bottom.html:2
 #, fuzzy
 msgid "or"
-msgstr "Vrata"
+msgstr "Prievadas"
 
 #: mailpile/www/default/html/help/bottom.html:2
 msgid "file an issue"
@@ -3689,7 +3710,7 @@ msgstr ""
 #: mailpile/www/default/html/page/gmail-access-non-google-accounts/index.html:7
 #: mailpile/www/default/html/partials/topbar.html:63
 msgid "Help"
-msgstr ""
+msgstr "Pagalba"
 
 #: mailpile/www/default/html/help/index.html:9
 msgid "Custom Searches"
@@ -3760,7 +3781,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/crypto/import.js:79
 #, fuzzy
 msgid "is"
-msgstr "Seznam"
+msgstr "Sąrašas"
 
 #: mailpile/www/default/html/jsapi/compose/attachments.js:141
 msgid "Some people cannot receive attachments larger than 50 Megabytes."
@@ -3792,7 +3813,7 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:124
 msgid "Unsigned"
-msgstr ""
+msgstr "Nepasirašytas"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:129
 msgid "Verification Error"
@@ -3817,7 +3838,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/compose/crypto.js:174
 #, fuzzy
 msgid "Can Not Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:179
 msgid "This message and metadata will not be encrypted"
@@ -3828,7 +3849,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:415
 #: mailpile/www/default/html/tags/form.html:94
 msgid "None"
-msgstr "Brez"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:186
 msgid "There was an error prepping this message for encryption"
@@ -3841,12 +3862,12 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/compose/events.js:336
 #, fuzzy
 msgid "Yay, Can Now Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/jsapi/crypto/find.js:29
 #, fuzzy
 msgid "No Email"
-msgstr "E-pošta"
+msgstr "El. paštas"
 
 #: mailpile/www/default/html/jsapi/crypto/import.js:79
 msgid "You can not upload a key larger than 5 Megabytes."
@@ -3867,7 +3888,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/global/global.js:8
 #: mailpile/www/default/html/partials/tools_search.html:107
 msgid "All"
-msgstr "Vse"
+msgstr "Visi"
 
 #: mailpile/www/default/html/jsapi/global/helpers.js:5
 msgid "What is an Encryption Key"
@@ -3880,7 +3901,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/global/notifications.js:179
 #, fuzzy
 msgid "edit settings"
-msgstr "Prikazane nastavitve"
+msgstr "Neteisingi nustatymai"
 
 #: mailpile/www/default/html/jsapi/message/events.js:64
 msgid "Plain Text"
@@ -3891,13 +3912,13 @@ msgid "Download"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/message/ui.js:17
+#, fuzzy
 msgid "Could not retrieve message"
-msgstr ""
+msgstr "Nepavyko pašalinti laiško"
 
 #: mailpile/www/default/html/jsapi/search/init.js:63
-#, fuzzy
 msgid " new messages received"
-msgstr "Ni izbranih sporočil"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/search/init.js:64
 msgid "Your pile is growing..."
@@ -3906,17 +3927,17 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/search/ui.js:155
 #, fuzzy
 msgid "No Messages Selected"
-msgstr "Ni izbranih sporočil"
+msgstr "Laiškų nėra!"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:171
 #, fuzzy
 msgid "1 message"
-msgstr "Ni sporočil!"
+msgstr "Laiškų nėra!"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:174
 #, fuzzy
 msgid "messages"
-msgstr "Sporočil"
+msgstr "Laiškai"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:176
 msgid "Moving"
@@ -4328,7 +4349,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/complete.js:110
 #, fuzzy
 msgid "Now enhancing photos"
-msgstr "Povezujem se na %s"
+msgstr "Jungiamasi prie %s"
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:111
 msgid "Backing up the entire Internet..."
@@ -4401,16 +4422,15 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/profiles.js:25
 #, fuzzy
 msgid "Enter a valid email address"
-msgstr "E-poštni naslov"
+msgstr "El. pašto adresas"
 
 #: mailpile/www/default/html/jsapi/setup/profiles.js:33
 msgid "Create or select a sending route"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:69
-#, fuzzy
 msgid "Test Connection"
-msgstr "1 pogovor"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:101
 #: mailpile/www/default/html/jsapi/setup/sending.js:130
@@ -4426,7 +4446,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sending.js:146
 #, fuzzy
 msgid "Error Connecting"
-msgstr "Povezujem se na %s"
+msgstr "Jungiamasi prie %s"
 
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:167
 msgid "Route"
@@ -4441,8 +4461,9 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:442
 #: mailpile/www/default/html/setup/partials/sending_settings.html:12
 #: mailpile/www/default/html/setup/partials/sources_settings.html:53
+#, fuzzy
 msgid "Username"
-msgstr ""
+msgstr "Naudotojo vardas"
 
 #: mailpile/www/default/html/jsapi/setup/sending.js:31
 msgid "Specify a server"
@@ -4462,8 +4483,9 @@ msgid "Source Name"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:49
+#, fuzzy
 msgid "You must pick a protocol or format"
-msgstr ""
+msgstr "Pašto dėžutės protokolas ar formatas"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:191
 msgid "Source has unconfigured mailboxes"
@@ -4489,20 +4511,21 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sources.js:234
 #, fuzzy
 msgid "In mailbox:"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Nėra tokios pašto dėžutės: %s"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:250
 #, fuzzy
 msgid "Cannot connect to server"
-msgstr "Povezujem se na %s"
+msgstr "Prisijungta prie IMAP serverio %s"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:252
 msgid "Edit Now"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:256
+#, fuzzy
 msgid "Not connected to server"
-msgstr ""
+msgstr "Prisijungta prie IMAP serverio %s"
 
 #: mailpile/www/default/html/jsapi/tags/events.js:108
 msgid "Are you sure you want to delete this tag?"
@@ -4518,13 +4541,13 @@ msgstr ""
 #: mailpile/www/default/html/tags/add/index.html:2
 #: mailpile/www/default/html/tags/add/index.html:4
 msgid "Add Tag"
-msgstr "Dodaj oznako"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-add-tag.html:10
 #: mailpile/www/default/html/partials/tag_add.html:10
 #: mailpile/www/default/html/tags/form.html:44
 msgid "Friends & Family"
-msgstr ""
+msgstr "Draugai ir Šeima"
 
 #: mailpile/www/default/html/jsapi/templates/modal-compose-quoted-reply.html:7
 msgid "Quoted Replies"
@@ -4550,12 +4573,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_configure.html:59
 #: mailpile/www/default/html/tags/form.html:198
 msgid "Save"
-msgstr "Shrani"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:7
 #, fuzzy
 msgid "Cannot Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:15
 msgid "You are missing encryption keys for the following contacts"
@@ -4577,19 +4600,17 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:62
 #: mailpile/www/default/html/partials/hidden.html:116
-#, fuzzy
 msgid "Searching for encryption keys for:"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:73
-#, fuzzy
 msgid "Searching for encryption keys..."
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:86
 #, fuzzy
 msgid "Send Unencrypted"
-msgstr "Šifrirano"
+msgstr "Užšifruotas"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:91
 msgid "Try Again"
@@ -4597,9 +4618,8 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:8
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:63
-#, fuzzy
 msgid "Save Search"
-msgstr "Išči"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:13
 msgid "Saved Searches appear as Tags in the sidebar."
@@ -4618,12 +4638,12 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:22
 #: mailpile/www/default/html/tags/form.html:32
 msgid "Change Icon"
-msgstr ""
+msgstr "Pakeisti Piktogramą"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:24
 #: mailpile/www/default/html/tags/form.html:38
 msgid "Change Color"
-msgstr ""
+msgstr "Pakeisti Spalvą"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:24
 #: mailpile/www/default/html/tags/form.html:38
@@ -4631,14 +4651,13 @@ msgid "Color"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:27
-#, fuzzy
 msgid "Save as"
-msgstr "Shrani"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:28
 #, fuzzy
 msgid "Tag Name"
-msgstr "Ime"
+msgstr "Vardas"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:35
 msgid "Mark as Read"
@@ -4651,20 +4670,23 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:39
 #, fuzzy
 msgid "Never send to Spam"
-msgstr "Premakni v Spam"
+msgstr "Perkelti į Brukalą"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:45
 #: mailpile/www/default/html/tags/form.html:130
+#, fuzzy
 msgid "Choose an Icon"
-msgstr ""
+msgstr "Pakeisti Piktogramą"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:51
+#, fuzzy
 msgid "Choose a Color"
-msgstr ""
+msgstr "Pakeisti Spalvą"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:69
+#, fuzzy
 msgid "Create new Saved Search"
-msgstr ""
+msgstr "Sukurti naują žymę"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:72
 msgid "Replace"
@@ -4689,31 +4711,29 @@ msgid "click here"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-search-keyservers.html:24
-#, fuzzy
 msgid "Searching for encryption keys for"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-send-public-key.html:5
-#, fuzzy
 msgid "Send Encryption Keys"
-msgstr "Pošlji izbrane ključe"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-send-public-key.html:12
 msgid "Send Selected Keys"
-msgstr "Pošlji izbrane ključe"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:6
 #: mailpile/www/default/html/partials/tag_add.html:9
 #: mailpile/www/default/html/partials/tag_add.html:17
 #: mailpile/www/default/html/tags/form.html:42
 msgid "Tag"
-msgstr "Oznaka"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:6
 #: mailpile/www/default/html/jsapi/templates/template-modal-tag-picker-item.html:9
 #: mailpile/www/default/html/partials/tools_message.html:7
 msgid "Messages"
-msgstr "Sporočil"
+msgstr "Laiškai"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:13
 #: mailpile/www/default/html/partials/tools_message.html:9
@@ -4721,7 +4741,7 @@ msgstr "Sporočil"
 #: mailpile/www/default/html/partials/topbar.html:42
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:22
 msgid "Tags"
-msgstr "Oznak"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:21
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:22
@@ -4759,19 +4779,17 @@ msgid "Unable to create uploader"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:18
-#, fuzzy
 msgid "update your browser"
-msgstr "Nastavitve so bile posodobljene"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/ui/sidebar.js:78
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "to"
-msgstr "do"
+msgstr ""
 
 #: mailpile/www/default/html/jsapi/ui/tooltips.js:52
-#, fuzzy
 msgid "Compose To:"
-msgstr "Sestavljanje"
+msgstr ""
 
 #: mailpile/www/default/html/layouts/full.html:7
 msgid "Somebody"
@@ -4780,8 +4798,9 @@ msgstr ""
 #: mailpile/www/default/html/page/comp/index.html:2
 #: mailpile/www/default/html/page/contribute/index.html:2
 #: mailpile/www/default/html/page/contribute/index.html:6
+#, fuzzy
 msgid "Help Mailpile Grow"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/www/default/html/page/contribute/bugs.html:2
 msgid "Reporting bugs"
@@ -4811,7 +4830,7 @@ msgstr ""
 
 #: mailpile/www/default/html/page/contribute/index.html:15
 msgid "Donate"
-msgstr "Prispevaj"
+msgstr ""
 
 #: mailpile/www/default/html/page/contribute/index.html:19
 msgid ""
@@ -4883,13 +4902,12 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/errors_content.html:3
 msgid "Message Not Found"
-msgstr ""
+msgstr "Laiškas Nerastas"
 
 #: mailpile/www/default/html/partials/errors_content.html:4
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
 msgstr ""
-"Sporočilo, ki ste ga zahtevali, ni bilo najdeno. Mogoče je bilo izbrisano?"
 
 #: mailpile/www/default/html/partials/errors_content.html:6
 msgid "Contact Missing"
@@ -4927,8 +4945,8 @@ msgid ""
 "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
 "\">bug report</a>"
 msgstr ""
-"Če mislite da je to hrošč, potem prosim izpolnite <a href=\"%(url)s\" target="
-"\"_blank\">poročilo o hrošču</a>"
+"Jei manote, kad tai klaida, prašome pranešti <a href=\"%(url)s\" target="
+"\"_blank\">apie klaidą</a>"
 
 #: mailpile/www/default/html/partials/head.html:97
 msgid "Browser notifications allowed"
@@ -4943,7 +4961,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/hidden.html:145
 #, fuzzy
 msgid "Contact Info"
-msgstr "Ime stika"
+msgstr "Kontakto vardas"
 
 #: mailpile/www/default/html/partials/helpers.html:55
 #: mailpile/www/default/html/partials/hidden.html:158
@@ -4993,7 +5011,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/thread_metadata.html:4
 #: mailpile/www/default/html/partials/thread_metadata.html:7
 msgid "From"
-msgstr "Od"
+msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "Start Date"
@@ -5001,7 +5019,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "Present"
-msgstr "Trenutno"
+msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:77
 msgid "With"
@@ -5009,7 +5027,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:77
 msgid "No Tags"
-msgstr "Brez oznak"
+msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:78
 msgid "In"
@@ -5106,12 +5124,12 @@ msgstr ""
 #: mailpile/www/default/html/partials/hidden.html:311
 #, fuzzy
 msgid "Import Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/partials/hidden.html:312
 #, fuzzy
 msgid "Show Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/partials/search_item.html:24
 msgid "View e-mail from this mailing list"
@@ -5127,7 +5145,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/sidebar.html:78
 msgid "Edit Sidebar"
-msgstr "Uredi stransko vrstico"
+msgstr ""
 
 #: mailpile/www/default/html/partials/sidebar.html:80
 msgid "Organize"
@@ -5135,7 +5153,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tag_add.html:3
 msgid "Add New Tag"
-msgstr "Dodaj novo oznako"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tag_add.html:12
 msgid "Slug"
@@ -5148,11 +5166,11 @@ msgstr ""
 #: mailpile/www/default/html/partials/tag_add.html:15
 #: mailpile/www/default/html/partials/tools_search.html:3
 msgid "Display"
-msgstr "Prikaz"
+msgstr "Rodymas"
 
 #: mailpile/www/default/html/partials/tag_add.html:18
 msgid "Archive"
-msgstr "Arhiviraj"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tag_add.html:21
 #: mailpile/www/default/html/tags/form.html:92
@@ -5173,7 +5191,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tag_add.html:36
 msgid "Search Terms"
-msgstr "Iskalni pojmi"
+msgstr ""
 
 #: mailpile/www/default/html/partials/thread_message_cryptofail.html:12
 msgid "Send Your Encryption Key"
@@ -5186,34 +5204,33 @@ msgstr ""
 #: mailpile/www/default/html/partials/thread_message_cryptofail.html:21
 #, fuzzy
 msgid "Decrypt Message"
-msgstr "Izbriši sporočila"
+msgstr "Ištrinti Laiškai"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:23
 #, fuzzy
 msgid "View Profile"
-msgstr "Profili"
+msgstr "Profiliai"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:30
-#, fuzzy
 msgid "Compose New"
-msgstr "Sestavljanje"
+msgstr ""
 
 #: mailpile/www/default/html/partials/thread_metadata.html:35
 #, fuzzy
 msgid "Search Messages"
-msgstr "Sporočil"
+msgstr "Laiškai"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:40
 #: mailpile/www/default/html/partials/tooltips.html:38
 #, fuzzy
 msgid "Show Encryption Keys"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:62
 #: mailpile/www/default/html/partials/thread_metadata.html:66
 #: mailpile/www/default/html/partials/thread_metadata.html:67
 msgid "To"
-msgstr "Za"
+msgstr "Kam"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:71
 msgid "No Recipients"
@@ -5223,20 +5240,20 @@ msgstr ""
 #: mailpile/www/default/html/partials/thread_metadata.html:79
 #: mailpile/www/default/html/partials/thread_metadata.html:80
 msgid "Cc"
-msgstr "Kp"
+msgstr "Cc"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:87
 msgid "Bcc"
-msgstr "Skp"
+msgstr "Bcc"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:90
 #: mailpile/www/default/html/partials/thread_metadata.html:91
 msgid "Bcc:"
-msgstr "Skp:"
+msgstr "Bcc:"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:97
 msgid "Subject"
-msgstr "Zadeva"
+msgstr "Tema"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:101
 msgid "View:"
@@ -5261,12 +5278,11 @@ msgstr ""
 #: mailpile/www/default/html/partials/tools_contacts.html:4
 #, fuzzy
 msgid "Import Encryption Keys"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:9
-#, fuzzy
 msgid "Search for Key"
-msgstr "Iskanje %s"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tools_contacts.html:14
 msgid "Upload Key"
@@ -5286,16 +5302,15 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_contacts.html:44
 msgid "Add a new contact"
-msgstr "Dodaj nov stik"
+msgstr "Pridėti naują kontaktą"
 
 #: mailpile/www/default/html/partials/tools_default.html:8
 msgid "Click item or checkbox to select"
 msgstr ""
 
 #: mailpile/www/default/html/partials/tools_default.html:94
-#, fuzzy
 msgid "messages selected"
-msgstr "Ni izbranih sporočil"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tools_default.html:95
 msgid "messages selected, click to select all matching this search"
@@ -5307,19 +5322,19 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_message.html:8
 msgid "People"
-msgstr "Ljudi"
+msgstr "Žmonės"
 
 #: mailpile/www/default/html/partials/tools_search.html:6
 msgid "Snug"
-msgstr "Ozko"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:9
 msgid "Cozy"
-msgstr "Udobno"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:12
 msgid "Comfy"
-msgstr "Široko"
+msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:21
 #: mailpile/www/default/html/partials/tools_search.html:33
@@ -5328,29 +5343,29 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:26
 msgid "Archive Selection"
-msgstr ""
+msgstr "Archyvuoti Parinkimą"
 
 #: mailpile/www/default/html/partials/tools_search.html:41
 #: mailpile/www/default/html/partials/tools_search.html:115
 msgid "Unread"
-msgstr "Neprebrano"
+msgstr "Neskaityta"
 
 #: mailpile/www/default/html/partials/tools_search.html:46
 msgid "Read"
-msgstr ""
+msgstr "Perskaityta"
 
 #: mailpile/www/default/html/partials/tools_search.html:54
 #, fuzzy
 msgid "Move out of Spam"
-msgstr "Premakni v Spam"
+msgstr "Perkelti į Brukalą"
 
 #: mailpile/www/default/html/partials/tools_search.html:62
 msgid "Move to Spam"
-msgstr "Premakni v Spam"
+msgstr "Perkelti į Brukalą"
 
 #: mailpile/www/default/html/partials/tools_search.html:70
 msgid "Delete Messages"
-msgstr "Izbriši sporočila"
+msgstr "Ištrinti Laiškai"
 
 #: mailpile/www/default/html/partials/tools_search.html:91
 msgid "Save the results of this search to a new tag"
@@ -5358,35 +5373,35 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:108
 msgid "All messages"
-msgstr "Vsa sporočila"
+msgstr "Visi laiškai"
 
 #: mailpile/www/default/html/partials/tools_search.html:116
 msgid "Unread messages"
-msgstr "Neprebrana sporočila"
+msgstr "Neperskaityti laiškai"
 
 #: mailpile/www/default/html/partials/tools_search.html:123
 msgid "Attachments"
-msgstr "Priponke"
+msgstr "Priedai"
 
 #: mailpile/www/default/html/partials/tools_search.html:124
 msgid "Messages with attachments"
-msgstr "Sporočila s priponkami"
+msgstr "Laiškai su priedais"
 
 #: mailpile/www/default/html/partials/tools_search.html:131
 msgid "List"
-msgstr "Seznam"
+msgstr "Sąrašas"
 
 #: mailpile/www/default/html/partials/tools_search.html:132
 msgid "List view"
-msgstr "Seznamski pogled"
+msgstr "Sąrašo rodinys"
 
 #: mailpile/www/default/html/partials/tools_tags.html:5
 msgid "View all tags"
-msgstr ""
+msgstr "Žiūrėti visas žymes"
 
 #: mailpile/www/default/html/partials/tools_tags.html:11
 msgid "Create a new tag"
-msgstr ""
+msgstr "Sukurti naują žymę"
 
 #: mailpile/www/default/html/partials/tools_tags.html:17
 msgid "All current filters"
@@ -5406,7 +5421,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tooltips.html:5
 msgid "Remove Tag"
-msgstr ""
+msgstr "Šalinti Žymę"
 
 #: mailpile/www/default/html/partials/topbar.html:4
 #: mailpile/www/default/html/partials/topbar.html:9
@@ -5430,7 +5445,7 @@ msgstr ""
 #: mailpile/www/default/html/settings/index.html:160
 #: mailpile/www/default/html/tags/form.html:119
 msgid "Settings"
-msgstr "Nastavitve"
+msgstr "Nustatymai"
 
 #: mailpile/www/default/html/partials/topbar.html:54
 #: mailpile/www/default/html/partials/topbar_setup.html:22
@@ -5440,21 +5455,22 @@ msgstr "Nastavitve"
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:8
 #: mailpile/www/default/html/setup/profiles/index.html:2
 msgid "Profiles"
-msgstr "Profili"
+msgstr "Profiliai"
 
 #: mailpile/www/default/html/partials/topbar.html:55
 #: mailpile/www/default/html/partials/topbar_setup.html:30
 #: mailpile/www/default/html/setup/partials/home.html:13
 #: mailpile/www/default/html/setup/partials/sources_list.html:3
+#, fuzzy
 msgid "Mail Sources"
-msgstr ""
+msgstr "Pašto dėžutės"
 
 #: mailpile/www/default/html/partials/topbar.html:56
 #: mailpile/www/default/html/setup/partials/home.html:20
 #: mailpile/www/default/html/setup/partials/sending.html:3
 #, fuzzy
 msgid "Sending Routes"
-msgstr "Pošiljam sporočilo"
+msgstr "Siunčiamas laiškas"
 
 #: mailpile/www/default/html/partials/topbar.html:57
 #: mailpile/www/default/html/setup/partials/home.html:27
@@ -5469,12 +5485,13 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/security.html:44
 #, fuzzy
 msgid "Encryption Keys"
-msgstr "Šifrirano"
+msgstr "Užšifruotas"
 
 #: mailpile/www/default/html/partials/topbar.html:60
 #: mailpile/www/default/html/setup/partials/home.html:41
+#, fuzzy
 msgid "Security"
-msgstr ""
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/www/default/html/partials/topbar.html:61
 #: mailpile/www/default/html/setup/partials/home.html:48
@@ -5494,9 +5511,8 @@ msgid "Logout"
 msgstr ""
 
 #: mailpile/www/default/html/partials/topbar_setup.html:38
-#, fuzzy
 msgid "Complete"
-msgstr "Sestavljanje"
+msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:143
 msgid "You need at least an e-mail address to proceed."
@@ -5521,7 +5537,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:253
 #, fuzzy
 msgid "New Address"
-msgstr "Naslov:"
+msgstr "Adresas:"
 
 #: mailpile/www/default/html/profiles/account-form.html:272
 #: mailpile/www/default/html/profiles/account-form.html:362
@@ -5532,7 +5548,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:280
 #, fuzzy
 msgid "Signature"
-msgstr "Podpis sporočila"
+msgstr "Laiško parašas"
 
 #: mailpile/www/default/html/profiles/account-form.html:281
 msgid "Everyone needs a unique, witty signature!"
@@ -5545,7 +5561,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:295
 #, fuzzy
 msgid "Detect settings"
-msgstr "Prikazane nastavitve"
+msgstr "Nustatymai"
 
 #: mailpile/www/default/html/profiles/account-form.html:306
 msgid "Auto-detecting settings"
@@ -5558,7 +5574,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:321
 #, fuzzy
 msgid "Sending Mail"
-msgstr "Pošiljam sporočilo"
+msgstr "Siunčiamas laiškas"
 
 #: mailpile/www/default/html/profiles/account-form.html:332
 msgid "Local"
@@ -5568,7 +5584,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:428
 #, fuzzy
 msgid "Host name"
-msgstr "Ime računa"
+msgstr "Paskyros pavadinimas"
 
 #: mailpile/www/default/html/profiles/account-form.html:345
 #: mailpile/www/default/html/profiles/account-form.html:434
@@ -5596,22 +5612,22 @@ msgid "Leave blank to auto-detect"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:385
-#, fuzzy
 msgid "No outgoing mail for this account."
-msgstr "Izhodna poštna pot"
+msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:399
 msgid "Receiving Mail"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:413
+#, fuzzy
 msgid "Mail spool"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/www/default/html/profiles/account-form.html:414
 #, fuzzy
 msgid "Local files"
-msgstr "Preveč datotek"
+msgstr "Per daug failų"
 
 #: mailpile/www/default/html/profiles/account-form.html:461
 msgid "Leave mail on server"
@@ -5671,14 +5687,12 @@ msgid "Enable this mail source"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:588
-#, fuzzy
 msgid "Add New"
-msgstr "Dodaj novo oznako"
+msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:599
-#, fuzzy
 msgid "Important"
-msgstr "Uvozi stike"
+msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:603
 msgid ""
@@ -5696,17 +5710,19 @@ msgid "Got it"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:623
+#, fuzzy
 msgid "Security and Privacy"
-msgstr ""
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/www/default/html/profiles/account-form.html:629
 #, fuzzy
 msgid "Encryption key"
-msgstr "Šifrirano"
+msgstr "Užšifruotas"
 
 #: mailpile/www/default/html/profiles/account-form.html:633
+#, fuzzy
 msgid "Create a new 2048 bit RSA key"
-msgstr ""
+msgstr "Sukurti naują žymę"
 
 #: mailpile/www/default/html/profiles/account-form.html:642
 msgid "Create a new 4096 bit RSA key (slow)"
@@ -5737,8 +5753,9 @@ msgid "Always encrypt if possible (may make mail unreadable)"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:689
+#, fuzzy
 msgid "Automatically attach encryption keys to outgoing mail"
-msgstr ""
+msgstr "Numatytoji išsiunčiamo pašto šifravimo politika"
 
 #: mailpile/www/default/html/profiles/account-form.html:696
 msgid "Prefer compatibility (avoid PGP/MIME, makes mail ugly)"
@@ -5758,8 +5775,9 @@ msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:9
 #: mailpile/www/default/html/profiles/index.html:32
+#, fuzzy
 msgid "Welcome Home"
-msgstr ""
+msgstr "Sveiki Atvykę į Mailpile!"
 
 #: mailpile/www/default/html/profiles/index.html:17
 #: mailpile/www/default/html/profiles/index.html:151
@@ -5767,14 +5785,15 @@ msgstr ""
 #: mailpile/www/default/html/profiles/add/index.html:2
 #, fuzzy
 msgid "Add Account"
-msgstr "Dodaj stik"
+msgstr "Pridėti Kontaktą"
 
 #: mailpile/www/default/html/profiles/index.html:18
 #: mailpile/www/default/html/profiles/index.html:149
 #: mailpile/www/default/html/profiles/index.html:172
 #: mailpile/www/default/html/profiles/add/index.html:6
+#, fuzzy
 msgid "Create a new Account"
-msgstr ""
+msgstr "Sukurti naują žymę"
 
 #: mailpile/www/default/html/profiles/index.html:24
 msgid "Keys"
@@ -5795,12 +5814,12 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:84
 #, fuzzy
 msgid "Edit Profile"
-msgstr "Dodaj profil"
+msgstr "Pridėti Profilį"
 
 #: mailpile/www/default/html/profiles/index.html:104
 #, fuzzy
 msgid "Configure incoming mail"
-msgstr "Časovni žig konfiguracije"
+msgstr "Konfigūracijos laiko žyma"
 
 #: mailpile/www/default/html/profiles/index.html:113
 #: mailpile/www/default/html/profiles/index.html:114
@@ -5810,12 +5829,12 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:120
 #, fuzzy
 msgid "Outgoing mail settings"
-msgstr "Izhodna poštna pot"
+msgstr "Neteisingi nustatymai"
 
 #: mailpile/www/default/html/profiles/index.html:126
 #, fuzzy
 msgid "Security settings"
-msgstr "Nastavitve"
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/www/default/html/profiles/index.html:135
 msgid "Delete or disable account"
@@ -5832,7 +5851,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:162
 #, fuzzy
 msgid "Unread Mail"
-msgstr "Neprebrano"
+msgstr "Neskaityta"
 
 #: mailpile/www/default/html/profiles/index.html:167
 msgid "Browse"
@@ -5848,18 +5867,16 @@ msgid ""
 "Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
 "strong> seconds."
 msgstr ""
-"Preiskano <strong>%(number)s</strong> sporočil v <strong>%(elapsed)s</"
-"strong> sekundah."
 
 #: mailpile/www/default/html/search/index.html:34
 msgid "Vroom!"
-msgstr "Brum!"
+msgstr ""
 
 #: mailpile/www/default/html/search/index.html:40
 #: mailpile/www/default/html/search/index.html:58
 #, fuzzy
 msgid "Nothing Happened."
-msgstr " Brez sprememb"
+msgstr "Niekas nepasikeitė"
 
 #: mailpile/www/default/html/search/index.html:41
 msgid "Usually, matching e-mails would be listed here."
@@ -5882,30 +5899,26 @@ msgid "Inbox zero? Impressive!"
 msgstr ""
 
 #: mailpile/www/default/html/search/index.html:59
-#, fuzzy
 msgid "It seems your Mailpile does not contain any messages for the search"
 msgstr ""
-"Izgleda, da Mailpile ne vsebuje nobenih sporočil, oznak ali stikov, ki bi "
-"ustrezali iskanju"
 
 #: mailpile/www/default/html/search/index.html:64
 msgid "Here are some other options for you"
-msgstr "Na voljo imate še nekaj drugih možnosti"
+msgstr "Štai jums yra kelios kitos parinktys"
 
 #: mailpile/www/default/html/search/index.html:68
 #, fuzzy
 msgid "Browse for mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Pridėta %d pašto dėžučių"
 
 #: mailpile/www/default/html/search/index.html:73
 #, fuzzy
 msgid "Compose a message"
-msgstr "Neprebrana sporočila"
+msgstr "Neperskaityti laiškai"
 
 #: mailpile/www/default/html/search/index.html:80
-#, fuzzy
 msgid "Search Tips & Tricks"
-msgstr "Iskalni pojmi"
+msgstr ""
 
 #: mailpile/www/default/html/search/index.html:89
 msgid "Hrm, We Could Not Find Anything"
@@ -5997,7 +6010,8 @@ msgstr ""
 #: mailpile/www/default/html/settings/backup-keys.html:115
 #, fuzzy
 msgid "Mailpile can be downloaded from: www.mailpile.is"
-msgstr "Poslano z Mailpile, prosto programsko opremo iz www.mailpile.is"
+msgstr ""
+"Išsiųsta, naudojant Mailpile, Laisvą Programinę Įrangą iš www.mailpile.is"
 
 #: mailpile/www/default/html/settings/index.html:5
 msgid "Chelsea Manning"
@@ -6006,7 +6020,7 @@ msgstr ""
 #: mailpile/www/default/html/settings/index.html:6
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:11
 msgid "Email"
-msgstr "E-pošta"
+msgstr ""
 
 #: mailpile/www/default/html/settings/index.html:7
 msgid "chelsea@email.com"
@@ -6023,37 +6037,37 @@ msgstr ""
 
 #: mailpile/www/default/html/settings/index.html:20
 msgid "Login"
-msgstr "Prijava"
+msgstr ""
 
 #: mailpile/www/default/html/settings/index.html:21
 #: mailpile/www/default/html/setup/partials/sending_settings.html:13
 msgid "username@smtp.mailserver.org"
-msgstr ""
+msgstr "username@smtp.mailserver.org"
 
 #: mailpile/www/default/html/settings/index.html:24
 #: mailpile/www/default/html/setup/partials/sending_settings.html:20
 msgid "Server"
-msgstr "Strežnik"
+msgstr "Serveris"
 
 #: mailpile/www/default/html/settings/index.html:25
 #: mailpile/www/default/html/setup/partials/sending_settings.html:21
 msgid "smtp.mailserver.org"
-msgstr ""
+msgstr "smtp.mailserver.org"
 
 #: mailpile/www/default/html/settings/index.html:39
 #: mailpile/www/default/html/settings/index.html:118
 #: mailpile/www/default/html/settings/index.html:124
 #: mailpile/www/default/html/setup/partials/profiles_list.html:4
 msgid "Add Profile"
-msgstr "Dodaj profil"
+msgstr "Pridėti Profilį"
 
 #: mailpile/www/default/html/settings/index.html:40
 msgid "Your Profiles"
-msgstr "Vaši profili"
+msgstr "Jūsų Profiliai"
 
 #: mailpile/www/default/html/settings/index.html:45
 msgid "Address:"
-msgstr "Naslov:"
+msgstr "Adresas:"
 
 #: mailpile/www/default/html/settings/index.html:46
 msgid "Route:"
@@ -6079,7 +6093,7 @@ msgstr ""
 #: mailpile/www/default/html/settings/index.html:89
 #: mailpile/www/default/html/settings/index.html:156
 msgid "Preferences"
-msgstr ""
+msgstr "Nuostatos"
 
 #: mailpile/www/default/html/settings/index.html:90
 msgid "Permit browser notifications"
@@ -6087,7 +6101,7 @@ msgstr ""
 
 #: mailpile/www/default/html/settings/index.html:102
 msgid "Advanced Settings"
-msgstr "Napredne nastavitve"
+msgstr "Išplėstiniai Nustatymai"
 
 #: mailpile/www/default/html/settings/index.html:158
 msgid "Advanced"
@@ -6096,18 +6110,16 @@ msgstr ""
 #: mailpile/www/default/html/settings/mailbox/index.html:14
 #, fuzzy
 msgid "Mailbox Settings"
-msgstr "Nastavitve"
+msgstr "Pašto dėžutės"
 
 #: mailpile/www/default/html/settings/mailbox/index.html:27
-#, fuzzy
 msgid "Archives"
-msgstr "Arhiviraj"
+msgstr ""
 
 #: mailpile/www/default/html/settings/mailbox/index.html:52
 #: mailpile/www/default/html/tags/form.html:161
-#, fuzzy
 msgid "Add messages to search engine"
-msgstr "Optimiziran iskalnik"
+msgstr ""
 
 #: mailpile/www/default/html/settings/mailbox/index.html:54
 msgid "Show mailbox tag in sidebar"
@@ -6145,17 +6157,18 @@ msgstr ""
 #: mailpile/www/default/html/settings/set/password/index.html:121
 #, fuzzy
 msgid "Lock Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Neužšifruotas"
 
 #: mailpile/www/default/html/settings/set/password/index.html:77
 #: mailpile/www/default/html/setup/crypto/index.html:93
+#, fuzzy
 msgid "Expires"
-msgstr ""
+msgstr "Nebegaliojantis"
 
 #: mailpile/www/default/html/settings/set/password/index.html:95
 #, fuzzy
 msgid "Your Password"
-msgstr "Geslo"
+msgstr "Slaptažodis"
 
 #: mailpile/www/default/html/settings/set/password/index.html:161
 msgid "No Keys Here!"
@@ -6267,9 +6280,8 @@ msgid "Can't wait any longer and want to start using your Mailpile?"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/complete.html:13
-#, fuzzy
 msgid "Go to Inbox"
-msgstr "Poštni predal"
+msgstr ""
 
 #: mailpile/www/default/html/setup/partials/configure_key.html:2
 msgid "Create Encryption Key"
@@ -6347,7 +6359,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/modals.html:21
 #, fuzzy
 msgid "Connecting To Gmail"
-msgstr "Povezujem se na %s"
+msgstr "Jungiamasi prie %s"
 
 #: mailpile/www/default/html/setup/partials/modals.html:25
 msgid "Check your"
@@ -6426,7 +6438,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:21
 #, fuzzy
 msgid "Sending Route"
-msgstr "Pošiljam sporočilo"
+msgstr "Siunčiamas laiškas"
 
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:21
 msgid "Technical details of how mail is sent"
@@ -6439,7 +6451,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:27
 #, fuzzy
 msgid "Add New Route"
-msgstr "Dodaj novo oznako"
+msgstr "Pridėti naują kontaktą"
 
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:34
 msgid "Note"
@@ -6456,12 +6468,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:41
 #, fuzzy
 msgid "Save Profile"
-msgstr "Profili"
+msgstr "Profiliai"
 
 #: mailpile/www/default/html/setup/partials/security.html:3
 #, fuzzy
 msgid "Security Settings"
-msgstr "Nastavitve"
+msgstr "Saugumas ir Raktai"
 
 #: mailpile/www/default/html/setup/partials/security.html:5
 msgid "What are your security & privacy preferences?"
@@ -6520,8 +6532,9 @@ msgid "Encrypt various other things"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/security.html:47
+#, fuzzy
 msgid "Attach public key to outgoing emails"
-msgstr ""
+msgstr "Numatytoji išsiunčiamo pašto šifravimo politika"
 
 #: mailpile/www/default/html/setup/partials/security.html:52
 msgid "Send requests through Tor for better anonymity and privacy"
@@ -6536,18 +6549,16 @@ msgid "Download contact pictures via Gravatar (over HTTPS)"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:8
-#, fuzzy
 msgid "No"
-msgstr "Brez"
+msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:8
 msgid "Route Name"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:29
-#, fuzzy
 msgid "Other"
-msgstr "drugi"
+msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:33
 #: mailpile/www/default/html/setup/partials/sources_settings.html:67
@@ -6561,12 +6572,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_configure.html:10
 #, fuzzy
 msgid "Source of these Messages"
-msgstr "Izbriši sporočila"
+msgstr "Ištrinti Laiškai"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:11
 #, fuzzy
 msgid "Create a Tag in your Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Sukurti kiekvienai pašto dėžutei žymę?"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:12
 msgid "Apply the Inbox tag to these Messages"
@@ -6591,7 +6602,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_configure.html:17
 #, fuzzy
 msgid "Import these Messages"
-msgstr "Izbriši sporočila"
+msgstr "Ištrinti Laiškai"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:30
 #: mailpile/www/default/html/tags/edit.html:8
@@ -6651,7 +6662,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_settings.html:18
 #, fuzzy
 msgid "On same computer as Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Sveiki Atvykę į Mailpile!"
 
 #: mailpile/www/default/html/setup/partials/sources_settings.html:19
 msgid "On different computer (server)"
@@ -6668,7 +6679,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_settings.html:42
 #, fuzzy
 msgid "Copy messages to Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Sveiki Atvykę į Mailpile!"
 
 #: mailpile/www/default/html/setup/partials/sources_settings.html:44
 msgid "Do Not Copy"
@@ -6708,8 +6719,9 @@ msgid "Begin"
 msgstr ""
 
 #: mailpile/www/default/html/setup/password/index.html:15
+#, fuzzy
 msgid "Mailpile Secured!"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/www/default/html/setup/password/index.html:17
 msgid "Access to your Mailpile will now require this password."
@@ -6722,13 +6734,13 @@ msgid ""
 msgstr ""
 
 #: mailpile/www/default/html/setup/password/index.html:23
-#, fuzzy
 msgid "Start using Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr ""
 
 #: mailpile/www/default/html/setup/password/index.html:33
+#, fuzzy
 msgid "Change your password"
-msgstr ""
+msgstr "Blogas vartotojo vardas ar slaptažodis"
 
 #: mailpile/www/default/html/setup/password/index.html:40
 msgid "your current password"
@@ -6753,13 +6765,14 @@ msgid "very important secret password"
 msgstr ""
 
 #: mailpile/www/default/html/setup/password/index.html:59
+#, fuzzy
 msgid "Confirm your password"
-msgstr ""
+msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
 #: mailpile/www/default/html/setup/password/index.html:67
 #, fuzzy
 msgid "Set Password"
-msgstr "Geslo"
+msgstr "Slaptažodis"
 
 #: mailpile/www/default/html/setup/welcome/index.html:24
 msgid "Select Language"
@@ -6772,7 +6785,7 @@ msgstr ""
 #: mailpile/www/default/html/tags/form.html:24
 #, fuzzy
 msgid "Tag Settings"
-msgstr "Nastavitve"
+msgstr "Nustatymai"
 
 #: mailpile/www/default/html/tags/form.html:49
 msgid "Show in top of sidebar"
@@ -6789,7 +6802,7 @@ msgstr ""
 #: mailpile/www/default/html/tags/form.html:57
 #, fuzzy
 msgid "Show in search results"
-msgstr "Število zadetkov na stran"
+msgstr "Paieškos rezultatų viename puslapyje"
 
 #: mailpile/www/default/html/tags/form.html:59
 msgid "Hide from search results"
@@ -6798,7 +6811,7 @@ msgstr ""
 #: mailpile/www/default/html/tags/form.html:78
 #, fuzzy
 msgid "Technical settings..."
-msgstr "Tehnične nastavitve sistema"
+msgstr "Techniniai sistemos nustatymai"
 
 #: mailpile/www/default/html/tags/form.html:85
 msgid "Keyword"
@@ -6809,18 +6822,18 @@ msgid "Subtags"
 msgstr ""
 
 #: mailpile/www/default/html/tags/form.html:137
+#, fuzzy
 msgid "Choose an Color"
-msgstr ""
+msgstr "Pakeisti Spalvą"
 
 #: mailpile/www/default/html/tags/form.html:149
 #, fuzzy
 msgid "Mailbox settings"
-msgstr "Nastavitve uvoza kartic vCard"
+msgstr "Pašto dėžutės"
 
 #: mailpile/www/default/html/tags/form.html:165
-#, fuzzy
 msgid "Stop adding messages to search engine"
-msgstr "Optimiziran iskalnik"
+msgstr ""
 
 #: mailpile/www/default/html/tags/form.html:203
 msgid "Delete Tag"
@@ -6829,20 +6842,48 @@ msgstr ""
 #~ msgid "%s: %s"
 #~ msgstr "%s: %s"
 
+#~ msgid "Current directory is %s"
+#~ msgstr "Dabartinis katalogas yra %s"
+
 #~ msgid "New mail check frequency"
-#~ msgstr "Pogostost preverjanja za novo pošto"
+#~ msgstr "Naujų laiškų tikrinimo dažnis"
+
+#~ msgid "DEPRECATED, DO NOT USE"
+#~ msgstr "PASENĘS, NEBENAUDOTI"
+
+#~ msgid ""
+#~ "<h1>Template not found</h1>\n"
+#~ "<p>%s</p><p><b>DATA:</b> %s</p>"
+#~ msgstr ""
+#~ "<h1>Šablonas nerastas</h1>\n"
+#~ "<p>%s</p><p><b>DUOMENYS:</b> %s</p>"
+
+#~ msgid ""
+#~ "<h1>Template error</h1>\n"
+#~ "<pre>%s</pre>\n"
+#~ "<p>%s</p><p><b>DATA:</b> %s</p>"
+#~ msgstr ""
+#~ "<h1>Šablono klaida</h1>\n"
+#~ "<pre>%s</pre>\n"
+#~ "<p>%s</p><p><b>DUOMENYS:</b> %s</p>"
 
 #~ msgid "Links"
-#~ msgstr "Povezave"
+#~ msgstr "Nuorodos"
 
-#~ msgid "Untag %d messages"
-#~ msgstr "Neoznačenih sporočil: %d"
+#~ msgid "Oh no, PGP/GPG support is unavailable!"
+#~ msgstr "O, ne, PGP/GPG palaikymas yra neprieinamas!"
 
-#~ msgid "Tagged %d messages"
-#~ msgstr "Označenih sporočil: %d"
+#~ msgid "Oh noes, we have no GnuPG"
+#~ msgstr "O, ne, mes neturime GnuPG"
 
-#~ msgid "Send"
-#~ msgstr "Pošlji"
+#~ msgid "Basic Information"
+#~ msgstr "Pagrindinė Informacija"
+
+#~ msgid "Learn About PGP Keys"
+#~ msgstr "Sužinoti Apie PGP Raktus"
+
+#~ msgid "Bitcoin Wallet"
+#~ msgstr "Bitcoin Piniginė"
 
 #~ msgid "No Results Found"
-#~ msgstr "Ni rezultatov iskanja"
+#~ msgstr "Rezultatų Nerasta"
