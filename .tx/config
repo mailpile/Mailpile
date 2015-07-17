@@ -1,0 +1,8 @@
+[main]
+host = https://www.transifex.com
+
+[mailpile.mailpilepot]
+source_file = mailpile/locale/mailpile.pot
+source_lang = en
+type = PO
+file_filter = mailpile/locale/<lang>/LC_MESSAGES/mailpile.po
