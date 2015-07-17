@@ -83,6 +83,9 @@ class MailpileCommand(Extension):
         # Jinja 2.7, which isn't apt-get installable.
         e.globals['urlencode'] = s._urlencode
         e.filters['urlencode'] = s._urlencode
+        # Same thing for selectattr
+        e.globals['selectattr'] = s._selectattr
+        e.filters['selectattr'] = s._selectattr
 
         # Make a function-version of the safe command
         e.globals['safe'] = s._safe
@@ -588,6 +591,12 @@ class MailpileCommand(Extension):
         if type(s) == 'Markup':
             s = s.unescape()
         return Markup(urllib.quote_plus(s.encode('utf-8')))
+
+    def _selectattr(self, seq, attr, value=None):
+        if value is None:
+            return [s for s in seq if s.get(attr)]
+        else:
+            return [s for s in seq if s.get(attr) == value]
 
     def _safe(self, s):
         if type(s) == 'Markup':
