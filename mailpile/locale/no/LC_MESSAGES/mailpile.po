@@ -3,25 +3,27 @@
 # This file is distributed under the same license as the mailpile project.
 #
 # Translators:
-# brodul <brodul@gmx.com>, 2013
-# bungabunga, 2014
-# Dražen M. <drazen@ubuntu.si>, 2013,2015
+# Allan Nordhøy <epost@anotheragency.no>, 2015
+# Daniel <i18n@daniel.priv.no>, 2014
+# falense <falensee@gmail.com>, 2014
+# Johannes Andersen <Jotoffen@gmail.com>, 2014
+# Per Thorsheim <transifex@thorsheim.net>, 2015
+# Per Thorsheim <transifex@thorsheim.net>, 2015
+# Sander Danielsen <thelugal@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2015-07-17 01:30+0000\n"
-"PO-Revision-Date: 2015-03-16 22:07+0000\n"
-"Last-Translator: Dražen M. <drazen@ubuntu.si>\n"
-"Language-Team: Slovenian (Slovenia) (http://www.transifex.com/p/mailpile/"
-"language/sl_SI/)\n"
-"Language: sl_SI\n"
+"PO-Revision-Date: 2015-06-21 04:45+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"Language-Team: Norwegian (http://www.transifex.com/p/mailpile/language/no/)\n"
+"Language: no\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: mailpile/app.py:73
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
@@ -48,13 +50,14 @@ msgid "Invalid passphrase, please try again"
 msgstr ""
 
 #: mailpile/auth.py:174
+#, fuzzy
 msgid "Incorrect username or password"
-msgstr ""
+msgstr "Ugyldig brukernavn eller passord"
 
 #: mailpile/auth.py:186
 #, fuzzy
 msgid "Your password: "
-msgstr "Geslo"
+msgstr "Passord"
 
 #: mailpile/auth.py:194 mailpile/commands.py:578
 #: mailpile/www/default/html/auth/login/index.html:2
@@ -69,11 +72,12 @@ msgstr ""
 #: mailpile/auth.py:223
 #, fuzzy
 msgid "No session found!"
-msgstr "Ni rezultatov iskanja"
+msgstr "Ingen innstillinger funnet"
 
 #: mailpile/auth.py:279
+#, fuzzy
 msgid "Enter your password"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/auth.py:297
 msgid "Password forgotten!"
@@ -84,8 +88,9 @@ msgid "Password will never be stored"
 msgstr ""
 
 #: mailpile/auth.py:310
+#, fuzzy
 msgid "Enter your password:"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/auth.py:320
 msgid "Password stored permanently"
@@ -96,8 +101,9 @@ msgid "Password stored temporarily"
 msgstr ""
 
 #: mailpile/auth.py:332
+#, fuzzy
 msgid "Invalid password policy!"
-msgstr ""
+msgstr "Ugyldig brukernavn eller passord"
 
 #: mailpile/command_cache.py:132
 msgid "New results are available"
@@ -105,44 +111,44 @@ msgstr ""
 
 #: mailpile/commands.py:120
 msgid "OK"
-msgstr "OK"
+msgstr "ok"
 
 #: mailpile/commands.py:120
 msgid "Failed"
-msgstr "Ni uspelo"
+msgstr "Feilet"
 
 #: mailpile/commands.py:242
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Feil i tolkning av parametre"
 
 #: mailpile/commands.py:283
-#, python-format
+#, fuzzy, python-format
 msgid "Cached result as %s"
-msgstr ""
+msgstr "Opprettet forvalgte merkelapper"
 
 #: mailpile/commands.py:383 mailpile/commands.py:388
 #, fuzzy
 msgid "No results to choose from!"
-msgstr "Ni rezultatov iskanja"
+msgstr "Fant ingen resultater"
 
 #: mailpile/commands.py:395
 #, python-format
 msgid "No such ID: %s"
-msgstr ""
+msgstr "ID-en finnes ikke: %s"
 
 #: mailpile/commands.py:401 mailpile/commands.py:408 mailpile/commands.py:414
 #, python-format
 msgid "What message is %s?"
-msgstr "Katero sporočilo je %s?"
+msgstr "Hvilken melding er %s?"
 
 #: mailpile/commands.py:422
 #, python-format
 msgid "%s error: %s"
-msgstr "%s napaka: %s"
+msgstr "%s feil: %s"
 
 #: mailpile/commands.py:524
 msgid "Generating result"
-msgstr ""
+msgstr "Genererer resultat"
 
 #: mailpile/commands.py:569
 #, python-format
@@ -150,68 +156,69 @@ msgid "Using pre-cached result object %s"
 msgstr ""
 
 #: mailpile/commands.py:580 mailpile/mail_source/__init__.py:202
+#, fuzzy
 msgid "Shutting down"
-msgstr ""
+msgstr "Avslutter..."
 
 #: mailpile/commands.py:900
 #, python-format
 msgid "Parsing metadata for %d results (full_threads=%s)"
-msgstr ""
+msgstr "Tolker metadata for %d resultater (full_threads=%s)"
 
 #: mailpile/commands.py:905
 #, python-format
 msgid "Search: %s"
-msgstr "Iskanje: %s"
+msgstr "Søk: %s"
 
 #: mailpile/commands.py:1140
 msgid "Loaded metadata index"
-msgstr ""
+msgstr "Lastet inn metadataindeks"
 
 #: mailpile/commands.py:1142
 msgid "Failed to loaded metadata index"
-msgstr ""
+msgstr "Kunne ikke laste inn metadataindeks"
 
 #: mailpile/commands.py:1171
 msgid "Rescanned vcards"
-msgstr ""
+msgstr "Skannet inn vcards på ny"
 
 #: mailpile/commands.py:1177
 msgid "Rescanned mailboxes"
-msgstr ""
+msgstr "Postkasser skannet inn på ny"
 
 #: mailpile/commands.py:1198
 #, python-format
 msgid "Failed to reindex: %s"
-msgstr ""
+msgstr "Feil ved reindeksering: %s"
 
 #: mailpile/commands.py:1205
 #, python-format
 msgid "Indexed %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr "%d meldinger indeksert"
 
 #: mailpile/commands.py:1211
 msgid "Rescan already in progress"
-msgstr ""
+msgstr "Reskanning pågår allerede"
 
 #: mailpile/commands.py:1224
 msgid "Rescanned vcards and mailboxes"
-msgstr ""
+msgstr "Vcards og postbokser skannet inn på ny"
 
 #: mailpile/commands.py:1227 mailpile/commands.py:2292
 #: mailpile/mail_source/__init__.py:919
 msgid "User aborted"
-msgstr ""
+msgstr "Avbrutt av bruker"
 
 #: mailpile/commands.py:1239 mailpile/commands.py:1316
 #: mailpile/commands.py:1374
 #, python-format
 msgid "Rescanning: %s"
-msgstr ""
+msgstr "Reskanner: %s"
 
 #: mailpile/commands.py:1260
 #, python-format
 msgid "Running: %s"
-msgstr "Se izvaja: %s"
+msgstr "Kjører: %s"
 
 #: mailpile/commands.py:1286
 #, python-format
@@ -225,72 +232,73 @@ msgstr ""
 #: mailpile/commands.py:1340
 #, python-format
 msgid "Rescanning: %s %s"
-msgstr ""
+msgstr "Reskanner: %s %s"
 
 #: mailpile/commands.py:1356
 #, python-format
 msgid "Failed to rescan: %s"
-msgstr ""
+msgstr "Feil ved reskanning: %s"
 
 #: mailpile/commands.py:1384
 msgid "Nothing changed"
-msgstr " Brez sprememb"
+msgstr "Ingenting ble endret"
 
 #: mailpile/commands.py:1412
 msgid "Optimized search engine"
-msgstr "Optimiziran iskalnik"
+msgstr "Optimalisert søkemotor"
 
 #: mailpile/commands.py:1414 mailpile/mail_source/__init__.py:634
 msgid "Aborted"
-msgstr "Prekinjeno"
+msgstr "Avbrutt"
 
 #: mailpile/commands.py:1452
+#, fuzzy
 msgid "Launching Mailpile"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/commands.py:1489
-#, python-format
+#, fuzzy, python-format
 msgid "Moved the web server to %s"
-msgstr ""
+msgstr "Startet vevtjener"
 
 #: mailpile/commands.py:1492
-#, python-format
+#, fuzzy, python-format
 msgid "Started the web server on %s"
-msgstr ""
+msgstr "Startet vevtjener"
 
 #: mailpile/commands.py:1495
 #, fuzzy
 msgid "Failed to started the web server"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Startet vevtjener"
 
 #: mailpile/commands.py:1508
 #, python-format
 msgid "Wrote PID to %s"
-msgstr ""
+msgstr "Skrev PID til %s"
 
 #: mailpile/commands.py:1528
 msgid "Rendered the page"
-msgstr ""
+msgstr "Tegnet siden"
 
 #: mailpile/commands.py:1555 mailpile/commands.py:1563
 #: mailpile/commands.py:1570 mailpile/commands.py:1576
 #: mailpile/commands.py:1585 mailpile/commands.py:1728
 msgid "Nothing Found"
-msgstr "Ni rezultatov"
+msgstr "Fant ikke noe"
 
 #: mailpile/commands.py:1669
 msgid "Listed events, threads, and locks"
-msgstr ""
+msgstr "Liste over hendelser, tråder og låser"
 
 #: mailpile/commands.py:1699 mailpile/contrib/hacks/hacks.py:92
 #: mailpile/plugins/eventlog.py:205
 msgid "That was fun!"
-msgstr ""
+msgstr "Det var gøy!"
 
 #: mailpile/commands.py:1700
 #, fuzzy, python-format
 msgid "%s returned: %s"
-msgstr "%s napaka: %s"
+msgstr "%s feil: %s"
 
 #: mailpile/commands.py:1739 mailpile/commands.py:1810
 #: mailpile/commands.py:1838 mailpile/commands.py:1904
@@ -318,42 +326,42 @@ msgstr "%s napaka: %s"
 #: mailpile/plugins/tags.py:847 mailpile/plugins/tags.py:944
 #: mailpile/plugins/vcard_gnupg.py:264
 msgid "In lockdown, doing nothing."
-msgstr ""
+msgstr "Ved nedlåst status, gjør ingenting."
 
 #: mailpile/commands.py:1767
 #, fuzzy, python-format
 msgid "Network error: %s"
-msgstr "%s napaka: %s"
+msgstr "%s feil: %s"
 
 #: mailpile/commands.py:1770
 #, fuzzy, python-format
 msgid "Failed to list: %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Kunne ikke sende %s"
 
 #: mailpile/commands.py:1790
-#, python-format
+#, fuzzy, python-format
 msgid "Listed %d files or directories"
-msgstr ""
+msgstr "Ingen slik fil eller katalog: %s"
 
 #: mailpile/commands.py:1816
 #, python-format
 msgid "Failed to change directories: %s"
-msgstr ""
+msgstr "Feilet å bytte katalog: %s"
 
 #: mailpile/commands.py:1844
 #, python-format
 msgid "That file already exists: %s"
-msgstr ""
+msgstr "Den filen finnes allerede: %s"
 
 #: mailpile/commands.py:1861
 #, python-format
 msgid "Dumped to %s: %s"
-msgstr ""
+msgstr "Dumpet til %s: %s"
 
 #: mailpile/commands.py:1864
 #, python-format
 msgid "Dumped: %s"
-msgstr ""
+msgstr "Dumpet: %s"
 
 #: mailpile/commands.py:1907
 msgid "WARNING: Any changes will be overwritten on login"
@@ -362,79 +370,81 @@ msgstr ""
 #: mailpile/commands.py:1927
 #, fuzzy, python-format
 msgid "Invalid section or variable: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Ugyldig vertsnavn: %s"
 
 #: mailpile/commands.py:1970 mailpile/commands.py:2025
 msgid "Updated your settings"
-msgstr "Nastavitve so bile posodobljene"
+msgstr "Oppdaterte dine innstillinger"
 
 #: mailpile/commands.py:2075
 msgid "Reset to default values"
-msgstr ""
+msgstr "Tilbakestill til standardverdier"
 
 #: mailpile/commands.py:2165
 msgid "Invalid keys"
-msgstr "Neveljavni ključi"
+msgstr "Ugyldige nøkler"
 
 #: mailpile/commands.py:2172
 msgid "Displayed settings"
-msgstr "Prikazane nastavitve"
+msgstr "Viste innstillinger"
 
 #: mailpile/commands.py:2241
-#, python-format
+#, fuzzy, python-format
 msgid "Account not found: %s"
-msgstr ""
+msgstr "Hendelse ikke funnet"
 
 #: mailpile/commands.py:2284
 msgid "Too many files"
-msgstr "Preveč datotek"
+msgstr "For mange filer."
 
 #: mailpile/commands.py:2287
 #, python-format
 msgid "Failed to read: %s"
-msgstr ""
+msgstr "Feil ved lesning av: %s"
 
 #: mailpile/commands.py:2290
 #, fuzzy, python-format
 msgid "Not a mailbox: %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Postkassen %s finnes ikke"
 
 #: mailpile/commands.py:2298
 #, fuzzy
 msgid "Add and configure mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "La til %d postkasser"
 
 #: mailpile/commands.py:2344
 #, fuzzy, python-format
 msgid "Configured %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "La til %d postkasser"
 
 #: mailpile/commands.py:2349
 msgid "Nothing was added"
-msgstr "Nič ni bilo dodano"
+msgstr "Ingenting ble lagt til"
 
 #: mailpile/commands.py:2398
 #, python-format
 msgid "Set output mode to: %s"
-msgstr ""
+msgstr "Sett utdatamodus til: %s"
 
 #: mailpile/commands.py:2494 mailpile/commands.py:2534
 #: mailpile/contrib/gui/gui.py:130
 msgid "Shutting down..."
-msgstr ""
+msgstr "Avslutter..."
 
 #: mailpile/commands.py:2553
 #, python-format
 msgid "The Web interface address is: %s"
-msgstr "Naslov spletnega vmesnika: %s"
+msgstr "Adressen til vevgrensesnittet er: %s"
 
 #: mailpile/commands.py:2556
+#, fuzzy
 msgid "The Web interface is disabled, type `www` to turn it on."
-msgstr ""
+msgstr "Vevgrensesnittet er avskrudd."
 
 #: mailpile/commands.py:2562
+#, fuzzy
 msgid "Type `help` for instructions or `quit` to quit."
-msgstr ""
+msgstr "Skriv 'hjelp' for instruksjoner eller trykk  <Ctrl-d> for å avslutte."
 
 #: mailpile/commands.py:2564
 msgid "Long running operations can be aborted by pressing: <CTRL-C>"
@@ -451,25 +461,26 @@ msgstr ""
 
 #: mailpile/commands.py:2589
 msgid "Commands:"
-msgstr "Ukazi:"
+msgstr "Kommandoer:"
 
 #: mailpile/commands.py:2623
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr "Oznake: (uporabi oznako kot ukaz za prikaz označenih sporočil)"
+msgstr ""
+"Merkelapper: (bruk merkelapper som en kommando for å vise merkede meldinger)"
 
 #: mailpile/commands.py:2632 mailpile/www/jinjaextensions.py:261
 #: mailpile/www/jinjaextensions.py:418
 #: mailpile/www/default/html/jsapi/global/notifications.js:177
 msgid "Error"
-msgstr "Napaka"
+msgstr "Programfeil"
 
 #: mailpile/commands.py:2661 mailpile/commands.py:2689
 msgid "Displayed help"
-msgstr ""
+msgstr "Vist hjelp"
 
 #: mailpile/commands.py:2666
 msgid "Unknown command"
-msgstr "Neznan ukaz"
+msgstr "Ukjent kommando"
 
 #: mailpile/commands.py:2722
 msgid "(subsection)"
@@ -477,85 +488,85 @@ msgstr ""
 
 #: mailpile/commands.py:2739
 msgid "Displayed variables"
-msgstr ""
+msgstr "Viste variabler"
 
 #: mailpile/commands.py:2764
 msgid "Displayed welcome message"
-msgstr ""
+msgstr "Vist velkomstmelding"
 
 #: mailpile/commands.py:2801
 #, python-format
 msgid "Unknown command: %s"
-msgstr "Neznan ukaz: %s"
+msgstr "Ukjent kommando: %s"
 
 #: mailpile/config.py:273
 msgid "true"
-msgstr ""
+msgstr "sant"
 
 #: mailpile/config.py:273
 msgid "yes"
-msgstr "da"
+msgstr "ja"
 
 #: mailpile/config.py:273
 msgid "on"
-msgstr ""
+msgstr "på"
 
 #: mailpile/config.py:276
 msgid "false"
-msgstr ""
+msgstr "usant"
 
 #: mailpile/config.py:276
 msgid "no"
-msgstr ""
+msgstr "Nei"
 
 #: mailpile/config.py:276
 msgid "off"
-msgstr ""
+msgstr "av"
 
 #: mailpile/config.py:278
 #, python-format
 msgid "Invalid boolean: %s"
-msgstr ""
+msgstr "Ugyldig boolsk verdi: %s"
 
 #: mailpile/config.py:301
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr ""
+msgstr "Ugyldig URL-kortnavn: %s"
 
 #: mailpile/config.py:325
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid message delivery protocol: %s"
-msgstr ""
+msgstr "Ugyldig meldingstype: %s"
 
 #: mailpile/config.py:387
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Ugyldig vertsnavn: %s"
 
 #: mailpile/config.py:434
 #, python-format
 msgid "File/directory does not exist: %s"
-msgstr "Datoteka/mapa ne obstaja: %s"
+msgstr "Filen/mappen finnes ikke: %s"
 
 #: mailpile/config.py:473
 #, python-format
 msgid "Not a file: %s"
-msgstr "Ni datoteka: %s"
+msgstr "%s er ikke ei fil"
 
 #: mailpile/config.py:491
 #, python-format
 msgid "Not a directory: %s"
-msgstr "Ni mapa: %s"
+msgstr "Ikke en mappe: %s"
 
 #: mailpile/config.py:529
 #, fuzzy, python-format
 msgid "Not a valid url: %s"
-msgstr "Ni datoteka: %s"
+msgstr "%s er ikke ei fil"
 
 #: mailpile/config.py:541
 #, fuzzy, python-format
 msgid "Not a valid email: %s"
-msgstr "Ni datoteka: %s"
+msgstr "%s er ikke ei fil"
 
 #: mailpile/config.py:577 mailpile/config.py:579 mailpile/config.py:584
 msgid "Not a GPG key ID or fingerprint"
@@ -563,12 +574,12 @@ msgstr ""
 
 #: mailpile/config.py:720
 msgid "Please override this method"
-msgstr ""
+msgstr "Vennligst overstyr denne metoden"
 
 #: mailpile/config.py:753
 #, python-format
 msgid "Only lists or dictionaries can contain dictionary values (key %s)."
-msgstr ""
+msgstr "Bare lister eller ordbøker kan ha ordboksverdier (nøkkel %s)."
 
 #: mailpile/config.py:763
 #, python-format
@@ -578,17 +589,17 @@ msgstr ""
 #: mailpile/config.py:772
 #, python-format
 msgid "Lists cannot have default values (key %s)."
-msgstr ""
+msgstr "Lister kan ikke ha forvalgte verdier (nøkkel %s)."
 
 #: mailpile/config.py:781
 #, python-format
 msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
-msgstr ""
+msgstr "Ugyldig type «%s» for nøkkelen «%s» (verdi: %s)"
 
 #: mailpile/config.py:797
 #, python-format
 msgid "Invalid key for %s: %s"
-msgstr "Neveljavni ključ za %s: %s"
+msgstr "Ugyldig nøkkel for %s: %s"
 
 #: mailpile/config.py:827
 #, python-format
@@ -598,31 +609,31 @@ msgstr ""
 #: mailpile/config.py:900
 #, python-format
 msgid "Modifying %s/%s is not allowed"
-msgstr "Spreminjanje %s/%s ni dovoljeno"
+msgstr "Endring av %s/%s ikke tillatt"
 
 #: mailpile/config.py:904 mailpile/config.py:917
 #, python-format
 msgid "Invalid value for %s/%s: %s"
-msgstr "Neveljavna vrednost za %s/%s: %s"
+msgstr "Ugyldig verdi for %s/%s: %s"
 
 #: mailpile/config.py:920
 #, python-format
 msgid "Unknown constraint for %s/%s: %s"
-msgstr "Neznana omejitev za %s/%s: %s"
+msgstr "Ukjent begrensning for %s/%s: %s"
 
 #: mailpile/config.py:1144
 msgid "Cannot append to fixed dict"
-msgstr ""
+msgstr "Kan ikke legge til fast ordbok"
 
 #: mailpile/config.py:1293
 #, python-format
 msgid "Creating: %s"
-msgstr "Ustvarjanje: %s"
+msgstr "Oppretter: %s"
 
 #: mailpile/config.py:1350
 #, python-format
 msgid "Invalid (%s): section %s does not exist"
-msgstr "Neveljavno (%s): oddelek %s ne obstaja"
+msgstr "Ugyldig (%s): seksjon %s eksisterer ikke"
 
 #: mailpile/config.py:1361
 #, python-format
@@ -632,7 +643,7 @@ msgstr ""
 #: mailpile/config.py:1511
 #, python-format
 msgid "Loading plugin: %s"
-msgstr ""
+msgstr "Laster tillegg: %s"
 
 #: mailpile/config.py:1513
 msgid "Processing manifests"
@@ -641,71 +652,73 @@ msgstr ""
 #: mailpile/config.py:1747
 #, python-format
 msgid "No such mailbox: %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Postkassen %s finnes ikke"
 
 #: mailpile/config.py:1872
 #, python-format
 msgid "%s: Updating: %s"
-msgstr "%s: Posodabljam: %s"
+msgstr "%s: Oppdaterer: %s"
 
 #: mailpile/config.py:1891
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: Odpiranje: %s (lahko traja nekaj časa)"
+msgstr "%s: Åpner: %s (dette kan ta en stund)"
 
 #: mailpile/config.py:1979
+#, fuzzy
 msgid "Please enter your password"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/config.py:2000
 msgid "Sent using Mailpile, Free Software from www.mailpile.is"
-msgstr "Poslano z Mailpile, prosto programsko opremo iz www.mailpile.is"
+msgstr "Sendt med Mailpile - Friprog fra www.mailpile.is"
 
 #: mailpile/config.py:2041
 #, fuzzy, python-format
 msgid "Route %s for %s does not exist."
-msgstr "Neveljavno (%s): oddelek %s ne obstaja"
+msgstr "Ruten %s finnes ikke."
 
 #: mailpile/config.py:2167
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "Foreldrestier er ikke tillat"
 
 #: mailpile/defaults.py:28
 msgid "Mailpile program version"
-msgstr "Različica Mailpile"
+msgstr "Mailpile programversjon"
 
 #: mailpile/defaults.py:29
 #, fuzzy
 msgid "Location of Mailpile data"
-msgstr "Mesto kartic vcard"
+msgstr "Sted for diverse data"
 
 #: mailpile/defaults.py:30
 msgid "Configuration timestamp"
-msgstr "Časovni žig konfiguracije"
+msgstr "Sett opp tidstempel"
 
 #: mailpile/defaults.py:31
+#, fuzzy
 msgid "Master symmetric encryption key"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/defaults.py:32
 msgid "Technical system settings"
-msgstr "Tehnične nastavitve sistema"
+msgstr "Tekniske systemvalg"
 
 #: mailpile/defaults.py:33
 msgid "Max files kept open at once"
-msgstr "Največje število odprtih datotek"
+msgstr "Maksimalt antall filer som blir holdt samtidig åpne"
 
 #: mailpile/defaults.py:34
 msgid "History length (lines, <0=no save)"
-msgstr ""
+msgstr "Historikk (linjer, <0=ikke lagre)"
 
 #: mailpile/defaults.py:35
 msgid "Listening host for web UI"
-msgstr "Gostitelj za poslušanje za spletni vmesnik"
+msgstr "Lyttevert for nettgrensesnittet"
 
 #: mailpile/defaults.py:37
 msgid "Listening port for web UI"
-msgstr "Vrata za poslušanje za spletni vmesnik"
+msgstr "Lytteport for nettgrensesnittet"
 
 #: mailpile/defaults.py:38
 msgid "HTTP path of web UI"
@@ -717,27 +730,27 @@ msgstr ""
 
 #: mailpile/defaults.py:40
 msgid "Posting list target size in KB"
-msgstr ""
+msgstr "Presenterer liste mål størrelse i KB"
 
 #: mailpile/defaults.py:41
 msgid "Max results we sort \"well\""
-msgstr "Največje število \"dobro\" razvrščenih rezultatov"
+msgstr "Maksimalt antall resultater som kan sorteres «bra»"
 
 #: mailpile/defaults.py:42
 msgid "Max length of metadata snippets"
-msgstr ""
+msgstr "Lengst mulige lengde for metainformasjonsutdrag"
 
 #: mailpile/defaults.py:43
 msgid "Debugging flags"
-msgstr "Zastavice za razhroščevanje"
+msgstr "Feilsøkingingssignaler"
 
 #: mailpile/defaults.py:44
 msgid "Host:port of PGP keyserver"
-msgstr "Naslov:vrata strežnika s ključi PGP"
+msgstr "Vert:port til PGP nøkkeltjener"
 
 #: mailpile/defaults.py:46
 msgid "Override the home directory of GnuPG"
-msgstr ""
+msgstr "Overstyr hjemmekatalog for GnuPG"
 
 #: mailpile/defaults.py:48
 msgid "Override the default GPG binary path"
@@ -745,43 +758,43 @@ msgstr ""
 
 #: mailpile/defaults.py:50
 msgid "Local read/write Maildir"
-msgstr "Krajevni poštni predal za branje/pisanje"
+msgstr "Lokal lese- og skrivbar postkasse"
 
 #: mailpile/defaults.py:51
 msgid "Metadata index file"
-msgstr ""
+msgstr "Metainformasjonsindekseringsfil"
 
 #: mailpile/defaults.py:52
 msgid "Search index directory"
-msgstr ""
+msgstr "Søk i indekseringsmappen"
 
 #: mailpile/defaults.py:53
 msgid "Mailboxes we index"
-msgstr "Zabeleženi poštni predali"
+msgstr "Postkasser vi indekserer"
 
 #: mailpile/defaults.py:54
 msgid "Plugins to load on startup"
-msgstr ""
+msgstr "Tillegg som lastes ved oppstart"
 
 #: mailpile/defaults.py:56
 msgid "Locations of assorted data"
-msgstr ""
+msgstr "Sted for diverse data"
 
 #: mailpile/defaults.py:57
 msgid "Default theme"
-msgstr "Privzeta tema"
+msgstr "Forvalt tema"
 
 #: mailpile/defaults.py:59
 msgid "Location of vcards"
-msgstr "Mesto kartic vcard"
+msgstr "Sted for vcards"
 
 #: mailpile/defaults.py:60
 msgid "Location of event log"
-msgstr ""
+msgstr "Plassering av hendelseslogg"
 
 #: mailpile/defaults.py:62
 msgid "Demo mode, disallow changes"
-msgstr ""
+msgstr "Demo modus, tillater ikke endringer"
 
 #: mailpile/defaults.py:63
 msgid "A custom banner for the login page"
@@ -790,7 +803,7 @@ msgstr ""
 #: mailpile/defaults.py:64
 #, fuzzy
 msgid "Proxy settings"
-msgstr "Nastavitve"
+msgstr "Ingen innstillinger funnet"
 
 #: mailpile/defaults.py:65
 msgid "Proxy protocol"
@@ -803,7 +816,7 @@ msgstr ""
 #: mailpile/defaults.py:69 mailpile/defaults.py:136 mailpile/defaults.py:157
 #: mailpile/www/default/html/jsapi/setup/sources.js:32
 msgid "User name"
-msgstr ""
+msgstr "Brukernavn"
 
 #: mailpile/defaults.py:70 mailpile/defaults.py:137 mailpile/defaults.py:158
 #: mailpile/www/default/html/jsapi/setup/sending.js:25
@@ -816,13 +829,13 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_settings.html:16
 #: mailpile/www/default/html/setup/partials/sources_settings.html:57
 msgid "Password"
-msgstr "Geslo"
+msgstr "Passord"
 
 #: mailpile/defaults.py:71 mailpile/defaults.py:140 mailpile/defaults.py:160
 #: mailpile/www/default/html/jsapi/setup/sources.js:40
 #: mailpile/www/default/html/setup/partials/sources_settings.html:63
 msgid "Host"
-msgstr ""
+msgstr "Vert"
 
 #: mailpile/defaults.py:72 mailpile/defaults.py:141 mailpile/defaults.py:161
 #: mailpile/www/default/html/jsapi/setup/sources.js:44
@@ -830,15 +843,15 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_settings.html:24
 #: mailpile/www/default/html/setup/partials/sources_settings.html:78
 msgid "Port"
-msgstr "Vrata"
+msgstr "Port"
 
 #: mailpile/defaults.py:75
 msgid "User preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Brukervalg"
 
 #: mailpile/defaults.py:76
 msgid "Search results per page"
-msgstr "Število zadetkov na stran"
+msgstr "Søkeresultater per side"
 
 #: mailpile/defaults.py:77
 msgid "Misc. data refresh frequency"
@@ -854,11 +867,11 @@ msgstr ""
 
 #: mailpile/defaults.py:80
 msgid "Inline PGP signatures or attached"
-msgstr "Medvrstični podpis PGP ali podpis v priponki"
+msgstr "Innebygde eller vedlagte PGP-signaturer"
 
 #: mailpile/defaults.py:82
 msgid "Encrypt local data to ..."
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Kryptert lokale data til …"
 
 #: mailpile/defaults.py:83
 msgid "Attach public key to outgoing messages?"
@@ -866,7 +879,7 @@ msgstr ""
 
 #: mailpile/defaults.py:85
 msgid "Advertise GPG preferences in a header?"
-msgstr ""
+msgstr "Vise GPG instillinger i header?"
 
 #: mailpile/defaults.py:88
 msgid "Default encryption policy for outgoing mail"
@@ -878,20 +891,20 @@ msgstr ""
 
 #: mailpile/defaults.py:91
 msgid "Default sort order"
-msgstr "Privzeto pravilo razvrščanja"
+msgstr "Standard sorteringsrekkefølge"
 
 #: mailpile/defaults.py:92
 msgid "Key to use to scramble the index"
-msgstr ""
+msgstr "Nøkkel for å røre sammen oversikten"
 
 #: mailpile/defaults.py:93
 msgid "Make encrypted content searchable"
-msgstr "Ustvari možnost iskanja po šifriranih vsebinah"
+msgstr ""
 
 #: mailpile/defaults.py:95
 #, fuzzy
 msgid "Encrypt locally stored mail"
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Kryptert lokale data til …"
 
 #: mailpile/defaults.py:96
 msgid "Encrypt the local search index"
@@ -902,25 +915,26 @@ msgid "Encrypt the contact database"
 msgstr ""
 
 #: mailpile/defaults.py:98
+#, fuzzy
 msgid "Encrypt the event log"
-msgstr ""
+msgstr "Plassering av hendelseslogg"
 
 #: mailpile/defaults.py:99
 #, fuzzy
 msgid "Encrypt misc. local data"
-msgstr "Šifriraj krajevne podatke v ..."
+msgstr "Kryptert lokale data til …"
 
 #: mailpile/defaults.py:100
 msgid "Command run before rescanning"
-msgstr ""
+msgstr "Kommando kjørt før det leses inn på nytt"
 
 #: mailpile/defaults.py:101
 msgid "Default outgoing e-mail address"
-msgstr "Privzeti odhodni naslov"
+msgstr "Standard utgående epostadresse"
 
 #: mailpile/defaults.py:102 mailpile/defaults.py:106
 msgid "Default outgoing mail route"
-msgstr "Privzeta odhodna pot"
+msgstr "Standard utgående e-postrute"
 
 #: mailpile/defaults.py:103
 msgid "Target line length, <40 disables reflow"
@@ -932,28 +946,28 @@ msgstr ""
 
 #: mailpile/defaults.py:107
 msgid "User interface language"
-msgstr "Jezik uporabniškega vmesnika"
+msgstr "Grensesnittspråk"
 
 #: mailpile/defaults.py:108
 msgid "VCard import/export settings"
-msgstr "Nastavitve uvoza/izvoza kartic vCard"
+msgstr "VCard importerings-/eksporteringssvalg"
 
 #: mailpile/defaults.py:109
 msgid "VCard import settings"
-msgstr "Nastavitve uvoza kartic vCard"
+msgstr "VCard importinstillinger"
 
 #: mailpile/defaults.py:110
 msgid "VCard export settings"
-msgstr "Nastavitve izvoza kartic vCard"
+msgstr "VCard eksportinstillinger"
 
 #: mailpile/defaults.py:111
 msgid "VCard context helper settings"
-msgstr ""
+msgstr "Valg for VCard konteksthjelper"
 
 #: mailpile/defaults.py:114
 #, fuzzy
 msgid "Web Interface Preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Brukervalg"
 
 #: mailpile/defaults.py:115
 msgid "User completed setup experience"
@@ -966,7 +980,7 @@ msgstr ""
 #: mailpile/defaults.py:117
 #, fuzzy
 msgid "Quote replies to messages"
-msgstr "Sporočila so bila označena"
+msgstr "Slett meldinger"
 
 #: mailpile/defaults.py:118
 msgid "Nag user to backup their key"
@@ -985,8 +999,9 @@ msgid "Credentials allowed to access Mailpile"
 msgstr ""
 
 #: mailpile/defaults.py:123
+#, fuzzy
 msgid "Salted and hashed password"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/defaults.py:125
 msgid "Secrets the user wants saved"
@@ -997,20 +1012,21 @@ msgid "A secret"
 msgstr ""
 
 #: mailpile/defaults.py:127
+#, fuzzy
 msgid "Security policy"
-msgstr ""
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/defaults.py:131
 msgid "Outgoing message routes"
-msgstr ""
+msgstr "Utgående meldingsruter"
 
 #: mailpile/defaults.py:132 mailpile/www/default/html/settings/index.html:18
 msgid "Route name"
-msgstr ""
+msgstr "Rutenavn"
 
 #: mailpile/defaults.py:133
 msgid "Messaging protocol"
-msgstr ""
+msgstr "Meldingsprotokoll"
 
 #: mailpile/defaults.py:138 mailpile/defaults.py:159
 msgid "Authentication scheme"
@@ -1020,15 +1036,15 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sending.js:28
 #: mailpile/www/default/html/profiles/account-form.html:374
 msgid "Shell command"
-msgstr ""
+msgstr "Skallkommando"
 
 #: mailpile/defaults.py:143
 msgid "Incoming message sources"
-msgstr ""
+msgstr "Innkommende meldingskilder"
 
 #: mailpile/defaults.py:144
 msgid "Source name"
-msgstr ""
+msgstr "Kildenavn"
 
 #: mailpile/defaults.py:145
 msgid "Profile this source belongs to"
@@ -1039,21 +1055,22 @@ msgid "Is this mail source enabled?"
 msgstr ""
 
 #: mailpile/defaults.py:147
+#, fuzzy
 msgid "Mail source protocol"
-msgstr ""
+msgstr "Ukjent mail kildeprotokoll: %s"
 
 #: mailpile/defaults.py:154
 msgid "Shell command run before syncing"
-msgstr ""
+msgstr "Skallkommando som kjøres før synkronisering"
 
 #: mailpile/defaults.py:155
 msgid "Shell command run after syncing"
-msgstr ""
+msgstr "Skallkommando som kjøres etter synkronisering"
 
 #: mailpile/defaults.py:156
 #: mailpile/www/default/html/jsapi/setup/sources.js:53
 msgid "How frequently to check for mail"
-msgstr ""
+msgstr "Hvor ofte postkassen skal sjekkes"
 
 #: mailpile/defaults.py:162
 msgid "Keep server connections alive"
@@ -1071,16 +1088,17 @@ msgstr ""
 #: mailpile/defaults.py:165
 #: mailpile/www/default/html/jsapi/setup/sources.js:65
 msgid "Default mailbox policy"
-msgstr ""
+msgstr "Forvalgt postkassepraksis"
 
 #: mailpile/defaults.py:168
 #: mailpile/www/default/html/jsapi/setup/sources.js:69
 msgid "Copy mail to a local mailbox?"
-msgstr ""
+msgstr "Kopier e-post til lokal postkasse?"
 
 #: mailpile/defaults.py:169
+#, fuzzy
 msgid "Parent tag for mailbox tags"
-msgstr ""
+msgstr "Opprett merkelapp for hver enkelt postasse?"
 
 #: mailpile/defaults.py:170
 msgid "Guess which local tags match"
@@ -1089,7 +1107,7 @@ msgstr ""
 #: mailpile/defaults.py:171
 #: mailpile/www/default/html/jsapi/setup/sources.js:73
 msgid "Create a tag for each mailbox?"
-msgstr ""
+msgstr "Opprett merkelapp for hver enkelt postasse?"
 
 #: mailpile/defaults.py:172
 msgid "Make tags visible by default?"
@@ -1098,16 +1116,16 @@ msgstr ""
 #: mailpile/defaults.py:173
 #: mailpile/www/default/html/jsapi/setup/sources.js:77
 msgid "Is a potential source of new mail"
-msgstr ""
+msgstr "Er en mulig kilde til ny e-post."
 
 #: mailpile/defaults.py:174 mailpile/defaults.py:185
 #: mailpile/www/default/html/jsapi/setup/sources.js:81
 msgid "Tags applied to messages"
-msgstr "Sporočila so bila označena"
+msgstr ""
 
 #: mailpile/defaults.py:176
 msgid "Mailboxes"
-msgstr ""
+msgstr "Postbokser"
 
 #: mailpile/defaults.py:177
 msgid "The name of this mailbox"
@@ -1115,39 +1133,39 @@ msgstr ""
 
 #: mailpile/defaults.py:178
 msgid "Mailbox source path"
-msgstr ""
+msgstr "Postboks kildesti"
 
 #: mailpile/defaults.py:179
 msgid "Mailbox policy"
-msgstr ""
+msgstr "Postboks policy"
 
 #: mailpile/defaults.py:182
 msgid "Local mailbox path"
-msgstr ""
+msgstr "Lokal postkassesti"
 
 #: mailpile/defaults.py:183
 msgid "Is a source of new mail"
-msgstr ""
+msgstr "Er en kilde for ny e-post"
 
 #: mailpile/defaults.py:184
 msgid "A tag representing this mailbox"
-msgstr ""
+msgstr "Denne postkassen er representert ved en merkelapp"
 
 #: mailpile/httpd.py:250
 msgid "XMLRPC has been disabled for now."
-msgstr "XMLRPC je trenutno onemogočen."
+msgstr "XMLRPC er for tiden deaktivert."
 
 #: mailpile/httpd.py:272
 msgid "OMG, input too big"
-msgstr "OMB, vnos je prevelik"
+msgstr "Herregud, for mye inndata"
 
 #: mailpile/httpd.py:275
 msgid "Unknown content-type"
-msgstr "Neznana vrsta vsebine"
+msgstr "Ukjent innholdstype (Content-Type)"
 
 #: mailpile/httpd.py:281
 msgid "Internal Error"
-msgstr "Notranja Napaka"
+msgstr "Intern programfeil"
 
 #: mailpile/httpd.py:318
 msgid "File not found (invalid path)"
@@ -1159,55 +1177,55 @@ msgstr ""
 
 #: mailpile/httpd.py:429 mailpile/mail_source/__init__.py:301
 msgid "Internal error"
-msgstr "Notranja napaka"
+msgstr "Intern programfeil"
 
 #: mailpile/i18n.py:132
-#, python-format
+#, fuzzy, python-format
 msgid "Loaded language %s"
-msgstr ""
+msgstr "Lastet tillegg: %s"
 
 #: mailpile/mailutils.py:46
 #, python-format
 msgid "%s is too large to be a mailbox ID"
-msgstr ""
+msgstr "%s er for stor til å være postkasse-ID"
 
 #: mailpile/mailutils.py:296
 #, fuzzy, python-format
 msgid "Unknown crypto policy: %s"
-msgstr "Neznan vrstni red razvrščanja: %s"
+msgstr "Ukjent sorteringsrekkefølge: %s"
 
 #: mailpile/mailutils.py:632 mailpile/mailutils.py:710
 #: mailpile/mailutils.py:915 mailpile/mailutils.py:925
 msgid "Message or mailbox is read-only."
-msgstr ""
+msgstr "Melding eller postkasse er kun lesbar."
 
 #: mailpile/mailutils.py:853
 msgid "Message not found?"
-msgstr "Sporočilo ni bilo najdeno?"
+msgstr "Kunne ikke finne meldingen?"
 
 #: mailpile/mailutils.py:972
 #, python-format
 msgid "Extracted attachment %s"
-msgstr "Razširjena priloga %s"
+msgstr "Hentet ut vedlegg %s"
 
 #: mailpile/mailutils.py:985
 #, python-format
 msgid "Wrote preview to: %s"
-msgstr "Predogled zapisan v: %s"
+msgstr "Skrev forhåndsvisning til: %s"
 
 #: mailpile/mailutils.py:987
 msgid "Failed to generate thumbnail"
-msgstr "Spodletelo ustvarjanje sličice"
+msgstr "Kunne ikke laget et miniatyrbilde"
 
 #: mailpile/mailutils.py:993
 #, python-format
 msgid "Wrote attachment to: %s"
-msgstr "Priloga zapisana v: %s"
+msgstr "Skrev vedlegget til: %s"
 
 #: mailpile/mailutils.py:998
 #, python-format
 msgid "No attachments found for: %s"
-msgstr "Ni bila najdena nobena priloga za: %s"
+msgstr "Fant ingen vedlegg for: %s"
 
 #: mailpile/mailutils.py:1050
 msgid "(Invalid HTML suppressed)"
@@ -1233,24 +1251,24 @@ msgstr ""
 #: mailpile/search.py:170
 #, fuzzy
 msgid "(deleted)"
-msgstr "Izbriši"
+msgstr "Slett"
 
 #: mailpile/search.py:257 mailpile/search.py:273
 msgid "Loading metadata index..."
-msgstr ""
+msgstr "Laster inn metadata indeks…"
 
 #: mailpile/search.py:265
 msgid "Your metadata index is either too old, too new or corrupt!"
-msgstr ""
+msgstr "Din metadataindeksering er enten for gammel, for ny, eller korrupt!"
 
 #: mailpile/search.py:269
 msgid "Corrupt data in metadata index! Trying to cope..."
-msgstr ""
+msgstr "Korrupt data i metadataindeksering! Prøver å gjøre det beste av det..."
 
 #: mailpile/search.py:292
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr ""
+msgstr "Metadata indeks fantes ikke: %s"
 
 #: mailpile/search.py:295
 msgid "Loading global posting list..."
@@ -1263,28 +1281,28 @@ msgstr ""
 
 #: mailpile/search.py:360
 msgid "Saving metadata index changes..."
-msgstr ""
+msgstr "Lagrer endringer i metadata indeksen…"
 
 #: mailpile/search.py:379
 msgid "Saved metadata index changes"
-msgstr ""
+msgstr "Lagret endringer i metadata indeks"
 
 #: mailpile/search.py:396
 msgid "Saving metadata index..."
-msgstr ""
+msgstr "Lagrer metadata indeks..."
 
 #: mailpile/search.py:423
 msgid "Saved metadata index"
-msgstr ""
+msgstr "Lagret metadata indeks"
 
 #: mailpile/search.py:434
 msgid "Updating high level indexes"
-msgstr ""
+msgstr "Oppdaterer høynivå indekser"
 
 #: mailpile/search.py:442
 #, python-format
 msgid "Bogus line: %s"
-msgstr ""
+msgstr "Falsk linje: %s"
 
 #: mailpile/search.py:603
 #, python-format
@@ -1294,27 +1312,27 @@ msgstr ""
 #: mailpile/search.py:610
 #, python-format
 msgid "=%s/%s has a bogus date"
-msgstr ""
+msgstr "=%s/%s har en ugyldig dato "
 
 #: mailpile/search.py:631
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
-msgstr "OPOZORILO: Ni ustreznega IDja sporočila za %s"
+msgstr "ADVARSEL: Ingen gyldig Meldings-ID for %s"
 
 #: mailpile/search.py:680
 #, python-format
 msgid "%s: Skipped: %s"
-msgstr "%s: Preskočeno: %s"
+msgstr "%s: Hoppet over: %s"
 
 #: mailpile/search.py:683
 #, python-format
 msgid "%s: Checking: %s"
-msgstr "%s: Preverjanje: %s"
+msgstr "%s: Kontrollerer: %s"
 
 #: mailpile/search.py:689
 #, python-format
 msgid "%s: Error opening: %s (%s)"
-msgstr "%s: Napaka pri odpiranju: %s (%s)"
+msgstr "%s: Programfeil ved åpning: %s (%)"
 
 #: mailpile/search.py:700
 #, python-format
@@ -1329,7 +1347,7 @@ msgstr ""
 #: mailpile/search.py:705
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
-msgstr "%s: Branje vaše pošte: %d%% (%d/%d sporočil)"
+msgstr "%s: Leser din e-post: %d%% (%d/%d meldinger)"
 
 #: mailpile/search.py:734
 #, python-format
@@ -1343,58 +1361,58 @@ msgstr ""
 
 #: mailpile/search.py:969
 msgid "(processing message ...)"
-msgstr ""
+msgstr "(behandler melding ...)"
 
 #: mailpile/search.py:1289
 #, python-format
 msgid "=%s/%s has bogus HTML."
-msgstr ""
+msgstr "=%s/%s har ugyldig HTML."
 
 #: mailpile/search.py:1681
-#, python-format
+#, fuzzy, python-format
 msgid "Opening mailbox %s"
-msgstr ""
+msgstr "Postkasser skannet inn på ny"
 
 #: mailpile/search.py:1725
 #, python-format
 msgid "Searching for %s"
-msgstr "Iskanje %s"
+msgstr "Søker etter %s"
 
 #: mailpile/search.py:1754
 #, python-format
 msgid "Ignoring common word: %s"
-msgstr ""
+msgstr "Ignorerer vanlig ord: %s"
 
 #: mailpile/search.py:1923
 msgid "Recovering from bogus sort, corrupt index?"
-msgstr ""
+msgstr "Gjenoppretter fra ugyldig sortering, korrupt indeks?"
 
 #: mailpile/search.py:1925
 msgid "Please tell team@mailpile.is !"
-msgstr "Povejte na team@mailpile.is !"
+msgstr "Vær så snill å si fra til team@mailpile.is (på engelsk)!"
 
 #: mailpile/search.py:1934
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Neznan vrstni red razvrščanja: %s"
+msgstr "Ukjent sorteringsrekkefølge: %s"
 
 #: mailpile/search.py:1939
 msgid "Sort failed, sorting badly. Partial index?"
-msgstr ""
+msgstr "Sortering mislyktes, sorterer dårlig. Ufullstendig indeks?"
 
 #: mailpile/search.py:1947
 msgid "Collapsing conversations..."
-msgstr ""
+msgstr "Slår sammen samtaler..."
 
 #: mailpile/smtp_client.py:187
 #, python-format
 msgid "SendMail: from %s (%s), to %s via %s\n"
-msgstr ""
+msgstr "Sendmail: fra %s (%s), til %s via %s\n"
 
 #: mailpile/smtp_client.py:193
 #, python-format
 msgid "Connecting to %s"
-msgstr "Povezujem se na %s"
+msgstr "Kobler til %s"
 
 #: mailpile/smtp_client.py:206
 #, python-format
@@ -1404,106 +1422,109 @@ msgstr ""
 #: mailpile/smtp_client.py:236
 #, python-format
 msgid "SMTP connection to: %s:%s as %s\n"
-msgstr ""
+msgstr "SMTP-tilkobling ti: %s:%s som %s\n"
 
 #: mailpile/smtp_client.py:273
+#, fuzzy
 msgid "Bad character in username or password"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/smtp_client.py:277 mailpile/mail_source/imap.py:691
 #: mailpile/mail_source/pop3.py:87
 msgid "Invalid username or password"
-msgstr ""
+msgstr "Ugyldig brukernavn eller passord"
 
 #: mailpile/smtp_client.py:280
 msgid "Sender rejected by SMTP server"
-msgstr ""
+msgstr "SMTP-tjeneren avviste avsender"
 
 #: mailpile/smtp_client.py:288
 #, python-format
 msgid "Server rejected recpient: %s"
-msgstr ""
+msgstr "Tjener avslo mottaker: %s"
 
 #: mailpile/smtp_client.py:291
 #, python-format
 msgid "Server rejected DATA: %s %s"
-msgstr ""
+msgstr "Tjener avslo DATA: %s %s"
 
 #: mailpile/smtp_client.py:303
 msgid "Error spooling mail"
-msgstr ""
+msgstr "Feil ved oppsamling av e-post for senere forsendelse"
 
 #: mailpile/smtp_client.py:311
 #, python-format
 msgid "Invalid sendmail command/SMTP server: %s"
-msgstr ""
+msgstr "Ugyldig sendmail-kommando eller SMTP-tjener: %s"
 
 #: mailpile/smtp_client.py:323
 msgid "Preparing message..."
-msgstr "Pripravljam sporočilo ..."
+msgstr "Forbereder meldingen…"
 
 #: mailpile/smtp_client.py:329
 msgid "Quitting"
-msgstr ""
+msgstr "Avslutter"
 
 #: mailpile/ui.py:314
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
-msgstr "Poteklo: %.3fs (%s)"
+msgstr "Tid brukt: %.3fs (%s)"
 
 #: mailpile/ui.py:320
 #, fuzzy, python-format
 msgid "Elapsed: %.3fs"
-msgstr "Poteklo: %.3fs (%s)"
+msgstr "Tid brukt: %.3fs (%s)"
 
 #: mailpile/ui.py:501 mailpile/ui.py:516
 #, fuzzy
 msgid "Template not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Kunne ikke finne meldingen"
 
 #: mailpile/ui.py:508 mailpile/ui.py:523
+#, fuzzy
 msgid "Template error"
-msgstr ""
+msgstr "Mal"
 
 #: mailpile/ui.py:538
 #, python-format
 msgid "Message %s is not editable"
-msgstr ""
+msgstr "Meldingen %s er ikke redigerbar"
 
 #: mailpile/ui.py:564
 msgid "Number of edit messages does not match!"
-msgstr ""
+msgstr "Antallet endringsmeldinger samsvarer ikke!"
 
 #: mailpile/ui.py:635
 msgid "FIXME: Multiple results, OMG WTF"
-msgstr ""
+msgstr "FIKSMEG: Flere resultater, dette burde aldri skje..."
 
 #: mailpile/util.py:552
 msgid "now"
-msgstr ""
+msgstr "nå"
 
 #: mailpile/util.py:554
 #, python-format
 msgid "%d mins"
-msgstr ""
+msgstr "%d minutter"
 
 #: mailpile/util.py:556
 #, python-format
 msgid "%d hour"
-msgstr ""
+msgstr "%d time"
 
 #: mailpile/util.py:558
 #, python-format
 msgid "%d hours"
-msgstr ""
+msgstr "%d timer"
 
 #: mailpile/util.py:568
 msgid "Monday"
 msgstr ""
 
 #: mailpile/util.py:568
+#, fuzzy
 msgid "Mon"
-msgstr ""
+msgstr "på"
 
 #: mailpile/util.py:568
 msgid "Tuesday"
@@ -1542,8 +1563,9 @@ msgid "Saturday"
 msgstr ""
 
 #: mailpile/util.py:570
+#, fuzzy
 msgid "Sat"
-msgstr ""
+msgstr "Statistikk"
 
 #: mailpile/util.py:571
 msgid "Sunday"
@@ -1558,8 +1580,9 @@ msgid "January"
 msgstr ""
 
 #: mailpile/util.py:572
+#, fuzzy
 msgid "Jan"
-msgstr ""
+msgstr "og"
 
 #: mailpile/util.py:572
 msgid "February"
@@ -1572,7 +1595,7 @@ msgstr ""
 #: mailpile/util.py:573
 #, fuzzy
 msgid "March"
-msgstr "Išči"
+msgstr "Søk"
 
 #: mailpile/util.py:573
 msgid "Mar"
@@ -1619,8 +1642,9 @@ msgid "September"
 msgstr ""
 
 #: mailpile/util.py:576
+#, fuzzy
 msgid "Sep"
-msgstr ""
+msgstr "Oppsett"
 
 #: mailpile/util.py:576
 msgid "October"
@@ -1652,46 +1676,48 @@ msgid "Line number %s is out of range"
 msgstr ""
 
 #: mailpile/vcard.py:1494
+#, fuzzy
 msgid "Generating new VCards"
-msgstr ""
+msgstr "Genererer resultat"
 
 #: mailpile/vcard.py:1501
 #, fuzzy, python-format
 msgid "Merging %s"
-msgstr "Iskanje %s"
+msgstr "Søker etter %s"
 
 #: mailpile/vcard.py:1531
 #, fuzzy, python-format
 msgid "Failed to merge VCard %s into %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Feil ved lesning av: %s"
 
 #: mailpile/vcard.py:1547
 #, fuzzy, python-format
 msgid "Failed to create new VCard for %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Feil ved lesning av: %s"
 
 #: mailpile/vcard.py:1555
-#, python-format
+#, fuzzy, python-format
 msgid "Saving %d updated cards"
-msgstr ""
+msgstr "Lagrer tilstanden til %s til %s"
 
 #: mailpile/vfs.py:316
 #, fuzzy
 msgid "My Files"
-msgstr "Datoteke"
+msgstr "Filer"
 
 #: mailpile/vfs.py:332
 msgid "Unix mail spool"
 msgstr ""
 
 #: mailpile/vfs.py:384
+#, fuzzy
 msgid "Mailpile VFS"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/contrib/datadig/datadig.py:36
 #, fuzzy
 msgid "Nothing Happened"
-msgstr " Brez sprememb"
+msgstr "Ingenting ble endret"
 
 #: mailpile/contrib/datadig/datadig.py:127
 #: mailpile/contrib/datadig/datadig.py:130
@@ -1702,120 +1728,122 @@ msgstr ""
 #: mailpile/contrib/datadig/datadig.py:138
 #, fuzzy, python-format
 msgid "Found %d rows in %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr "Fant %d resultat på %.3fs"
 
 #: mailpile/contrib/demos/demos.py:45
 msgid "Demo Contacts"
-msgstr "Vzročni stiki"
+msgstr "Demonstrasjons kontakter"
 
 #: mailpile/contrib/demos/demos.py:46
 msgid "This is the demo importer"
-msgstr "To je vzorčni uvoznik"
+msgstr "Dette er demonstrasjonsimportøren"
 
 #: mailpile/contrib/demos/demos.py:49
 msgid "Activate demo importer"
-msgstr ""
+msgstr "Aktiver demonstrajonsimport"
 
 #: mailpile/contrib/demos/demos.py:50
 msgid "Contact name"
-msgstr "Ime stika"
+msgstr "Kontaktnavn"
 
 #: mailpile/contrib/demos/demos.py:51
 msgid "Contact email"
-msgstr "E-pošta stika"
+msgstr "Kontaktepost"
 
 #: mailpile/contrib/demos/demos.py:112
 msgid "I refuse to work with empty or gross data"
-msgstr ""
+msgstr "Jeg vil ikke jobbe med tomme eller store data"
 
 #: mailpile/contrib/demos/demos.py:116
 msgid "I hashed your data for you, yay!"
-msgstr ""
+msgstr "Jeg hashet dataene for deg, yay!"
 
 #: mailpile/contrib/forcegrapher/forcegrapher.py:80
 msgid "Generated graph view"
 msgstr ""
 
 #: mailpile/contrib/gui/gui.py:76
+#, fuzzy
 msgid "Starting up ..."
-msgstr ""
+msgstr "Starter opp"
 
 #: mailpile/contrib/gui/gui.py:79
 #, fuzzy
 msgid "Open Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Mailpile"
 
 #: mailpile/contrib/gui/gui.py:84
+#, fuzzy
 msgid "Quit"
-msgstr ""
+msgstr "Avslutter"
 
 #: mailpile/contrib/gui/gui.py:137
 #, fuzzy, python-format
 msgid "%d messages"
-msgstr "Poslano %d sporočil"
+msgstr "Sendt %d meldinger"
 
 #: mailpile/contrib/hacks/hacks.py:60
 msgid "Tried to fix metadata index"
-msgstr ""
+msgstr "Forsøkte å fikse metadata indexen"
 
 #: mailpile/contrib/hacks/hacks.py:135
 msgid "Displayed raw metadata"
-msgstr "Prikazani neobdelani meta-podatki"
+msgstr "Viste rå metadata"
 
 #: mailpile/contrib/hacks/hacks.py:154
 #, fuzzy
 msgid "Displayed message keywords"
-msgstr "Prikazano sporočil: %d"
+msgstr "Viste %d meldinger"
 
 #: mailpile/contrib/hacks/hacks.py:170
 #, fuzzy
 msgid "Displayed message HeaderPrint"
-msgstr "Prikazano sporočil: %d"
+msgstr "Viste %d meldinger"
 
 #: mailpile/contrib/i18nhelper/i18nhelper.py:19
 #, fuzzy
 msgid "Nothing recently translated"
-msgstr " Brez sprememb"
+msgstr "Ingenting ble endret"
 
 #: mailpile/crypto/gpgi.py:35
 msgid "Trust not calculated"
-msgstr "Zaupanje ni izračunano"
+msgstr "Pålitelighet ikke utregnet"
 
 #: mailpile/crypto/gpgi.py:36
 msgid "Unknown trust"
-msgstr "Neznano zaupanje"
+msgstr "Ukjent pålitelighet"
 
 #: mailpile/crypto/gpgi.py:37
 msgid "Undefined trust"
-msgstr "Nedoločeno zaupanje"
+msgstr "Udefinert pålitelighet"
 
 #: mailpile/crypto/gpgi.py:38
 msgid "Never trust"
-msgstr "Nikoli ne zaupaj"
+msgstr "Upålitelig"
 
 #: mailpile/crypto/gpgi.py:39
 msgid "Marginally trust"
-msgstr "Delno zaupanje"
+msgstr "Marginal pålitelighet"
 
 #: mailpile/crypto/gpgi.py:40
 msgid "Full trust"
-msgstr "Polno zaupanje"
+msgstr "Full pålitelighet"
 
 #: mailpile/crypto/gpgi.py:41
 msgid "Ultimate trust"
-msgstr "Popolno zaupanje"
+msgstr "Ubestridt pålitelighet"
 
 #: mailpile/crypto/gpgi.py:42
 msgid "Expired key, not trusted"
-msgstr "Potekel ključ, ni vreden zaupanja"
+msgstr "Utløpt nøkkel, ikke pålitelig"
 
 #: mailpile/crypto/gpgi.py:43
 msgid "Disabled key, not trusted"
-msgstr "Onemogočen ključ, ni vreden zaupanja"
+msgstr "Deaktivert nøkkel, ikke pålitelig"
 
 #: mailpile/crypto/gpgi.py:44
 msgid "Revoked key, not trusted"
-msgstr "Preklican ključ, ni vreden zaupanja"
+msgstr "Inndratt nøkkel, ikke pålitelig"
 
 #: mailpile/crypto/gpgi.py:46
 msgid "RSA"
@@ -1823,15 +1851,15 @@ msgstr "RSA"
 
 #: mailpile/crypto/gpgi.py:47
 msgid "RSA (encrypt only)"
-msgstr "RSA (zgolj šifriraj)"
+msgstr "RSA (kun kryptering)"
 
 #: mailpile/crypto/gpgi.py:48
 msgid "RSA (sign only)"
-msgstr "RSA (zgolj podpiši)"
+msgstr "RSA (kun signering)"
 
 #: mailpile/crypto/gpgi.py:49
 msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (zgolj šifriraj)"
+msgstr "Elgamal (kun kryptering)"
 
 #: mailpile/crypto/gpgi.py:50
 msgid "DSA"
@@ -1839,7 +1867,7 @@ msgstr "DSA"
 
 #: mailpile/crypto/gpgi.py:51
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (šifriraj/podpiši) [OGROŽEN]"
+msgstr "Elgamal (kryptering/signering) [KOMPROMITTERT]"
 
 #: mailpile/crypto/gpgi.py:52
 msgid "EdDSA"
@@ -1854,80 +1882,82 @@ msgid "Your PGP key is needed for signing."
 msgstr ""
 
 #: mailpile/crypto/gpgi.py:460
+#, fuzzy
 msgid "Unlock your encryption key"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/crypto/gpgi.py:1052
 #, fuzzy, python-format
 msgid "Keys missing for %s"
-msgstr "Iskanje %s"
+msgstr "Tvetydige eller manglende nøkler til %s"
 
 #: mailpile/crypto/gpgi.py:1056
-#, python-format
+#, fuzzy, python-format
 msgid "Keys ambiguous for %s"
-msgstr ""
+msgstr "Tvetydige eller manglende nøkler til %s"
 
 #: mailpile/crypto/mime.py:357
 msgid "Failed to sign message!"
-msgstr ""
+msgstr "Kunne ikke signere melding"
 
 #: mailpile/crypto/mime.py:419
 #, fuzzy
 msgid "Failed to encrypt message!"
-msgstr "Dodajanje sporočila neuspešno"
+msgstr "Kunne ikke signere melding"
 
 #: mailpile/mail_source/__init__.py:147
 msgid "Starting up"
-msgstr ""
+msgstr "Starter opp"
 
 #: mailpile/mail_source/__init__.py:149
 #: mailpile/www/default/html/setup/partials/sources_settings.html:2
+#, fuzzy
 msgid "Mail Source"
-msgstr ""
+msgstr "Råkilde:"
 
 #: mailpile/mail_source/__init__.py:201
 #, python-format
 msgid "Interrupted: %s"
-msgstr ""
+msgstr "Avbrutt: %s"
 
 #: mailpile/mail_source/__init__.py:312
 #, fuzzy, python-format
 msgid "Discovered %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Reskannet %d postkasser"
 
 #: mailpile/mail_source/__init__.py:314
 #, fuzzy, python-format
 msgid "Processed %d mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Reskannet %d postkasser"
 
 #: mailpile/mail_source/__init__.py:316
 #, fuzzy, python-format
 msgid "Failed to process %d"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Feil ved reskanning: %s"
 
 #: mailpile/mail_source/__init__.py:318
 #, fuzzy, python-format
 msgid "No new mail at %s"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Postkassen %s finnes ikke"
 
 #: mailpile/mail_source/__init__.py:359
 msgid "Checking for new mailboxes"
-msgstr ""
+msgstr "Ser etter nye mailbokser"
 
 #: mailpile/mail_source/__init__.py:370
-#, python-format
+#, fuzzy, python-format
 msgid "Checking for new mailboxes in %s"
-msgstr ""
+msgstr "Ser etter nye mailbokser"
 
 #: mailpile/mail_source/__init__.py:501
 #, fuzzy, python-format
 msgid "Mail: %s"
-msgstr "Ni datoteka: %s"
+msgstr "%s er ikke ei fil"
 
 #: mailpile/mail_source/__init__.py:691
 #, fuzzy, python-format
 msgid "Copying message: %s"
-msgstr "Pošiljam sporočilo"
+msgstr "Rå meldingsdata: %s"
 
 #: mailpile/mail_source/__init__.py:783
 #, python-format
@@ -1937,32 +1967,32 @@ msgstr ""
 #: mailpile/mail_source/__init__.py:794
 #, fuzzy, python-format
 msgid "Updating search engine for %s"
-msgstr "Optimiziran iskalnik"
+msgstr "Optimalisert søkemotor"
 
 #: mailpile/mail_source/__init__.py:875
 msgid "Internal error!  Sleeping..."
-msgstr ""
+msgstr "Intern feil! Venter..."
 
 #: mailpile/mail_source/__init__.py:886 mailpile/mail_source/__init__.py:929
 msgid "Shut down"
-msgstr ""
+msgstr "Avslutt"
 
 #: mailpile/mail_source/__init__.py:959
 #, python-format
 msgid "Unknown mail source protocol: %s"
-msgstr ""
+msgstr "Ukjent mail kildeprotokoll: %s"
 
 #: mailpile/mail_source/imap.py:344
 msgid "Failed to add message"
-msgstr "Dodajanje sporočila neuspešno"
+msgstr "Feilet å legge til melding"
 
 #: mailpile/mail_source/imap.py:350
 msgid "Failed to remove message"
-msgstr ""
+msgstr "Feilet å fjerne melding"
 
 #: mailpile/mail_source/imap.py:370
 msgid "Mailbox is out of sync"
-msgstr ""
+msgstr "Mailboks ute av sync"
 
 #: mailpile/mail_source/imap.py:402
 #, python-format
@@ -1971,17 +2001,18 @@ msgstr ""
 
 #: mailpile/mail_source/imap.py:431
 msgid "Failed to list mailbox contents"
-msgstr ""
+msgstr "Opplisting av postkasseinnhold feilet"
 
 #: mailpile/mail_source/imap.py:521
+#, fuzzy
 msgid "Not connected to IMAP server."
-msgstr ""
+msgstr "Tilkoblet IMAP-tjener %s"
 
 #: mailpile/mail_source/imap.py:598 mailpile/mail_source/imap.py:639
 #: mailpile/mail_source/pop3.py:49 mailpile/mail_source/pop3.py:76
 #, fuzzy
 msgid "Nothing is wrong"
-msgstr "Ni rezultatov"
+msgstr "Fant ikke noe"
 
 #: mailpile/mail_source/imap.py:679
 msgid "Failed to STARTTLS"
@@ -1990,24 +2021,24 @@ msgstr ""
 #: mailpile/mail_source/imap.py:719
 #, python-format
 msgid "Connected to IMAP server %s"
-msgstr ""
+msgstr "Tilkoblet IMAP-tjener %s"
 
 #: mailpile/mail_source/imap.py:733
 msgid "Connection timed out"
-msgstr ""
+msgstr "Tidsavbrudd for tilkobling"
 
 #: mailpile/mail_source/imap.py:737
 msgid "An IMAP protocol error occurred"
-msgstr ""
+msgstr "En IMAP protokollfeil har oppstått"
 
 #: mailpile/mail_source/imap.py:741 mailpile/mail_source/pop3.py:89
 msgid "A network error occurred"
-msgstr ""
+msgstr "En nettverksfeil har oppstått"
 
 #: mailpile/mail_source/local.py:18
 #, fuzzy
 msgid "Local mailboxes"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Lokal postkassesti"
 
 #: mailpile/mail_source/local.py:39
 #, python-format
@@ -2015,40 +2046,40 @@ msgid "Watching %d mbox mailboxes"
 msgstr ""
 
 #: mailpile/mail_source/pop3.py:52
-#, python-format
+#, fuzzy, python-format
 msgid "Watching %d POP3 mailboxes"
-msgstr ""
+msgstr "Reskannet %d postkasser"
 
 #: mailpile/mailboxes/__init__.py:117 mailpile/mailboxes/mbox.py:124
 #, python-format
 msgid "Saving %s state to %s"
-msgstr ""
+msgstr "Lagrer tilstanden til %s til %s"
 
 #: mailpile/mailboxes/mbox.py:144 mailpile/mailboxes/mbox.py:149
 msgid "No data found"
-msgstr "Ni bilo najdenih podatkov"
+msgstr "Kunne ikke finne noen data"
 
 #: mailpile/mailboxes/mbox.py:178
 msgid "Message not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Kunne ikke finne meldingen"
 
 #: mailpile/mailboxes/wervd.py:123
 msgid "Could not find a filename for the message."
-msgstr ""
+msgstr "Kunne ikke finne filnavn for meldingen."
 
 #: mailpile/mailboxes/wervd.py:143
 #, python-format
 msgid "Invalid message type: %s"
-msgstr ""
+msgstr "Ugyldig meldingstype: %s"
 
 #: mailpile/mailboxes/wervd.py:146
 msgid "Mailbox messages are immutable"
-msgstr ""
+msgstr "Mailboks meldinger kan ikke mutes"
 
 #: mailpile/plugins/__init__.py:730
 #, python-format
 msgid "Already registered: %s"
-msgstr ""
+msgstr "Allerede registrert: %s"
 
 #: mailpile/plugins/autotag.py:160
 msgid "Retraining SpamBayes autotaggers"
@@ -2062,12 +2093,12 @@ msgstr ""
 #: mailpile/plugins/autotag.py:241
 #, python-format
 msgid "Reading %s (%d/%d, %s=%s)"
-msgstr ""
+msgstr "Leser %s (%d/%d, %s=%s)"
 
 #: mailpile/plugins/autotag.py:255
 #, python-format
 msgid "Failed to process message at =%s"
-msgstr ""
+msgstr "Kunne ikke behandle meldingen på =%s"
 
 #: mailpile/plugins/autotag.py:262
 #, python-format
@@ -2081,58 +2112,58 @@ msgstr ""
 #: mailpile/plugins/autotag.py:310
 #, python-format
 msgid "Unknown tag: %s"
-msgstr ""
+msgstr "Ukjent merkelapp: %s"
 
 #: mailpile/plugins/autotag.py:326
 #, python-format
 msgid "Classified %d messages"
-msgstr "Razvrščenih sporočil: %d"
+msgstr "Klassifiserte %d meldinger"
 
 #: mailpile/plugins/autotag.py:361
 #, python-format
 msgid "Auto-tagged %d messages"
-msgstr "Avto-označenih sporočil: %d"
+msgstr "Automerket %d meldinger"
 
 #: mailpile/plugins/compose.py:42
 #, python-format
 msgid "Sent: %s"
-msgstr "Poslano: %s"
+msgstr "Sendt: %s"
 
 #: mailpile/plugins/compose.py:188
 msgid "Cannot update from multiple files"
-msgstr ""
+msgstr "Kan ikke oppdatere fra flere filer"
 
 #: mailpile/plugins/compose.py:270
 msgid "Message is not editable"
-msgstr ""
+msgstr "Meldingen kan ikke endres"
 
 #: mailpile/plugins/compose.py:280 mailpile/plugins/compose.py:307
 #, python-format
 msgid "%d message(s) edited"
-msgstr ""
+msgstr "%d melding(er) endret"
 
 #: mailpile/plugins/compose.py:282
 #, python-format
 msgid "%d message(s) created"
-msgstr ""
+msgstr "%d melding(er) opprettet"
 
 #: mailpile/plugins/compose.py:302
 msgid "No messages!"
-msgstr "Ni sporočil!"
+msgstr "Ingen meldinger!"
 
 #: mailpile/plugins/compose.py:309
 #, python-format
 msgid "%d message(s) unchanged"
-msgstr ""
+msgstr "%d melding(er) uendret"
 
 #: mailpile/plugins/compose.py:352 mailpile/plugins/compose.py:523
 msgid "Please use update for editing messages"
-msgstr ""
+msgstr "Vennligst bruk oppdater for å endre meldinger"
 
 #: mailpile/plugins/compose.py:485
 #, python-format
 msgid "%s wrote:"
-msgstr ""
+msgstr "%s skrev:"
 
 #: mailpile/plugins/compose.py:498
 #, python-format
@@ -2142,15 +2173,15 @@ msgstr ""
 #: mailpile/plugins/compose.py:500
 #, python-format
 msgid "Composing a reply from %(from)s to %(to)s"
-msgstr ""
+msgstr "Skriver svar fra %(from)s til %(to)s"
 
 #: mailpile/plugins/compose.py:552
 msgid "You must configure a From address first."
-msgstr "Najprej morate izpolni ti polje \"Od\""
+msgstr "Du må opprette en Fra: adresse først."
 
 #: mailpile/plugins/compose.py:561 mailpile/plugins/compose.py:665
 msgid "No message found"
-msgstr ""
+msgstr "Ingen melding funnet"
 
 #: mailpile/plugins/compose.py:647
 msgid "Sorry, ephemeral messages cannot have attachments at this time."
@@ -2158,11 +2189,11 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:706
 msgid "No files found"
-msgstr "Ne najdem nobenih datotek"
+msgstr "Ingen filer funnet"
 
 #: mailpile/plugins/compose.py:713 mailpile/plugins/compose.py:777
 msgid "No messages selected"
-msgstr "Ni izbranih sporočil"
+msgstr "Ingen melding valgt"
 
 #: mailpile/plugins/compose.py:728 mailpile/plugins/compose.py:793
 #, python-format
@@ -2177,7 +2208,7 @@ msgstr ""
 #: mailpile/plugins/compose.py:734
 #, fuzzy, python-format
 msgid "Attached %s to %d messages, failed %d"
-msgstr "Avto-označenih sporočil: %d"
+msgstr "Automerket %d meldinger"
 
 #: mailpile/plugins/compose.py:737
 #, python-format
@@ -2185,63 +2216,64 @@ msgid "Attached %s to %d messages"
 msgstr ""
 
 #: mailpile/plugins/compose.py:795
-#, python-format
+#, fuzzy, python-format
 msgid "Error removing from %s"
-msgstr ""
+msgstr "Feil ved fjerning av linjer fra %s"
 
 #: mailpile/plugins/compose.py:799
-#, python-format
+#, fuzzy, python-format
 msgid "Removed %s from %d messages, failed %d"
-msgstr ""
+msgstr "Utførte %d overførelser, feilet %d."
 
 #: mailpile/plugins/compose.py:802
 #, fuzzy, python-format
 msgid "Removed %s from %d messages"
-msgstr "Indeksirano sporočil: %d"
+msgstr "%d meldinger indeksert"
 
 #: mailpile/plugins/compose.py:883
 msgid "Sending message"
-msgstr "Pošiljam sporočilo"
+msgstr "Sender melding"
 
 #: mailpile/plugins/compose.py:918
 #, python-format
 msgid "Failed to send %s"
-msgstr "Napaka pri pošiljanju %s"
+msgstr "Kunne ikke sende %s"
 
 #: mailpile/plugins/compose.py:943
 #, python-format
 msgid "Sent %d messages"
-msgstr "Poslano %d sporočil"
+msgstr "Sendt %d meldinger"
 
 #: mailpile/plugins/compose.py:945
 msgid "Nothing was sent"
-msgstr "Nič ni bilo poslano"
+msgstr "Ingenting ble sendt"
 
 #: mailpile/plugins/compose.py:967 mailpile/plugins/compose.py:1037
 msgid "Nothing to do!"
-msgstr ""
+msgstr "Ingenting å gjøre!"
 
 #: mailpile/plugins/compose.py:971
 msgid "Failed to attach files"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Feilet å legge til filer"
 
 #: mailpile/plugins/compose.py:977
 #, python-format
 msgid "%d message(s) updated"
-msgstr ""
+msgstr "%d melding(er) oppdatert"
 
 #: mailpile/plugins/compose.py:990
 msgid "Missing encryption keys"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/plugins/compose.py:995
+#, fuzzy
 msgid "Could not encrypt message"
-msgstr ""
+msgstr "Kunne ikke finne filnavn for meldingen."
 
 #: mailpile/plugins/compose.py:1000
 #, fuzzy
 msgid "Could not sign message"
-msgstr "Prikazano eno samo sporočilo"
+msgstr "Kunne ikke signere melding"
 
 #: mailpile/plugins/compose.py:1035
 #, python-format
@@ -2254,63 +2286,63 @@ msgstr ""
 
 #: mailpile/plugins/compose.py:1067
 msgid "The outbox is empty"
-msgstr ""
+msgstr "Utboksen er tom"
 
 #: mailpile/plugins/compose.py:1071
 msgid "Delay between attempts to send mail"
-msgstr "Odlog med poskusi pošiljanja sporočila "
+msgstr "Pause mellom forsøk på å sende mail"
 
 #: mailpile/plugins/contacts.py:56
 msgid "(BASE64 ENCODED DATA)"
-msgstr ""
+msgstr "(BASE64-kodet DATA)"
 
 #: mailpile/plugins/contacts.py:150
 #, python-format
 msgid "Found %d results"
-msgstr ""
+msgstr "Fant %d resultater"
 
 #: mailpile/plugins/contacts.py:210
 msgid "Add contacts here!"
-msgstr ""
+msgstr "Legg til kontakter her!"
 
 #: mailpile/plugins/contacts.py:281
 #, python-format
 msgid "Added %d contacts"
-msgstr "Dodano stikov: %d"
+msgstr "La til %d kontakter"
 
 #: mailpile/plugins/contacts.py:312
 #, python-format
 msgid "No such contact: %s"
-msgstr ""
+msgstr "Ingen slik kontakt: %s"
 
 #: mailpile/plugins/contacts.py:314
 #, python-format
 msgid "Removed contacts: %s"
-msgstr ""
+msgstr "Fjernet kontakt: %s"
 
 #: mailpile/plugins/contacts.py:317
 msgid "No contacts found"
-msgstr ""
+msgstr "Ingen kontakter funnet"
 
 #: mailpile/plugins/contacts.py:385
 #, python-format
 msgid "Added %d lines"
-msgstr "Dodano vrstic: %d"
+msgstr "La til %d linjer"
 
 #: mailpile/plugins/contacts.py:395
 #, python-format
 msgid "Error adding lines to %s"
-msgstr ""
+msgstr "Feil ved tillegg av linjer til %s"
 
 #: mailpile/plugins/contacts.py:423
 #, python-format
 msgid "Removed %d lines"
-msgstr ""
+msgstr "Fjernet %d linjer"
 
 #: mailpile/plugins/contacts.py:433
 #, python-format
 msgid "Error removing lines from %s"
-msgstr ""
+msgstr "Feil ved fjerning av linjer fra %s"
 
 #: mailpile/plugins/contacts.py:488
 #, python-format
@@ -2331,32 +2363,32 @@ msgstr ""
 
 #: mailpile/plugins/contacts.py:771
 msgid "Searched for addresses"
-msgstr "Poiskano med naslovi"
+msgstr "Søkte etter adresser"
 
 #: mailpile/plugins/contacts.py:825
 #, fuzzy
 msgid "Local mail"
-msgstr "E-pošta stika"
+msgstr "Lokal postkassesti"
 
 #: mailpile/plugins/contacts.py:836
 #, fuzzy, python-format
 msgid "Unhandled outgoing mail protocol: %s"
-msgstr "Privzeta odhodna pot"
+msgstr "Ukjent mail kildeprotokoll: %s"
 
 #: mailpile/plugins/contacts.py:888
 #, fuzzy
 msgid "Mail spool not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Kunne ikke finne meldingen"
 
 #: mailpile/plugins/contacts.py:891
-#, python-format
+#, fuzzy, python-format
 msgid "Already configured: %s"
-msgstr ""
+msgstr "Allerede lastet: %s"
 
 #: mailpile/plugins/contacts.py:950
-#, python-format
+#, fuzzy, python-format
 msgid "Unhandled incoming mail protocol: %s"
-msgstr ""
+msgstr "Ukjent mail kildeprotokoll: %s"
 
 #: mailpile/plugins/contacts.py:961
 #, python-format
@@ -2364,12 +2396,14 @@ msgid "The PGP key for %s is ready for use."
 msgstr ""
 
 #: mailpile/plugins/contacts.py:964
+#, fuzzy
 msgid "PGP key generation is complete"
-msgstr ""
+msgstr "Ny PGP nøkkel produsert"
 
 #: mailpile/plugins/contacts.py:972
+#, fuzzy
 msgid "PGP key generation failed!"
-msgstr ""
+msgstr "Ny PGP nøkkel produsert"
 
 #: mailpile/plugins/contacts.py:993
 #, python-format
@@ -2379,35 +2413,37 @@ msgstr ""
 #: mailpile/plugins/contacts.py:1230
 #, fuzzy
 msgid "Account Updated!"
-msgstr "Ime računa"
+msgstr "Kontonavn"
 
 #: mailpile/plugins/contacts.py:1233
 #: mailpile/www/default/html/profiles/edit/index.html:2
+#, fuzzy
 msgid "Edit Account"
-msgstr ""
+msgstr "Rediger rute"
 
 #: mailpile/plugins/contacts.py:1281
 msgid "Choosing from address"
-msgstr "Izbiram med naslovi"
+msgstr "Velg fra adresser"
 
 #: mailpile/plugins/crypto_gnupg.py:69
-#, python-format
+#, fuzzy, python-format
 msgid "Encryption key for %s.asc"
-msgstr ""
+msgstr "Krypterer konfigurasjon til %s"
 
 #: mailpile/plugins/crypto_gnupg.py:71
+#, fuzzy
 msgid "My encryption key.asc"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/plugins/crypto_gnupg.py:132 mailpile/plugins/search.py:67
 #: mailpile/plugins/vcard_gnupg.py:229
 msgid "No results"
-msgstr ""
+msgstr "Ingen resultater"
 
 #: mailpile/plugins/crypto_gnupg.py:208
-#, python-format
+#, fuzzy, python-format
 msgid "Imported %d keys"
-msgstr ""
+msgstr "Importer valgte nøkler"
 
 #: mailpile/plugins/crypto_gnupg.py:406
 msgid "Looks good!"
@@ -2418,15 +2454,16 @@ msgid "Proposed fixes:"
 msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:416
+#, fuzzy
 msgid "You need a new key!"
-msgstr ""
+msgstr "Laget ny nøkkel"
 
 #: mailpile/plugins/crypto_gnupg.py:417 mailpile/plugins/crypto_gnupg.py:426
 #: mailpile/plugins/crypto_gnupg.py:427 mailpile/plugins/crypto_gnupg.py:433
 #: mailpile/plugins/crypto_gnupg.py:443
 #, fuzzy, python-format
 msgid "Run: %s"
-msgstr "Se izvaja: %s"
+msgstr "Kjører: %s"
 
 #: mailpile/plugins/crypto_gnupg.py:418
 #, python-format
@@ -2448,7 +2485,7 @@ msgstr ""
 #: mailpile/plugins/crypto_gnupg.py:432
 #, fuzzy
 msgid "Revoke bad keys:"
-msgstr "Preklican ključ, ni vreden zaupanja"
+msgstr "Tilbaketrukket"
 
 #: mailpile/plugins/crypto_gnupg.py:434
 msgid "Say yes to the first question, follow the instructions"
@@ -2470,12 +2507,12 @@ msgstr ""
 #: mailpile/plugins/crypto_gnupg.py:442
 #, fuzzy
 msgid "Disable bad keys:"
-msgstr "Onemogočen ključ, ni vreden zaupanja"
+msgstr "Deaktivert nøkkel, ikke pålitelig"
 
 #: mailpile/plugins/crypto_gnupg.py:444 mailpile/plugins/crypto_gnupg.py:445
-#, python-format
+#, fuzzy, python-format
 msgid "Type %s"
-msgstr ""
+msgstr "Type"
 
 #: mailpile/plugins/crypto_gnupg.py:476
 #, python-format
@@ -2483,9 +2520,9 @@ msgid "%s: --- Disabled."
 msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:481
-#, python-format
+#, fuzzy, python-format
 msgid "%s: --- Revoked."
-msgstr ""
+msgstr "Tilbaketrukket"
 
 #: mailpile/plugins/crypto_gnupg.py:485
 #, python-format
@@ -2584,26 +2621,26 @@ msgstr ""
 #: mailpile/plugins/eventlog.py:115
 #, python-format
 msgid "Found %d events"
-msgstr ""
+msgstr "Fant %d hendelser"
 
 #: mailpile/plugins/eventlog.py:152
 #, python-format
 msgid "Canceled %d events"
-msgstr ""
+msgstr "Kansellerte %d hendelser"
 
 #: mailpile/plugins/eventlog.py:174
 msgid "Need an event ID!"
 msgstr ""
 
 #: mailpile/plugins/eventlog.py:181
-#, python-format
+#, fuzzy, python-format
 msgid "Event %s is not undoable"
-msgstr ""
+msgstr "Hendelsen kan ikke gjøres om"
 
 #: mailpile/plugins/eventlog.py:183
 #, fuzzy, python-format
 msgid "Event %s not found"
-msgstr "Sporočilo ni bilo najdeno"
+msgstr "Hendelse ikke funnet"
 
 #: mailpile/plugins/eventlog.py:194
 msgid "Watching logs: Press CTRL-C to return to the CLI"
@@ -2612,7 +2649,7 @@ msgstr ""
 #: mailpile/plugins/exporters.py:94
 #, fuzzy
 msgid "Parent directory does not exist."
-msgstr "Datoteka/mapa ne obstaja: %s"
+msgstr "Filen/mappen finnes ikke: %s"
 
 #: mailpile/plugins/exporters.py:96
 msgid "Is the disk full? Are permissions lacking?"
@@ -2621,22 +2658,22 @@ msgstr ""
 #: mailpile/plugins/exporters.py:97
 #, fuzzy, python-format
 msgid "Failed to create mailbox: %s"
-msgstr "Spodletelo ustvarjanje sličice"
+msgstr "Feil ved lesning av: %s"
 
 #: mailpile/plugins/exporters.py:105
 #, fuzzy, python-format
 msgid "Exporting message =%s ..."
-msgstr "Pripravljam sporočilo ..."
+msgstr "Forbereder meldingen…"
 
 #: mailpile/plugins/exporters.py:109
-#, python-format
+#, fuzzy, python-format
 msgid "Message =%s is unreadable! Skipping."
-msgstr ""
+msgstr "Meldingen %s er ikke redigerbar"
 
 #: mailpile/plugins/exporters.py:142
 #, python-format
 msgid "Exported %d messages to %s"
-msgstr "%d sporočil izvoženih v %s"
+msgstr ""
 
 #: mailpile/plugins/html_magic.py:64
 msgid "Serving up API content"
@@ -2644,46 +2681,46 @@ msgstr ""
 
 #: mailpile/plugins/html_magic.py:115
 msgid "Generated Javascript API"
-msgstr ""
+msgstr "Laget Javascript API"
 
 #: mailpile/plugins/migrate.py:33
 #, python-format
 msgid "%(user)s on %(host)s"
-msgstr ""
+msgstr "%(user)s på %(host)s"
 
 #: mailpile/plugins/migrate.py:42
 #, python-format
 msgid "Could not migrate route: %s"
-msgstr ""
+msgstr "Kunne ikke overføre rute: %s"
 
 #: mailpile/plugins/migrate.py:219
 #, python-format
 msgid "Unknown migration: %s (available: %s)"
-msgstr ""
+msgstr "Ukjent overførelse: %s (tilgjengelig: %s)"
 
 #: mailpile/plugins/migrate.py:239
 #, python-format
 msgid "Performed %d migrations, failed %d."
-msgstr ""
+msgstr "Utførte %d overførelser, feilet %d."
 
 #: mailpile/plugins/plugins.py:31
 msgid "Listed available plugins"
-msgstr ""
+msgstr "Listet tilgjengelige tillegg"
 
 #: mailpile/plugins/plugins.py:49
 #, python-format
 msgid "Already loaded: %s"
-msgstr ""
+msgstr "Allerede lastet: %s"
 
 #: mailpile/plugins/plugins.py:59
 #, python-format
 msgid "Failed to load plugin: %s"
-msgstr ""
+msgstr "Feilet å laste tillegg: %s"
 
 #: mailpile/plugins/plugins.py:63
 #, python-format
 msgid "Loaded plugins: %s"
-msgstr ""
+msgstr "Lastet tillegg: %s"
 
 #: mailpile/plugins/plugins.py:82
 #, python-format
@@ -2693,90 +2730,91 @@ msgstr ""
 #: mailpile/plugins/plugins.py:85
 #, python-format
 msgid "Plugin not loaded: %s"
-msgstr ""
+msgstr "Tillegg ikke innlastet: %s"
 
 #: mailpile/plugins/plugins.py:92
 #, python-format
 msgid "Disabled plugins: %s (restart required)"
-msgstr ""
+msgstr "Avskrudde tillegg: %s (krever omstart)"
 
 #: mailpile/plugins/search.py:65
+#, fuzzy
 msgid "Unprintable results"
-msgstr ""
+msgstr "Genererer resultat"
 
 #: mailpile/plugins/search.py:136
 #, python-format
 msgid "Weird starting point: %s"
-msgstr ""
+msgstr "Merkelig utgangspunkt: %s"
 
 #: mailpile/plugins/search.py:210
-#, python-format
+#, fuzzy, python-format
 msgid "Prepared %d search results (context=%s)"
-msgstr ""
+msgstr "Forberedte %d søkeresultater"
 
 #: mailpile/plugins/search.py:212
 #, python-format
 msgid "Found %d results in %.3fs"
-msgstr ""
+msgstr "Fant %d resultat på %.3fs"
 
 #: mailpile/plugins/search.py:230
 msgid "You must perform a search before requesting the next page."
-msgstr "Preden zahtevate naslednjo stran morate izvesti iskanje."
+msgstr "Du må gjennomføre et søk før du kan etterspørre neste side."
 
 #: mailpile/plugins/search.py:233
 msgid "Displayed next page of results."
-msgstr "Prikazana naslednja stran rezultatov."
+msgstr "Viste neste side med resultat."
 
 #: mailpile/plugins/search.py:249
 msgid "You must perform a search before requesting the previous page."
-msgstr "Preden zahtevate prejšnjo stran morate izvesti iskanje."
+msgstr "Du må gjennomføre et søk før du kan etterspørre den forrige siden."
 
 #: mailpile/plugins/search.py:252
 msgid "Displayed previous page of results."
-msgstr "Prikazana prejšnja stran rezultatov."
+msgstr "Viste forrige side med resultat."
 
 #: mailpile/plugins/search.py:268
 #, python-format
 msgid "Changed sort order to %s"
-msgstr ""
+msgstr "Endret sorteringsrekkefølge til %s"
 
 #: mailpile/plugins/search.py:332
 #, python-format
 msgid "Raw message: %s"
-msgstr ""
+msgstr "Rå meldingsdata: %s"
 
 #: mailpile/plugins/search.py:360
 msgid "Displayed a single message"
-msgstr "Prikazano eno samo sporočilo"
+msgstr "Viste én melding"
 
 #: mailpile/plugins/search.py:364
 #, python-format
 msgid "Displayed %d messages"
-msgstr "Prikazano sporočil: %d"
+msgstr "Viste %d meldinger"
 
 #: mailpile/plugins/setup_magic.py:52
 msgid "New"
-msgstr "Novo"
+msgstr "Ny"
 
 #: mailpile/plugins/setup_magic.py:60
 msgid "Inbox"
-msgstr "Poštni predal"
+msgstr "Innboks"
 
 #: mailpile/plugins/setup_magic.py:67
 msgid "Blank"
-msgstr ""
+msgstr "Blank"
 
 #: mailpile/plugins/setup_magic.py:77
 msgid "Drafts"
-msgstr "Osnutki"
+msgstr "utkast"
 
 #: mailpile/plugins/setup_magic.py:86
 msgid "Outbox"
-msgstr ""
+msgstr "Utboks"
 
 #: mailpile/plugins/setup_magic.py:95
 msgid "Sent"
-msgstr "Poslano"
+msgstr "Sendt"
 
 #: mailpile/plugins/setup_magic.py:104
 msgid "Spam"
@@ -2784,32 +2822,32 @@ msgstr "Spam"
 
 #: mailpile/plugins/setup_magic.py:110
 msgid "MaybeSpam"
-msgstr "MogočeSpam"
+msgstr "MuligSpam"
 
 #: mailpile/plugins/setup_magic.py:115
 msgid "Ham"
-msgstr ""
+msgstr "Skinke"
 
 #: mailpile/plugins/setup_magic.py:124
 msgid "Trash"
-msgstr "Smeti"
+msgstr "Søppel"
 
 #: mailpile/plugins/setup_magic.py:142
 msgid "Photos"
-msgstr "Fotografije"
+msgstr "Bilder"
 
 #: mailpile/plugins/setup_magic.py:151
 #, fuzzy
 msgid "Documents"
-msgstr "Priponke"
+msgstr "Vedlegg"
 
 #: mailpile/plugins/setup_magic.py:165
 msgid "All Mail"
-msgstr "Vsa pošta"
+msgstr "All epost"
 
 #: mailpile/plugins/setup_magic.py:241
 msgid "Created default tags"
-msgstr ""
+msgstr "Opprettet forvalgte merkelapper"
 
 #: mailpile/plugins/setup_magic.py:262
 msgid "Enabling spambayes autotagger"
@@ -2821,11 +2859,11 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:270
 msgid "Enabling gravatar image importer"
-msgstr ""
+msgstr "Muliggjør gravatar bilde import"
 
 #: mailpile/plugins/setup_magic.py:276
 msgid "Importing contacts from GPG keyring"
-msgstr ""
+msgstr "Importerte kontakter fra GPG nøkkelring"
 
 #: mailpile/plugins/setup_magic.py:322
 msgid ""
@@ -2839,9 +2877,9 @@ msgid ""
 msgstr ""
 
 #: mailpile/plugins/setup_magic.py:483
-#, python-format
+#, fuzzy, python-format
 msgid "Checking ISPDB for %(domain)s"
-msgstr ""
+msgstr "Ser etter nye mailbokser"
 
 #: mailpile/plugins/setup_magic.py:529
 #, python-format
@@ -2849,73 +2887,73 @@ msgid "Found %(domain)s in ISPDB"
 msgstr ""
 
 #: mailpile/plugins/setup_magic.py:542
-#, python-format
+#, fuzzy, python-format
 msgid "Guessing settings for %(email)s"
-msgstr ""
+msgstr "Fant nye innstillinger for %d adresser"
 
 #: mailpile/plugins/setup_magic.py:588
 #, python-format
 msgid "Found settings for %d addresses"
-msgstr ""
+msgstr "Fant nye innstillinger for %d adresser"
 
 #: mailpile/plugins/setup_magic.py:591
 msgid "No settings found"
-msgstr ""
+msgstr "Ingen innstillinger funnet"
 
 #: mailpile/plugins/setup_magic.py:621
 #, fuzzy, python-format
 msgid "Invalid language: %s"
-msgstr "Neveljavni gostitelj: %s"
+msgstr "Ugyldig boolsk verdi: %s"
 
 #: mailpile/plugins/setup_magic.py:639 mailpile/plugins/setup_magic.py:680
 #: mailpile/www/default/html/setup/welcome/index.html:2
 msgid "Welcome to Mailpile!"
-msgstr ""
+msgstr "Velkommen til Mailpile!"
 
 #: mailpile/plugins/setup_magic.py:788
 #, fuzzy
 msgid "Invalid key"
-msgstr "Neveljavni ključi"
+msgstr "Ugyldige nøkler"
 
 #: mailpile/plugins/setup_magic.py:823
 #, fuzzy
 msgid "Invalid passphrase"
-msgstr "Neveljavni ključi"
+msgstr "Ugyldige nøkler"
 
 #: mailpile/plugins/setup_magic.py:867
 #, fuzzy
 msgid "Invalid preference"
-msgstr "Uporabniške nastavitve"
+msgstr "Brukervalg"
 
 #: mailpile/plugins/setup_magic.py:896
 #, fuzzy
 msgid "Updated crypto preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Brukervalg"
 
 #: mailpile/plugins/setup_magic.py:898
 #, fuzzy
 msgid "Configure crypto preferences"
-msgstr "Uporabniške nastavitve"
+msgstr "Brukervalg"
 
 #: mailpile/plugins/setup_magic.py:1008
 #, fuzzy
 msgid "Failed to add profile"
-msgstr "Pripenjanje datotek ni uspelo"
+msgstr "Feilet å legge til filer"
 
 #: mailpile/plugins/setup_magic.py:1029
 #, fuzzy
 msgid "Your profiles"
-msgstr "Vaši profili"
+msgstr "Dine profiler"
 
 #: mailpile/plugins/setup_magic.py:1055
 #, fuzzy
 msgid "Configuring a key"
-msgstr "Časovni žig konfiguracije"
+msgstr "Sett opp tidstempel"
 
 #: mailpile/plugins/setup_magic.py:1099
 #, fuzzy
 msgid "Unknown error"
-msgstr "Neznano zaupanje"
+msgstr "Ukjent"
 
 #: mailpile/plugins/setup_magic.py:1107
 msgid "Route is working"
@@ -2924,7 +2962,7 @@ msgstr ""
 #: mailpile/plugins/setup_magic.py:1110
 #, fuzzy
 msgid "Invalid command"
-msgstr "Neznan ukaz"
+msgstr "Ugyldig boolsk verdi: %s"
 
 #: mailpile/plugins/setup_magic.py:1120
 msgid "Route is not working"
@@ -2957,47 +2995,48 @@ msgstr ""
 
 #: mailpile/plugins/smtp_server.py:25
 msgid "SMTP Daemon"
-msgstr ""
+msgstr "SMTP tjener"
 
 #: mailpile/plugins/smtp_server.py:26
 msgid "Listening host for SMTP daemon"
-msgstr ""
+msgstr "Lyttetjener for SMTP-nisse"
 
 #: mailpile/plugins/smtp_server.py:27
 msgid "Listening port for SMTP daemon"
-msgstr ""
+msgstr "Lytteport for SMTP-nissen"
 
 #: mailpile/plugins/tags.py:189
+#, fuzzy
 msgid "name"
-msgstr ""
+msgstr "Brukernavn"
 
 #: mailpile/plugins/tags.py:381
 msgid "Undid tagging operation"
-msgstr ""
+msgstr "Gjorde om markeringen"
 
 #: mailpile/plugins/tags.py:403
 #, python-format
 msgid "Scheduled %d messages for future tagging"
-msgstr "Sporočila določena za označbo: %d"
+msgstr "Planla fremtidig merking av %d meldinger"
 
 #: mailpile/plugins/tags.py:462
 msgid "Add tags here!"
-msgstr "Tu dodaj oznake!"
+msgstr "Legg til merkelapper her!"
 
 #: mailpile/plugins/tags.py:509
 #, python-format
 msgid "Added %d tags"
-msgstr "Dodano oznak: %d"
+msgstr "%d merkelapper lagt til"
 
 #: mailpile/plugins/tags.py:622
 #, python-format
 msgid "Listed %d tags"
-msgstr ""
+msgstr "%d merkelapper opplistet"
 
 #: mailpile/plugins/tags.py:684
 #, python-format
 msgid "Deleted %d tags"
-msgstr ""
+msgstr "%d merkelapper slettet"
 
 #: mailpile/plugins/tags.py:784
 msgid "Need tag name"
@@ -3010,29 +3049,29 @@ msgstr ""
 #: mailpile/plugins/tags.py:802
 #, python-format
 msgid "No such tag: %s"
-msgstr ""
+msgstr "Ingen slik merkelapp: %s"
 
 #: mailpile/plugins/tags.py:836
 #, fuzzy
 msgid "Added new filter"
-msgstr "Dodano vrstic: %d"
+msgstr "La til %d linjer"
 
 #: mailpile/plugins/tags.py:867
-#, python-format
+#, fuzzy, python-format
 msgid "Removed %d filter(s)"
-msgstr ""
+msgstr "Fjernet %d linjer"
 
 #: mailpile/plugins/vcard_gnupg.py:21
 msgid "Import contacts from GnuPG keyring"
-msgstr "Uvozi stike iz zbirke ključev GnuPG"
+msgstr "Importer kontakter fra GnuPG-nøkkelringen"
 
 #: mailpile/plugins/vcard_gnupg.py:24 mailpile/plugins/vcard_gravatar.py:34
 msgid "Enable this importer"
-msgstr ""
+msgstr "Skru på denne importøren"
 
 #: mailpile/plugins/vcard_gnupg.py:25
 msgid "Location of keyring"
-msgstr "Mesto zbirke ključev"
+msgstr "Sted for nøkkelring"
 
 #: mailpile/plugins/vcard_gnupg.py:246
 #, python-format
@@ -3042,11 +3081,11 @@ msgstr ""
 #: mailpile/plugins/vcard_gnupg.py:282
 #, fuzzy, python-format
 msgid "Imported %d VCards from GPG keychain"
-msgstr "Uvozi stike iz zbirke ključev GnuPG"
+msgstr "Importer kontakter fra GnuPG-nøkkelringen"
 
 #: mailpile/plugins/vcard_gravatar.py:31
 msgid "Import contact info from a Gravatar server"
-msgstr ""
+msgstr "Importer kontaktinformasjon fra en Gravatar server"
 
 #: mailpile/plugins/vcard_gravatar.py:35
 msgid "Require anonymity for use"
@@ -3054,7 +3093,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:36
 msgid "Minimum days between refreshing"
-msgstr ""
+msgstr "Minimum dager mellom oppdateringer"
 
 #: mailpile/plugins/vcard_gravatar.py:37
 msgid "Max batch size per update"
@@ -3074,23 +3113,26 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:42
 msgid "Gravatar server URL"
-msgstr ""
+msgstr "Gravater tjener URL"
 
 #: mailpile/plugins/vcard_mork.py:43
 msgid "Location of Mork database"
-msgstr ""
+msgstr "Lokasjon for Mork database"
 
 #: mailpile/plugins/keylookup/__init__.py:28
+#, fuzzy
 msgid "Encryption key is revoked"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:30
+#, fuzzy
 msgid "Encryption key is disabled"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:32
+#, fuzzy
 msgid "Encryption key has expired"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:34
 msgid "Encryption key has been imported and verified"
@@ -3105,16 +3147,19 @@ msgid "Encryption key is very strong"
 msgstr ""
 
 #: mailpile/plugins/keylookup/__init__.py:69
+#, fuzzy
 msgid "Encryption key is strong"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:71
+#, fuzzy
 msgid "Encryption key is average"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:73
+#, fuzzy
 msgid "Encryption key is weak"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:91
 msgid "Anonymous"
@@ -3123,28 +3168,31 @@ msgstr ""
 #: mailpile/plugins/keylookup/__init__.py:126
 #, fuzzy, python-format
 msgid "Searching for encryption keys in: %s"
-msgstr "Iskanje %s"
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/__init__.py:326
+#, fuzzy
 msgid "Found encryption key in keychain"
-msgstr ""
+msgstr "Funnet nøkkelring"
 
 #: mailpile/plugins/keylookup/__init__.py:360
+#, fuzzy
 msgid "Found encryption key in keyserver"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/plugins/keylookup/dnspka.py:21
 msgid "DNS PKA records"
 msgstr ""
 
 #: mailpile/plugins/keylookup/dnspka.py:33
+#, fuzzy
 msgid "Found key in DNSPKA"
-msgstr ""
+msgstr "Funnet nøkkelring"
 
 #: mailpile/plugins/keylookup/email_keylookup.py:78
 #, fuzzy
 msgid "E-mail keys"
-msgstr "E-poštni naslov"
+msgstr "E-postadresse"
 
 #: mailpile/plugins/keylookup/email_keylookup.py:92
 msgid "Found key in local e-mail"
@@ -3161,53 +3209,57 @@ msgstr ""
 #: mailpile/www/jinjaextensions.py:249 mailpile/www/jinjaextensions.py:305
 #: mailpile/www/jinjaextensions.py:370
 msgid "Unknown"
-msgstr ""
+msgstr "Ukjent"
 
 #: mailpile/www/jinjaextensions.py:250
 msgid "There is something unknown or wrong with this signature"
-msgstr ""
+msgstr "Det er noe ukjent eller galt med denne signaturen"
 
 #: mailpile/www/jinjaextensions.py:255
 msgid "Not Signed"
-msgstr "Ni podpisano"
+msgstr "Ikke signert"
 
 #: mailpile/www/jinjaextensions.py:256
 msgid ""
 "This message contains no signature, which means it could have come from "
 "anyone, not necessarily the real sender"
 msgstr ""
+"Denne meldingen har ingen signatur, noe som betyr at den kan ha kommet fra "
+"hvem som helst, ikke nødvendigvis den avsenderen som er oppgitt"
 
 #: mailpile/www/jinjaextensions.py:262
 msgid "There was a weird error with this signature"
-msgstr ""
+msgstr "Det oppsto en merkelig feil med denne signaturen"
 
 #: mailpile/www/jinjaextensions.py:266 mailpile/www/jinjaextensions.py:423
 msgid "Mixed Error"
-msgstr ""
+msgstr "Blandet feil"
 
 #: mailpile/www/jinjaextensions.py:267
 msgid "Parts of this message have a signature with a weird error"
-msgstr ""
+msgstr "Deler av denne meldingen har en merkelig signaturfeil"
 
 #: mailpile/www/jinjaextensions.py:271
 msgid "Invalid"
-msgstr ""
+msgstr "Ugyldig"
 
 #: mailpile/www/jinjaextensions.py:272
 msgid "The signature was invalid or bad"
-msgstr ""
+msgstr "Signaturen var ugyldig eller feil"
 
 #: mailpile/www/jinjaextensions.py:276
 msgid "Mixed Invalid"
-msgstr ""
+msgstr "Blandet ugyldig"
 
 #: mailpile/www/jinjaextensions.py:277
 msgid "Parts of this message has a signature that are invalid or bad"
 msgstr ""
+"Deler av denne meldingen har en signatur som enten er ugyldige eller eller "
+"dårlige"
 
 #: mailpile/www/jinjaextensions.py:282
 msgid "Revoked"
-msgstr ""
+msgstr "Tilbaketrukket"
 
 #: mailpile/www/jinjaextensions.py:283
 msgid ""
@@ -3226,7 +3278,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:294
 msgid "Expired"
-msgstr ""
+msgstr "Utgått"
 
 #: mailpile/www/jinjaextensions.py:295
 msgid "The signature was made with an expired key"
@@ -3256,7 +3308,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:317
 msgid "Unverified"
-msgstr ""
+msgstr "Ikke verifisert"
 
 #: mailpile/www/jinjaextensions.py:318
 msgid "The signature was good but it came from a key that is not verified yet"
@@ -3272,7 +3324,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:328
 msgid "Verified"
-msgstr ""
+msgstr "Verifisert"
 
 #: mailpile/www/jinjaextensions.py:329
 msgid "The signature was good and came from a verified key, w00t!"
@@ -3292,20 +3344,18 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:376
 msgid "Not Encrypted"
-msgstr "Ni šifrirano"
+msgstr "Ikke kryptert"
 
 #: mailpile/www/jinjaextensions.py:377
 msgid ""
 "This message was not encrypted. It may have been intercepted and read by an "
 "unauthorized party"
 msgstr ""
-"To sporočilo ni šifrirano. Lahko je bilo prestreženo in prebrano s strani "
-"nepooblaščene osebe."
 
 #: mailpile/www/jinjaextensions.py:382
 #: mailpile/www/default/html/jsapi/compose/crypto.js:167
 msgid "Encrypted"
-msgstr "Šifrirano"
+msgstr "Krypterte"
 
 #: mailpile/www/jinjaextensions.py:383
 msgid "This message was encrypted, great job being secure"
@@ -3317,7 +3367,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:388
 msgid "Part of this message were encrypted, but other parts were not encrypted"
-msgstr "Del tega sporočila je šifriran, drugi deli pa ne,"
+msgstr ""
 
 #: mailpile/www/jinjaextensions.py:393
 msgid "Locked Key"
@@ -3334,37 +3384,30 @@ msgid "Mixed Locked Key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:400
-#, fuzzy
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr "Del tega sporočila je šifriran, drugi deli pa ne,"
+msgstr ""
 
 #: mailpile/www/jinjaextensions.py:405
 msgid "Missing Key"
-msgstr ""
+msgstr "Mangler nøkkel"
 
 #: mailpile/www/jinjaextensions.py:406
-#, fuzzy
 msgid ""
 "You don't have the encryption key to decrypt this message, perhaps it was "
 "encrypted to an old key you don't have anymore?"
 msgstr ""
-"Delov sporočila ni bilo mogoče dešifrirati, ker nimate ustreznega zasebnega "
-"ključa. Morda je bilo šifrirano s starim ključem, ki ga več ne posedujete?"
 
 #: mailpile/www/jinjaextensions.py:411
 msgid "Mixed Missing Key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:412
-#, fuzzy
 msgid ""
 "Parts of the message could not be decrypted because you are missing the "
 "private key. Perhaps it was encrypted to an old key you don't have anymore?"
 msgstr ""
-"Delov sporočila ni bilo mogoče dešifrirati, ker nimate ustreznega zasebnega "
-"ključa. Morda je bilo šifrirano s starim ključem, ki ga več ne posedujete?"
 
 #: mailpile/www/jinjaextensions.py:419
 msgid "We failed to decrypt message and are unsure why."
@@ -3385,8 +3428,9 @@ msgid ""
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:466
+#, fuzzy
 msgid "Don't Sign or Encrypt"
-msgstr ""
+msgstr "Kan ikke kryptere"
 
 #: mailpile/www/jinjaextensions.py:467
 msgid "Messages will not be encrypted nor signed by your encryption key"
@@ -3403,7 +3447,7 @@ msgstr ""
 #: mailpile/www/jinjaextensions.py:472
 #, fuzzy
 msgid "Only Encrypt"
-msgstr "Šifrirano"
+msgstr "Kan ikke kryptere"
 
 #: mailpile/www/jinjaextensions.py:473
 msgid "Messages will only be encrypted but not signed by your encryption key"
@@ -3425,27 +3469,28 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:645
 msgid "No Subject"
-msgstr ""
+msgstr "Ingen tittel"
 
 #: mailpile/www/jinjaextensions.py:664
 msgid "and"
-msgstr ""
+msgstr "og"
 
 #: mailpile/www/jinjaextensions.py:664
 msgid "others"
-msgstr "drugi"
+msgstr "andre"
 
 #: mailpile/www/jinjaextensions.py:824
 msgid "No Fingerprint"
-msgstr ""
+msgstr "Inget fingeravtrykk"
 
 #: mailpile/www/default/html/auth/shared.html:24
 msgid "To Log In Please Enter"
 msgstr ""
 
 #: mailpile/www/default/html/auth/shared.html:30
+#, fuzzy
 msgid "Your Passphrase"
-msgstr ""
+msgstr "Din melding..."
 
 #: mailpile/www/default/html/auth/shared.html:34
 msgid "Oops, wrong passphrase. Try again?"
@@ -3461,16 +3506,16 @@ msgstr ""
 #: mailpile/www/default/html/partials/tools_contacts.html:37
 #: mailpile/www/default/html/partials/topbar.html:39
 msgid "Contacts"
-msgstr "Stiki"
+msgstr "Kontakter"
 
 #: mailpile/www/default/html/contacts/index.html:43
 msgid "No Contact Info"
-msgstr ""
+msgstr "Ingen kontaktinfo"
 
 #: mailpile/www/default/html/contacts/index.html:49
 #, fuzzy
 msgid "No Contacts Found"
-msgstr "Vzročni stiki"
+msgstr "Ingen kontakter funnet"
 
 #: mailpile/www/default/html/contacts/index.html:50
 msgid ""
@@ -3483,7 +3528,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_list.html:12
 #: mailpile/www/default/html/setup/partials/sources_list.html:13
 msgid "Previous"
-msgstr "Nazaj"
+msgstr "Forrige"
 
 #: mailpile/www/default/html/contacts/index.html:61
 #: mailpile/www/default/html/profiles/account-form.html:299
@@ -3496,28 +3541,28 @@ msgstr "Nazaj"
 #: mailpile/www/default/html/setup/partials/profiles_list.html:14
 #: mailpile/www/default/html/setup/partials/sources_list.html:15
 msgid "Next"
-msgstr "Naprej"
+msgstr "Neste"
 
 #: mailpile/www/default/html/contacts/index.html:63
 #: mailpile/www/default/html/search/index.html:27
 msgid "of"
-msgstr "od"
+msgstr "av"
 
 #: mailpile/www/default/html/contacts/index.html:63
 #: mailpile/www/default/html/search/index.html:29
 msgid "1 Conversation"
-msgstr "1 pogovor"
+msgstr "1 samtale"
 
 #: mailpile/www/default/html/contacts/index.html:63
 msgid "No results found"
-msgstr "Ni rezultatov iskanja"
+msgstr "Fant ingen resultater"
 
 #: mailpile/www/default/html/contacts/add/index.html:2
 #: mailpile/www/default/html/jsapi/templates/modal-contact-add.html:6
 #: mailpile/www/default/html/partials/thread_metadata.html:17
 #: mailpile/www/default/html/partials/tools_contacts.html:43
 msgid "Add Contact"
-msgstr "Dodaj stik"
+msgstr "Legg til en kontakt"
 
 #: mailpile/www/default/html/contacts/add/index.html:9
 #: mailpile/www/default/html/jsapi/templates/modal-add-tag.html:9
@@ -3527,14 +3572,14 @@ msgstr "Dodaj stik"
 #: mailpile/www/default/html/settings/index.html:4
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:6
 msgid "Name"
-msgstr "Ime"
+msgstr "Navn"
 
 #: mailpile/www/default/html/contacts/add/index.html:11
 #: mailpile/www/default/html/jsapi/templates/modal-contact-add.html:13
 #: mailpile/www/default/html/partials/hidden.html:104
 #: mailpile/www/default/html/profiles/account-form.html:264
 msgid "E-mail"
-msgstr "E-pošta"
+msgstr "Epost"
 
 #: mailpile/www/default/html/contacts/add/index.html:16
 #: mailpile/www/default/html/jsapi/setup/profiles.js:5
@@ -3551,11 +3596,11 @@ msgstr "E-pošta"
 #: mailpile/www/default/html/profiles/account-form.html:740
 #: mailpile/www/default/html/tags/form.html:196
 msgid "Add"
-msgstr "Dodaj"
+msgstr "Legg til"
 
 #: mailpile/www/default/html/contacts/import/index.html:2
 msgid "Import Contacts"
-msgstr "Uvozi stike"
+msgstr "Importer kontakter"
 
 #: mailpile/www/default/html/contacts/view/index.html:2
 #: mailpile/www/default/html/contacts/view/index.html:9
@@ -3563,27 +3608,27 @@ msgstr "Uvozi stike"
 #: mailpile/www/default/html/partials/search_item.html:42
 #: mailpile/www/default/html/setup/partials/sources_configure.html:25
 msgid "No Name"
-msgstr ""
+msgstr "Mangler navn"
 
 #: mailpile/www/default/html/contacts/view/index.html:21
 msgid "Hey that's you"
-msgstr ""
+msgstr "Hei det er deg"
 
 #: mailpile/www/default/html/contacts/view/index.html:32
 #: mailpile/www/default/html/partials/topbar.html:35
 msgid "Compose"
-msgstr "Sestavljanje"
+msgstr "Skriv"
 
 #: mailpile/www/default/html/contacts/view/index.html:33
 #: mailpile/www/default/html/jsapi/templates/modal-search-keyservers.html:15
 #: mailpile/www/default/html/partials/topbar.html:17
 #: mailpile/www/default/html/partials/topbar.html:25
 msgid "Search"
-msgstr "Išči"
+msgstr "Søk"
 
 #: mailpile/www/default/html/contacts/view/index.html:41
 msgid "Security & Keys"
-msgstr ""
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/www/default/html/contacts/view/index.html:84
 msgid "messages when communicating with"
@@ -3594,6 +3639,8 @@ msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
 msgstr ""
+"Du har ingen krypteringsnøkler for denne kontakten. Du trenger "
+"krypteringsnøkler for å kommunisere sikkert."
 
 #: mailpile/www/default/html/contacts/view/index.html:94
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -3603,27 +3650,27 @@ msgstr ""
 #: mailpile/www/default/html/partials/thread_metadata.html:40
 #: mailpile/www/default/html/partials/tooltips.html:40
 msgid "Find Encryption Keys"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/contacts/view/index.html:120
 #: mailpile/www/default/html/search/index.html:27
 msgid "Conversations"
-msgstr "Pogovori"
+msgstr "Samtaler"
 
 #: mailpile/www/default/html/contacts/view/index.html:146
 #, fuzzy
 msgid "No Conversations"
-msgstr "Pogovori"
+msgstr "Samtaler"
 
 #: mailpile/www/default/html/eventlog/index.html:13
 msgid "No Events Found"
-msgstr ""
+msgstr "Ingen hendelser funnet"
 
 #: mailpile/www/default/html/filter/list/index.html:2
 #: mailpile/www/default/html/help/index.html:15
 #: mailpile/www/default/html/partials/tools_tags.html:16
 msgid "Filters"
-msgstr ""
+msgstr "Filtre"
 
 #: mailpile/www/default/html/filter/list/index.html:30
 #: mailpile/www/default/html/jsapi/setup/profiles.js:84
@@ -3645,18 +3692,19 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:13
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:23
 msgid "Edit"
-msgstr ""
+msgstr "Rediger"
 
 #: mailpile/www/default/html/filter/list/index.html:31
 #: mailpile/www/default/html/settings/index.html:49
 #: mailpile/www/default/html/settings/index.html:72
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:15
 msgid "Delete"
-msgstr "Izbriši"
+msgstr "Slett"
 
 #: mailpile/www/default/html/filter/list/index.html:37
+#, fuzzy
 msgid "No Filters Exist"
-msgstr ""
+msgstr "Filtre"
 
 #: mailpile/www/default/html/filter/list/index.html:38
 msgid ""
@@ -3675,7 +3723,7 @@ msgstr ""
 #: mailpile/www/default/html/help/bottom.html:2
 #, fuzzy
 msgid "or"
-msgstr "Vrata"
+msgstr "Port"
 
 #: mailpile/www/default/html/help/bottom.html:2
 msgid "file an issue"
@@ -3689,7 +3737,7 @@ msgstr ""
 #: mailpile/www/default/html/page/gmail-access-non-google-accounts/index.html:7
 #: mailpile/www/default/html/partials/topbar.html:63
 msgid "Help"
-msgstr ""
+msgstr "Hjelp"
 
 #: mailpile/www/default/html/help/index.html:9
 msgid "Custom Searches"
@@ -3718,8 +3766,9 @@ msgid ""
 msgstr ""
 
 #: mailpile/www/default/html/help/index.html:18
+#, fuzzy
 msgid "Encryption & Security"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/help/index.html:19
 msgid ""
@@ -3735,7 +3784,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/password/index.html:2
 #: mailpile/www/default/html/setup/profiles/index.html:2
 msgid "Setup"
-msgstr ""
+msgstr "Oppsett"
 
 #: mailpile/www/default/html/help/index.html:23
 msgid "Gmail's 2 Step App Passwords"
@@ -3760,7 +3809,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/crypto/import.js:79
 #, fuzzy
 msgid "is"
-msgstr "Seznam"
+msgstr "Liste"
 
 #: mailpile/www/default/html/jsapi/compose/attachments.js:141
 msgid "Some people cannot receive attachments larger than 50 Megabytes."
@@ -3782,7 +3831,7 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:117
 msgid "Signed"
-msgstr ""
+msgstr "Signert"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:122
 msgid ""
@@ -3792,15 +3841,16 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:124
 msgid "Unsigned"
-msgstr ""
+msgstr "Usignert"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:129
 msgid "Verification Error"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:131
+#, fuzzy
 msgid "Error accesing your encryption key"
-msgstr ""
+msgstr "Feil ved tilgang til din nøkkel"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:165
 msgid ""
@@ -3817,18 +3867,18 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/compose/crypto.js:174
 #, fuzzy
 msgid "Can Not Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Kan ikke kryptere"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:179
 msgid "This message and metadata will not be encrypted"
-msgstr ""
+msgstr "Denne meldingen og metadata vil ikke bli kryptert"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:181
 #: mailpile/www/default/html/profiles/account-form.html:333
 #: mailpile/www/default/html/profiles/account-form.html:415
 #: mailpile/www/default/html/tags/form.html:94
 msgid "None"
-msgstr "Brez"
+msgstr "Ingen"
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:186
 msgid "There was an error prepping this message for encryption"
@@ -3836,17 +3886,17 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:188
 msgid "Error Encrypting"
-msgstr ""
+msgstr "Feil ved kryptering"
 
 #: mailpile/www/default/html/jsapi/compose/events.js:336
 #, fuzzy
 msgid "Yay, Can Now Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Kan ikke kryptere"
 
 #: mailpile/www/default/html/jsapi/crypto/find.js:29
 #, fuzzy
 msgid "No Email"
-msgstr "E-pošta"
+msgstr "Epost"
 
 #: mailpile/www/default/html/jsapi/crypto/import.js:79
 msgid "You can not upload a key larger than 5 Megabytes."
@@ -3867,20 +3917,22 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/global/global.js:8
 #: mailpile/www/default/html/partials/tools_search.html:107
 msgid "All"
-msgstr "Vse"
+msgstr "Alt"
 
 #: mailpile/www/default/html/jsapi/global/helpers.js:5
+#, fuzzy
 msgid "What is an Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/global/helpers.js:9
+#, fuzzy
 msgid "What is Missing Encryption Key"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/global/notifications.js:179
 #, fuzzy
 msgid "edit settings"
-msgstr "Prikazane nastavitve"
+msgstr "Viste innstillinger"
 
 #: mailpile/www/default/html/jsapi/message/events.js:64
 msgid "Plain Text"
@@ -3891,13 +3943,14 @@ msgid "Download"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/message/ui.js:17
+#, fuzzy
 msgid "Could not retrieve message"
-msgstr ""
+msgstr "Feilet å fjerne melding"
 
 #: mailpile/www/default/html/jsapi/search/init.js:63
 #, fuzzy
 msgid " new messages received"
-msgstr "Ni izbranih sporočil"
+msgstr "Ingen melding valgt"
 
 #: mailpile/www/default/html/jsapi/search/init.js:64
 msgid "Your pile is growing..."
@@ -3906,17 +3959,17 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/search/ui.js:155
 #, fuzzy
 msgid "No Messages Selected"
-msgstr "Ni izbranih sporočil"
+msgstr "Ingen melding valgt"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:171
 #, fuzzy
 msgid "1 message"
-msgstr "Ni sporočil!"
+msgstr "Ingen meldinger!"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:174
 #, fuzzy
 msgid "messages"
-msgstr "Sporočil"
+msgstr "Meldinger"
 
 #: mailpile/www/default/html/jsapi/search/ui.js:176
 msgid "Moving"
@@ -3927,8 +3980,9 @@ msgid "Mail is being imported into your Mailpile"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:6
+#, fuzzy
 msgid "Dont look now, we are copying things"
-msgstr ""
+msgstr "Ved nedlåst status, gjør ingenting."
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:7
 msgid "Copying your mail, please do not be alarmed!"
@@ -3971,8 +4025,9 @@ msgid "Formating your C:\\ drive... (just kidding)"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:19
+#, fuzzy
 msgid "Fortifying encryption shields"
-msgstr ""
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:20
 msgid "Increasing entropy & scrambling bits"
@@ -4198,8 +4253,9 @@ msgid "Good things come to those who wait"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:79
+#, fuzzy
 msgid "Make free software and be happy"
-msgstr ""
+msgstr "er fri programvare produsert av"
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:80
 msgid "Most of Mailpile was built in cafes in Reykjavík, Iceland"
@@ -4328,7 +4384,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/complete.js:110
 #, fuzzy
 msgid "Now enhancing photos"
-msgstr "Povezujem se na %s"
+msgstr "Kobler til %s"
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:111
 msgid "Backing up the entire Internet..."
@@ -4351,8 +4407,9 @@ msgid "Slacking off over here"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:116
+#, fuzzy
 msgid "Doing nothing"
-msgstr ""
+msgstr "Ved nedlåst status, gjør ingenting."
 
 #: mailpile/www/default/html/jsapi/setup/complete.js:117
 msgid "Making you wait for no reason"
@@ -4401,7 +4458,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/profiles.js:25
 #, fuzzy
 msgid "Enter a valid email address"
-msgstr "E-poštni naslov"
+msgstr "E-postadresse"
 
 #: mailpile/www/default/html/jsapi/setup/profiles.js:33
 msgid "Create or select a sending route"
@@ -4410,7 +4467,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:69
 #, fuzzy
 msgid "Test Connection"
-msgstr "1 pogovor"
+msgstr "1 samtale"
 
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:101
 #: mailpile/www/default/html/jsapi/setup/sending.js:130
@@ -4426,11 +4483,12 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sending.js:146
 #, fuzzy
 msgid "Error Connecting"
-msgstr "Povezujem se na %s"
+msgstr "Feil ved kryptering"
 
 #: mailpile/www/default/html/jsapi/setup/profiles_settings.js:167
+#, fuzzy
 msgid "Route"
-msgstr ""
+msgstr "Ruter"
 
 #: mailpile/www/default/html/jsapi/setup/sending.js:19
 msgid "You must name this route"
@@ -4441,8 +4499,9 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:442
 #: mailpile/www/default/html/setup/partials/sending_settings.html:12
 #: mailpile/www/default/html/setup/partials/sources_settings.html:53
+#, fuzzy
 msgid "Username"
-msgstr ""
+msgstr "Brukernavn"
 
 #: mailpile/www/default/html/jsapi/setup/sending.js:31
 msgid "Specify a server"
@@ -4454,20 +4513,24 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/setup/sending.js:152
 #: mailpile/www/default/html/setup/partials/sending_settings.html:38
+#, fuzzy
 msgid "Test Route"
-msgstr ""
+msgstr "Rediger rute"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:28
+#, fuzzy
 msgid "Source Name"
-msgstr ""
+msgstr "Kildenavn"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:49
+#, fuzzy
 msgid "You must pick a protocol or format"
-msgstr ""
+msgstr "Postkasse-protokoll eller format"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:191
+#, fuzzy
 msgid "Source has unconfigured mailboxes"
-msgstr ""
+msgstr "Postkasser skannet inn på ny"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:191
 #: mailpile/www/default/html/setup/partials/profiles_list_item.html:20
@@ -4489,20 +4552,22 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/setup/sources.js:234
 #, fuzzy
 msgid "In mailbox:"
-msgstr "Poštni predal ne obstaja: %s"
+msgstr "Postkassen %s finnes ikke"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:250
 #, fuzzy
 msgid "Cannot connect to server"
-msgstr "Povezujem se na %s"
+msgstr "Tilkoblet IMAP-tjener %s"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:252
+#, fuzzy
 msgid "Edit Now"
-msgstr ""
+msgstr "Rediger:"
 
 #: mailpile/www/default/html/jsapi/setup/sources.js:256
+#, fuzzy
 msgid "Not connected to server"
-msgstr ""
+msgstr "Tilkoblet IMAP-tjener %s"
 
 #: mailpile/www/default/html/jsapi/tags/events.js:108
 msgid "Are you sure you want to delete this tag?"
@@ -4518,13 +4583,13 @@ msgstr ""
 #: mailpile/www/default/html/tags/add/index.html:2
 #: mailpile/www/default/html/tags/add/index.html:4
 msgid "Add Tag"
-msgstr "Dodaj oznako"
+msgstr "Legg til merkelapp"
 
 #: mailpile/www/default/html/jsapi/templates/modal-add-tag.html:10
 #: mailpile/www/default/html/partials/tag_add.html:10
 #: mailpile/www/default/html/tags/form.html:44
 msgid "Friends & Family"
-msgstr ""
+msgstr "Venner og familie"
 
 #: mailpile/www/default/html/jsapi/templates/modal-compose-quoted-reply.html:7
 msgid "Quoted Replies"
@@ -4550,12 +4615,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_configure.html:59
 #: mailpile/www/default/html/tags/form.html:198
 msgid "Save"
-msgstr "Shrani"
+msgstr "Lagre"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:7
 #, fuzzy
 msgid "Cannot Encrypt"
-msgstr "Ni šifrirano"
+msgstr "Kan ikke kryptere"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:15
 msgid "You are missing encryption keys for the following contacts"
@@ -4579,17 +4644,17 @@ msgstr ""
 #: mailpile/www/default/html/partials/hidden.html:116
 #, fuzzy
 msgid "Searching for encryption keys for:"
-msgstr "Iskanje %s"
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:73
 #, fuzzy
 msgid "Searching for encryption keys..."
-msgstr "Iskanje %s"
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:86
 #, fuzzy
 msgid "Send Unencrypted"
-msgstr "Šifrirano"
+msgstr "Krypterte"
 
 #: mailpile/www/default/html/jsapi/templates/modal-composer-encryption-helper.html:91
 msgid "Try Again"
@@ -4599,7 +4664,7 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:63
 #, fuzzy
 msgid "Save Search"
-msgstr "Išči"
+msgstr "Søk"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:13
 msgid "Saved Searches appear as Tags in the sidebar."
@@ -4618,12 +4683,12 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:22
 #: mailpile/www/default/html/tags/form.html:32
 msgid "Change Icon"
-msgstr ""
+msgstr "Endre ikon"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:24
 #: mailpile/www/default/html/tags/form.html:38
 msgid "Change Color"
-msgstr ""
+msgstr "Endre farge"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:24
 #: mailpile/www/default/html/tags/form.html:38
@@ -4633,12 +4698,12 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:27
 #, fuzzy
 msgid "Save as"
-msgstr "Shrani"
+msgstr "Lagre"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:28
 #, fuzzy
 msgid "Tag Name"
-msgstr "Ime"
+msgstr "Mangler navn"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:35
 msgid "Mark as Read"
@@ -4651,24 +4716,28 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:39
 #, fuzzy
 msgid "Never send to Spam"
-msgstr "Premakni v Spam"
+msgstr "Flytt til spam"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:45
 #: mailpile/www/default/html/tags/form.html:130
+#, fuzzy
 msgid "Choose an Icon"
-msgstr ""
+msgstr "Endre ikon"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:51
+#, fuzzy
 msgid "Choose a Color"
-msgstr ""
+msgstr "Endre farge"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:69
+#, fuzzy
 msgid "Create new Saved Search"
-msgstr ""
+msgstr "Opprett ny merkelapp"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:72
+#, fuzzy
 msgid "Replace"
-msgstr ""
+msgstr "Svar"
 
 #: mailpile/www/default/html/jsapi/templates/modal-save-search.html:80
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:39
@@ -4691,29 +4760,29 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-search-keyservers.html:24
 #, fuzzy
 msgid "Searching for encryption keys for"
-msgstr "Iskanje %s"
+msgstr "Mangler krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-send-public-key.html:5
 #, fuzzy
 msgid "Send Encryption Keys"
-msgstr "Pošlji izbrane ključe"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-send-public-key.html:12
 msgid "Send Selected Keys"
-msgstr "Pošlji izbrane ključe"
+msgstr "Send valgte nøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:6
 #: mailpile/www/default/html/partials/tag_add.html:9
 #: mailpile/www/default/html/partials/tag_add.html:17
 #: mailpile/www/default/html/tags/form.html:42
 msgid "Tag"
-msgstr "Oznaka"
+msgstr "Merkelapp"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:6
 #: mailpile/www/default/html/jsapi/templates/template-modal-tag-picker-item.html:9
 #: mailpile/www/default/html/partials/tools_message.html:7
 msgid "Messages"
-msgstr "Sporočil"
+msgstr "Meldinger"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:13
 #: mailpile/www/default/html/partials/tools_message.html:9
@@ -4721,38 +4790,41 @@ msgstr "Sporočil"
 #: mailpile/www/default/html/partials/topbar.html:42
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:22
 msgid "Tags"
-msgstr "Oznak"
+msgstr "Merkelapper"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:21
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:22
 #: mailpile/www/default/html/setup/partials/profiles_list_item.html:14
 msgid "Remove"
-msgstr ""
+msgstr "Fjern"
 
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:24
 #: mailpile/www/default/html/jsapi/templates/modal-tag-picker.html:25
 msgid "Apply"
-msgstr ""
+msgstr "Utfør"
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:5
+#, fuzzy
 msgid "Upload Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:9
 msgid "Something went wrong uploading encryption key. Try again?"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:14
+#, fuzzy
 msgid "Select or Drag Encryption Key"
-msgstr ""
+msgstr "Finner krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:14
 msgid "A file located on your computer usually ending in: .asc .key .pub"
 msgstr ""
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:16
+#, fuzzy
 msgid "Select Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:18
 msgid "Unable to create uploader"
@@ -4761,17 +4833,17 @@ msgstr ""
 #: mailpile/www/default/html/jsapi/templates/modal-upload-key.html:18
 #, fuzzy
 msgid "update your browser"
-msgstr "Nastavitve so bile posodobljene"
+msgstr "Oppdaterte dine innstillinger"
 
 #: mailpile/www/default/html/jsapi/ui/sidebar.js:78
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "to"
-msgstr "do"
+msgstr "til"
 
 #: mailpile/www/default/html/jsapi/ui/tooltips.js:52
 #, fuzzy
 msgid "Compose To:"
-msgstr "Sestavljanje"
+msgstr "Skriv"
 
 #: mailpile/www/default/html/layouts/full.html:7
 msgid "Somebody"
@@ -4780,8 +4852,9 @@ msgstr ""
 #: mailpile/www/default/html/page/comp/index.html:2
 #: mailpile/www/default/html/page/contribute/index.html:2
 #: mailpile/www/default/html/page/contribute/index.html:6
+#, fuzzy
 msgid "Help Mailpile Grow"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/www/default/html/page/contribute/bugs.html:2
 msgid "Reporting bugs"
@@ -4811,7 +4884,7 @@ msgstr ""
 
 #: mailpile/www/default/html/page/contribute/index.html:15
 msgid "Donate"
-msgstr "Prispevaj"
+msgstr "Doner"
 
 #: mailpile/www/default/html/page/contribute/index.html:19
 msgid ""
@@ -4883,17 +4956,16 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/errors_content.html:3
 msgid "Message Not Found"
-msgstr ""
+msgstr "Melding ikke funnet"
 
 #: mailpile/www/default/html/partials/errors_content.html:4
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
-msgstr ""
-"Sporočilo, ki ste ga zahtevali, ni bilo najdeno. Mogoče je bilo izbrisano?"
+msgstr "Vi kunne ikke finne meldingen du ba om. Kanskje den har blitt fjernet?"
 
 #: mailpile/www/default/html/partials/errors_content.html:6
 msgid "Contact Missing"
-msgstr ""
+msgstr "Kontakt mangler"
 
 #: mailpile/www/default/html/partials/errors_content.html:7
 msgid ""
@@ -4903,7 +4975,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/errors_content.html:9
 msgid "Tag Missing"
-msgstr ""
+msgstr "Merkelapp mangler"
 
 #: mailpile/www/default/html/partials/errors_content.html:10
 msgid ""
@@ -4927,12 +4999,13 @@ msgid ""
 "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
 "\">bug report</a>"
 msgstr ""
-"Če mislite da je to hrošč, potem prosim izpolnite <a href=\"%(url)s\" target="
-"\"_blank\">poročilo o hrošču</a>"
+"Fyll gjerne en <a href=\"%(url)s\" target=\"_blank\">feilrapport</a> om du "
+"tror dette er en programfeil."
 
 #: mailpile/www/default/html/partials/head.html:97
+#, fuzzy
 msgid "Browser notifications allowed"
-msgstr ""
+msgstr "Tillat nettleser-merknader"
 
 #: mailpile/www/default/html/partials/helpers.html:14
 #: mailpile/www/default/html/partials/helpers.html:15
@@ -4943,7 +5016,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/hidden.html:145
 #, fuzzy
 msgid "Contact Info"
-msgstr "Ime stika"
+msgstr "Ingen kontaktinfo"
 
 #: mailpile/www/default/html/partials/helpers.html:55
 #: mailpile/www/default/html/partials/hidden.html:158
@@ -4952,8 +5025,9 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/helpers.html:60
 #: mailpile/www/default/html/partials/hidden.html:164
+#, fuzzy
 msgid "Details"
-msgstr ""
+msgstr "Se nøkkeldetaljer"
 
 #: mailpile/www/default/html/partials/helpers.html:61
 #: mailpile/www/default/html/partials/hidden.html:165
@@ -4971,7 +5045,7 @@ msgstr ""
 #: mailpile/www/default/html/settings/set/password/index.html:77
 #: mailpile/www/default/html/setup/crypto/index.html:93
 msgid "Created"
-msgstr ""
+msgstr "Laget"
 
 #: mailpile/www/default/html/partials/helpers.html:77
 msgid "Use This Key"
@@ -4983,49 +5057,49 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:22
 msgid "Notifications"
-msgstr ""
+msgstr "Merknader"
 
 #: mailpile/www/default/html/partials/hidden.html:66
 msgid "All Notifications"
-msgstr ""
+msgstr "Alle merknader"
 
 #: mailpile/www/default/html/partials/hidden.html:76
 #: mailpile/www/default/html/partials/thread_metadata.html:4
 #: mailpile/www/default/html/partials/thread_metadata.html:7
 msgid "From"
-msgstr "Od"
+msgstr "Fra"
 
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "Start Date"
-msgstr ""
+msgstr "Oppstartsdato"
 
 #: mailpile/www/default/html/partials/hidden.html:76
 msgid "Present"
-msgstr "Trenutno"
+msgstr "Nåtiden"
 
 #: mailpile/www/default/html/partials/hidden.html:77
 msgid "With"
-msgstr ""
+msgstr "Med"
 
 #: mailpile/www/default/html/partials/hidden.html:77
 msgid "No Tags"
-msgstr "Brez oznak"
+msgstr "Ingen merkelapper"
 
 #: mailpile/www/default/html/partials/hidden.html:78
 msgid "In"
-msgstr ""
+msgstr "I"
 
 #: mailpile/www/default/html/partials/hidden.html:78
 msgid "All Groups"
-msgstr ""
+msgstr "Alle grupper"
 
 #: mailpile/www/default/html/partials/hidden.html:79
 msgid "And"
-msgstr ""
+msgstr "Og"
 
 #: mailpile/www/default/html/partials/hidden.html:79
 msgid "All Contacts"
-msgstr ""
+msgstr "Alle kontakter"
 
 #: mailpile/www/default/html/partials/hidden.html:120
 msgid "No encryption keys found matching:"
@@ -5044,28 +5118,31 @@ msgid "This key is on your key chain."
 msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:194
+#, fuzzy
 msgid "Import Key"
-msgstr ""
+msgstr "Importer"
 
 #: mailpile/www/default/html/partials/hidden.html:206
+#, fuzzy
 msgid "Importing Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/hidden.html:230
 msgid "Key"
-msgstr ""
+msgstr "Nøkkel"
 
 #: mailpile/www/default/html/partials/hidden.html:232
 msgid "Key Size"
-msgstr ""
+msgstr "Nøkkelstørrelse"
 
 #: mailpile/www/default/html/partials/hidden.html:233
 msgid "Key Type"
-msgstr ""
+msgstr "Nøkkeltype"
 
 #: mailpile/www/default/html/partials/hidden.html:241
+#, fuzzy
 msgid "Show Hidden Encryption Keys"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/hidden.html:244
 msgid "Hidden keys are either revoked or expired and should not be used"
@@ -5100,18 +5177,19 @@ msgid "undo"
 msgstr ""
 
 #: mailpile/www/default/html/partials/hidden.html:311
+#, fuzzy
 msgid "Encryption Key from"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/hidden.html:311
 #, fuzzy
 msgid "Import Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/hidden.html:312
 #, fuzzy
 msgid "Show Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/search_item.html:24
 msgid "View e-mail from this mailing list"
@@ -5127,7 +5205,7 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/sidebar.html:78
 msgid "Edit Sidebar"
-msgstr "Uredi stransko vrstico"
+msgstr "Rediger sidemeny"
 
 #: mailpile/www/default/html/partials/sidebar.html:80
 msgid "Organize"
@@ -5135,49 +5213,50 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tag_add.html:3
 msgid "Add New Tag"
-msgstr "Dodaj novo oznako"
+msgstr "Legg til ny merkelapp"
 
 #: mailpile/www/default/html/partials/tag_add.html:12
 msgid "Slug"
-msgstr ""
+msgstr "Kortnavn"
 
 #: mailpile/www/default/html/partials/tag_add.html:13
 msgid "friends-family"
-msgstr ""
+msgstr "Venner-familie"
 
 #: mailpile/www/default/html/partials/tag_add.html:15
 #: mailpile/www/default/html/partials/tools_search.html:3
 msgid "Display"
-msgstr "Prikaz"
+msgstr "Vis"
 
 #: mailpile/www/default/html/partials/tag_add.html:18
 msgid "Archive"
-msgstr "Arhiviraj"
+msgstr "Arkiv"
 
 #: mailpile/www/default/html/partials/tag_add.html:21
 #: mailpile/www/default/html/tags/form.html:92
 msgid "Parent"
-msgstr ""
+msgstr "Overnevnt"
 
 #: mailpile/www/default/html/partials/tag_add.html:23
 msgid "none"
-msgstr ""
+msgstr "ingen"
 
 #: mailpile/www/default/html/partials/tag_add.html:31
 msgid "Template"
-msgstr ""
+msgstr "Mal"
 
 #: mailpile/www/default/html/partials/tag_add.html:33
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: mailpile/www/default/html/partials/tag_add.html:36
 msgid "Search Terms"
-msgstr "Iskalni pojmi"
+msgstr "Søkekriterier"
 
 #: mailpile/www/default/html/partials/thread_message_cryptofail.html:12
+#, fuzzy
 msgid "Send Your Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/thread_message_cryptofail.html:16
 msgid "Password incorrect?  Try again!"
@@ -5186,57 +5265,57 @@ msgstr ""
 #: mailpile/www/default/html/partials/thread_message_cryptofail.html:21
 #, fuzzy
 msgid "Decrypt Message"
-msgstr "Izbriši sporočila"
+msgstr "Slett meldinger"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:23
 #, fuzzy
 msgid "View Profile"
-msgstr "Profili"
+msgstr "Profiler"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:30
 #, fuzzy
 msgid "Compose New"
-msgstr "Sestavljanje"
+msgstr "Skriv"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:35
 #, fuzzy
 msgid "Search Messages"
-msgstr "Sporočil"
+msgstr "Meldinger"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:40
 #: mailpile/www/default/html/partials/tooltips.html:38
 #, fuzzy
 msgid "Show Encryption Keys"
-msgstr "Ni šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:62
 #: mailpile/www/default/html/partials/thread_metadata.html:66
 #: mailpile/www/default/html/partials/thread_metadata.html:67
 msgid "To"
-msgstr "Za"
+msgstr "Til"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:71
 msgid "No Recipients"
-msgstr ""
+msgstr "Ingen mottakere"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:76
 #: mailpile/www/default/html/partials/thread_metadata.html:79
 #: mailpile/www/default/html/partials/thread_metadata.html:80
 msgid "Cc"
-msgstr "Kp"
+msgstr "Kopi"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:87
 msgid "Bcc"
-msgstr "Skp"
+msgstr "Blindkopi"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:90
 #: mailpile/www/default/html/partials/thread_metadata.html:91
 msgid "Bcc:"
-msgstr "Skp:"
+msgstr "Blindkopi:"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:97
 msgid "Subject"
-msgstr "Zadeva"
+msgstr "Emne"
 
 #: mailpile/www/default/html/partials/thread_metadata.html:101
 msgid "View:"
@@ -5252,21 +5331,22 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/thread_metadata.html:104
 msgid "Raw Source"
-msgstr ""
+msgstr "Råkilde:"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:3
+#, fuzzy
 msgid "Search and import encryption keys"
-msgstr ""
+msgstr "Søk i indekseringsmappen"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:4
 #, fuzzy
 msgid "Import Encryption Keys"
-msgstr "Ni šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:9
 #, fuzzy
 msgid "Search for Key"
-msgstr "Iskanje %s"
+msgstr "Søker etter %s"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:14
 msgid "Upload Key"
@@ -5282,11 +5362,11 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_contacts.html:38
 msgid "View your contacts"
-msgstr ""
+msgstr "Se dine kontakter"
 
 #: mailpile/www/default/html/partials/tools_contacts.html:44
 msgid "Add a new contact"
-msgstr "Dodaj nov stik"
+msgstr "Legg til en kontakt"
 
 #: mailpile/www/default/html/partials/tools_default.html:8
 msgid "Click item or checkbox to select"
@@ -5295,7 +5375,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/tools_default.html:94
 #, fuzzy
 msgid "messages selected"
-msgstr "Ni izbranih sporočil"
+msgstr "Ingen melding valgt"
 
 #: mailpile/www/default/html/partials/tools_default.html:95
 msgid "messages selected, click to select all matching this search"
@@ -5307,19 +5387,19 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_message.html:8
 msgid "People"
-msgstr "Ljudi"
+msgstr "Mennesker"
 
 #: mailpile/www/default/html/partials/tools_search.html:6
 msgid "Snug"
-msgstr "Ozko"
+msgstr "Tett"
 
 #: mailpile/www/default/html/partials/tools_search.html:9
 msgid "Cozy"
-msgstr "Udobno"
+msgstr "Koselig"
 
 #: mailpile/www/default/html/partials/tools_search.html:12
 msgid "Comfy"
-msgstr "Široko"
+msgstr "Komfortabelt"
 
 #: mailpile/www/default/html/partials/tools_search.html:21
 #: mailpile/www/default/html/partials/tools_search.html:33
@@ -5333,24 +5413,24 @@ msgstr ""
 #: mailpile/www/default/html/partials/tools_search.html:41
 #: mailpile/www/default/html/partials/tools_search.html:115
 msgid "Unread"
-msgstr "Neprebrano"
+msgstr "Ulest"
 
 #: mailpile/www/default/html/partials/tools_search.html:46
 msgid "Read"
-msgstr ""
+msgstr "Lest"
 
 #: mailpile/www/default/html/partials/tools_search.html:54
 #, fuzzy
 msgid "Move out of Spam"
-msgstr "Premakni v Spam"
+msgstr "Flytt til spam"
 
 #: mailpile/www/default/html/partials/tools_search.html:62
 msgid "Move to Spam"
-msgstr "Premakni v Spam"
+msgstr "Flytt til spam"
 
 #: mailpile/www/default/html/partials/tools_search.html:70
 msgid "Delete Messages"
-msgstr "Izbriši sporočila"
+msgstr "Slett meldinger"
 
 #: mailpile/www/default/html/partials/tools_search.html:91
 msgid "Save the results of this search to a new tag"
@@ -5358,55 +5438,55 @@ msgstr ""
 
 #: mailpile/www/default/html/partials/tools_search.html:108
 msgid "All messages"
-msgstr "Vsa sporočila"
+msgstr "Alle meldinger"
 
 #: mailpile/www/default/html/partials/tools_search.html:116
 msgid "Unread messages"
-msgstr "Neprebrana sporočila"
+msgstr "Uleste meldinger"
 
 #: mailpile/www/default/html/partials/tools_search.html:123
 msgid "Attachments"
-msgstr "Priponke"
+msgstr "Vedlegg"
 
 #: mailpile/www/default/html/partials/tools_search.html:124
 msgid "Messages with attachments"
-msgstr "Sporočila s priponkami"
+msgstr "Meldinger med vedlegg"
 
 #: mailpile/www/default/html/partials/tools_search.html:131
 msgid "List"
-msgstr "Seznam"
+msgstr "Liste"
 
 #: mailpile/www/default/html/partials/tools_search.html:132
 msgid "List view"
-msgstr "Seznamski pogled"
+msgstr "Listevisning"
 
 #: mailpile/www/default/html/partials/tools_tags.html:5
 msgid "View all tags"
-msgstr ""
+msgstr "Vis alle merkelapper"
 
 #: mailpile/www/default/html/partials/tools_tags.html:11
 msgid "Create a new tag"
-msgstr ""
+msgstr "Opprett ny merkelapp"
 
 #: mailpile/www/default/html/partials/tools_tags.html:17
 msgid "All current filters"
-msgstr ""
+msgstr "Alle gjeldende filter"
 
 #: mailpile/www/default/html/partials/tools_tags.html:24
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: mailpile/www/default/html/partials/tools_tags.html:25
 msgid "Show Tag by type"
-msgstr ""
+msgstr "Vis merkelapp etter type"
 
 #: mailpile/www/default/html/partials/tooltips.html:4
 msgid "Browse Tag"
-msgstr ""
+msgstr "Utforsk merkelapp"
 
 #: mailpile/www/default/html/partials/tooltips.html:5
 msgid "Remove Tag"
-msgstr ""
+msgstr "Fjern merkelapp"
 
 #: mailpile/www/default/html/partials/topbar.html:4
 #: mailpile/www/default/html/partials/topbar.html:9
@@ -5430,7 +5510,7 @@ msgstr ""
 #: mailpile/www/default/html/settings/index.html:160
 #: mailpile/www/default/html/tags/form.html:119
 msgid "Settings"
-msgstr "Nastavitve"
+msgstr "Innstillinger"
 
 #: mailpile/www/default/html/partials/topbar.html:54
 #: mailpile/www/default/html/partials/topbar_setup.html:22
@@ -5440,21 +5520,22 @@ msgstr "Nastavitve"
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:8
 #: mailpile/www/default/html/setup/profiles/index.html:2
 msgid "Profiles"
-msgstr "Profili"
+msgstr "Profiler"
 
 #: mailpile/www/default/html/partials/topbar.html:55
 #: mailpile/www/default/html/partials/topbar_setup.html:30
 #: mailpile/www/default/html/setup/partials/home.html:13
 #: mailpile/www/default/html/setup/partials/sources_list.html:3
+#, fuzzy
 msgid "Mail Sources"
-msgstr ""
+msgstr "Råkilde:"
 
 #: mailpile/www/default/html/partials/topbar.html:56
 #: mailpile/www/default/html/setup/partials/home.html:20
 #: mailpile/www/default/html/setup/partials/sending.html:3
 #, fuzzy
 msgid "Sending Routes"
-msgstr "Pošiljam sporočilo"
+msgstr "Sender melding"
 
 #: mailpile/www/default/html/partials/topbar.html:57
 #: mailpile/www/default/html/setup/partials/home.html:27
@@ -5469,12 +5550,13 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/security.html:44
 #, fuzzy
 msgid "Encryption Keys"
-msgstr "Šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/partials/topbar.html:60
 #: mailpile/www/default/html/setup/partials/home.html:41
+#, fuzzy
 msgid "Security"
-msgstr ""
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/www/default/html/partials/topbar.html:61
 #: mailpile/www/default/html/setup/partials/home.html:48
@@ -5496,7 +5578,7 @@ msgstr ""
 #: mailpile/www/default/html/partials/topbar_setup.html:38
 #, fuzzy
 msgid "Complete"
-msgstr "Sestavljanje"
+msgstr "Skriv"
 
 #: mailpile/www/default/html/profiles/account-form.html:143
 msgid "You need at least an e-mail address to proceed."
@@ -5507,8 +5589,9 @@ msgid "Detecting settings for: "
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:241
+#, fuzzy
 msgid "Basic Details"
-msgstr ""
+msgstr "Skjul detaljer"
 
 #: mailpile/www/default/html/profiles/account-form.html:243
 msgid "At least a name and e-mail are required!"
@@ -5521,7 +5604,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:253
 #, fuzzy
 msgid "New Address"
-msgstr "Naslov:"
+msgstr "Adresse:"
 
 #: mailpile/www/default/html/profiles/account-form.html:272
 #: mailpile/www/default/html/profiles/account-form.html:362
@@ -5532,7 +5615,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:280
 #, fuzzy
 msgid "Signature"
-msgstr "Podpis sporočila"
+msgstr "Signaturfeil"
 
 #: mailpile/www/default/html/profiles/account-form.html:281
 msgid "Everyone needs a unique, witty signature!"
@@ -5545,11 +5628,12 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:295
 #, fuzzy
 msgid "Detect settings"
-msgstr "Prikazane nastavitve"
+msgstr "Ufullstendig konfigurasjon"
 
 #: mailpile/www/default/html/profiles/account-form.html:306
+#, fuzzy
 msgid "Auto-detecting settings"
-msgstr ""
+msgstr "Ufullstendig konfigurasjon"
 
 #: mailpile/www/default/html/profiles/account-form.html:316
 msgid "Failed to detect settings, manual configuration required"
@@ -5558,7 +5642,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:321
 #, fuzzy
 msgid "Sending Mail"
-msgstr "Pošiljam sporočilo"
+msgstr "Sender melding"
 
 #: mailpile/www/default/html/profiles/account-form.html:332
 msgid "Local"
@@ -5568,7 +5652,7 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:428
 #, fuzzy
 msgid "Host name"
-msgstr "Ime računa"
+msgstr "Rutenavn"
 
 #: mailpile/www/default/html/profiles/account-form.html:345
 #: mailpile/www/default/html/profiles/account-form.html:434
@@ -5598,20 +5682,21 @@ msgstr ""
 #: mailpile/www/default/html/profiles/account-form.html:385
 #, fuzzy
 msgid "No outgoing mail for this account."
-msgstr "Izhodna poštna pot"
+msgstr "Utgående e-postrute"
 
 #: mailpile/www/default/html/profiles/account-form.html:399
 msgid "Receiving Mail"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:413
+#, fuzzy
 msgid "Mail spool"
-msgstr ""
+msgstr "Postboks policy"
 
 #: mailpile/www/default/html/profiles/account-form.html:414
 #, fuzzy
 msgid "Local files"
-msgstr "Preveč datotek"
+msgstr "For mange filer."
 
 #: mailpile/www/default/html/profiles/account-form.html:461
 msgid "Leave mail on server"
@@ -5667,18 +5752,19 @@ msgid "Use the Browse tool to import local mailboxes later on."
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:566
+#, fuzzy
 msgid "Enable this mail source"
-msgstr ""
+msgstr "Skru på denne importøren"
 
 #: mailpile/www/default/html/profiles/account-form.html:588
 #, fuzzy
 msgid "Add New"
-msgstr "Dodaj novo oznako"
+msgstr "Legg til ny merkelapp"
 
 #: mailpile/www/default/html/profiles/account-form.html:599
 #, fuzzy
 msgid "Important"
-msgstr "Uvozi stike"
+msgstr "Importer"
 
 #: mailpile/www/default/html/profiles/account-form.html:603
 msgid ""
@@ -5696,25 +5782,29 @@ msgid "Got it"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/account-form.html:623
+#, fuzzy
 msgid "Security and Privacy"
-msgstr ""
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/www/default/html/profiles/account-form.html:629
 #, fuzzy
 msgid "Encryption key"
-msgstr "Šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/profiles/account-form.html:633
+#, fuzzy
 msgid "Create a new 2048 bit RSA key"
-msgstr ""
+msgstr "Laget ny nøkkel"
 
 #: mailpile/www/default/html/profiles/account-form.html:642
+#, fuzzy
 msgid "Create a new 4096 bit RSA key (slow)"
-msgstr ""
+msgstr "Laget ny nøkkel"
 
 #: mailpile/www/default/html/profiles/account-form.html:643
+#, fuzzy
 msgid "Create a new 1024 bit RSA key (weak)"
-msgstr ""
+msgstr "Laget ny nøkkel"
 
 #: mailpile/www/default/html/profiles/account-form.html:645
 msgid "Disable encryption for this account"
@@ -5758,8 +5848,9 @@ msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:9
 #: mailpile/www/default/html/profiles/index.html:32
+#, fuzzy
 msgid "Welcome Home"
-msgstr ""
+msgstr "Velkommen til Mailpile!"
 
 #: mailpile/www/default/html/profiles/index.html:17
 #: mailpile/www/default/html/profiles/index.html:151
@@ -5767,22 +5858,24 @@ msgstr ""
 #: mailpile/www/default/html/profiles/add/index.html:2
 #, fuzzy
 msgid "Add Account"
-msgstr "Dodaj stik"
+msgstr "Legg til rute"
 
 #: mailpile/www/default/html/profiles/index.html:18
 #: mailpile/www/default/html/profiles/index.html:149
 #: mailpile/www/default/html/profiles/index.html:172
 #: mailpile/www/default/html/profiles/add/index.html:6
+#, fuzzy
 msgid "Create a new Account"
-msgstr ""
+msgstr "Opprett ny merkelapp"
 
 #: mailpile/www/default/html/profiles/index.html:24
 msgid "Keys"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:25
+#, fuzzy
 msgid "Manage Your Encryption Keys"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/profiles/index.html:38
 msgid "E-mail Accounts"
@@ -5795,12 +5888,12 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:84
 #, fuzzy
 msgid "Edit Profile"
-msgstr "Dodaj profil"
+msgstr "Legg til en profil"
 
 #: mailpile/www/default/html/profiles/index.html:104
 #, fuzzy
 msgid "Configure incoming mail"
-msgstr "Časovni žig konfiguracije"
+msgstr "Sett opp tidstempel"
 
 #: mailpile/www/default/html/profiles/index.html:113
 #: mailpile/www/default/html/profiles/index.html:114
@@ -5810,12 +5903,12 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:120
 #, fuzzy
 msgid "Outgoing mail settings"
-msgstr "Izhodna poštna pot"
+msgstr "Utgående e-postrute"
 
 #: mailpile/www/default/html/profiles/index.html:126
 #, fuzzy
 msgid "Security settings"
-msgstr "Nastavitve"
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/www/default/html/profiles/index.html:135
 msgid "Delete or disable account"
@@ -5832,15 +5925,17 @@ msgstr ""
 #: mailpile/www/default/html/profiles/index.html:162
 #, fuzzy
 msgid "Unread Mail"
-msgstr "Neprebrano"
+msgstr "Ulest"
 
 #: mailpile/www/default/html/profiles/index.html:167
+#, fuzzy
 msgid "Browse"
-msgstr ""
+msgstr "Utforsk merkelapp"
 
 #: mailpile/www/default/html/profiles/edit/index.html:6
+#, fuzzy
 msgid "Edit your Account"
-msgstr ""
+msgstr "Se dine kontakter"
 
 #: mailpile/www/default/html/search/index.html:34
 #, python-format
@@ -5848,18 +5943,18 @@ msgid ""
 "Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
 "strong> seconds."
 msgstr ""
-"Preiskano <strong>%(number)s</strong> sporočil v <strong>%(elapsed)s</"
-"strong> sekundah."
+"Gjennomsøkte <strong>%(number)s</strong> meldinger på <strong>%(elapsed)s</"
+"strong> sekunder."
 
 #: mailpile/www/default/html/search/index.html:34
 msgid "Vroom!"
-msgstr "Brum!"
+msgstr "Broom!"
 
 #: mailpile/www/default/html/search/index.html:40
 #: mailpile/www/default/html/search/index.html:58
 #, fuzzy
 msgid "Nothing Happened."
-msgstr " Brez sprememb"
+msgstr "Ingenting ble endret"
 
 #: mailpile/www/default/html/search/index.html:41
 msgid "Usually, matching e-mails would be listed here."
@@ -5870,8 +5965,9 @@ msgid "You need to create an account and add some mail first!"
 msgstr ""
 
 #: mailpile/www/default/html/search/index.html:48
+#, fuzzy
 msgid "Manage your Accounts"
-msgstr ""
+msgstr "Se dine kontakter"
 
 #: mailpile/www/default/html/search/index.html:54
 msgid "No Spam Found, Hooray!"
@@ -5885,31 +5981,31 @@ msgstr ""
 #, fuzzy
 msgid "It seems your Mailpile does not contain any messages for the search"
 msgstr ""
-"Izgleda, da Mailpile ne vsebuje nobenih sporočil, oznak ali stikov, ki bi "
-"ustrezali iskanju"
+"Det later til at Mailpile ikke inneholder noen meldinger, merkelapper eller "
+"kontakter for søket"
 
 #: mailpile/www/default/html/search/index.html:64
 msgid "Here are some other options for you"
-msgstr "Na voljo imate še nekaj drugih možnosti"
+msgstr "Her er noen muligheter for deg"
 
 #: mailpile/www/default/html/search/index.html:68
 #, fuzzy
 msgid "Browse for mailboxes"
-msgstr "Dodanih nabiralnikov: %d"
+msgstr "Ser etter nye mailbokser"
 
 #: mailpile/www/default/html/search/index.html:73
 #, fuzzy
 msgid "Compose a message"
-msgstr "Neprebrana sporočila"
+msgstr "Uleste meldinger"
 
 #: mailpile/www/default/html/search/index.html:80
 #, fuzzy
 msgid "Search Tips & Tricks"
-msgstr "Iskalni pojmi"
+msgstr "Søkekriterier"
 
 #: mailpile/www/default/html/search/index.html:89
 msgid "Hrm, We Could Not Find Anything"
-msgstr ""
+msgstr "Hmm, vi fant ikke noe"
 
 #: mailpile/www/default/html/settings/backup-keys.html:7
 msgid "Key Backup"
@@ -5932,8 +6028,9 @@ msgid "Print Page"
 msgstr ""
 
 #: mailpile/www/default/html/settings/backup-keys.html:42
+#, fuzzy
 msgid "Done Printing"
-msgstr ""
+msgstr "Ferdig med å redigere"
 
 #: mailpile/www/default/html/settings/backup-keys.html:46
 msgid ""
@@ -5997,117 +6094,117 @@ msgstr ""
 #: mailpile/www/default/html/settings/backup-keys.html:115
 #, fuzzy
 msgid "Mailpile can be downloaded from: www.mailpile.is"
-msgstr "Poslano z Mailpile, prosto programsko opremo iz www.mailpile.is"
+msgstr "Sendt med Mailpile - Friprog fra www.mailpile.is"
 
 #: mailpile/www/default/html/settings/index.html:5
 msgid "Chelsea Manning"
-msgstr ""
+msgstr "Chelsea Manning"
 
 #: mailpile/www/default/html/settings/index.html:6
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:11
 msgid "Email"
-msgstr "E-pošta"
+msgstr "Epost"
 
 #: mailpile/www/default/html/settings/index.html:7
 msgid "chelsea@email.com"
-msgstr ""
+msgstr "chelsea@e-post.no"
 
 #: mailpile/www/default/html/settings/index.html:8
 msgid "Delivery route"
-msgstr ""
+msgstr "Leveringsrute"
 
 #: mailpile/www/default/html/settings/index.html:19
 #: mailpile/www/default/html/setup/partials/sending_settings.html:9
 msgid "my delivery route"
-msgstr ""
+msgstr "min leveringsrute"
 
 #: mailpile/www/default/html/settings/index.html:20
 msgid "Login"
-msgstr "Prijava"
+msgstr "Logginn"
 
 #: mailpile/www/default/html/settings/index.html:21
 #: mailpile/www/default/html/setup/partials/sending_settings.html:13
 msgid "username@smtp.mailserver.org"
-msgstr ""
+msgstr "brukernavn@smtp.mailserver"
 
 #: mailpile/www/default/html/settings/index.html:24
 #: mailpile/www/default/html/setup/partials/sending_settings.html:20
 msgid "Server"
-msgstr "Strežnik"
+msgstr "Tjener"
 
 #: mailpile/www/default/html/settings/index.html:25
 #: mailpile/www/default/html/setup/partials/sending_settings.html:21
 msgid "smtp.mailserver.org"
-msgstr ""
+msgstr "smtp.eposttjener.no"
 
 #: mailpile/www/default/html/settings/index.html:39
 #: mailpile/www/default/html/settings/index.html:118
 #: mailpile/www/default/html/settings/index.html:124
 #: mailpile/www/default/html/setup/partials/profiles_list.html:4
 msgid "Add Profile"
-msgstr "Dodaj profil"
+msgstr "Legg til en profil"
 
 #: mailpile/www/default/html/settings/index.html:40
 msgid "Your Profiles"
-msgstr "Vaši profili"
+msgstr "Dine profiler"
 
 #: mailpile/www/default/html/settings/index.html:45
 msgid "Address:"
-msgstr "Naslov:"
+msgstr "Adresse:"
 
 #: mailpile/www/default/html/settings/index.html:46
 msgid "Route:"
-msgstr ""
+msgstr "Rute:"
 
 #: mailpile/www/default/html/settings/index.html:63
 #: mailpile/www/default/html/settings/index.html:137
 #: mailpile/www/default/html/settings/index.html:143
 #: mailpile/www/default/html/setup/partials/sending.html:4
 msgid "Add Route"
-msgstr ""
+msgstr "Legg til rute"
 
 #: mailpile/www/default/html/settings/index.html:64
 #: mailpile/www/default/html/settings/index.html:154
 msgid "Routes"
-msgstr ""
+msgstr "Ruter"
 
 #: mailpile/www/default/html/settings/index.html:75
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:30
 msgid "Edit Route"
-msgstr ""
+msgstr "Rediger rute"
 
 #: mailpile/www/default/html/settings/index.html:89
 #: mailpile/www/default/html/settings/index.html:156
 msgid "Preferences"
-msgstr ""
+msgstr "Valg"
 
 #: mailpile/www/default/html/settings/index.html:90
 msgid "Permit browser notifications"
-msgstr ""
+msgstr "Tillat nettleser-merknader"
 
 #: mailpile/www/default/html/settings/index.html:102
 msgid "Advanced Settings"
-msgstr "Napredne nastavitve"
+msgstr "Avanserte innstillinger"
 
 #: mailpile/www/default/html/settings/index.html:158
 msgid "Advanced"
-msgstr ""
+msgstr "Avansert"
 
 #: mailpile/www/default/html/settings/mailbox/index.html:14
 #, fuzzy
 msgid "Mailbox Settings"
-msgstr "Nastavitve"
+msgstr "Postbokser"
 
 #: mailpile/www/default/html/settings/mailbox/index.html:27
 #, fuzzy
 msgid "Archives"
-msgstr "Arhiviraj"
+msgstr "Arkiv"
 
 #: mailpile/www/default/html/settings/mailbox/index.html:52
 #: mailpile/www/default/html/tags/form.html:161
 #, fuzzy
 msgid "Add messages to search engine"
-msgstr "Optimiziran iskalnik"
+msgstr "Optimalisert søkemotor"
 
 #: mailpile/www/default/html/settings/mailbox/index.html:54
 msgid "Show mailbox tag in sidebar"
@@ -6122,20 +6219,23 @@ msgstr ""
 #: mailpile/www/default/html/settings/set/password/index.html:33
 #: mailpile/www/default/html/settings/set/password/index.html:34
 #: mailpile/www/default/html/settings/set/password/index.html:105
+#, fuzzy
 msgid "Unlock Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/settings/set/password/index.html:32
 msgid "10 minutes"
 msgstr ""
 
 #: mailpile/www/default/html/settings/set/password/index.html:33
+#, fuzzy
 msgid "1 hour"
-msgstr ""
+msgstr "%d time"
 
 #: mailpile/www/default/html/settings/set/password/index.html:34
+#, fuzzy
 msgid "12 hours"
-msgstr ""
+msgstr "%d timer"
 
 #: mailpile/www/default/html/settings/set/password/index.html:36
 msgid "Unlock Key and Remember Password"
@@ -6145,17 +6245,18 @@ msgstr ""
 #: mailpile/www/default/html/settings/set/password/index.html:121
 #, fuzzy
 msgid "Lock Encryption Key"
-msgstr "Ni šifrirano"
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/settings/set/password/index.html:77
 #: mailpile/www/default/html/setup/crypto/index.html:93
+#, fuzzy
 msgid "Expires"
-msgstr ""
+msgstr "Utgått"
 
 #: mailpile/www/default/html/settings/set/password/index.html:95
 #, fuzzy
 msgid "Your Password"
-msgstr "Geslo"
+msgstr "Passord"
 
 #: mailpile/www/default/html/settings/set/password/index.html:161
 msgid "No Keys Here!"
@@ -6172,8 +6273,9 @@ msgid "Passphrase"
 msgstr ""
 
 #: mailpile/www/default/html/setup/crypto/index.html:16
+#, fuzzy
 msgid "Creating Encryption Keys"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/setup/crypto/index.html:17
 msgid ""
@@ -6259,8 +6361,9 @@ msgid "Skip To Inbox"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/complete.html:9
+#, fuzzy
 msgid "Begin Tour"
-msgstr ""
+msgstr "Begynn"
 
 #: mailpile/www/default/html/setup/partials/complete.html:12
 msgid "Can't wait any longer and want to start using your Mailpile?"
@@ -6269,15 +6372,17 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/complete.html:13
 #, fuzzy
 msgid "Go to Inbox"
-msgstr "Poštni predal"
+msgstr "Innboks"
 
 #: mailpile/www/default/html/setup/partials/configure_key.html:2
+#, fuzzy
 msgid "Create Encryption Key"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/setup/partials/home.html:2
+#, fuzzy
 msgid "Your Setup"
-msgstr ""
+msgstr "Oppsett"
 
 #: mailpile/www/default/html/setup/partials/home.html:9
 msgid ""
@@ -6323,8 +6428,9 @@ msgid "Access"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/key_generated.html:3
+#, fuzzy
 msgid "Encryption Key Generated"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/setup/partials/key_generated.html:4
 msgid ""
@@ -6333,8 +6439,9 @@ msgid ""
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/key_generated.html:6
+#, fuzzy
 msgid "View Encryption Key Details"
-msgstr ""
+msgstr "Finn krypteringsnøkler"
 
 #: mailpile/www/default/html/setup/partials/keys.html:5
 msgid "Select which encryption key to use"
@@ -6347,7 +6454,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/modals.html:21
 #, fuzzy
 msgid "Connecting To Gmail"
-msgstr "Povezujem se na %s"
+msgstr "Kobler til %s"
 
 #: mailpile/www/default/html/setup/partials/modals.html:25
 msgid "Check your"
@@ -6426,7 +6533,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:21
 #, fuzzy
 msgid "Sending Route"
-msgstr "Pošiljam sporočilo"
+msgstr "Rediger rute"
 
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:21
 msgid "Technical details of how mail is sent"
@@ -6439,7 +6546,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:27
 #, fuzzy
 msgid "Add New Route"
-msgstr "Dodaj novo oznako"
+msgstr "Legg til rute"
 
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:34
 msgid "Note"
@@ -6456,12 +6563,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/profiles_settings.html:41
 #, fuzzy
 msgid "Save Profile"
-msgstr "Profili"
+msgstr "Profiler"
 
 #: mailpile/www/default/html/setup/partials/security.html:3
 #, fuzzy
 msgid "Security Settings"
-msgstr "Nastavitve"
+msgstr "Sikkerhet & nøkler"
 
 #: mailpile/www/default/html/setup/partials/security.html:5
 msgid "What are your security & privacy preferences?"
@@ -6512,8 +6619,9 @@ msgid "Encrypt your address book & contacts"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/security.html:36
+#, fuzzy
 msgid "Index messages that were encrypted"
-msgstr ""
+msgstr "Denne meldingen og metadata vil ikke bli kryptert"
 
 #: mailpile/www/default/html/setup/partials/security.html:40
 msgid "Encrypt various other things"
@@ -6538,16 +6646,17 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sending_list_item.html:8
 #, fuzzy
 msgid "No"
-msgstr "Brez"
+msgstr "Ingen"
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:8
+#, fuzzy
 msgid "Route Name"
-msgstr ""
+msgstr "Rutenavn"
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:29
 #, fuzzy
 msgid "Other"
-msgstr "drugi"
+msgstr "andre"
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:33
 #: mailpile/www/default/html/setup/partials/sources_settings.html:67
@@ -6555,18 +6664,19 @@ msgid "Protocol"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sending_settings.html:46
+#, fuzzy
 msgid "Save Route"
-msgstr ""
+msgstr "Legg til rute"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:10
 #, fuzzy
 msgid "Source of these Messages"
-msgstr "Izbriši sporočila"
+msgstr "Slett meldinger"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:11
 #, fuzzy
 msgid "Create a Tag in your Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Doner til Mailpile"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:12
 msgid "Apply the Inbox tag to these Messages"
@@ -6591,16 +6701,17 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_configure.html:17
 #, fuzzy
 msgid "Import these Messages"
-msgstr "Izbriši sporočila"
+msgstr "Slett meldinger"
 
 #: mailpile/www/default/html/setup/partials/sources_configure.html:30
 #: mailpile/www/default/html/tags/edit.html:8
 msgid "Edit Tag"
-msgstr ""
+msgstr "Rediger tag"
 
 #: mailpile/www/default/html/setup/partials/sources_list.html:4
+#, fuzzy
 msgid "Add Source"
-msgstr ""
+msgstr "Legg til rute"
 
 #: mailpile/www/default/html/setup/partials/sources_list.html:8
 msgid ""
@@ -6610,12 +6721,14 @@ msgid ""
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sources_list.html:17
+#, fuzzy
 msgid "Analyzing mail sources..."
-msgstr ""
+msgstr "Innkommende meldingskilder"
 
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:9
+#, fuzzy
 msgid "source"
-msgstr ""
+msgstr "Råkilde:"
 
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:14
 #: mailpile/www/default/html/setup/partials/sources_list_item.html:16
@@ -6651,7 +6764,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_settings.html:18
 #, fuzzy
 msgid "On same computer as Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Velkommen til Mailpile!"
 
 #: mailpile/www/default/html/setup/partials/sources_settings.html:19
 msgid "On different computer (server)"
@@ -6668,7 +6781,7 @@ msgstr ""
 #: mailpile/www/default/html/setup/partials/sources_settings.html:42
 #, fuzzy
 msgid "Copy messages to Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Velkommen til Mailpile!"
 
 #: mailpile/www/default/html/setup/partials/sources_settings.html:44
 msgid "Do Not Copy"
@@ -6695,21 +6808,23 @@ msgid "Do not download (index only)"
 msgstr ""
 
 #: mailpile/www/default/html/setup/partials/sources_settings.html:130
+#, fuzzy
 msgid "Save Source"
-msgstr ""
+msgstr "Råkilde:"
 
 #: mailpile/www/default/html/setup/partials/various.html:25
 #: mailpile/www/default/html/setup/welcome/index.html:20
 msgid "You're about to experience secure email like never before!"
-msgstr ""
+msgstr "Du er i ferd med å oppleve sikker epost som aldri før!"
 
 #: mailpile/www/default/html/setup/partials/various.html:26
 msgid "Begin"
-msgstr ""
+msgstr "Begynn"
 
 #: mailpile/www/default/html/setup/password/index.html:15
+#, fuzzy
 msgid "Mailpile Secured!"
-msgstr ""
+msgstr "Mailpile"
 
 #: mailpile/www/default/html/setup/password/index.html:17
 msgid "Access to your Mailpile will now require this password."
@@ -6724,11 +6839,12 @@ msgstr ""
 #: mailpile/www/default/html/setup/password/index.html:23
 #, fuzzy
 msgid "Start using Mailpile"
-msgstr "Prispevajte k razvoju Mailpile"
+msgstr "Starter opp"
 
 #: mailpile/www/default/html/setup/password/index.html:33
+#, fuzzy
 msgid "Change your password"
-msgstr ""
+msgstr "Feil brukernavn eller passord"
 
 #: mailpile/www/default/html/setup/password/index.html:40
 msgid "your current password"
@@ -6753,13 +6869,14 @@ msgid "very important secret password"
 msgstr ""
 
 #: mailpile/www/default/html/setup/password/index.html:59
+#, fuzzy
 msgid "Confirm your password"
-msgstr ""
+msgstr "Ugyldig brukernavn eller passord"
 
 #: mailpile/www/default/html/setup/password/index.html:67
 #, fuzzy
 msgid "Set Password"
-msgstr "Geslo"
+msgstr "Passord"
 
 #: mailpile/www/default/html/setup/welcome/index.html:24
 msgid "Select Language"
@@ -6767,12 +6884,12 @@ msgstr ""
 
 #: mailpile/www/default/html/tags/edit.html:6
 msgid "Edit: "
-msgstr ""
+msgstr "Rediger:"
 
 #: mailpile/www/default/html/tags/form.html:24
 #, fuzzy
 msgid "Tag Settings"
-msgstr "Nastavitve"
+msgstr "Innstillinger"
 
 #: mailpile/www/default/html/tags/form.html:49
 msgid "Show in top of sidebar"
@@ -6789,16 +6906,17 @@ msgstr ""
 #: mailpile/www/default/html/tags/form.html:57
 #, fuzzy
 msgid "Show in search results"
-msgstr "Število zadetkov na stran"
+msgstr "Forberedte %d søkeresultater"
 
 #: mailpile/www/default/html/tags/form.html:59
+#, fuzzy
 msgid "Hide from search results"
-msgstr ""
+msgstr "Forberedte %d søkeresultater"
 
 #: mailpile/www/default/html/tags/form.html:78
 #, fuzzy
 msgid "Technical settings..."
-msgstr "Tehnične nastavitve sistema"
+msgstr "Tekniske systemvalg"
 
 #: mailpile/www/default/html/tags/form.html:85
 msgid "Keyword"
@@ -6809,40 +6927,176 @@ msgid "Subtags"
 msgstr ""
 
 #: mailpile/www/default/html/tags/form.html:137
+#, fuzzy
 msgid "Choose an Color"
-msgstr ""
+msgstr "Endre farge"
 
 #: mailpile/www/default/html/tags/form.html:149
 #, fuzzy
 msgid "Mailbox settings"
-msgstr "Nastavitve uvoza kartic vCard"
+msgstr "Postbokser"
 
 #: mailpile/www/default/html/tags/form.html:165
 #, fuzzy
 msgid "Stop adding messages to search engine"
-msgstr "Optimiziran iskalnik"
+msgstr "Optimalisert søkemotor"
 
 #: mailpile/www/default/html/tags/form.html:203
 msgid "Delete Tag"
-msgstr ""
+msgstr "Slett merkelapp"
 
 #~ msgid "%s: %s"
 #~ msgstr "%s: %s"
 
+#~ msgid "Current directory is %s"
+#~ msgstr "Gjeldende katalog er %s"
+
+#~ msgid "Failed to list directory: %s"
+#~ msgstr "Klarte ikke å lese mappe: %s"
+
 #~ msgid "New mail check frequency"
-#~ msgstr "Pogostost preverjanja za novo pošto"
+#~ msgstr "Hyppighet for å se etter nye meldinger"
+
+#~ msgid "DEPRECATED: User profiles and personalities"
+#~ msgstr "AVLEGGS: Brukerprofiler og personopplysninger"
+
+#~ msgid "Message signature"
+#~ msgstr "Meldingssignatur"
+
+#~ msgid "DEPRECATED, DO NOT USE"
+#~ msgstr "UTGÅTT, IKKE BRUK DENNE"
+
+#~ msgid ""
+#~ "<h1>Template not found</h1>\n"
+#~ "<p>%s</p><p><b>DATA:</b> %s</p>"
+#~ msgstr ""
+#~ "<h1>Mal ikke funnet</h1>\n"
+#~ "<p>%s</p><p><b>DATA:</b> %s</p>"
+
+#~ msgid ""
+#~ "<h1>Template not found in %s</h1>\n"
+#~ "<b>%s</b><br/><div><hr><p><b>DATA:</b> %s</p></div>"
+#~ msgstr ""
+#~ "<h1>Mal ble ikke funnet i %s</h1>\n"
+#~ "<b>%s</b><br/><div><hr><p><b>DATA:</b> %s</p></div>"
+
+#~ msgid "%d day"
+#~ msgstr "%d dag"
+
+#~ msgid "%d days"
+#~ msgstr "%d dager"
+
+#~ msgid "Missing keys %s"
+#~ msgstr "Mangler nøkler %s"
 
 #~ msgid "Links"
-#~ msgstr "Povezave"
+#~ msgstr "Lenker"
+
+#~ msgid "Oh no, PGP/GPG support is unavailable!"
+#~ msgstr "Åh nei, PGP/GPG støtte er utilgjengelig!"
+
+#~ msgid "Oh noes, we have no GnuPG"
+#~ msgstr "Åh nei, vi har ikke GnuPG"
+
+#~ msgid "No e-mail addresses found"
+#~ msgstr "Ingen epost adresse funnet"
+
+#~ msgid "Discovered e-mail addresses"
+#~ msgstr "Oppdaget epost adresser"
+
+#~ msgid "That all worked"
+#~ msgstr "Alt fungerte"
+
+#~ msgid "Invalid settings"
+#~ msgstr "Ugyldige innstillinger"
 
 #~ msgid "Untag %d messages"
-#~ msgstr "Neoznačenih sporočil: %d"
+#~ msgstr "Avmerk %d meldinger"
 
 #~ msgid "Tagged %d messages"
-#~ msgstr "Označenih sporočil: %d"
+#~ msgstr "Merket %d meldinger"
+
+#~ msgid "Crypto Policy"
+#~ msgstr "Kryptopolicy"
+
+#~ msgid "Basic Information"
+#~ msgstr "Grunnleggende informasjon"
+
+#~ msgid "If you have a PGP key with a passphrase, use that passphrase here!"
+#~ msgstr "Dersom du har en PGP-nøkkel med passord, oppgi det her!"
+
+#~ msgid "We found an existing PGP keychain"
+#~ msgstr "Vi fant en eksisterende PGP nøkkelring"
+
+#~ msgid "Do you want to generate a new key or import this keychain?"
+#~ msgstr "Vil du lage en ny nøkkel eller importere denne nøkkelringen?"
+
+#~ msgid "Learn About PGP Keys"
+#~ msgstr "Lær om PGP nøkler"
+
+#~ msgid "Generate"
+#~ msgstr "Lag"
+
+#~ msgid "This is your key’s verification fingerprint"
+#~ msgstr "Dette er fingeravtrykket for verifisering av din nøkkel"
+
+#~ msgid "Or you can donate to our"
+#~ msgstr "Eller du kan to donere til vår"
+
+#~ msgid "Bitcoin Wallet"
+#~ msgstr "Bitcoin lommebok"
+
+#~ msgid "more"
+#~ msgstr "mer"
+
+#~ msgid "autosaving..."
+#~ msgstr "Autolagrer..."
+
+#~ msgid "error autosaving"
+#~ msgstr "Feil ved autolagring"
+
+#~ msgid "Choose sending profile ..."
+#~ msgstr "Velg avsenderprofil ..."
 
 #~ msgid "Send"
-#~ msgstr "Pošlji"
+#~ msgstr "Send"
+
+#~ msgid ""
+#~ "We are searching numerous sources for encryption keys that match the "
+#~ "address: "
+#~ msgstr ""
+#~ "Vi søker flerfoldige kilder etter krypteringsnøkler som samsvarer med "
+#~ "adressen:"
+
+#~ msgid "Tag Selection"
+#~ msgstr "Valg av merkelapper"
+
+#~ msgid "Send Your Public Key"
+#~ msgstr "Send din offentlige nøkkel"
+
+#~ msgid "Items Selected"
+#~ msgstr "Elementer valgt"
+
+#~ msgid "Close"
+#~ msgstr "Lukk"
 
 #~ msgid "No Results Found"
-#~ msgstr "Ni rezultatov iskanja"
+#~ msgstr "Fant ingen resultater"
+
+#~ msgid "Icon & Color"
+#~ msgstr "Ikon og fargevalg"
+
+#~ msgid "Priority Tag"
+#~ msgstr "Markering for prioritet"
+
+#~ msgid "Invisible"
+#~ msgstr "Usynlig"
+
+#~ msgid "Parent Tag"
+#~ msgstr "Overnevnt merkelapp"
+
+#~ msgid "Pick Tag Icon"
+#~ msgstr "Velg Tag bilde"
+
+#~ msgid "Pick Tag Color"
+#~ msgstr "Velg tag farge"
