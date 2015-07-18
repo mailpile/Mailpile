@@ -199,7 +199,7 @@ class AddVCard(VCardCommand):
         return {'form': self.HTTP_POST_VARS}
 
     def command(self, recipients=False, quietly=False, internal=False):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
@@ -294,7 +294,7 @@ class RemoveVCard(VCardCommand):
     }
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
@@ -336,7 +336,7 @@ class VCardAddLines(VCardCommand):
     }
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
@@ -405,7 +405,7 @@ class VCardRemoveLines(VCardCommand):
     HTTP_CALLABLE = ('POST', 'UPDATE')
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
@@ -577,7 +577,7 @@ class ContactImport(Command):
     HTTP_CALLABLE = ('GET', )
 
     def command(self, format, terms=None, **kwargs):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
@@ -1113,6 +1113,9 @@ class AddProfile(ProfileVCard(AddVCard)):
         }
 
     def _update_vcard_from_post(self, vcard, state=None):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if not state:
             # When editing, this doesn't run first, so we invoke it now.
             state = self._before_vcard_create(vcard.kind, [], vcard=vcard)
@@ -1212,7 +1215,7 @@ class EditProfile(AddProfile):
         return pvars
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
+        if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
         idx = self._idx()  # Make sure VCards are all loaded
