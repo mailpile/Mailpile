@@ -2183,7 +2183,7 @@ class ConfigureMailboxes(Command):
     and configured for automatic indexing.
     """
     SYNOPSIS = ('A', 'add', 'settings/mailbox',
-                '[--recurse] [account@email] <path/to/mailbox>')
+                '[+<tag>] [--<option>] [account@email] <path/to/mailbox>')
     ORDER = ('Config', 4)
     IS_USER_ACTIVITY = True
     HTTP_CALLABLE = ('GET', 'POST', 'UPDATE')
@@ -2213,12 +2213,19 @@ class ConfigureMailboxes(Command):
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
+        # Which tags do we want to apply?
+        apply_tags = self.data.get('apply_tags', [])
+        atis = [i for i, p in enumerate(paths)
+                if p.startswith('+')]
+        for ati in atis:
+            at = paths.pop(ati)[1:].split(',')
+            apply_tags += [config.get_tag_id(a) for a in at]
+
         # Parse arguments from the web
         paths += self.data.get('path', [])
         account_id = self.data.get('profile', [None])[0]
         recurse = self._truthy('recurse', default='n')
 
-        apply_tags = self.data.get('apply_tags', [])
         if self.data.get('_method', 'CLI') == 'POST':
             auto_index = self._truthy('auto_index', default='n')
             tag_visible = self._truthy('tag_visible', default='n')
@@ -2228,9 +2235,16 @@ class ConfigureMailboxes(Command):
             tag_visible = False
             local_copy = None
 
-        # Recursion requested on CLI?
-        if paths and paths[0] == '--recurse':
-            recurse = paths.pop(0)
+        # Recursion or other options requested on CLI?
+        if self.data.get('_method', 'CLI') == 'CLI':
+            while paths and '--recurse' in paths:
+                recurse = paths.pop(paths.index('--recurse'))
+            while paths and '--local_copy' in paths:
+                local_copy = paths.pop(paths.index('--local_copy'))
+            while paths and '--tag_visible' in paths:
+                tag_visible = paths.pop(paths.index('--tag_visible'))
+            while paths and '--no_auto_index' in paths:
+                auto_index = not paths.pop(paths.index('--no_auto_index'))
 
         # Are we linking these mailboxes to a particular account?
         if (not account_id and
