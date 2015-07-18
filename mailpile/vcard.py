@@ -1491,6 +1491,10 @@ class VCardImporter(VCardPluginClass):
         return self.config.guid
 
     def import_vcards(self, session, vcard_store, **kwargs):
+        create_profiles = kwargs.get('profiles', False)
+        if 'profiles' in kwargs:
+            del kwargs['profiles']
+
         session.ui.mark(_('Generating new VCards'))
         all_vcards = self.get_vcards(**kwargs)
         all_vcards.sort(key=lambda k: (k.email, k.random_uid))
@@ -1532,11 +1536,13 @@ class VCardImporter(VCardPluginClass):
                                        ) % (vcard.email, card.random_uid))
 
             # Otherwise, create new ones.
-            if not existing:
+            kindhint = vcard.get('x-mailpile-kind-hint', 0)
+            if not existing and (create_profiles or
+                                 kindhint is 0 or
+                                 kindhint.value != 'profile'):
                 try:
                     new_vcard = MailpileVCard(config=self.config)
                     new_vcard.merge(self.get_guid(vcard), vcard.as_lines())
-                    kindhint = vcard.get('x-mailpile-kind-hint', 0)
                     if kindhint is not 0:
                         new_vcard.add(VCardLine(name='kind',
                                                 value=kindhint.value))
