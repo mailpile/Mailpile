@@ -185,8 +185,9 @@ class GnuPGImporter(VCardImporter):
         # list as well and we want to be done handling them here.
         if secret:
             secret_keys = gnupg.list_secret_keys(selectors=selectors)
-            results += cls.vcards_one_per_uid(secret_keys, vcards,
-                                              kindhint='profile')
+# FIXME: Disable auto-creation of profiles
+#           results += cls.vcards_one_per_uid(secret_keys, vcards,
+#                                             kindhint='profile')
         else:
             secret_keys = []
 
