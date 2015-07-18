@@ -203,7 +203,7 @@ class GnuPGRecordParser:
     def parse_pubkey(self, line):
         self.curkey = line["keyid"]
         line["keytype_name"] = openpgp_algorithms.get(int(line["keytype"]),
-                                                      'Unknown'),
+                                                      'Unknown')
         line["capabilities_map"] = {
             "encrypt": "E" in line["capabilities"],
             "sign": "S" in line["capabilities"],
