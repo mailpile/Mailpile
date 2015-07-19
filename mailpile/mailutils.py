@@ -231,6 +231,8 @@ def PrepareMessage(config, msg,
                 events)
 
     crypto_policy = 'default'
+    crypto_format = 'default'
+
     rcpts = rcpts or []
     if bounce:
         assert(len(rcpts) > 0)
@@ -259,6 +261,13 @@ def PrepareMessage(config, msg,
 
     # FIXME: This makes mistakes sometimes
     sender = ExtractEmails(sender, strip_keys=False)[0]
+
+    profile = config.vcards.get_vcard(sender)
+    if profile:
+        crypto_format = (profile.crypto_format or crypto_format).lower()
+    if crypto_format == 'default':
+        crypto_format = ('prefer_inline' if config.prefs.inline_pgp else
+                         'pgpmime')
 
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
@@ -289,7 +298,7 @@ def PrepareMessage(config, msg,
         sender, rcpts, msg, matched = plugins.outgoing_email_crypto_transform(
             config, sender, rcpts, msg,
             crypto_policy=crypto_policy,
-            prefer_inline=config.prefs.inline_pgp,
+            prefer_inline='prefer_inline' in crypto_format,
             cleaner=lambda m: CleanMessage(config, m))
 
         if crypto_policy and (crypto_policy != 'none') and not matched:

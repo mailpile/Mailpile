@@ -30,9 +30,24 @@ class ContentTxf(EmailTransform):
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
         matched = False
         gnupg = None
-
         sender_keyid = None
-        if self.config.prefs.openpgp_header:
+
+        # Prefer to just get everything from the profile VCard, in the
+        # common case...
+        profile = self.config.vcards.get_vcard(sender)
+        if profile:
+            sender_keyid = profile.pgp_key
+            crypto_format = profile.crypto_format
+
+        # Parse the openpgp_header data from the crypto_format
+        openpgp_header = [p.split(':')[-1]
+                          for p in crypto_format.split('+')
+                          if p.startswith('openpgp_header:')]
+        if not openpgp_header:
+            openpgp_header = self.config.prefs.openpgp_header and ['CFG']
+
+        if openpgp_header[0] != 'N' and not sender_keyid:
+            # This is a fallback: this shouldn't happen much in normal use
             try:
                 gnupg = gnupg or GnuPG(self.config)
                 seckeys = dict([(uid["email"], fp) for fp, key
@@ -44,10 +59,17 @@ class ContentTxf(EmailTransform):
             except (KeyError, TypeError, IndexError, ValueError):
                 traceback.print_exc()
 
-        if sender_keyid and self.config.prefs.openpgp_header:
+        if sender_keyid and openpgp_header:
+            preference = {
+                'ES': 'signencrypt',
+                'SE': 'signencrypt',
+                'E': 'encrypt',
+                'S': 'sign',
+                'N': 'unprotected',
+                'CFG': self.config.prefs.openpgp_header
+            }[openpgp_header[0].upper()]
             msg["OpenPGP"] = ("id=%s; preference=%s"
-                              % (sender_keyid,
-                                 self.config.prefs.openpgp_header))
+                              % (sender_keyid, preference))
 
         if ('attach-pgp-pubkey' in msg and
                 msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
