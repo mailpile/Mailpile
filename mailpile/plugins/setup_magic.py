@@ -632,8 +632,10 @@ class SetupWelcome(TestableWebbable):
             config.slow_worker.add_unique_task(
                 session, 'Setup, Stage 1', lambda: self.bg_setup_stage_1())
 
+        languages = [(l, n) for l, n in ListTranslations(config).iteritems()]
+        languages.sort(key=lambda k: (k[1], k[0]))
         results = {
-            'languages': ListTranslations(config),
+            'languages': languages,
             'language': config.prefs.language
         }
         return self._success(_('Welcome to Mailpile!'), results)
