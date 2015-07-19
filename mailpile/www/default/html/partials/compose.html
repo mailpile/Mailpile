@@ -105,12 +105,11 @@
                    title="{{_("Attach your public encryption key to this message")}}">
               <input type="hidden" id="compose-hidden-attach-key-{{mid}}"
                      name="attach-pgp-pubkey"
-                     value="{%- if editing_strings['attach-pgp-pubkey']
-                                in ('yes', 'true', true) %}yes{% else %}no
-                            {%- endif %}">
+                     value="{{ editing_strings.get('attach-pgp-pubkey', 'no')
+                              }}">
               <input type="checkbox" id="compose-attach-key-{{mid}}"
                      {%- if editing_strings['attach-pgp-pubkey']
-                         in ('yes', 'true', true) %} checked{% endif %}>
+                         in ('Yes', 'yes', 'true', 'True', true) %} checked{% endif %}>
               {{_("Attach Key")}}
             </label>
           </li>{% endif %}

@@ -2004,13 +2004,21 @@ class ConfigManager(ConfigDict):
             'email': find,
             'messageroute': self.prefs.default_messageroute,
             'signature': default_sig,
+            'crypto_policy': 'none',
+            'crypto_format': 'none',
             'vcard': None
         }
+
         profiles = []
         if find:
             profiles = [self.vcards.get_vcard(find)]
         if not profiles or not profiles[0]:
             profiles = self.vcards.find_vcards([], kinds=['profile'])
+        if profiles:
+            profiles.sort(key=lambda k: ((0 if k.route else 1),
+                                         (-len(k.recent_history())),
+                                         (-len(k.sources()))))
+
         if profiles and profiles[0]:
             profile = profiles[0]
             psig = profile.signature
@@ -2021,8 +2029,11 @@ class ConfigManager(ConfigDict):
                 'signature': psig if (psig is not None) else default_sig,
                 'messageroute': (proute if (proute is not None)
                                  else self.prefs.default_messageroute),
+                'crypto_policy': profile.crypto_policy or 'none',
+                'crypto_format': profile.crypto_format or 'none',
                 'vcard': profile
             })
+
         return default_profile
 
     def get_sendmail(self, frm, rcpts=['-t']):

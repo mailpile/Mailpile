@@ -445,21 +445,13 @@ class Email(object):
                 msg.attach(att)
                 del att['MIME-Version']
 
-        # Determine if we want to attach a PGP public key due to timing:
-        if idx.config.prefs.gpg_email_key:
-            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
-            offset = timedelta(days=30)
-            dates = []
-            for addr in addrs:
-                vcard = idx.config.vcards.get(addr)
-                if vcard != None:
-                    lastdate = vcard.pgp_key_shared
-                    if lastdate:
-                        try:
-                            dates.append(datetime.fromtimestamp(float(lastdate)))
-                        except ValueError:
-                            pass
-            if all([date+offset < datetime.now() for date in dates]):
+        # Determine if we want to attach a PGP public key due to policy and
+        # timing...
+        if (idx.config.prefs.gpg_email_key and
+                'send_keys' in from_profile.get('crypto_format', 'none')):
+            from mailpile.plugins.crypto_policy import CryptoPolicy
+            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc) + norm(msg_bcc))
+            if CryptoPolicy.ShouldAttachKey(idx.config, emails=addrs):
                 msg["Attach-PGP-Pubkey"] = "Yes"
 
         if save:
