@@ -38,6 +38,8 @@ class ContentTxf(EmailTransform):
         if profile:
             sender_keyid = profile.pgp_key
             crypto_format = profile.crypto_format or 'none'
+        else:
+            crypto_format = 'none'
 
         # Parse the openpgp_header data from the crypto_format
         openpgp_header = [p.split(':')[-1]
