@@ -37,7 +37,7 @@ class ContentTxf(EmailTransform):
         profile = self.config.vcards.get_vcard(sender)
         if profile:
             sender_keyid = profile.pgp_key
-            crypto_format = profile.crypto_format
+            crypto_format = profile.crypto_format or 'none'
 
         # Parse the openpgp_header data from the crypto_format
         openpgp_header = [p.split(':')[-1]
