@@ -23,8 +23,8 @@
     <select name="language">
       <option value="">{{_("Select Language")}}...</option>
       {% set selected = {(result.language or 'en_US'): ' selected'} %}
-      {% for lc in result.languages|sort %}
-      <option value="{{ lc }}"{{ selected[lc] }}>{{ result.languages[lc] }}</option>
+      {% for lc, txt in result.languages %}
+      <option value="{{ lc }}"{{ selected[lc] }}>{{ txt }}</option>
       {% endfor %}
     </select>
     </p>
