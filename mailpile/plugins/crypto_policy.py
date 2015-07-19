@@ -72,27 +72,30 @@ class CryptoPolicy(CryptoPolicyBaseAction):
     HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
 
     @classmethod
-    def ShouldAttachKey(cls, config, vcards=None, emails=None):
-        offset = timedelta(days=30)  # FIXME: Magic number!
+    def ShouldAttachKey(cls, config, vcards=None, emails=None, ttl=90):
+        offset = timedelta(days=ttl)  # FIXME: Magic number!
+        never = datetime.fromtimestamp(0)
         dates = []
 
         if not vcards:
             vcards = []
         for vc in (config.vcards.get(e) for e in (emails or [])):
-            if vc:
-                vcards.append(vc)
-        for vc in vcards:
+            vcards.append(vc)  # Note: May append None, that's OK
+        for vc in (v for v in vcards):
             # A VCard with no last shared date or an invalid shared date,
             # is considered to never have received a key.
             try:
-                lastdate = vc.pgp_key_shared
-                dates.append(datetime.fromtimestamp(float(lastdate)))
+                if vc.kind != 'profile':
+                    # FIXME: This doesn't check *which* key we sent! This
+                    #        needs to be made smarter for key rollover and
+                    #        mutliple-key scenarios.
+                    lastdate = vc.pgp_key_shared
+                    dates.append(datetime.fromtimestamp(float(lastdate)))
             except (ValueError, TypeError, AttributeError):
-                pass
+                dates.append(never)
 
-        # Note: If this list of dates is empty then nobody has gotten any
-        # keys. The list will be emtpy: all([]) is True, we return True!
-        return all([d+offset < datetime.now() for d in dates])
+        # If anyone needs a key, attach a key...
+        return 0 < len([d for d in dates if d+offset < datetime.now()])
 
     @classmethod
     def _vcard_policy(self, config, email):
