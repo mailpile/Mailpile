@@ -73,10 +73,12 @@ class ContentTxf(EmailTransform):
 
         if ('attach-pgp-pubkey' in msg and
                 msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
-            # FIXME: Check attach_pgp_pubkey for instructions on which key(s)
-            #        to attach. Attaching all of them may be a bit lame.
             gnupg = gnupg or GnuPG(self.config)
-            keys = gnupg.address_to_keys(ExtractEmails(sender)[0])
+            if sender_keyid:
+                keys = gnupg.list_keys(selectors=[sender_keyid])
+            else:
+                keys = gnupg.address_to_keys(ExtractEmails(sender)[0])
+
             key_count = 0
             for fp, key in keys.iteritems():
                 if not any(key["capabilities_map"].values()):
