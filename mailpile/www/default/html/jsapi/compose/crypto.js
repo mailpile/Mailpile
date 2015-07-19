@@ -10,6 +10,11 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
   // recommended crypto policy.
   Mailpile.API.crypto_policy_get({email: emails}, function(response) {
     var r = response.result;
+
+    // Update attach key (or not) state
+    $('#compose-attach-key-' + mid).prop('checked', r['send-keys']);
+    Mailpile.Composer.Crypto.AttachKey(mid);
+
     // Record our capabilities: can we encrypt? Sign?
     $('#compose-crypto-encryption-' + mid).data('can', r['can-encrypt']);
     $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);

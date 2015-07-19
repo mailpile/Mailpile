@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -70,11 +72,36 @@ class CryptoPolicy(CryptoPolicyBaseAction):
     HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
 
     @classmethod
+    def ShouldAttachKey(cls, config, vcards=None, emails=None):
+        offset = timedelta(days=30)  # FIXME: Magic number!
+        dates = []
+
+        if not vcards:
+            vcards = []
+        for vc in (config.vcards.get(e) for e in (emails or [])):
+            if vc:
+                vcards.append(vc)
+        for vc in vcards:
+            # A VCard with no last shared date or an invalid shared date,
+            # is considered to never have received a key.
+            try:
+                lastdate = vc.pgp_key_shared
+                dates.append(datetime.fromtimestamp(float(lastdate)))
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+        # Note: If this list of dates is empty then nobody has gotten any
+        # keys. The list will be emtpy: all([]) is True, we return True!
+        return all([d+offset < datetime.now() for d in dates])
+
+    @classmethod
     def _vcard_policy(self, config, email):
         vcard = config.vcards.get_vcard(email)
         if vcard:
-            return (vcard, vcard.kind, email, vcard.crypto_policy or 'default')
-        return (None, None, email, 'default')
+            return (vcard, vcard.kind, email,
+                    vcard.crypto_policy or 'default',
+                    vcard.crypto_format or 'default')
+        return (None, None, email, 'default', 'default')
 
     @classmethod
     def _encryption_ratio(self, session, idx, email):
@@ -101,19 +128,24 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                                       .split('>', 1)[0]
                                       .rsplit('#', 1)[0].strip())
         policies = [cls._vcard_policy(config, e) for e in set(emails)]
-        default = [(v, k, e, p) for v, k, e, p in policies if k == 'profile']
-        default = default[0] if default else (None, None, None, 'best-effort')
+        default = [(v, k, e, p, f) for v, k, e, p, f in policies
+                   if k == 'profile']
+        default = default[0] if default else (None, None, None,
+                                              'best-effort', 'send_keys')
+        cpolicy = default[-2]
+        cformat = default[-1]
 
         # Try and merge all the user policies into one. This may lead
         # to conflicts which cannot be resolved.
-        policy = default[-1]
+        policy = cpolicy
         reason = None
-        for vc, kind, email, cpol in policies:
+        for vc, kind, email, cpol, cfmt in policies:
             if cpol and cpol not in ('default', 'best-effort'):
                 if policy in ('default', 'best-effort'):
                     policy = cpol
                 elif policy != cpol:
-                    reason = _('Recipients have conflicting encryption policies.')
+                    reason = _('Recipients have conflicting encryption '
+                               'policies.')
                     policy = 'conflict'
         if policy == 'default':
             policy = 'best-effort'
@@ -139,18 +171,19 @@ class CryptoPolicy(CryptoPolicyBaseAction):
             can_sign = False
             can_encrypt = False
         if can_encrypt is not False:
-            can_encrypt = len([1 for v, k, e, p in policies
+            can_encrypt = len([1 for v, k, e, p, f in policies
                                if not v or not v.get_all('KEY')]) == 0
         if not can_encrypt and 'encrypt' in policy:
             policy = 'conflict'
-            reason = _('Some recipients require encryption, but we do not have keys for everyone!')
+            reason = _('Some recipients require encryption, '
+                       'but we do not have keys for everyone!')
 
         # If the policy is "best-effort", then we would like to sign and
         # encrypt if possible/safe. The bar for signing is lower.
         if policy == 'best-effort':
             should_encrypt = can_encrypt
             if should_encrypt:
-                for v, k, e, p in policies:
+                for v, k, e, p, f in policies:
                     if k and k == 'profile':
                         pass
                     elif cls._encryption_ratio(session, idx, e) < 0.8:
@@ -158,22 +191,29 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                         break
                 if should_encrypt:
                     policy = 'sign-encrypt'
-                    reason = _('Signing and encrypting because we have keys for everyone!')
+                    reason = _('Signing and encrypting because we have '
+                               'keys for everyone!')
             if can_sign and not should_encrypt:
                 # FIXME: Should we check if anyone is using a lame MUA?
                 policy = 'sign'
                 if can_encrypt:
-                    reason = _('Signing, but will not encrypt because historic data is insufficient.')
+                    reason = _('Signing, but will not encrypt because '
+                               'historic data is insufficient.')
                 else:
-                    reason = _('Signing, but cannot encrypt because we do not have keys for all recipients.')
+                    reason = _('Signing, but cannot encrypt because we '
+                               'do not have keys for all recipients.')
 
+        vcards = [p[0] for p in policies]
         return {
           'reason': reason,
           'can-sign': can_sign,
           'can-encrypt': can_encrypt,
           'crypto-policy': policy,
+          'crypto-format': cformat,
+          'send-keys': ('send_keys' in cformat and
+                        cls.ShouldAttachKey(config, vcards=vcards)),
           'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
-                             for vc, k, e, p in policies if vc])
+                             for vc, k, e, p, f in policies if vc])
         }
 
     def command(self):

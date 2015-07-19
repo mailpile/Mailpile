@@ -77,6 +77,7 @@ def say(stuff):
 def do_setup():
     # Set up initial tags and such
     mp.setup()
+    mp.profiles_add(MY_FROM, '=', MY_NAME)
     mp.rescan('vcards:gpg')
 
     # Setup GPG access credentials and TELL EVERYONE!
@@ -100,7 +101,7 @@ def do_setup():
     if '-v' in sys.argv:
         config.sys.debug = 'log http vcard rescan sendmail log compose'
 
-    # Set up dummy conctact importer fortesting, disable Gravatar
+    # Set up dummy conctact importer for testing, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
     mp.set('prefs/vcard/importers/gravatar/0/active = false')
     mp.set('prefs/vcard/importers/gpg/0/active = false')

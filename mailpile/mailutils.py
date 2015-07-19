@@ -231,6 +231,8 @@ def PrepareMessage(config, msg,
                 events)
 
     crypto_policy = 'default'
+    crypto_format = 'default'
+
     rcpts = rcpts or []
     if bounce:
         assert(len(rcpts) > 0)
@@ -259,6 +261,13 @@ def PrepareMessage(config, msg,
 
     # FIXME: This makes mistakes sometimes
     sender = ExtractEmails(sender, strip_keys=False)[0]
+
+    profile = config.vcards.get_vcard(sender)
+    if profile:
+        crypto_format = (profile.crypto_format or crypto_format).lower()
+    if crypto_format == 'default':
+        crypto_format = ('prefer_inline' if config.prefs.inline_pgp else
+                         'pgpmime')
 
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
@@ -289,7 +298,7 @@ def PrepareMessage(config, msg,
         sender, rcpts, msg, matched = plugins.outgoing_email_crypto_transform(
             config, sender, rcpts, msg,
             crypto_policy=crypto_policy,
-            prefer_inline=config.prefs.inline_pgp,
+            prefer_inline='prefer_inline' in crypto_format,
             cleaner=lambda m: CleanMessage(config, m))
 
         if crypto_policy and (crypto_policy != 'none') and not matched:
@@ -445,21 +454,13 @@ class Email(object):
                 msg.attach(att)
                 del att['MIME-Version']
 
-        # Determine if we want to attach a PGP public key due to timing:
-        if idx.config.prefs.gpg_email_key:
-            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc))
-            offset = timedelta(days=30)
-            dates = []
-            for addr in addrs:
-                vcard = idx.config.vcards.get(addr)
-                if vcard != None:
-                    lastdate = vcard.pgp_key_shared
-                    if lastdate:
-                        try:
-                            dates.append(datetime.fromtimestamp(float(lastdate)))
-                        except ValueError:
-                            pass
-            if all([date+offset < datetime.now() for date in dates]):
+        # Determine if we want to attach a PGP public key due to policy and
+        # timing...
+        if (idx.config.prefs.gpg_email_key and
+                'send_keys' in from_profile.get('crypto_format', 'none')):
+            from mailpile.plugins.crypto_policy import CryptoPolicy
+            addrs = ExtractEmails(norm(msg_to) + norm(msg_cc) + norm(msg_bcc))
+            if CryptoPolicy.ShouldAttachKey(idx.config, emails=addrs):
                 msg["Attach-PGP-Pubkey"] = "Yes"
 
         if save:

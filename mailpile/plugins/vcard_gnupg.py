@@ -183,13 +183,10 @@ class GnuPGImporter(VCardImporter):
 
         # Secret keys first, as they'll probably all show up on the public
         # list as well and we want to be done handling them here.
+        secret_keys = gnupg.list_secret_keys(selectors=selectors)
         if secret:
-            secret_keys = gnupg.list_secret_keys(selectors=selectors)
-# FIXME: Disable auto-creation of profiles
-#           results += cls.vcards_one_per_uid(secret_keys, vcards,
-#                                             kindhint='profile')
-        else:
-            secret_keys = []
+            results += cls.vcards_one_per_uid(secret_keys, vcards,
+                                              kindhint='profile')
 
         if public:
             keys = gnupg.list_keys(selectors=selectors)
