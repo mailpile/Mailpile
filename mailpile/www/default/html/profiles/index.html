@@ -193,7 +193,10 @@
  {%- set mrg = '' %}
 {%- endif %}
   <div style="margin: {{mrg}}40px 0; width: 38em; padding: 0 1em; opacity: {{opa}}">
-    <h4>{{_("Welcome to Mailpile Beta III")}} :-)</h4>
+    <h4>
+      {{_("Welcome to Mailpile Beta III")}} :-)
+      <small class='right'>v{{ config.version }}</small>
+    </h4>
     <p>
       {{_("This release is a technology preview release, meant for developers, early adopters, usability testers and our community of translators.")}}
       {{_("It might also be useful for reading and writing e-mail, you never know!")}}
