@@ -150,8 +150,9 @@
             href="{{ U('/profiles/add/') }}"><button type=button class="button-secondary">
         <span class="icon icon-plus"></span> {{_("Add Account")}}
       </button></a></p>
-    </div></td></tr>
+    </div></td></tr><tr><td colspan=9>&nbsp;</td></tr>
     {%- endif %}
+    {%- if result.profiles|length > 0 %}
     <tr><td></td><td>
       </td><td style='text-align: left;'>
         <a href="{{ U('/in/inbox/') }}">
@@ -162,12 +163,10 @@
           <span class="icon icon-new"></span> {{_("Unread Mail")}}
         </a>
       </td><td colspan=5>
-{%- if result.profiles|length > 0 %}
         <a href="{{ U('/browse/') }}">
           <span class="icon icon-list"></span> {{_("Browse")}}
         </a>
         &nbsp;&nbsp;
-{%- endif %}
         <a class="auto-modal" data-flags="reload" data-icon="icon-user"
            title="{{_("Create a new Account")}}"
            href="{{ U('/profiles/add/') }}">
@@ -176,8 +175,8 @@
       </td><td>
       </td>
     </tr>
+    {%- endif %}
   </table>
-  <p></p>
 
 {#
   <div style="display: inline-block; width: 45%; padding: 0 1em;">
@@ -186,5 +185,27 @@
   </div>
 #}
 
+{%- if result.profiles|length == 0 %}
+ {%- set opa = '0.9' %}
+ {%- set mrg = '-' %}
+{%- else %}
+ {%- set opa = '0.5' %}
+ {%- set mrg = '' %}
+{%- endif %}
+  <div style="margin: {{mrg}}40px 0; width: 38em; padding: 0 1em; opacity: {{opa}}">
+    <h4>{{_("Welcome to Mailpile Beta III")}} :-)</h4>
+    <p>
+      {{_("This release is a technology preview release, meant for developers, early adopters, usability testers and our community of translators.")}}
+      {{_("It might also be useful for reading and writing e-mail, you never know!")}}
+      {{_("Read all about it:")}}
+    </p>
+    <ul class='list' style='margin-left: 2em; list-style: disc'>
+      <li><a target=_blank href="https://www.mailpile.is/blog/2015-07-20_Mailpile_Beta_III.html">{{_("Annoucement blog post")}}</a></li>
+      <li><a target=_blank href="https://github.com/mailpile/Mailpile/wiki/Release-Notes-201507-Beta-III">{{_("Release Notes")}}</a></li>
+      <li><a target=_blank href="https://github.com/mailpile/Mailpile/wiki/Security-roadmap">{{_("Security Roadmap")}}</a></li>
+    </ul>
+  </div>
+
+  <p></p>
 </div>
 {%- endblock %}
