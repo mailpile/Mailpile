@@ -117,19 +117,19 @@ def lookup_crypto_keys(session, address,
             # We have all the keys!
             break
 
-        h = handler(session, known_keys_list)
-        if not allowremote and not h.LOCAL:
-            continue
-
-        if event:
-            ordered_keys.sort(key=lambda k: -k["score"])
-            event.message = _('Searching for encryption keys in: %s'
-                              ) % _(h.NAME)
-            event.private_data = {"result": ordered_keys,
-                                  "runningsearch": h.NAME}
-            session.config.event_log.log_event(event)
-
         try:
+            h = handler(session, known_keys_list)
+            if not allowremote and not h.LOCAL:
+                continue
+
+            if event:
+                ordered_keys.sort(key=lambda k: -k["score"])
+                event.message = _('Searching for encryption keys in: %s'
+                                  ) % _(h.NAME)
+                event.private_data = {"result": ordered_keys,
+                                      "runningsearch": h.NAME}
+                session.config.event_log.log_event(event)
+
             # We allow for more time when importing keys
             timeout = h.TIMEOUT
             if ungotten:
@@ -142,7 +142,7 @@ def lookup_crypto_keys(session, address,
                                strict_email_match=strict_email_match,
                                get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
-        except (TimedOut, IOError, ValueError):
+        except (TimedOut, IOError, ValueError, TypeError, AttributeError):
             if session.config.sys.debug:
                 traceback.print_exc()
             results = {}
