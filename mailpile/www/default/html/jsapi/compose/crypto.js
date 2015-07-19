@@ -12,7 +12,14 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
     var r = response.result;
 
     // Update attach key (or not) state
-    $('#compose-attach-key-' + mid).prop('checked', r['send-keys']);
+    if (r['can-sign']) {
+      $('.compose-attach-key').show();
+    }
+    else {
+      $('.compose-attach-key').hide();
+    }
+    $('#compose-attach-key-' + mid).prop('checked',
+                                         r['can-sign'] && r['send-keys']);
     Mailpile.Composer.Crypto.AttachKey(mid);
 
     // Record our capabilities: can we encrypt? Sign?
