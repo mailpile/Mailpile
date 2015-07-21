@@ -13,6 +13,7 @@
     border-right: 1px solid @gray;
     border-spacing: 0px;
     overflow-y: auto;
+    overflow-x: hidden;
     z-index: 10;
   }
 
@@ -66,11 +67,12 @@
   #sidebar a.sidebar-tag {
     position: relative;
     width: 200px;
-    display: inline-block;
+    display: block;
     margin: 0px 7px;
     padding: 6px 5px;
     vertical-align: middle;
     text-align: left;
+    white-space: nowrap;
     transition-duration: 0.2s;
   }
 
@@ -107,12 +109,16 @@
 
   #sidebar a.sidebar-tag span.name {
     display: inline-block;
-    max-width: 132px;
+    max-width: 140px;
     padding-left: 5px;
+    padding-right: 0px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 	}
 
   #sidebar a.sidebar-tag span.notification {
+    display: inline-block;
     letter-spacing: -.5px;
     color: @gray;
   }
