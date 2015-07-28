@@ -1,4 +1,4 @@
-APPVER = "0.4.5"
+APPVER = "0.6.0+dev"
 ABOUT = """\
 Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
                for searching and                   <https://www.mailpile.is/>
