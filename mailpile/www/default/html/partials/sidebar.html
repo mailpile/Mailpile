@@ -48,6 +48,7 @@
 
 <!-- FIXME: make "density" class be pulled from user profile setting -->
 <div id="sidebar" class="{{ config.web.display_density }}">
+  <div id="sidebar-lists">
   <nav>
     <ul id="sidebar-priority" class="sidebar-sortable">
       {%- for tag in mailpile("tags", "mode=tree", "display=priority").result.tags -%}
@@ -63,6 +64,7 @@
   </nav>
   <nav id='sidebar-user-contacts'>
   </nav>
+  </div>
   <nav id="sidebar-bottom">
 {%- if config.version >= '0.6.0' %}
     <a style='float: right' href="{{ U('/contacts/') }}" id="button-sidebar-people" title="{{_("Contacts")}}">
