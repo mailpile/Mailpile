@@ -10,7 +10,7 @@
 </head>
 <body>
 {% include("partials/topbar.html") %}
-<div id="content-wide"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
+<div id="content-wide"><div{% if state and state.cache_id %} class="cached content-{{ state.cache_id }}"{% endif %}>
   {%- block contenttools %}{% endblock %}
   {%- block content %}{{results}}{% endblock %}
 </div></div>

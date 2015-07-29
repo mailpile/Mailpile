@@ -1,1 +1,3 @@
-<div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>{% block content %}{% endblock %}</div>
+<div{% if state and state.cache_id %} data-template="{{ render_template }}" class="cached content-{{ state.cache_id }}"{% endif %}>
+{%- block content %}{% endblock -%}
+</div>

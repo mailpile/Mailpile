@@ -212,6 +212,7 @@ class Command(object):
             data = self.as_dict()
             data['title'] = self.message
             data['render_mode'] = mode or 'full'
+            data['render_template'] = template or 'index'
 
             rendering = self.session.ui.render_web(self.session.config,
                                                    [tpath], data)

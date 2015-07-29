@@ -31,7 +31,7 @@
  {% endif %}
 {% endblock %}
   </div>
-  <div id="content-view"><div{% if state and state.cache_id %} class="content-{{ state.cache_id }}"{% endif %}>
+  <div id="content-view"><div{% if state and state.cache_id %} class="cached content-{{ state.cache_id }}"{% endif %}>
     {% block content %}{{results}}{% endblock %}
   </div></div>
 </div>
