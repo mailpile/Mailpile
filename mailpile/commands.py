@@ -622,6 +622,14 @@ class Command(object):
         else:
             return self._run_sync(True, *args, **kwargs)
 
+    def _maybe_trigger_cache_refresh(self):
+        if self.data.get('_method') == 'POST':
+            def refresher():
+                self.session.config.command_cache.refresh(
+                    event_log=self.session.config.event_log)
+            self.session.config.async_worker.add_unique_task(
+                self.session, 'post-refresh', refresher)
+
     def run(self, *args, **kwargs):
         if self.COMMAND_SECURITY is not None:
             forbidden = security.forbid_command(self)
@@ -633,11 +641,15 @@ class Command(object):
                 try:
                     mailpile.util.LAST_USER_ACTIVITY = time.time()
                     mailpile.util.LIVE_USER_ACTIVITIES += 1
-                    return self._run(*args, **kwargs)
+                    rv = self._run(*args, **kwargs)
+                    self._maybe_trigger_cache_refresh()
+                    return rv
                 finally:
                     mailpile.util.LIVE_USER_ACTIVITIES -= 1
             else:
-                return self._run(*args, **kwargs)
+                rv = self._run(*args, **kwargs)
+                self._maybe_trigger_cache_refresh()
+                return rv
 
     def refresh(self):
         self._create_event()

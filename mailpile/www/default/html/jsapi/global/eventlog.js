@@ -61,7 +61,7 @@ EventLog.poll = function() {
   EventLog.request({
   //source: source_re,
     since: EventLog.last_ts,
-    gather: (EventLog.last_ts < 0) ? 0.2 : 2,
+    gather: (EventLog.last_ts < 0) ? 0.2 : 0.5,
     wait: 30
   });
 };

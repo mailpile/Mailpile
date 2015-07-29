@@ -34,7 +34,7 @@ class CommandCache(object):
     def __init__(self, debug=None):
         self.debug = debug or (lambda s: None)
         self.lock = UiRLock()
-        self._lag = 0.5
+        self._lag = 0.1
         self.cache = {}       # id -> [exp, req, ss, cmd_obj, res_obj, added]
         self.dirty = []       # (ts, req): Requirements that changed & when
         self._dirty_ttl = 10
@@ -64,7 +64,7 @@ class CommandCache(object):
             self.debug('Suppressing cache result %s, recent=%s dirty=%s'
                        % (fprint, recent, sorted(list(dirty))))
             raise KeyError(fprint)
-        match[0] = min(match[0] + extend, time.time() + 5 * extend)
+        match[0] = time.time() + extend
         co.session = result_obj.session = ss
         self.debug('Returning cached result for %s' % fprint)
         return result_obj
@@ -82,7 +82,7 @@ class CommandCache(object):
             self.dirty.append((time.time(), set(requirements)))
         self.debug('Marked dirty: %s' % sorted(list(requirements)))
 
-    def refresh(self, extend=0, runtime=4, event_log=None):
+    def refresh(self, extend=0, runtime=5, event_log=None):
         started = now = time.time()
         with self.lock:
             # Expire things from the cache
@@ -98,6 +98,7 @@ class CommandCache(object):
             fingerprints = list(self.cache.keys())
 
         refreshed = []
+        fingerprints.sort(key=lambda k: -self.cache[k][0])
         for fprint in fingerprints:
             try:
                 e, req, ss, co, ro, a = self.cache[fprint]

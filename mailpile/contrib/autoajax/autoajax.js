@@ -35,7 +35,7 @@ update_using_jhtml = function(original_url) {
             url: Mailpile.API.jhtml_url(original_url),
             type: 'GET',
             success: function(data) {
-                cv.html(data['result']).fadeIn('fast');
+                cv.html(data['result']).show();
                 prepare_new_content(cv);
 
                 // FIXME: The back button is still broken
@@ -56,15 +56,16 @@ $(document).ready(function(){
     EventLog.subscribe('.command_cache.CommandCache', function(ev) {
         for (var cidx in ev.data.cache_ids) {
             var cid = ev.data.cache_ids[cidx];
-            if ($('.content-'+cid).length > 0) {
+            var $inpage = $('.content-'+cid);
+            if ($inpage.length > 0) {
                 Mailpile.API.cached_get({
                     id: cid,
-                    _output: 'as.jhtml'
+                    _output: Mailpile.API.jhtml_url($inpage.data('template')
+                                                    || 'as.html')
                 }, function(json) {
                     var cid = json.state.cache_id;
-                    var existing = $('.content-'+cid);
-                    existing.html(json.result);
-                    prepare_new_content(existing);
+                    $('.content-'+cid).replaceWith(json.result);
+                    prepare_new_content($('.content-'+cid));
                 });
             }
         }
