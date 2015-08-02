@@ -32,7 +32,7 @@ def _CopyAsMultipart(msg, callback, cleaner):
             del msg[hdr]
         elif hdrl == 'mime-version':
             del msg[hdrl]
-    callback('headers', m, None)
+    callback('headers', m, msg)
 
     def att(part):
         if hasattr(part, 'signature_info'):
@@ -45,13 +45,16 @@ def _CopyAsMultipart(msg, callback, cleaner):
             att(part)
     else:
         att(msg)
-    callback('payload', m, None)
+    callback('payload', m, msg)
 
     return m
 
 
 class EmailCryptoTxf(EmailTransform):
     """This is a set of email encryption experiments"""
+
+    # Different methods. True is for backwards compatibility, => 'attach'
+    TRANSFORM_STYLES = ('true', 'attach', 'mime')
 
     # Header protection ignores these...
     DKG_IGNORED_HEADERS = ['mime-version', 'content-type']
@@ -66,7 +69,8 @@ class EmailCryptoTxf(EmailTransform):
     }
     DKG_STRIPPED_HEADERS = ['openpgp']
 
-    def DkgHeaderTransformOutgoing(self, msg, crypto_policy, cleaner):
+    def DkgHeaderTransformOutgoing(self, msg, crypto_policy, cleaner,
+                                   transform_style):
         visible, invisible = Message(), Message()
 
         if 'encrypt' in crypto_policy:
@@ -92,25 +96,47 @@ class EmailCryptoTxf(EmailTransform):
         else:
             return msg
 
-        def copy_callback(stage, msg, part):
+        def copy_callback_attach(stage, msg, part):
             if stage == 'headers' and visible.keys():
                 part = _AddCryptoState(MIMEText(visible.as_string(),
                                                 'rfc822-headers'))
-                part.set_param('memoryhole', 'v1,%s' % msg['Message-ID'])
+                part.set_param('protected-headers',
+                               'v1,%s' % msg['Message-ID'])
                 part['Content-Disposition'] = 'inline'
                 del part['MIME-Version']
                 msg.attach(part)
+                return part
 
             elif stage == 'payload' and invisible.keys():
                 part = _AddCryptoState(MIMEText(invisible.as_string(),
                                                 'rfc822-headers'))
-                part.set_param('memoryhole', 'v1,%s' % msg['Message-ID'])
+                part.set_param('protected-headers',
+                               'v1,%s' % msg['Message-ID'])
                 part['Content-Disposition'
                      ] = 'attachment; filename=Secure_Headers.txt'
                 del part['MIME-Version']
                 msg.attach(part)
+                return part
 
-        return _CopyAsMultipart(msg, copy_callback, cleaner)
+            return None
+
+        def copy_callback_mime(stage, msg, part):
+            if stage == 'headers':
+                new_part = copy_callback_attach(stage, msg, part)
+                if new_part:
+                    for key in invisible.keys():
+                        new_part[key] = invisible[key]
+                        del invisible[key]
+
+            elif stage in ('payload', 'part') and invisible.keys():
+                for key in invisible.keys():
+                    part[key] = invisible[key]
+                    del invisible[key]
+
+        if transform_style == 'mime':
+            return _CopyAsMultipart(msg, copy_callback_mime, cleaner)
+        else:
+            return _CopyAsMultipart(msg, copy_callback_attach, cleaner)
 
     def DkgHeaderTransformIncoming(self, msg):
         # FIXME: Parse incoming message/rfc822-headers parts, migrate
@@ -128,8 +154,10 @@ class EmailCryptoTxf(EmailTransform):
         txf_continue = True
         txf_matched = False
 
-        if self.config.prefs.experiment_dkg_hdrs is True:
-            msg = self.DkgHeaderTransformOutgoing(msg, crypto_policy, cleaner)
+        txf_style = self.config.prefs.get('experiment_dkg_hdrs', 'off').lower()
+        if txf_style in self.TRANSFORM_STYLES:
+            msg = self.DkgHeaderTransformOutgoing(msg, crypto_policy, cleaner,
+                                                  txf_style)
             txf_matched = True
 
         return sender, rcpt, msg, txf_matched, txf_continue
@@ -156,7 +184,7 @@ def paragraph_id_extractor(index, msg, ctype, textpart):
     try:
         if not ctype == 'text/plain':
             return kws
-        if not index.config.prefs.experiment_para_kws:
+        if not index.config.prefs.get('experiment_para_kws'):
             return kws
 
         para = {'text': '', 'qlevel': 0}
