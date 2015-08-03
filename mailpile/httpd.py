@@ -135,6 +135,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if mimetype.startswith('text/') and ';' not in mimetype:
             mimetype += ('; charset = utf-8')
         self.send_header('Cache-Control', cachectrl)
+        self.send_header('Content-Security-Policy',
+                         "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                         "img-src 'self' data://*")
         self.send_header('Content-Type', mimetype)
         for header in header_list:
             self.send_header(header[0], header[1])
