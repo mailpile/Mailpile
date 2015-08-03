@@ -683,9 +683,9 @@ class ImapMailSource(BaseMailSource):
 
             try:
                 ok, data = self.timed_imap(conn.login,
-                                           my_config.username,
-                                           my_config.password)
-            except IMAP4.error:
+                                           my_config.username.encode('utf-8'),
+                                           my_config.password.encode('utf-8'))
+            except IMAP4.error, UnicodeDecodeError:
                 ok = False
             if not ok:
                 ev['error'] = ['auth', _('Invalid username or password')]
