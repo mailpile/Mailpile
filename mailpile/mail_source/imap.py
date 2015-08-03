@@ -587,7 +587,12 @@ class ImapMailSource(BaseMailSource):
         return BaseMailSource._sleep(self, seconds)
 
     def _conn_id(self):
-        return md5_hex('\n'.join([str(self.my_config[k]) for k in
+        def e(s):
+            try:
+                return unicode(s).encode('utf-8')
+            except UnicodeDecodeError:
+                return unicode(s).encode('utf-8', 'replace')
+        return md5_hex('\n'.join([e(self.my_config[k]) for k in
                                   ('host', 'port', 'password', 'username')]))
 
     def close(self):
