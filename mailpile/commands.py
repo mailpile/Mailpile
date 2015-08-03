@@ -1752,6 +1752,7 @@ class ListDir(Command):
                     if '-a' in flags or f.raw_fp[:1] != '.']
 
         file_list = []
+        errors = 0
         for path in args:
             try:
                 path = os.path.expanduser(path.encode('utf-8'))
@@ -1765,9 +1766,12 @@ class ListDir(Command):
                             file_list.append(lsf(p))
             except (socket.error, socket.gaierror), e:
                 return self._error(_('Network error: %s') % e)
-            except (OSError, IOError, UnicodeDecodeError, socket.error), e:
-                traceback.print_exc()
-                return self._error(_('Failed to list: %s') % e)
+            except (OSError, IOError, UnicodeDecodeError), e:
+                errors += 1
+
+        if errors and not file_list:
+            traceback.print_exc()
+            return self._error(_('Failed to list: %s') % e)
 
         id_src_map = self.session.config.find_mboxids_and_sources_by_path(
             *[unicode(f['path']) for f in file_list])
