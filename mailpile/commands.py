@@ -1167,6 +1167,10 @@ class Rescan(Command):
         if not slowly:
             mailpile.util.LAST_USER_ACTIVITY = 0
 
+        # Cron always runs the rescan command, no matter what else
+        if cron:
+            self._run_rescan_command(session)
+
         if args and args[0].lower().startswith('vcards'):
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session, args[0]))
