@@ -11,6 +11,7 @@ import socket
 import SocketServer
 import time
 import threading
+import traceback
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
@@ -498,7 +499,14 @@ class HttpWorker(threading.Thread):
         self.session = session
 
     def run(self):
-        self.httpd.serve_forever()
+        while self.httpd is not None:
+            try:
+                self.httpd.serve_forever()
+            except KeyboardInterrupt:
+                return
+            except:
+                traceback.print_exc()
+                time.sleep(1)
 
     def quit(self, join=False):
         if self.httpd:
