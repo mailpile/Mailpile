@@ -21,6 +21,7 @@ import webbrowser
 import mailpile.util
 import mailpile.ui
 import mailpile.postinglist
+import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
@@ -58,6 +59,7 @@ class Command(object):
     SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
     WITH_CONTEXT = ()
+    COMMAND_SECURITY = None
 
     # Event logging settings
     LOG_NOTHING = False
@@ -620,6 +622,11 @@ class Command(object):
             return self._run_sync(True, *args, **kwargs)
 
     def run(self, *args, **kwargs):
+        if self.COMMAND_SECURITY is not None:
+            forbidden = security.forbid_command(self)
+            if forbidden:
+                return self._error(forbidden)
+
         with MultiContext(self.WITH_CONTEXT):
             if self.IS_USER_ACTIVITY:
                 try:
@@ -1711,6 +1718,7 @@ class ListDir(Command):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1738,9 +1746,6 @@ class ListDir(Command):
 
         if '_method' in self.data:
             args = ['/' + '/'.join(args)]
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         if not args:
             args = ['.']
@@ -1810,14 +1815,11 @@ class ChangeDir(ListDir):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
     def command(self, args=None):
-        args = list((args is None) and self.args or args or [])
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         try:
+            args = list((args is None) and self.args or args or [])
             os.chdir(os.path.expanduser(args.pop(0).encode('utf-8')))
             return ListDir.command(self, args=['.'])
         except (OSError, IOError, UnicodeEncodeError), e:
@@ -1830,6 +1832,7 @@ class CatFile(Command):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1841,10 +1844,6 @@ class CatFile(Command):
     def command(self, args=None):
         lines = []
         files = list(args or self.args)
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         target = tfd = None
         if files and files[-1] and files[-1][:1] == '>':
             target = files.pop(-1)[1:]
@@ -1908,8 +1907,10 @@ class ConfigSet(Command):
             force = True
             arg = arg[8:]
 
-        if config.sys.lockdown and not force:
-            return self._error(_('In lockdown, doing nothing.'))
+        if not force:
+            fb = security.forbid_command(self, security.CC_CHANGE_CONFIG)
+            if fb:
+                return self._error(fb)
 
         if not config.loaded_config:
             self.session.ui.warning(_('WARNING: Any changes will '
@@ -1989,16 +1990,13 @@ class ConfigAdd(Command):
         'section.variable': 'value|json-string',
     }
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
-
         config = self.session.config
         args = list(self.args)
         ops = []
-
-        if config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
@@ -2042,14 +2040,11 @@ class ConfigUnset(Command):
         'var': 'section.variables'
     }
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
-
         session, config = self.session, self.session.config
-
-        if config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         def unset(cfg, key):
             if isinstance(cfg[key], dict):
@@ -2137,7 +2132,7 @@ class ConfigPrint(Command):
         list_all = not self.data.get('short', ['-short' in args])[0]
         sanitize = not self.data.get('secrets', ['-secrets' in args])[0]
 
-        if config.sys.lockdown:
+        if security.forbid_command(self, security.CC_LIST_PRIVATE_DATA):
             sanitize = True
 
         # FIXME: Shouldn't we suppress critical variables as well?
@@ -2204,6 +2199,7 @@ class ConfigureMailboxes(Command):
         'tag_visible': 'Make new tags visible in sidebar',
         'local_copy': 'Make local copy of mail'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     MAX_PATHS = 50000
 
@@ -2217,9 +2213,6 @@ class ConfigureMailboxes(Command):
         session, config = self.session, self.session.config
         paths = list(self.args)
         recurse = False
-
-        if config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         # Which tags do we want to apply?
         apply_tags = self.data.get('apply_tags', [])
@@ -2428,11 +2421,9 @@ class Pipe(Command):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         if '--' in self.args:
             dashdash = self.args.index('--')
             target = self.args[0:dashdash]
@@ -2497,11 +2488,9 @@ class Quit(Command):
     ORDER = ("Internals", 2)
     CONFIG_REQUIRED = False
     RAISES = (KeyboardInterrupt,)
+    COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         mailpile.util.QUITTING = True
         self._background_save(index=True, config=True, wait=True)
         try:
@@ -2519,11 +2508,9 @@ class Quit(Command):
 class TrustingQQQ(Command):
     """Allow anybody to quit the app"""
     SYNOPSIS = (None, "trustingqqq", None, None)
+    COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         # FIXME: This is a hack to allow Windows deployments to shut
         #        down cleanly. Eventually this will take an argument
         #        specifying a random token that the launcher chooses.
@@ -2541,11 +2528,9 @@ class Abort(Command):
     HTTP_QUERY_VARS = {
         'no_save': 'Do not try to save state'
     }
+    COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         mailpile.util.QUITTING = True
         if 'no_save' not in self.data:
             self._background_save(index=True, config=True, wait=True,

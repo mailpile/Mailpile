@@ -5,6 +5,7 @@ import urllib2
 from email import encoders
 from email.mime.base import MIMEBase
 
+import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -171,11 +172,9 @@ class GPGKeyReceive(Command):
     SYNOPSIS = (None, 'crypto/gpg/receivekey', 'crypto/gpg/receivekey', '<keyid>')
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
+    COMMAND_SECURITY = security.CC_CHANGE_GNUPG
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         keyid = self.data.get("keyid", self.args)
         res = []
         for key in keyid:
@@ -200,11 +199,9 @@ class GPGKeyImport(Command):
         'key_url': 'URL of file containing the public key',
         'name': '(ignored)'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_GNUPG
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         key_files = self.data.get("key_file", []) + [a for a in self.args
                                                      if not '://' in a]
         key_urls = self.data.get("key_url", []) + [a for a in self.args
@@ -241,11 +238,9 @@ class GPGKeySign(Command):
     HTTP_CALLABLE = ('POST',)
     HTTP_QUERY_VARS = {'keyid': 'The key to sign',
                        'signingkey': 'The key to sign with'}
+    COMMAND_SECURITY = security.CC_CHANGE_GNUPG
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         signingkey = None
         keyid = None
         args = list(self.args)
@@ -274,6 +269,7 @@ class GPGKeyImportFromMail(Search):
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
     COMMAND_CACHE_TTL = 0
+    COMMAND_SECURITY = security.CC_CHANGE_GNUPG
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -288,9 +284,6 @@ class GPGKeyImportFromMail(Search):
             return ""
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
         if args and args[-1][0] == "#":

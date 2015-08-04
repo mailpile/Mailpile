@@ -2,6 +2,7 @@ import datetime
 import re
 import time
 
+import mailpile.security as security
 from mailpile.commands import Command, SearchResults
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -405,8 +406,10 @@ class Extract(Command):
             mode = args.pop(0)
 
         if len(args) > 0 and args[-1].startswith('>'):
-            if self.session.config.sys.lockdown:
-                return self._error(_('In lockdown, doing nothing.'))
+            forbid = security.forbid_command(self,
+                                             security.CC_ACCESS_FILESYSTEM)
+            if forbid:
+                return self._error(forbid)
             name_fmt = args.pop(-1)[1:]
 
         if (args[0].startswith('#') or

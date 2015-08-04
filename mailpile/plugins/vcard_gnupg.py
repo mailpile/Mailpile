@@ -1,6 +1,7 @@
 #coding:utf-8
 import os
 
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -256,11 +257,9 @@ class PGPKeysImportAsVCards(Command):
         'no_public': 'omit public keys',
         'no_secret': 'omit secret keys'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         session, config = self.session, self.session.config
 
         selectors = [a for a in self.args if not a.startswith('-')]

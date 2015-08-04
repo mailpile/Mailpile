@@ -1,4 +1,5 @@
 import mailpile.config
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
@@ -203,13 +204,11 @@ class Migrate(Command):
     SYNOPSIS = (None, 'setup/migrate', None,
                 '[' + '|'.join(sorted(MIGRATIONS.keys())) + ']')
     ORDER = ('Internals', 0)
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self, before_setup=True, after_setup=True):
         session = self.session
         err = cnt = 0
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         migrations = []
         for a in self.args:

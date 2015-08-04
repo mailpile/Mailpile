@@ -3,6 +3,7 @@ import os
 import time
 
 import mailpile.config
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -30,6 +31,7 @@ class ExportMail(Command):
     """Export messages to an external mailbox"""
     SYNOPSIS = (None, 'export', None, '[-flat] [-notags] <msgs> [<fmt>:<path>]')
     ORDER = ('Searching', 99)
+    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
     def export_path(self, mbox_type):
         if mbox_type == 'mbox':
@@ -48,9 +50,6 @@ class ExportMail(Command):
     def command(self, save=True):
         session, config, idx = self.session, self.session.config, self._idx()
         mbox_type = config.prefs.export_format
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
 
         args = list(self.args)
         if args and ':' in args[-1]:

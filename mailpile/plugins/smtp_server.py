@@ -6,6 +6,7 @@ import threading
 import traceback
 
 import mailpile.config
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -204,11 +205,9 @@ class HashCash(Command):
     SYNOPSIS = (None, 'hashcash', None, '<bits> <challenge>')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ()
+    COMMAND_SECURITY = security.CC_CPU_INTENSIVE
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         bits, challenge = int(self.args[0]), self.args[1]
         expected = 2 ** bits
         def marker(counter):
