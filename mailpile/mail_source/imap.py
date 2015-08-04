@@ -149,7 +149,7 @@ class SharedImapConn(threading.Thread):
         self._selected = None
 
         for meth in ('append', 'add', 'capability', 'fetch', 'noop',
-                     'list', 'login', 'namespace', 'search', 'uid'):
+                     'list', 'login', 'logout', 'namespace', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
         self._update_name()
@@ -268,6 +268,11 @@ class SharedImapConn(threading.Thread):
 
     def quit(self):
         with self._lock:
+            try:
+                if self._conn:
+                    self.logout()
+            except IOError:
+                pass
             self._conn = None
             self._update_name()
 
