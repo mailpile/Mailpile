@@ -1005,7 +1005,7 @@ class Email(object):
         tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
         return [self.config.get_tag(t) for t in tids]
 
-    RE_HTML_BORING = re.compile('(\s+|<style[^>]*>[^<>]*</style>)')
+    RE_HTML_BORING = re.compile('(\s+|<style[^>]*>.*?</style>)')
     RE_EXCESS_WHITESPACE = re.compile('\n\s*\n\s*')
     RE_HTML_NEWLINES = re.compile('(<br|</(tr|table))')
     RE_HTML_PARAGRAPHS = re.compile('(</?p|</?(title|div|html|body))')
