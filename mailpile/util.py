@@ -594,12 +594,12 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 
     >>> friendly_number(102)
     '102'
-    >>> friendly_number(10240)
+    >>> friendly_number(10230)
     '10k'
     >>> friendly_number(12341234, decimals=1)
     '12.3M'
     >>> friendly_number(1024000000, base=1024, suffix='iB')
-    '976MiB'
+    '977MiB'
     """
     count = 0
     number = float(number)
@@ -609,6 +609,7 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
     if decimals:
         fmt = '%%.%df%%s%%s' % decimals
     else:
+        number = round(number)
         fmt = '%d%s%s'
     return fmt % (number, powers[count], suffix)
 
