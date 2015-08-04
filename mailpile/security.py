@@ -49,3 +49,18 @@ def forbid_command(command_obj, cc_list=None):
             if forbid:
                 return forbid
     return False
+
+
+##[ Common web-server security code ]#################################
+
+def http_content_security_policy(http_server):
+    """
+    Calculate the default Content Security Policy string.
+
+    This provides an important line of defense against malicious
+    Javascript being injected into our web user-interface.
+    """
+    # FIXME: Allow deviations in config, for integration purposes
+    # FIXME: Clean up Javascript and then make this more strict
+    return ("default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "img-src 'self' data://*")

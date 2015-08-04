@@ -16,6 +16,7 @@ from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
 
 import mailpile.util
+import mailpile.security as security
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.urlmap import UrlMap
@@ -136,8 +137,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             mimetype += ('; charset = utf-8')
         self.send_header('Cache-Control', cachectrl)
         self.send_header('Content-Security-Policy',
-                         "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                         "img-src 'self' data://*")
+                         security.http_content_security_policy(self.server))
         self.send_header('Content-Type', mimetype)
         for header in header_list:
             self.send_header(header[0], header[1])
