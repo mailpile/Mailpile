@@ -80,7 +80,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None):
     """
     part.signature_info = SignatureInfo(parent=psi)
     part.encryption_info = EncryptionInfo(parent=pei)
-    mimetype = part.get_content_type()
+    mimetype = part.get_content_type() or 'text/plain'
     if part.is_multipart():
 
         # FIXME: Check the protocol. PGP? Something else?
@@ -111,6 +111,8 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None):
                 part.set_payload(payload.get_payload())
                 for h in payload.keys():
                     del part[h]
+                if 'content-type' in part:
+                    del part['content-type']  # May be missing from child
                 for h, v in payload.items():
                     part.add_header(h, v)
 
@@ -148,6 +150,8 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None):
                 part.set_payload(newpart.get_payload())
                 for h in newpart.keys():
                     del part[h]
+                if 'content-type' in part:
+                    del part['content-type']  # May be missing from child
                 for h, v in newpart.items():
                     part.add_header(h, v)
 
@@ -285,7 +289,8 @@ class MimeWrapper:
             if part.is_multipart():
                 continue
             count += 1
-            if part.get_content_type() != 'text/plain' or count != 1:
+            mimetype = part.get_content_type() or 'text/plain'
+            if mimetype != 'text/plain' or count != 1:
                 return False
             else:
                 only_text_part = part

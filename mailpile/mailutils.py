@@ -891,7 +891,7 @@ class Email(object):
         msg = self.get_msg()
         count = 0
         for part in (msg.walk() if msg else []):
-            mimetype = part.get_content_type()
+            mimetype = part.get_content_type() or 'text/plain'
             if mimetype.startswith('multipart/'):
                 continue
 
@@ -1128,7 +1128,7 @@ class Email(object):
                 'encryption': part.encryption_info,
             }
 
-            mimetype = part.get_content_type()
+            mimetype = part.get_content_type() or 'text/plain'
             if (mimetype.startswith('multipart/')
                     or mimetype == "application/pgp-encrypted"):
                 continue
