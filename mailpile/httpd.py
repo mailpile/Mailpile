@@ -505,8 +505,9 @@ class HttpWorker(threading.Thread):
             except KeyboardInterrupt:
                 return
             except:
-                traceback.print_exc()
                 time.sleep(1)
+                if self.httpd:
+                    traceback.print_exc()
 
     def quit(self, join=False):
         if self.httpd:
