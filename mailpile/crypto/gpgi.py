@@ -589,11 +589,12 @@ class GnuPG:
         return gpg_retcode, self.outputbuffers
 
     def _reap_threads(self):
-        for name, thr in self.threads.iteritems():
-            if thr.isAlive():
-                thr.join(timeout=15)
+        for tries in (1, 2, 3):
+            for name, thr in self.threads.iteritems():
                 if thr.isAlive():
-                    print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
+                    thr.join(timeout=15)
+                    if thr.isAlive() and tries > 1:
+                        print 'WARNING: Failed to reap thread %s' % thr
 
     def parse_status(self, line, *args):
         self.debug('<<STATUS<< %s' % line)
