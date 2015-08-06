@@ -3,6 +3,7 @@ import random
 import time
 
 import mailpile.defaults
+import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
@@ -163,6 +164,7 @@ class AddVCard(VCardCommand):
         'note': 'Note about contact',
         'mid': 'Message ID'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     IGNORED_EMAILS_AND_DOMAINS = (
         'reply.airbnb.com',
@@ -199,9 +201,6 @@ class AddVCard(VCardCommand):
         return {'form': self.HTTP_POST_VARS}
 
     def command(self, recipients=False, quietly=False, internal=False):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
         args = list(self.args)
@@ -292,11 +291,9 @@ class RemoveVCard(VCardCommand):
         'email': 'delete by e-mail',
         'rid': 'delete by x-mailpile-rid'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
         removed = []
@@ -334,11 +331,9 @@ class VCardAddLines(VCardCommand):
         'replace_all': 'If nonzero, replaces all lines',
         'client': 'Source of this change'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
@@ -403,11 +398,9 @@ class VCardRemoveLines(VCardCommand):
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
@@ -575,11 +568,9 @@ class ContactImport(Command):
     SYNOPSIS = (None, 'contacts/import', 'contacts/import', '[<parameters>]')
     ORDER = ('Internals', 6)
     HTTP_CALLABLE = ('GET', )
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self, format, terms=None, **kwargs):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
@@ -1113,9 +1104,6 @@ class AddProfile(ProfileVCard(AddVCard)):
         }
 
     def _update_vcard_from_post(self, vcard, state=None):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         if not state:
             # When editing, this doesn't run first, so we invoke it now.
             state = self._before_vcard_create(vcard.kind, [], vcard=vcard)
@@ -1215,9 +1203,6 @@ class EditProfile(AddProfile):
         return pvars
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
       

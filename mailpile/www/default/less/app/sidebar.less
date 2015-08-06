@@ -13,6 +13,7 @@
     border-right: 1px solid @gray;
     border-spacing: 0px;
     overflow-y: auto;
+    overflow-x: hidden;
     z-index: 10;
   }
 
@@ -65,13 +66,14 @@
 
   #sidebar a.sidebar-tag {
     position: relative;
-    width: 200px;
-    display: inline-block;
+    display: block;
     margin: 0px 7px;
     padding: 6px 5px;
     vertical-align: middle;
     text-align: left;
+    white-space: nowrap;
     transition-duration: 0.2s;
+    box-sizing: content-box;
   }
 
   #sidebar a.sidebar-tag:hover  { color: @gray; }
@@ -107,12 +109,16 @@
 
   #sidebar a.sidebar-tag span.name {
     display: inline-block;
-    max-width: 132px;
+    max-width: 135px;
     padding-left: 5px;
+    padding-right: 0px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 	}
 
   #sidebar a.sidebar-tag span.notification {
+    display: inline-block;
     letter-spacing: -.5px;
     color: @gray;
   }
@@ -128,10 +134,16 @@
     font-weight: normal;
   }
 
- #sidebar span.sidebar-tag-expand {
-   float: right;
+ #sidebar a.sidebar-tag span.sidebar-tag-expand {
    display: inline-block;
    color: @grayMid;
+   position: absolute;
+   top: 25%;
+   right: 3%;
+ }
+
+ #sidebar a.sidebar-tag.navigation-on span.sidebar-tag-expand {
+  color: @gray;
  }
 
 

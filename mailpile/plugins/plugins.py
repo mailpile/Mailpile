@@ -1,6 +1,7 @@
 import os
 
 import mailpile.commands
+import mailpile.security as security
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -36,13 +37,10 @@ class LoadPlugin(mailpile.commands.Command):
     SYNOPSIS = (None, 'plugins/load', None, '<plugin>')
     ORDER = ('Config', 9)
     HTTP_CALLABLE = ()
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         config = self.session.config
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.LOADED:
@@ -69,13 +67,10 @@ class DisablePlugin(mailpile.commands.Command):
     SYNOPSIS = (None, 'plugins/disable', None, '<plugin>')
     ORDER = ('Config', 9)
     HTTP_CALLABLE = ()
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         config = self.session.config
-
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.REQUIRED:

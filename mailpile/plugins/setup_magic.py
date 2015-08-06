@@ -8,6 +8,7 @@ from urllib2 import urlopen
 from lxml import objectify
 
 import mailpile.auth
+import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.defaults import CONFIG_RULES
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
@@ -41,6 +42,7 @@ class SetupMagic(Command):
     SYNOPSIS = (None, None, None, None)
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     TAGS = {
         'New': {
@@ -332,10 +334,7 @@ class SetupMagic(Command):
             return False
 
     def command(self, *args, **kwargs):
-        session = self.session
-        if session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-        return self.setup_command(session, *args, **kwargs)
+        return self.setup_command(self.session, *args, **kwargs)
 
 
 class TestableWebbable(SetupMagic):

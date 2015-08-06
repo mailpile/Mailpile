@@ -7,8 +7,10 @@ WORKDIR /Mailpile
 ADD . /Mailpile
 
 RUN	groupadd -r mailpile \
-&&  mkdir /mailpile-data \
+&&  mkdir -p /mailpile-data/.gnupg \
 &&	useradd -r -d /mailpile-data -g mailpile mailpile
+
+RUN touch /mailpile-data/.gnupg/docker_placeholder
 
 RUN chown -R mailpile:mailpile /Mailpile
 RUN chown -R mailpile:mailpile /mailpile-data

@@ -1,4 +1,5 @@
 import mailpile.config
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -246,6 +247,7 @@ class Tag(TagCommand):
         'conversations': '[yes|no|auto]',
         'context': 'search context, for tagging relative results'
     }
+    COMMAND_SECURITY = security.CC_TAG_EMAIL
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -381,9 +383,6 @@ class Tag(TagCommand):
         return undo._success(_('Undid tagging operation'), rv)
 
     def command(self, **kwargs):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         return self._do_tagging(*self._get_ops_and_msgids(list(self.args)),
                                 **kwargs)
 
@@ -393,9 +392,6 @@ class TagLater(Tag):
     SYNOPSIS = (None, 'tag/later', 'tag/later', '<seconds> <[+|-]tags> <msgs>')
 
     def command(self, **kwargs):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         args = list(self.args)
         seconds = args.pop(0)
         ops, msg_ids, conversations = self._get_ops_and_msgids(args)
@@ -412,9 +408,6 @@ class TagTemporarily(Tag):
     SYNOPSIS = (None, 'tag/tmp', 'tag/tmp', '<seconds> <[+|-]tags> <msgs>')
 
     def command(self, **kwargs):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         args = list(self.args)
         seconds = args.pop(0)
         rv = self._do_tagging(*self._get_ops_and_msgids(args), **kwargs)
@@ -440,6 +433,8 @@ class AddTag(TagCommand):
         'magic_terms': 'magic search terms associated with this tag',
         'parent': 'parent tag ID',
     }
+    COMMAND_SECURITY = security.CC_CHANGE_TAGS
+
     OPTIONAL_VARS = ['icon', 'label', 'label_color', 'display', 'template',
                      'search_terms', 'parent']
 
@@ -453,9 +448,6 @@ class AddTag(TagCommand):
                     ', '.join([k['name'] for k in self.result['added']]))
 
     def command(self, save=True):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         config = self.session.config
 
         if self.data.get('_method', 'not-http').upper() == 'GET':
@@ -635,6 +627,7 @@ class DeleteTag(TagCommand):
     HTTP_POST_VARS = {
         "tag" : "tag(s) to delete"
     }
+    COMMAND_SECURITY = security.CC_CHANGE_TAGS
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -646,9 +639,6 @@ class DeleteTag(TagCommand):
                     ', '.join([k['name'] for k in self.result['removed']]))
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         session, config = self.session, self.session.config
         clean_session = mailpile.ui.Session(config)
         clean_session.ui = session.ui
@@ -711,15 +701,13 @@ class Filter(FilterCommand):
         'tag-color': 'color',
         'replace': 'filter ID'
     }
+    COMMAND_SECURITY = security.CC_CHANGE_FILTERS
 
     def _truthy(self, var):
         return (self.data.get(var, ['n'])[0][:1].lower()
                 in ('y', 't', 'o', '1'))
 
     def command(self, save=True):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         session, config = self.session, self.session.config
         args = list(self.args)
 
@@ -841,11 +829,9 @@ class DeleteFilter(FilterCommand):
     SYNOPSIS = (None, 'filter/delete', None, '<filter-id>')
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', 'DELETE')
+    COMMAND_SECURITY = security.CC_CHANGE_FILTERS
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         session, config = self.session, self.session.config
         if len(self.args) < 1:
             raise UsageError('Delete what?')
@@ -938,11 +924,9 @@ class MoveFilter(ListFilters):
     SYNOPSIS = (None, 'filter/move', None, '<filter-id> <position>')
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    COMMAND_SECURITY = security.CC_CHANGE_FILTERS
 
     def command(self):
-        if (self.session.config.sys.lockdown or 0) > 1:
-            return self._error(_('In lockdown, doing nothing.'))
-
         self.session.config.filter_move(self.args[0], self.args[1])
         self._background_save(config=True)
         return ListFilters.command(self, want_fid=self.args[1])

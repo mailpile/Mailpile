@@ -149,7 +149,7 @@ class SharedImapConn(threading.Thread):
         self._selected = None
 
         for meth in ('append', 'add', 'capability', 'fetch', 'noop',
-                     'list', 'login', 'namespace', 'search', 'uid'):
+                     'list', 'login', 'logout', 'namespace', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
         self._update_name()
@@ -268,6 +268,11 @@ class SharedImapConn(threading.Thread):
 
     def quit(self):
         with self._lock:
+            try:
+                if self._conn:
+                    self.logout()
+            except IOError:
+                pass
             self._conn = None
             self._update_name()
 
@@ -587,7 +592,12 @@ class ImapMailSource(BaseMailSource):
         return BaseMailSource._sleep(self, seconds)
 
     def _conn_id(self):
-        return md5_hex('\n'.join([str(self.my_config[k]) for k in
+        def e(s):
+            try:
+                return unicode(s).encode('utf-8')
+            except UnicodeDecodeError:
+                return unicode(s).encode('utf-8', 'replace')
+        return md5_hex('\n'.join([e(self.my_config[k]) for k in
                                   ('host', 'port', 'password', 'username')]))
 
     def close(self):
@@ -682,10 +692,10 @@ class ImapMailSource(BaseMailSource):
                     return WithaBool(False)
 
             try:
-                ok, data = self.timed_imap(conn.login,
-                                           my_config.username,
-                                           my_config.password)
-            except IMAP4.error:
+                username = my_config.get('username', '').encode('utf-8')
+                password = my_config.get('password', '').encode('utf-8')
+                ok, data = self.timed_imap(conn.login, username, password)
+            except (IMAP4.error, UnicodeDecodeError):
                 ok = False
             if not ok:
                 ev['error'] = ['auth', _('Invalid username or password')]

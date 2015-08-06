@@ -16,8 +16,8 @@
     "config": {
         "variables": {
             "prefs": {
-                "experiment_dkg_hdrs": ["Enable DKG-style encrypted headers",
-                                        "bool", "False"],
+                "experiment_dkg_hdrs": ["DKG-style encrypted headers (mime|attach|OFF)",
+                                        "str", ""],
                 "experiment_para_kws": ["Make paragraphs searchable by hash",
                                         "bool", "False"]
             }

@@ -11,11 +11,13 @@ import socket
 import SocketServer
 import time
 import threading
+import traceback
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
 
 import mailpile.util
+import mailpile.security as security
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.urlmap import UrlMap
@@ -135,6 +137,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if mimetype.startswith('text/') and ';' not in mimetype:
             mimetype += ('; charset = utf-8')
         self.send_header('Cache-Control', cachectrl)
+        self.send_header('Content-Security-Policy',
+                         security.http_content_security_policy(self.server))
         self.send_header('Content-Type', mimetype)
         for header in header_list:
             self.send_header(header[0], header[1])
@@ -495,7 +499,15 @@ class HttpWorker(threading.Thread):
         self.session = session
 
     def run(self):
-        self.httpd.serve_forever()
+        while self.httpd is not None:
+            try:
+                self.httpd.serve_forever()
+            except KeyboardInterrupt:
+                return
+            except:
+                time.sleep(1)
+                if self.httpd:
+                    traceback.print_exc()
 
     def quit(self, join=False):
         if self.httpd:

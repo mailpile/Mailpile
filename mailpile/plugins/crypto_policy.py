@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import mailpile.security as security
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -30,11 +31,9 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST',)
     HTTP_QUERY_VARS = {'email': 'contact email', 'policy': 'new policy'}
+    COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         email, policy = self._parse_args()
 
         if policy not in CRYPTO_POLICIES:
@@ -64,6 +63,7 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         return email, policy
 
 
+# FIXME: These decisions belong in mailpile.security!
 class CryptoPolicy(CryptoPolicyBaseAction):
     """Calculate the aggregate crypto policy for a set of users"""
     SYNOPSIS = (None, 'crypto_policy', 'crypto_policy', '[<emailaddresses>]')

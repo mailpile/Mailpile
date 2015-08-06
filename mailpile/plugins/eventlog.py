@@ -1,6 +1,7 @@
 import time
 
 import mailpile.util
+import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -129,11 +130,9 @@ class Cancel(Command):
         'event_id': 'Event ID'
     }
     IS_USER_ACTIVITY = False
+    COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         if self.args and 'all' in self.args:
             events = self.session.config.event_log.events()
         else:
@@ -164,9 +163,6 @@ class Undo(Command):
     IS_USER_ACTIVITY = False
 
     def command(self):
-        if self.session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         event_id = (self.data.get('event_id', [None])[0]
                     or (self.args and self.args[0])
                     or (self.session.last_event_id))
@@ -175,7 +171,12 @@ class Undo(Command):
         event = self.session.config.event_log.get(event_id)
         if event:
             try:
-                return event.source_class.Undo(self, event)
+                sc = event.source_class
+                forbid = security.forbid_command(self, sc.COMMAND_SECURITY)
+                if forbid:
+                    return self._error(forbid)
+                else:
+                    return sc.Undo(self, event)
             except (NameError, AttributeError):
                 self._ignore_exception()
                 return self._error(_('Event %s is not undoable') % event_id)

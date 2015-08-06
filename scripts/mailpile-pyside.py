@@ -44,7 +44,7 @@ def main():
     app = QApplication(sys.argv)
     window = Window()
     window.show()
-    window.view.load('http://localhost:33511/')
+    window.view.load('http://localhost:33511/bjarni/')
     return app.exec_()
 
 sys.exit(main())
