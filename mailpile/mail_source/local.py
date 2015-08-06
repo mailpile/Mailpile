@@ -1,8 +1,10 @@
+import time
 import os
 
 from mailpile.mail_source import BaseMailSource
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.vfs import FilePath
 
 
 class LocalMailSource(BaseMailSource):
@@ -45,14 +47,14 @@ class LocalMailSource(BaseMailSource):
         return (len(ds) == 1) and os.path.join(path, ds[0], 'Data')
 
     def _has_mailbox_changed(self, mbx, state):
-        mbx_path = self._path(mbx)
+        mbx_path = FilePath(self._path(mbx)).raw_fp
 
         # This is common to all local mailboxes, check the mtime/size
         try:
             mt = long(os.path.getmtime(mbx_path))
             sz = long(os.path.getsize(mbx_path))
         except (OSError, IOError):
-            mt = sz = -1
+            mt = sz = (int(time.time()) // 7200)  # Guarantee rescans
         mtsz = state['mtsz'] = '%s/%s' % (mt, sz)
 
         # Check more carefully if it's a Maildir, Mac Maildir or WERVD.
@@ -120,6 +122,7 @@ class LocalMailSource(BaseMailSource):
         return data and os.path.isdir(data)
 
     def is_mailbox(self, fn):
+        fn = FilePath(fn).raw_fp
         return (self._is_maildir(fn) or
                 self._is_macmaildir(fn) or
                 self._is_mbox(fn))
