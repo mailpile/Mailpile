@@ -16,7 +16,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
-from mailpile.mailutils import AddressHeaderParser
+from mailpile.mailutils import AddressHeaderParser, GetTextPayload
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
@@ -1268,7 +1268,7 @@ class MailIndex(object):
 
             def _loader(p):
                 if payload[0] is None:
-                    payload[0] = self.try_decode(p.get_payload(None, True),
+                    payload[0] = self.try_decode(GetTextPayload(p),
                                                  charset)
                 return payload[0]
 

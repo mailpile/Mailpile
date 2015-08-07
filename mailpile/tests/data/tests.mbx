@@ -2729,8 +2729,8 @@ YIC3qNe8fqErjT5dm/UJHBRd8H8hMREbBhlGGw==
 Yay, that is so neat and cool and funky and awesome.
 
 
-From barnaby@waterpigs.co.uk  Fri Jan 17 17:28:01 2014
-Return-Path: <barnaby@waterpigs.co.uk>
+From barnaby@woots  Fri Jan 17 17:28:01 2014
+Return-Path: <barnaby@woots>
 X-Original-To: team+testing@mailpile.is
 Delivered-To: mailpile@mailpile.is
 Received: by mailpile.is (Postfix)
@@ -2751,12 +2751,12 @@ Content-Type: multipart/encrypted; boundary="Apple-Mail=_FEEA9815-A6CE-42D3-B415
 Subject: PGP Testing Email
 Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
 X-Pgp-Agent: GPGMail (null)
-From: Barnaby Walters <barnaby@waterpigs.co.uk>
+From: Barnaby Walters <barnaby@woots>
 Date: Fri, 17 Jan 2014 17:19:50 +0000
 References: <201309160027.r8G0R3Ag013323@example.com>,
  <cfa47c79110f45a8f68fab75b1f1636935c.20130916115400@mail71.us2.mcsv.net>
 Content-Transfer-Encoding: 7bit
-Message-Id: <52906F15-18A6-456A-A442-97667D27E4C0@waterpigs.co.uk>
+Message-Id: <52906F15-18A6-456A-A442-97667D27E4C0@woots>
 Content-Description: OpenPGP encrypted message
 To: team+testing@mailpile.is
 X-Mailer: Apple Mail (2.1827)
@@ -2812,3 +2812,87 @@ gGcS1XaPCA==
 
 --Apple-Mail=_FEEA9815-A6CE-42D3-B415-492B16ADEBAD--
 
+From bjarni@woots  Fri Jan 17 17:28:01 2014
+Return-Path: <linux-usb-owner@vger>
+From:  ATA NOO <Noa@fujihamfist>
+To: People <people@linux>,
+    "linux-usb@vger" <linux-usb@vger.kernel.org>
+CC: fx <MIA.Tadao@jifu>
+Subject: RE: [PATCH v3 00/11] usbip: features to USB over WebSocket
+Thread-Topic: [PATCH v3 00/11] usbip: features to USB over WebSocket
+Thread-Index: AQHQgI4ttWgT3k26+ZNRhh3DyZ1iCKMAgAATgBA=
+Date:   Tue, 28 Apr 2015 09:35:25 +0000
+Message-ID: <HKNPR060B22EA62DA9D841BBB9E80@HKNPR06Mrd06.prod.outlook.com>
+References: <14300967-8006-1-git-send-email-nobuo.iwata@fujihamfist>
+In-Reply-To: <553F3@sumsing>
+Accept-Language: ja-JP, en-US
+Content-Language: ja-JP
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: fujihamfist
+Sender: linux-usb-owner@vger
+Precedence: bulk
+List-ID: <linux-usb.vger>
+X-Mailing-List: linux-usb@vger
+
+SGVsbG8sDQoNCj4gQXMgZmFyIGFzIEkgdW5kZXJzdGFuZCB5b3VyIGRlc2lnbiB5b3UgaGF2ZSBr
+ZXJuZWwgc3R1YiBkcml2ZXIgd2hpY2ggDQo+IGlzIHNlbmRpbmcgYW5kIHJlY2VpdmluZyBkYXRh
+IHZpYSBzb2NrZXQgZmQgcmVjZWl2ZWQgZnJvbSB1c2Vyc3BhY2UuDQo+IE5vdyBhZnRlciB0aGlz
+IHNlcmllcyB5b3UgYXJlIGV4cG9ydGluZyBhbGwgbWVzc2FnZXMgIHRvIHVzZXJzcGFjZQ0KPiB3
+aGVyZSBkYWVtb24gaXMgc2VuZGluZyB0aGVtIHVzaW5nIHdlYiBzb2NrZXRzLiBBbSBJIHJpZ2h0
+Pw0KDQpZZXMuDQoNCj4gSSBkb24ndCBzZWUgd2hhdCBhcmUgdGhlIGJlbmVmaXRzIG9mIHN1Y2gg
+a2VybmVsIGRyaXZlcj8NCj4gQ291bGRuJ3QgeW91IGp1c3Qgc2ltcGx5IHVzZSBsaWJ1c2IgaW4g
+eW91ciBkYWVtb24gYW5kIGRvIGV2ZXJ5dGhpbmcNCj4gZnJvbSB1c2Vyc3BhY2U/IFN1Y2ggc29s
+dXRpb24gY291bGQgYmUgYmVuZWZpY2lhbCBmb3Igb2xkZXIga2VybmVsDQo+IGJlY2F1c2UgeW91
+IGRvbid0IG5lZWQgdG8gYmFja3BvcnQgeW91ciBwYXRjaGVzIGJ1dCBzaW1wbHkgdXNlIHlvdXIN
+Cj4gZGFlbW9uIHdoaWNoIHdpbGwgYmUgY29tcGF0aWJsZSB3aXRoIG1vc3Qga2VybmVsIHZlcnNp
+b25zIGFzIGxpYnVzYiBpcw0KPiB3b3JraW5nIHdpdGggdGhlbS4NCg0KU29ycnkgcmVwZWF0aW5n
+IGNvbW1lbnQgaW4gVjEgdGhyZWFkLg0KSSBoYWQgdG8gd3JpdGUgdGhpcyB0byBjaGFuZ2UgbG9n
+Lg0KDQpUaGVyZSBhcmUgMiByZWFzb25zLg0KDQoxKSBBcHBsaWNhdGlvbih2aGNpX2hjZCkgc2lk
+ZSBpcyBhbHNvIG5lZWRlZA0KDQpJbiBteSB1bmRlcnN0YW5kaW5nLCB1c2JmcyBwcm92aWRlcyBm
+dW5jdGlvbnMgdG8gY29udHJvbCBVU0IgZGV2aWNlcy4gDQpTbyBkZXZpY2UodXNiaXBfaG9zdCkg
+c2lkZSBjYW4gYmUgZG9uZSBieSB1c2JmcyBidXQgDQphcHBsaWNhdGlvbih2aGNpX2hjZCkgc2lk
+ZSBjYW5ub3QuIE15IHBhdGNoIGNvdmVycyBib3RoIA0KZGV2aWNlKHVzYmlwX2hvc3QpIGFuZCBh
+cHBsaWNhdGlvbih2aGNpX2hjZCkgc2lkZS4gDQpBbmQgaXQgaXMgcXVpdGUgdGhlIHNhbWUgaW4g
+Ym90aCBzaWRlIGFuZCB3b3JrcyBzeW1tZXRyaWNhbGx5Lg0KDQoyKSBNYWludGFpbmFiaWxpdHkN
+Cg0KVXNiZnMgcHJvdmlkZXMgc2ltaWxhciBpbnRlcmZhY2VzIHdoaWNoIFVTQiBjb3JlIHByb3Zp
+ZGVzIHRvIFVTQiBob3N0IA0KZHJpdmVzLiBUbyB1c2UgdGhlIGludGVyZmFjZXMgaW4gdXNlciBz
+cGFjZSwgaW1wbGVtZW50YXRpb24gd2hpY2ggYXJlIA0KaW5jbHVkZWQgaW4gc29tZSBwb3J0aW9u
+cyBvZiB1c2JpcF9ob3N0LmtvIGFuZCB1c2JpcF9jb3JlIHNob3VsZCBiZSANCmNvcGllZCB0byB1
+c2Vyc3BhY2UuIEF0IHRoZSBzYW1lIHRpbWUsIHV0aWxpdGllcyBtdXN0IGJlIG1vZGlmaWVkIA0K
+YmVjYXVzZSBpbnRlcmZhY2VzIHVzZWQgYmV0d2VlbiB0aGUgdXRpbGl0aWVzIGFuZCB0aGUga2Vy
+bmVsIG1vZHVsZXMgDQooc3lzZnMpIHdpbGwgYmUgY2hhbmdlZCB0byBmdW5jdGlvbiBjYWxscyBp
+biB1c2Vyc3BhY2UuDQoNCkZvciBleGFtcGxlLCBJJ2QgbGlrZSB0byBicmVhayBkb3duIHVzYmlw
+X2hvc3Qua28gYXMgYmVsb3cuDQooYSkgc3VibWl0cyBhbmQgY2FuY2VscyBVUkJzIHRvIFVTQiBj
+b3JlDQooYikgY29yZSBwYXJ0OiByZWNlaXZlcyBhbmQgaGFuZGxlIFVSQnMsIG1hbmFnZSBzdWJt
+aXR0ZWQgVVJCcywgZXRjLg0KKGMpIHByb3ZpZGVzIGZ1bmN0aW9ucyB0byB1dGlsaXRpZXMgdmlh
+IHN5c2ZzDQooZCkgY2FsbHMgdXNiaXBfY29tbW9uJ3MgZnVuY3Rpb25zDQooZSkgY2FsbHMga2Vy
+bmVsIGZ1bmN0aW9ucw0KDQpUbyBtb3ZlIGl0IHRvIHVzZXIgc3BhY2UsDQooYSkgcmVwbGFjZSB3
+aXRoIHVzYmZzIGNhbGxzDQooYikgY29weSB0aGUgY29yZSBwYXJ0DQooYykgbW9kaWZ5IHRvIGlu
+dGVyZmFjZSBpbnNpZGUgdXNlcnNwYWNlIG9yIHVzZSB1c2JmcyBkaXJlY3RseQ0KKGQpIHBvcnQg
+c29tZSBwb3J0aW9uIG9mIHVzYmlwX2NvcmUNCihlKSByZXBsYWNlIHdpdGggc3lzdGVtY2FsbHMg
+YW5kIGxpYnJhcmllcy4NCg0KVGhlbiwgdG8gdXNlIHVzYmZzIChhKSwgYW5vdGhlciB1c2JpcF9o
+b3N0IGxpa2UgcHJvZ3JhbSB3aGljaCBoYXMgc2FtZSANCmZvciAoYikgYW5kIGRpZmZlcmVudCBp
+biAoYyksIChkKSBhbmQgKGUpLiBCeSAoYyksIHV0aWxpdGllcyBzaG91bGQgYmUgDQpjaGFuZ2Vk
+IHVubGVzcyBzeXNmcyBlbXVsYXRpb24gaXMgbm90IHByb3ZpZGVkLg0KDQpJIHRoaW5rIGl0J3Mg
+YmV0dGVyIHRvIHVzZSB0aGUga2VybmVsIG1vZHVsZXMgYXMtaXMuIFN0cmljdGx5LCBpdCdzIA0K
+YWxtb3N0IGFzLWlzIGJlY2F1c2UgSSBwdXQgYSBzbWFsbCBjb2RlIHRvIG1ha2UgcmVwbGFjZWFi
+bGUgDQprZXJuZWxfc2VuZG1zZygpIGFuZCBrZXJuZWxfcmVjdm1zZygpLg0KDQpBcyBhIHJlZmVy
+ZW5jZSwgSSBzdG9yZWQgbXkgcHJvdG90eXBlIGluY2x1ZGluZyB1c2Vyc3BhY2UgdXNiaXBfaG9z
+dCANCndpdGggbGlidXNiKG5vdCBzeXNmcyBidXQgYSBwb3J0YWJsZSB3cmFwcGVyIG9mIHN5c2Zz
+KSBpbiBzdGFnaW5nL3VzYmlwIA0Kb2YgbGludXggMy4xNC4yLiBJdCBzdGlsbCBuZWVkcyByZWZh
+Y3RvcmluZy4NCmh0dHBzOi8vZHJpdmUuZ29vZ2xlLmNvbS9kcml2ZS9mb2xkZXJzLzBCeG51V0JX
+X3RCOU5mbEZEWTFobGNWQlJORWQ0WnpCMg0KVkZKM09USTBSRUZHZWxOQlYyeFhUSFJOYzBsUmVH
+SmxhVFJHZERRLzBCeG51V0JXX3RCOU5mamhhYnpWTVNuWjZWR3hyVFhCDQp3TkVFMWRGSllkRU52
+YUMxSU1VZzFaRzFrVFU5aU9VTjFPRXBHVWxVDQoNCkluIHRoZSBwcm90b3R5cGUsIGxpYnNyYy9z
+dHViX21haW4uYywgc3R1Yl9kZXYuYywgc3R1Yl9yeC5jIGFuZCANCnN0dWJfdHguYyBhcmUgcG9y
+dGluZ3Mgb2YgdXNiaXBfaG9zdC4gc3R1Yl9jb21tb24uYyBhbmQgc3R1Yl9ldmVudC5jIGlzIA0K
+dXNiaXBfY29yZS4gTWFjcm8gVVNFX0xJQlVTQiBpbiB1dGlsaXRpZXMgZGVub3RlcyBwb3J0aW9u
+cyB0byBiZSANCm1vZGlmaWVkIGluIHV0aWxpdGllcy4NCg0KTXkgcGF0Y2ggd29ya3MgaW4gYm90
+aCBob3N0IGFuZCB2aGNpIHNpZGUgdXNpbmcgZXhpc3Rpbmcga2VybmVsIG1vZHVsZXMuDQoNClRo
+YW5rIHlvdSBmb3IgeW91ciBjb21tZW50LA0KDQpuLml3YXRhDQovLw0K
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo@vger
+More majordomo info at  http://vger/majordomo-info.html
