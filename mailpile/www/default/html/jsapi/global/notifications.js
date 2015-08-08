@@ -187,3 +187,12 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
     Mailpile.notification(ev);
   }
 });
+EventLog.subscribe('.*compose.Sendit', function(ev) {
+  if (ev.data.delivered == ev.data.recipients) {
+    ev.icon = 'icon-outbox';
+  }
+  else if (ev.data.last_error) {
+    ev.icon = 'icon-signature-unknown';
+  }
+  Mailpile.notification(ev);
+});
