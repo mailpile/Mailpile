@@ -213,27 +213,36 @@ Mailpile.API = {
     return true;
   },
 
-  jhtml_url: function(original_url) {
+  U: function(original_url) {
+    var prefix = "{{ config.sys.http_path }}";
+    if (original_url.indexOf(prefix) != 0) {
+      return prefix + original_url;
+    }
+    return original_url;
+  },
+
+  jhtml_url: function(original_url, rendering) {
     var new_url = original_url;
     var html = new_url.indexOf('.html');
+    rendering = rendering || 'minimal';
     if (html != -1) {
-      new_url = (new_url.slice(0, html+1) + 'j' +
-                 new_url.slice(html+1));
+      new_url = (new_url.slice(0, html+1) + 'jhtml!' + rendering +
+                 new_url.slice(html+5));
     }
     else {
       var qs = new_url.indexOf('?');
       if (qs != -1) {
-        new_url = (new_url.slice(0, qs) + 'as.jhtml' +
+        new_url = (new_url.slice(0, qs) + 'as.jhtml!' + rendering +
                    new_url.slice(qs));
       }
       else {
         var anch = new_url.indexOf('#');
         if (anch != -1) {
-          new_url = (new_url.slice(0, anch) + 'as.jhtml' +
+          new_url = (new_url.slice(0, anch) + 'as.jhtml!' + rendering +
                      new_url.slice(anch));
         }
         else {
-          new_url += 'as.jhtml';
+          new_url += 'as.jhtml!' + rendering;
         }
       }
     }

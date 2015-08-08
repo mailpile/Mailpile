@@ -1,3 +1,6 @@
+{% extends "layouts/content.html" %}
+
+{% block layout_top %}
 <!doctype html>
 <!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
 <!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
@@ -12,28 +15,11 @@
 {% include("partials/topbar.html") %}
 {% include("partials/sidebar.html") %}
 <div id="content" class="clearfix">
-  <div id="content-tools">
-{% block contenttools %}
- {% if result %}
-  {% if command == "search" %}
-    {% include("partials/tools_search.html") %}
-  {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
-    {% include("partials/tools_contacts.html") %}
-  {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
-    {% include("partials/tools_tags.html") %}
-  {% elif state.command_url in ("/settings/") %}
-    {% include("partials/tools_settings.html") %}
-  {% elif state.command_url == "/message/" %}
-    {% include("partials/tools_message.html") %}
-  {% else %}
-    {% include("partials/tools_default.html") %}
-  {% endif %}
- {% endif %}
 {% endblock %}
-  </div>
-  <div id="content-view"><div{% if state and state.cache_id %} class="cached content-{{ state.cache_id }}"{% endif %}>
-    {% block content %}{{results}}{% endblock %}
-  </div></div>
+
+{# content.html, which we inherited from, places content here #}
+
+{% block layout_bottom %}
 </div>
 {% include("partials/hidden.html") %}
 {% include("partials/helpers.html") %}
@@ -42,3 +28,4 @@
 {% include("partials/javascript.html") %}
 </body>
 </html>
+{% endblock %}

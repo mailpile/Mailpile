@@ -1,3 +1,36 @@
-<div{% if state and state.cache_id %} data-template="{{ render_template }}" class="cached content-{{ state.cache_id }}"{% endif %}>
-{%- block content %}{% endblock -%}
+{%- block layout_top %}{% endblock -%}
+<div>
+
+{%- block content_top %}
+  <div id="content-tools">
+  {% block contenttools %}
+    {% if result %}
+      {% if command == "search" %}
+        {% include("partials/tools_search.html") %}
+      {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
+        {% include("partials/tools_contacts.html") %}
+      {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
+        {% include("partials/tools_tags.html") %}
+      {% elif state.command_url in ("/settings/") %}
+        {% include("partials/tools_settings.html") %}
+      {% elif state.command_url == "/message/" %}
+        {% include("partials/tools_message.html") %}
+      {% else %}
+        {% include("partials/tools_default.html") %}
+      {% endif %}
+    {% endif %}
+  {% endblock %}
+  </div>
+  <div id="content-view">
+{%- endblock %}
+
+    <div {% if state and state.cache_id %} data-template="{{ render_template }}" class="cached content-{{ state.cache_id }}"{% endif %}>
+{%- block content %}<h1>No Content</h1>{% endblock -%}
+    </div>
+
+{%- block content_bottom %}
+  </div>
+{%- endblock %}
+
 </div>
+{%- block layout_bottom %}{% endblock %}

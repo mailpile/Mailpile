@@ -1,7 +1,7 @@
 <!-- FIXME: make "density" class be pulled from user profile setting -->
 <div id="sidebar" class="{{ config.web.display_density }}">
   <div id="sidebar-lists">
-    {{ mailpile_render("sidebar.html!content", "tags", "mode=tree")[1]|safe }}
+    {{ mailpile_render("sidebar.html!minimal", "tags", "mode=tree")[1]|safe }}
     <nav id='sidebar-user-contacts'></nav>
   </div>
   <nav id="sidebar-bottom">
