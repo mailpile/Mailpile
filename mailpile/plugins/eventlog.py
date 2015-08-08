@@ -189,12 +189,17 @@ class Watch(Command):
     SYNOPSIS = (None, 'eventlog/watch', None, None)
     ORDER = ('Internals', 9)
     IS_USER_ACTIVITY = False
+    CONFIG_REQUIRED = False
 
     def command(self):
+        config = self.session.config
+        unregister = False
         self.session.ui.notify(
             _('Watching logs: Press CTRL-C to return to the CLI'))
-        unregister = self.session.config.event_log.ui_watch(self.session.ui)
         try:
+            while not mailpile.util.QUITTING and not config.event_log:
+                time.sleep(1)
+            unregister = config.event_log.ui_watch(self.session.ui)
             self.session.ui.unblock(force=True)
             while not mailpile.util.QUITTING:
                 time.sleep(1)
@@ -202,7 +207,7 @@ class Watch(Command):
             pass
         finally:
             if unregister:
-                self.session.config.event_log.ui_unwatch(self.session.ui)
+                config.event_log.ui_unwatch(self.session.ui)
         return self._success(_('That was fun!'))
 
 
