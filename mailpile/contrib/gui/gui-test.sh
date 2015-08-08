@@ -20,6 +20,12 @@
             "op": "show_url",
             "args": ["https://xkcd.com/"],
             "sensitive": false
+        },{
+            "label": "Mailpile",
+            "item": "mailpile",
+            "op": "show_url",
+            "args": ["https://www.mailpile.is/"],
+            "sensitive": true
         }
     ]
 }

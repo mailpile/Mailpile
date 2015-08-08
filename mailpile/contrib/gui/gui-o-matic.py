@@ -22,12 +22,13 @@ class Indicator(object):
     def __init__(self, config):
         self.config = config
         self.ready = False
+        self._webview = None
 
     def _do(self, op, args):
         op, args = op.lower(), args[:]
 
         if op == 'show_url':
-            webbrowser.open(args[0])
+            self.show_url(url=args[0])
 
         elif op in ('get_url', 'post_url'):
             url = args.pop(0)
@@ -52,7 +53,7 @@ class Indicator(object):
                 if 'message' in data:
                     self.notify_user(data['message'])
 
-    def _theme_icon(self, pathname):
+    def _theme_image(self, pathname):
         return pathname.replace('%(theme)s', self.ICON_THEME)
 
     def _add_menu_item(self, item='item', label='Menu item', sensitive=False,
@@ -94,6 +95,17 @@ class Indicator(object):
                            progress_bar=False, image=None, message=None):
         pass
 
+    def _get_webview(self):
+        return None
+
+    def show_url(self, url=None):
+        assert(url is not None)
+        if not self.config.get('external_browser'):
+            webview = self._get_webview()
+            if webview:
+                return webview.show_url(url)
+        webbrowser.open(url)
+
     def hide_splash_screen(self):
         pass
 
@@ -116,6 +128,36 @@ def UnityIndicator():
     ICON_THEME = 'light'
 
     gobject.threads_init()
+
+    class UnityWebView():
+        def __init__(self, mpi):
+            import webkit
+            self.webview = webkit.WebView()
+
+            self.scroller = gtk.ScrolledWindow()
+            self.scroller.add(self.webview)
+
+            self.vbox = gtk.VBox(False, 1)
+            self.vbox.pack_start(self.scroller, True, True)
+
+            self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+            self.window.set_size_request(1100, 600)
+            self.window.connect('delete-event', lambda w, e: w.hide() or True)
+            self.window.add(self.vbox)
+
+            self.browser_settings = self.webview.get_settings()
+            self.browser_settings.set_property("enable-java-applet", False)
+            self.browser_settings.set_property("enable-plugins", False)
+            self.browser_settings.set_property("enable-scripts", True)
+            self.browser_settings.set_property("enable-private-browsing", True)
+            self.browser_settings.set_property("enable-spell-checking", True)
+            self.browser_settings.set_property("enable-developer-extras", True)
+            self.webview.set_settings(self.browser_settings)
+
+        def show_url(self, url):
+            self.webview.open('about:blank')  # Clear page while loading
+            self.webview.open(url)
+            self.window.show_all()
 
     class MailpileIndicator(Indicator):
         def __init__(self, config):
@@ -172,7 +214,8 @@ def UnityIndicator():
                     lbl = None
 
                 if image:
-                    img = gtk.gdk.pixbuf_new_from_file(image)
+                    themed_image = self._theme_image(image)
+                    img = gtk.gdk.pixbuf_new_from_file(themed_image)
                     def draw_background(widget, ev):
                         alloc = widget.get_allocation()
                         pb = img.scale_simple(alloc.width, alloc.height,
@@ -193,7 +236,7 @@ def UnityIndicator():
                 else:
                     pbar = None
 
-                # FIXME: window.set_title('Your app name')
+                window.set_title(self.config['app_name'])
                 window.set_decorated(False)
                 window.set_position(gtk.WIN_POS_CENTER)
                 window.set_size_request(width or 240, height or 320)
@@ -223,6 +266,14 @@ def UnityIndicator():
             else:
                 gobject.idle_add(hide, self)
 
+        def _get_webview(self):
+            if not self._webview:
+                try:
+                    self._webview = UnityWebView(self)
+                except ImportError:
+                    pass
+            return self._webview
+
         def notify_user(self, message='Hello'):
             if pynotify:
                 notification = pynotify.Notification(
@@ -249,7 +300,7 @@ def UnityIndicator():
                 if not icon:
                     icon = self.config['indicator_icons'].get('normal')
                 if icon:
-                    do(self.ind.set_icon, self._theme_icon(icon))
+                    do(self.ind.set_icon, self._theme_image(icon))
             do(self.ind.set_status, self._STATUS_MODES[mode])
 
         def set_menu_label(self, item=None, label=None):
@@ -338,7 +389,7 @@ def MacOSXIndicator():
             # Load all images, set initial
             self.images = {}
             for s, p in self.config.get('indicator_icons', {}).iteritems():
-                p = self._theme_icon(p)
+                p = self._theme_image(p)
                 self.images[s] = NSImage.alloc().initByReferencingFile_(p)
             if self.images:
                 self.ind.setImage_(self.images['normal'])
@@ -401,7 +452,8 @@ class StdinWatcher(threading.Thread):
                     break
                 try:
                     cmd, args = line.split(' ', 1)
-                    self.do(cmd, json.loads(args))
+                    args = json.loads(args)
+                    self.do(cmd, args)
                 except (ValueError, IndexError, NameError):
                     traceback.print_exc()
         except:

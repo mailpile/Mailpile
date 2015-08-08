@@ -64,6 +64,7 @@ def _real_startup(config):
         ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
         gui.stdin.write(json.dumps({
             'app_name': 'Mailpile',
+            'external_browser': True,
             'indicator_icons': {
                 'startup': ico('startup.png'),
                 'normal': ico('normal.png'),
@@ -92,13 +93,16 @@ def _real_startup(config):
             },
         }).strip() + '\nOK GO\n')
 
+        indicator('show_splash_screen',
+                  image=ico('startup.png'),
+                  message=_("Starting Mailpile"),
+                  progress_bar=False)
         indicator('set_menu_sensitive', item='quit')
         indicator('set_menu_sensitive', item='open')
-
-        # FIXME: This sleep is lame
-        time.sleep(5)
+        indicator('hide_splash_screen')
         if (gui.poll() is not None) or mailpile.util.QUITTING:
             return
+
     except:
         # If the basic indicator setup fails, we just assume it doesn't
         # work and go silently dead...
