@@ -2036,7 +2036,7 @@ class ConfigManager(ConfigDict):
 
         return default_profile
 
-    def get_sendmail(self, frm, rcpts=['-t']):
+    def get_route(self, frm, rcpts=['-t']):
         if len(rcpts) == 1:
             if rcpts[0].lower().endswith('.onion'):
                 return {"protocol": "smtorp",
@@ -2048,7 +2048,6 @@ class ConfigManager(ConfigDict):
         if self.routes[routeid] is not None:
             return self.routes[routeid]
         else:
-            print "Migration notice: Try running 'setup/migrate'."
             raise ValueError(_("Route %s for %s does not exist."
                                ) % (routeid, frm))
 

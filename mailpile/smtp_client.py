@@ -95,7 +95,8 @@ class SendMailError(IOError):
 def _RouteTuples(session, from_to_msg_ev_tuples, test_route=None):
     tuples = []
     for frm, to, msg, events in from_to_msg_ev_tuples:
-        dest = {}
+        rcpts = {}
+        routes = {}
         for recipient in to:
             # If any of the events thinks this message has been delivered,
             # then don't try to send it again.
@@ -110,27 +111,21 @@ def _RouteTuples(session, from_to_msg_ev_tuples, test_route=None):
                          "password": "",
                          "command": "",
                          "host": "",
-                         "port": 25
-                         }
+                         "port": 25}
 
                 if test_route:
                     route.update(test_route)
                 else:
-                    route.update(session.config.get_sendmail(frm, [recipient]))
+                    route.update(session.config.get_route(frm, [recipient]))
 
-                if route["command"]:
-                    txtroute = "|%(command)s" % route
-                else:
-                    # FIXME: This is dumb, makes it hard to handle usernames
-                    #        or passwords with funky characters in them :-(
-                    txtroute = "%(protocol)s://%(username)s:%(password)s@" \
-                               + "%(host)s:%(port)d"
-                    txtroute %= route
-
-                dest[txtroute] = dest.get(txtroute, [])
-                dest[txtroute].append(recipient)
-        for route in dest:
-            tuples.append((frm, route, dest[route], msg, events))
+                # Group together recipients that use the same route
+                rid = '/'.join(sorted(['%s' % (k, )
+                                       for k in route.iteritems()]))
+                routes[rid] = route
+                rcpts[rid] = rcpts.get(rid, [])
+                rcpts[rid].append(recipient)
+        for rid in rcpts:
+            tuples.append((frm, routes[rid], rcpts[rid], msg, events))
     return tuples
 
 
@@ -147,12 +142,12 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
 
     # Update initial event state before we go through and start
     # trying to deliver stuff.
-    for frm, sendmail, to, msg, events in routes:
+    for frm, route, to, msg, events in routes:
         for ev in (events or []):
             for rcpt in to:
                 ev.private_data['>'.join([frm, rcpt])] = False
 
-    for frm, sendmail, to, msg, events in routes:
+    for frm, route, to, msg, events in routes:
         for ev in events:
             ev.data['recipients'] = len(ev.private_data.keys())
             ev.data['delivered'] = len([k for k in ev.private_data
@@ -179,22 +174,25 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                  details={'smtp_error': '%s: %s' % (rc, msg)})
 
     # Do the actual delivering...
-    for frm, sendmail, to, msg, events in routes:
+    for frm, route, to, msg, events in routes:
+        route_description = route['command'] or route['host']
+
         frm_vcard = session.config.vcards.get_vcard(frm)
         update_to_vcards = msg and msg["x-mp-internal-pubkeys-attached"]
 
         if 'sendmail' in session.config.sys.debug:
-            sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n'
-                               ) % (frm,
-                                    frm_vcard and frm_vcard.random_uid or '',
-                                    to, sendmail.split('@')[-1]))
+            sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n')
+                             % (frm, frm_vcard and frm_vcard.random_uid or '',
+                                to, route_description))
         sm_write = sm_close = lambda: True
 
-        mark(_('Connecting to %s') % sendmail.split('@')[-1], events)
+        mark(_('Sending via %s') % route_description, events)
 
-        if sendmail.startswith('|'):
-            sendmail %= {"rcpt": ",".join(to)}
-            cmd = sendmail[1:].strip().split()
+        if route['command']:
+            # Note: The .strip().split() here converts our cmd into a list,
+            #       which should ensure that Popen does not spawn a shell
+            #       with potentially exploitable arguments.
+            cmd = (route['command'] % {"rcpt": ",".join(to)}).strip().split()
             proc = Popen(cmd, stdin=PIPE, long_running=True)
             sm_startup = None
             sm_write = proc.stdin.write
@@ -213,19 +211,11 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 ev.data['proto'] = 'subprocess'
                 ev.data['command'] = cmd[0]
 
-        elif (sendmail.startswith('smtp:') or
-              sendmail.startswith('smtorp:') or
-              sendmail.startswith('smtpssl:') or
-              sendmail.startswith('smtptls:')):
-            proto = sendmail.split(':', 1)[0]
-            host, port = sendmail.split(':', 1
-                                        )[1].replace('/', '').rsplit(':', 1)
+        elif route['protocol'] in ('smtp', 'smtorp', 'smtpssl', 'smtptls'):
+            proto = route['protocol']
+            host, port = route['host'], route['port']
+            user, pwd = route['username'], route['password']
             smtp_ssl = proto in ('smtpssl', )  # FIXME: 'smtorp'
-            if '@' in host:
-                userpass, host = host.rsplit('@', 1)
-                user, pwd = userpass.split(':', 1)
-            else:
-                user = pwd = None
 
             for ev in events:
                 ev.data['proto'] = proto
@@ -242,7 +232,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                           )(local_hostname='mailpile.local', timeout=25)
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
-                if smtp_ssl or sendmail[:7] in ('smtorp', 'smtptls'):
+                if smtp_ssl or proto in ('smtorp', 'smtptls'):
                     conn_needs = [ConnBroker.OUTGOING_ENCRYPTED]
                 else:
                     conn_needs = [ConnBroker.OUTGOING_SMTP]
@@ -260,7 +250,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     try:
                         server.starttls()
                     except:
-                        if sendmail.startswith('smtptls'):
+                        if proto == 'smtptls':
                             raise InsecureSmtpError()
                         else:
                             server = sm_connect_server()
@@ -268,7 +258,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
 
                 if user and pwd:
                     try:
-                        server.login(user.encode('utf-8'), pwd.encode('utf-8'))
+                        server.login(user.encode('utf-8'),
+                                     pwd.encode('utf-8'))
                     except UnicodeDecodeError:
                         fail(_('Bad character in username or password'),
                              events,
@@ -308,8 +299,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 if hasattr(server, 'sock'):
                     server.close()
         else:
-            fail(_('Invalid sendmail command/SMTP server: %s') % sendmail,
-                 events)
+            fail(_('Invalid route: %s') % route, events)
 
         try:
             # Run the entire connect/login sequence in a single timer, but

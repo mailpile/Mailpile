@@ -870,7 +870,8 @@ class Sendit(CompositionCommand):
                         data={'mid': msg_mid, 'sid': msg_sid}))
 
                 SendMail(session, msg_mid,
-                         [PrepareMessage(config, email.get_msg(pgpmime=False),
+                         [PrepareMessage(config,
+                                         email.get_msg(pgpmime=False),
                                          sender=sender,
                                          rcpts=(bounce_to or None),
                                          bounce=(True if bounce_to else False),
