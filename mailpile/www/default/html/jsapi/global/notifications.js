@@ -106,6 +106,8 @@ Mailpile.notification = function(result) {
       window.location.href = result.action
     }, 4000);
   }
+
+  return result['event_id'];
 };
 
 
@@ -138,12 +140,6 @@ $(document).on('click', '.notification-nag', function(e) {
   Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag }, function() {
     window.location.href = href;
   });
-});
-
-
-/* Connection Down - Hide */
-$(document).on('click', '#connection-down-hide', function() {
-  $('#connection-down').fadeOut().remove();
 });
 
 

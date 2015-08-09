@@ -114,51 +114,79 @@ Mailpile.API = {
   _sync_url: "{{ config.sys.http_path }}/api",
   _async_url: "{{ config.sys.http_path }}/async",
 
+  _dead_notification: undefined,
+  _notify_dead: function(status, message) {
+    Mailpile.API._dead_notification = Mailpile.notification({
+      status: status,
+      message: message,
+      message2: ((document.location.href.indexOf('/localhost:') == -1)
+                 ? '{{_("Check your network?")}}'
+                 : '{{_("Restart the app?")}}'),
+      event_id: Mailpile.API._dead_notification,
+      icon: 'icon-signature-unknown'
+    });
+  },
+  _ajax_dead_count: 0,
+  _ajax_is_alive: function() {
+    Mailpile.API._ajax_dead_count = 0;
+    if (Mailpile.API._dead_notification) {
+      Mailpile.cancel_notification(Mailpile.API._dead_notification);
+      Mailpile.API._dead_notification = undefined;
+    }
+  },
   _ajax_error: function(base_url, command, data, method, response, status) {
     console.log('Oops, an AJAX call returned as error :(');
     console.log('status: ' + status + ' method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
     console.log(response);
 
-    // General 500 internal errors.
-    // FIXME: Make this more helpful for any errors we actually expect.
-    if (command !== '/0/eventlog/' && status == 'error' && response.status == 500) {
-      Mailpile.notification({
-        status: 'error',
-        message: '{{_("Oops. Mailpile failed to complete your task.")}}',
-        icon: 'icon-signature-unknown'
-      });
+    if (response.status == 403) {
+      // We have been logged out or the backend restated, go to login
+      var href = document.location.href;
+      if (href.indexOf('#') != -1) href = href.substring(0, href.indexOf('#'));
+      href += (href.indexOf('?') == -1) ? '?' : '&';
+      document.location.href = href + 'ui_relogin=1';
       return;
     }
-
-    // Handle the long-polling eventlog stuff differently
-    if (command == '/0/eventlog/' && status == 'error') {
-      if (response.status == 404) {
-        console.log('FIXME: SHOW CONNECTION DOWN!!!');
-        //$('body').append($('#template-connection-down').html());
-        return;
+    else if (response.status == 500) {
+      // 500 internal errors and timeouts...
+      if (command != '/0/cached/' && command != '/0/eventlog/') {
+        Mailpile.notification({
+          status: 'error',
+          message: '{{_("Oops. Mailpile failed to complete your task.")}}',
+          icon: 'icon-signature-unknown'
+        });
       }
-      else if (status == 'error' && response.status == 0) {
-        console.log('Request aborted by browser.');
-        return;
-      }
+      Mailpile.API._ajax_dead_count = 0;
+      return;
+    }
+    if (response.status == 0) {
+      Mailpile.API._ajax_dead_count += 1;
     }
 
-    // Any other error state generates this annoying popup
-    Mailpile.notification({
-      status: 'warning',
-      message: ('{{_("Something went wrong and we are not sure what")}}' +
-                ' (response.status=' + response.status +
-                ' status=' + status + ')'),
-      icon: 'icon-signature-unknown'
-    });
+    if (Mailpile.API._ajax_dead_count > 3) {
+      Mailpile.API._notify_dead('error', '{{_("Mailpile is unreachable.")}}');
+    }
+    else if (status == "timeout") {
+      Mailpile.API._notify_dead('warning', '{{_("Mailpile timed out...")}}');
+    }
   },
 
   _action: function(base_url, command, data, method, callback) {
-    // Output format
+    // Output format, timeout...
     var output = '';
+    var timeout = 5000;
+    var error_callback = undefined;
     if (data._output) {
       output = data._output;
       delete data['_output'];
+    }
+    if (data._timeout) {
+      timeout = data._timeout;
+      delete data['_timeout'];
+    }
+    if (data._error_callback) {
+      error_callback = data._error_callback;
+      delete data['_error_callback'];
     }
 
     // Get search context
@@ -181,12 +209,18 @@ Mailpile.API = {
       if (context) params += '&context=' + context;
 
       $.ajax({
-        url      : base_url + command + output + "?" + params,
-        type     : 'GET',
-        dataType : 'json',
-        success  : callback,
+        url: base_url + command + output + "?" + params,
+        type: 'GET',
+        timeout: timeout,
+        dataType: 'json',
+        success: function(response, status) {
+          Mailpile.API._ajax_is_alive();
+          return callback(response, status);
+        },
         error: function(response, status) {
-          Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+          Mailpile.API._ajax_error(base_url, command, data,
+                                   method, response, status);
+          if (error_callback) error_callback(response, status);
         }
       });
     }
@@ -200,13 +234,19 @@ Mailpile.API = {
         }
       }
       $.ajax({
-        url      : base_url + command + output,
-        type     : 'POST',
-        data     : data,
-        dataType : 'json',
-        success  : callback,
-        error    : function(response, status) {
-          Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+        url: base_url + command + output,
+        type: 'POST',
+        data: data,
+        timeout: timeout,
+        dataType: 'json',
+        success: function(response, status) {
+          Mailpile.API._ajax_is_alive();
+          return callback(response, status);
+        },
+        error: function(response, status) {
+          Mailpile.API._ajax_error(base_url, command, data,
+                                   method, response, status);
+          if (error_callback) error_callback(response, status);
         }
       });
     }
