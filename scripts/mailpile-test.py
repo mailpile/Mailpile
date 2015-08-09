@@ -165,7 +165,7 @@ def test_load_save_rescan():
                    ['from:bjarni', 'subject:inline', 'subject:encryption',
                     'grand', 'tag:mp_enc-mixed-decrypted'],
                    ['from:bjarni', 'subject:signatures', '-is:unread',
-                    'tag:mp_sig-unverified'],
+                    'tag:mp_sig-expired'],
                    ['from:brennan', 'subject:encrypted',
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
                    ['from:brennan', 'subject:signed',
@@ -175,6 +175,7 @@ def test_load_save_rescan():
                    ['from:square', 'subject:here', '-has:attachment'],
                    [u'subject:' + IS_CHARS, 'subject:8859'],
                    [u'subject:' + IS_CHARS, 'subject:UTF'],
+                   ['use_libusb', 'unsubscribe', 'vger'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -182,7 +183,7 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 18)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 19)
 
     say('FIXME: Make sure message signatures verified')
 

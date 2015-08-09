@@ -870,7 +870,8 @@ class Sendit(CompositionCommand):
                         data={'mid': msg_mid, 'sid': msg_sid}))
 
                 SendMail(session, msg_mid,
-                         [PrepareMessage(config, email.get_msg(pgpmime=False),
+                         [PrepareMessage(config,
+                                         email.get_msg(pgpmime=False),
                                          sender=sender,
                                          rcpts=(bounce_to or None),
                                          bounce=(True if bounce_to else False),
@@ -901,7 +902,8 @@ class Sendit(CompositionCommand):
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
-                message = _('Failed to send %s') % email
+                subject = email.get_msg_info(config.index.MSG_SUBJECT)
+                message = _('Failed to send message: %s') % subject
                 for ev in events:
                     ev.flags = Event.INCOMPLETE
                     ev.message = message
@@ -1031,14 +1033,27 @@ class EmptyOutbox(Sendit):
         if not idx:
             return self._error(_('The index is not ready yet'))
 
+        # Collect a list of messages from the outbox
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]
             for msg_idx_pos in idx.search(self.session, search,
                                           order='flat-index').as_set():
                 messages.append('=%s' % b36(msg_idx_pos))
+
+        # Messages no longer in the outbox get their events canceled...
+        if cfg.event_log:
+            events = cfg.event_log.incomplete(source='.plugins.compose.Sendit')
+            for ev in events:
+                if ('mid' in ev.data and
+                        ('=%s' % ev.data['mid']) not in messages):
+                    ev.flags = ev.COMPLETE
+                    ev.message = _('Sending cancelled.')
+                    cfg.event_log.log_event(ev)
+
+        # Send all the mail!
         if messages:
-            self.args = tuple(messages)
+            self.args = tuple(set(messages))
             return Sendit.command(self)
         else:
             return self._success(_('The outbox is empty'))

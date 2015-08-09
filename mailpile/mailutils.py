@@ -143,6 +143,20 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
     return message
 
 
+def GetTextPayload(part):
+    mimetype = part.get_content_type() or 'text/plain'
+    cte = part.get('content-transfer-encoding', '').lower()
+    if mimetype[:5] == 'text/' and cte == 'base64':
+        # Mailing lists like to mess with text/plain parts, and Majordomo
+        # in particular isn't aware of base64 encoding. Compensate!
+        payload = part.get_payload(None, False) or ''
+        parts = payload.split('\n--')
+        parts[0] = base64.b64decode(parts[0])
+        return '\n--'.join(parts)
+    else:
+        return part.get_payload(None, True) or ''
+
+
 def ExtractEmails(string, strip_keys=True):
     emails = []
     startcrap = re.compile('^[\'\"<(]')
@@ -1232,8 +1246,7 @@ class Email(object):
 
     def decode_payload(self, part):
         charset = part.get_content_charset() or None
-        payload = part.get_payload(None, True) or ''
-        return self.decode_text(payload, charset=charset)
+        return self.decode_text(GetTextPayload(part), charset=charset)
 
     def parse_text_part(self, data, charset, crypto):
         psi = crypto['signature']
