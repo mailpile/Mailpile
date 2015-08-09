@@ -13,14 +13,9 @@ Mailpile.UI.Search   = {};
 
 
 Mailpile.UI.init = function() {
-
-  // Favicon
-  var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
-  var favicon = new Favico({animation:'popFade'});
-  favicon.badge(inbox.stats.new);
-
+  // BRE: disabled for now, it doesn't really work
   // Show Typeahead
-  Mailpile.activities.render_typeahead();
+  //Mailpile.activities.render_typeahead();
 
   // Start Eventlog
   //EventLog.init();
@@ -38,7 +33,7 @@ Mailpile.UI.init = function() {
       Mailpile.Composer.AutosaveTimer.set({ time : 20000, autostart : true });
     }
 
-  }, 1000);
+  }, 200);
 
 
   /* Drag & Drop */
@@ -50,6 +45,13 @@ Mailpile.UI.init = function() {
   Mailpile.UI.Tooltips.BulkActions();
   Mailpile.UI.Tooltips.ComposeEmail();
 
+  // Favicon:
+  // FIXME: This should go in the tags template
+  setTimeout(function() {
+    var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
+    var favicon = new Favico({animation:'none'});
+    favicon.badge(inbox.stats.new);
+  }, 1000);
 };
 
 

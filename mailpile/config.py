@@ -2290,7 +2290,7 @@ class ConfigManager(ConfigDict):
                     config.background, 'refresh_command_cache',
                     lambda: config.command_cache.refresh(
                         event_log=config.event_log))
-            config.cron_worker.add_task('refresh_command_cache', 19,
+            config.cron_worker.add_task('refresh_command_cache', 5,
                                         refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
