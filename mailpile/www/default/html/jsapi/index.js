@@ -115,16 +115,28 @@ Mailpile.API = {
   _async_url: "{{ config.sys.http_path }}/async",
 
   _dead_notification: undefined,
-  _notify_dead: function(status, message) {
-    Mailpile.API._dead_notification = Mailpile.notification({
-      status: status,
-      message: message,
-      message2: ((document.location.href.indexOf('/localhost:') == -1)
-                 ? '{{_("Check your network?")}}'
-                 : '{{_("Restart the app?")}}'),
-      event_id: Mailpile.API._dead_notification,
-      icon: 'icon-signature-unknown'
-    });
+  _notify_dead: function(status, message, fullscreen) {
+    var advice = ((document.location.href.indexOf('/localhost:') == -1)
+                  ? '{{_("Check your network?")}}'
+                  : '{{_("Restart the app?")}}');
+    if (fullscreen) {
+      if (!$('#connection-down').length) {
+        var template = _.template($('#template-connection-down').html());
+        $('body').append(template({
+          message: message,
+          advice: advice
+        }));
+      }
+    }
+    else {
+      Mailpile.API._dead_notification = Mailpile.notification({
+        status: status,
+        message: message,
+        message2: advice,
+        event_id: Mailpile.API._dead_notification,
+        icon: 'icon-signature-unknown'
+      });
+    }
   },
   _ajax_dead_count: 0,
   _ajax_is_alive: function() {
@@ -132,6 +144,9 @@ Mailpile.API = {
     if (Mailpile.API._dead_notification) {
       Mailpile.cancel_notification(Mailpile.API._dead_notification);
       Mailpile.API._dead_notification = undefined;
+      if ($('#connection-down').length) {
+        $('#connection-down').fadeOut().remove();
+      }
     }
   },
   _ajax_error: function(base_url, command, data, method, response, status) {
@@ -164,7 +179,8 @@ Mailpile.API = {
     }
 
     if (Mailpile.API._ajax_dead_count > 3) {
-      Mailpile.API._notify_dead('error', '{{_("Mailpile is unreachable.")}}');
+      Mailpile.API._notify_dead('error', '{{_("Mailpile is unreachable.")}}',
+                                (Mailpile.API._ajax_dead_count > 10));
     }
     else if (status == "timeout") {
       Mailpile.API._notify_dead('warning', '{{_("Mailpile timed out...")}}');

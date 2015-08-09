@@ -5,11 +5,8 @@
       <div id="connection-down-logo" class="add-top animated bounceIn">
       {% include("../img/logo-color.svg") %}
       </div>
-      <h1 class="half-top">Can't Connect</h1>
-      <p>This is caused by one of the following:</p>
-      <h3 class="half-top">Your Internet Connection Is Down</h3>
-      <h3 class="">Your Mailpile App Crashed</h3>
-      <p class="add-bottom"><a href="#" id="connection-down-hide">Hide This</a></p>
+      <h1 class="half-top"><%= message %></h1>
+      <h3 class="half-top"><%= advice %></h3>
     </div>
   </div>
 </script>
