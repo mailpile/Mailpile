@@ -23,12 +23,21 @@ else
     PYTHON=python2.7
 fi
 
-[ "$1" != "--keep" ] && rm -rf "$MAILPILE_HOME"
+if [ "$1" = "--keep" ]; then
+    shift
+else
+    rm -rf "$MAILPILE_HOME"
+fi
 mkdir -p "$MAILPILE_HOME"
 chmod 700 "$MAILPILE_HOME"
 
+if [ "$1" = "--cleanup" ]; then
+    shift
+    CLEANUP=1
+fi
+
 $PYTHON ./mp --set 'sys.debug = log http' \
              --www 'localhost:33433' \
-             --interact
+             "$@" --interact
 
-[ "$1" = "--cleanup" ] && rm -rf "$MAILPILE_HOME"
+[ "xCLEANUP" = "1" ] && rm -rf "$MAILPILE_HOME"
