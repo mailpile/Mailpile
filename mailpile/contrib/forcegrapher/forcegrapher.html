@@ -4,7 +4,7 @@
 {% if result %}
 
 <div id="content-tools">
-  {% include("partials/tools_search.html") %}
+  {% include("partials/tools_search.html") ignore missing %}
 </div>
 <div id="content-view">
   <div id="pile-graph" style="background: #FFFFFF; display: block; position: relative;">
@@ -17,6 +17,27 @@
     </div>
   </div>
 </div>
+
+<script id="modal-grapher-node-detail" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-user"></span> Contact Details</h4>
+      </div>
+      <div class="modal-body clearfix">
+        <% if (name) { %>
+        <h3 class="name"><%= name %></h3>
+        <p><%= email %></p>
+        <% } else { %>
+        <h3 class="email"><%= email %></h3>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</script>
+
+
 <script>
 $(document).ready(function() {
 	var data = {{result|json|safe}};

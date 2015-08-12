@@ -7,8 +7,14 @@ return {
     draw: function(graph) {
 
         // Determine & Set Height
-        var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
+        var available_height = $(window).height() - ($('#header').height() + $('#content-tools').height());
         var available_width = $("#content-wide").width();
+
+        // Hide if tools empty (for alt themes like ArchivePile)
+        if ($('#content-tools').height() == 0) {
+          $('#content-tools').hide();
+          $("#content-wide").css({ position: 'absolute', top: $('#header').height(), left: 0 });
+        }
 
         $('#pile-graph-canvas').height(available_height);
         $('#pile-graph-canvas').width(available_width);
@@ -83,7 +89,8 @@ return {
                 Mailpile.graphselected.pop(d["email"]);
                 d3.select(node[q][m]).selectAll("circle").style("fill", "#337FB2");
             }
-            Mailpile.graph_actionbuttons();
+
+            Mailpile.plugins.forcegrapher.node_click(d)
         });
         node.on("mouseover", function(d, m, q) {
             d3.select(node[q][m]).selectAll("text").style("opacity", "1");
@@ -105,5 +112,12 @@ return {
                 .attr("x2", function(d) { return d.target.x; })
                 .attr("y2", function(d) { return d.target.y; });
         });
+    },
+    node_click: function(contact) {
+      console.log(contact);
+      var modal_template = _.template($('#modal-grapher-node-detail').html());
+
+      $('#modal-full').html(modal_template(contact));
+      $('#modal-full').modal(Mailpile.UI.ModalOptions);
     }
 }
