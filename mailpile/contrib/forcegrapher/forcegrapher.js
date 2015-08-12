@@ -114,10 +114,51 @@ return {
         });
     },
     node_click: function(contact) {
-      console.log(contact);
-      var modal_template = _.template($('#modal-grapher-node-detail').html());
 
-      $('#modal-full').html(modal_template(contact));
-      $('#modal-full').modal(Mailpile.UI.ModalOptions);
+      contact['search'] = {};
+
+      var show_contact_modal = function(contact) {
+        var modal_template = _.template($('#modal-grapher-node-detail').html());
+        $('#modal-full').html(modal_template(contact));
+        $('#modal-full').modal(Mailpile.UI.ModalOptions);
+      }
+
+      var clean_email_addresses = function(input) {
+        var separateEmailsBy = ", ";
+        var email = "<none>";
+        var emailsArray = input.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
+        if (emailsArray) {
+            email = "";
+            for (var i = 0; i < emailsArray.length; i++) {
+                if (i != 0) email += separateEmailsBy;
+                email += emailsArray[i];
+            }
+        }
+        return email;
+      }
+
+      if (contact.email) {
+
+        // Clean Junk
+        contact.email = clean_email_addresses(contact.email);
+
+        // Do Search
+        $.ajax({
+  			  url: Mailpile.api.search + '?q=from:' + contact.email,
+          type: 'GET',
+          dataType: 'json',
+  		  	success: function(result) {
+            console.log(result);
+            if (result.result && result.result.data) {
+              contact.search = result.result.data;
+              show_contact_modal(contact);
+            } else if (result.result) {
+              show_contact_modal(contact);              
+            }
+  		  	}
+  		  });
+
+      }
+
     }
 }

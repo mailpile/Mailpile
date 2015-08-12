@@ -19,7 +19,7 @@
                 "name": "graph",
                 "text": "Graph",
                 "description": "Show contact relationships",
-                "icon": "graph",
+                "icon": "force-graph",
                 "url": "/graph/"
             }
         ]

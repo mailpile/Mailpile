@@ -23,14 +23,44 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title"><span class="icon-user"></span> Contact Details</h4>
+        <h4 class="modal-title">
+          <span class="icon-user"></span> 
+          <% if (name) { %>
+          <%= name %>
+          <% } else { %>
+          <%= email %>
+          <% } %>
+        </h4>
       </div>
       <div class="modal-body clearfix">
-        <% if (name) { %>
-        <h3 class="name"><%= name %></h3>
-        <p><%= email %></p>
+        <% if (search.metadata) { %>
+        <p style="padding: 10px 15px; background: #d9d9d9;"><strong><%= search.metadata.length %> Recent Tags & Messages from: <%= email %></strong></p>
+
+        <% var shown_tags = [] %>
+        <ul class="horizontal">
+        <% _.each(search.metadata, function(msg, mid) { %>
+          <% _.each(msg.tag_tids, function(tid) { var tag = _.findWhere(Mailpile.instance.tags, {tid: tid}) %>
+            <% if (_.indexOf(shown_tags, tid) == -1 && _.indexOf(['priority', 'tag', 'archive'], tag.display) > -1) { shown_tags.push(tid) %>
+            <li class="half-right"><a href="/search/?q=in:<%= tag.slug %>" target="_blank" title="Search for Tag">
+              <span class="<%= tag.icon %>"></span> <%= tag.name %></a> &nbsp;
+            </li>
+            <% } %>
+          <% }) %>
+        <% }) %>
+        </ul>
+        <ul>
+        <% _.each(search.metadata, function(msg, mid) { %>
+        <li>
+          <hr class="half-top half-bottom">
+          <h4 class="half-bottom">
+            <a href="<%= msg.urls.thread %>"><%= msg.subject %> <span class="icon-lock-closed <%= msg.crypto.encryption %>"></span></a> 
+          </h4>
+          <span class="color:#999"><%= msg.body.snippet %>... <a href="<%= msg.urls.thread %>" target="_blank">View Thread</a></span>
+        </li>
+        <% }) %>
+        </ul>
         <% } else { %>
-        <h3 class="email"><%= email %></h3>
+        No results found for address: <%= email %>
         <% } %>
       </div>
     </div>
