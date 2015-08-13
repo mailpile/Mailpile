@@ -902,8 +902,11 @@ class Sendit(CompositionCommand):
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
-                subject = email.get_msg_info(config.index.MSG_SUBJECT)
-                message = _('Failed to send message: %s') % subject
+                to = email.get_msg().get('x-mp-internal-rcpts').split(',')[0]
+                if to:
+                    message = _('Could not send mail to %s') % to
+                else:
+                    message = _('Could not send mail')
                 for ev in events:
                     ev.flags = Event.INCOMPLETE
                     ev.message = message
