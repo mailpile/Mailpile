@@ -1,6 +1,18 @@
 /* Notifications - UI notification at top of window */
 
-Mailpile.cancel_notification = function(not_id, $existing, replace) {
+Mailpile.expire_canceled_notifictions = function() {
+  var expired = new Date().getTime() - (3600 * 1000);
+  for (item in Mailpile.local_storage) {
+    if (item.indexOf('canceled-') == '0'
+        && Mailpile.local_storage[item] < expired) {
+      delete Mailpile.local_storage[item];
+    }
+  }
+};
+Mailpile.expire_canceled_notifictions();
+
+
+Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
   // Cancel existing notification, if any
   var $existing = $existing || $('#event-' + not_id);
   if ($existing.length > 0) {
@@ -9,6 +21,10 @@ Mailpile.cancel_notification = function(not_id, $existing, replace) {
       return $existing;
     }
     else {
+      if (record) {
+        not_id = $existing.attr('id').substring(6);
+        Mailpile.local_storage['canceled-' + not_id] = new Date().getTime();
+      }
       $existing.remove();
     }
   }
@@ -79,6 +95,11 @@ Mailpile.notification = function(result) {
     result.timeout = 20000;
   }
 
+  // If user has canceled this notification, don't bug him again.
+  if (Mailpile.local_storage['canceled-' + result['event_id']]) {
+    return result['event_id'];
+  }
+
   // Show Notification
   var $elem = Mailpile.cancel_notification(result.event_id, undefined, 'keep');
   var notification_template = _.template($('#template-notification-bubble').html());
@@ -86,7 +107,10 @@ Mailpile.notification = function(result) {
       $elem.replaceWith(notification_template(result));
   }
   else {
-      $('#notification-bubbles').prepend(notification_template(result));
+      var bubbles = $('#notification-bubbles');
+      if (bubbles.children().length < 5) {
+          bubbles.prepend(notification_template(result));
+      }
   }
   setTimeout(function() {
     $('#event-' + result.event_id).fadeIn('fast');
@@ -117,7 +141,7 @@ $(document).on('click', '.notification-close', function() {
     var next_nag = new Date().getTime() + Mailpile.nagify;
     Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag });
   }
-  Mailpile.cancel_notification('', $(this).parent());
+  Mailpile.cancel_notification('', $(this).parent(), undefined, true);
 });
 
 
@@ -189,6 +213,7 @@ EventLog.subscribe('.*compose.Sendit', function(ev) {
   }
   else if (ev.data.last_error) {
     ev.icon = 'icon-signature-unknown';
+    ev.message2 = ev.data.last_error
   }
   Mailpile.notification(ev);
 });
