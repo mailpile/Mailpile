@@ -53,7 +53,8 @@ prepare_new_content = function(selector) {
                     (url.indexOf(U("/browse/")) == 0) ||
                     (url.indexOf(U("/thread/")) == 0) ||
                     (url.indexOf(U("/profiles/")) == 0) ||
-                    (url.indexOf(U("/search/")) == 0))) {
+                    (url.indexOf(U("/search/")) == 0))
+                && (elem.className.indexOf('auto-modal') == -1)) {
             $(elem).click(function(ev) {
                 if (update_using_jhtml(url)) ev.preventDefault();
             });
