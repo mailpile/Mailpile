@@ -11,8 +11,8 @@ Mailpile.Search.init = function() {
   Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'td.draggable');
 
   // Render Display Size
-  if (!localStorage.getItem('view_size')) {
-    localStorage.setItem('view_size', Mailpile.config.web.display_density);
+  if (!Mailpile.local_storage['view_size']) {
+    Mailpile.local_storage['view_size'] = Mailpile.config.web.display_density;
   }
 
   var search = ($('#search-query').attr('value') + ' ');
@@ -26,11 +26,11 @@ Mailpile.Search.init = function() {
     $('.btn-activity-edit_tag').remove();
   }
 
-  Mailpile.pile_display(localStorage.getItem('view_size'));
+  Mailpile.pile_display(Mailpile.local_storage['view_size']);
 
   // Display Select
   $.each($('a.change-view-size'), function() {
-    if ($(this).data('view_size') == localStorage.getItem('view_size')) {
+    if ($(this).data('view_size') == Mailpile.local_storage['view_size']) {
       $(this).addClass('view-size-selected');
     }
   });

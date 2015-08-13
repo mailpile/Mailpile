@@ -20,7 +20,7 @@ Mailpile.pile_display = function(current, change) {
 $(document).on('click', 'a.change-view-size', function(e) {
 
   e.preventDefault();
-  var current_size = localStorage.getItem('view_size');
+  var current_size = Mailpile.local_storage['view_size'];
   var change_size = $(this).data('view_size');
 
   // Update Link Selected
@@ -31,7 +31,7 @@ $(document).on('click', 'a.change-view-size', function(e) {
   Mailpile.pile_display(current_size, change_size);
 
   // Data
-  localStorage.setItem('view_size', change_size);
+  Mailpile.local_storage['view_size'] = change_size;
 
   // Update Config & Model
   Mailpile.API.settings_set_post({ 'web.display_density': change_size }, function(result) {});

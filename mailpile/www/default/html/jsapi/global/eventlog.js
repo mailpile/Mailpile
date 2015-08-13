@@ -1,6 +1,6 @@
 var EventLog = {
   eventbindings: [],  // All the subscriptions
-  last_ts: localStorage.getItem('eventlog_last_ts') || -1800,
+  last_ts: Mailpile.local_storage['eventlog_last_ts'] || -1800,
   first_load: true,
   timer: null
 };
@@ -82,7 +82,7 @@ EventLog.process_error = function(result, textstatus) {
 EventLog.process_result = function(result, textstatus) {
   EventLog.last_ts = EventLog.invoke_callbacks(result);
   EventLog.poll();
-  localStorage.setItem('eventlog_last_ts', EventLog.last_ts);
+  Mailpile.local_storage['eventlog_last_ts'] = EventLog.last_ts;
 };
 
 

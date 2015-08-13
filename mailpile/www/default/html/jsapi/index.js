@@ -92,7 +92,8 @@ Mailpile = {
   },
   plugins: [],
   theme: {},
-  activities: {}
+  activities: {},
+  local_storage: localStorage || {}
 };
 {% set theme_settings = theme_settings() %}
 Mailpile.theme = {{ theme_settings|json|safe }};
