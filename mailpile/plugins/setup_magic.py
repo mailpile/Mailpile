@@ -407,7 +407,8 @@ class SetupGetEmailSettings(TestableWebbable):
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
         'email': 'E-mail address',
         'timeout': 'Seconds',
-        'track-id': 'tracking ID for event log'
+        'password': 'Account password',
+        'track-id': 'Tracking ID for event log'
     })
     TEST_DATA = {
         'imap_host': 'imap.wigglebonk.com',
@@ -477,7 +478,22 @@ class SetupGetEmailSettings(TestableWebbable):
                 rank -= score
         return rank
 
+    def _clean_domain(self, domain):
+        domain = domain.lower()
+
+        # Shortcuts, to save some cycles & speed things up...
+        for shortcut in ('.google.com', ):
+            if domain.endswith(shortcut):
+                domain = shortcut[1:]
+        for prefix in ('mx.', 'mx1.', 'mail.', 'smtp.'):
+            if domain.startswith(prefix) and '.' in domain[len(prefix):]:
+                domain = domain[len(prefix):]
+
+        return domain
+
     def _get_ispdb(self, email, domain):
+        domain = self._clean_domain(domain)
+
         domain_hash = {'domain': domain}
         self._progress(_('Checking ISPDB for %(domain)s') % domain_hash)
         try:
@@ -529,19 +545,122 @@ class SetupGetEmailSettings(TestableWebbable):
                 return result
         except (IOError, ValueError, AttributeError):
             pass
+        dparts = domain.split('.')
+        if len(dparts) > 2:
+            domain = '.'.join(dparts[1:])
+            # FIXME: Make a longer list of 2nd-level public TLDs to ignore
+            if domain not in ('co.uk', 'pagekite.me'):
+                return self._get_ispdb(email, domain)
         return None
 
     def _get_mx1(self, domain):
-        print 'FIXME: Get MX record for %s' % domain
-        time.sleep(1)
-        return domain
+        import DNS
+        # FIXME: This bypasses the connection broker and is not secured or
+        #        anonymized.
+        DNS.DiscoverNameServers()
+        try:
+            timeout = (self.deadline - time.time()) // 2
+            mxlist = DNS.DnsRequest(name=domain, qtype=DNS.Type.MX,
+                                    timeout=timeout).req()
+            mxs = sorted([m['data'] for m in mxlist.answers if 'data' in m])
+            return mxs[0][1] if mxs else None
+        except socket.error:
+            return None
 
-    def _guess_settings(self, email, domain):
+    def _guess_service_domains(self, domain,
+                               mx=None, service_domains=None):
+        import socket
+        seen_ips = {'pop3': set(), 'imap': set(), 'smtp': set()}
+        service_domains = {} if (service_domains is None) else service_domains
+        # FIXME: Also check DNS service records?
+        for prefix, protos in (('pop',  ('pop3',)),
+                               ('pop3', ('pop3',)),
+                               ('imap', ('imap',)),
+                               ('smtp', ('smtp',)),
+                               ('mail', ('imap', 'pop3', 'smtp')),
+                               (None, ('imap', 'pop3', 'smtp'))):
+            try:
+                if prefix:
+                    name = '%s.%s' % (prefix, domain)
+                else:
+                    name = domain
+                # FIXME: This bypasses the connection broker and is
+                #        not secured or anonymized.
+                ip = socket.gethostbyname(name)
+                if ip:
+                    for proto in protos:
+                        if ip not in seen_ips[proto]:
+                            seen_ips[proto].add(ip)
+                            if proto in service_domains:
+                                if name not in service_domains[proto]:
+                                    service_domains[proto].append(name)
+                            else:
+                                service_domains[proto] = [name]
+            except socket.gaierror:
+                pass
+        if mx:
+            isp_domain = self._clean_domain(mx)
+            self._guess_service_domains(isp_domain,
+                                        service_domains=service_domains)
+
+        print 'service_domains=%s' % service_domains
+        return service_domains
+
+    def _probe_port(self, host, port):
+        import socket
+        # FIXME: This is neither secured nor anonymized.
+        with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
+                                      ConnBroker.OUTGOING_CLEARTEXT]) as cb:
+            try:
+                conn = socket.create_connection((host, port))
+                conn.close()
+                return True
+            except socket.error:
+                pass
+        return False
+
+    def _guess_settings(self, email, domain, mx1):
+        # Strategy:
+        #
+        # 1. Look up possible service names...
+        # 2. Attempt connections on well-known service ports
+        #
+        # Passwords and usernames are checked later, as is STARTTLS.
+
         args_hash = {'domain': domain, 'email': email}
         self._progress(_('Guessing settings for %(email)s') % args_hash)
-        print 'FIXME: Guess settings for %(email)s / %(domain)s' % args_hash
-        time.sleep(5)
-        return None
+
+        service_domains = self._guess_service_domains(domain, mx=mx1)
+        if not service_domains:
+            return None
+
+        self._progress(_('Probing for services...'))
+        result = {'sources': [], 'routes': []}
+        for section, service, port, proto in (
+                ('sources', 'imap', '993', 'imap_ssl'),
+                ('sources', 'pop3', '995', 'pop3_ssl'),
+                ('sources', 'imap', '143', 'imap'),
+                ('sources', 'pop3', '110', 'pop3'),
+                ('routes', 'smtp', '465', 'smtp_ssl'),
+                ('routes', 'smtp', '587', 'smtp'),
+                ('routes', 'smtp', '25', 'smtp')):
+            for host in service_domains.get(service, []):
+                if len(result[section]) > 3:
+                    break
+                if self._probe_port(host, port):
+                    result[section].append({
+                        'protocol': proto,
+                        'host': str(host),
+                        'port': str(port),
+                    })
+                    self._progress(_('Found %(service)s server on '
+                                     '%(host)s:%(port)s')
+                                   % {'service': service.upper(),
+                                      'host': host,
+                                      'port': port})
+
+        print 'services=%s' % result
+        return result
 
     def _get_email_settings(self, email):
         # Thunderbird does this:
@@ -557,29 +676,40 @@ class SetupGetEmailSettings(TestableWebbable):
 
         domain = email.split('@')[-1].lower()
         settings = None
+        mx1 = None
 
         if not settings and self.deadline > time.time():
             settings = self._get_ispdb(email, domain)
 
         if not settings and self.deadline > time.time():
             mx1 = self._get_mx1(domain)
-            if mx1 != domain:
+            if mx1 and not mx1.endswith('.' + domain):
                 settings = self._get_ispdb(email, mx1)
 
         if not settings and self.deadline > time.time():
-            settings = self._guess_settings(email, domain)
+            settings = self._guess_settings(email, domain, mx1)
 
         return settings
+
+    def _probe_account_settings(self, results):
+        pass
 
     def setup_command(self, session):
         results = {}
         self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
         self.tracking_id = self.data.get('track-id', [None])[0]
-        for email in list(self.args) + self.data.get('email'):
+        self.password = self.data.get('password', [None])[0]
+        emails = list(self.args) + self.data.get('email')
+        if self.password and len(emails) != 1:
+            return self._error(_('Can only test settings for one account '
+                                 'at a time'))
+        for email in emails:
             settings = self._testing_data(self._get_email_settings,
                                           self.TEST_DATA, email)
             if settings:
                 results[email] = settings
+                if self.password and self.deadline > time.time():
+                    self._probe_account_settings(results)
             if time.time() >= self.deadline:
                 break
         if results:
