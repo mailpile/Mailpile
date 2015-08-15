@@ -149,7 +149,7 @@ class Retrain(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/retrain', None, '[<tags>]')
 
     def command(self):
-        self._retrain(tags=self.args)
+        return self._retrain(tags=self.args)
 
     def _retrain(self, tags=None):
         "Retrain autotaggers"
