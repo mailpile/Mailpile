@@ -327,7 +327,7 @@
                 onchange="javascript:_fpa.select(this, 'route-settings');">
           {%- set protocol = result['route-protocol'] %}
           {%- for val, txt in (('smtp', 'SMTP'),
-                              ('smtpssl', 'SMTP/SSL'),
+                              ('smtpssl', 'SMTP/TLS'),
                               ('smtptls', 'SMTP/STARTTLS'),
                               ('local', _("Local")),
                               ('none', _("None"))) %}
@@ -407,9 +407,9 @@
                 onchange="javascript:_fpa.select(this, 'source-settings-{{ new_rid }}');"
                 name="source-{{ new_rid }}-protocol">
           {% for val, txt in (('imap', 'IMAP'),
-                              ('imap_ssl', 'IMAP/SSL'),
+                              ('imap_ssl', 'IMAP/TLS'),
                               ('pop3', 'POP3'),
-                              ('pop3_ssl', 'POP3/SSL'),
+                              ('pop3_ssl', 'POP3/TLS'),
                               ('spool', _("Mail spool")),
                               ('local', _("Local files")),
                               ('none', _("None"))) %}
