@@ -24,6 +24,7 @@ from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
+from mailpile.eventlog import Event
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
@@ -401,7 +402,7 @@ class TestableWebbable(SetupMagic):
 
 
 class SetupGetEmailSettings(TestableWebbable):
-    """Guess server details for an e-mail address"""
+    """Lookup, guess, test server details for an e-mail address"""
     SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers', None)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
@@ -426,11 +427,22 @@ class SetupGetEmailSettings(TestableWebbable):
     def _progress(self, message):
         if self.event and self.tracking_id:
             self.event.private_data = {"track-id": self.tracking_id}
+            if 'log' in self.event.data:
+                self.event.data['log'].append([int(time.time()), message])
+            else:
+                self.event.data['log'] = [[int(time.time()), message]]
             self.event.message = message
             self._update_event_state(self.event.RUNNING, log=True)
         else:
             self.session.ui.mark(message)
- 
+
+    def _log_result(self, message):
+        if self.event and self.tracking_id:
+            if self.event.data.get('log'):
+                self.event.data['log'][-1].append(message)
+        else:
+            self.session.ui.mark(message)
+
     def _urlget(self, url):
         if url.lower().startswith('https'):
             conn_needs = [ConnBroker.OUTGOING_HTTPS]
@@ -494,6 +506,9 @@ class SetupGetEmailSettings(TestableWebbable):
     def _get_ispdb(self, email, domain):
         domain = self._clean_domain(domain)
 
+        if domain in ('localhost',):
+            return None
+
         domain_hash = {'domain': domain}
         self._progress(_('Checking ISPDB for %(domain)s') % domain_hash)
         try:
@@ -541,7 +556,7 @@ class SetupGetEmailSettings(TestableWebbable):
                     })
                 result['sources'].sort(key=self._rank)
                 result['routes'].sort(key=self._rank)
-                self._progress(_('Found %(domain)s in ISPDB') % domain_hash)
+                self._log_result(_('Found %(domain)s in ISPDB') % domain_hash)
                 return result
         except (IOError, ValueError, AttributeError):
             pass
@@ -554,6 +569,9 @@ class SetupGetEmailSettings(TestableWebbable):
         return None
 
     def _get_mx1(self, domain):
+        if domain in ('localhost',):
+            return None
+
         import DNS
         # FIXME: This bypasses the connection broker and is not secured or
         #        anonymized.
@@ -569,6 +587,9 @@ class SetupGetEmailSettings(TestableWebbable):
 
     def _guess_service_domains(self, domain,
                                mx=None, service_domains=None):
+        if domain in ('localhost',):
+            return {'pop3': [domain], 'imap': [domain], 'smtp': [domain]}
+
         import socket
         seen_ips = {'pop3': set(), 'imap': set(), 'smtp': set()}
         service_domains = {} if (service_domains is None) else service_domains
@@ -603,7 +624,6 @@ class SetupGetEmailSettings(TestableWebbable):
             self._guess_service_domains(isp_domain,
                                         service_domains=service_domains)
 
-        print 'service_domains=%s' % service_domains
         return service_domains
 
     def _probe_port(self, host, port):
@@ -612,10 +632,9 @@ class SetupGetEmailSettings(TestableWebbable):
         with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
                                       ConnBroker.OUTGOING_CLEARTEXT]) as cb:
             try:
-                conn = socket.create_connection((host, port))
-                conn.close()
+                socket.create_connection((host, port)).close()
                 return True
-            except socket.error:
+            except (AssertionError, IOError, OSError, socket.error):
                 pass
         return False
 
@@ -631,6 +650,8 @@ class SetupGetEmailSettings(TestableWebbable):
         self._progress(_('Guessing settings for %(email)s') % args_hash)
 
         service_domains = self._guess_service_domains(domain, mx=mx1)
+        self._log_result(_('Found %d potential servers')
+                         % len(service_domains))
         if not service_domains:
             return None
 
@@ -641,7 +662,7 @@ class SetupGetEmailSettings(TestableWebbable):
                 ('sources', 'pop3', '995', 'pop3_ssl'),
                 ('sources', 'imap', '143', 'imap'),
                 ('sources', 'pop3', '110', 'pop3'),
-                ('routes', 'smtp', '465', 'smtp_ssl'),
+                ('routes', 'smtp', '465', 'smtpssl'),
                 ('routes', 'smtp', '587', 'smtp'),
                 ('routes', 'smtp', '25', 'smtp')):
             for host in service_domains.get(service, []):
@@ -659,7 +680,6 @@ class SetupGetEmailSettings(TestableWebbable):
                                       'host': host,
                                       'port': port})
 
-        print 'services=%s' % result
         return result
 
     def _get_email_settings(self, email):
@@ -689,10 +709,139 @@ class SetupGetEmailSettings(TestableWebbable):
         if not settings and self.deadline > time.time():
             settings = self._guess_settings(email, domain, mx1)
 
+        if self.deadline < time.time():
+            self._progress(_('Ran out of time, results may be incomplete'))
+
         return settings
 
-    def _probe_account_settings(self, results):
-        pass
+    def _test_login_and_proto(self, email, settings):
+        event = Event(data={})
+
+        if settings['protocol'].startswith('smtp'):
+            try:
+                assert(SendMail(self.session, None,
+                                [(email,
+                                  [email, 'test@mailpile.is'], None,
+                                  [event])],
+                                test_only=True, test_route=settings))
+                return True, True
+            except (IOError, OSError, AssertionError, SendMailError):
+                pass
+
+        if settings['protocol'].startswith('imap'):
+            from mailpile.mail_source.imap import TestImapSettings
+            if TestImapSettings(self.session, settings, event):
+                return True, True
+
+        if settings['protocol'].startswith('pop3'):
+            from mailpile.mail_source.pop3 import TestPop3Settings
+            if TestPop3Settings(self.session, settings, event):
+                return True, True
+
+        if ('connection' in event.data and
+                event.data['connection']['error'][0] == 'auth'):
+            return False, True
+
+        if ('last_error' in event.data and event.data.get('auth')):
+            return False, True
+
+        return False, False
+
+    def _probe_account_settings(self, email, results):
+        result = results[email]
+        userpart = email.split('@')[0]
+        user_info = {'userpart': userpart, 'email': email}
+        login_errors_total = 0
+        route_open_relay = False
+        for cleartext, which in ((False, 'routes'),
+                                 (False, 'sources'),
+                                 (True, 'routes'),
+                                 (True, 'sources')):
+            login_errors = 0
+            servers = result[which]
+            if cleartext and ((not servers) or
+                              (which == 'routes' and route_open_relay) or
+                              servers[0].get('username')):
+                # If we have already found combinations that work for both
+                # incoming and outgoing, don't send the password over the
+                # network in the clear; just stop here.
+                continue
+
+            self._progress(_('Probing %s, cleartext=%s')
+                           % (which, cleartext))
+
+            for details in servers:
+                for starttls, userfmt in ((True, '%(email)s'),
+                                          (True, '%(userpart)s'),
+                                          (True, ''),
+                                          (False, '%(email)s'),
+                                          (False, '%(userpart)s'),
+                                          (False, '')):
+                    # Skip some combinations...
+                    has_ssl = (('ssl' in details['protocol']) or
+                               ('tls' in details['protocol']))
+                    crypto = True if (starttls or has_ssl) else False
+                    if starttls and has_ssl:
+                        # No STARTTLS if this server already uses TLS
+                        continue
+                    if crypto is cleartext:
+                        # Cleartext pass: ignore starttls and ssl conns
+                        # Crypto pass: require starttls OR has_ssl
+                        continue
+                    if time.time() > self.deadline:
+                        continue
+                    if not userfmt and (details['protocol'][:4] != 'smtp'
+                                        or login_errors_total == 0):
+                        continue
+
+                    server_info = copy.copy(details)
+                    server_info['username'] = userfmt % user_info
+                    if userfmt:
+                        server_info['password'] = self.password
+                    if starttls:
+                        if server_info['protocol'] == 'smtp':
+                            server_info['protocol'] += 'tls'
+                        else:
+                            server_info['protocol'] += '_tls'
+                        pmsg = _('Testing %(protocol)4.4s '
+                                 'on %(host)s:%(port)s '
+                                 'with STARTTLS as %(username)s')
+                    else:
+                        pmsg = _('Testing %(protocol)4.4s '
+                                 'on %(host)s:%(port)s '
+                                 'as %(username)s')
+                    if not crypto:
+                        pmsg += ' (' + _('insecure') + ')'
+
+                    # FIXME: Unsupported protocol...
+                    if server_info['protocol'] == 'pop3_tls':
+                        continue
+
+                    self._progress(pmsg % server_info)
+                    lok, pok = self._test_login_and_proto(email, server_info)
+                    if lok and pok:
+                        self._log_result(_('Success'))
+                        details.update(server_info)
+                        if not userfmt:
+                            route_open_relay = True
+                        break
+                    elif pok:
+                        self._log_result(_('Protocol is OK'))
+                        details['protocol'] = server_info['protocol']
+                    if not lok:
+                        self._log_result(_('Login failed'))
+                        login_errors += 1
+            if login_errors:
+                # Sort the results; prefer the ones with a successful login
+                order = list(range(0, len(servers)))
+                order.sort(key=lambda i: (
+                    0 if servers[i].get('username') else 1,
+                    0 if servers[i]['protocol'][-3:] in ('ssl', 'tls') else 1,
+                    0 if 'imap' in servers[i]['protocol'] else 1,
+                    i))
+                servers[:] = [servers[i] for i in order]
+                login_errors_total += login_errors
+        return login_errors_total
 
     def setup_command(self, session):
         results = {}
@@ -709,7 +858,13 @@ class SetupGetEmailSettings(TestableWebbable):
             if settings:
                 results[email] = settings
                 if self.password and self.deadline > time.time():
-                    self._probe_account_settings(results)
+                    errors = self._probe_account_settings(email, results)
+                    if errors:
+                        for k in ('routes', 'sources'):
+                            if (settings.get(k) and
+                                    not settings[k][0].get('username')):
+                                results['login_failed'] = True
+
             if time.time() >= self.deadline:
                 break
         if results:

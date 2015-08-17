@@ -492,6 +492,107 @@ class SharedImapMailbox(Mailbox):
         pass
 
 
+def _connect_imap(session, settings, event,
+                  conn_cls=None, timeout=30, throw=False, logged_in_cb=None):
+
+    def timed(*args, **kwargs):
+        return RunTimed(timeout, *args, **kwargs)
+
+    def timed_imap(*args, **kwargs):
+        return _parse_imap(RunTimed(timeout, *args, **kwargs))
+
+    conn = None
+    try:
+        # Prepare the data section of our event, for keeping state.
+        for d in ('mailbox_state',):
+            if d not in event.data:
+                event.data[d] = {}
+        ev = event.data['connection'] = {
+            'live': False,
+            'error': [False, _('Nothing is wrong')]
+        }
+
+        # If we are given a conn class, use that - this allows mocks for
+        # testing.
+        if not conn_cls:
+            req_stls = (settings.get('protocol') == 'imap_tls')
+            want_ssl = (settings.get('protocol') == 'imap_ssl')
+            conn_cls = IMAP4_SSL if want_ssl else IMAP4
+        else:
+            req_stls = want_ssl = False
+
+        def mkconn():
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_IMAP]):
+                return conn_cls(settings.get('host'),
+                                int(settings.get('port')))
+        conn = timed(mkconn)
+        conn.debug = ('imaplib' in session.config.sys.debug) and 4 or 0
+
+        ok, data = timed_imap(conn.capability)
+        if ok:
+            capabilities = set(' '.join(data).upper().split())
+        else:
+            capabilities = set()
+
+        if req_stls or ('STARTTLS' in capabilities and not want_ssl):
+            try:
+                ok, data = timed_imap(conn.starttls)
+                if ok:
+                    # Fetch capabilities again after STARTTLS
+                    ok, data = timed_imap(conn.capability)
+                    capabilities = set(' '.join(data).upper().split())
+            except (IMAP4.error, IOError, socket.error):
+                ok = False
+            if not ok:
+                ev['error'] = ['protocol', _('Failed to STARTTLS')]
+                if throw:
+                    raise throw(ev['error'][1])
+                return WithaBool(False)
+
+        try:
+            username = settings.get('username', '').encode('utf-8')
+            password = settings.get('password', '').encode('utf-8')
+            ok, data = timed_imap(conn.login, username, password)
+        except (IMAP4.error, UnicodeDecodeError):
+            ok = False
+        if not ok:
+            ev['error'] = ['auth', _('Invalid username or password')]
+            if throw:
+                raise throw(ev['error'][1])
+            return WithaBool(False)
+
+        if logged_in_cb is not None:
+            logged_in_cb(conn, ev, capabilities)
+
+        return conn
+
+    except TimedOut:
+        if 'imap' in session.config.sys.debug:
+            session.ui.debug(traceback.format_exc())
+        ev['error'] = ['timeout', _('Connection timed out')]
+    except (IMAP_IOError, IMAP4.error):
+        if 'imap' in session.config.sys.debug:
+            session.ui.debug(traceback.format_exc())
+        ev['error'] = ['protocol', _('An IMAP protocol error occurred')]
+    except (IOError, AttributeError, socket.error):
+        if 'imap' in session.config.sys.debug:
+            session.ui.debug(traceback.format_exc())
+        ev['error'] = ['network', _('A network error occurred')]
+
+    try:
+        if conn:
+            # Close the socket directly, in the hopes this will boot
+            # any timed-out operations out of a hung state.
+            conn.socket().shutdown(socket.SHUT_RDWR)
+            conn.file.close()
+    except (AttributeError, IOError, socket.error):
+        pass
+    if throw:
+        raise throw(ev['error'])
+
+    return None
+
+
 class ImapMailSource(BaseMailSource):
     """
     This is a mail source that connects to an IMAP server.
@@ -502,8 +603,8 @@ class ImapMailSource(BaseMailSource):
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.imap.ImapMailSource'
 
-    TIMEOUT_INITIAL = 15
-    TIMEOUT_LIVE = 60
+    TIMEOUT_INITIAL = 60
+    TIMEOUT_LIVE = 120
     CONN_ERRORS = (IOError, IMAP_IOError, IMAP4.error, TimedOut)
 
 
@@ -634,75 +735,15 @@ class ImapMailSource(BaseMailSource):
                     self.conn = None
             conn.quit()
 
+        my_config = self.my_config
+
         # This facilitates testing, event should already exist in real life.
         if self.event:
             event = self.event
         else:
             event = Event(source=self, flags=Event.RUNNING, data={})
 
-        # Prepare the data section of our event, for keeping state.
-        for d in ('mailbox_state',):
-            if d not in event.data:
-                event.data[d] = {}
-        ev = event.data['connection'] = {
-            'live': False,
-            'error': [False, _('Nothing is wrong')]
-        }
-
-        conn = None
-        my_config = self.my_config
-        mailboxes = my_config.mailbox.values()
-
-        # If we are given a conn class, use that - this allows mocks for
-        # testing.
-        if not conn_cls:
-            req_stls = (my_config.protocol == 'imap_tls')
-            want_ssl = (my_config.protocol == 'imap_ssl')
-            conn_cls = IMAP4_SSL if want_ssl else IMAP4
-        else:
-            req_stls = want_ssl = False
-
-        try:
-            def mkconn():
-                with ConnBroker.context(need=[ConnBroker.OUTGOING_IMAP]):
-                    return conn_cls(my_config.host, my_config.port)
-            conn = self.timed(mkconn)
-            conn.debug = ('imaplib' in self.session.config.sys.debug
-                          ) and 4 or 0
-
-            ok, data = self.timed_imap(conn.capability)
-            if ok:
-                capabilities = set(' '.join(data).upper().split())
-            else:
-                capabilities = set()
-
-            if req_stls or ('STARTTLS' in capabilities and not want_ssl):
-                try:
-                    ok, data = self.timed_imap(conn.starttls)
-                    if ok:
-                        # Fetch capabilities again after STARTTLS
-                        ok, data = self.timed_imap(conn.capability)
-                        capabilities = set(' '.join(data).upper().split())
-                except (IMAP4.error, IOError, socket.error):
-                    ok = False
-                if not ok:
-                    ev['error'] = ['protocol', _('Failed to STARTTLS')]
-                    if throw:
-                        raise throw(ev['error'][1])
-                    return WithaBool(False)
-
-            try:
-                username = my_config.get('username', '').encode('utf-8')
-                password = my_config.get('password', '').encode('utf-8')
-                ok, data = self.timed_imap(conn.login, username, password)
-            except (IMAP4.error, UnicodeDecodeError):
-                ok = False
-            if not ok:
-                ev['error'] = ['auth', _('Invalid username or password')]
-                if throw:
-                    raise throw(ev['error'][1])
-                return WithaBool(False)
-
+        def logged_in_cb(conn, ev, capabilities):
             with self._lock:
                 if self.conn is not None:
                     raise IOError('Woah, we lost a race.')
@@ -735,32 +776,16 @@ class ImapMailSource(BaseMailSource):
 
             self.conn_id = conn_id
             ev['live'] = True
+
+        conn = _connect_imap(self.session, self.my_config, event,
+                             conn_cls=conn_cls,
+                             timeout=self.timeout,
+                             throw=throw,
+                             logged_in_cb=logged_in_cb)
+        if conn:
             return self.conn
-
-        except TimedOut:
-            if 'imap' in self.session.config.sys.debug:
-                self.session.ui.debug(traceback.format_exc())
-            ev['error'] = ['timeout', _('Connection timed out')]
-        except (IMAP_IOError, IMAP4.error):
-            if 'imap' in self.session.config.sys.debug:
-                self.session.ui.debug(traceback.format_exc())
-            ev['error'] = ['protocol', _('An IMAP protocol error occurred')]
-        except (IOError, AttributeError, socket.error):
-            if 'imap' in self.session.config.sys.debug:
-                self.session.ui.debug(traceback.format_exc())
-            ev['error'] = ['network', _('A network error occurred')]
-
-        try:
-            if conn:
-                # Close the socket directly, in the hopes this will boot
-                # any timed-out operations out of a hung state.
-                conn.socket().shutdown(socket.SHUT_RDWR)
-                conn.file.close()
-        except (AttributeError, IOError, socket.error):
-            pass
-        if throw:
-            raise throw(ev['error'])
-        return WithaBool(False)
+        else:
+            return WithaBool(False)
 
     def _idle_callback(self, data):
         pass
@@ -889,6 +914,19 @@ class ImapMailSource(BaseMailSource):
         if self.conn:
             self.conn.quit()
         return BaseMailSource.quit(self, *args, **kwargs)
+
+
+def TestImapSettings(session, settings, event,
+                     timeout=ImapMailSource.TIMEOUT_INITIAL):
+    conn = _connect_imap(session, settings, event, timeout=timeout)
+    if conn:
+        try:
+            conn.socket().shutdown(socket.SHUT_RDWR)
+            conn.file.close()
+        except (IOError, OSError, socket.error):
+            pass
+        return True
+    return False
 
 
 ##[ Test code follows ]#######################################################

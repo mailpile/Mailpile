@@ -51,6 +51,7 @@
         next: function(show) {
           $(pf + 'div.section').slideUp();
           $(pf + 'div.' + show).slideDown();
+          $(pf + '.fpa-login-failed').hide();
           $(pf + '.fpa-detection-failed').hide();
           // Any navigation disables the auto-detection
           $(pf + '.fpa-autoconfig').prop('checked', false);
@@ -154,7 +155,8 @@
             });
             Mailpile.API.setup_email_servers_get({
               'track-id': new_src_id,
-              'timeout': 10,
+              'timeout': 120,
+              'password': $(pf + '.fpa-basic-password').val(),
               'email': email
             }, function(data) {
               EventLog.unsubscribe(ev_source, watch_id);
@@ -164,7 +166,12 @@
               var nxt = undefined;
               var result = data.result[email];
               if (result) nxt = _fpa.copy_email_settings(result);
-              if (nxt) {
+              if (data.result['login_failed']) {
+                _fpa.next('profile-add-basics');
+                $(pf + '.fpa-autoconfig').prop('checked', true);
+                $(pf + '.fpa-login-failed').slideDown();
+              }
+              else if (nxt) {
                 _fpa.next(nxt);
               }
               else {
@@ -314,6 +321,10 @@
     <div class="fpa-network-settings">
       <p class="message paragraph-alert fpa-detection-failed hide">
         <span class="icon-robot"></span> <b>{{_("Failed to detect settings, manual configuration required")}}!</b>
+        <span class="description" href=""></span>
+      </p>
+      <p class="message paragraph-alert fpa-login-failed hide">
+        <span class="icon-robot"></span> <b>{{_("Failed to log in, check the username and password")}}!</b>
         <span class="description" href=""></span>
       </p>
       <p class="message paragraph-important"
