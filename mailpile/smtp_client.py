@@ -240,7 +240,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     with ConnBroker.context(need=conn_needs) as ctx:
                         server.connect(host, int(port))
                         server.ehlo_or_helo_if_needed()
-                except (IOError, OSError):
+                except (IOError, OSError, smtplib.SMTPServerDisconnected):
                     fail(_('Failed to connect to %s') % host, events,
                          details={'connection_error': True})
 
@@ -271,6 +271,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                              details={'authentication_error': True})
                     except smtplib.SMTPAuthenticationError:
                         fail(_('Invalid username or password'), events,
+                             details={'authentication_error': True})
+                    except smtplib.SMTPException:
+                        fail(_('Authentication not supported'), events,
                              details={'authentication_error': True})
 
                 smtp_do_or_die(_('Sender rejected by SMTP server'),

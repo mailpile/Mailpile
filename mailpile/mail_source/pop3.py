@@ -8,6 +8,25 @@ from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
 
+def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
+    cev = event.data['connection'] = {
+        'live': False,
+        'error': [False, _('Nothing is wrong')]
+    }
+    try:
+        return pop3.MailpileMailbox(host,
+                                    port=port,
+                                    user=username,
+                                    password=password,
+                                    use_ssl=protocol,
+                                    debug=debug)
+    except AccessError:
+        cev['error'] = ['auth', _('Invalid username or password')]
+    except (IOError, OSError):
+        cev['error'] = ['network', _('A network error occurred')]
+    return None
+
+
 class Pop3MailSource(BaseMailSource):
     """
     This is a mail source that watches over one or more POP3 mailboxes.
@@ -71,22 +90,11 @@ class Pop3MailSource(BaseMailSource):
     def open_mailbox(self, mbx_id, mfn):
         my_cfg = self.my_config
         if mfn.startswith('src:') and FormatMbxId(mbx_id) in my_cfg.mailbox:
-            cev = self.event.data['connection'] = {
-                'live': False,
-                'error': [False, _('Nothing is wrong')]
-            }
-            try:
-                debug = ('pop3' in self.session.config.sys.debug) and 99 or 0
-                return pop3.MailpileMailbox(my_cfg.host,
-                                            port=my_cfg.port,
-                                            user=my_cfg.username,
-                                            password=my_cfg.password,
-                                            use_ssl='ssl' in my_cfg.protocol,
-                                            debug=debug)
-            except AccessError:
-                cev['error'] = ['auth', _('Invalid username or password')]
-            except (IOError, OSError):
-                cev['error'] = ['network', _('A network error occurred')]
+            debug = ('pop3' in self.session.config.sys.debug) and 99 or 0
+            return _open_pop3_mailbox(self.event,
+                                      my_cfg.host, my_cfg.port,
+                                      my_cfg.username, my_cfg.password,
+                                      my_cfg.protocol, debug)
         return None
 
     def discover_mailboxes(self, paths=None):
@@ -100,3 +108,17 @@ class Pop3MailSource(BaseMailSource):
 
     def is_mailbox(self, fn):
         return False
+
+
+def TestPop3Settings(session, settings, event):
+    conn = _open_pop3_mailbox(event,
+                              settings['host'],
+                              int(settings['port']),
+                              settings['username'],
+                              settings['password'],
+                              'ssl' in settings['protocol'],
+                              False)
+    if conn:
+        conn.close()
+        return True
+    return False
