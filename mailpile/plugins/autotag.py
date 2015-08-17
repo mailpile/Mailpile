@@ -32,7 +32,7 @@ _plugins.register_config_section(
         'exclude_tags': ['Tags on messages we should never match (ham)',
                          str, []],
         'ignore_kws': ['Ignore messages with these keywords', str, []],
-        'corpus_size': ['How many messages do we train on?', int, 1000],
+        'corpus_size': ['How many messages do we train on?', int, 1200],
         'threshold': ['Size of the sure/unsure ranges', float, 0.1],
         'tagger': ['Internal class name or |shell command', str, ''],
         'trainer': ['Internal class name or |shell commant', str, ''],
@@ -212,12 +212,14 @@ class Retrain(AutoTagCommand):
                 # while we still lack training data, add to the training set.
                 for ttype in interesting:
                     for tset, mset, srch, which in yn:
-                        # FIXME: Is this a good idea? No single data source
-                        # is allowed to be more than 50% of the corpus, to
-                        # try and encourage diversity.
-                        want = min(at_config.corpus_size / 4,
-                                   max(0,
-                                       at_config.corpus_size / 2 - len(tset)))
+                        # False positives are really annoying, and generally
+                        # speaking any autotagged subset should be a small
+                        # part of the Universe. So we divide the corpus
+                        # budget 33% True, 67% False.
+                        full_size = int(at_config.corpus_size *
+                                        (0.33 if which else 0.67))
+                        want = min(full_size // 4,
+                                   max(0, full_size - len(tset)))
                         if want:
                             if ttype:
                                 adding = sorted(list(mset & interest[ttype]))
@@ -232,7 +234,9 @@ class Retrain(AutoTagCommand):
                 atagger.reset(at_config)
                 for tset, mset, srch, which in yn:
                     count = 0
-                    for msg_idx in tset:
+                    # We go through the liste of message in order, to avoid
+                    # thrashing caches too badly.
+                    for msg_idx in sorted(list(tset)):
                         try:
                             e = Email(idx, msg_idx)
                             count += 1
