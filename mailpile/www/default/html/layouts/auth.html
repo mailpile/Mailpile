@@ -9,14 +9,6 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-  {% block content %}{{results}}{% endblock %}
-{% if state.command_url in ("{{ config.sys.http_path }}/setup/") %}
-<script>
-$(document).ready(function() {
-  Mailpile.instance = {};
-  SetupApp.init();
-});
-</script>
-{% endif %}
+  {%- block content %}{{results}}{% endblock %}
 </body>
 </html>
