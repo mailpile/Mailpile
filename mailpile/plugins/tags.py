@@ -508,6 +508,7 @@ class ListTags(TagCommand):
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
     COMMAND_CACHE_TTL = 3600
+    LOG_NOTHING = True  # Avoid gunking up the event log with Boring Stuff
 
     def cache_requirements(self, result):
         if result:
