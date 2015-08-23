@@ -25,7 +25,12 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
         not_id = $existing.attr('id').substring(6);
         Mailpile.local_storage['canceled-' + not_id] = new Date().getTime();
       }
-      $existing.remove();
+      $existing.slideUp('normal', function() {
+        $(this).remove();
+        if ($('.notification-bubble').length < 1) {
+          $('.notifications-close-all span').hide();
+        }
+      });
     }
   }
   return undefined;
@@ -108,20 +113,16 @@ Mailpile.notification = function(result) {
   }
   else {
       var bubbles = $('#notification-bubbles');
-      if (bubbles.children().length < 5) {
-          bubbles.prepend(notification_template(result));
+      if (bubbles.children().length < 15) {
+          bubbles.prepend($(notification_template(result)).slideDown('normal'));
+          $('.notifications-close-all span').show();
       }
   }
-  setTimeout(function() {
-    $('#event-' + result.event_id).fadeIn('fast');
-  }, 250);
 
   // If Not Nagify, default
   if (result.complete === 'hide' && result.type !== 'nagify') {
     var to_id = setTimeout(function() {
-      $('#event-' + result.event_id).fadeOut('normal', function() {
-        $(this).remove();
-      });
+      Mailpile.cancel_notification(result.event_id);
     }, result.timeout);
     $('#event-' + result.event_id).data('timeout_id', to_id);
   }
@@ -133,6 +134,13 @@ Mailpile.notification = function(result) {
 
   return result['event_id'];
 };
+
+
+/* Notification - Close all */
+$(document).on('click', '.notifications-close-all', function() {
+  $('.notification-close').click();
+});
+
 
 
 /* Notification - Close */

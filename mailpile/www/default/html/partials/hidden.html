@@ -12,60 +12,6 @@
 </script>
 
 
-<!-- Notifications -->
-<script id="template-notifications" type="text/template">
-  <div id="notifications" class="hide">
-    <div class="notifications-header">
-      {{_("Notifications") }}
-    </div>
-    <div class="notifications-window">
-    <ul>
-      <li class="notification">
-        <a href="#">
-          <img src="{{ U('/static/img/avatar-default.png') }}">
-          <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <span class="icon-tag"></span> The <strong> Mailpile</strong> tag was applied to <strong>400 messages</strong>
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <img src="{{ U('/static/img/avatar-default.png') }}">
-          <strong>You</strong> sent <strong>5 tormail</strong> to various people
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <span class="icon-inbox"></span> <strong>16 new messages</strong> have been downloaded to <strong>Inbox</strong>
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <span class="icon-groups"></span> <strong>You</strong> added 5 people to group <strong>Group</strong>
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <span class="icon-inbox"></span> <strong>3 new messages</strong> have been downloaded to <strong>Bills & Banking</strong>
-        </a>
-      </li>
-      <li class="notification">
-        <a href="#">
-          <span class="icon-tag"></span> The <strong>Friends</strong> tag was applied to <strong>51 messages</strong>
-        </a>
-      </li>
-    </ul>
-    </div>
-    <div class="notifications-bottom">
-      <a href="{{ U('/eventlog/') }}">{{_("All Notifications")}}</a>
-    </div>
-  </div>
-</script>
-
-
 <!-- Search Param Editor -->
 <script id="template-search-params" type="text/template">
   <div id="search-params" class="clearfix hide">
@@ -299,7 +245,7 @@
       <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo">{{_("undo")}}</a></span>
       <% } %>
     </span>
-    <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-circle-x"></span></a>
+    <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-x"></span></a>
   </div>
 </script>
 
