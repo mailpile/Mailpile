@@ -24,6 +24,10 @@ var refresh_timer;
 var refresh_interval = (5 * 1000) + (Math.random() * 2000);
 
 
+outerHTML = function(elem) {
+  return $('<div />').append(elem.clone()).html();
+};
+
 get_now = function() {
     if (Date.now) return Date.now();
     return new Date().getTime()
@@ -62,18 +66,28 @@ prepare_new_content = function(selector) {
     });
 };
 
+restore_state = function(ev) {
+    if (ev.state && ev.state.autoajax) {
+        $('#content-view').parent().replaceWith(ev.state.html).show();
+        clear_selection_state();
+        prepare_new_content($('#content-view').parent());
+        Mailpile.render();
+    }
+};
+
 update_using_jhtml = function(original_url) {
     for (i in ajaxable_commands) {
         if (Mailpile.instance['command'] == ajaxable_commands[i]) {
             var cv = $('#content-view').parent();
+            history.replaceState({autoajax: true, html: outerHTML(cv)},
+                                 document.title);
             cv.hide();
             return $.ajax({
                 url: Mailpile.API.jhtml_url(original_url, 'content'),
                 type: 'GET',
                 success: function(data) {
-                    // FIXME: The back button is still broken
-                    history.pushState(null, data['message'], original_url);
-
+                    history.pushState({autoajax: true, html: data['result']},
+                                      data['message'], original_url);
                     cv.replaceWith(data['result']).show();
                     clear_selection_state();
                     prepare_new_content($('#content-view').parent());
@@ -119,6 +133,9 @@ $(document).ready(function(){
     if (Mailpile && Mailpile.instance) {
         prepare_new_content('body');
     }
+
+    // Set up our onpopstate handler
+    window.onpopstate = restore_state;
 
     // Figure out which elements on the page exist in cache, initialized
     // our refresh_history timers to match...
