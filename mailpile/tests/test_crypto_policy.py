@@ -41,7 +41,7 @@ class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_vcard_has_to_exist(self):
         res = self.mp.crypto_policy_set('test@test.local', 'sign').as_dict()
         self.assertEqual('error', res['status'])
-        self.assertEqual('No vcard for email test@test.local!', res['message'])
+        self.assertEqual('No vCard for email test@test.local!', res['message'])
 
     def test_vcard_is_updated(self):
         vcard = self._add_vcard('Test', 'test@test.local')
