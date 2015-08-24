@@ -1017,7 +1017,7 @@ class UnThread(CompositionCommand):
             for email in emails:
                 idx.unthread_message(email.msg_mid())
             return self._return_search_results(
-                _('Unthreaded %d messaages') % len(emails), emails)
+                _('Unthreaded %d messages') % len(emails), emails)
         else:
             return self._error(_('Nothing to do!'))
 
