@@ -277,14 +277,14 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Invalid"),
-            _("Parts of this message has a signature that are invalid"
+            _("Parts of this message have a signature that is invalid"
               " or bad")],
         "revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Revoked"),
-            _("Watch out, the signature was made with a key that has been"
-              "revoked- this is not a good thing")],
+            _("Watch out, the signature was made with a key that has been "
+              "revoked - this is not a good thing")],
         "mixed-revoked": [
             "crypto-color-red",
             "icon-signature-revoked",

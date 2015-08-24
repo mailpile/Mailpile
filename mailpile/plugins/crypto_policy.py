@@ -48,7 +48,7 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
                                    ) % (email, policy),
                                  result={'email': email, 'policy:': policy})
         else:
-            return self._error(_('No vcard for email %s!') % email)
+            return self._error(_('No vCard for email %s!') % email)
 
     def _parse_args(self):
         if self.data:

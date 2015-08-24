@@ -582,7 +582,7 @@ class ContactImport(Command):
 
         if not all([x in kwargs.keys() for x in importer.required_parameters]):
             session.ui.error(
-                _("Required paramter missing. Required parameters "
+                _("Required parameter missing. Required parameters "
                   "are: %s") % ", ".join(importer.required_parameters))
             return False
 

@@ -242,7 +242,7 @@ class PGPKeysAsVCards(Command):
             public=public,
             secret=secret)
 
-        return self._success(_('Extracted %d VCards from GPG keychain'
+        return self._success(_('Extracted %d vCards from GPG keychain'
                                ) % len(vcards), vcards)
 
 
@@ -276,7 +276,7 @@ class PGPKeysImportAsVCards(Command):
             imported += gimp.import_vcards(session, config.vcards,
                                            selectors=selectors)
 
-        return self._success(_('Imported %d VCards from GPG keychain'
+        return self._success(_('Imported %d vCards from GPG keychain'
                                ) % imported, {'vcards': imported})
 
 

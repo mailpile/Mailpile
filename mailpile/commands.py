@@ -1146,7 +1146,7 @@ class Load(Command):
                          quiet=quiet):
                 return self._success(_('Loaded metadata index'))
             else:
-                return self._error(_('Failed to loaded metadata index'))
+                return self._error(_('Failed to load metadata index'))
         except IOError:
             return self._error(_('Failed to decrypt configuration, '
                                  'please log in!'))
@@ -1179,7 +1179,7 @@ class Rescan(Command):
             self._run_rescan_command(session)
 
         if args and args[0].lower().startswith('vcards'):
-            return self._success(_('Rescanned vcards'),
+            return self._success(_('Rescanned vCards'),
                                  result=self._rescan_vcards(session, args[0]))
         elif args and (args[0].lower() in ('both', 'mailboxes', 'sources',
                                            'editable') or
@@ -1232,7 +1232,7 @@ class Rescan(Command):
                 self.session.config.event_log.log_event(self.event)
                 if 'aborted' in results:
                     raise KeyboardInterrupt()
-                return self._success(_('Rescanned vcards and mailboxes'),
+                return self._success(_('Rescanned vCards and mailboxes'),
                                      result=results)
             except (KeyboardInterrupt), e:
                 return self._error(_('User aborted'), info=results)
@@ -1503,7 +1503,7 @@ class RunWWW(Command):
                 return self._success(_('Started the web server on %s'
                                        ) % http_url)
         else:
-            return self._error(_('Failed to started the web server'))
+            return self._error(_('Failed to start the web server'))
 
 
 class WritePID(Command):

@@ -284,7 +284,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                             msg.startswith(SMTORP_HASHCASH_PREFIX)):
                         rc, msg = server.rcpt(SMTorP_HashCash(rcpt, msg))
                     if rc != 250:
-                        fail(_('Server rejected recpient: %s') % rcpt, events)
+                        fail(_('Server rejected recipient: %s') % rcpt, events)
                 rcode, rmsg = server.docmd('DATA')
                 if rcode != 354:
                     fail(_('Server rejected DATA: %s %s') % (rcode, rmsg))

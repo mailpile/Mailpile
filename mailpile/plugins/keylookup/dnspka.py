@@ -30,7 +30,7 @@ class DNSPKALookupHandler(LookupHandler):
         self.req = DNS.Request(qtype="TXT")
 
     def _score(self, key):
-        return (9, _('Found key in DNSPKA'))
+        return (9, _('Found key in DNS PKA'))
 
     def _lookup(self, address, strict_email_match=True):
         """

@@ -6,7 +6,8 @@
     "config": {},
     "code": {
         "python": ["forcegrapher.py"],
-        "javascript": ["forcegrapher.js", "d3.js"]
+        "javascript": ["forcegrapher.js", "d3.js"],
+        "css": ["forcegrapher.css"]
     },
     "routes": {
         "/graph/": {"file": "forcegrapher.html", "api": 0}
@@ -18,7 +19,7 @@
                 "name": "graph",
                 "text": "Graph",
                 "description": "Show contact relationships",
-                "icon": "graph",
+                "icon": "force-graph",
                 "url": "/graph/"
             }
         ]
