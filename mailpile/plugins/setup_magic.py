@@ -262,9 +262,9 @@ class SetupMagic(Command):
             import mailpile.plugins.autotag_sb
             if 'autotag_sb' not in session.config.sys.plugins:
                 session.config.sys.plugins.append('autotag_sb')
-                session.ui.notify(_('Enabling spambayes autotagger'))
+                session.ui.notify(_('Enabling SpamBayes autotagger'))
         except ImportError:
-            session.ui.warning(_('Please install spambayes '
+            session.ui.warning(_('Please install SpamBayes '
                                  'for super awesome spam filtering'))
 
         vcard_importers = session.config.prefs.vcard.importers
