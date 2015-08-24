@@ -277,7 +277,7 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Invalid"),
-            _("Parts of this message has a signature that are invalid"
+            _("Parts of this message have a signature that is invalid"
               " or bad")],
         "revoked": [
             "crypto-color-red",
