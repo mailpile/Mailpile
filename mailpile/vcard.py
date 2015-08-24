@@ -1495,7 +1495,7 @@ class VCardImporter(VCardPluginClass):
         if 'profiles' in kwargs:
             del kwargs['profiles']
 
-        session.ui.mark(_('Generating new VCards'))
+        session.ui.mark(_('Generating new vCards'))
         all_vcards = self.get_vcards(**kwargs)
         all_vcards.sort(key=lambda k: (k.email, k.random_uid))
         counter = len(all_vcards)
@@ -1532,7 +1532,7 @@ class VCardImporter(VCardPluginClass):
                         updated[card.random_uid] = card
                     vcard_store.index_vcard(card)
                 except ValueError:
-                    session.ui.error(_('Failed to merge VCard %s into %s'
+                    session.ui.error(_('Failed to merge vCard %s into %s'
                                        ) % (vcard.email, card.random_uid))
 
             # Otherwise, create new ones.
@@ -1550,7 +1550,7 @@ class VCardImporter(VCardPluginClass):
                     updated[new_vcard.random_uid] = new_vcard
                     counter += 1
                 except ValueError:
-                    session.ui.error(_('Failed to create new VCard for %s'
+                    session.ui.error(_('Failed to create new vCard for %s'
                                        ) % (vcard.email, card.random_uid))
 
             if counter > 100:

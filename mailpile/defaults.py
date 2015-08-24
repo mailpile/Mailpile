@@ -56,7 +56,7 @@ CONFIG_RULES = {
         'path':           [_('Locations of assorted data'), False, {
             'html_theme': [_('Default theme'),
                            'dir', os.path.join('mailpile', 'www', 'default')],
-            'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
+            'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
         'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
@@ -105,10 +105,10 @@ CONFIG_RULES = {
         'always_bcc_self': (_('Always BCC self on outgoing mail'), bool, True),
         'default_messageroute': (_('Default outgoing mail route'), str,    ''),
         'language':       p(_('User interface language'), str,             ''),
-        'vcard':           [_("VCard import/export settings"), False, {
-            'importers':   [_("VCard import settings"), False,             {}],
-            'exporters':   [_("VCard export settings"), False,             {}],
-            'context':     [_("VCard context helper settings"), False,     {}],
+        'vcard':           [_("vCard import/export settings"), False, {
+            'importers':   [_("vCard import settings"), False,             {}],
+            'exporters':   [_("vCard export settings"), False,             {}],
+            'context':     [_("vCard context helper settings"), False,     {}],
         }],
     }),
     'web': (_("Web Interface Preferences"), False, {
