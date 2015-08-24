@@ -9,7 +9,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Please be patient, we are copying mail as fast as possible")}}',
       '{{_("Wow, you have a lot of mail")}}',
       '{{_("I hope you dont have a plane to catch or anything")}}',
-      '{{_("Copying mail. Put your arms above your head and whistle la cucaracha")}}',
+      '{{_("Copying mail. Put your arms above your head and whistle La Cucaracha")}}',
       '{{_("Making a copy of your mail. Putting it in your inbox, all comfy like")}}'
     ],
     nerds: [
