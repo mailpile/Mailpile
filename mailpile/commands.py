@@ -1146,7 +1146,7 @@ class Load(Command):
                          quiet=quiet):
                 return self._success(_('Loaded metadata index'))
             else:
-                return self._error(_('Failed to loaded metadata index'))
+                return self._error(_('Failed to load metadata index'))
         except IOError:
             return self._error(_('Failed to decrypt configuration, '
                                  'please log in!'))
@@ -1503,7 +1503,7 @@ class RunWWW(Command):
                 return self._success(_('Started the web server on %s'
                                        ) % http_url)
         else:
-            return self._error(_('Failed to started the web server'))
+            return self._error(_('Failed to start the web server'))
 
 
 class WritePID(Command):

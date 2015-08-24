@@ -140,7 +140,7 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-red');
     $('#compose-crypto-signature-' + mid).attr('title', '{{_("Verification Error")|escapejs}}');
     $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Error accesing your encryption key")|escapejs}}');
+    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Error accessing your encryption key")|escapejs}}');
     $('#compose-crypto-signature-' + mid).removeClass('none').addClass('error bounce');
   }
 
