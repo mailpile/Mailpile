@@ -67,7 +67,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Encryption ensures that your emails are only read by the intended recipient")}}',
       '{{_("Unencrypted email is more like sending a postcard than sending a letter")}}',
       '{{_("Mailpile uses OpenPGP to encrypt and decrypt your messages securely")}}',
-      '{{_("All of your config settings & passwords are encrypted with AES 256")}}',
+      '{{_("All of your config settings & passwords are encrypted with AES-256")}}',
       '{{_("Encrypting emails means your communication actually stays private")}}',
       '{{_("The more encrypted email you send, the better!")}}',
       '{{_("Make sure you print or save your keys & passphrase somewhere secure")}}',
