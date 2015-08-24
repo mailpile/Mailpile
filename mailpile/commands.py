@@ -1503,7 +1503,7 @@ class RunWWW(Command):
                 return self._success(_('Started the web server on %s'
                                        ) % http_url)
         else:
-            return self._error(_('Failed to started the web server'))
+            return self._error(_('Failed to start the web server'))
 
 
 class WritePID(Command):
