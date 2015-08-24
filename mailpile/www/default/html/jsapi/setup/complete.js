@@ -3,7 +3,7 @@ var CompleteModel = Backbone.Model.extend({
   defaults: {
     copying: [
       '{{_("Mail is being imported into your Mailpile")}}',
-      '{{_("Dont look now, we are copying things")}}',
+      '{{_("Don\'t look now, we are copying things")}}',
       '{{_("Copying your mail, please do not be alarmed!")}}',
       '{{_("Copying mail. This could take a while")}}',
       '{{_("Please be patient, we are copying mail as fast as possible")}}',
@@ -13,9 +13,9 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Making a copy of your mail. Putting it in your inbox, all comfy like")}}'
     ],
     nerds: [
-      '{{_("Damn kids. Theyre all alike.")}}',
+      '{{_("Damn kids. They\'re all alike.")}}',
       '{{_("RMS approves!")}}',
-      '{{_("Formating your C:\ drive... (just kidding)")}}',
+      '{{_("Formatting your C:\ drive... (just kidding)")}}',
       '{{_("Fortifying encryption shields")}}',
       '{{_("Increasing entropy & scrambling bits")}}',
       '{{_("Patching bugs...")}}',
@@ -62,7 +62,7 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("BCC-ing the NSA and GCHQ")}}',
       '{{_("Sending encrypted mail to Snowden")}}',
       '{{_("Decrypting an email from Snowden")}}',
-      '{{_("The worlds most powerful governments are conducting mass dragnet surveillance")}}',
+      '{{_("The world\'s most powerful governments are conducting mass dragnet surveillance")}}',
       '{{_("Most email can be read by anyone as it travel through the internet")}}',
       '{{_("Encryption ensures that your emails are only read by the intended recipient")}}',
       '{{_("Unencrypted email is more like sending a postcard than sending a letter")}}',
