@@ -34,7 +34,6 @@ Mailpile.pile_action_select = function(item) {
     item.removeClass('result').addClass('result-on')
         .data('state', 'selected')
         .find('td.checkbox input[type=checkbox]')
-        .val('selected')
         .prop('checked', true);
 };
 
@@ -66,7 +65,6 @@ Mailpile.pile_action_unselect = function(item) {
     item.removeClass('result-on').addClass('result')
         .data('state', 'normal')
         .find('td.checkbox input[type=checkbox]')
-        .val('normal')
         .prop('checked', false);
 };
 
@@ -187,7 +185,6 @@ Mailpile.UI.Search.Draggable = function(element) {
     	$(event.target).parent().removeClass('result').addClass('result-on')
     	.data('state', 'selected')
     	.find('td.checkbox input[type=checkbox]')
-    	.val('selected')
     	.prop('checked', true);
     },
     stop: function(event, ui) {}

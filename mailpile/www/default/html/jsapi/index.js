@@ -359,6 +359,26 @@ Mailpile.API = {
 };
 
 
+// JS App Files /=============================================================
+{% include("jsapi/global/eventlog.js") %}
+{% include("jsapi/global/activities.js") %}
+{% include("jsapi/global/global.js") %}
+{% include("jsapi/global/helpers.js") %}
+
+
+// JS - UI /==================================================================
+{% include("jsapi/ui/init.js") %}
+{% include("jsapi/ui/selection.js") %}
+{% include("jsapi/ui/content.js") %}
+{% include("jsapi/ui/events.js") %}
+{% include("jsapi/ui/global.js") %}
+{% include("jsapi/ui/topbar.js") %}
+{% include("jsapi/ui/modals.js") %}
+{% include("jsapi/ui/sidebar.js") %}
+{% include("jsapi/ui/tooltips.js") %}
+{% include("jsapi/ui/keybindings.js") %}
+
+
 // Plugin Javascript /========================================================
 {#
 ## Note: we do this in multiple commands instead of one big dict, so plugin
@@ -378,25 +398,5 @@ Mailpile.API = {
 {{ js_classname }} = {};
 {% endif %}
 {% endfor %}
-
-
-// JS App Files /=============================================================
-{% include("jsapi/global/eventlog.js") %}
-{% include("jsapi/global/activities.js") %}
-{% include("jsapi/global/global.js") %}
-{% include("jsapi/global/helpers.js") %}
-{% include("jsapi/global/keybindings.js") %}
-{% include("jsapi/global/notifications.js") %}
-
-
-// JS - UI /==================================================================
-{% include("jsapi/ui/init.js") %}
-{% include("jsapi/ui/content.js") %}
-{% include("jsapi/ui/events.js") %}
-{% include("jsapi/ui/global.js") %}
-{% include("jsapi/ui/topbar.js") %}
-{% include("jsapi/ui/modals.js") %}
-{% include("jsapi/ui/sidebar.js") %}
-{% include("jsapi/ui/tooltips.js") %}
 
 // EOF
