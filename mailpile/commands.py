@@ -2172,7 +2172,7 @@ class ConfigPrint(Command):
                                    'access_denied': access_denied
                                })
         else:
-            return self._success(_('Display settings'), result=result)
+            return self._success(_('Displayed settings'), result=result)
 
 
 class ConfigureMailboxes(Command):
