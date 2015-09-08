@@ -124,7 +124,7 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
   }
   if (status === 'sign') {
     $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-green');
-    $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will be verifiable to reicpients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
+    $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will be verifiable to recipients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
     $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
     $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Signed")|escapejs}}');
     $('#compose-crypto-signature-' + mid).removeClass('none').addClass('signed bounce');
