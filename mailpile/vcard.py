@@ -1558,7 +1558,7 @@ class VCardImporter(VCardPluginClass):
                     play_nice_with_threads()
                     counter = 0
 
-        session.ui.mark(_('Saving %d updated cards') % len(updated))
+        session.ui.mark(_('Saving %d updated vCards') % len(updated))
         for vcard in updated.values():
             vcard.save()
             if not kwargs.get('fast'):
