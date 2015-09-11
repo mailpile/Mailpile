@@ -254,6 +254,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                     # if the user asked for encryption.
                     try:
                         server.starttls()
+                        server.ehlo_or_helo_if_needed()
                     except:
                         if proto == 'smtptls':
                             raise InsecureSmtpError()
