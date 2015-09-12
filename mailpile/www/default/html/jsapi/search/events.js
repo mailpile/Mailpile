@@ -1,5 +1,5 @@
 /* Search - select item via clicking */
-$(document).on('click', '#pile-results tr.result', function(e) {
+$(document).on('click', '.pile-results tr.result', function(e) {
   if ($(e.target).attr('type') === 'checkbox') {
     $(e.target).blur();
     Mailpile.pile_action_select($(this));
@@ -13,9 +13,9 @@ $(document).on('click', '#pile-results tr.result', function(e) {
 
 
 /* Search - unselect search item via clicking */
-$(document).on('click', '#pile-results tr.result-on', function(e) {
+$(document).on('click', '.pile-results tr.result-on', function(e) {
   if ($(e.target).attr('type') === 'checkbox') {
-    $(e.target).val('').attr('checked', false).blur();
+    $(e.target).prop('checked', false).blur();
     Mailpile.pile_action_unselect($(this));
   }
   else if (e.target.href === undefined &&
@@ -31,9 +31,11 @@ $(document).on('click', '.pile-tag-delete', function(e) {
   e.preventDefault();
   var tid = $(this).data('tid');
   var mid = $(this).data('mid');
-  Mailpile.API.tag_post({ del: tid, mid: mid }, function(result) {
-    Mailpile.notification(result);
-    $('#pile-message-tag-' + tid + '-' + mid).qtip('hide').remove();
+  Mailpile.UI.Tagging.tag_and_update_ui({
+    del: tid,
+    mid: mid
+  }, 'untag', function() {
+    $('.pile-message-' + mid + ' .pile-message-tag-' + tid).qtip('hide');
   });
 });
 

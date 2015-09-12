@@ -1,108 +1,70 @@
 /* Search - Bulk Select / Unselect All */
 $(document).on('click', '#pile-select-all-action', function(e) {
-  var checkboxes = $('#pile-results input[type=checkbox]');
-  if ($(this).attr('checked') === undefined) {
-    $(this).attr('checked','checked');
-    $.each(checkboxes, function() {      
-      Mailpile.pile_action_select($(this).parent().parent());
+  var $checkbox = $(this);
+  var $results = $checkbox.closest('.selection-context')
+                          .find('.pile-results .pile-message');
+  if ($checkbox.is(':checked')) {
+    // Going from unchecked -> checked
+    $results.each(function(i, result) {
+      Mailpile.pile_action_select($(result), "partial");
     });
   }
   else {
-    $(this).removeAttr('checked');
-    Mailpile.bulk_cache_remove('messages_cache', '!all');
-    $.each(checkboxes, function() {
-      Mailpile.pile_action_unselect($(this).parent().parent());
+    // Going from checked -> unchecked
+    $checkbox.val('');
+    $results.each(function(i, result) {
+      Mailpile.pile_action_unselect($(result), "partial");
     });
   }
+  Mailpile.bulk_actions_update_ui();
+  return true;
 });
 
 
 /* Search - Bulk Action - Tag */
 $(document).on('click', '.bulk-action-tag', function() {
-  Mailpile.render_modal_tags();
+  Mailpile.render_modal_tags(this);
 });
 
 
 /* Search - Bulk Action - Archive */
 $(document).on('click', '.bulk-action-archive', function() {
-  Mailpile.API.tag_post({ del: 'inbox', mid: Mailpile.messages_cache}, function(result) {
-
-    // Notifications
-    Mailpile.notification(result);
-
-    // Update Pile View
-    $.each(Mailpile.messages_cache, function(key, mid) {
-      $('#pile-message-' + mid).fadeOut('fast');
-    });
-
-    // Empty Bulk Cache
-    Mailpile.messages_cache = [];
-
-    // Update Bulk UI
-    Mailpile.bulk_actions_update_ui();
-  });
+  Mailpile.UI.Tagging.tag_and_update_ui({
+    del: 'inbox',
+    mid: Mailpile.UI.Selection.selected(this)
+  }, 'archive');
 });
 
 
 /* Search - Bulk Action - Trash */
 $(document).on('click', '.bulk-action-trash', function(result) {
-  Mailpile.API.tag_post({ add: 'trash', del: 'new', mid: Mailpile.messages_cache}, function(result) {
-
-    // Notifications
-    Mailpile.notification(result);
-
-    // Update Pile View
-    $.each(Mailpile.messages_cache, function(key, mid) {
-      $('#pile-message-' + mid).fadeOut('fast');
-    });
-
-    // Empty Bulk Cache
-    Mailpile.messages_cache = [];
-
-    // Update Bulk UI
-    Mailpile.bulk_actions_update_ui();
-  });
+  Mailpile.UI.Tagging.tag_and_update_ui({
+    del: ['new', 'spam'],
+    add: 'trash',
+    mid: Mailpile.UI.Selection.selected(this)
+  }, 'trash');
 });
 
 
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
-
-  var tag_data = { add: 'spam', del: 'new', mid: Mailpile.messages_cache};
-
-  if ($(this).data('action') === 'remove') {
-    tag_data.add = '';
-    tag_data.del = 'spam';
-  }
-
-  Mailpile.API.tag_post(tag_data, function(result) {
-
-    // Notifications
-    Mailpile.notification(result);
-
-    // Update Pile View
-    $.each(Mailpile.messages_cache, function(key, mid) {
-      $('#pile-message-' + mid).fadeOut('fast');
-    });
-
-    // Empty Bulk Cache
-    Mailpile.messages_cache = [];
-
-    // Update Bulk UI
-    Mailpile.bulk_actions_update_ui();
-  });
+  Mailpile.UI.Tagging.tag_and_update_ui({
+    del: ['new', 'trash'],
+    add: 'spam',
+    mid: Mailpile.UI.Selection.selected(this)
+  }, 'spam');
 });
 
 
 /* Search - Bulk Action - Mark Unread */
 $(document).on('click', '.bulk-action-unread', function() {
-  Mailpile.bulk_action_unread();
+  Mailpile.bulk_action_unread(this);
 });
 
 
 /* Search - Bulk Action - Mark Read */
 $(document).on('click', '.bulk-action-read', function() {
-  Mailpile.bulk_action_read();    
+  Mailpile.bulk_action_read(this);
 });
 
 
@@ -151,12 +113,12 @@ $(document).on('submit', '#form-tag-picker', function(e) {
       _.each(result.result.msg_ids, function(mid, key) {
 
         // Select to minimize load traversing DOM
-        $item = $('#pile-message-' + mid).find('td.subject span.item-tags');
+        $item = $('.pile-message-' + mid).find('td.subject span.item-tags');
 
         // Add / Remove Tags from UI
         if (action == 'add') {
           _.each(Mailpile.tags_cache, function(tid, key) {
-            if ($('#pile-message-tag-' + tid + '-' + mid).length < 1) {
+            if ($('.pile-message-' + mid + ' .pile-message-tag-' + tid).length < 1) {
               var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
               tag['mid'] = mid;
               $item.append(tag_link_template(tag));
@@ -165,8 +127,9 @@ $(document).on('submit', '#form-tag-picker', function(e) {
         }
         else if (action === 'remove') {
           _.each(Mailpile.tags_cache, function(tid, key) {
-            if ($('#pile-message-tag-' + tid + '-' + mid).length >= 1) {
-              $('#pile-message-tag-' + tid + '-' + mid).remove();
+            var $elem = $('.pile-message-' + mid + ' .pile-message-tag-' + tid);
+            if ($elem.length >= 1) {
+              $elem.remove();
             };
           });
         }

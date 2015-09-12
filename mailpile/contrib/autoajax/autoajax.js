@@ -46,7 +46,7 @@ can_refresh = function(cid) {
     // FIXME: Should we just monitor for mouse/keyboard activity and only
     //        update if user isn't doing anything in particular?
     if (cid.indexOf('-tags') != -1) return true;
-    return (Mailpile.messages_cache.length  < 1);
+    return ($('.pile-results input[type=checkbox]:checked').length < 1);
 };
 
 prepare_new_content = function(selector) {

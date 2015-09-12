@@ -1,31 +1,18 @@
 Mailpile.keybinding_move_message = function(add_tag) {
 
   // Has Messages
-  if (this.messages_cache.length) {
+  var selection = Mailpile.UI.Selection.selected('#content');
+  if (selection.length) {
 
+    // FIXME: This should come from the DOM, not Mailpile.instance
     var delete_tags = Mailpile.instance.search_tag_ids;
     delete_tags.push('new');
 
-    // Add / Delete
-    Mailpile.API.tag_post({ add: add_tag,
-                            del: delete_tags,
-                            mid: Mailpile.messages_cache }, function(result) {
-
-      Mailpile.notification(result);
-
-      // Update Pile View
-      $.each(Mailpile.messages_cache, function(key, mid) {
-        if (mid != '!all') {
-          $('#pile-message-' + mid).fadeOut('fast');
-        }
-      });
-
-      // Empty Bulk Cache
-      Mailpile.messages_cache = [];
-
-      // Update Bulk UI
-      Mailpile.bulk_actions_update_ui();
-    });    
+    Mailpile.Tagging.tag_and_update_ui({
+      add: add_tag,
+      del: delete_tags,
+      mid: selection
+    }, 'move');
   }
   else {
     console.log('FIXME: Provide helpful / unobstrusive UI feedback that tells a user they hit a keybinding, then fades away');
@@ -50,22 +37,6 @@ Mailpile.keybinding_target =  function(direction) {
 
   this.search_target = next;
 
-  $('#pile-results tr').eq(current).removeClass('is-target result-hover').find('td.draggable');
-  $('#pile-results tr').eq(next).addClass('is-target result-hover').find('td.draggable');
-};
-
-
-/* Keybinding - FIXME: will allow holding shift key to select items in list between 
-   a previous selected point + new target OR two select items */
-Mailpile.keybinding_shift_router = function() {
-
-  if (!this.select_between) {
-    this.select_between = true;
-    console.log('Shift: make true');
-  }
-  else {
-    this.select_between = false;
-    console.log('Shift: make false');
-  }
-
+  $('.pile-results tr').eq(current).removeClass('is-target result-hover').find('td.draggable');
+  $('.pile-results tr').eq(next).addClass('is-target result-hover').find('td.draggable');
 };

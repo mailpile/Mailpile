@@ -16,8 +16,9 @@
 %}{%    set msg_url = metadata.urls.thread
 %}{%  endif
 %}
-<tr id="pile-message-{{mid}}"
-    class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}"
+<tr class="pile-message pile-message-{{mid}} result
+           {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
+           {%- if metadata.flags.replied %} replied{% endif %}"
     data-state="normal"
 {%- if metadata.body and metadata.body.list and
        ('list:' + metadata.body.list) not in state.query_args.q %}
@@ -53,17 +54,17 @@
     <span class="icon-lock-closed color-12-red"></span> 
     {% endif %}
     <span class="item-tags">
-    {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <span class="pile-message-tag color-{{tag.label_color}}" id="pile-message-tag-{{tag.tid}}-{{mid}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
+      <span class="pile-message-tag pile-message-tag-{{tag.tid}}
+                   color-{{tag.label_color}}"
+            data-tid="{{tag.tid}}" data-mid="{{mid}}">
         <span class="pile-message-tag-icon {{tag.icon}}"></span>
         <span class="pile-message-tag-name">{{tag.name}}</span>
       </span>
       {% endif %}
     {% endfor %}
-    {% endif %}
     </span>
     <a class="item-subject" title="{{metadata.body.snippet}}"
        href="{{msg_url}}">{{ nice_subject(metadata) }}</a>

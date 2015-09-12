@@ -73,10 +73,13 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
     revert: false,
     opacity: 1,
     helper: function(event) {
+      // FIXME: Helper tooltip assumes only one destination for the drag,
+      //        which may not always be true!
       var count = '';
-      if (Mailpile.messages_cache.length >= 1) {
+      var selection = Mailpile.UI.Selection.selected('#content');
+      if (selection.length >= 1) {
         count = (' {{_("to")|escapejs}} (' +
-                 Mailpile.bulk_cache_human_length("messages_cache") + ')');
+                 Mailpile.UI.Selection.human_length(selection) + ')');
       }
 
       var tag = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });
@@ -93,61 +96,28 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
     activeClass: 'sidebar-tags-draggable-hover',
     hoverClass: 'sidebar-tags-draggable-active',
     tolerance: 'pointer',
-    over: function(event, ui) {
-      var tid = $(this).find('a').data('tid');
-      setTimeout(function() {
-        //Mailpile.UI.SidebarSubtagsToggle(tid, 'open');
-      }, 500);
-    },
-    out: function(event, ui) {
-      var tid = $(this).find('a').data('tid');
-      setTimeout(function() {
-        //Mailpile.UI.SidebarSubtagsToggle(tid, 'close');
-      }, 1000);
-    },
     drop: function(event, ui) {
-  
-      var tid = $(this).find('a').data('tid');
-  
-      // Add MID to Cache
-      Mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
-  
-      // Add / Delete
+{#    // What should happen:
+      //    - The drop happens on a tag, this tells us which tag to *add*
+      //    - If the drop happens on something else... are we just untagging?
+      //    - For clarity, require a selection: starting a drag should select
+      //    - Can look at ui.draggable.parent() .closest()? to find container.
+      //    - Container should be annotated with whatever tags we are looking
+      //      at, to facilitate removal so the "move" really is a move.
+      //
+#}
+      // FIXME: This should come from the DOM, not Mailpile.instance
       if (Mailpile.instance.state.command_url == '/message/') {
         var tags_delete = ['inbox'];
       } else {
         var tags_delete = Mailpile.instance.search_tag_ids;
       }
-  
-      Mailpile.API.tag_post({ add: tid,
-                              del: tags_delete,
-                              mid: Mailpile.messages_cache}, function(result) {
-        // Show
-        Mailpile.notification(result);
-  
-        // Update Pile View
-        if (Mailpile.instance.state.command_url == '/search/') {
-          $.each(Mailpile.messages_cache, function(key, mid) {
-            if (mid != '!all') {
-              $('#pile-message-' + mid).fadeOut('fast');
-            }
-          });
 
-          // Empty Bulk Cache
-          Mailpile.messages_cache = [];
-
-          // Update Bulk UI
-          Mailpile.bulk_actions_update_ui();
-
-          // Hide Collapsible
-          Mailpile.UI.Sidebar.SubtagsToggle(tid, 'close');
-
-        } else {
-          // FIXME: this action is up for discussion
-          // Github Issue - https://github.com/pagekite/Mailpile/issues/794
-          window.location.href = '/in/inbox/';
-        }
-      });
+      Mailpile.UI.Tagging.tag_and_update_ui({
+        add: $(this).find('a').data('tid'),
+        del: tags_delete,
+        mid: Mailpile.UI.Selection.selected(ui.draggable)
+      }, 'move');
     }
   });
 };

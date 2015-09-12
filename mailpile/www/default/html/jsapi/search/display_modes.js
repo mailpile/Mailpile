@@ -3,15 +3,15 @@ Mailpile.pile_display = function(current, change) {
 
   if (change) {
     $('#sidebar').removeClass(current).addClass(change);
-    $('#pile-results').removeClass(current).addClass(change);
+    $('.pile-results').removeClass(current).addClass(change);
   } else {
     $('#sidebar').addClass(current);
-    $('#pile-results').addClass(current);
+    $('.pile-results').addClass(current);
   }
 
   setTimeout(function() {
     $('#sidebar').fadeIn('fast');
-    $('#pile-results').fadeIn('fast');
+    $('.pile-results').fadeIn('fast');
   }, 250);
 };
 

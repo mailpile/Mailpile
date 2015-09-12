@@ -33,7 +33,7 @@ $(document).on('click', '.checkbox-item-picker', function(e) {
     // Remove Cache
     mailpile.bulk_cache_remove('tags_cache', $(this).data('tid'));
 
-		$(this).data('state', 'none').removeClass('checkbox-item-picker-selected').find('input[type=checkbox]').val('none').removeAttr('checked').prop('checked', false);
+		$(this).data('state', 'none').removeClass('checkbox-item-picker-selected').find('input[type=checkbox]').val('none').prop('checked', false);
 	}
 	else if (e.target.href === undefined) {
 		console.log('Select tag: ' + $(this).data('tid') + ' ' + $(this).data('slug'));
@@ -48,7 +48,7 @@ $(document).on('click', '.checkbox-item-picker', function(e) {
 
 /* Compose - Create a new email to an address */
 $(document).on('click', 'a', function(e) {
-  if ($(this).attr('href') && $(this).attr('href').startsWith('mailto:')) {
+  if ($(this).attr('href') && ($(this).attr('href').indexOf('mailto:') == 0)) {
     e.preventDefault();
     Mailpile.activities.compose($(this).attr('href').replace('mailto:', ''));
   }

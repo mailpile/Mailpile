@@ -91,8 +91,8 @@
 {%- endif %}
   {%- if have_initial_prompt or not tools_disable_checkbox %}
   <div id="bulk-actions-message" class="left"
-       data-bulk_selected="{{_("messages selected")}}"
-       data-select_all="{{_("messages selected, click to select all matching this search")}}"
+       data-bulk_selected="{{_("conversations selected")}}"
+       data-select_all="{{_("conversations selected, click to select all matching this search")}}"
        data-unselect_all="{{_("Entire search selected, click to undo")}}"
        data-bulk_selected_none="{{ selection_initial_prompt }}">
     {{ selection_initial_prompt }}
@@ -114,7 +114,9 @@
     </li>
   {%- endfor %}{{ hard_coded_selection_actions|safe }}
   {%- if not tools_disable_checkbox %}
-    <li><input type="checkbox" id="pile-select-all-action" class="bulk-action-select-all" tabindex="-1"></li>
+    <li><input type="checkbox" id="pile-select-all-action"
+               class="bulk-action-select-all" tabindex="-1"
+               value=""></li>
   {%- endif %}
   </ul>
   {%- if selection_actions %}<script>

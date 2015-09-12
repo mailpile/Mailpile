@@ -368,7 +368,9 @@ Mailpile.API = {
 
 // JS - UI /==================================================================
 {% include("jsapi/ui/init.js") %}
+{% include("jsapi/ui/notifications.js") %}
 {% include("jsapi/ui/selection.js") %}
+{% include("jsapi/ui/tagging.js") %}
 {% include("jsapi/ui/content.js") %}
 {% include("jsapi/ui/events.js") %}
 {% include("jsapi/ui/global.js") %}
