@@ -2,9 +2,7 @@
 
   <h3>{{_("Add New Tag")}}</h3>
 
-  <form id="form-tag-add" class="standard" method="POST">
-
-    <input type="hidden" name="csrf" value="">
+  <form id="form-tag-add" class="standard" method="POST">{{ csrf_field|safe }}
 
     <label>{{_("Tag")}}</label>
     <input type="text" id="data-tag-add-tag" name="name" value="" placeholder="{{_("Friends & Family")}}">

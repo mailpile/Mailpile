@@ -55,10 +55,14 @@ EventLog.poll = function() {
 };
 
 
-EventLog.invoke_callbacks = function(result) {
-  var last_ts = result.result.ts;
-  for (event in result.result.events) {
-    var ev = result.result.events[event];
+EventLog.invoke_callbacks = function(response) {
+  // Update the API CSRF token
+  Mailpile.csrf_token = response.state.csrf_token;
+
+  // Iterate through the events, calling callbacks...
+  var last_ts = response.result.ts;
+  for (event in response.result.events) {
+    var ev = response.result.events[event];
     for (id in EventLog.eventbindings) {
       binding = EventLog.eventbindings[id][0];
       callback = EventLog.eventbindings[id][1];
@@ -68,7 +72,7 @@ EventLog.invoke_callbacks = function(result) {
         callback(ev);
       }
     }
-    last_ts = result.result.ts;
+    last_ts = response.result.ts;
   }
   return last_ts;
 };

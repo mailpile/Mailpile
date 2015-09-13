@@ -155,6 +155,9 @@ class Command(object):
                 'event_id': self.command_obj.event.event_id,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
+            csrf_token = self.session.ui.html_variables.get('csrf_token')
+            if csrf_token:
+                rv['state']['csrf_token'] = csrf_token
             if self.error_info:
                 rv['error'] = self.error_info
             for ui_key in [k for k in self.command_obj.data.keys()

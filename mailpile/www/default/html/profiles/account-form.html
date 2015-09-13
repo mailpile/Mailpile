@@ -237,8 +237,7 @@
 
   <form id="form-profile-editor" class="standard"
         method="POST" action="{{ U(state.command_url) }}"
-        style="position: relative; max-width: 60em;">
-    <input type="hidden" name="csrf" value="">
+        style="position: relative; max-width: 60em;">{{ csrf_field|safe }}
     {%- if result.rid %}
     <input type="hidden" name="rid" value="{{ result.rid }}">
     {%- endif %}

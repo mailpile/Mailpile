@@ -10,6 +10,7 @@ if (!window.console) window.console = {
 
 // Mailpile global Javascript state and configuration /========================
 Mailpile = {
+  csrf_token:         "{{ csrf_token }}",
   instance:           {},
   select_between:     false,
   search_target:      'none',
@@ -245,12 +246,17 @@ Mailpile.API = {
       });
     }
     else if (method === 'POST') {
-      if (context) {
-        if (data._serialized) {
-          data = data._serialized + '&context=' + context;
+      if (data._serialized) {
+        data = data._serialized + '&csrf=' + Mailpile.csrf_token;
+        if (context) data = data + '&context=' + context;
+      }
+      else {
+        if (context) data['context'] = context;
+        if (data['csrf']) {
+          Mailpile.csrf_token = data['csrf'];
         }
         else {
-          data['context'] = context;
+          data['csrf'] = Mailpile.csrf_token;
         }
       }
       $.ajax({

@@ -215,7 +215,10 @@ $(document).on('click', '.compose-message-trash', function() {
   $.ajax({
     url      : '/api/0/message/unthread/',
     type     : 'POST',
-    data     : { mid: mid },
+    data     : {
+      csrf: Mailpile.csrf_token,
+      mid: mid
+    },
     success  : function(response) {
       Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_trash) {
         if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/draft/') {

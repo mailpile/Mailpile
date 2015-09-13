@@ -86,7 +86,11 @@ $(document).on('click', '.message-action-forward', function() {
   $.ajax({
     url      : '{{ config.sys.http_path }}/api/0/message/forward/',
     type     : 'POST',
-    data     : { mid: mid, 'atts': true },
+    data     : {
+      csrf: Mailpile.csrf_token,
+      mid: mid,
+      atts: true
+    },
     success  : function(response) {
       if (response.status === 'success') {
         window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
@@ -131,7 +135,10 @@ $(document).on('click', '.message-action-unthread', function() {
   $.ajax({
     url      : '{{ config.sys.http_path }}/api/0/message/unthread/',
     type     : 'POST',
-    data     : { mid: mid },
+    data     : {
+      csrf: Mailpile.csrf_token,
+      mid: mid
+    },
     success  : function(response) {
       if (response.status === 'success') {
         var notification_data     = { url: Mailpile.urls.message_sent + mid + '/' };

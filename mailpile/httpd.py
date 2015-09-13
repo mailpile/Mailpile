@@ -239,15 +239,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                    cachectrl='must-revalidate, max-age=36000')
         self.wfile.write(message or '')
 
-    def csrf(self):
-        """
-        Generate a hashed token from the current timestamp
-        and the server secret to avoid CSRF attacks
-        """
-        ts = '%x' % time.time()
-        return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret,
-                                                     ts]))))
-
     def do_POST(self, method='POST'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         if path.startswith('/::XMLRPC::/'):
@@ -352,12 +343,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         else:
             name = 'Chelsea Manning'
 
+        http_session = self.http_session()
+        csrf_token = security.make_csrf_token(self, http_session)
         session.ui.html_variables = {
-            'csrf': self.csrf(),
+            'csrf_token': csrf_token,
+            'csrf_field': ('<input type="hidden" name="csrf" value="%s">'
+                           % csrf_token),
             'http_host': self.headers.get('host', 'localhost'),
             'http_hostname': self.http_host(),
             'http_method': method,
-            'http_session': self.http_session(),
+            'http_session': http_session,
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',

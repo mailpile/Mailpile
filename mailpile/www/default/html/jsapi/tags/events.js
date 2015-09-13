@@ -4,13 +4,14 @@ Mailpile.tag_add = function(tag_add, mids, complete) {
 	  url			 : Mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
+      csrf: Mailpile.csrf_token,
       add: tag_add,
       mid: mids
     },
 	  dataType : 'json',
     success  : function(response) {
       if (response.status == 'success') {
-       complete(response.result);       
+        complete(response.result);
       } else {
         Mailpile.notification(response);
       }
@@ -43,7 +44,7 @@ $(document).on('click', '#tag-edit-icon-picker .modal-tag-icon-option', function
   var icon = $(this).data('icon');
 
   var setting = Mailpile.tag_setting(tid, 'icon', icon);
-  Mailpile.API.settings_set_post(setting, function(result) { 
+  Mailpile.API.settings_set_post(setting, function(result) {
 
     Mailpile.notification(result);
 
@@ -75,7 +76,7 @@ $(document).on('click', '#tag-edit-color-picker .modal-tag-color-option', functi
   var hex = $(this).data('hex');
 
   var setting = Mailpile.tag_setting(tid, 'label_color', name);
-  Mailpile.API.settings_set_post(setting, function(result) { 
+  Mailpile.API.settings_set_post(setting, function(result) {
 
     Mailpile.notification(result);
 
@@ -150,7 +151,7 @@ $(document).on('change', '#data-tag-display', function(e) {
   var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'display', $(this).val());
   Mailpile.API.settings_set_post(setting, function(result) {
     Mailpile.notification(result);
-  });  
+  });
 });
 
 
@@ -159,7 +160,7 @@ $(document).on('change', '#data-tag-parent', function(e) {
   var setting = Mailpile.tag_setting($('#data-tag-tid').val(), 'parent', $(this).val());
   Mailpile.API.settings_set_post(setting, function(result) {
     Mailpile.notification(result);
-  });  
+  });
 });
 
 

@@ -1,6 +1,6 @@
 <div class="modal-dialog">
 <form id="modal-save-search" class="standard"
-      method="POST" action="{{ U('/filter/') }}">
+      method="POST" action="{{ U('/filter/') }}">{{ csrf_field|safe }}
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
