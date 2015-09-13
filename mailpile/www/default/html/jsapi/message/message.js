@@ -171,8 +171,7 @@ $(document).on('click', '.message-action-add-contact', function(e) {
   };
 
   Mailpile.API.with_template('modal-contact-add', function(modal) {
-    $('#modal-full').html(modal(modal_data));
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+    Mailpile.UI.show_modal(modal(modal_data));
   });
 });
 
@@ -196,9 +195,10 @@ $(document).on('click', '.message-action-find-keys', function(e) {
 
 /* Message - Import key from a message */
 $(document).on('click', '.message-action-import-key', function() {
+  // FIXME: This is old/unreliable modal code
   $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
   $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  $('#modal-full').modal(Mailpile.UI.modal_options);
 });
 
 
@@ -216,7 +216,7 @@ $(document).on('click', '.message-crypto-action', function() {
 
       $('#modal-full').html(modal(modal_data));
       $('#crypto-private-key-list').html(key_html);
-      $('#modal-full').modal(Mailpile.UI.ModalOptions);
+      Mailpile.UI.show_modal();
     });
   });
 });
@@ -237,8 +237,9 @@ $(document).on('click', '.message-crypto-investigate', function() {
     // can have much latency and slowness
     Mailpile.API.crypto_gpg_searchkey_get(missing_keys[0], function(data) {
       var modal_template = _.template($("#modal-search-keyservers").html());
-      $('#modal-full').html(modal_template({ keys: '<li>Key of User #1</li>' }));
-      $('#modal-full').modal(Mailpile.UI.ModalOptions);
+      Mailpile.UI.show_modal(modal_template({
+        keys: '<li>Key of User #1</li>'
+      }));
     });
   }
 });

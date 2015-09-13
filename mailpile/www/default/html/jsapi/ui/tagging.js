@@ -28,6 +28,10 @@ var operations = {
  * @return {Array} Array of selected values
  */
 function tag_and_update_ui(options, op, callback) {
+  // If there's nothing to do, don't bother the back-end.
+  if (!options.mid) return;
+  if (!options.add && !options.del) return;
+
   Mailpile.API.tag_post(options, function(response) {
 {#  // The output of tag_post response.result is:
     // {
@@ -51,6 +55,12 @@ function tag_and_update_ui(options, op, callback) {
     // of a search - we handle the former here but not the latter.
     //
 #}
+    if ((!response.result) || (response.status != "success")) {
+      // Just report errors, do nothing else.
+      Mailpile.notification(response);
+      return;
+    }
+
     var count = response.result.msg_ids.length;
     if (count < 1) return; // This was a no-op.
 

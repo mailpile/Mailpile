@@ -64,13 +64,21 @@ prepare_new_content = function(selector) {
             });
         }
     });
+    var $form = $(selector).find('form#form-search');
+    $form.submit(function(ev) {
+      if (update_using_jhtml(U("/search/?") + $form.serialize())) {
+        ev.preventDefault();
+      }
+    });
 };
+Mailpile.UI.content_setup.push(prepare_new_content);
+
 
 restore_state = function(ev) {
     if (ev.state && ev.state.autoajax) {
         $('#content-view').parent().replaceWith(ev.state.html).show();
         clear_selection_state();
-        prepare_new_content($('#content-view').parent());
+        Mailpile.UI.prepare_new_content($('#content-view').parent());
         Mailpile.render();
     }
 };
@@ -90,7 +98,7 @@ update_using_jhtml = function(original_url) {
                                       data['message'], original_url);
                     cv.replaceWith(data['result']).show();
                     clear_selection_state();
-                    prepare_new_content($('#content-view').parent());
+                    Mailpile.UI.prepare_new_content($('#content-view').parent());
                     Mailpile.render();
                 },
                 error: function() {
@@ -114,7 +122,7 @@ refresh_from_cache = function(cid) {
              if (json.result) {
                  var cid = json.state.cache_id;
                  $('.content-'+cid).replaceWith(json.result);
-                 prepare_new_content('.content-'+cid);
+                 Mailpile.UI.prepare_new_content('.content-'+cid);
                  refresh_history[cid] = get_now();
              }
              else {
@@ -129,11 +137,7 @@ refresh_from_cache = function(cid) {
     return false;
 };
 
-$(document).ready(function(){
-    if (Mailpile && Mailpile.instance) {
-        prepare_new_content('body');
-    }
-
+$(document).ready(function() {
     // Set up our onpopstate handler
     window.onpopstate = restore_state;
 

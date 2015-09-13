@@ -2,17 +2,19 @@
 
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
- $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
- $('#modal-full .modal-body').html($('#thread-people').html());
- $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  // FIXME: Old/unreliable modal code
+  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
+  $('#modal-full .modal-body').html($('#thread-people').html());
+  $('#modal-full').modal(Mailpile.UI.modal_options);
 });
 
 
 /* Thread - Show Tags In Converstation */
 $(document).on('click', '.show-thread-tags', function() {
- $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
- $('#modal-full .modal-body').html($('#thread-tags').html());
- $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  // FIXME: Old/unreliable modal code
+  $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
+  $('#modal-full .modal-body').html($('#thread-tags').html());
+  $('#modal-full').modal(Mailpile.UI.modal_options);
 });
 
 {% endif %}

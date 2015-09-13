@@ -50,8 +50,6 @@ Mailpile.UI.Sidebar.Sortable = function() {
       var next      = get_order(index + 2, 1000000);
       var new_order = (parseFloat(previous) + parseFloat(next)) / 2.0;
 
-      alert(index + ': ' + previous + ' .. ' + new_order + ' .. ' + next);
-
       // Save Tag Order
       var tag_setting = Mailpile.tag_setting(tid, 'display_order', new_order);
       Mailpile.API.settings_set_post(tag_setting, function(result) { 
@@ -182,3 +180,11 @@ Mailpile.UI.Sidebar.TagArchive = function() {
     $('#sidebar-tag-' + tid).fadeOut();
   });
 };
+
+
+// Register update functions
+Mailpile.UI.content_setup.push(function($content) {
+  Mailpile.UI.Sidebar.Draggable($content.find('a.sidebar-tag'));
+  Mailpile.UI.Sidebar.Droppable($content.find('li.sidebar-tags-draggable'),
+                                'td.draggable, div.thread-draggable');
+});

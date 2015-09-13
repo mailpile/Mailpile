@@ -1,7 +1,8 @@
 /* UI - Tooltips */
+Mailpile.UI.content_setup.push(function($content) {
 
-Mailpile.UI.Tooltips.TopbarNav = function() {
-  $('.topbar-nav a').qtip({
+  // Topbar navigation tooltips
+  $content.find('.topbar-nav a').qtip({
     style: {
      tip: {
         corner: 'top center',
@@ -24,11 +25,9 @@ Mailpile.UI.Tooltips.TopbarNav = function() {
       delay: 350
     }
   });
-};
 
-
-Mailpile.UI.Tooltips.BulkActions = function() {
-  $('.bulk-actions ul li a').qtip({
+  // Bulk action tooltips
+  $content.find('.bulk-actions ul li a').qtip({
     style: {
       classes: 'qtip-tipped'
     },
@@ -41,11 +40,9 @@ Mailpile.UI.Tooltips.BulkActions = function() {
 			}
     }
   });
-};
 
-
-Mailpile.UI.Tooltips.ComposeEmail = function() {
-  $('.compose-to-email').qtip({
+  // Email composition tooltips
+  $content.find('.compose-to-email').qtip({
     content: {
       title: false,
       text: function(event, api) {
@@ -67,4 +64,5 @@ Mailpile.UI.Tooltips.ComposeEmail = function() {
       delay: 450
     }
   });
-};
+
+});

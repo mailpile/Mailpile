@@ -82,7 +82,6 @@ Mailpile.Composer.Body.QuotedReply = function(mid, state) {
 
 Mailpile.Composer.Body.QuotedReplySetup = function() {
   Mailpile.API.with_template('modal-compose-quoted-reply', function(modal) {
-    $('#modal-full').html(modal());
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+    Mailpile.UI.show_modal(modal());
   });
 };

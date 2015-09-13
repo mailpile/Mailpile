@@ -138,13 +138,12 @@ Mailpile.render_modal_tags = function(elem) {
         });
 
         Mailpile.API.with_template('modal-tag-picker', function(modal) {
-          $('#modal-full').html(modal({
+          Mailpile.UI.show_modal(modal({
             count: selected.length,
             priority: priority_html,
             tags: tags_html,
             archive: archive_html
           }));
-          $('#modal-full').modal(Mailpile.UI.ModalOptions);
         });
       });
     });

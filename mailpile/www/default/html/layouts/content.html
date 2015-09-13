@@ -6,6 +6,10 @@
   {% block contenttools %}
     {% if result %}
       {% if command == "search" %}
+        <span id='search-terms' class='hide'
+              data-context="{{state.context}}"
+              data-q="{% for t in result.search_terms %}{{ t }} {% endfor %}">
+        </span>
         {% include("partials/tools_search.html") %}
       {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
         {% include("partials/tools_contacts.html") %}

@@ -45,6 +45,7 @@ $(document).on('click', 'span.checkbox, div.checkbox', function(e) {
   $(this).prev().trigger('click');
 });
 
+
 // FIXME: this is in the wrong place
 Mailpile.auto_modal = function(params) {
   var jhtml_url = Mailpile.API.jhtml_url(params.url);
@@ -58,7 +59,7 @@ Mailpile.auto_modal = function(params) {
       url: jhtml_url,
       type: params.method,
       success: function(data) {
-        var mf = $('#modal-full').html(modal({
+        var mf = Mailpile.UI.show_modal(modal({
           data: data,
           icon: params.icon,
           title: params.title,
@@ -89,11 +90,11 @@ Mailpile.auto_modal = function(params) {
             return false;
           });
         }
-        mf.modal(Mailpile.UI.ModalOptions);
       }
     });
   }, undefined, params.flags);
 };
+
 
 $(document).on('click', '.auto-modal', function(e) {
   var elem = $(this);

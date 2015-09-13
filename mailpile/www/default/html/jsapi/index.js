@@ -372,13 +372,12 @@ Mailpile.API = {
 {% include("jsapi/ui/selection.js") %}
 {% include("jsapi/ui/tagging.js") %}
 {% include("jsapi/ui/content.js") %}
-{% include("jsapi/ui/events.js") %}
 {% include("jsapi/ui/global.js") %}
 {% include("jsapi/ui/topbar.js") %}
-{% include("jsapi/ui/modals.js") %}
 {% include("jsapi/ui/sidebar.js") %}
 {% include("jsapi/ui/tooltips.js") %}
 {% include("jsapi/ui/keybindings.js") %}
+{% include("jsapi/ui/events.js") %}
 
 
 // Plugin Javascript /========================================================

@@ -4,6 +4,23 @@ $(document).on('click', '#search-query', function() {
 });
 
 
+Mailpile.UI.content_setup.push(function($content) {
+  var $sq = $('#search-query');
+  if (($sq.data('q') == $sq.val()) || ($sq.val() == "")) {
+    // FIXME: This will do silly things if we have multiple search results
+    //        on a page at a time.
+    var $st = $content.find('#search-terms');
+    var search_terms = $st.data('q');
+    if (search_terms !== undefined) {
+      $sq.data('q', search_terms).val(search_terms)
+         .data('context', $st.data('context'));
+    }
+  }
+});
+
+
+// {# FIXME: Disabled by Bjarni, this doesn't really work reliably
+//  #
 /* Search - Special handling of certain queries */
 $(document).on('submit', '#form-search', function(e) {
   var search_query = $('#search-query').val();
@@ -36,29 +53,21 @@ $(document).on('submit', '#form-search', function(e) {
     console.log('inside of else, just a normal query');
   }
 });
-
-
 /* Activities - */
 $(document).on('click', '#button-search-options', function(key) {
 	$('#search-params').slideDown('fast');
 });
-
-
 /* Activities - */
 $(document).on('blur', '#button-search-options', function(key) {
 	$('#search-params').slideUp('fast');
 });
+// #
+// #
+// #}
 
 
 /* Activities - Create New Blank Message */
 $(document).on('click', '.button-compose', function(e) {
 	e.preventDefault();
   Mailpile.activities.compose($(this).data('to'), $(this).data('from'));
-});
-
-
-/* Show Settings Dropdown */
-$(document).on('mouseover', '#button-settings', function() {
-  // FIXME: crap, this makes the links in the dropdown note fire... something obnoxious in Bootstrap causes it :(
-  // $('#settings-menu').dropdown('toggle');
 });

@@ -6,8 +6,7 @@ Mailpile.UI.Modals.ContactAdd = function() {
 
   Mailpile.API.with_template('modal-contact-add', function(modal) {
     var modal_data = { name: '', address: '', extras: '' };
-    $('#modal-full').html(modal(modal_data));
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+    Mailpile.UI.show_modal(modal(modal_data));
   });
 };
 

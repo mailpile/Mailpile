@@ -9,8 +9,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
   };
 
   Mailpile.API.with_template('modal-search-keyservers', function(modal) {
-    $('#modal-full').html(modal(options));
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
+    Mailpile.UI.show_modal(modal(options));
     if (options.query) {
       Mailpile.Crypto.Find.Keys(options);
     } else {
@@ -22,10 +21,7 @@ Mailpile.UI.Modals.CryptoFindKeys = function(options) {
 
 Mailpile.UI.Modals.CryptoUploadKey = function(options) {
   Mailpile.API.with_template('modal-upload-key', function(modal) {
-    $('#modal-full').html(modal(options));
-    $('#modal-full').modal(Mailpile.UI.ModalOptions);
-
-    // Uploader
+    Mailpile.UI.show_modal(modal(options));
     Mailpile.Crypto.Import.Uploader();
   });
 };

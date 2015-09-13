@@ -1,15 +1,44 @@
 /* UI */
 
 Mailpile.UI = {
-  ModalOptions: { backdrop: true, keyboard: true, show: true, remote: false }
+  content_setup: [],
+  modal_options: { backdrop: true, keyboard: true, show: true, remote: false },
+  Favico: new Favico({animation:'none'}),
+
+  Crypto: {},
+  Sidebar: {},
+  Modals: {},
+  Tooltips: {},
+  Message: {},
+  Search: {}
 };
 
-Mailpile.UI.Crypto   = {};
-Mailpile.UI.Sidebar  = {};
-Mailpile.UI.Modals   = {};
-Mailpile.UI.Tooltips = {};
-Mailpile.UI.Message  = {};
-Mailpile.UI.Search   = {};
+
+Mailpile.UI.prepare_new_content = function(content) {
+  var $content = $(content);
+
+  // Iterate through the list of setup callbacksk, so different parts of
+  // the JS app, plugins included, can mess with the new content.
+  for (var i in Mailpile.UI.content_setup) {
+    Mailpile.UI.content_setup[i]($content);
+  }
+
+  // Check if this update tells us new things about the Inbox unread count,
+  // update the Favico if so.
+  // FIXME: This will not update the favico if the sidebar is not visible.
+  var inbox_new = $content.find('.sidebar-tag-inbox').data('new');
+  if (inbox_new !== undefined) {
+    setTimeout(function() { Mailpile.UI.Favico.badge(inbox_new); }, 250);
+  }
+};
+
+
+Mailpile.UI.show_modal = function(html) {
+  if (html) $('#modal-full').html(html);
+  $('#modal-full').modal(Mailpile.UI.modal_options);
+  Mailpile.UI.prepare_new_content($('#modal-full'));
+  return $('#modal-full');
+};
 
 
 Mailpile.UI.init = function() {
@@ -18,7 +47,6 @@ Mailpile.UI.init = function() {
   //Mailpile.activities.render_typeahead();
 
   // Start Eventlog
-  //EventLog.init();
   setTimeout(function() {
 
     // make event log start async (e.g. for proper page load event handling)
@@ -35,30 +63,16 @@ Mailpile.UI.init = function() {
 
   }, 200);
 
-
-  /* Drag & Drop */
-  Mailpile.UI.Sidebar.Draggable('a.sidebar-tag');
-
-
-  /* Tooltips */
-  Mailpile.UI.Tooltips.TopbarNav();
-  Mailpile.UI.Tooltips.BulkActions();
-  Mailpile.UI.Tooltips.ComposeEmail();
-
-  // Favicon:
-  // FIXME: This should go in the tags template
-  setTimeout(function() {
-    var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
-    var favicon = new Favico({animation:'none'});
-    favicon.badge(inbox.stats.new);
-  }, 1000);
+  // Register callbacks etc on new content: the whole page is new!
+  Mailpile.UI.prepare_new_content(document);
 };
 
 
 Mailpile.UI.tag_icons_as_lis = function() {
   var icons_html = '';
   $.each(Mailpile.theme.icons, function(key, icon) {
-    icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
+    icons_html += ('<li class="modal-tag-icon-option ' + icon +
+                   '" data-icon="' + icon + '"></li>');
   });
   return icons_html;
 };
@@ -69,7 +83,9 @@ Mailpile.UI.tag_colors_as_lis = function() {
   var colors_html = '';
   $.each(sorted_colors, function(key, name) {
     var hex = Mailpile.theme.colors[name];
-    colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + hex + '" data-name="' + name + '" data-hex="' + hex + '"></a></li>';
+    colors_html += ('<li><a href="#" class="modal-tag-color-option" ' +
+                    'style="background-color: ' + hex + '" data-name="' +
+                    name + '" data-hex="' + hex + '"></a></li>');
   });
   return colors_html;
 };

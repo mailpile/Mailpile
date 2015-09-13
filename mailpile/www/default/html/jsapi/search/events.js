@@ -63,9 +63,8 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     }
     else {
       Mailpile.API.with_template(template, function(modal) {
-        mf = $('#modal-full').html(modal({ terms: searchq }));
+        var mf = Mailpile.UI.show_modal(modal({ terms: searchq }));
         mf.find('#ss-search-terms').attr('value', searchq);
-        mf.modal(Mailpile.UI.ModalOptions);
       });
     }
   });

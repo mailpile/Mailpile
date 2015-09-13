@@ -30,10 +30,9 @@ Mailpile.tag_setting = function(tid, setting, value) {
 
 $(document).on('click', '#button-tag-change-icon', function() {
   var modal_template = _.template($("#modal-tag-icon-picker").html());
-  $('#modal-full').html(modal_template({
+  Mailpile.UI.show_modal(modal_template({
     icons: Mailpile.UI.tag_icons_as_lis()
   }));
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 
@@ -62,10 +61,9 @@ $(document).on('click', '#tag-edit-icon-picker .modal-tag-icon-option', function
 $(document).on('click', '#button-tag-change-label-color', function(e) {
   var modal_html = $("#modal-tag-color-picker").html();
   var modal_template = _.template(modal_html);
-  $('#modal-full').html(modal_template({
+  Mailpile.UI.show_modal(modal_template({
     colors: Mailpile.UI.tag_colors_as_lis()
   }));
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
 });
 
 

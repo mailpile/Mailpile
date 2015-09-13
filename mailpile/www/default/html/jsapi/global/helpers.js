@@ -21,12 +21,8 @@ $(document).on('click', '.btn-helper', function(e) {
   console.log(helper);
   console.log(helper_data);
 
-  // Load Helper Specific HTML in Modal
   var modal_template = _.template($('#template-modal-helper').html());
-  $('#modal-full').html(modal_template(helper_data));
-
-  // Launch Modal
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.UI.show_modal(modal_template(helper_data));
 });
 
 

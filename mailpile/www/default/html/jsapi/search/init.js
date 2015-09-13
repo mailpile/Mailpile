@@ -8,7 +8,6 @@ Mailpile.Search.init = function() {
   // Drag Items
   Mailpile.UI.Search.Draggable('td.draggable');
   Mailpile.UI.Search.Dropable('.pile-results tr', 'a.sidebar-tag');
-  Mailpile.UI.Sidebar.Droppable('li.sidebar-tags-draggable', 'td.draggable');
 
   // Render Display Size
   if (!Mailpile.local_storage['view_size']) {

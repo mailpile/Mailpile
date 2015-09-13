@@ -1,7 +1,6 @@
 /* Settings - Shows profile add modal */
 $(document).on('click', '#btn-settings-profile-add', function(e) {
-  $("#modal-full").html($("#modal-settings-profile-add").html());
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.UI.show_modal($("#modal-settings-profile-add").html());
 });
 
 
@@ -28,8 +27,7 @@ $(document).on('submit', '#form-settings-profile-add', function(e) {
 
 /* Settings - Shows route add modal */
 $(document).on('click', '#btn-settings-route-add', function(e) {
-  $("#modal-full").html($("#modal-settings-route-add").html());
-  $('#modal-full').modal(Mailpile.UI.ModalOptions);
+  Mailpile.UI.show_modal($("#modal-settings-route-add").html());
 });
 
 
