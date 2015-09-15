@@ -2,5 +2,3 @@ mailpile:
   build: .
   ports:
     - 33411:33411
-  volumes:
-    - .:/Mailpile
