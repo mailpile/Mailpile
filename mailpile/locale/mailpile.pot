@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mailpile VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-24 13:35+0100\n"
+"POT-Creation-Date: 2015-09-18 15:34+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1362,47 +1362,47 @@ msgstr ""
 msgid "Failed to connect to %s"
 msgstr ""
 
-#: mailpile/smtp_client.py:269
+#: mailpile/smtp_client.py:270
 msgid "Bad character in username or password"
 msgstr ""
 
-#: mailpile/smtp_client.py:273 mailpile/mail_source/imap.py:559
+#: mailpile/smtp_client.py:274 mailpile/mail_source/imap.py:559
 #: mailpile/mail_source/pop3.py:24
 msgid "Invalid username or password"
 msgstr ""
 
-#: mailpile/smtp_client.py:276
+#: mailpile/smtp_client.py:277
 msgid "Authentication not supported"
 msgstr ""
 
-#: mailpile/smtp_client.py:279
+#: mailpile/smtp_client.py:280
 msgid "Sender rejected by SMTP server"
 msgstr ""
 
-#: mailpile/smtp_client.py:287
+#: mailpile/smtp_client.py:288
 #, python-format
 msgid "Server rejected recipient: %s"
 msgstr ""
 
-#: mailpile/smtp_client.py:290
+#: mailpile/smtp_client.py:291
 #, python-format
 msgid "Server rejected DATA: %s %s"
 msgstr ""
 
-#: mailpile/smtp_client.py:302
+#: mailpile/smtp_client.py:303
 msgid "Error spooling mail"
 msgstr ""
 
-#: mailpile/smtp_client.py:310
+#: mailpile/smtp_client.py:311
 #, python-format
 msgid "Invalid route: %s"
 msgstr ""
 
-#: mailpile/smtp_client.py:321
+#: mailpile/smtp_client.py:322
 msgid "Preparing message..."
 msgstr ""
 
-#: mailpile/smtp_client.py:327
+#: mailpile/smtp_client.py:328
 msgid "Quitting"
 msgstr ""
 
@@ -1430,7 +1430,7 @@ msgid "Message %s is not editable"
 msgstr ""
 
 #: mailpile/ui.py:564
-msgid "Number of edit messages does not match!"
+msgid "Number of edited messages does not match!"
 msgstr ""
 
 #: mailpile/ui.py:635
@@ -1630,7 +1630,7 @@ msgstr ""
 
 #: mailpile/vcard.py:1561
 #, python-format
-msgid "Saving %d updated cards"
+msgid "Saving %d updated vCards"
 msgstr ""
 
 #: mailpile/vfs.py:316
@@ -2786,163 +2786,173 @@ msgstr ""
 msgid "Obfuscating search index and enabling indexing of encrypted e-mail. Yay!"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:513
+#: mailpile/plugins/setup_magic.py:564
 #, python-format
-msgid "Checking ISPDB for %(domain)s"
+msgid "Checking ISPDB for %s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:559
+#: mailpile/plugins/setup_magic.py:567
 #, python-format
-msgid "Found %(domain)s in ISPDB"
+msgid "Found %s in ISPDB"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:650
+#: mailpile/plugins/setup_magic.py:602
+#, python-format
+msgid "Checking for autoconfig on %s"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:605
+#, python-format
+msgid "Found autoconfig on %s"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:672
 #, python-format
 msgid "Guessing settings for %(email)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:653
+#: mailpile/plugins/setup_magic.py:675
 #, python-format
 msgid "Found %d potential servers"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:658
+#: mailpile/plugins/setup_magic.py:680
 msgid "Probing for services..."
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:677
+#: mailpile/plugins/setup_magic.py:699
 #, python-format
 msgid "Found %(service)s server on %(host)s:%(port)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:713
+#: mailpile/plugins/setup_magic.py:744
 msgid "Ran out of time, results may be incomplete"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:770
+#: mailpile/plugins/setup_magic.py:801
 #, python-format
 msgid "Probing %s, cleartext=%s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:806
+#: mailpile/plugins/setup_magic.py:837
 #, python-format
 msgid "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:810
+#: mailpile/plugins/setup_magic.py:841
 #, python-format
 msgid "Testing %(protocol)4.4s on %(host)s:%(port)s as %(username)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:814
+#: mailpile/plugins/setup_magic.py:845
 msgid "insecure"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:823
+#: mailpile/plugins/setup_magic.py:854
 msgid "Success"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:829
+#: mailpile/plugins/setup_magic.py:860
 msgid "Protocol is OK"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:832
+#: mailpile/plugins/setup_magic.py:863
 msgid "Login failed"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:853
+#: mailpile/plugins/setup_magic.py:884
 msgid "Can only test settings for one account at a time"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:872
+#: mailpile/plugins/setup_magic.py:903
 #, python-format
 msgid "Found settings for %d addresses"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:875
+#: mailpile/plugins/setup_magic.py:906
 msgid "No settings found"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:905
+#: mailpile/plugins/setup_magic.py:936
 #, python-format
 msgid "Invalid language: %s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:925 mailpile/plugins/setup_magic.py:966
+#: mailpile/plugins/setup_magic.py:956 mailpile/plugins/setup_magic.py:997
 #: mailpile/www/default/html/setup/welcome/index.html:2
 msgid "Welcome to Mailpile!"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1074
+#: mailpile/plugins/setup_magic.py:1105
 msgid "Invalid key"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1109
+#: mailpile/plugins/setup_magic.py:1140
 msgid "Invalid passphrase"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1153
+#: mailpile/plugins/setup_magic.py:1184
 msgid "Invalid preference"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1182
+#: mailpile/plugins/setup_magic.py:1213
 msgid "Updated crypto preferences"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1184
+#: mailpile/plugins/setup_magic.py:1215
 msgid "Configure crypto preferences"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1294
+#: mailpile/plugins/setup_magic.py:1325
 msgid "Failed to add profile"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1315
+#: mailpile/plugins/setup_magic.py:1346
 msgid "Your profiles"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1341
+#: mailpile/plugins/setup_magic.py:1372
 msgid "Configuring a key"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1385
+#: mailpile/plugins/setup_magic.py:1416
 msgid "Unknown error"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1393
+#: mailpile/plugins/setup_magic.py:1424
 msgid "Route is working"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1396
+#: mailpile/plugins/setup_magic.py:1427
 msgid "Invalid command"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1406
+#: mailpile/plugins/setup_magic.py:1437
 msgid "Route is not working"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1496
+#: mailpile/plugins/setup_magic.py:1527
 #, python-format
 msgid "Language set to: %s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1501
+#: mailpile/plugins/setup_magic.py:1532
 msgid "Choose a password for Mailpile: "
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1503
+#: mailpile/plugins/setup_magic.py:1534
 msgid "Confirm password: "
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1510
+#: mailpile/plugins/setup_magic.py:1541
 msgid "Passwords did not match! Please try again."
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1518
+#: mailpile/plugins/setup_magic.py:1549
 msgid "Performed initial Mailpile setup"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1522
+#: mailpile/plugins/setup_magic.py:1553
 msgid "Entering setup flow"
 msgstr ""
 
@@ -3738,7 +3748,7 @@ msgstr ""
 
 #: mailpile/www/default/html/jsapi/compose/crypto.js:127
 msgid ""
-"This message will be verifiable to reicpients who have your encryption "
+"This message will be verifiable to recipients who have your encryption "
 "key. They will know it actually came from you :)"
 msgstr ""
 
@@ -5675,14 +5685,14 @@ msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:17
 #: mailpile/www/default/html/profiles/index.html:151
-#: mailpile/www/default/html/profiles/index.html:174
+#: mailpile/www/default/html/profiles/index.html:173
 #: mailpile/www/default/html/profiles/add/index.html:2
 msgid "Add Account"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:18
 #: mailpile/www/default/html/profiles/index.html:149
-#: mailpile/www/default/html/profiles/index.html:172
+#: mailpile/www/default/html/profiles/index.html:171
 #: mailpile/www/default/html/profiles/add/index.html:6
 msgid "Create a new Account"
 msgstr ""
@@ -5732,16 +5742,46 @@ msgstr ""
 msgid "You have not configured any accounts yet."
 msgstr ""
 
-#: mailpile/www/default/html/profiles/index.html:158
+#: mailpile/www/default/html/profiles/index.html:159
 msgid "Master Inbox"
 msgstr ""
 
-#: mailpile/www/default/html/profiles/index.html:162
+#: mailpile/www/default/html/profiles/index.html:163
 msgid "Unread Mail"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/index.html:167
 msgid "Browse"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:197
+msgid "Welcome to Mailpile Beta III"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:201
+msgid ""
+"This release is a technology preview release, meant for developers, early"
+" adopters, usability testers and our community of translators."
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:202
+msgid "It might also be useful for reading and writing e-mail, you never know!"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:203
+msgid "Read all about it:"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:206
+msgid "Annoucement blog post"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:207
+msgid "Release Notes"
+msgstr ""
+
+#: mailpile/www/default/html/profiles/index.html:208
+msgid "Security Roadmap"
 msgstr ""
 
 #: mailpile/www/default/html/profiles/edit/index.html:6
