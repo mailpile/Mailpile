@@ -561,7 +561,7 @@ class UserInteraction:
 
         updates = [t.strip() for t in edited.split(sep)]
         if len(updates) != len(emails):
-            raise ValueError(_('Number of edit messages does not match!'))
+            raise ValueError(_('Number of edited messages does not match!'))
         for i in range(0, len(updates)):
             emails[i].update_from_string(session, updates[i])
         return True

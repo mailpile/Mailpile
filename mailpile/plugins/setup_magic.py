@@ -423,6 +423,8 @@ class SetupGetEmailSettings(TestableWebbable):
         'smtp_tls': False
     }
     ISPDB_URL = 'https://autoconfig.thunderbird.net/v1.1/%(domain)s'
+    AUTOCONFIG_URL = '%(protocol)s://autoconfig.%(domain)s/mail/config-v1.1.xml?emailaddress=%(email)s'
+    AUTOCONFIG_ALT_URL = '%(protocol)s://%(domain)s/.well-known/autoconfig/mail/config-v1.1.xml'
 
     def _progress(self, message):
         if self.event and self.tracking_id:
@@ -503,17 +505,10 @@ class SetupGetEmailSettings(TestableWebbable):
 
         return domain
 
-    def _get_ispdb(self, email, domain):
-        domain = self._clean_domain(domain)
-
-        if domain in ('localhost',):
-            return None
-
-        domain_hash = {'domain': domain}
-        self._progress(_('Checking ISPDB for %(domain)s') % domain_hash)
+    def _get_xml_autoconfig(self, url, email):
         try:
             result = {'sources': [], 'routes': []}
-            xml_data = self._urlget(self.ISPDB_URL % domain_hash)
+            xml_data = self._urlget(url)
             if xml_data:
                 data = objectify.fromstring(xml_data)
 # FIXME: Massage these so they match the format of the routes and
@@ -556,16 +551,27 @@ class SetupGetEmailSettings(TestableWebbable):
                     })
                 result['sources'].sort(key=self._rank)
                 result['routes'].sort(key=self._rank)
-                self._log_result(_('Found %(domain)s in ISPDB') % domain_hash)
                 return result
         except (IOError, ValueError, AttributeError):
-            pass
+            return None
+
+    def _get_ispdb(self, email, domain):
+        domain = self._clean_domain(domain)
+
+        if domain in ('localhost',):
+            return None
+
+        self._progress(_('Checking ISPDB for %s') % domain)
+        settings = self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
+        if settings:
+            self._log_result(_('Found %s in ISPDB') % domain)
+            return settings
         dparts = domain.split('.')
         if len(dparts) > 2:
             domain = '.'.join(dparts[1:])
             # FIXME: Make a longer list of 2nd-level public TLDs to ignore
             if domain not in ('co.uk', 'pagekite.me'):
-                return self._get_ispdb(email, domain)
+                return self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
         return None
 
     def _get_mx1(self, domain):
@@ -584,6 +590,22 @@ class SetupGetEmailSettings(TestableWebbable):
             return mxs[0][1] if mxs else None
         except socket.error:
             return None
+
+    def _get_domain_autoconfig(self, email, domain, mx1, ssl=True):
+        protocol = 'https'
+        if not ssl:
+            protocol = 'http'
+
+        for url in (self.AUTOCONFIG_URL, self.AUTOCONFIG_ALT_URL):
+            for dom in (domain, mx1):
+                if dom:
+                    self._progress(_('Checking for autoconfig on %s') % dom)
+                    settings = self._get_xml_autoconfig(url % {'protocol': protocol, 'domain': dom, 'email': email}, email)
+                    if settings:
+                        self._log_result(_('Found autoconfig on %s') % dom)
+                        return settings
+
+        return None
 
     def _guess_service_domains(self, domain,
                                mx=None, service_domains=None):
@@ -699,12 +721,21 @@ class SetupGetEmailSettings(TestableWebbable):
         mx1 = None
 
         if not settings and self.deadline > time.time():
+            #FIXME: actually we want mx1 here but since DNS lack security that would compromise security when ISPDB gives us a result
+            settings = self._get_domain_autoconfig(email, domain, None, ssl=True)
+
+        if not settings and self.deadline > time.time():
             settings = self._get_ispdb(email, domain)
 
         if not settings and self.deadline > time.time():
             mx1 = self._get_mx1(domain)
             if mx1 and not mx1.endswith('.' + domain):
                 settings = self._get_ispdb(email, mx1)
+
+        if not settings and self.deadline > time.time():
+            settings = self._get_domain_autoconfig(email, None, mx1, ssl=True)
+        if not settings and self.deadline > time.time():
+            settings = self._get_domain_autoconfig(email, domain, mx1, ssl=False)
 
         if not settings and self.deadline > time.time():
             settings = self._guess_settings(email, domain, mx1)
