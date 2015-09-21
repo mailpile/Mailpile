@@ -1,6 +1,15 @@
 # Recipes for stuff
 export PYTHONPATH := .
 
+help:
+	@echo ""
+	@echo "BUILD"
+	@echo "    dpkg"
+	@echo "        Create a debian package of this service (in a Docker "
+	@echo "        container)."
+	@echo ""
+
+
 all:	submodules alltests docs web compilemessages
 
 dev:
@@ -156,3 +165,25 @@ genmessages:
 
 compilemessages:
 	@scripts/compile-messages.sh
+
+
+
+# -----------------------------------------------------------------------------
+# BUILD
+# -----------------------------------------------------------------------------
+
+
+dpkg: clean
+	if [ ! -d dist ]; then \
+	    mkdir dist; \
+	fi;
+	if [ -e ./dist/*.deb ]; then \
+	    sudo rm ./dist/*.deb; \
+	fi;
+	sudo docker build \
+	    --file=./debian/Dockerfile \
+	    --tag=mailpile-deb-builder \
+	    ./
+	sudo docker run \
+	    --volume=$$(pwd)/dist:/mnt/dist \
+	    mailpile-deb-builder

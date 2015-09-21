@@ -1,0 +1,5 @@
+mailpile (0.1.0-1) UNRELEASED; urgency=low
+
+  * mailpile: Initial debian packaging
+
+ -- Bjarni R Einarrson <bre@mailpile.is>  Mon, 21 Sept 2015 11:26:00 +0000
