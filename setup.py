@@ -87,4 +87,10 @@ An e-mail search engine and webmail client, with easy encryption and privacy.
             'mailpile = mailpile.__main__:main'
         ]},
     test_suite='nose.collector',
-    tests_require=['nose'])
+    tests_require=[
+        'mock',
+        'nose',
+        # Pinned to 1.6.0 because otherwise tests will fail
+        # on newer versions.
+        'pbr==1.6.0',
+    ])

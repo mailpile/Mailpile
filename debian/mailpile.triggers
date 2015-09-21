@@ -1,0 +1,14 @@
+# ------------------------------------------------------------------------- #
+# DEBIAN PACKAGE TRIGGERS FILE                                              #
+#                                                                           #
+# This file contains triggers for the mailpile package. For                 #
+# more information on triggers, please run `man deb-triggers`.              #
+# ------------------------------------------------------------------------- #
+
+
+# Register interest in Python interpreter changes and don't make the
+# Python package dependent on the virtualenv package processing (noawait)
+interest-noawait /usr/bin/python2.7
+
+# Also provide a symbolic trigger file for all dh-virtualenv packages
+interest dh-virtualenv-interpreter-update
