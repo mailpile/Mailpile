@@ -195,7 +195,7 @@ class SetupMagic(Command):
         for t, tag_settings in self.TAGS.iteritems():
             tag_settings = copy.copy(tag_settings)
 
-            tid = session.config.get_tag_id(t)
+            tid = session.config.get_tag_id(t.replace(' ', '-'))
             if not tid:
                 AddTag(session, arg=[t]).run(save=False)
                 tid = session.config.get_tag_id(t)
