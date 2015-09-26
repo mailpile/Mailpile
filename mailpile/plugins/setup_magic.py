@@ -200,8 +200,11 @@ class SetupMagic(Command):
                 AddTag(session, arg=[t]).run(save=False)
                 tid = session.config.get_tag_id(t)
                 created.append(t)
+            if not tid:
+                session.ui.notify(_('Failed to create tag: %s') % t)
+                continue
+
             tag_info = session.config.tags[tid]
-            assert(tid)
 
             # Delete any old filters...
             old_fids = [f for f, v in session.config.filters.iteritems()
