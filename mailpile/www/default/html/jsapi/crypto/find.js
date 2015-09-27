@@ -15,7 +15,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
 
       // Try to find Avatar
       if (uid) {
-        var contact  = _.findWhere(Mailpile.instance.addresses, {address: uid.email});
+        var contact  = _.findWhere(key.vcards, {address: uid.email});
         if (contact) {
           if (contact.photo) {
             avatar = contact.photo;
