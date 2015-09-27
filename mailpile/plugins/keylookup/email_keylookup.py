@@ -100,7 +100,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for key_data in self._get_keys(messageid):
                 if strict_email_match:
                     match = [u for u in key_data.get('uids', [])
-                             if u['email'].lower() == address]
+                             if (u['email'] or '').lower() == address]
                     if not match:
                         continue
                 results[key_data["fingerprint"]] = copy.copy(key_data)
