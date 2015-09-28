@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ex
 
 MAILPILE_PATH='/srv/Mailpile'
 MAILPILE_HOME='/home/vagrant/.mailpile'
