@@ -178,8 +178,12 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                                if not v or not v.get_all('KEY')]) == 0
         if not can_encrypt and 'encrypt' in policy:
             policy = 'conflict'
-            reason = _('Some recipients require encryption, '
-                       'but we do not have keys for everyone!')
+            if 'encrypt' in cpolicy:
+                reason = _('Your policy is to always encrypt, '
+                           'but we do not have keys for everyone!')
+            else:
+                reason = _('Some recipients require encryption, '
+                           'but we do not have keys for everyone!')
 
         # If the policy is "best-effort", then we would like to sign and
         # encrypt if possible/safe. The bar for signing is lower.

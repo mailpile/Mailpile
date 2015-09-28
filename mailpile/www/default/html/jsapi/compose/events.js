@@ -90,8 +90,9 @@ $(document).on('click', '.compose-action', function(e) {
 });
 
 Mailpile.Composer.SendMessage = function(send_btn) {
-  var action = $(send_btn).val();
-  var mid = $(send_btn).parent().data('mid');
+  var $send_btn = $(send_btn);
+  var action = $send_btn.val();
+  var mid = $send_btn.parent().data('mid');
   var form_data = $('#form-compose-' + mid).serialize();
 
   if (action === 'send') {
@@ -108,6 +109,13 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  =  'success';
 	  var action_message = 'Your reply was sent';
+  }
+
+  // Warn the user if he's trying to go against his own security policies,
+  // let him abort... or not.
+  if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
+    if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
+                 '{{_("Click OK to send the message anyway.")}}')) return;
   }
 
 	$.ajax({

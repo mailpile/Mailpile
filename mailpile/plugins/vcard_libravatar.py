@@ -73,7 +73,6 @@ class LibravatarImporter(VCardImporter):
             return urlopen(url, data=None, timeout=3).read()
 
     def check_libravatar(self, vcard, email):
-        self.session.ui.debug("check_libravatar")
         img = vcf = json = None
         for vcl in vcard.get_all('email'):
             digest = mailpile.util.md5_hex(vcl.value.lower())

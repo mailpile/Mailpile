@@ -27,7 +27,8 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
     $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);
     if (emails.length > 1) {
       // Update encrypt/sign icons
-      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy']);
+      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy'],
+                                               r['reason']);
 
       // Embellish our recipients with data from the backend; in particular
       // this adds the keys and avatars to things manually typed.
@@ -47,7 +48,7 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
       });
     }
     else {
-      Mailpile.Composer.Crypto.LoadStates(mid, 'none');
+      Mailpile.Composer.Crypto.LoadStates(mid, 'none', '');
     }
     if (chain) chain(mid);
   });
@@ -63,7 +64,7 @@ Mailpile.Composer.Crypto.Unencryptables = function(mid) {
 };
 
 
-Mailpile.Composer.Crypto.LoadStates = function(mid, state) {
+Mailpile.Composer.Crypto.LoadStates = function(mid, state, reason) {
   state = state || $('#compose-crypto-' + mid).val();
 
   var signature = 'none';
@@ -81,13 +82,11 @@ Mailpile.Composer.Crypto.LoadStates = function(mid, state) {
   // FIXME: We need to know if encryption or signing is REQUIRED, and
   // disable or enable the send button based on that. The conflict state
   // doesn't cover for when the user does illegal things manually.
-  if (state.match(/conflict/)) {
-    // FIXME: Need to replace button with an explanation!
-    $('#form-compose-' + mid + ' button[name=send]').hide();
-  }
-  else {
-    $('#form-compose-' + mid + ' button[name=send]').show();
-  }
+  $('#form-compose-' + mid + ' button[name=send]')
+    .data('crypto-state', state || '')
+    .data('crypto-reason', reason || '')
+    .attr('title', reason || '')
+    .css({ 'opacity': (state.match(/conflict/)) ? 0.25 : 1.0 });
 };
 
 
