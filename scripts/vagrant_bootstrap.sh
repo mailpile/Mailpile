@@ -24,7 +24,7 @@ echo '.. initial setup (creates folders and tags)'
 $AS_VAGRANT ./mp --setup
 
 echo '.. adding a test mailbox'
-$AS_VAGRANT ./mp --add $MAILPILE_PATH/testing
+$AS_VAGRANT ./mp --add $MAILPILE_PATH/mailpile/tests/data
 echo -n
 
 echo '.. rescanning everything'
