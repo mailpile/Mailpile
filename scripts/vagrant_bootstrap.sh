@@ -35,7 +35,7 @@ echo
 
 echo '.. set subdirectory'
 echo -n
-$AS_VAGRANT ./mp set sys.subdirectory  /mailpile
+$AS_VAGRANT ./mp set sys.http_path  /mailpile
 echo
 
 
