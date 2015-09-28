@@ -9,6 +9,8 @@ echo '.. installing python libraries'
 apt-get update
 apt-get install -y python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pip nginx
 
+apt-get install gnupg openssl
+
 cp $MAILPILE_PATH/scripts/nginx.conf /etc/nginx/sites-enabled/mailpile
 service nginx restart
 
