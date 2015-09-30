@@ -63,4 +63,4 @@ def http_content_security_policy(http_server):
     # FIXME: Allow deviations in config, for integration purposes
     # FIXME: Clean up Javascript and then make this more strict
     return ("default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "img-src 'self' data://*")
+            "img-src 'self' data:")
