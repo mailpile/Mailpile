@@ -1138,8 +1138,14 @@ class MailIndex(object):
         # FIXME: This needs to get written out...
         return eid
 
-    def update_email(self, email, name=None):
+    def update_email(self, email, name=None, change_name=True):
         eid = self.EMAIL_IDS.get(email.lower())
+        if eid and not change_name:
+            el = self.EMAILS.get(eid, '').split(' ')
+            if len(el) == 2:
+                en = el[1][1:-1]
+                if '@' not in en:
+                    name = en
         return self._add_email(email, name=name, eid=eid)
 
     def compact_to_list(self, msg_to):
@@ -1150,7 +1156,7 @@ class MailIndex(object):
             if eid is None:
                 eid = self._add_email(email, name=ai.fn)
             elif ai.fn and ai.fn != email:
-                self.update_email(email, name=ai.fn)
+                self.update_email(email, name=ai.fn, change_name=False)
             eids.append(eid)
         return ','.join([b36(e) for e in set(eids)])
 
