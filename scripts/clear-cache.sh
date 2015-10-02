@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # For testing, this clears the Linux VM cache so we can get real numbers
 #
