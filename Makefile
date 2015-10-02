@@ -19,7 +19,7 @@ arch-dev:
 	sudo pacman -Syu --needed community/python2-pillow extra/python2-lxml community/python2-jinja \
 	                 community/python2-pep8 extra/python2-nose community/phantomjs \
 	                 extra/python2-pip community/python2-mock \
-	                 extra/ruby community/npm
+	                 extra/ruby community/npm community/spambayes
 	TMPDIR=`mktemp -d /tmp/aur.XXXXXXXXXX`; \
 	cd $$TMPDIR; \
 	pacman -Qs '^yuicompressor$$' > /dev/null; \
@@ -28,12 +28,6 @@ arch-dev:
 	  cd yuicompressor; \
 	  makepkg -si; \
 	  cd $$TMPDIR; \
-	fi; \
-	  pacman -Qs '^spambayes$$' > /dev/null; \
-	  if [ $$? -ne 0 ]; then \
-	  curl -s https://aur.archlinux.org/packages/sp/spambayes/spambayes.tar.gz | tar xzv; \
-	  cd spambayes; \
-	  makepkg -si; \
 	fi; \
 	cd /tmp; \
 	rm -rf $$TMPDIR
