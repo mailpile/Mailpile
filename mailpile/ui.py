@@ -168,7 +168,7 @@ class Completer(object):
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""
-    MAX_BUFFER_LEN = 150
+    MAX_BUFFER_LEN = 250
     JSON_WRAP_TYPES = ('jhtml', 'jjs', 'jtxt', 'jcss', 'jxml', 'jrss')
 
     LOG_URGENT = 0

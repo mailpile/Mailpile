@@ -195,13 +195,16 @@ class SetupMagic(Command):
         for t, tag_settings in self.TAGS.iteritems():
             tag_settings = copy.copy(tag_settings)
 
-            tid = session.config.get_tag_id(t)
+            tid = session.config.get_tag_id(t.replace(' ', '-'))
             if not tid:
                 AddTag(session, arg=[t]).run(save=False)
                 tid = session.config.get_tag_id(t)
                 created.append(t)
+            if not tid:
+                session.ui.notify(_('Failed to create tag: %s') % t)
+                continue
+
             tag_info = session.config.tags[tid]
-            assert(tid)
 
             # Delete any old filters...
             old_fids = [f for f, v in session.config.filters.iteritems()
@@ -271,6 +274,9 @@ class SetupMagic(Command):
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
             session.ui.notify(_('Enabling gravatar image importer'))
+        if not vcard_importers.libravatar:
+            vcard_importers.libravatar.append({'active': True})
+            session.ui.notify(_('Enabling libravatar image importer'))
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
