@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ex
 
 MAILPILE_PATH='/srv/Mailpile'
 MAILPILE_HOME='/home/vagrant/.mailpile'
@@ -8,7 +9,8 @@ echo 'Running bootstrap for Vagrant'
 echo '.. installing python libraries'
 apt-get update
 apt-get install -y python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pip nginx
-ln -s /usr/bin/python2.7 /usr/bin/python2
+
+apt-get install -y gnupg openssl
 
 cp $MAILPILE_PATH/scripts/nginx.conf /etc/nginx/sites-enabled/mailpile
 service nginx restart
@@ -23,7 +25,7 @@ echo '.. initial setup (creates folders and tags)'
 $AS_VAGRANT ./mp --setup
 
 echo '.. adding a test mailbox'
-$AS_VAGRANT ./mp --add $MAILPILE_PATH/testing
+$AS_VAGRANT ./mp --add $MAILPILE_PATH/mailpile/tests/data
 echo -n
 
 echo '.. rescanning everything'
@@ -34,7 +36,7 @@ echo
 
 echo '.. set subdirectory'
 echo -n
-$AS_VAGRANT ./mp set sys.subdirectory  /mailpile
+$AS_VAGRANT ./mp set sys.http_path  /mailpile
 echo
 
 
