@@ -16,10 +16,10 @@ dev:
 	@echo export PYTHONPATH=`pwd`
 
 arch-dev:
-	sudo pacman -Syu community/python2-pillow extra/python2-lxml community/python2-jinja \
+	sudo pacman -Syu --needed community/python2-pillow extra/python2-lxml community/python2-jinja \
 	                 community/python2-pep8 extra/python2-nose community/phantomjs \
 	                 extra/python2-pip community/python2-mock \
-	                 extra/ruby
+	                 extra/ruby community/npm
 	TMPDIR=`mktemp -d /tmp/aur.XXXXXXXXXX`; \
 	cd $$TMPDIR; \
 	pacman -Qs '^yuicompressor$$' > /dev/null; \
