@@ -24,7 +24,7 @@ arch-dev:
 	cd $$TMPDIR; \
 	pacman -Qs '^yuicompressor$$' > /dev/null; \
 	if [ $$? -ne 0 ]; then \
-	  curl -s https://aur.archlinux.org/packages/yu/yuicompressor/yuicompressor.tar.gz | tar xzv; \
+	  curl -s https://aur.archlinux.org/cgit/aur.git/snapshot/yuicompressor.tar.gz | tar xzv; \
 	  cd yuicompressor; \
 	  makepkg -si; \
 	  cd $$TMPDIR; \
