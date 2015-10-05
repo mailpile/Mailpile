@@ -22,7 +22,7 @@ function _call_callbacks(context, selected) {
     update_callbacks[i](context, selected);
   }
 }
-function _context(selector) {
+function context(selector) {
   return $(selector).eq(0).closest('.selection-context').eq(0);
 }
 function _select_all(ctx) {
@@ -57,7 +57,7 @@ function unregister(name) {
  * @return {Array} Array of selected values
  */
 function select_these(selector, no_callbacks) {
-  var ctx = _context(selector);
+  var ctx = context(selector);
   var sel = [];
   _each_checkbox(ctx, function() {
     if (this.value == '!all') this.value = '';
@@ -75,7 +75,7 @@ function select_these(selector, no_callbacks) {
  * @return {Array} Array of selected values, should be []
  */
 function select_none(selector, no_callbacks) {
-  var ctx = _context(selector);
+  var ctx = context(selector);
   _each_checkbox(ctx, function() {
     if (this.value == '!all') this.value = '';
     $(this).prop('checked', false);
@@ -91,7 +91,7 @@ function select_none(selector, no_callbacks) {
  * @return {Array} Array of selected values, should be ['!all']
  */
 function select_all(selector, no_callbacks) {
-  var ctx = _context(selector);
+  var ctx = context(selector);
   Mailpile.UI.Selection.select_these(ctx, true);
   _select_all(ctx).val('!all');
   if (!no_callbacks) _call_callbacks(ctx, ['!all']);
@@ -105,7 +105,7 @@ function select_all(selector, no_callbacks) {
  * @return {Array} Array of selected values
  */
 function select_not_all(selector, no_callbacks) {
-  var ctx = _context(selector);
+  var ctx = context(selector);
   _select_all(ctx).val('');
   var sel = Mailpile.UI.Selection.selected(ctx);
   if (!no_callbacks) _call_callbacks(ctx, sel);
@@ -118,7 +118,7 @@ function select_not_all(selector, no_callbacks) {
  * @return {Array} Array of selected values or ['!all']
  */
 function selected(selector) {
-  var ctx = _context(selector);
+  var ctx = context(selector);
   var selected = [];
   var all = false;
   _each_checkbox(ctx, function() {
@@ -145,6 +145,7 @@ function human_length(selection) {
 return {
   'register': register,
   'unregister': unregister,
+  'context': context,
   'select_these': select_these,
   'select_none': select_none,
   'select_all': select_all,
