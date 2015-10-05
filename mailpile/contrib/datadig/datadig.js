@@ -81,6 +81,7 @@ function download() {
 
 // Display the datadig widget!
 $(document).on('click', '.bulk-action-datadig', function() {
+  var $context = $(this);
   Mailpile.API.with_template('datadig-modal', function(modal) {
     mf = $('#modal-full').html(modal({
       context: $('#search-query').data('context')
@@ -90,7 +91,7 @@ $(document).on('click', '.bulk-action-datadig', function() {
     column_html = mf.find('.datadig-data-term').html();
 
     // Add hidden form-fields for all the message metadata-IDs
-    $.each(Mailpile.messages_cache, function(key, mid) {
+    $.each(Mailpile.UI.Selection.selected($context), function(key, mid) {
       var input = $('<input type="hidden" name="mid" value="' + mid + '">');
       mf.find('.datadig-form').append(input);
     });

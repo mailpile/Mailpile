@@ -21,7 +21,7 @@ class dataDigCommand(Command):
     HTTP_QUERY_VARS = {
         'track-id': 'tracking ID for event log',
         'timeout': 'runtime in seconds',
-        'header': 'runtime in seconds',
+        'header': 'include header',
         'no-mid': 'omit metadata-ID column',
         'term': 'extraction term',
         'mid': 'metadata-ID'
