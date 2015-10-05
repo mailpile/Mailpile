@@ -24,8 +24,20 @@ var refresh_timer;
 var refresh_interval = (5 * 1000) + (Math.random() * 2000);
 
 
-outerHTML = function(elem) {
-  return $('<div />').append(elem.clone()).html();
+ajaxable_url = function(url) {
+    return (url && ((url.indexOf(U("/in/")) == 0) ||
+                    (url.indexOf(U("/browse/")) == 0) ||
+                    (url.indexOf(U("/thread/")) == 0) ||
+                    (url.indexOf(U("/profiles/")) == 0) ||
+                    (url.indexOf(U("/search/")) == 0)));
+};
+
+_outerHTML = function(elem) {
+    return $('<div />').append(elem.clone()).html();
+};
+
+_scroll_up = function(elem) {
+    setTimeout(function() { $(elem).scrollTop(0); }, 10);
 };
 
 get_now = function() {
@@ -51,28 +63,36 @@ can_refresh = function(cid) {
 
 prepare_new_content = function(selector) {
     $(selector).find('a').each(function(idx, elem) {
-        var url = $(elem).attr('href');
         // FIXME: Should we add some majick to avoid dup click handlers?
-        if (url && ((url.indexOf(U("/in/")) == 0) ||
-                    (url.indexOf(U("/browse/")) == 0) ||
-                    (url.indexOf(U("/thread/")) == 0) ||
-                    (url.indexOf(U("/profiles/")) == 0) ||
-                    (url.indexOf(U("/search/")) == 0))
-                && (elem.className.indexOf('auto-modal') == -1)) {
+        var url = $(elem).attr('href');
+        var jhtml = ajaxable_url(url);
+        if (elem.className.indexOf('auto-modal') == -1) {
             $(elem).click(function(ev) {
-                if (update_using_jhtml(url)) ev.preventDefault();
+                // We don't hijack events that spawn new tabs/windows etc.
+                if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
+                    ev.preventDefault();
+                    // If we have any composers on the page, save contents
+                    // before continuing - whether we're JHTMLing or not!
+                    Mailpile.Composer.AutosaveAll(0, function() {
+                        if (!(jhtml && update_using_jhtml(url, _scroll_up))) {
+                            document.location.href = url;
+                        }
+                    });
+                }
             });
         }
     });
     var $form = $(selector).find('form#form-search');
     $form.submit(function(ev) {
-      if (update_using_jhtml(U("/search/?") + $form.serialize())) {
-        ev.preventDefault();
-      }
+        // We don't hijack events that spawn new tabs/windows etc.
+        if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
+            if (update_using_jhtml(U("/search/?") + $form.serialize(), _scroll_up)) {
+                ev.preventDefault();
+            }
+        }
     });
 };
 Mailpile.UI.content_setup.push(prepare_new_content);
-
 
 restore_state = function(ev) {
     if (ev.state && ev.state.autoajax) {
@@ -83,29 +103,29 @@ restore_state = function(ev) {
     }
 };
 
-update_using_jhtml = function(original_url) {
-    for (i in ajaxable_commands) {
-        if (Mailpile.instance['command'] == ajaxable_commands[i]) {
-            var cv = $('#content-view').parent();
-            history.replaceState({autoajax: true, html: outerHTML(cv)},
-                                 document.title);
-            cv.hide();
-            return $.ajax({
-                url: Mailpile.API.jhtml_url(original_url, 'content'),
-                type: 'GET',
-                success: function(data) {
-                    history.pushState({autoajax: true, html: data['result']},
-                                      data['message'], original_url);
-                    cv.replaceWith(data['result']).show();
-                    clear_selection_state();
-                    Mailpile.UI.prepare_new_content($('#content-view').parent());
-                    Mailpile.render();
-                },
-                error: function() {
-                    cv.show();
-                }
-            });
-        }
+update_using_jhtml = function(original_url, callback) {
+    if (ajaxable_url(document.location.pathname)) {
+        var cv = $('#content-view').parent();
+        history.replaceState({autoajax: true, html: _outerHTML(cv)},
+                             document.title);
+        cv.hide();
+        return $.ajax({
+            url: Mailpile.API.jhtml_url(original_url, 'content'),
+            type: 'GET',
+            success: function(data) {
+                history.pushState({autoajax: true, html: data['result']},
+                                  data['message'], original_url);
+                cv.replaceWith(data['result']).show();
+                clear_selection_state();
+                cv = $('#content-view');
+                Mailpile.UI.prepare_new_content(cv.parent());
+                Mailpile.render();
+                if (callback) { callback(cv) };
+            },
+            error: function() {
+                cv.show();
+            }
+        });
     }
     return false;
 };
@@ -174,7 +194,7 @@ $(document).ready(function() {
     refresh_timer = $.timer(function() {
         var now = get_now();
         for (var cid in refresh_history) {
-            if ((refresh_history[cid] >= 0) && 
+            if ((refresh_history[cid] >= 0) &&
                     (refresh_history[cid] < now - refresh_interval)) {
                 if (can_refresh(cid)) {
                     refresh_from_cache(cid);
