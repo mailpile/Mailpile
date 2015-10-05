@@ -47,7 +47,6 @@ Mailpile = {
     ["normal", "j",      function() { Mailpile.bulk_action_selection_down(); }],
     ["normal", "k",      function() { Mailpile.bulk_action_selection_up(); }],
     ["normal", "enter",  function() { Mailpile.open_selected_thread(); }],
-    ["normal", "f",      function() { Mailpile.update_search(); }],
     ["normal", ["m a"],  function() { Mailpile.keybinding_move_message(''); }],
     ["normal", ["m d"],  function() { Mailpile.keybinding_move_message('trash'); }],
     ["normal", ["m s"],  function() { Mailpile.keybinding_move_message('spam'); }],
@@ -208,6 +207,12 @@ Mailpile.API = {
     if (data._error_callback) {
       error_callback = data._error_callback;
       delete data['_error_callback'];
+    }
+    if (data._args) {
+      for (var i in data._args) {
+        command = command + '/' + data._args[i];
+      }
+      delete data['_args'];
     }
 
     // Get search context
