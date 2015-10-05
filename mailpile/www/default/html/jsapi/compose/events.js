@@ -211,28 +211,26 @@ $(document).on('click', '.compose-show-details', function(e) {
 /* Compose - Delete message that's in a composer */
 $(document).on('click', '.compose-message-trash', function() {
   var mid = $(this).data('mid');
-  //Mailpile.API.message_unthread({ mid: mid }, function(response) {
-  $.ajax({
-    url      : '/api/0/message/unthread/',
-    type     : 'POST',
-    data     : {
-      csrf: Mailpile.csrf_token,
-      mid: mid
-    },
-    success  : function(response) {
-      Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_trash) {
-        if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/draft/') {
-          window.location.href = '/in/inbox/';
-        }
-        else if (response_trash.status === 'success' && Mailpile.instance.state.command_url === '/message/') {
-          $('#form-compose-' + mid).removeClass('form-compose clearfix')
-                              .addClass('thread-notification')
-                              .html($('#template-thread-notification-draft-trash').html());
-        } else {
-          Mailpile.notification(response_trash.status, response_trash.message);
-        }
-      });
-    }
+  Mailpile.API.message_unthread_post({ mid: mid }, function(response) {
+    Mailpile.API.tag_post({
+      mid: mid,
+      add: 'trash',
+      del: ['drafts', 'blank']
+    }, function(response_trash) {
+      if (response_trash.status === 'success') {
+        // FIXME: Make this more intelligent
+        window.location.href = '/in/inbox/';
+      }
+      else if (response_trash.status === 'success' &&
+               Mailpile.instance.state.command_url === '/message/') {
+        // FIXME: NOT REACHED
+        $('#form-compose-' + mid).removeClass('form-compose clearfix')
+                            .addClass('thread-notification')
+                            .html($('#template-thread-notification-draft-trash').html());
+      } else {
+        Mailpile.notification(response_trash.status, response_trash.message);
+      }
+    });
   });
 });
 

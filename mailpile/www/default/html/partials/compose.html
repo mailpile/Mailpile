@@ -204,7 +204,9 @@
   </form>
   <script>
   $(document).ready(function() {
-    Mailpile.Composer.init('{{mid}}');
+    Mailpile.Composer.init('{{mid}}',
+                           {{ editing_strings|json|safe }},
+                           {{ editing_addresses|json|safe }});
   });
   </script>
 </div>

@@ -80,9 +80,14 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
                  Mailpile.UI.Selection.human_length(selection) + ')');
       }
 
-      var tag = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });
-      var hex = Mailpile.theme.colors[tag.label_color];
-      return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + hex + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
+      var $elem = $(this);
+      var tid = $elem.data('tid').toString();
+      var hex = Mailpile.theme.colors[$elem.data('color')];
+      var icon = $elem.data('icon');
+      var name = $elem.find('.name').html();
+      return $('<div class="sidebar-tag-drag ui-widget-header" style="color: '
+               + hex + '"><span class="' + icon + '"></span> '
+               + name + count + '</div>');
     }
   });
 };
@@ -104,13 +109,9 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
       //      at, to facilitate removal so the "move" really is a move.
       //
 #}
-      // FIXME: This should come from the DOM, not Mailpile.instance
-      if (Mailpile.instance.state.command_url == '/message/') {
-        var tags_delete = ['inbox'];
-      } else {
-        var tags_delete = Mailpile.instance.search_tag_ids;
-      }
-
+      var $context = Mailpile.UI.Selection.context(ui.draggable);
+      var tags_delete = (($context.find('.pile-results').data("tids") || ""
+                          ) + "").split(/\s+/);
       Mailpile.UI.Tagging.tag_and_update_ui({
         add: $(this).find('a').data('tid'),
         del: tags_delete,

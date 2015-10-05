@@ -113,6 +113,7 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
         $target = $(e.target);
         var address = $target.data('address');
         var mid = $target.closest('form.form-compose').data('mid');
+        var model = Mailpile.Composer.Drafts[mid];
 
         if ($target.hasClass('select2-search-choice')) {
           address = $target.find('.compose-choice-name').data('address');
@@ -124,7 +125,7 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
           address = $target.parent().parent().find('.compose-choice-name').data('address');
         } 
 
-        var contact_data = _.findWhere(Mailpile.instance.addresses, { address: address });
+        var contact_data = _.findWhere(model.addresses, { address: address });
         if (contact_data) {
           contact_data['mid'] = mid;
 

@@ -1,9 +1,14 @@
 /* Compose - Autosave */
 
-Mailpile.Composer.Autosave = function(mid, form_data) {
+Mailpile.Composer.Autosave = function(mid, form_data, callback) {
 
-  // Text is different, run autosave
-  if ($('#compose-text-' + mid).val() !== Mailpile.Composer.Drafts[mid].body) {
+  if (Mailpile.Composer.Drafts[mid] === undefined) {
+    Mailpile.Composer.Drafts[mid] = Mailpile.Composer.Model({}, {});
+    Mailpile.Composer.Body.Setup(mid);
+  }
+
+  // Has text changed, or is new?  If so, run autosave.
+  if ($('#compose-text-' + mid).val() != Mailpile.Composer.Drafts[mid].body) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
@@ -25,23 +30,47 @@ Mailpile.Composer.Autosave = function(mid, form_data) {
         setTimeout(function() {
           $('#compose-message-autosaving-' + mid).fadeOut();
         }, 2000);
+        callback();
       },
       error: function() {
         var autosave_error_msg = $('#compose-message-autosaving-' + mid).data('autosave_error_msg');
         $('#compose-message-autosaving-' + mid).html('<span class="icon-x"></span>' + autosave_error_msg).fadeIn();
+        callback();
       }
   	});
 
   }
   // Not Autosaving
-  else { }
+  else {
+    callback();
+  }
 };
+
+
+Mailpile.Composer.AutosaveAll = function(delay, callback) {
+  var save_chain = [];
+  $('.form-compose').each(function(key, form) {
+    save_chain.push(function(chain) {
+      Mailpile.Composer.Autosave($(form).data('mid'), $(form).serialize(),
+                                 function() {
+        if (chain && chain.length) {
+          var nxt = chain.shift();
+          if (delay) {
+            setTimeout(function() { nxt(chain); }, delay)
+          }
+          else {
+            nxt(chain);
+          }
+        }
+      });
+    });
+  });
+  if (callback) save_chain.push(callback);
+  if (save_chain.length) save_chain.shift()(save_chain);
+}
 
 
 /* Compose Autosave - finds each compose form and performs action */
 Mailpile.Composer.AutosaveTimer = $.timer(function() {
-  // UNTESTED: should handle multiples in a thread
-  $('.form-compose').each(function(key, form) {
-    Mailpile.Composer.Autosave($(form).data('mid'), $(form).serialize());
-  });
+  Mailpile.Composer.AutosaveAll(250);
 });

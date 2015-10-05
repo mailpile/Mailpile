@@ -1,21 +1,9 @@
 /* Composer - Body */
 
-// This is rough, and isn't being fully used yet
-Mailpile.Composer.Model = {
-  to:  [], // Something like { fn: '', address: '', secure: false}
-  cc:  [],
-  bcc: [],
-  subject: '',
-  body: '',
-  quoted_reply: '',
-  attachements: [],
-  datetime: 0,
-  crypto: {
-    encrypt: false,
-    sign: false,
-    type: 'openpgp',
-    email_key: false,
-  }
+Mailpile.Composer.Model = function(strings, addresses) {
+  var model = strings;
+  model["addresses"] = addresses;
+  return model;
 };
 
 

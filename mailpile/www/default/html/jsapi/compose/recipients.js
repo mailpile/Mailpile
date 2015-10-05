@@ -145,24 +145,25 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
               </span>';
     },
     formatSelection: function(state, elem) {
-
       // Update Model
       var found = false;
-      for (i in Mailpile.instance.addresses) {
-        var contact_data = Mailpile.instance.addresses[i];
+      var model = Mailpile.Composer.Drafts[mid];
+      for (i in model.addresses) {
+        var contact_data = model.addresses[i];
         if (contact_data.address == state.address) {
           if (state.flags.manual) {
-            state = Mailpile.instance.addresses[i];
+            state.photo = contact_data.photo;
+            model.addresses[i] = state;
           }
           else {
-            Mailpile.instance.addresses[i] = state;
+            state = model.addresses[i];
           }
           found = i;
         }
       }
       if (!found) {
         found = Math.random().toString(16).substring(6);
-        Mailpile.instance.addresses[found] = state;
+        model.addresses[found] = state;
       }
 
       // Create HTML
