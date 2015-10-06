@@ -115,7 +115,8 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
       Mailpile.UI.Tagging.tag_and_update_ui({
         add: $(this).find('a').data('tid'),
         del: tags_delete,
-        mid: Mailpile.UI.Selection.selected(ui.draggable)
+        mid: Mailpile.UI.Selection.selected($context),
+        context: $context.find('.search-context').data('context')
       }, 'move');
     }
   });

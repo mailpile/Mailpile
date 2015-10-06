@@ -183,11 +183,13 @@ Mailpile.UI.Search.Dropable = function(element, accept) {
     hoverClass: 'result-hover',
     tolerance: 'pointer',
     drop: function(event, ui) {
-      var selected = Mailpile.UI.Selection.selected(event.target);
+      var $context = Mailpile.UI.Selection.context(event.target);
+      var selected = Mailpile.UI.Selection.selected($context);
       selected.push($(event.target).data('mid'));
       Mailpile.UI.Tagging.tag_and_update_ui({
         add: ui.draggable.data('tid'),
-        mid: selected
+        mid: selected,
+        context: $context.find('.search-context').data('context')
       }, 'tag');
     }
   });

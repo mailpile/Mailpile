@@ -215,8 +215,8 @@ Mailpile.API = {
       delete data['_args'];
     }
 
-    // Get search context
-    var context = $('#search-query').data('context');
+    // Get search context; should be overridden by methods that know better
+    var context = (data['context'] || $('#search-query').data('context'));
 
     // Force method to GET if not POST
     if (method !== 'GET' && method !== 'POST') method = 'GET';
@@ -232,7 +232,10 @@ Mailpile.API = {
         }
         params = $.param(data);
       }
-      if (context) params += '&context=' + context;
+      if (context && (-1 == params.indexOf('&context=')) &&
+                     (0 != params.indexOf('context='))) {
+        params += '&context=' + context;
+      }
 
       $.ajax({
         url: base_url + command + output + "?" + params,

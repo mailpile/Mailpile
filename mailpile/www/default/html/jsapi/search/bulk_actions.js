@@ -27,7 +27,7 @@ Mailpile.bulk_actions_update_ui = function() {
       if (selected[0] == "!all") {
         message = ('<a onclick="javascript:Mailpile.unselect_all_matches(this);">' +
                      '<span class="icon-new"></span> ' +
-                     $('#bulk-actions-message').data('unselect_all') +
+                     $context.find('#bulk-actions-message').data('unselect_all') +
                    '</a>');
       }
       else if ($context.find("#pile-select-all-action").is(':checked')) {
@@ -40,7 +40,7 @@ Mailpile.bulk_actions_update_ui = function() {
         message += $context.find('#bulk-actions-message').data('bulk_selected');
         if (selected.length == 1) Mailpile.show_message_hints($context, selected);
       }
-      $('#bulk-actions-message').html(message);
+      $context.find('#bulk-actions-message').html(message);
       Mailpile.show_bulk_actions($context.find('.bulk-actions').find('li.hide'));
     }
     else {
@@ -93,17 +93,21 @@ Mailpile.unselect_all_matches = function(elem) {
 
 
 Mailpile.bulk_action_read = function(elem) {
+  var $context = Mailpile.UI.Selection.context(elem || '.pile-results');
   Mailpile.UI.Tagging.tag_and_update_ui({
     del: 'new',
-    mid: Mailpile.UI.Selection.selected(elem || '.pile-results')
+    mid: Mailpile.UI.Selection.selected($context),
+    context: $context.find('.search-context').data('context')
   }, 'read');
 };
 
 
 Mailpile.bulk_action_unread = function(elem) {
+  var $context = Mailpile.UI.Selection.context(elem || '.pile-results');
   Mailpile.UI.Tagging.tag_and_update_ui({
     add: 'new',
-    mid: Mailpile.UI.Selection.selected(elem || '.pile-results')
+    mid: Mailpile.UI.Selection.selected($context),
+    context: $context.find('.search-context').data('context')
   }, 'unread');
 };
 

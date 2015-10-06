@@ -1,7 +1,8 @@
 Mailpile.keybinding_move_message = function(add_tag) {
 
   // Has Messages
-  var selection = Mailpile.UI.Selection.selected('#content');
+  var $context = Mailpile.UI.Selection.context('#content');
+  var selection = Mailpile.UI.Selection.selected($context);
   if (selection.length) {
 
     // FIXME: This should come from the DOM, not Mailpile.instance
@@ -11,7 +12,8 @@ Mailpile.keybinding_move_message = function(add_tag) {
     Mailpile.Tagging.tag_and_update_ui({
       add: add_tag,
       del: delete_tags,
-      mid: selection
+      mid: selection,
+      context: $context.find('.search-context').data('context')
     }, 'move');
   }
   else {

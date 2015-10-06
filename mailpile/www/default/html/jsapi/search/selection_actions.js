@@ -29,29 +29,35 @@ $(document).on('click', '.bulk-action-tag', function() {
 
 /* Search - Bulk Action - Archive */
 $(document).on('click', '.bulk-action-archive', function() {
+  var $context = Mailpile.UI.Selection.context(this);
   Mailpile.UI.Tagging.tag_and_update_ui({
     del: 'inbox',
-    mid: Mailpile.UI.Selection.selected(this)
+    mid: Mailpile.UI.Selection.selected($context),
+    context: $context.find('.search-context').data('context')
   }, 'archive');
 });
 
 
 /* Search - Bulk Action - Trash */
 $(document).on('click', '.bulk-action-trash', function(result) {
+  var $context = Mailpile.UI.Selection.context(this);
   Mailpile.UI.Tagging.tag_and_update_ui({
     del: ['new', 'spam'],
     add: 'trash',
-    mid: Mailpile.UI.Selection.selected(this)
+    mid: Mailpile.UI.Selection.selected($context),
+    context: $context.find('.search-context').data('context')
   }, 'trash');
 });
 
 
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
+  var $context = Mailpile.UI.Selection.context(this);
   Mailpile.UI.Tagging.tag_and_update_ui({
     del: ['new', 'trash'],
     add: 'spam',
-    mid: Mailpile.UI.Selection.selected(this)
+    mid: Mailpile.UI.Selection.selected($context),
+    context: $context.find('.search-context').data('context')
   }, 'spam');
 });
 
