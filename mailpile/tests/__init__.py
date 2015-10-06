@@ -13,12 +13,15 @@ import mailpile.util
 from mailpile.plugins.tags import AddTag, Filter
 from mailpile.crypto.gpgi import GNUPG_HOMEDIR
 from mailpile.ui import SilentInteraction
+from mailpile.vcard import AddressInfo
 
 # Pull in all the standard plugins, plus the demos.
 from mailpile.mailboxes import *
 from mailpile.plugins import *
 
 MP = None
+MY_FROM = 'team+testing@mailpile.is'
+MY_NAME = 'Mailpile Team'
 
 
 def get_mailpile_root():
@@ -63,6 +66,7 @@ def _initialize_mailpile_for_testing(workdir, test_data):
 
     mp.add(test_data)
     mp.rescan('mailboxes')
+    mp.profiles_add(MY_FROM, '=', MY_NAME)
 
     return mp, session, config, ui
 
