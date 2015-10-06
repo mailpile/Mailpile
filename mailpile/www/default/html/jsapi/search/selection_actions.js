@@ -119,7 +119,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
       _.each(result.result.msg_ids, function(mid, key) {
 
         // Select to minimize load traversing DOM
-        $item = $('.pile-message-' + mid).find('td.subject span.item-tags');
+        $item = $('.pile-message-' + mid).find('span.item-tags');
 
         // Add / Remove Tags from UI
         if (action == 'add') {

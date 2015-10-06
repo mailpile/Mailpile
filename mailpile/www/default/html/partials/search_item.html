@@ -47,13 +47,8 @@
       {% endif %}
     </a>
   </td>
-  <td class="subject">
-    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
-    <span class="icon-lock-closed color-08-green"></span> 
-    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
-    <span class="icon-lock-closed color-12-red"></span> 
-    {% endif %}
-    <span class="item-tags">
+  <td class="crypto-and-tags" style="text-align: right;">
+    <span class="item-tags" style="opacity: 0.5"> {# FIXME #}
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
@@ -61,16 +56,23 @@
                    color-{{tag.label_color}}"
             data-tid="{{tag.tid}}" data-mid="{{mid}}">
         <span class="pile-message-tag-icon {{tag.icon}}"></span>
-        <span class="pile-message-tag-name">{{tag.name}}</span>
       </span>
       {% endif %}
     {% endfor %}
     </span>
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
+    <span class="icon-lock-closed color-08-green"></span>
+    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
+    <span class="icon-lock-closed color-12-red"></span>
+    {% endif %}
+  </td>
+  <td class="subject">
     <a class="item-subject" title="{{metadata.body.snippet}}"
        href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
-    <a href="{{ U('/search/?q=dates:', metadata.date) }}/">{{metadata.timestamp|elapsed_datetime}}</a>
+    <a href="{{ U('/search/?q=dates:', metadata.date) }}/"
+       title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
   <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">

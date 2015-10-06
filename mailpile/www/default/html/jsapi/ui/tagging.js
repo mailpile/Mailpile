@@ -111,8 +111,7 @@ function tag_and_update_ui(options, op, callback) {
             '<span class="pile-message-tag pile-message-tag-' + 
                           tag.tid + '" style="color: ' + hex + ';">' +
                           '<span class="pile-message-tag-icon ' + tag.icon +
-                          '"></span> <span class="pile-message-tag-name">' +
-                          tag.name + '</span></span>'
+                          '"></span></span>'
           );
           $context.find('.pile-message').each(function(i, elem) {
             var $elem = $(elem);
@@ -125,7 +124,7 @@ function tag_and_update_ui(options, op, callback) {
               else {
                 $elem.addClass('in_' + tag.slug);
                 if (tag.label) {
-                  $elem.find('td.subject span.item-tags').append(tag_html);
+                  $elem.find('span.item-tags').append(tag_html);
                 }
               }
             }
