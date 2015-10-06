@@ -5,10 +5,15 @@ Mailpile.Search.Tooltips.MessageTags = function() {
     content: {
       title: false,
       text: function(event, api) {
-        var tooltip_data = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
-        tooltip_data['mid'] = $(this).data('mid');
-        var tooltip_template = _.template($('#tooltip-pile-tag-details').html());
-        return tooltip_template(tooltip_data);
+        var mid = $(this).data('mid').toString();
+        var tid = $(this).data('tid').toString();
+        Mailpile.API.tags_get({ tid: tid }, function(response) {
+          var tooltip_template = _.template($('#tooltip-pile-tag-details').html());
+          var tooltip_data = response.result.tags[0];
+          tooltip_data['mid'] = mid;
+          api.set('content.text', tooltip_template(tooltip_data));
+        });
+        return "...";
       }
     },
     style: {
@@ -24,18 +29,10 @@ Mailpile.Search.Tooltips.MessageTags = function() {
     position: {
       my: 'bottom center',
       at: 'top left',
-			viewport: $(window),
-			adjust: {
-				x: 7,  y: -4
-			}
+      viewport: $(window),
+      adjust: {x: 7, y: 2}
     },
-    show: {
-      event: 'click',
-      delay: 50
-    },
-    hide: {
-      event: false,
-      inactive: 700
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };

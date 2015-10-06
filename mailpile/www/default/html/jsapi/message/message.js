@@ -115,7 +115,7 @@ $(document).on('click', '.message-action-inbox', function() {
 $(document).on('click', '.message-action-archive', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: '', del: ['inbox'], mid: mid}, function(response) {
-    window.location.href = '/in/inbox/';
+    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
   });
 });
 
@@ -124,7 +124,7 @@ $(document).on('click', '.message-action-archive', function() {
 $(document).on('click', '.message-action-spam', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['spam'], del: ['trash', 'inbox'], mid: mid}, function() {
-    window.location.href = '/in/inbox/';
+    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
   });
 });
 
@@ -159,7 +159,7 @@ $(document).on('click', '.message-action-unthread', function() {
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
-    window.location.href = '/in/inbox/';
+    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
   });
 });
 

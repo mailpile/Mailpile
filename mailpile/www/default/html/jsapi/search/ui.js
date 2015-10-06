@@ -79,19 +79,6 @@ Mailpile.results_list = function() {
 };
 
 
-Mailpile.update_search = function(ev) {
-    $("#pile-newmessages-notification").slideUp("slow");
-    console.log("Refreshing ", Mailpile.instance);
-    url = "{{ config.sys.http_path }}/api/0/search/as.jhtml?" + $.param(Mailpile.instance.state.query_args);
-    $.getJSON(url, {}, function(data) {
-        if (data.status == "success") {
-            $("#content-view").html(data.result);
-        }
-        console.log(data);
-    });
-};
-
-
 Mailpile.render_modal_tags = function(elem) {
   var selected = Mailpile.UI.Selection.selected(elem || '.pile-results');
   if (selected.length) {

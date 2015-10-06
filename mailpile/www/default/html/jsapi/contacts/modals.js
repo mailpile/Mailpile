@@ -17,10 +17,11 @@ Mailpile.UI.Modals.ContactAddProcess = function() {
       $('#modal-full').modal('hide');
 
       // If Contacts List
-      if (Mailpile.instance.state.command_url === "/contacts/") {
+      var $clist = $('#contacts-list');
+      if ($clist.length > 0) {
         var contact_template = _.template($('#template-contact-list-item').html());
         var contact_html = contact_template(result.result.contact);
-        $('#contacts-list').append(contact_html);
+        $clist.append(contact_html);
       }
     }
   });

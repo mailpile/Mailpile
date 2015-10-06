@@ -4,7 +4,7 @@
 <div id="mailbox-settings" class="content-normal"
      style="position: relative; max-width: 42em;">
 <form class="standard" method="POST"
-      action="{{ U('/settings/mailbox/') }}">
+      action="{{ U('/settings/mailbox/') }}">{{ csrf_field|safe }}
 
   <script type="text/javascript">
   </script>

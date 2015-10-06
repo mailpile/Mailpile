@@ -1,7 +1,7 @@
 {%- block layout_top %}{% endblock -%}
-<div class="selection-context">
 
 {%- block content_top %}
+<div class="selection-context">
   <div id="content-tools">
   {% block contenttools %}
     {% if result %}
@@ -28,13 +28,19 @@
   <div id="content-view">
 {%- endblock %}
 
-    <div {% if state and state.cache_id %} data-template="{{ render_template }}" class="cached content-{{ state.cache_id }}"{% endif %}>
+    <div {% if state and state.cache_id -%}
+         data-template="{{ render_template }}"
+         class="search-context cached content-{{ state.cache_id }}"
+         {% else -%}
+         class="search-context"
+         {% endif -%}
+         data-context="{{state.context}}">
 {%- block content %}<h1>No Content</h1>{% endblock -%}
     </div>
 
 {%- block content_bottom %}
   </div>
+</div>
 {%- endblock %}
 
-</div>
 {%- block layout_bottom %}{% endblock %}

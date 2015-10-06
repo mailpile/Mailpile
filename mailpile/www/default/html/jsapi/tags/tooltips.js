@@ -5,13 +5,17 @@ Mailpile.Tags.Tooltips.CardSubtags = function() {
     content: {
       title: false,
       text: function(event, api) {
-        var tag = _.findWhere(Mailpile.instance.tags, {tid: $(this).data('tid')});
-        var tooltip_template = _.template($('#tooltip-tag-subtags').html());
-        return tooltip_template({ tag: tag });
+        Mailpile.API.tags_get({ tid: $(this).data('tid').toString() },
+                              function(response) {
+          var tooltip_template = _.template($('#tooltip-tag-subtags').html());
+          var tooltip_data = response.result.tags[0];
+          api.set('content.text', tooltip_template(tooltip_data));
+        });
+        return "...";
       }
     },
     style: {
-     tip: {
+      tip: {
         target: $(this),
         border: 0,
         width: 10,
@@ -22,17 +26,12 @@ Mailpile.Tags.Tooltips.CardSubtags = function() {
     position: {
       my: 'top center',
       at: 'bottom center',
-			viewport: $('#content-view'),
-			adjust: {
-				x: -5,  y: 0
-			}
+      viewport: $('#content-view'),
+      adjust: {
+        x: -5,  y: 0
+      }
     },
-    show: {
-      delay: 50
-    },
-    hide: {
-      event: false,
-      inactive: 1000
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };

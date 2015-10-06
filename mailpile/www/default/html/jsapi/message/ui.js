@@ -24,16 +24,19 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
 
 Mailpile.UI.Message.ScrollToMessage = function() {
 
-  $('#content-view').scrollTop(msg_top_pos - 150);
+  var msg_top_pos = 0;
   var check_new = $('#content-view').find('div.new');
 
   if (check_new.length) {
     var unread_thread_id = $(check_new[0]).data('mid');
-    var msg_top_pos = $('#message-' + unread_thread_id).position().top + 1;
+    msg_top_pos = $('#message-' + unread_thread_id).position().top + 1;
   } 
   else {
-    var thread_id = _.keys(Mailpile.instance.messages)[0];
-    var msg_top_pos = $('#message-' + thread_id).position().top + 1;
+    var full_message = $('#content-view').find('div.thread-message');
+    if (full_message.length) {
+      var thread_id = $(full_message[0]).data('mid');
+      msg_top_pos = $('#message-' + thread_id).position().top + 1;
+    }
   }
 
   // Scroll To
