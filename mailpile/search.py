@@ -1140,8 +1140,8 @@ class MailIndex(object):
 
     def update_email(self, email, name=None, change_name=True):
         eid = self.EMAIL_IDS.get(email.lower())
-        if eid and not change_name:
-            el = self.EMAILS.get(eid, '').split(' ')
+        if (eid is not None) and not change_name:
+            el = self.EMAILS[eid].split(' ')
             if len(el) == 2:
                 en = el[1][1:-1]
                 if '@' not in en:

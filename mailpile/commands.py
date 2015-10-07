@@ -1394,12 +1394,15 @@ class Rescan(Command):
                     src_ids = config.sources.keys()
                     src_ids.sort(key=lambda k: random.randint(0, 100))
                     for src_id in src_ids:
-                        src = config.get_mail_source(src_id, start=True)
-                        if mailpile.util.QUITTING:
-                            ocount = msg_count
-                            break
-                        session.ui.mark(_('Rescanning: %s') % (src, ))
-                        count = src.rescan_now(session)
+                        try:
+                            src = config.get_mail_source(src_id, start=True)
+                            if mailpile.util.QUITTING:
+                                ocount = msg_count
+                                break
+                            session.ui.mark(_('Rescanning: %s') % (src, ))
+                            count = src.rescan_now(session)
+                        except ValueError:
+                            count = 0
                         if count > 0:
                             msg_count += count
                             mbox_count += 1
