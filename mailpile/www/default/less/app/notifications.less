@@ -2,7 +2,7 @@
 
   #notifications {
     position: fixed;
-    bottom: 0px; //15px;
+    bottom: 0px;
     right: 15px;
     width: 250px;
     display: inline-block;
@@ -62,6 +62,7 @@
     line-height: 18px;
     color: @white;
   }
+  #notifications-header span.text { padding-bottom: 0; margin: 0; }
 
   div.notification-bubble span.message {
     font-weight: bold;
@@ -78,4 +79,6 @@
   #notifications a:hover   { color: @grayLight; }
 
   #notifications a.notifications-close-all,
-  #notifications a.notification-close { display: table-cell; vertical-align: text-top; }
+  #notifications a.notification-close {
+    display: table-cell; vertical-align: text-top;
+  }

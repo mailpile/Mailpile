@@ -3,22 +3,90 @@
 
   .topbar-logo-name { display: none; }
 
-  #form-search { display: none; }
+  .form-search { width: auto; }
+  .form-search input { width: 50%; }
 
-	.topbar-nav {
-	  float: none;
+  .topbar-nav .nav-search { display: list-item; }
+  .topbar-nav { display: none; }
+
+  #sidebar, #sidebar-wrapper { width: 40px; }
+  #sidebar-scroll-area { bottom: 0; }
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag > span.notification { display: none; }
+  #sidebar-bottom { display: none; }
+  #content { margin-left: 40px; }
+
+  #pile-results td.checkbox,
+  #pile-results td.crypto-and-tags { display: none; }
+  #pile-results td.from,
+  #pile-results td.date { padding-right: 3px; }
+
+  #content-tools nav li { padding: 2px; margin: 0; }
+  #content-tools nav .navigation-text { display: none; }
+
+  #bulk-actions-message { position: absolute; }
+}
+
+/* This is too small for the tabular result list, switch to card-style */
+@media only screen and (max-width: 480px), (orientation: portrait) {
+  #content { margin-left: 0px; padding-bottom: 96px; }
+  #sidebar {
+    position: fixed; display: block;
+    top: auto; left: 0; right: 0; bottom: 0;
+    padding: 0;
+    height: 81px; width: 100%;
+    border-top: 1px solid @gray; border-right: 0;
+    z-index: 10;
+  }
+  #sidebar-wrapper {
+    width: 100%; height: 80px; margin: 0; padding: 0;
+  }
+  #sidebar-scroll-area {
+    overflow-x: scroll; overflow-y: hidden; padding: 0; margin: 0;
+  }
+  #sidebar-lists { width: 7200px; }
+  #sidebar a.sidebar-tag,
+  #sidebar-lists ul,
+  #sidebar-lists ul li {
+    display: inline-block;
+    text-align: center; vertical-align: top;
+    padding: 0; margin: 0;
+  }
+  #sidebar-lists li {
+    width: 80px; height: 80px;
+    padding: 3px; margin: 0;
+    overflow: hidden;
+    border-left: 1px solid @gray;
+  }
+  #sidebar li.sidebar-subtag a.sidebar-tag span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag span.notification,
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar.snug a.sidebar-tag > span.name,
+  #sidebar.cozy a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag span.icon,
+  #sidebar.snug a.sidebar-tag span.icon,
+  #sidebar.cozy a.sidebar-tag span.icon,
+  #sidebar a.sidebar-tag > span.notification,
+  #sidebar.snug a.sidebar-tag > span.notification,
+  #sidebar.cozy a.sidebar-tag > span.notification {
+    display: block; font-size: 12px; line-height: 14px; max-width: 80px;
+  }
+  #sidebar li.sidebar-subtag a.sidebar-tag span.icon,
+  #sidebar.cozy a.sidebar-tag span.icon,
+  #sidebar.snug a.sidebar-tag span.icon,
+  #sidebar a.sidebar-tag span.icon {
+    width: auto; height: 24px; font-size: 24px; line-height: 24px; padding: 8px;
   }
 
-  .topbar-nav .nav-search {
-    display: list-item;
+  #notifications {
+    top: 0; right: 15%; left: 15%; width: 70%; bottom: auto;
+    border-bottom-left-radius: (@base-border-radius);
+    border-bottom-right-radius: (@base-border-radius);
   }
 
-  #sidebar { display: none; }
-  #content { margin-left: 0px; }
-
-  /* Pile */
-  #pile-results td.draggable { display: none; }
-  #pile-results td.avatar { padding-left: 12px; }
-
+  /* Stuff we just hide... */
+  #sidebar hr,
+  #notifications-header,
+  #pile-results td.from { display: none; }
 
 }
