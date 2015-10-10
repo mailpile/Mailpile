@@ -53,7 +53,7 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "mailpile/www/default/css/default.css": "mailpile/www/default/less/default.less"
+          "mailpile/www/default/css/default.min.css": "mailpile/www/default/less/default.less"
         }
       }
     },
