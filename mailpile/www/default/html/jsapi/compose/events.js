@@ -126,7 +126,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 	  success  : function(response) {
 	    // Is A New Message (or Forward)
       if (action === 'send' && response.status === 'success') {
-        window.location.href = Mailpile.urls.message_sent + response.result.thread_ids[0] + "/";
+        Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");
       }
       // Is Thread Reply
       else if (action === 'reply' && response.status === 'success') {
@@ -219,7 +219,7 @@ $(document).on('click', '.compose-message-trash', function() {
     }, function(response_trash) {
       if (response_trash.status === 'success') {
         // FIXME: Make this more intelligent
-        window.location.href = '/in/inbox/';
+        Mailpile.go('/in/inbox/');
       }
       else if (response_trash.status === 'success' &&
                Mailpile.instance.state.command_url === '/message/') {

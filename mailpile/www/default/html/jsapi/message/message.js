@@ -93,7 +93,7 @@ $(document).on('click', '.message-action-forward', function() {
     },
     success  : function(response) {
       if (response.status === 'success') {
-        window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
+        Mailpile.go(Mailpile.urls.message_draft + response.result.created + '/');
       } else {
         Mailpile.notification(response);
       }
@@ -106,7 +106,7 @@ $(document).on('click', '.message-action-forward', function() {
 $(document).on('click', '.message-action-inbox', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['inbox'],  del: ['spam', 'trash'], mid: mid}, function() {
-    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
+    Mailpile.go('/in/inbox/');
   });
 });
 
@@ -115,7 +115,7 @@ $(document).on('click', '.message-action-inbox', function() {
 $(document).on('click', '.message-action-archive', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: '', del: ['inbox'], mid: mid}, function(response) {
-    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
+    Mailpile.go('/in/inbox/');
   });
 });
 
@@ -124,7 +124,7 @@ $(document).on('click', '.message-action-archive', function() {
 $(document).on('click', '.message-action-spam', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['spam'], del: ['trash', 'inbox'], mid: mid}, function() {
-    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
+    Mailpile.go('/in/inbox/');
   });
 });
 
@@ -159,7 +159,7 @@ $(document).on('click', '.message-action-unthread', function() {
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).parent().parent().data('mid');
   Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
-    window.location.href = '{{ config.sys.http_path }}/in/inbox/';
+    Mailpile.go('/in/inbox/');
   });
 });
 

@@ -73,8 +73,7 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
       Mailpile.API.filter_post({
         _serialized: $('#modal-save-search').serialize()
       }, function(data) {
-        window.location.href = ('{{ config.sys.http_path }}/in/saved-search-'
-                                + data['result']['id'] + '/');
+        Mailpile.go('/in/saved-search-' + data['result']['id'] + '/');
       });
     }
     else {

@@ -1,5 +1,12 @@
+Mailpile.fix_url = function(url) {
+  if (url.indexOf("{{ config.sys.http_path }}") != 0) {
+    return "{{ config.sys.http_path }}" + url;
+  }
+  return url;
+}
+
 Mailpile.go = function(url) {
-  window.location.href = "{{ config.sys.http_path }}" + url;
+  window.location.href = Mailpile.fix_url(url);
 };
 
 

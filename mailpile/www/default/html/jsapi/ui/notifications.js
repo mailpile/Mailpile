@@ -128,7 +128,7 @@ Mailpile.notification = function(result) {
   }
   else if (result.complete == 'redirect') {
     setTimeout(function() {
-      window.location.href = result.action
+      Mailpile.go(result.action);
     }, 4000);
   }
 
@@ -170,7 +170,7 @@ $(document).on('click', '.notification-nag', function(e) {
   var href = $(this).attr('href');
   var next_nag = new Date().getTime() + Mailpile.nagify;
   Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag }, function() {
-    window.location.href = href;
+    Mailpile.go(href);
   });
 });
 

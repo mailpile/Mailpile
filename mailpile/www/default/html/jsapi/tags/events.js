@@ -96,7 +96,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
   e.preventDefault();
   var tag_data = $('#form-tag-add').serialize();
   Mailpile.API.tags_add_post(tag_data, function() {
-    window.location.href = "{{ U('/tags/edit.html?only=') }}" + $('#data-tag-add-slug').val();
+    Mailpile.go('/tags/edit.html?only=' + $('#data-tag-add-slug').val());
   });
 });
 
@@ -106,7 +106,7 @@ $(document).on('click', '#button-tag-delete', function(e) {
   var tag_slug = $(this).data('slug');
   if (confirm("{{_('Are you sure you want to delete this tag?')}}\n{{_('This action cannot be undone.')}}")) {
     Mailpile.API.tags_delete_post({ tag: tag_slug }, function(response) {
-      window.location.href = "{{ U('/') }}";
+      Mailpile.go('/in/inbox/');
     }, 'POST');
   }
 });
