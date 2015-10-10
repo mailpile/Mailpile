@@ -3,7 +3,9 @@
 #
 ###############################################################################
 import Cookie
+import cStringIO
 import hashlib
+import gzip
 import mimetypes
 import os
 import random
@@ -177,11 +179,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             self.send_header('WWW-Authenticate',
                              'Basic realm = MP%d' % (time.time() / 3600))
         # If suppress_body == True, we don't know the content length
-        contentLengthHeaders = []
+        headers = []
         if not suppress_body:
-            contentLengthHeaders = [('Content-Length', len(message or ''))]
-        self.send_standard_headers(header_list=(header_list +
-                                                contentLengthHeaders),
+            message, headers = self._maybe_gzip(message, len(message or ''), [])
+        self.send_standard_headers(header_list=(header_list + headers),
                                    mimetype=mimetype,
                                    cachectrl=(cachectrl or "no-cache"))
         # Response body
@@ -200,6 +201,25 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         # about the actual server configuration.
         data = '%s-%s' % (self.server.secret, '-'.join((str(a) for a in args)))
         return hashlib.md5(data).hexdigest()
+
+    def _maybe_gzip(self, data, msg_size, headers):
+        if (data and
+                (len(data) > 1400) and
+                (data[:2] not in ('\xff\xd8', '\x89\x50', # JPEG, PNG
+                                  '\x1f\x8b', 'BZ', 'PK' # GZIP, BZIP, PKZIP
+                                  )) and
+                ('gzip' in self.headers.get('accept-encoding', ''))):
+            gzipped = cStringIO.StringIO()
+            with gzip.GzipFile(fileobj=gzipped, mode='w') as fd:
+                fd.write(data)
+            gzipped = gzipped.getvalue()
+            if len(data) > len(gzipped):
+                headers.extend([('Content-Length', '%s' % len(gzipped)),
+                                ('X-Full-Size', '%s' % msg_size),
+                                ('Content-Encoding', 'gzip')])
+                return gzipped, headers
+        headers.append(('Content-Length', '%s' % msg_size))
+        return data, headers
 
     def send_file(self, config, filename, suppress_body=False):
         # FIXME: Do we need more security checks?
@@ -232,9 +252,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         #       on a given Mailpile instance, thuse the long TTL and no
         #       ETag for conditional loads.
 
+        message, headers = self._maybe_gzip(message, msg_size, [])
         self.log_request(code, msg_size if (message is not None) else '-')
         self.send_http_response(code, msg)
-        self.send_standard_headers(header_list=[('Content-Length', msg_size)],
+        self.send_standard_headers(header_list=headers,
                                    mimetype=mimetype,
                                    cachectrl='must-revalidate, max-age=36000')
         self.wfile.write(message or '')
