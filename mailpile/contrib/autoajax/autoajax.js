@@ -21,7 +21,8 @@ var refresh_history = {};
 var U = Mailpile.API.U;
 
 var refresh_timer;
-var refresh_interval = (5 * 1000) + (Math.random() * 2000);
+var backup_refresh_interval = (30 * 1000) + (Math.random() * 2000);
+var refresh_interval = backup_refresh_interval;
 
 
 ajaxable_url = function(url) {
@@ -47,7 +48,7 @@ get_now = function() {
 
 clear_selection_state = function() {
     // FIXME: Is this sufficient?
-    Mailpile.messages_cache = [];
+    Mailpile.UI.Selection.select_none();
 };
 
 can_refresh = function(cid) {
@@ -57,8 +58,25 @@ can_refresh = function(cid) {
     //        updates somewhat granularly.
     // FIXME: Should we just monitor for mouse/keyboard activity and only
     //        update if user isn't doing anything in particular?
-    if (cid.indexOf('-tags') != -1) return true;
-    return ($('.pile-results input[type=checkbox]:checked').length < 1);
+    return ((Mailpile.ui_in_action < 1) &&
+            ($('.pile-results input[type=checkbox]:checked').length < 1));
+};
+
+autoajax_go = function(url, message, jhtml) {
+    url = Mailpile.fix_url(url);
+    if (jhtml === undefined) jhtml = ajaxable_url(url);
+    // If we have any composers on the page, save contents
+    // before continuing - whether we're JHTMLing or not!
+    var done = Mailpile.notify_working(message, 1500);
+    var scroll_and_done = function(stuff) {
+      done();
+      return _scroll_up(stuff);
+    }
+    Mailpile.Composer.AutosaveAll(0, function() {
+        if (!(jhtml && update_using_jhtml(url, scroll_and_done))) {
+            document.location.href = url;
+        }
+    });
 };
 
 prepare_new_content = function(selector) {
@@ -66,18 +84,14 @@ prepare_new_content = function(selector) {
         // FIXME: Should we add some majick to avoid dup click handlers?
         var url = $(elem).attr('href');
         var jhtml = ajaxable_url(url);
-        if (elem.className.indexOf('auto-modal') == -1) {
+        if (url &&
+                (url.indexOf('#') != 0) &&
+                (elem.className.indexOf('auto-modal') == -1)) {
             $(elem).click(function(ev) {
                 // We don't hijack events that spawn new tabs/windows etc.
                 if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
                     ev.preventDefault();
-                    // If we have any composers on the page, save contents
-                    // before continuing - whether we're JHTMLing or not!
-                    Mailpile.Composer.AutosaveAll(0, function() {
-                        if (!(jhtml && update_using_jhtml(url, _scroll_up))) {
-                            document.location.href = url;
-                        }
-                    });
+                    autoajax_go(url, undefined, jhtml);
                 }
             });
         }
@@ -97,8 +111,9 @@ Mailpile.UI.content_setup.push(prepare_new_content);
 restore_state = function(ev) {
     if (ev.state && ev.state.autoajax) {
         $('#content-view').parent().replaceWith(ev.state.html).show();
-        clear_selection_state();
-        Mailpile.UI.prepare_new_content($('#content-view').parent());
+        var $context = $('#content-view');
+        clear_selection_state($context);
+        Mailpile.UI.prepare_new_content($context.parent());
         Mailpile.render();
     }
 };
@@ -120,6 +135,9 @@ update_using_jhtml = function(original_url, callback) {
                 cv = $('#content-view');
                 Mailpile.UI.prepare_new_content(cv.parent());
                 Mailpile.render();
+                // Work around bugs in drag/drop lib, nuke artefacts
+                $('div.ui-draggable-dragging').remove();
+                // Invoke any callbacks, woo!
                 if (callback) { callback(cv) };
             },
             error: function() {
@@ -132,7 +150,8 @@ update_using_jhtml = function(original_url, callback) {
 
 refresh_from_cache = function(cid) {
     var $inpage = $('.content-'+cid);
-    if ($inpage.length > 0) {
+    if ($inpage.length > 0 && ($inpage.closest('#modal-full').length < 1)) {
+        console.log('Updating from cache: ' + cid);
         refresh_history[cid] = -1; // Avoid thrashing
         Mailpile.API.cached_get({
             id: cid,
@@ -141,9 +160,18 @@ refresh_from_cache = function(cid) {
         }, function(json) {
              if (json.result) {
                  var cid = json.state.cache_id;
-                 $('.content-'+cid).replaceWith(json.result);
-                 Mailpile.UI.prepare_new_content('.content-'+cid);
-                 refresh_history[cid] = get_now();
+                 if (can_refresh(cid)) {
+                     $('.content-'+cid).replaceWith(json.result);
+                     Mailpile.UI.prepare_new_content('.content-'+cid);
+                     refresh_history[cid] = get_now();
+                     // Work around bugs in drag/drop lib, nuke artefacts
+                     $('div.ui-draggable-dragging').remove();
+                 }
+                 else {
+                     // Result discarded, mark as needing a refresh!
+                     console.log('Result discarded, will try again for ' + cid);
+                     refresh_history[cid] = 0;
+                 }
              }
              else {
                  console.log('Failed to load from cache!');
@@ -161,6 +189,8 @@ $(document).ready(function() {
     // Set up our onpopstate handler
     window.onpopstate = restore_state;
 
+    Mailpile.go = autoajax_go;
+
     // Figure out which elements on the page exist in cache, initialized
     // our refresh_history timers to match...
     $('.cached').each(function(i, elem) {
@@ -170,7 +200,7 @@ $(document).ready(function() {
             if (cn.indexOf('content-') == 0) {
                 var cid = cn.substring(8);
                 refresh_history[cid] = get_now();
-                console.log('refresh_history['+cid+'] =' + get_now());
+                console.log('refresh_history['+cid+'] = ' + refresh_history[cid]);
             }
         }
     });
@@ -178,15 +208,16 @@ $(document).ready(function() {
     // Subscribe to the event-log, to freshen up UI elements as soon as
     // possible.
     EventLog.subscribe('.command_cache.CommandCache', function(ev) {
+        var now = get_now();
         for (var cidx in ev.data.cache_ids) {
             var cid = ev.data.cache_ids[cidx];
-            if (can_refresh(cid)) {
-                refresh_from_cache(cid);
+            refresh_history[cid] = 0; // Mark as needing a refresh!
+            console.log('Eventlog reports new data for ' + cid);
+            // If the event log is reporting things actively, lower the
+            // force-refresh interval as it's probably not needed.
+            if (refresh_interval < 120000) {
+                refresh_interval += 1000 * Math.random();
             }
-            else {
-               refresh_history[cid] = 0; // Mark as needing a refresh!
-            }
-            refresh_interval = 2000;
         }
     });
 
@@ -198,14 +229,17 @@ $(document).ready(function() {
                     (refresh_history[cid] < now - refresh_interval)) {
                 if (can_refresh(cid)) {
                     refresh_from_cache(cid);
+                    return;
                 }
             }
         }
-        if (refresh_interval < 60000) {
-            refresh_interval += 1000 * Math.random();
+        // If we get this far, nothing was refreshed, might need to
+        // force things.
+        if (refresh_interval > backup_refresh_interval) {
+            refresh_interval -= 1000 * Math.random();
         }
     });
-    refresh_timer.set({ time: 950, autostart: true });
+    refresh_timer.set({ time: 750, autostart: true });
 });
 
 return {
