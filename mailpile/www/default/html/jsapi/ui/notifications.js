@@ -135,6 +135,30 @@ Mailpile.notification = function(result) {
   return result['event_id'];
 };
 
+/* Use when stuff is loading in the backgrount to show progress */
+Mailpile.notify_working = function(message, timeout) {
+  var events = [undefined, undefined];
+  var notify = function() {
+    var silly = Math.floor(Math.random() * Mailpile.silly_strings.misc.length);
+    events[1] = Mailpile.notification({
+      event_id: events[1],
+      message: message || "{{_('Working...')}}",
+      message2: Mailpile.silly_strings.misc[silly],
+      status: 'warning',
+      icon: 'icon-robot'
+    });
+    events[0] = setTimeout(notify, 5000);
+  };
+  events[0] = setTimeout(notify, timeout);
+  return function() {
+    // This cancels the event. To avoid weird flickering, if the notification
+    // has already been displayed, we leave it up for a little longer.
+    if (events[0]) clearTimeout(events[0]);
+    setTimeout(function() {
+      if (events[1]) Mailpile.cancel_notification(events[1]);
+    }, 1500);
+  }
+};
 
 /* Notification - Close all */
 $(document).on('click', '.notifications-close-all', function() {

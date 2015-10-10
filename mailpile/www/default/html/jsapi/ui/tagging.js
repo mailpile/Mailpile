@@ -32,6 +32,9 @@ function tag_and_update_ui(options, op, callback) {
   if (!options.mid) return;
   if (!options.add && !options.del) return;
 
+  var notify_done = Mailpile.notify_working("{{_('Tagging...')}}", 500);
+  options._error_callback = notify_done;
+
   Mailpile.API.tag_post(options, function(response) {
 {#  // The output of tag_post response.result is:
     // {
@@ -55,6 +58,8 @@ function tag_and_update_ui(options, op, callback) {
     // of a search - we handle the former here but not the latter.
     //
 #}
+    notify_done();
+
     if ((!response.result) || (response.status != "success")) {
       // Just report errors, do nothing else.
       Mailpile.notification(response);

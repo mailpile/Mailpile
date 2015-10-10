@@ -6,6 +6,7 @@ Mailpile.fix_url = function(url) {
 }
 
 Mailpile.go = function(url) {
+  Mailpile.notify_working(undefined, 1000);
   window.location.href = Mailpile.fix_url(url);
 };
 
