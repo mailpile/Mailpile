@@ -46,7 +46,7 @@ Mailpile.UI.content_setup.push(function($content) {
     content: {
       title: false,
       text: function(event, api) {
-        return '{{_("Compose To:")}} ' + $(this).attr('href').replace('mailto:', '');
+        return '{{_("Compose to:")|escapejs}} ' + $(this).attr('href').replace('mailto:', '');
       }
     },  
     style: {

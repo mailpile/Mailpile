@@ -118,8 +118,8 @@ Mailpile.API = {
   _dead_notification: undefined,
   _notify_dead: function(status, message, fullscreen) {
     var advice = ((document.location.href.indexOf('/localhost:') == -1)
-                  ? '{{_("Check your network?")}}'
-                  : '{{_("Restart the app?")}}');
+                  ? '{{_("Check your network?")|escapejs}}'
+                  : '{{_("Restart the app?")|escapejs}}');
     if (fullscreen) {
       if (!$('#connection-down').length) {
         var template = _.template($('#template-connection-down').html());
@@ -168,7 +168,7 @@ Mailpile.API = {
       if (command != '/0/cached/' && command != '/0/eventlog/') {
         Mailpile.notification({
           status: 'error',
-          message: '{{_("Oops. Mailpile failed to complete your task.")}}',
+          message: '{{_("Oops. Mailpile failed to complete your task.")|escapejs}}',
           icon: 'icon-signature-unknown'
         });
       }
@@ -183,11 +183,11 @@ Mailpile.API = {
     }
 
     if (Mailpile.API._ajax_dead_count > 3) {
-      Mailpile.API._notify_dead('error', '{{_("Mailpile is unreachable.")}}',
+      Mailpile.API._notify_dead('error', '{{_("Mailpile is unreachable.")|escapejs}}',
                                 (Mailpile.API._ajax_dead_count > 10));
     }
     else if (status == "timeout") {
-      Mailpile.API._notify_dead('warning', '{{_("Mailpile timed out...")}}');
+      Mailpile.API._notify_dead('warning', '{{_("Mailpile timed out...")|escapejs}}');
     }
   },
 

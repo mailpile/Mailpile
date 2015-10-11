@@ -55,8 +55,8 @@ Mailpile.Search.init = function() {
       $("#pile-newmessages-notification").slideDown("slow");
 
       if (Notification.permission == "granted") {
-        new Notification(ev.data.messages + "{{_(' new messages received')}}", { 
-            body:'{{_("Your pile is growing...")}}',
+        new Notification(ev.data.messages + "{{_(' new messages received')|escapejs}}", { 
+            body:'{{_("Your pile is growing...")|escapejs}}',
             icon:'{{ config.sys.http_path }}/static/img/logo-color.png', 
           }  
         )

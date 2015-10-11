@@ -2,11 +2,11 @@
 
 Mailpile.Helpers = [{
     slug: 'what-is-encryption-key', 
-    title: '{{_("What is an Encryption Key")}}',
+    title: '{{_("What is an Encryption Key")|escapejs}}',
     actions: false
 },{
     slug: 'what-is-missing-key',
-    title: '{{_("What is Missing Encryption Key")}}',
+    title: '{{_("What is Missing Encryption Key")|escapejs}}',
     actions: ['hideable']
 }];
 

@@ -3,22 +3,22 @@
 Mailpile.UI.Tagging = (function(){
 
 var operations = {
-  'tag':     ['{{_("Tagged 1 message")}}',
-              '{{_("Tagged <num> messages")}}'],
-  'untag':   ['{{_("Untagged 1 message")}}',
-              '{{_("Untagged <num> messages")}}'],
-  'read':    ['{{_("Marked 1 message read")}}',
-              '{{_("Marked <num> messages read")}}'],
-  'unread':  ['{{_("Marked 1 message unread")}}',
-              '{{_("Marked <num> messages unread")}}'],
-  'move':    ['{{_("Moved 1 message")}}',
-              '{{_("Moved <num> messages")}}'],
-  'archive': ['{{_("Archived 1 message")}}',
-              '{{_("Archived <num> messages")}}'],
-  'trash':   ['{{_("Moved 1 message to trash")}}',
-              '{{_("Moved <num>  messages to trash")}}'],
-  'spam':    ['{{_("Moved 1 message to spam")}}',
-              '{{_("Moved <num> messages to spam")}}']
+  'tag':     ['{{_("Tagged 1 message")|escapejs}}',
+              '{{_("Tagged <num> messages")|escapejs}}'],
+  'untag':   ['{{_("Untagged 1 message")|escapejs}}',
+              '{{_("Untagged <num> messages")|escapejs}}'],
+  'read':    ['{{_("Marked 1 message read")|escapejs}}',
+              '{{_("Marked <num> messages read")|escapejs}}'],
+  'unread':  ['{{_("Marked 1 message unread")|escapejs}}',
+              '{{_("Marked <num> messages unread")|escapejs}}'],
+  'move':    ['{{_("Moved 1 message")|escapejs}}',
+              '{{_("Moved <num> messages")|escapejs}}'],
+  'archive': ['{{_("Archived 1 message")|escapejs}}',
+              '{{_("Archived <num> messages")|escapejs}}'],
+  'trash':   ['{{_("Moved 1 message to trash")|escapejs}}',
+              '{{_("Moved <num>  messages to trash")|escapejs}}'],
+  'spam':    ['{{_("Moved 1 message to spam")|escapejs}}',
+              '{{_("Moved <num> messages to spam")|escapejs}}']
 };
 
 /**

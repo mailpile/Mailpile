@@ -142,7 +142,7 @@ Mailpile.notify_working = function(message, timeout) {
     var silly = Math.floor(Math.random() * Mailpile.silly_strings.misc.length);
     events[1] = Mailpile.notification({
       event_id: events[1],
-      message: message || "{{_('Working...')}}",
+      message: message || "{{_('Working...')|escapejs}}",
       message2: Mailpile.silly_strings.misc[silly],
       status: 'warning',
       icon: 'icon-robot'
@@ -226,9 +226,9 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
-                         '{{_("Error")}}: ' +  ev.message);
+                         '{{_("Error")|escapejs}}: ' +  ev.message);
       ev.action_js = "onclick=\"javascript:$('.source-" + ev.data.id + "').click();\"";
-      ev.action_text = '{{_("edit settings")}}';
+      ev.action_text = '{{_("edit settings")|escapejs}}';
     }
     else {
       $icon.removeClass('misconfigured').removeClass('unconfigured');

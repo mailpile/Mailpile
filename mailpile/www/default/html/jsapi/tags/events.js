@@ -104,7 +104,8 @@ $(document).on('submit', '#form-tag-add', function(e) {
 /* Tag - Delete Tag */
 $(document).on('click', '#button-tag-delete', function(e) {
   var tag_slug = $(this).data('slug');
-  if (confirm("{{_('Are you sure you want to delete this tag?')}}\n{{_('This action cannot be undone.')}}")) {
+  if (confirm("{{_('Are you sure you want to delete this tag?')|escapejs}}\n"
+              + "{{_('This action cannot be undone.')|escapejs}}")) {
     Mailpile.API.tags_delete_post({ tag: tag_slug }, function(response) {
       Mailpile.go('/in/inbox/');
     }, 'POST');
