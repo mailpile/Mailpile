@@ -4,21 +4,21 @@ Mailpile.UI.Tagging = (function(){
 
 var operations = {
   'tag':     ['{{_("Tagged 1 message")|escapejs}}',
-              '{{_("Tagged <num> messages")|escapejs}}'],
+              '{{_("Tagged (num) messages")|escapejs}}'],
   'untag':   ['{{_("Untagged 1 message")|escapejs}}',
-              '{{_("Untagged <num> messages")|escapejs}}'],
+              '{{_("Untagged (num) messages")|escapejs}}'],
   'read':    ['{{_("Marked 1 message read")|escapejs}}',
-              '{{_("Marked <num> messages read")|escapejs}}'],
+              '{{_("Marked (num) messages read")|escapejs}}'],
   'unread':  ['{{_("Marked 1 message unread")|escapejs}}',
-              '{{_("Marked <num> messages unread")|escapejs}}'],
+              '{{_("Marked (num) messages unread")|escapejs}}'],
   'move':    ['{{_("Moved 1 message")|escapejs}}',
-              '{{_("Moved <num> messages")|escapejs}}'],
+              '{{_("Moved (num) messages")|escapejs}}'],
   'archive': ['{{_("Archived 1 message")|escapejs}}',
-              '{{_("Archived <num> messages")|escapejs}}'],
+              '{{_("Archived (num) messages")|escapejs}}'],
   'trash':   ['{{_("Moved 1 message to trash")|escapejs}}',
-              '{{_("Moved <num>  messages to trash")|escapejs}}'],
+              '{{_("Moved (num)  messages to trash")|escapejs}}'],
   'spam':    ['{{_("Moved 1 message to spam")|escapejs}}',
-              '{{_("Moved <num> messages to spam")|escapejs}}']
+              '{{_("Moved (num) messages to spam")|escapejs}}']
 };
 
 /**
@@ -149,7 +149,7 @@ function tag_and_update_ui(options, op, callback) {
       }
       else {
         var msg = operations[op][1];
-        var ofs = msg.indexOf('<num>');
+        var ofs = msg.indexOf('(num)');
         response.message = (msg.substring(0, ofs) +
                             count +
                             msg.substring(ofs+5));
