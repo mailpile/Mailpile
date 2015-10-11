@@ -35,9 +35,7 @@
 {%- endif %}
     data-mid="{{mid}}">
   <td class="draggable"></td>
-  <td class="avatar">
-    <a href="{{msg_url}}"><img src="{{ show_avatar(from) }}"></a>
-  </td>
+  <td class="avatar"><a><img src="{{ show_avatar(from) }}"></a></td>
   <td class="from">
     <a href="{{msg_url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
@@ -47,7 +45,7 @@
       {% endif %}
     </a>
   </td>
-  <td class="crypto-and-tags" style="text-align: right;">
+  <td class="crypto-and-tags">
     <span class="item-tags" style="opacity: 0.5"> {# FIXME #}
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
@@ -55,15 +53,15 @@
       <span class="pile-message-tag pile-message-tag-{{tag.tid}}
                    color-{{tag.label_color}}"
             data-tid="{{tag.tid}}" data-mid="{{mid}}">
-        <span class="pile-message-tag-icon {{tag.icon}}"></span>
+        <span class="icon pile-message-tag-icon {{tag.icon}}"></span>
       </span>
       {% endif %}
     {% endfor %}
     </span>
     {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
-    <span class="icon-lock-closed color-08-green"></span>
+    <span class="icon icon-lock-closed color-08-green"></span>
     {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
-    <span class="icon-lock-closed color-12-red"></span>
+    <span class="icon icon-lock-closed color-12-red"></span>
     {% endif %}
   </td>
   <td class="subject">
@@ -71,8 +69,9 @@
        href="{{msg_url}}">{{ nice_subject(metadata) }}</a>
   </td>
   <td class="date">
-    <a href="{{ U('/search/?q=dates:', metadata.date) }}/"
-       title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">{{metadata.timestamp|elapsed_datetime}}</a>
+    <span title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">
+      {{metadata.timestamp|elapsed_datetime}}
+    </span>
   </td>
   <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">

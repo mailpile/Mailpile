@@ -1,7 +1,12 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
-  <table id="pile-results" data-tids="{{ result.search_tag_ids|join(' ') }}"
+  <table id="pile-results"
+         data-tids="{{ result.search_tag_ids|join(' ') }}"
+         data-tags="{% for tid in result.search_tag_ids -%}
+                      {{ config.tags[tid].name }}
+                      {%- if not loop.last %}, {% endif %}
+                    {%- endfor %}"
          class="pile-results {{ config.web.display_density }}">
   <tbody>
  {% for mid in result.thread_ids %}
@@ -15,12 +20,32 @@
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="{{ config.sys.http_path }}/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
+    {% set prv = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_add': [['start', newstart], ['end', newend]]
+    } %}
+    <a href="{{prv.url|add_state_query_string(state, prv)|url_path_fix}}"
+       class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
+    {% set moar = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_add': [['start', result.stats.start],
+                       ['end', result.stats.start+(2*result.stats.count)-1]]
+    } %}
+    <a href="{{moar.url|add_state_query_string(state, moar)|url_path_fix}}"
+       class="button-primary left" id="pile-more">{{_("More")}}</a>
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="{{ config.sys.http_path }}/search/?context={{state.context|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left" id="pile-next">{{_("Next")}}</a>
+    {% set nxt = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_add': [['start', newstart], ['end', newend]]
+    } %}
+    <a href="{{nxt.url|add_state_query_string(state, nxt)|url_path_fix}}"
+       class="button-primary left" id="pile-next">{{_("Next")}}</a>
     {% endif %}
     <h5 class="text-right">
     {% if result.stats.total > 1 %}
@@ -31,7 +56,9 @@
     </h5>
   </div>
   <div id="pile-speed" class="text-center clearfix">
-    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.",
+                                        number=mailpile_size, elapsed=elapsed)}}
+    {% if elapsed < "0.25" %}{{_("Vroom!")}}{% endif %}
   </div>
  {% else %}
   <div id="pile-empty" class="clearfix add-bottom text-center">

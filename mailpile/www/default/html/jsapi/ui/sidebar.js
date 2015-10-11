@@ -1,23 +1,46 @@
-Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
+Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
+  // FIXME: This assumes we have a Mailpile.config object that is up to date.
+  //        That is not a safe or reasonable assumption...
 
-  // Show or Hide
+  if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1) {
+    $('#sidebar-tag-' + tid).find('span.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
+    if (gradual) {
+      $('.subtag-of-' + tid).slideDown('fast');
+    }
+    else {
+      $('.subtag-of-' + tid).show();
+    }
+  } else {
+    //$('#sidebar-tag-' + tid).removeClass('show-subtags');
+    $('#sidebar-tag-' + tid).find('span.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
+    if (gradual) {
+      $('.subtag-of-' + tid).slideUp('fast');
+    }
+    else {
+      $('.subtag-of-' + tid).hide();
+    }
+  }
+};
+
+
+Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
+  // FIXME: This assumes we have a Mailpile.config object that is up to date.
+  //        That is not a safe or reasonable assumption...
+
+  // Toggle show/hide for this tid
   if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) > -1) {
-    $('#sidebar-tag-' + tid).addClass('show-subtags');
-    $('#sidebar-tag-' + tid).find('a.sidebar-tag span.sidebar-tag-expand span').removeClass('icon-arrow-left').addClass('icon-arrow-down');
-    $('#sidebar-subtags-' + tid).slideDown('fast');
     var collapsed = _.without(Mailpile.config.web.subtags_collapsed, tid);
   } else {
-    $('#sidebar-tag-' + tid).removeClass('show-subtags');
-    $('#sidebar-tag-' + tid).find('a.sidebar-tag span.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-left');
-    $('#sidebar-subtags-' + tid).slideUp('fast');
     Mailpile.config.web.subtags_collapsed.push(tid);
     var collapsed = Mailpile.config.web.subtags_collapsed;
   }
 
-  // Save to Config
+  // Display and record new state
   Mailpile.config.web.subtags_collapsed = collapsed;
-  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) { 
+  Mailpile.UI.Sidebar.SubtagsRender(tid, true);
 
+  // Save to Config
+  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) { 
   });
 };
 
