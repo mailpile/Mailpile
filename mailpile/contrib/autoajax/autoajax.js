@@ -73,7 +73,7 @@ autoajax_go = function(url, message, jhtml) {
       return _scroll_up(stuff);
     }
     Mailpile.Composer.AutosaveAll(0, function() {
-        if (!(jhtml && update_using_jhtml(url, scroll_and_done))) {
+        if (!(jhtml && update_using_jhtml(url, scroll_and_done, done))) {
             document.location.href = url;
         }
     });
@@ -86,6 +86,8 @@ prepare_new_content = function(selector) {
         var jhtml = ajaxable_url(url);
         if (url &&
                 (url.indexOf('#') != 0) &&
+                (url.indexOf('mailto:') != 0) &&
+                (elem.target != '_blank') &&
                 (elem.className.indexOf('auto-modal') == -1)) {
             $(elem).click(function(ev) {
                 // We don't hijack events that spawn new tabs/windows etc.
@@ -118,7 +120,7 @@ restore_state = function(ev) {
     }
 };
 
-update_using_jhtml = function(original_url, callback) {
+update_using_jhtml = function(original_url, callback, error_callback) {
     if (ajaxable_url(document.location.pathname)) {
         var cv = $('#content-view').parent();
         history.replaceState({autoajax: true, html: _outerHTML(cv)},
@@ -141,6 +143,7 @@ update_using_jhtml = function(original_url, callback) {
                 if (callback) { callback(cv) };
             },
             error: function() {
+                if (error_callback) error_callback();
                 cv.show();
             }
         });
