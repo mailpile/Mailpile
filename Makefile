@@ -151,6 +151,7 @@ less-loop: less-compiler
         done
 
 less-compiler:
+	bower install
 	@cp scripts/less-compiler.in scripts/less-compiler.mk
 	@find mailpile/www/default/less/ -name '*.less' \
                 |perl -npe s'/^/\t/' \
