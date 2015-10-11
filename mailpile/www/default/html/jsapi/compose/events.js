@@ -99,25 +99,29 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  = 'success';
 	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
+    var done_working = Mailpile.notify_working("{{_('Preparing to send...')|escapejs}}", 100);
   }
   else if (action == 'save') {
 	  var action_url     = Mailpile.api.compose_save;
 	  var action_status  =  'info';
 	  var action_message = 'Your message was saved';
+    var done_working = Mailpile.notify_working("{{_('Saving...')|escapejs}}", 500);
   }
   else if (action == 'reply') {
 	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  =  'success';
 	  var action_message = 'Your reply was sent';
+    var done_working = Mailpile.notify_working("{{_('Preparing to send...')|escapejs}}", 100);
   }
 
   // Warn the user if he's trying to go against his own security policies,
   // let him abort... or not.
   if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
     if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
-                 '{{_("Click OK to send the message anyway.")}}')) return;
+                 '{{_("Click OK to send the message anyway.")|escapejs}}')) return;
   }
 
+  // FIXME: Use Mailpile.API instead of this.
 	$.ajax({
 		url			 : action_url,
 		type		 : 'POST',
@@ -125,6 +129,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 		dataType : 'json',
 	  success  : function(response) {
 	    // Is A New Message (or Forward)
+      done_working();
       if (action === 'send' && response.status === 'success') {
         Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");
       }
@@ -147,6 +152,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
       }
     },
     error: function() {
+      done_working();
       Mailpile.notification({
         status: 'error',
         message: 'Could not ' + action + ' your message'

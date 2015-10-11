@@ -32,7 +32,7 @@ function tag_and_update_ui(options, op, callback) {
   if (!options.mid) return;
   if (!options.add && !options.del) return;
 
-  var notify_done = Mailpile.notify_working("{{_('Tagging...')}}", 500);
+  var notify_done = Mailpile.notify_working("{{_('Tagging...')|escapejs}}", 500);
   options._error_callback = notify_done;
 
   Mailpile.API.tag_post(options, function(response) {
