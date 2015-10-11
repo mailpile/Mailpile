@@ -183,7 +183,7 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 19)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 20)
 
     say('FIXME: Make sure message signatures verified')
 
