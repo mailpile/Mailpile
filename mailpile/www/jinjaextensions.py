@@ -191,7 +191,7 @@ class MailpileCommand(Extension):
                     for ak, av in elem.get('url_args_add', []):
                         if ak == key and av not in values:
                             values.append(av)
-                args.extend([(key, v.encode("utf-8")) for v in values])
+                args.extend([(key, unicode(v).encode("utf-8")) for v in values])
             return url + '?' + urllib.urlencode(args) + frag
         else:
             return url + frag
