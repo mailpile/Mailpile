@@ -1,5 +1,7 @@
 /* Thread */
 
+  @readable-max-width: 50em;
+
   .crypto-color-gray   { color: @grayMid; }
   .crypto-color-red    { color: @red; }
   .crypto-color-orange { color: @orange; }
@@ -7,7 +9,7 @@
   .crypto-color-green  { color: @green; }
 
 
-/* Thread Title */	
+/* Thread Title */
 
   #thread-title {
     display: table;
@@ -42,7 +44,7 @@
     width: 12px;
     height: 100%;
     display: table-cell;
-    background: url('../img/draggable-pattern.png'), rgba(255,255,255,1);
+    background: url('../../img/draggable-pattern.png'), rgba(255,255,255,1);
     opacity: 0.3;
     filter:alpha(opacity=30);
   }
@@ -50,7 +52,7 @@
   #thread-title div.thread-draggable:hover {
     cursor: move;
   }
-  
+
   #thread-title div.thread-details {
     display: table-cell;
   }
@@ -106,7 +108,7 @@
     display: none;
   }
 
-  .thread-notification a { 
+  .thread-notification a {
     width: 100%;
     height: 100%;
     display: block;
@@ -140,11 +142,12 @@
   }
 
   .thread-line-subject {
-    
+
   }
 
   .thread-item-metadata {
     width: 100%;
+    max-width: (1em + @readable-max-width);
     display: table;
     margin: 0px;
   }
@@ -171,7 +174,7 @@
     vertical-align: text-top;
     text-align: left;
   }
-  
+
   .thread-item-from a.name {
     display: inline-block;
     margin-top: 0px;
@@ -198,9 +201,9 @@
     width: 200px;
     display: table-cell;
     vertical-align: top;
-    text-align: right;    
+    text-align: right;
     padding-top: 15px;
-    padding-right: 15px;
+    padding-left: 15px;
   }
 
 
@@ -267,21 +270,21 @@
     margin-right: 8px;
     vertical-align: middle;
     font-size: 14px;
-    font-weight: normal;   
+    font-weight: normal;
     line-height: 14px;
   }
 
-	.thread-item-metadata-details a:hover {
+  .thread-item-metadata-details a:hover {
     color: @blue;
   }
-  
+
   .thread-item-metadata-details.border-bottom {
     border-bottom: 1px solid @grayMid;
   }
 
   .thread-item-metadata-contact {
-	  color: @grayDark;
-	  display: table;
+    color: @grayDark;
+    display: table;
   }
 
   .thread-item-metadata-contact a {
@@ -299,7 +302,7 @@
     color: @gray;
   }
 
-	.thread-item-metadata-contact a img {
+  .thread-item-metadata-contact a img {
      width: 24px;
      height: 24px;
      border-radius: @base-border-radius;
@@ -321,7 +324,7 @@
     width: 50%;
     text-align: center;
     color: @gray;
-    margin: 0px auto @base-margin auto;    
+    margin: 0px auto @base-margin auto;
   }
 
   .thread-item-crypto-error p {
@@ -363,11 +366,11 @@
   .thread-item-html-text {
     margin: 0px;
     padding: 0px;
-    .font-style-item-text();  
+    .font-style-item-text();
   }
 
   .thread-item-text {
-    max-width: 60%;
+    max-width: @readable-max-width;
     margin-top: 5px;
     margin-left: @base-margin;
     margin-right: 15px;
@@ -386,10 +389,10 @@
   .thread-item-text a:hover {
     color: @blueDark;
   }
-	
+
   .thread-item-quote,
   .thread-item-quote-text {
-    max-width: 60%;
+    max-width: @readable-max-width;
     margin-left: 20px;
     margin-bottom: 15px;
     .font-style-item-text();
@@ -400,7 +403,7 @@
   .thread-item-quote a:visited {
     color: lighten(@black, 40%);
   }
-  
+
   .thread-item-quote a:hover {
     color: @grayDark;
   }
@@ -416,15 +419,15 @@
 
 /* Thread Message Attachments */
 
-	div.thread-message-attachments {
+  div.thread-message-attachments {
     margin-top: 15px;
-  	margin-left: 20px;
-  	margin-bottom: 0px;
-	}
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
 
-	ul.thread-message-attachments {
-  	margin-left: 0px;
-	  margin-bottom: 0px;
+  ul.thread-message-attachments {
+    margin-left: 0px;
+    margin-bottom: 0px;
   }
 
   ul.thread-message-attachments li {
@@ -433,13 +436,22 @@
     padding: 0;
   }
 
-  
+
 /* Thread Message Actions */
 
+  div.thread-message-actions {
+    width: 100%;
+    max-width: (1em + @readable-max-width);
+  }
+
   ul.thread-message-actions {
-    display: block;
+    display: inline-block;
     margin-left: 20px;
     margin-bottom: 10px;
+  }
+
+  ul.thread-message-actions.right {
+    margin-right: (2 - @base-margin);
   }
 
   ul.thread-message-actions li.action {
@@ -455,18 +467,18 @@
     display: none;
   }
 
-	a.thread-message-actions-quote {
-	  display: inline-block;
+  a.thread-message-actions-quote {
+    display: inline-block;
     padding: 0px 4px;
-  	border: 1px solid @grayMid;
-  	border-radius: 3px;
-  	color: @grayDark;
-  	cursor: pointer;
-  	font-size: 18px;
-  	font-weight: normal;
-  	line-height: 14px;
-	}
-	
+    border: 1px solid @grayMid;
+    border-radius: 3px;
+    color: @grayDark;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 14px;
+  }
+
   a.thread-message-actions-quote:hover {
     background: @grayLight;
   }

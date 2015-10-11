@@ -68,6 +68,7 @@
   bottom: 0;
   left: 0;
   background-color: @modal-backdrop-bg;
+  z-index: (@zindex-modal - 1);
   // Fade for backdrop
   &.fade { .opacity(0); }
   &.in { .opacity(@modal-backdrop-opacity); }
