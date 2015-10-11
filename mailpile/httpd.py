@@ -46,6 +46,8 @@ def Idle_HTTPD(allowed=1):
 
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
+    # Allow persistent HTTP/1.1 connections
+    protocol_version = 'HTTP/1.1'
 
     # We always recognize these extensions, no matter what the Python
     # mimetype module thinks.
