@@ -33,7 +33,7 @@ EventLog.poll = function() {
   //      we need in one call. It also has the issue that if subscriptions
   //      change then we need the ability to immediately terminate the
   //      outstanding request and fire off a new one. So for now we just
-  //      use the firehose, but increase the gather time to 2 seconds.
+  //      use the firehose, but increase the gather time to 1 second.
   //
   // Request news about updates to the mail sources and command cache
   //var source_re = '~(.mail_source|.command_cache';
@@ -48,7 +48,7 @@ EventLog.poll = function() {
   EventLog.request({
   //source: source_re,
     since: EventLog.last_ts,
-    gather: (EventLog.last_ts < 0) ? 0.2 : 0.5,
+    gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
     wait: 30,
     _timeout: 31000
   });

@@ -156,7 +156,7 @@ Mailpile.notify_working = function(message, timeout) {
     if (events[0]) clearTimeout(events[0]);
     setTimeout(function() {
       if (events[1]) Mailpile.cancel_notification(events[1]);
-    }, 1500);
+    }, 1250);
   }
 };
 

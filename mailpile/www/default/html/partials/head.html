@@ -1,5 +1,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="{{ U('/static/css/default.css') }}" />
   <link rel="stylesheet" href="{{ U('/static/css/print.css') }}" media="print" />
@@ -50,9 +51,7 @@
   <script src="{{ U('/static/js/libraries.min.js') }}"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
   <script src="{{ U('/api/0/jsapi/as.js?ts=', config.version, '-', config.timestamp) }}"></script>
-  {% if state.command_url in ("/message/draft/", "/message/", "/contacts/") %}
   <script src="{{ U('/static/js/plupload.full.min.js') }}"></script>
-  {% endif %}
 
   <!-- JS - App Specific -->
   <script>

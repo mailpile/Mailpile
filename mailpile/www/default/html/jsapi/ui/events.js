@@ -1,7 +1,6 @@
 $(document).on('click', '.sidebar-tag-expand', function(e) {
   e.preventDefault();
-  var tid = $(this).parent().data('tid');
-  Mailpile.UI.Sidebar.SubtagsToggle(tid);
+  Mailpile.UI.Sidebar.SubtagsToggle($(this).data('tid'));
 });
 
 
@@ -12,7 +11,7 @@ $(document).on('click', '.is-editing', function(e) {
 
 $(document).on('click', '#button-sidebar-organize', function(e) {
   e.preventDefault();
-  Mailpile.UI.Sidebar.OrganizeToggle();
+  Mailpile.UI.Sidebar.OrganizeToggle(this);
 });
 
 

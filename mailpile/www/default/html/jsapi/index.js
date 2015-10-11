@@ -195,7 +195,7 @@ Mailpile.API = {
   _action: function(base_url, command, data, method, callback) {
     // Output format, timeout...
     var output = '';
-    var timeout = 5000;
+    var timeout = 10000;
     var error_callback = undefined;
     if (data._output) {
       output = data._output;

@@ -2,17 +2,17 @@ Mailpile.render = function() {
 
   // Dynamic CSS Reiszing
   var dynamic_sizing = function() {
+    return;
 
-    // Is Tablet or Mobile
-    if ($('#sidebar').length === 0 || $(window).width() < 1024) {
-      var sidebar_width  = 0;
-    }
-    else {
-      var sidebar_width  = 225;
-    }
-
+    var sidebar_width  = $('#sidebar').width();
     var content_width  = $(window).width() - sidebar_width;
     var content_height = $(window).height() - 62;
+    if (content_width < 10) {
+        /* This means we are in portrait mode */
+        sidebar_width = 0;
+        content_width = $(window).width();
+        content_height -= 80;
+    }
     var content_tools_height    = $('#content-tools').height();
     var new_content_width       = $(window).width() - sidebar_width;
     var new_content_view_height = content_height - content_tools_height;
