@@ -48,7 +48,7 @@ Mailpile.UI.Message.ScrollToMessage = function() {
 
 Mailpile.UI.Message.Draggable = function(element) {
   $(element).draggable({
-    containment: 'body',
+    containment: 'window',
     appendTo: 'body',
     cursor: 'move',
     scroll: false,
@@ -58,6 +58,7 @@ Mailpile.UI.Message.Draggable = function(element) {
       return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving Thread</div>');
     },
     start: function(event, ui) {
+      Mailpile.ui_in_action += 1;
   
       // FIXME: This should all come from the DOM; and a checkbox needs to
       //        live in the DOM as well for the standard drag/drop code to
@@ -70,6 +71,8 @@ Mailpile.UI.Message.Draggable = function(element) {
       // Update Bulk UI
       // Style & Select Checkbox
     },
-    stop: function(event, ui) {}
+    stop: function(event, ui) {
+      setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);
+    }
   });
 };

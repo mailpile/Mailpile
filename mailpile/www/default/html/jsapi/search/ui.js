@@ -142,12 +142,15 @@ Mailpile.render_modal_tags = function(elem) {
 
 
 Mailpile.UI.Search.Draggable = function(element) {
-  $(element).draggable({
-    containment: 'body',
+  var $element = $(element);
+  var initializing = true;
+  $element.draggable({
+    containment: 'window',
     appendTo: 'body',
     cursor: 'move',
     scroll: false,
     revert: false,
+    refreshPositions: true,
     opacity: 1,
     helper: function(event) {
       var selected = Mailpile.UI.Selection.selected(element);
@@ -161,7 +164,16 @@ Mailpile.UI.Search.Draggable = function(element) {
       }
       return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> {{_("Moving")|escapejs}} ' + drag_count + '</div>');
     },
+    drag: function() {
+      if ((!initializing) && $element.draggable('option', 'refreshPositions')) {
+        setTimeout(function() {
+          $element.draggable('option', 'refreshPositions', initializing);
+        }, 10);
+      }
+    },
     start: function(event, ui) {
+      Mailpile.ui_in_action += 1;
+
       // Style & Select Checkbox
       $(event.target).parent().removeClass('result')
                               .addClass('result-on')
@@ -171,8 +183,18 @@ Mailpile.UI.Search.Draggable = function(element) {
 
       // Update Bulk UI
       Mailpile.bulk_actions_update_ui();
+
+      // Unveil the magical untagger!
+      $('.sidebar-untag-dropzone').slideDown(1000, function() {
+        initializing = false;
+      });
     },
-    stop: function(event, ui) {}
+    stop: function(event, ui) {
+      initializing = true;
+      $element.draggable('option', 'refreshPositions', initializing);
+      $('.sidebar-untag-dropzone').slideUp();
+      setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);
+    }
   });
 };
 
@@ -183,14 +205,26 @@ Mailpile.UI.Search.Dropable = function(element, accept) {
     hoverClass: 'result-hover',
     tolerance: 'pointer',
     drop: function(event, ui) {
-      var $context = Mailpile.UI.Selection.context(event.target);
-      var selected = Mailpile.UI.Selection.selected($context);
-      selected.push($(event.target).data('mid'));
-      Mailpile.UI.Tagging.tag_and_update_ui({
-        add: ui.draggable.data('tid'),
-        mid: selected,
-        context: $context.find('.search-context').data('context')
-      }, 'tag');
+      // Suppress spurious drops that happened outside the content window
+      var $box = $('#content');
+      var ofs = $box.offset();
+      if ((ui.position.top > ofs.top + 20) &&
+          (ui.position.top < (ofs.top + $box.height() - 20)) &&
+          (ui.position.left > ofs.left + 40) &&
+          (ui.position.left < (ofs.left + $box.width() - 40)))
+      {
+        var $context = Mailpile.UI.Selection.context(event.target);
+        var selected = Mailpile.UI.Selection.selected($context);
+        selected.push($(event.target).data('mid'));
+        Mailpile.UI.Tagging.tag_and_update_ui({
+          add: ui.draggable.data('tid'),
+          mid: selected,
+          context: $context.find('.search-context').data('context')
+        }, 'tag');
+      }
+      else {
+        console.log('Dropped outside content area!');
+      }
     }
   });
 };

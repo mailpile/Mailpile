@@ -11,6 +11,7 @@ if (!window.console) window.console = {
 // Mailpile global Javascript state and configuration /========================
 Mailpile = {
   csrf_token:         "{{ csrf_token }}",
+  ui_in_action:       0,
   instance:           {},
   select_between:     false,
   search_target:      'none',

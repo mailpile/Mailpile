@@ -63,9 +63,11 @@ Mailpile.UI.Sidebar.Sortable = function() {
 
 Mailpile.UI.Sidebar.Draggable = function(element) {
   $(element).draggable({
-    containment: 'body',
+    containment: 'window',
     appendTo: 'body',
+    handle: '.name',
     cursor: 'move',
+    cursorAt: { right: -5, top: 15 },
     distance: 15,
     scroll: false,
     revert: false,
@@ -88,6 +90,12 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
       return $('<div class="sidebar-tag-drag ui-widget-header" style="color: '
                + hex + '"><span class="' + icon + '"></span> '
                + name + count + '</div>');
+    },
+    start: function() {
+      Mailpile.ui_in_action += 1;
+    },
+    stop: function() {
+      setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);
     }
   });
 };
@@ -123,13 +131,14 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
 };
 
 
-Mailpile.UI.Sidebar.OrganizeToggle = function() {
-  var new_message = $(this).data('message');
-  var old_message = $(this).find('span.text').html();
+Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
+  var $elem = $(elem);
+  var new_message = $elem.data('message');
+  var old_message = $elem.find('span.text').html();
 
   // Make Editable
-  if ($(this).data('state') === 'done') {
-
+  if ($elem.data('state') != 'editing') {
+    Mailpile.ui_in_action += 1;
     Mailpile.UI.Sidebar.Sortable();
 
     // Disable Drag & Drop
@@ -139,7 +148,7 @@ Mailpile.UI.Sidebar.OrganizeToggle = function() {
     $('.sidebar-sortable li').addClass('is-editing');
 
     // Hide Notification & Subtags
-    $('.sidebar-notification').hide();
+    $('a.sidebar-tag .notification').hide();
     $('.sidebar-subtag').hide();
 
     // Add Minus Button
@@ -148,27 +157,30 @@ Mailpile.UI.Sidebar.OrganizeToggle = function() {
     });
 
     // Update Edit Button
-    $(this).data('message', old_message).data('state', 'editing');
-    $(this).find('span.icon').removeClass('icon-settings').addClass('icon-checkmark');
+    $elem.data('state', 'editing');
+    $elem.find('span.icon').removeClass('icon-settings').addClass('icon-checkmark');
 
   } else {
+
+    Mailpile.ui_in_action -= 1;
 
     // Enable Drag & Drop
     $('a.sidebar-tag').draggable({ disabled: false });    
 
-    // Update Cursor Make Links Not Work
+    // Update Cursor Make Links Work
     $('.sidebar-sortable li').removeClass('is-editing');
 
     // Show Notification / Hide Minus Button
-    $('.sidebar-notification').show();
+    $('a.sidebar-tag .notification').show();
     $('.sidebar-tag-archive').remove();
 
     // Update Edit Button
-    $(this).data('message', old_message).data('state', 'done');
-    $(this).find('span.icon').removeClass('icon-checkmark').addClass('icon-settings');
+    $elem.data('state', 'done');
+    $elem.find('span.icon').removeClass('icon-checkmark').addClass('icon-settings');
   }
 
-  $(this).find('span.text').html(new_message);
+  $elem.data('message', old_message)
+  $elem.find('span.text').html(new_message);
 };
 
 
@@ -186,7 +198,12 @@ Mailpile.UI.Sidebar.TagArchive = function() {
 
 // Register update functions
 Mailpile.UI.content_setup.push(function($content) {
-  Mailpile.UI.Sidebar.Draggable($content.find('a.sidebar-tag'));
-  Mailpile.UI.Sidebar.Droppable($content.find('li.sidebar-tags-draggable'),
-                                'td.draggable, div.thread-draggable');
+  Mailpile.UI.Sidebar.Draggable(
+    $content.find('.sidebar-tags-draggable a.sidebar-tag'));
+  Mailpile.UI.Sidebar.Droppable(
+    $content.find('.sidebar-tags-draggable'),
+   'td.draggable, div.thread-draggable');
+  $content.find('.sidebar-tag-expand').each(function(i, elem) {
+    Mailpile.UI.Sidebar.SubtagsRender($(elem).data('tid'), false);
+  });
 });
