@@ -9,7 +9,7 @@ import shlex
 import time
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
-from jinja2.utils import contextfunction, import_string
+from jinja2.utils import contextfunction, import_string, escape
 
 #from markdown import markdown
 
@@ -95,6 +95,10 @@ class MailpileCommand(Extension):
         # Strip trailing blank lines from email
         e.globals['nice_text'] = s._nice_text
         e.filters['nice_text'] = s._nice_text
+
+        # Transforms \n into HTML <br />
+        e.globals['to_br'] = s._to_br
+        e.filters['to_br'] = s._to_br
 
         # Strip Re: Fwd: from subject lines
         e.globals['nice_subject'] = s._nice_subject
@@ -645,6 +649,17 @@ class MailpileCommand(Extension):
                 else:
                     previous = 'blank'
         return trimmed.strip()
+
+    _TEXT_LINEBREAK_RE = re.compile(r'(?:\r\n|\r|\n)')
+
+    @classmethod
+    def _to_br(self, text):
+        """ Replaces \n by <br />
+
+        Inspired from http://jinja.pocoo.org/docs/dev/api/#custom-filters
+        """
+        result = '<br />'.join(p for p in self._TEXT_LINEBREAK_RE.split(escape(text)))
+        return Markup(result)
 
     @classmethod
     def _nice_subject(self, metadata):

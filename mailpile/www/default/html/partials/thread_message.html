@@ -55,13 +55,13 @@
           {% autoescape false %}
           {% set part_text = part.data|nice_text|e|urlize|fix_urls(40, url_danger) %}
           {% if part.type in ("text", "pgpsignedtext") %}
-            <div class="thread-item-text">{{ part_text }}</div>
+            <div class="thread-item-text">{{ part_text|to_br }}</div>
           {% elif part.type in ("pgptext",) %}
             {% if part.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
               {%- set failed_crypto = part.crypto.encryption %}
               {%- include("partials/thread_message_cryptofail.html") %}
             {% else %}
-            <div class="thread-item-text">{{ part_text }}</div>
+            <div class="thread-item-text">{{ part_text|to_br }}</div>
             {% endif %}
           {% elif part.type in ("pgpbegin", "pgpend") %}
             <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
@@ -71,17 +71,17 @@
             {%- if loop.index == (loop.length - 1) and
                    message.text_parts[last_part].type in ("signature", "quote") -%}
               {% do special_text_parts.append("quote") %}
-              <div class="thread-item-quote hide">{{ part_text }}</div>
+              <div class="thread-item-quote hide">{{ part_text|to_br }}</div>
             {# If this part is a quote at end of message, hide #}
             {% elif loop.last %}
               {% do special_text_parts.append("quote") %}
-              <div class="thread-item-quote hide">{{ part_text }}</div>
+              <div class="thread-item-quote hide">{{ part_text|to_br }}</div>
             {% else %}
-              <div class="thread-item-quote">{{ part_text }}</div>
+              <div class="thread-item-quote">{{ part_text|to_br }}</div>
             {%- endif -%}
           {% elif part.type == "signature" %}
             {% do special_text_parts.append("signature") %}
-            <div class="thread-item-signature hide">{{ part_text }}</div>
+            <div class="thread-item-signature hide">{{ part_text|to_br }}</div>
           {% else %}
             <div class="thread-item-text"><em>{{_("Unknown Text Part")}}</em></div>
           {% endif %}
