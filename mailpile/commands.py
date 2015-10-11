@@ -2396,7 +2396,8 @@ class Cached(Command):
     def run(self):
         try:
             cid = self.args[0] if self.args else self.data.get('id', [None])[0]
-            rv = self.session.config.command_cache.get_result(cid)
+            rv = self.session.config.command_cache.get_result(
+                cid, dirty_check=False)
             self.session.copy(rv.session)
             rv.session.ui.render_mode = self.session.ui.render_mode
             return rv

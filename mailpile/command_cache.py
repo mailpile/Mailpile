@@ -56,14 +56,15 @@ class CommandCache(object):
     def get_result(self, fprint, dirty_check=True, extend=300):
         with self.lock:
             exp, req, ss, co, result_obj, a = match = self.cache[fprint]
-        recent = (a > time.time() - self._lag)
-        dirty = (dirty_check and (req & self.dirty_set(after=a)))
-        if recent or dirty:
-            # If item is too new, or requirements are dirty, pretend this
-            # item does not exist.
-            self.debug('Suppressing cache result %s, recent=%s dirty=%s'
-                       % (fprint, recent, sorted(list(dirty))))
-            raise KeyError(fprint)
+        if dirty_check:
+            recent = (a > time.time() - self._lag)
+            dirty = (req & self.dirty_set(after=a))
+            if recent or dirty:
+                # If item is too new, or requirements are dirty, pretend this
+                # item does not exist.
+                self.debug('Suppressing cache result %s, recent=%s dirty=%s'
+                           % (fprint, recent, sorted(list(dirty))))
+                raise KeyError(fprint)
         match[0] = time.time() + extend
         co.session = result_obj.session = ss
         self.debug('Returning cached result for %s' % fprint)
@@ -118,6 +119,7 @@ class CommandCache(object):
                             # Make sure we do not overwrite new results from
                             # elsewhere at this time.
                             if self.cache[fprint][-1] == a:
+                                e = max(e, self.cache[fprint][0])  # Clobber?
                                 self.cache[fprint] = [e, req, ss, co, ro, now]
                             refreshed.append(fprint)
                     else:
