@@ -31,12 +31,8 @@ Mailpile.Message.Tooltips.Crypto = function() {
 				x: 7, y: -5
 			}
     },
-    show: {
-      delay: 100
-    },
-    hide: {
-      delay: 250
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 250 }
   });
 };
 
@@ -72,11 +68,7 @@ Mailpile.Message.Tooltips.Attachments = function() {
 				x: 0, y: -5
 			}
     },
-    show: {
-      delay: 100
-    },
-    hide: {
-      delay: 250
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 250 }
   });
 };

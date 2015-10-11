@@ -31,12 +31,11 @@ Mailpile.Composer.Tooltips.Signature = function() {
 				x: -5,  y: 0
 			}
     },
-    show: {
-      delay: 50
-    },
     events: {
       show: function(event, api) {}
-    }
+    },
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };
 
@@ -71,9 +70,6 @@ Mailpile.Composer.Tooltips.Encryption = function() {
 				x: -5,  y: 0
 			}
     },
-    show: {
-      delay: 50
-    },
     events: {
       show: function(event, api) {
         // FIXME: Replace colors with dynamic JSAPI values
@@ -100,7 +96,9 @@ Mailpile.Composer.Tooltips.Encryption = function() {
         $('.compose-body').css('border-color', '#CCCCCC');
         $('.compose-attachments').css('border-color', '#CCCCCC');
       }
-    }
+    },
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };
 
@@ -156,14 +154,8 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
 				x: 5,  y: -25
 			}
     },
-    show: {
-      event: 'mouseenter',
-      delay: 50
-    },
-    hide: {
-      event: true,
-      inactive: 750
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };
 
@@ -177,13 +169,7 @@ Mailpile.Composer.Tooltips.AttachKey = function() {
 				x: 5,  y: -25
 			}
     },
-    show: {
-      event: 'mouseenter',
-      delay: 50
-    },
-    hide: {
-      event: true,
-      inactive: 750
-    }
+    show: { delay: 100 },
+    hide: { fixed: true, delay: 350 }
   });
 };
