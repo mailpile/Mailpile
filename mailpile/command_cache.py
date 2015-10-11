@@ -53,7 +53,7 @@ class CommandCache(object):
                                        time.time()]
             self.debug('Cached %s, req=%s' % (fprint, sorted(list(req))))
 
-    def get_result(self, fprint, dirty_check=True, extend=60):
+    def get_result(self, fprint, dirty_check=True, extend=300):
         with self.lock:
             exp, req, ss, co, result_obj, a = match = self.cache[fprint]
         recent = (a > time.time() - self._lag)
@@ -70,7 +70,7 @@ class CommandCache(object):
         return result_obj
 
     def dirty_set(self, after=0):
-        dirty = set()
+        dirty = set(['!timedout'])
         with self.lock:
             for ts, req in self.dirty:
                 if (after == 0) or (ts > after):
@@ -100,6 +100,7 @@ class CommandCache(object):
         refreshed = []
         fingerprints.sort(key=lambda k: -self.cache[k][0])
         for fprint in fingerprints:
+            req = None
             try:
                 e, req, ss, co, ro, a = self.cache[fprint]
                 now = time.time()
@@ -111,6 +112,8 @@ class CommandCache(object):
                         ro = co.refresh()
                         if extend > 0:
                             e = min(e + extend, now + 5*extend)
+                        if '!timedout' in req:
+                            req.remove('!timedout')
                         with self.lock:
                             # Make sure we do not overwrite new results from
                             # elsewhere at this time.
@@ -118,16 +121,12 @@ class CommandCache(object):
                                 self.cache[fprint] = [e, req, ss, co, ro, now]
                             refreshed.append(fprint)
                     else:
-                        # Out of time, evict because otherwise it may be
-                        # assumed to be up-to-date.
-                        with self.lock:
-                            del self.cache[fprint]
+                        # Out of time, mark as dirty.
+                        req.add('!timedout')
             except (ValueError, IndexError, TypeError):
-                # Broken stuff just gets evicted
-                with self.lock:
-                    if fprint in self.cache:
-                        self.debug('Evicted: %s' % fprint)
-                        del self.cache[fprint]
+                # Treat broken things as if they had timed out
+                if req:
+                    req.add('!timedout')
 
         if refreshed and event_log:
             event_log.log(message=_('New results are available'),
