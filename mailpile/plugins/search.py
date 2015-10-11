@@ -315,6 +315,8 @@ class View(Search):
         session, config, idx = self.session, self.session.config, self._idx()
         results = []
         args = list(self.args)
+        args.extend(['=%s' % mid.replace('=', '')
+                     for mid in self.data.get('mid', [])])
         if args and args[0].lower() == 'raw':
             raw = args.pop(0)
         else:
