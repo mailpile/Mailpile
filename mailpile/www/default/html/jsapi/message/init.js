@@ -3,16 +3,18 @@
 Mailpile.Message = {};
 Mailpile.Message.Tooltips = {};
 
-Mailpile.Message.init = function() {
-
+Mailpile.Message.setup = function($content) {
   /* Drag & Drop */
-  Mailpile.UI.Message.Draggable('div.thread-draggable');
-
-  /* Scroll To */
-  Mailpile.UI.Message.ScrollToMessage();
+  Mailpile.UI.Message.Draggable($content.find('div.thread-draggable'));
 
   /* Tooltips */
-  Mailpile.Message.Tooltips.Crypto();
-  Mailpile.Message.Tooltips.Attachments();
-
+  Mailpile.Message.Tooltips.Crypto($content);
+  Mailpile.Message.Tooltips.Attachments($content);
 };
+
+Mailpile.Message.init = function() {
+  /* Scroll To */
+  Mailpile.UI.Message.ScrollToMessage();
+};
+
+Mailpile.UI.content_setup.push(Mailpile.Message.setup);

@@ -1,25 +1,28 @@
 /* UI - Message */
 
 Mailpile.UI.Message.ShowMessage = function(mid) {
-  // Mailpile.API.message_get({ mid: '=VCT', _output: 'single.jhtml' }, function(result) { console.log(result); });
-  $.ajax({
-    url			 : Mailpile.api.message + mid + "/single.jhtml",
-    type		 : 'GET',
-    dataType : 'json',
-    success  : function(response) {
-      if (response.result) {
-        $('#message-' + mid).replaceWith(response.result);
-        Mailpile.Message.Tooltips.Crypto();
-        Mailpile.Message.Tooltips.Attachments();
-      }
-    },
-    error: function() {
-      Mailpile.notification({status: 'error', message: '{{_("Could not retrieve message")|escapejs}}' });
+  var done_loading = Mailpile.notify_working("{{_('Loading message...')|escapejs}}",
+                                             500);
+  var failed = function() {
+    done_loading();
+    Mailpile.notification({
+      status: 'error',
+      message: '{{_("Could not retrieve message")|escapejs}}'
+    });
+  }
+  Mailpile.API.message_get({
+    mid: mid,
+    _output: 'single.jhtml!minimal',
+    _error_callback: failed
+  }, function(response) {
+    if (response.result) {
+      done_loading();
+      $('#message-' + mid).replaceWith(response.result);
+      Mailpile.UI.prepare_new_content($('#message-' + mid));
     }
+    else failed();
   });
-
-}
-;
+};
 
 
 Mailpile.UI.Message.ScrollToMessage = function() {

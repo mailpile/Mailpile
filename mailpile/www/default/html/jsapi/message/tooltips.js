@@ -1,5 +1,5 @@
-Mailpile.Message.Tooltips.Crypto = function() {
-  $('.thread-item-crypto-info').qtip({
+Mailpile.Message.Tooltips.Crypto = function($content) {
+  $content.find('.thread-item-crypto-info').qtip({
     content: {
       title: false,
       text: function(event, api) {
@@ -37,8 +37,8 @@ Mailpile.Message.Tooltips.Crypto = function() {
 };
 
 
-Mailpile.Message.Tooltips.Attachments = function() {
-  $('a.attachment, a.attachment-image').qtip({
+Mailpile.Message.Tooltips.Attachments = function($content) {
+  $content.find('a.attachment, a.attachment-image').qtip({
     content: {
       title: false,
       text: function(event, api) {
