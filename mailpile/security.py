@@ -78,7 +78,7 @@ def make_csrf_token(req, session_id, ts=None):
     """
     ts = '%x' % (ts if (ts is not None) else time.time())
     payload = [req.server.secret, session_id, ts]
-    return '%s-%s' % (ts, b64w(sha1b64('-'.join(payload))))
+    return '%s-%s' % (ts, b64w(sha512b64('-'.join(payload))))
 
 
 def valid_csrf_token(req, session_id, csrf_token):
