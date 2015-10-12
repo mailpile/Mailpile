@@ -35,6 +35,8 @@ def output_eater(fd, buf):
 
 
 def _real_startup(config):
+    return  # FIXME: Just disable this for now, it's dumb.
+
     while config.http_worker is None:
         time.sleep(0.1)
 

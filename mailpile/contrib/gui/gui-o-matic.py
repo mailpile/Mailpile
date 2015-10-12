@@ -477,12 +477,9 @@ if __name__ == '__main__':
                 #WxWindowsIndicator
                 ):
         try:
-            indicator = cls()
-        except (AssertionError, ImportError, NameError):
-#           traceback.print_exc()
-            indicator = None
-        if indicator:
-            indi = indicator(config)
-            StdinWatcher(config, indi).start()
-            indi.run()
+            indicator = cls()(config)
+            StdinWatcher(config, indicator).start()
+            indicator.run()
             break
+        except:
+            pass
