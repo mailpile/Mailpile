@@ -1459,6 +1459,8 @@ class BrowseOrLaunch(Command):
             MakePopenUnsafe()
             webbrowser.open(http_url)
             return http_url
+        except:
+            pass
         finally:
             MakePopenSafe()
         return False
