@@ -64,7 +64,7 @@ def _real_startup(config):
         ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
         gui.stdin.write(json.dumps({
             'app_name': 'Mailpile',
-            'external_browser': False,
+            'external_browser': True,
             'indicator_icons': {
                 'startup': ico('startup.png'),
                 'normal': ico('normal.png'),
