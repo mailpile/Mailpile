@@ -106,9 +106,12 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
   	browse_button : settings.browse_button, // you can pass in id...
   	container: settings.container, // ... or DOM Element itself
     drop_element: settings.container,
-  	url : '/api/0/message/attach/',
+  	url : Mailpile.API.U('/api/0/message/attach/'),
     multipart : true,
-    multipart_params : {'mid': settings.mid},
+    multipart_params : {
+      'mid': settings.mid,
+      'csrf': Mailpile.csrf_token
+    },
     file_data_name : 'file-data',
   	filters : {
   		max_file_size : '50mb'

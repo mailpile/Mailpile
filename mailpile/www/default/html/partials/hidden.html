@@ -39,7 +39,7 @@
 
 <!-- Contact -->
 <script id="template-contact-add" type="text/template">
-  <form id="form-contact-add" class="standard">
+  <form id="form-contact-add" class="standard">{{ csrf_field|safe }}
     <fieldset class="contact-add-fields">
       <label>{{_("Name")}}</label>
       <input type="text" name="name" data-type="name" class="contact-add-name" value="" placeholder="Chelsea Manning">

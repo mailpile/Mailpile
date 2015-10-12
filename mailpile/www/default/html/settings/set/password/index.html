@@ -22,6 +22,7 @@
 
   <form id="form-set-password" class="standard text-center"
         method="POST" action="{{ U("/settings/set/password/") }}">
+    {{ csrf_field|safe }}
 
     <select name="policy-ttl" class="text-center"
             onchange="javascript:_ssp.policy_changed(this);"

@@ -395,7 +395,13 @@ class UrlMap:
                     else:
                         user_session.update_ts()
                     if user_session and method == 'POST':
-                        csrf = post_data.get('csrf', [''])[0]
+                        if isinstance(post_data, cgi.FieldStorage):
+                            try:
+                                csrf = post_data['csrf'].value
+                            except KeyError:
+                                csrf = ''
+                        else:
+                            csrf = post_data.get('csrf', [''])[0]
                         if not security.valid_csrf_token(request, sid, csrf):
                             user_session = None
                 if not user_session or not user_session.auth:

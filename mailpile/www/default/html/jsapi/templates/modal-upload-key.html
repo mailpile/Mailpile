@@ -9,7 +9,7 @@
         <span class="icon-signature-unknown"></span> {{_("Something went wrong uploading encryption key. Try again?")}}
       </p>
       <ul id="upload-key-list" class="hide"></ul>
-      <form id="form-upload-key" class="standard add-bottom">
+      <form id="form-upload-key" class="standard add-bottom">{{ csrf_field|safe }}
         <fieldset>
           <label>{{_("Select or Drag Encryption Key")}} <span class="icon-signature-unverified" title="{{_("A file located on your computer usually ending in: .asc .key .pub")}}"></span></label>
           <a id="upload-key-pick" class="hide half-top button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">

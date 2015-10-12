@@ -9,7 +9,7 @@
       </h4>
     </div>
     <div class="modal-body clearfix">
-      <form id="form-search-keyservers" class="standard hide animated">
+      <form id="form-search-keyservers" class="standard hide animated">{{ csrf_field|safe }}
         <label>{{_("Enter Name or Email Address")}} </label>
         <input type="text" name="query" value="" placeholder="name@email.org" tabindex="2">
         <button type="submit" class="button-primary"><span class="icon-search"></span> {{_("Search")}}</button>

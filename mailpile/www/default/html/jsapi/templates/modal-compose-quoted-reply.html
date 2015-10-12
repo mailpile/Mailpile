@@ -8,7 +8,7 @@
       </h4>
     </div>
     <div class="modal-body clearfix">
-      <form id="form-compose-quoted-reply" class="standard">
+      <form id="form-compose-quoted-reply" class="standard">{{ csrf_field|safe }}
         <p>{{_("Would you like to disable quoted replies in all the messages you compose?")}}</p>
         <label class="add-bottom"><input type="checkbox" name="web.quoted_reply" checked="checked"> {{_("Disable Quoted Replies")}}</label>
         <button type="submit"><span class="icon-checkmark"></span> {{_("Save")}}</button>
