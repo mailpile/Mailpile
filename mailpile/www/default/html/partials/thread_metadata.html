@@ -36,7 +36,8 @@
         </a>
       </li>
       <li role="presentation">
-        <a class="message-action-find-keys" role="menuitem" tabindex="-1" href="{{from.address}}">
+        <a class="message-action-find-keys" role="menuitem" tabindex="-1"
+           data-email="{{from.address}}">
           <span class="icon-key"></span> {% if from.flags.secure %}{{_("Show Encryption Keys")}}{% else %}{{_("Find Encryption Keys")}}{% endif %}
         </a>
       </li>

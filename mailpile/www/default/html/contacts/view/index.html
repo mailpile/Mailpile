@@ -90,7 +90,8 @@
     {% endif %}
   </ul>
 
-    <a href="{{result.contact.email.0.email}}" class="button-secondary message-action-find-keys add-bottom">
+    <a data-email="{{result.contact.email.0.email}}"
+       class="button-secondary message-action-find-keys add-bottom">
       <span class="icon-key"></span> {{_("Find Encryption Keys")}}
     </a>
 

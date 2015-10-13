@@ -3,7 +3,7 @@
 $(document).on('click', '.compose-contact-find-keys', function() {
   var $elem = $(this);
   var mid = $elem.data('mid');
-  var email = $elem.data('address');
+  var email = $elem.data('email');
   Mailpile.UI.Modals.CryptoFindKeys({
     query: email,
     strict: true,
