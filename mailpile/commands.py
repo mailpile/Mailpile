@@ -871,6 +871,9 @@ class SearchResults(dict):
         for k in tree.keys():
             if k not in self.WANT_MSG_TREE or k in self.PRUNE_MSG_TREE:
                 del tree[k]
+        for att in tree.get('attachments', []):
+            if 'part' in att:
+                del att['part']
         return tree
 
     def _message(self, email):
