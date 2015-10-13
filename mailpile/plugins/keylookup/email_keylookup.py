@@ -133,7 +133,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         return keys
 
 
-def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader):
+def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader,
+                                 body_info=None, **kwargs):
     kws = []
     if mimetype == "application/pgp-keys":
         kws += ['pgpkey:has']

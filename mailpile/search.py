@@ -1326,7 +1326,8 @@ class MailIndex(object):
                 #       add a 'crypto:has' keyword which we check for below
                 #       before performing further processing.
                 for kwe in _plugins.get_text_kw_extractors():
-                    keywords.extend(kwe(self, msg, ctype, textpart))
+                    keywords.extend(kwe(self, msg, ctype, textpart,
+                                        body_info=body_info))
 
                 if ctype == 'text/plain':
                     snippet_text += ''.join(lines).strip() + '\n'
@@ -1335,7 +1336,8 @@ class MailIndex(object):
 
             for extract in _plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
-                                        lambda: _loader(part)))
+                                        lambda: _loader(part),
+                                        body_info=body_info))
 
         if textparts == 0:
             keywords.append('text:missing')
@@ -1359,7 +1361,8 @@ class MailIndex(object):
                 for text in [t['data'] for t in tree['text_parts']]:
                     keywords.extend(re.findall(WORD_REGEXP, text.lower()))
                     for kwe in _plugins.get_text_kw_extractors():
-                        keywords.extend(kwe(self, msg, 'text/plain', text))
+                        keywords.extend(kwe(self, msg, 'text/plain', text,
+                                            body_info=body_info))
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,
@@ -1416,9 +1419,8 @@ class MailIndex(object):
                 keywords.append('%s:missing' % key)
 
         for extract in _plugins.get_meta_kw_extractors():
-            keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts))
-
-        # FIXME: Allow plugins to augment the body_info
+            keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
+                                    body_info=body_info))
 
         if snippet_text.strip() != '':
             body_info['snippet'] = self.clean_snippet(snippet_text[:1024])

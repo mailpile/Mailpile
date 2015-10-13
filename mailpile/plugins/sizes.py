@@ -12,7 +12,7 @@ _plugins = PluginManager(builtin=__file__)
 
 ##[ Keywords ]################################################################
 
-def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
+def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     """Create a search term with the floored log2 size of the message."""
     if msg_size <= 0:
         return []

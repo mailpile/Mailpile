@@ -178,7 +178,7 @@ class EmailCryptoTxf(EmailTransform):
 RE_QUOTES = re.compile(r'^(>\s*)+')
 RE_CLEANPARA = re.compile(r'[>"\*\'\s]')
 
-def paragraph_id_extractor(index, msg, ctype, textpart):
+def paragraph_id_extractor(index, msg, ctype, textpart, **kwargs):
     """Create search index terms to identify paragraphs."""
     kws = set([])
     try:

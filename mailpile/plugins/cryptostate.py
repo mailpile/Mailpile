@@ -9,7 +9,7 @@ _plugins = PluginManager(builtin=__file__)
 
 ##[ Keywords ]################################################################
 
-def text_kw_extractor(index, msg, ctype, text):
+def text_kw_extractor(index, msg, ctype, text, **kwargs):
     kw = set()
     if ('-----BEGIN PGP' in text and '\n-----END PGP' in text):
         kw.add('pgp:has')
@@ -17,7 +17,7 @@ def text_kw_extractor(index, msg, ctype, text):
     return kw
 
 
-def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
+def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     kw, enc, sig = set(), set(), set()
     def crypto_eval(part):
         # This is generic
