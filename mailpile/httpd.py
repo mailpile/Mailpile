@@ -154,6 +154,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             cookies[self.server.session_cookie]['max-age'] = 24 * 3600
             self.send_header(*cookies.output().split(': ', 1))
             self.send_header('Cache-Control', 'no-cache="set-cookie"')
+        if mailpile.util.QUITTING:
+            self.send_header('Connection', 'close')
         self.end_headers()
 
     def send_full_response(self, message,
