@@ -30,15 +30,20 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
 Mailpile.Message.ShowHTML = function(mid) {
 
   // HTML Parts Exist
-  if (Mailpile.instance.messages[mid].html_parts) {
+  var html_data = $('#message-' + mid).data('html');
+  if (html_data) {
 
     // Inject iframe
     $('#message-' + mid).find('.thread-item-text').hide();
-    $('#message-' + mid).find('.thread-message-body').append('<iframe id="thread-message-iframe-' + mid + '" class="thread-item-html" sandbox="allow-same-origin allow-scripts allow-popups allow-top-navigation" seamless target="_blank" srcdoc=""></iframe>');
+    $('#message-' + mid).find('.thread-message-body').append(
+      '<iframe id="thread-message-iframe-' + mid +
+      '" class="thread-item-html" sandbox="allow-same-origin ' +
+      'allow-scripts allow-popups allow-top-navigation" ' +
+      'seamless target="_blank" srcdoc=""></iframe>');
 
     // Add html parts
     var html_parts = '';
-    _.each(Mailpile.instance.messages[mid].html_parts, function(part, key) {
+    _.each(html_data, function(part, key) {
       html_parts += part.data;
     });
     $('#thread-message-iframe-' + mid).attr('srcdoc', html_parts);

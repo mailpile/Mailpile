@@ -187,5 +187,6 @@
 <script>
 $(document).ready(function() {
   Mailpile.Message.AnalyzeMessageInline('{{mid}}');
+  $('#message-{{mid}}').data('html', {{ message.html_parts|json|safe }});
 });
 </script>
