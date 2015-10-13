@@ -1,15 +1,15 @@
 Mailpile.keybinding_move_message = function(add_tag) {
 
   // Has Messages
-  var $context = Mailpile.UI.Selection.context('#content');
+  var $context = Mailpile.UI.Selection.context('.pile-results tr.is-target');
   var selection = Mailpile.UI.Selection.selected($context);
   if (selection.length) {
 
-    // FIXME: This should come from the DOM, not Mailpile.instance
-    var delete_tags = Mailpile.instance.search_tag_ids;
+    var delete_tags = (($context.find('.pile-results').data("tids") || ""
+                        ) + "").split(/\s+/);
     delete_tags.push('new');
 
-    Mailpile.Tagging.tag_and_update_ui({
+    Mailpile.UI.Tagging.tag_and_update_ui({
       add: add_tag,
       del: delete_tags,
       mid: selection,
