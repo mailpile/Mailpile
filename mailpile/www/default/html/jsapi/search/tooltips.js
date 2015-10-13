@@ -30,7 +30,8 @@ Mailpile.Search.Tooltips.MessageTags = function() {
       my: 'bottom center',
       at: 'top left',
       viewport: $(window),
-      adjust: {x: 7, y: 2}
+      adjust: {x: 7, y: 2},
+      effect: false
     },
     show: { delay: 100 },
     hide: { fixed: true, delay: 350 }
