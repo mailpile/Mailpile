@@ -98,6 +98,7 @@
   #sidebar li.is-editing a.sidebar-tag { cursor: move; }
 
   #sidebar a.sidebar-tag span.icon {
+    margin-left: 5px;
     width: 24px;
     height: 18px;
     display: inline-block;
@@ -128,7 +129,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-	}
+  }
 
   #sidebar a.sidebar-tag span.notification {
     display: inline-block;
@@ -147,16 +148,15 @@
     font-weight: normal;
   }
 
- #sidebar a.sidebar-tag span.sidebar-tag-expand {
-   display: inline-block;
-   color: @grayMid;
-   position: absolute;
-   top: 25%;
-   right: 3%;
+ #sidebar li.sidebar-tag {
+   position: relative;
  }
 
- #sidebar a.sidebar-tag.navigation-on span.sidebar-tag-expand {
-  color: @gray;
+ #sidebar a.sidebar-tag-expand {
+   position: absolute;
+   display: inline-block;
+   color: @grayMid;
+   top: 20%;
  }
 
 
@@ -181,6 +181,7 @@
   }
 
   #sidebar li.sidebar-subtag a.sidebar-tag span.icon {
+    margin-left: 16px;
     font-size: 16px;
     line-height: 16px;
   }

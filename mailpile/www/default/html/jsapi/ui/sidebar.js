@@ -3,7 +3,7 @@ Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
   //        That is not a safe or reasonable assumption...
 
   if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1) {
-    $('#sidebar-tag-' + tid).find('span.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
+    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
     if (gradual) {
       $('.subtag-of-' + tid).slideDown('fast');
     }
@@ -12,7 +12,7 @@ Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
     }
   } else {
     //$('#sidebar-tag-' + tid).removeClass('show-subtags');
-    $('#sidebar-tag-' + tid).find('span.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
+    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
     if (gradual) {
       $('.subtag-of-' + tid).slideUp('fast');
     }

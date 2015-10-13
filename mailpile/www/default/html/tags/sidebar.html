@@ -6,13 +6,13 @@
 {#  Show proper classes #}
 {%  if tag.type in ("drafts", "sent") %}
 <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
-    class="sidebar-tags-default">
+    class="sidebar-tag sidebar-tags-default">
 {%  elif tag.type == "outbox" %}
 <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
-    class="sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
+    class="sidebar-tag sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
 {%  else %}
 <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
-    class="sidebar-tags-draggable">
+    class="sidebar-tag sidebar-tags-draggable">
 {%  endif %}
 
 {%- if tag.slug == "outbox" or tag.slug == "drafts" %}
@@ -37,8 +37,7 @@
 {%- set subtags_collapsed = (tag.tid in config.web.subtags_collapsed) %}
 {%- if tag.get("subtags") %}
     <a class="sidebar-tag-expand" data-tid="{{tag.tid}}"
-       data-collapsed="{{ subtags_collapsed }}"
-       style="position: absolute; margin: -12px 0 0 1px; opacity: 0.5;">
+       data-collapsed="{{ subtags_collapsed }}">
   {% if subtags_collapsed %}
       <span class="icon-arrow-right"></span>
   {% else %}
