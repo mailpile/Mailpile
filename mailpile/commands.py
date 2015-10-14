@@ -2390,30 +2390,6 @@ class ConfigureMailboxes(Command):
 
 ###############################################################################
 
-class Cached(Command):
-    """Fetch results from the command cache."""
-    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
-    ORDER = ('Internals', 7)
-    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
-    IS_USER_ACTIVITY = False
-    LOG_NOTHING = True
-
-    def run(self):
-        try:
-            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
-            rv = self.session.config.command_cache.get_result(
-                cid, dirty_check=False)
-            self.session.copy(rv.session)
-            rv.session.ui.render_mode = self.session.ui.render_mode
-            return rv
-        except:
-            self._starting()
-            self._ignore_exception()
-            self._error(self.FAILURE % {'name': self.name,
-                                        'args': ' '.join(self.args)})
-            return self._finishing(False)
-
-
 class Output(Command):
     """Choose format for command results."""
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
@@ -2838,7 +2814,7 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
-    RenderPage, Cached, Output, Pipe,
+    RenderPage, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

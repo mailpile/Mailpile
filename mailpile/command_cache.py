@@ -1,11 +1,16 @@
 import time
 
 import mailpile.util
+from mailpile.commands import Command
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
+
+
+_plugins = PluginManager(builtin=__name__)
 
 
 class CommandCache(object):
@@ -84,6 +89,10 @@ class CommandCache(object):
         self.debug('Marked dirty: %s' % sorted(list(requirements)))
 
     def refresh(self, extend=0, runtime=5, event_log=None):
+        if mailpile.util.LIVE_USER_ACTIVITIES > 0:
+            self.debug('Skipping cache refresh, user is waiting.')
+            return
+
         started = now = time.time()
         with self.lock:
             # Expire things from the cache
@@ -136,3 +145,29 @@ class CommandCache(object):
                           data={'cache_ids': refreshed},
                           flags=Event.COMPLETE)
             self.debug('Refreshed: %s' % refreshed)
+
+
+class Cached(Command):
+    """Fetch results from the command cache."""
+    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
+    ORDER = ('Internals', 7)
+    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    # Warning: This depends on internals of Command, how things are run there.
+    def run(self):
+        try:
+            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
+            rv = self.session.config.command_cache.get_result(cid)
+            self.session.copy(rv.session)
+            rv.session.ui.render_mode = self.session.ui.render_mode
+            return rv
+        except:
+            self._starting()
+            self._error(self.FAILURE % {'name': self.name,
+                                        'args': ' '.join(self.args)})
+            return self._finishing(False)
+
+
+_plugins.register_commands(Cached)
