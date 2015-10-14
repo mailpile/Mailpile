@@ -1441,6 +1441,7 @@ class Email(object):
         tree['crypto']['encryption'].mix_bubbles()
         if crypto_state_feedback:
             self._update_crypto_state()
+
         return tree
 
     def _decode_gpg(self, message, decrypted):

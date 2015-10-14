@@ -315,6 +315,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             threading.current_thread().name = 'WORK:%s' % path
             return self._real_do_GET(*args, **kwargs)
         finally:
+            threading.current_thread().name = 'DONE:%s' % path
             LIVE_HTTP_REQUESTS -= 1
 
     def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):

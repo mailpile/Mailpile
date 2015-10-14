@@ -735,7 +735,7 @@ def play_nice_with_threads(sleep=True, deadline=None):
     if threading.activeCount() < 4:
         return 0
 
-    deadline = (time.time() + 1) if (deadline is None) else deadline
+    deadline = (time.time() + 5) if (deadline is None) else deadline
     while True:
         activity_threshold = (180 - time.time() + LAST_USER_ACTIVITY) / 120
         delay = max(0.001, min(0.1, 0.1 * activity_threshold))
@@ -744,7 +744,10 @@ def play_nice_with_threads(sleep=True, deadline=None):
 
         # This isn't just about sleeping, this is also basically a hack
         # to release the GIL and let other threads run.
-        time.sleep(delay)
+        if LIVE_USER_ACTIVITIES < 1:
+            time.sleep(delay)
+        else:
+            time.sleep(max(delay, 0.250))
 
         if QUITTING or LIVE_USER_ACTIVITIES < 1:
             break
