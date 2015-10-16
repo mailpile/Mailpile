@@ -740,6 +740,9 @@ class SearchResults(dict):
         f_info = self._address(e=fe, n=fn)
         f_info['aid'] = (self._msg_addresses(msg_info, no_to=True, no_cc=True)
                          or [''])[0]
+        thread_mid = parent_mid = msg_info[MailIndex.MSG_THREAD_MID]
+        if '/' in thread_mid:
+            thread_mid, parent_mid = thread_mid.split('/')
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
@@ -749,7 +752,8 @@ class SearchResults(dict):
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
             'tag_tids': sorted(self._msg_tags(msg_info)),
-            'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
+            'thread_mid': thread_mid,
+            'parent_mid': parent_mid,
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': MailIndex.get_body(msg_info),
             'flags': {
@@ -989,7 +993,9 @@ class SearchResults(dict):
         self['data']['metadata'][mid] = self._metadata(msg_info)
 
         # Populate data.thread
-        thread_mid = msg_info[self.idx.MSG_THREAD_MID]
+        thread_mid = parent_mid = msg_info[MailIndex.MSG_THREAD_MID]
+        if '/' in thread_mid:
+            thread_mid, parent_mid = thread_mid.split('/')
         if thread_mid not in self['data']['threads']:
             thread = self._thread(thread_mid)
             self['data']['threads'][thread_mid] = thread
