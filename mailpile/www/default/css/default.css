@@ -6233,7 +6233,7 @@ tr.modal-tag-picker-item td.checkbox {
   background: #f8f3b9;
 }
 #pile-results td {
-  vertical-align: middle;
+  vertical-align: top;
   border-spacing: 0px;
   border-top: 0px;
   border-right: 0px;
@@ -6247,15 +6247,15 @@ tr.modal-tag-picker-item td.checkbox {
   padding-right: 0px;
 }
 #pile-results.comfy td {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 13px;
+  padding-bottom: 11px;
 }
 #pile-results.cozy td {
-  padding-top: 6px;
+  padding-top: 9px;
   padding-bottom: 6px;
 }
 #pile-results.snug td {
-  padding-top: 2px;
+  padding-top: 5px;
   padding-bottom: 2px;
 }
 #pile-results tr a {
@@ -6292,6 +6292,15 @@ tr.modal-tag-picker-item td.checkbox {
   display: inline-block;
   border-radius: 2px;
 }
+#pile-results.comfy td.avatar,
+#pile-results.cozy td.avatar {
+  padding-top: 6px;
+  padding-bottom: 5px;
+}
+#pile-results.snug td.avatar {
+  padding-top: 4px;
+  padding-bottom: 3px;
+}
 #pile-results.comfy td.avatar a img {
   width: 24px;
   height: 24px;
@@ -6313,11 +6322,11 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #pile-results td.from span.conversation-count {
   text-align: center;
-  vertical-align: middle;
+  vertical-align: top;
   position: relative;
-  top: -2px;
+  top: 1px;
   left: 3px;
-  padding: 4px 8px 4px 8px;
+  padding: 4px 8px;
   box-sizing: border-box;
   color: #4d4d4d;
   background: #cccccc;
@@ -6327,12 +6336,12 @@ tr.modal-tag-picker-item td.checkbox {
   line-height: 11px;
 }
 #pile-results.cozy td.from span.conversation-count {
+  top: 2px;
   padding: 3px 6px;
 }
 #pile-results.snug td.from span.conversation-count {
-  padding: 0px;
-  background: transparent;
-  color: #b3b3b3;
+  top: 2px;
+  padding: 2px 4px;
 }
 #pile-results td.from .icon-reply,
 #pile-results td.from .icon-forward,
@@ -6353,6 +6362,10 @@ tr.modal-tag-picker-item td.checkbox {
   width: 370px;
   display: inline-block;
 }
+#pile-results td.subject .message-container {
+  display: relative;
+  width: 100%;
+}
 #pile-results td.date {
   width: 60px;
   text-align: right;
@@ -6362,6 +6375,14 @@ tr.modal-tag-picker-item td.checkbox {
 #pile-results td.checkbox {
   width: 45px;
   text-align: center;
+  padding-top: 2px;
+  padding-bottom: 0px;
+}
+#pile-results.cozy td.checkbox {
+  padding-top: 6px;
+}
+#pile-results.comfy td.checkbox {
+  padding-top: 10px;
 }
 /* Pile Bottom */
 #pile-bottom {
