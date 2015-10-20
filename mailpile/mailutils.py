@@ -1099,6 +1099,7 @@ class Email(object):
             tree['conversation'] = {}
             conv_id = self.get_msg_info(self.index.MSG_THREAD_MID)
             if conv_id:
+                conv_id = conv_id.split('/')[0]
                 conv = Email(self.index, int(conv_id, 36))
                 tree['conversation'] = convs = [conv.get_msg_summary()]
                 for rid in conv.get_msg_info(self.index.MSG_REPLIES

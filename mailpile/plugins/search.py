@@ -344,21 +344,21 @@ class View(Search):
                     old_result.add_email(email)
                     continue
 
-                conv = [int(c[0], 36) for c
-                        in idx.get_conversation(msg_idx=email.msg_idx_pos)]
-                if email.msg_idx_pos not in conv:
-                    conv.append(email.msg_idx_pos)
+                # Get conversation
+                conv = idx.get_conversation(msg_idx=email.msg_idx_pos)
 
-                # FIXME: This is a hack. The indexer should just keep things
-                #        in the right order on rescan. Fixing threading is a
-                #        bigger problem though, so we do this for now.
-                def sort_conv_key(msg_idx_pos):
-                    info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                # Sort our results by date...
+                def sort_conv_key(info):
                     return -int(info[idx.MSG_DATE], 36)
                 conv.sort(key=sort_conv_key)
 
+                # Convert to index positions only
+                conv = [int(info[idx.MSG_MID], 36) for info in conv]
+
                 session.results = conv
-                results.append(SearchResults(session, idx, emails=[email]))
+                results.append(SearchResults(session, idx,
+                                             emails=[email],
+                                             num=len(conv)))
         if len(results) == 1:
             return self._success(_('Displayed a single message'),
                                  result=results[0])

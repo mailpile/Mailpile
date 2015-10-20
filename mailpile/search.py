@@ -612,6 +612,11 @@ class MailIndex(object):
             return (default or int(time.time()-1))
 
     def encode_msg_id(self, msg_id):
+        # Discard any data seen outside the first angle-brackets
+        if '<' in msg_id:
+            new_msg_id = '<%s>' % msg_id.split('<')[1].split('>')[0]
+            if len(new_msg_id) > 2:
+                msg_id = new_msg_id
         return b64c(sha1b64(msg_id.strip()))
 
     def get_msg_id(self, msg, msg_ptr):
@@ -625,7 +630,9 @@ class MailIndex(object):
                                      self.hdr(msg, 'subject'),
                                      self.hdr(msg, 'received'),
                                      self.hdr(msg, 'from'),
-                                     self.hdr(msg, 'to')])).strip()
+                                     self.hdr(msg, 'to')])
+                          # This is to avoid truncation in encode_msg_id:
+                          ).replace('<', '').strip()
         # Fall back to the msg_ptr if all else fails.
         if not raw_msg_id:
             print _('WARNING: No proper Message-ID for %s') % msg_ptr
@@ -1020,77 +1027,155 @@ class MailIndex(object):
 
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
-        # If our thread ID is lame, try to update it
-        if (msg_info[self.MSG_THREAD_MID] in (None, '', msg_mid) or
-                '/' not in msg_info[self.MSG_THREAD_MID]):
-            self.set_conversation_ids(msg_info[self.MSG_MID], msg,
-                                      subject_threading=False)
-
         # Reset the internal tags on this message
         for tag_id in self.get_tags(msg_info=msg_info):
             tag = session.config.get_tag(tag_id)
             if tag and tag.slug.startswith('mp_'):
                 self.remove_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
+        # Update conversation threading
+        self.set_conversation_ids(msg_info[self.MSG_MID], msg,
+                                  subject_threading=False)
+
         # Add normal tags implied by a rescan
         for tag_id in tags:
             self.add_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
     def set_conversation_ids(self, msg_mid, msg, subject_threading=True):
+        """
+        This method will calculate/update the thread-ID and parent-ID of a
+        given message. Mailpile will group all messages in a thread
+        together as "replies" to the root message; but it will also keep track
+        of what is the immediate parent of any given mail.
+
+        Note that the "root" message may not be the actual root of the thread;
+        it's just whatever message fit the bill at the time.
+
+        See https://www.jwz.org/doc/threading.html for a very nice discussion
+        and threading algorithm which we're not using, but wish we could.
+        """
+        # We are looking for two things: an immediate parent, and the
+        # conversation we're linked to. Since messages may arrive out of
+        # order, our strategy is as follows:
+        #
+        # 1. To determine immediate parent, look at in-reply-to or the
+        #    last entry in references.
+        #
+        # 2. If any messages in References (or In-Reply-To) don't exist,
+        #    create a ghost for the closest missing ancestor.
+        #
+        # 3. To determine converstation, look at In-Reply-To and References,
+        #    merge all conversations we find into one, including us. Note
+        #    that if a message in References has been "unthreaded", we should
+        #    ignore all previous ones.
+        #
+        # Step two is a compromise; for the best possible threading we would
+        # create a ghost for each missing reference; however that would leave
+        # us vulnerable to a DOS where hostile messages contain hundreds of
+        # bogus references. So we never add more than one...
+
+        # Initial state of ignorance
         parent_mid = None
         parent_idx_pos = None
+        msg_thr_mid = None
+
+        # These are the headers we're examining
         in_reply_to = self.hdr(msg, 'in-reply-to')
+        refs = self.hdr(msg, 'references').replace(',', ' ').strip().split()
+
+        # Part 1: Figure out parent stuff.
         if in_reply_to:
-            in_reply_to = self.encode_msg_id(in_reply_to)
-            parent_idx_pos = self.MSGIDS.get(in_reply_to)
+            if '<' in in_reply_to:
+                irt_ref = '<%s>' % in_reply_to.split('<')[1].split('>')[0]
+                while irt_ref in refs:
+                    refs.remove(irt_ref)
+                refs.append(irt_ref)
+        # According to the RFCs, the last entry in the References header
+        # should be our immediate parent. We have made sure In-Reply-To has
+        # precedence if it exists...
+        if refs:
+            parent_idx_pos = self.MSGIDS.get(self.encode_msg_id(refs[-1]))
             if parent_idx_pos is not None:
                 parent_mid = b36(parent_idx_pos)
 
-        msg_thr_mid = None
-        if parent_idx_pos is not None:
-            refs = [in_reply_to]
-            ref_idxs = [parent_idx_pos]
-        else:
-            refs = self.hdr(msg, 'references').replace(',', ' ').strip().split()
-            ref_idxs = [m for m in (self.MSGIDS.get(self.encode_msg_id(r))
-                                    for r in refs if r) if m]
+        # Part 2: Add a ghost for at most 1 missing ancestor
+        enc_refs = [self.encode_msg_id(r) for r in refs]
+        ref_idxs = [self.MSGIDS.get(er) for er in enc_refs]
+        last_missing = None
+        for i, r in enumerate(ref_idxs):
+            if r is None:
+                last_missing = i
+        if last_missing is not None:
+            g_idx_pos, g_info = self.add_new_ghost(enc_refs[last_missing])
+            ref_idxs[last_missing] = g_idx_pos
 
-        # FIXME: If we have an in-reply-to, but no parent_mid, we should
-        #        probably create a ghost entry in the metadata for it, in
-        #        case we find it later.
-
-        for ref_idx_pos in ref_idxs:
+        # Part 3: Discover and merge conversations
+        ref_idxs = [r for r in ref_idxs if r is not None]
+        conversations = set([])
+        for ref_idx_pos in (r for r in reversed(ref_idxs) if r is not None):
             try:
-                msg_thr_mid = self.get_msg_at_idx_pos(ref_idx_pos
-                                                      )[self.MSG_THREAD_MID]
-                msg_thr_mid = msg_thr_mid.split('/')[0]
-                # Update root of conversation thread
-                parent = self.get_msg_at_idx_pos(int(msg_thr_mid, 36))
-                replies = parent[self.MSG_REPLIES][:-1].split(',')
-                if msg_mid not in replies:
-                    replies.append(msg_mid)
-                parent[self.MSG_REPLIES] = ','.join(replies) + ','
-                self.set_msg_at_idx_pos(int(msg_thr_mid, 36), parent)
-                break
+                ref_info = self.get_msg_at_idx_pos(ref_idx_pos)
+                if ref_info[self.MSG_REPLIES]:
+                    conversations.add(b36(ref_idx_pos))
+                msg_thr_mid = ref_info[self.MSG_THREAD_MID].split('/')[0]
+                conversations.add(msg_thr_mid)
+                if ref_info[self.MSG_THREAD_MID].endswith('/-'):
+                    break
             except (KeyError, ValueError, IndexError):
                 pass
 
+        root = None
+        replies = []
+        if msg_thr_mid:
+            root = self.get_msg_at_idx_pos(int(msg_thr_mid, 36))
+            replies = [r for r in root[self.MSG_REPLIES][:-1].split(',') if r]
+            reparent = []
+            conversations.add(msg_mid)
+            for t_mid in (c for c in conversations if c != msg_thr_mid):
+                t_msg_info = self.get_msg_at_idx_pos(int(t_mid, 36))
+                reparent.extend(t_msg_info[self.MSG_REPLIES][:-1].split(','))
+                reparent.append(t_mid)
+            for m_mid in set([r for r in reparent if r]):
+                m_msg_idx = int(m_mid, 36)
+                m_msg_info = self.get_msg_at_idx_pos(m_msg_idx)
+                otp = m_msg_info[self.MSG_THREAD_MID].split('/')
+                otp[0] = msg_thr_mid
+                m_msg_info[self.MSG_THREAD_MID] = '/'.join(otp)
+                m_msg_info[self.MSG_REPLIES] = ''
+                self.set_msg_at_idx_pos(m_msg_idx, m_msg_info)
+                replies.append(m_mid)
+
+        # FIXME: If nothing was found, do a subject-based search of recent
+        #        messages, for subject-based grouping.
+
+        # OK, finally we add ourselves and our references the conversation, yay!
+        if msg_thr_mid and root:
+            replies.append(msg_mid)
+            for ref_idx_pos in (r for r in ref_idxs if r is not None):
+                ref_mid = b36(ref_idx_pos)
+                replies.append(ref_mid)
+            root[self.MSG_REPLIES] = ','.join(sorted(list(set(replies)))) + ','
+            self.set_msg_at_idx_pos(int(msg_thr_mid, 36), root)
+
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
+        msg_replies = msg_info[self.MSG_REPLIES][:-1].split(',')
 
-        if subject_threading and not msg_thr_mid and not refs:
+        if subject_threading and not (msg_thr_mid or refs or msg_replies):
             # Can we do plain GMail style subject-based threading?
-            # FIXME: Is this too aggressive? Make configurable?
             subj = msg_info[self.MSG_SUBJECT].lower()
             subj = subj.replace('re: ', '')  # FIXME: i18n?
             date = long(msg_info[self.MSG_DATE], 36)
             if subj.strip() != '':
+                # FIXME: Is this too aggressive? Make configurable?
                 for midx in reversed(range(max(0, msg_idx_pos - 150),
                                            msg_idx_pos)):
                     try:
                         m_info = self.get_msg_at_idx_pos(midx)
-                        if m_info[self.MSG_SUBJECT  # FIXME: i18n?
-                                  ].lower().replace('re: ', '') == subj:
+                        m_date = long(m_info[self.MSG_DATE], 36)
+                        m_subj = m_info[self.MSG_SUBJECT]
+                        if ((m_date < date) and  # FIXME: i18n?
+                                (m_subj.lower().replace('re: ', '') == subj)):
                             msg_thr_mid = m_info[self.MSG_THREAD_MID]
                             msg_thr_mid = msg_thr_mid.split('/')[0]
                             parent = self.get_msg_at_idx_pos(int(msg_thr_mid,
@@ -1106,8 +1191,7 @@ class MailIndex(object):
                                 break
                             else:
                                 msg_thr_mid = None
-                        if date - long(m_info[self.MSG_DATE],
-                                       36) > 5 * 24 * 3600:
+                        if date - m_date > 5 * 24 * 3600:
                             break
                     except (KeyError, ValueError, IndexError):
                         pass
@@ -1134,6 +1218,8 @@ class MailIndex(object):
             msg_info[self.MSG_REPLIES] = ''
             if msg_mid in thread:
                 thread.remove(msg_mid)
+            # We can just pick any message to be the new "head" of
+            # the thread, the actual ordering happens elsewhere.
             if thread and thread[0]:
                 head_mid = thread[0]
                 head_idx_pos = int(head_mid, 36)
@@ -1220,6 +1306,19 @@ class MailIndex(object):
                 self.update_email(email, name=fn)
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
             return msg_idx_pos, msg_info
+
+    def add_new_ghost(self, msg_id):
+        return self.add_new_msg(
+            '',  # msg_ptr
+            msg_id,
+            long(time.time()),
+            '',  # from
+            [],  # msg_to
+            [],  # msg_cc
+            0,
+            _('(missing message)'),
+            self.MSG_BODY_GHOST,
+            [])
 
     def filter_keywords(self, session, msg_mid, msg, keywords, incoming=True):
         keywordmap = {}
@@ -1569,13 +1668,28 @@ class MailIndex(object):
             except KeyError:
                 pass
 
-    def get_conversation(self, msg_info=None, msg_idx=None):
+    def get_conversation(self, msg_info=None, msg_idx=None, ghosts=False):
         if not msg_info:
             msg_info = self.get_msg_at_idx_pos(msg_idx)
         conv_mid = msg_info[self.MSG_THREAD_MID].split('/')[0]
         if conv_mid:
-            return ([self.get_msg_at_idx_pos(int(conv_mid, 36))] +
-                    self.get_replies(msg_idx=int(conv_mid, 36)))
+            conv_mid_idx = int(conv_mid, 36)
+            replies = self.get_replies(msg_idx=conv_mid_idx)
+
+            # In case of buggy data, ensure both the conversation head and
+            # the message itself are included in the results.
+            reply_mids = [r[self.MSG_MID] for r in replies]
+            if conv_mid not in reply_mids:
+                replies = [self.get_msg_at_idx_pos(conv_mid_idx)] + replies
+                reply_mids.append(conv_mid)
+            if msg_info[self.MSG_MID] not in reply_mids:
+                replies += [msg_info]
+
+            if ghosts:
+                return results
+            else:
+                return [r for r in replies
+                        if r[self.MSG_BODY] not in self.MSG_BODY_MAGIC]
         else:
             return [msg_info]
 
@@ -1583,7 +1697,7 @@ class MailIndex(object):
         if not msg_info:
             msg_info = self.get_msg_at_idx_pos(msg_idx)
         return [self.get_msg_at_idx_pos(int(r, 36)) for r
-                in msg_info[self.MSG_REPLIES].split(',') if r]
+                in set(msg_info[self.MSG_REPLIES].split(',')) if r]
 
     def get_tags(self, msg_info=None, msg_idx=None):
         if not msg_info:
@@ -1608,7 +1722,8 @@ class MailIndex(object):
                            len(msg_idxs)
                            ) % (len(msg_idxs), tag_id))
             for msg_idx in list(msg_idxs):
-                for reply in self.get_conversation(msg_idx=msg_idx):
+                for reply in self.get_conversation(msg_idx=msg_idx,
+                                                   ghosts=True):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         else:
@@ -1662,7 +1777,8 @@ class MailIndex(object):
                            ) % (tag_id, ))
         for msg_idx in list(msg_idxs):
             if conversation:
-                for reply in self.get_conversation(msg_idx=msg_idx):
+                for reply in self.get_conversation(msg_idx=msg_idx,
+                                                   ghosts=True):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         session.ui.mark(_n('Untagging %d message (%s)',
