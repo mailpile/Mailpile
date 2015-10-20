@@ -889,7 +889,7 @@ class MailIndex(object):
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
                       msg_from=None, msg_subject=None, msg_body=None,
-                      msg_to=None, msg_cc=None, msg_tags=None):
+                      msg_to=None, msg_cc=None, msg_size=None, msg_tags=None):
         if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id is not None:
@@ -904,6 +904,8 @@ class MailIndex(object):
             msg_info[self.MSG_SUBJECT] = msg_subject
         if msg_body is not None:
             msg_info[self.MSG_BODY] = msg_body
+        if msg_size is not None:
+            msg_info[self.MSG_KB] = b36(int(msg_size) // 1024)
         if msg_to is not None:
             msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
         if msg_cc is not None:
@@ -972,8 +974,8 @@ class MailIndex(object):
             else:
                 msg_idx_pos, msg_info = self.add_new_msg(
                     msg_ptr, msg_id, default_date,
-                    self.hdr(msg, 'from'), [], [],
-                    msg_size, _('(processing message ...)'), '', [])
+                    '', [], [], 0, _('(processing message ...)'),
+                    self.MSG_BODY_GHOST, [])
                 msg_mid = b36(msg_idx_pos)
 
             # Parse and index
@@ -988,11 +990,13 @@ class MailIndex(object):
 
             # Finally, update the metadata index with whatever we learned
             self.edit_msg_info(msg_info,
+                               msg_from=self.hdr(msg, 'from'),
                                msg_ts=msg_ts,
                                msg_to=msg_to,
                                msg_cc=msg_cc,
                                msg_subject=msg_subj,
                                msg_body=msg_body,
+                               msg_size=msg_size,
                                msg_tags=tags)
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
@@ -1311,7 +1315,7 @@ class MailIndex(object):
         return self.add_new_msg(
             '',  # msg_ptr
             msg_id,
-            long(time.time()),
+            1,   # msg_ts
             '',  # from
             [],  # msg_to
             [],  # msg_cc
@@ -1686,7 +1690,7 @@ class MailIndex(object):
                 replies += [msg_info]
 
             if ghosts:
-                return results
+                return replies
             else:
                 return [r for r in replies
                         if r[self.MSG_BODY] not in self.MSG_BODY_MAGIC]
