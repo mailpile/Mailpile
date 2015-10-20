@@ -643,6 +643,9 @@ class BaseMailSource(threading.Thread):
         return ProcessNew(self.session, msg, msg_metadata_kws, msg_ts,
                           keywords, snippet)
 
+    def _msg_key_order(self, key):
+        return key
+
     def _copy_new_messages(self, mbx_key, mbx_cfg, src,
                            stop_after=-1, scan_args=None):
         session, config = self.session, self.session.config
@@ -673,7 +676,8 @@ class BaseMailSource(threading.Thread):
                 del loc.source_map[key]
 
             # Figure out what actually needs to be downloaded, log it
-            keys = sorted(src_keys - set(loc.source_map.keys()))
+            keys = list(src_keys - set(loc.source_map.keys()))
+            keys.sort(key=self._msg_key_order)
             progress.update({
                 'total': len(src_keys),
                 'total_local': len(loc_keys),

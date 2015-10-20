@@ -834,6 +834,9 @@ class ImapMailSource(BaseMailSource):
         else:
             return 'inherit'
 
+    def _msg_key_order(self, key):
+        return [int(k, 36) for k in key.split('.')]
+
     def _strip_file_extension(self, mbx_path):
         return mbx_path  # Yes, a no-op :)
 
