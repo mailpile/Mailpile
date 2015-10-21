@@ -375,11 +375,13 @@ class BaseMailSource(threading.Thread):
                 if not os.path.exists(fn):
                     continue
 
+                is_mailbox = False
                 if (raw_fn not in existing and
                         fn not in existing and
                         fn not in adding):
                     if self.is_mailbox(fn):
                         adding.append(fn)
+                        is_mailbox = True
                     if len(adding) > max_mailboxes:
                         break
 
@@ -388,7 +390,9 @@ class BaseMailSource(threading.Thread):
                         for f in [f for f in os.listdir(fn)
                                   if f not in ('.', '..')]:
                             nfn = os.path.join(fn, f)
-                            if (len(paths) <= self.MAX_PATHS and
+                            if is_mailbox and f in ('cur', 'new', 'tmp'):
+                                pass  # Skip Maildir special directories
+                            elif (len(paths) <= self.MAX_PATHS and
                                     os.path.isdir(nfn)):
                                 paths.append(nfn)
                             elif self.is_mailbox(nfn):
@@ -397,6 +401,9 @@ class BaseMailSource(threading.Thread):
                         pass
                 if len(adding) > max_mailboxes:
                     break
+
+                # This may actually be a big list, let's play nice.
+                play_nice_with_threads()
 
             new = {}
             for path in adding:
@@ -710,6 +717,7 @@ class BaseMailSource(threading.Thread):
                 progress['copied_messages'] += 1
                 progress['copied_bytes'] += len(data)
                 progress['uncopied'] -= 1
+                count += 1
 
                 # This forks off a scan job to index the message
                 config.index.scan_one_message(
