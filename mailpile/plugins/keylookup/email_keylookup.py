@@ -73,7 +73,9 @@ def _get_keydata(data):
                     "keysize": size,
                     "uids": [],
                 })
-            if isinstance(m, pgpdump.packet.UserIDPacket):
+            if isinstance(m, pgpdump.packet.UserIDPacket) and results:
+                # FIXME: This used to happen with results=[], does that imply
+                #        UIDs sometimes come before the PublicKeyPacket?
                 results[-1]["uids"].append({"name": m.user_name,
                                             "email": m.user_email})
         except (TypeError, AttributeError, KeyError, IndexError, NameError):
