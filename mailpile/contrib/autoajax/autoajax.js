@@ -62,7 +62,7 @@ can_refresh = function(cid) {
             ($('.pile-results input[type=checkbox]:checked').length < 1));
 };
 
-autoajax_go = function(url, message, jhtml) {
+autoajax_go = function(url, message, jhtml, noblank) {
     url = Mailpile.fix_url(url);
     if (jhtml === undefined) jhtml = ajaxable_url(url);
     // If we have any composers on the page, save contents
@@ -73,7 +73,7 @@ autoajax_go = function(url, message, jhtml) {
       return _scroll_up(stuff);
     }
     Mailpile.Composer.AutosaveAll(0, function() {
-        if (!(jhtml && update_using_jhtml(url, scroll_and_done, done))) {
+        if (!(jhtml && update_using_jhtml(url, scroll_and_done, done, noblank))) {
             document.location.href = url;
         }
     });
@@ -93,7 +93,8 @@ prepare_new_content = function(selector) {
                 // We don't hijack events that spawn new tabs/windows etc.
                 if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
                     ev.preventDefault();
-                    autoajax_go(url, undefined, jhtml);
+                    autoajax_go(url, undefined, jhtml,
+                                $(elem).data('noblank') ? true : false);
                 }
             });
         }
@@ -120,12 +121,12 @@ restore_state = function(ev) {
     }
 };
 
-update_using_jhtml = function(original_url, callback, error_callback) {
+update_using_jhtml = function(original_url, callback, error_callback, noblank) {
     if (ajaxable_url(document.location.pathname)) {
         var cv = $('#content-view').parent();
         history.replaceState({autoajax: true, html: _outerHTML(cv)},
                              document.title);
-        cv.hide();
+        if (!noblank) cv.hide();
         return $.ajax({
             url: Mailpile.API.jhtml_url(original_url, 'content'),
             type: 'GET',
