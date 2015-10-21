@@ -598,6 +598,8 @@ class BaseMailSource(threading.Thread):
         """This converts a path to a tag name."""
         parts = self._mailbox_path_split(path)
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
+        if not parts:
+            return _('Unnamed')
         tagname = self._strip_file_extension(parts.pop(-1))
         while tagname[:1] == '.':
             tagname = tagname[1:]
