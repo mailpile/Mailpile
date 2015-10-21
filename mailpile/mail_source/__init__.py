@@ -235,7 +235,10 @@ class BaseMailSource(threading.Thread):
 
         all_completed = True
         ostate = self._state
-        for mbx_cfg in self._sorted_mailboxes():
+        plan = self._sorted_mailboxes()
+        self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
+        event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
+        for mbx_cfg in plan:
             if self._check_interrupt(clear=False):
                 all_completed = False
                 break
@@ -246,14 +249,19 @@ class BaseMailSource(threading.Thread):
                     policy = self._policy(mbx_cfg)
                     if (path in ('/dev/null', '', None)
                             or policy in ('ignore', 'unknown')):
+                        event_plan[mbx_cfg._key][1] = _('Skipped')
                         continue
 
                 # Generally speaking, we only rescan if a mailbox looks like
-                # it has changed. However, 1/50th of the time we take a look
+                # it has changed. However, every once in a while time we check
                 # anyway just in case looks are deceiving.
                 state = {}
-                if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
-                                  random.randint(0, 50) == 10):
+                if batch < 1:
+                    event_plan[mbx_cfg._key][1] = _('Postponed')
+
+                elif (self._has_mailbox_changed(mbx_cfg, state) or
+                        random.randint(0, 25 + len(plan)*5) == 1):
+                    event_plan[mbx_cfg._key][1] = _('Working ...')
 
                     this_batch = max(5, int(0.7 * batch))
                     self._state = 'Waiting... (rescan)'
@@ -286,17 +294,29 @@ class BaseMailSource(threading.Thread):
 
                         # OK, everything looks complete, mark it!
                         if complete:
+                            event_plan[mbx_cfg._key][1] = _('Completed')
                             self._mark_mailbox_rescanned(mbx_cfg, state)
                         else:
+                            event_plan[mbx_cfg._key][1] = _('Indexed %d'
+                                                            ) % count
                             all_completed = False
+                            if count == 0:
+                                time.sleep(60)
                     else:
+                        event_plan[mbx_cfg._key][1] = _('Failed')
                         self._last_rescan_failed = True
                         all_completed = False
                         errors += 1
+
+                else:
+                    event_plan[mbx_cfg._key][1] = _('Unchanged')
+
             except (NoSuchMailboxError, IOError, OSError):
+                event_plan[mbx_cfg._key][1] = _('Error')
                 self._last_rescan_failed = True
                 errors += 1
             except:
+                event_plan[mbx_cfg._key][1] = _('Internal error')
                 self._last_rescan_failed = True
                 self._log_status(_('Internal error'))
                 raise
