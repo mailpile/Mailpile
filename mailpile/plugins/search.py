@@ -12,7 +12,7 @@ from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
-from mailpile.ui import SuppressHtmlOutput
+from mailpile.ui import SuppressHtmlOutput, HttpUserInteraction
 from mailpile.vfs import vfs, FilePath
 
 
@@ -134,7 +134,10 @@ class Search(Command):
             try:
                 start = int(spoint) - 1
             except ValueError:
-                raise UsageError(_('Weird starting point: %s') % spoint)
+                if isinstance(session.ui, HttpUserInteraction):
+                    session.ui.log(session.ui.LOG_WARNING, ('Weird starting point: %s') % spoint)
+                else:
+                    raise UsageError(_('Weird starting point: %s') % spoint)
 
         session.order = session.order or session.config.prefs.default_order
         self._start = start
