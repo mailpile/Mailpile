@@ -3,7 +3,7 @@
 {
     "name": "datadig",
     "author": "The Mailpile Team <team@mailpile.is>",
-    "description": "Poor-man's data-mining: extract tabular (spreadsheet) data from e-mail.",
+    "description": "Poor-man's data-mining: extract tabular (spreadsheet) data from email.",
 
     "config": {},
     "code": {

@@ -22,13 +22,13 @@
     data-state="normal"
 {%- if metadata.body and metadata.body.list and
        ('list:' + metadata.body.list) not in state.query_args.q %}
-    data-context-hint="{{ _('View e-mail from this mailing list') }}"
+    data-context-hint="{{ _('View email from this mailing list') }}"
     data-context-icon="groups"
     data-context-url="{{ U('/search/?q=list:', metadata.body.list) }}"
 {%- else %}
   {%- if from and from.address and
          ('from:' + from.address) not in state.query_args.q %}
-    data-context-hint="{{ _('Search for e-mail from:') }} {{metadata.from.fn}}"
+    data-context-hint="{{ _('Search for email from:') }} {{metadata.from.fn}}"
     data-context-icon="user"
     data-context-url="{{ U('/search/?q=from:', from.address) }}"
   {%- endif %}

@@ -69,7 +69,7 @@ class CryptoPolicy(CryptoPolicyBaseAction):
     SYNOPSIS = (None, 'crypto_policy', 'crypto_policy', '[<emailaddresses>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET',)
-    HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
+    HTTP_QUERY_VARS = {'email': 'email addresses'}
 
     @classmethod
     def ShouldAttachKey(cls, config, vcards=None, emails=None, ttl=90):

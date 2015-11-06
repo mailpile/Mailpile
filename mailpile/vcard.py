@@ -249,7 +249,7 @@ class SimpleVCard(object):
     '990.1'
 
     There are shorthand methods for accessing or setting the values of
-    the full name and e-mail lines:
+    the full name and email lines:
     >>> vcard.email
     u'bre@evil.com'
     >>> vcard.fn = 'Bjarni R. E.'
@@ -640,7 +640,7 @@ class SimpleVCard(object):
                         ol.set_attr('pid', ','.join(pids))
                         changes += 1
                     elif not ol.get('pref') and ol.name not in ('email', ):
-                        # Note: We never remove e-mail addresses or a user's
+                        # Note: We never remove email addresses or a user's
                         # preferred settings. That just causes trouble.
                         self.remove(ol.line_id)
                         changes += 1
@@ -1178,7 +1178,7 @@ class VCardStore(dict):
     ...                              VCardLine('EMAIL:d@evil.com')),
     ...                MailpileVCard(VCardLine('FN:Guy')))
 
-    VCards can be looked up directly by e-mail.
+    VCards can be looked up directly by email.
     >>> vcs.get_vcard('d@evil.com').fn
     u'Dude'
     >>> vcs.get_vcard('nosuch@email.address') is None
@@ -1341,7 +1341,7 @@ class VCardStore(dict):
         from address a cumulative score, where scores express roughly
         the following preferences.
 
-        1. If one of the profiles' e-mail addresses is present in the
+        1. If one of the profiles' email addresses is present in the
            headers, prefer that so replies come from the address they
            were sent to.
         2. Else, if we have a preferred profile for communicating
@@ -1406,7 +1406,7 @@ class VCardStore(dict):
         return fa_list and fa_list[0] or None
 
     def choose_from_addresses(vcards, config, *address_lists):
-        # Generate all the possible e-mail address / vcard pairs
+        # Generate all the possible email address / vcard pairs
         profile_cards = vcards.find_vcards([], kinds=['profile'])
         matches = []
         for pc in profile_cards:
@@ -1506,7 +1506,7 @@ class VCardImporter(VCardPluginClass):
             counter += 1
 
             # Some importers want to update the index's idea of what names go
-            # with what e-mail addresses. Not all do, but some...
+            # with what email addresses. Not all do, but some...
             if (self.UPDATE_INDEX and vcard.fn and
                     session.config and session.config.index):
                 for email in vcard.get_all('email'):

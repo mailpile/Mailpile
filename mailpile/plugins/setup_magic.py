@@ -335,7 +335,7 @@ class SetupMagic(Command):
                 session.config.prefs.obfuscate_index = True
                 session.config.prefs.index_encrypted = True
                 session.ui.notify(_('Obfuscating search index and enabling '
-                                    'indexing of encrypted e-mail. Yay!'))
+                                    'indexing of encrypted email. Yay!'))
             return True
         else:
             return False
@@ -408,11 +408,11 @@ class TestableWebbable(SetupMagic):
 
 
 class SetupGetEmailSettings(TestableWebbable):
-    """Lookup, guess, test server details for an e-mail address"""
+    """Lookup, guess, test server details for an email address"""
     SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers', None)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-        'email': 'E-mail address',
+        'email': 'Email address',
         'timeout': 'Seconds',
         'password': 'Account password',
         'track-id': 'Tracking ID for event log'
@@ -1229,8 +1229,8 @@ class SetupProfiles(SetupCrypto):
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
     })
     HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
-        'email': 'Create a profile for this e-mail address',
-        'name': 'Name associated with this e-mail',
+        'email': 'Create a profile for this email address',
+        'name': 'Name associated with this email',
         'note': 'Profile note',
         'pass': 'Password for remote accounts',
         'route_id': 'Route ID for sending mail',
@@ -1288,7 +1288,7 @@ class SetupProfiles(SetupCrypto):
                     ai['note'] = note if note else ai['note']
                     ai['pgp_keys'].append(key)
 
-        # FIXME: Scan Thunderbird and MacMail for e-mails, other apps...
+        # FIXME: Scan Thunderbird and MacMail for emails, other apps...
 
         return addresses
 

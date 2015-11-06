@@ -56,10 +56,10 @@ class DemoVCardImporter(VCardImporter):
         # Notes to implementors:
         #
         #  - It is important to only return one card per (set of)
-        #    e-mail addresses, as internal overwriting may cause
+        #    email addresses, as internal overwriting may cause
         #    unexpected results.
         #  - If data is to be deleted from the contact list, it
-        #    is important to return a VCard for that e-mail address
+        #    is important to return a VCard for that email address
         #    which has the relevant data removed.
         #
         if not self.config.active:

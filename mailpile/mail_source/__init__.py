@@ -30,7 +30,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 200     # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 200     # Index at most this many new emails at once
     MAX_MAILBOXES = 100         # Max number of mailboxes we add
     MAX_PATHS = 5000            # Abort if asked to scan too many directories
 
@@ -814,7 +814,7 @@ class BaseMailSource(threading.Thread):
                 # the rescan may need to catch up.
                 self._create_local_mailbox(mbx_cfg)
                 max_copy = max(min(stop_after, 5), int(0.8 * stop_after))
-                self._log_status(_('Copying up to %d e-mails from %s'
+                self._log_status(_('Copying up to %d emails from %s'
                                    ) % (max_copy, self._mailbox_name(path)))
                 count += self._copy_new_messages(mbx_key, mbx_cfg, mbox,
                                                  stop_after=max_copy,

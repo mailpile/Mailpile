@@ -95,7 +95,7 @@ class GnuPGImporter(VCardImporter):
 
     @classmethod
     def vcards_one_per_uid(cls, keys, vcards, kindhint=None):
-        """This creates one VCard per e-mail address found in UIDs"""
+        """This creates one VCard per email address found in UIDs"""
         new_vcards = []
         for key_id, key in keys.iteritems():
             if cls.key_is_useless(key):
@@ -137,7 +137,7 @@ class GnuPGImporter(VCardImporter):
                     vcls.append(VCardLine(name='fn', value=name))
             if emails:
                 # This is us taking care to only create one card for each
-                # set of e-mail addresses.
+                # set of email addresses.
                 card = MailpileVCard(*vcls)
                 card.add(VCardLine(name='x-gpg-mrgid', value=key_id))
                 for email in emails:
@@ -148,7 +148,7 @@ class GnuPGImporter(VCardImporter):
 
     @classmethod
     def vcards_merged(cls, keys, vcards):
-        """This creates merged VCards, grouping by uid/e-mail and key"""
+        """This creates merged VCards, grouping by uid/email and key"""
         new_vcards = []
         for key_id, key in keys.iteritems():
             if cls.key_is_useless(key):
@@ -168,7 +168,7 @@ class GnuPGImporter(VCardImporter):
                 card.add(*vcls)
             elif emails:
                 # This is us taking care to only create one card for each
-                # set of e-mail addresses.
+                # set of email addresses.
                 card = MailpileVCard(*vcls)
                 card.add(VCardLine(name='x-gpg-mrgid', value=key_id))
                 for email in emails:

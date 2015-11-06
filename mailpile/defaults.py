@@ -2,7 +2,7 @@ APPVER = "0.6.0+dev"
 ABOUT = """\
 Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
                for searching and                   <https://www.mailpile.is/>
-           organizing piles of e-mail
+           organizing piles of email
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
@@ -80,7 +80,7 @@ CONFIG_RULES = {
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
         'gpg_recipient':  p(_('Encrypt local data to ...'), 'gpgkeyid',    ''),
-        'gpg_email_key':   (_('Enable e-mail based public key distribution'),
+        'gpg_email_key':   (_('Enable email based public key distribution'),
                             bool, True),
         'openpgp_header': X(_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
@@ -98,7 +98,7 @@ CONFIG_RULES = {
         'encrypt_events': X(_('Encrypt the event log'), bool,            True),
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
-        'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
+        'default_email':   (_('Default outgoing email address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),
         'line_length':     (_('Target line length, <40 disables reflow'),
                             int, 65),

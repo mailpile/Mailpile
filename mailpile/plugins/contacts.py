@@ -159,7 +159,7 @@ class AddVCard(VCardCommand):
     KIND = ''
     HTTP_CALLABLE = ('POST', 'PUT', 'GET')
     HTTP_POST_VARS = {
-        'email': 'E-mail address',
+        'email': 'Email address',
         'name': 'Contact name',
         'note': 'Note about contact',
         'mid': 'Message ID'
@@ -288,7 +288,7 @@ class RemoveVCard(VCardCommand):
     KIND = ''
     HTTP_CALLABLE = ('POST', 'DELETE')
     HTTP_POST_VARS = {
-        'email': 'delete by e-mail',
+        'email': 'delete by email',
         'rid': 'delete by x-mailpile-rid'
     }
     COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
@@ -323,7 +323,7 @@ class VCardAddLines(VCardCommand):
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_POST_VARS = {
-        'email': 'update by e-mail',
+        'email': 'update by email',
         'rid': 'update by x-mailpile-rid',
         'name': 'Line name',
         'value': 'Line value',
@@ -1239,7 +1239,7 @@ class ChooseFromAddress(Command):
     HTTP_CALLABLE = ('GET',)
     HTTP_QUERY_VARS = {
         'mid': 'Message ID',
-        'email': 'E-mail address',
+        'email': 'Email address',
         'no_from': 'Ignore From: lines'
     }
 

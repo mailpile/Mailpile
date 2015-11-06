@@ -30,7 +30,7 @@
   {% endif %}
 
   {% if result.new_emails %}
-    <h3>Discovered e-mail addresses</h3>
+    <h3>Discovered email addresses</h3>
     <ul>
       {% for email in result.new_emails|sort %}<li>
         {% set info = result.new_emails[email] %}
@@ -48,8 +48,8 @@
   {% endif %}
   
   <hr><form method="POST">
-    <h3>Add another e-mail address</h3>
-    E-mail: <input type="text" name="email" value=""><br>
+    <h3>Add another email address</h3>
+    Email: <input type="text" name="email" value=""><br>
     Name: <input type="text" name="name" value=""><br>
     Note: <input type="text" name="note" value=""><br>
     <input type="submit" value="Add to profiles">
