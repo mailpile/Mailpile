@@ -119,6 +119,23 @@ PROVISIONAL_URI_SCHEMES = set([
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
+UNI_BOX_FLIPS = [
+    (u'\u250c', u'\u2514'), (u'\u250d', u'\u2515'), (u'\u250e', u'\u2516'),
+    (u'\u250f', u'\u2517'), (u'\u2510', u'\u2518'), (u'\u2511', u'\u2519'),
+    (u'\u2512', u'\u251a'), (u'\u2513', u'\u251b'), (u'\u251d', u'\u251f'),
+    (u'\u2521', u'\u2522'), (u'\u2526', u'\u2527'), (u'\u2529', u'\u252a'),
+    (u'\u252c', u'\u2534'), (u'\u252d', u'\u2535'), (u'\u252e', u'\u2536'),
+    (u'\u252f', u'\u2537'), (u'\u2530', u'\u2538'), (u'\u2531', u'\u2539'),
+    (u'\u2532', u'\u253a'), (u'\u2533', u'\u253b'), (u'\u2543', u'\u2545'),
+    (u'\u2544', u'\u2546'), (u'\u2547', u'\u2548'), (u'\u2552', u'\u2558'),
+    (u'\u2553', u'\u2559'), (u'\u2554', u'\u255a'), (u'\u2555', u'\u255b'),
+    (u'\u2556', u'\u255c'), (u'\u2557', u'\u255d'), (u'\u2564', u'\u2567'),
+    (u'\u2565', u'\u2568'), (u'\u2566', u'\u2569'), (u'\u256d', u'\u2570'),
+    (u'\u256e', u'\u256f'), (u'\u2571', u'\u2572'), (u'\u2575', u'\u2577'),
+    (u'\u2579', u'\u257a'), (u'\u257d', u'\u257f')
+]
+UNI_BOX_FLIP = dict(UNI_BOX_FLIPS + [(b, a) for a, b in UNI_BOX_FLIPS])
+
 
 ##[ Lock debugging tools ]##################################################
 
@@ -297,6 +314,10 @@ def escape_html(t):
     t -- The string to escape
     """
     return cgi.escape(t)
+
+
+def flip_unicode_boxes(text):
+    return ''.join(UNI_BOX_FLIP.get(c, c) for c in text)
 
 
 def _hash(cls, data):
