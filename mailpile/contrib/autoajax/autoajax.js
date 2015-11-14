@@ -67,7 +67,7 @@ autoajax_go = function(url, message, jhtml, noblank) {
     if (jhtml === undefined) jhtml = ajaxable_url(url);
     // If we have any composers on the page, save contents
     // before continuing - whether we're JHTMLing or not!
-    var done = Mailpile.notify_working(message, 1500);
+    var done = Mailpile.notify_working(message, (noblank) ? 250 : 1500);
     var scroll_and_done = function(stuff) {
       done();
       return _scroll_up(stuff);
