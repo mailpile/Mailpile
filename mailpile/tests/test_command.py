@@ -71,6 +71,15 @@ class TestCommands(MailPileUnittest):
         self.assertEqual(res.as_dict()["result"]['crypto-policy'],
                          'best-effort')
 
+    def test_reply_no_subject(self):
+        mid = self.mp.search('from:ohcheeou').result['data']['metadata']\
+                                             .values()[0]['mid']
+        # Just checks it does not crash
+        res = self.mp.reply('ephemeral', '=%s' % mid)
+        self.assertEqual(res.status, 'success')
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         'Re:')
+
     def test_reply_subjects_on_first_msg(self):
         # Subject: Verb. Target. Outcome.'
         mid = self.mp.search('subject:Verb').result['data']['metadata']\
