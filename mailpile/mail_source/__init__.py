@@ -419,12 +419,14 @@ class BaseMailSource(threading.Thread):
                                 paths.append(nfn)
                     except OSError:
                         pass
+
+                    # This may have been a bit of work, take a break.
+                    play_nice_with_threads()
+
                 if len(adding) > max_mailboxes:
                     break
 
-                # This may actually be a big list, let's play nice.
-                play_nice_with_threads()
-
+            play_nice_with_threads()
             new = {}
             for path in adding:
                 new[config.sys.mailbox.append(path)] = path
