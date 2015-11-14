@@ -88,7 +88,7 @@ CONFIG_RULES = {
         'crypto_policy':  X(_('Default encryption policy for outgoing mail'),
                             str, 'none'),
         'inline_pgp':      (_('Use inline PGP when possible'), bool,     True),
-        'default_order':   (_('Default sort order'), str,          'rev-date'),
+        'default_order':   (_('Default sort order'), str,     'rev-freshness'),
         'obfuscate_index':X(_('Key to use to scramble the index'), str,    ''),
         'index_encrypted':X(_('Make encrypted content searchable'),
                             bool, False),
