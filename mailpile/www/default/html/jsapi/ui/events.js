@@ -45,6 +45,30 @@ $(document).on('click', 'span.checkbox, div.checkbox', function(e) {
 });
 
 
+$(document).on('click', 'a.show-hide, a.do-show', function(e) {
+  var $elem = $(this);
+  if ($elem.data('done') == 'show') {
+    $($elem.data('hide')).slideDown();
+    $($elem.data('show')).slideUp();
+    if ($elem.hasClass('show-hide')) {
+      $elem.data('done', 'hide').removeClass('did-show').addClass('did-hide');
+    }
+  }
+  else {
+    $($elem.data('show')).slideDown();
+    $($elem.data('hide')).slideUp();
+    if ($elem.hasClass('show-hide')) {
+      $elem.data('done', 'show').removeClass('did-hide').addClass('did-show');
+    }
+  }
+  if ($elem.data('other')) {
+    var msg = $elem.html();
+    $elem.html($elem.data('other')).data('other', msg);
+  }
+  e.preventDefault();
+});
+
+
 // FIXME: this is in the wrong place
 Mailpile.auto_modal = function(params) {
   var jhtml_url = Mailpile.API.jhtml_url(params.url);
