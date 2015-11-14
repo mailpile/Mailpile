@@ -725,6 +725,7 @@ class SearchResults(dict):
         'drafts': 'draft',
         'blank': 'draft',
         'sent': 'from_me',
+        'unread': 'unread',
         'outbox': 'from_me',
         'replied': 'replied',
         'fwded': 'forwarded'
