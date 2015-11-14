@@ -66,7 +66,7 @@ class PluginManager(object):
     ]
     # Plugins we want, if they are discovered
     WANTED = [
-        'gui', 'print', 'datadig'
+        'autoajax', 'print', 'datadig'
     ]
     # Plugins that have been renamed from past releases
     RENAMED = {
