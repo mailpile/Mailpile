@@ -32,7 +32,7 @@ PLUGINS = __all__
 
 
 class EmailTransform(object):
-    """Base class for e-mail transforms"""
+    """Base class for email transforms"""
     def __init__(self, config):
         self.config = config
 

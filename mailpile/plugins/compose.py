@@ -314,7 +314,7 @@ class Draft(AddComposeMethods(View)):
 
 
 class Compose(CompositionCommand):
-    """Create a new blank e-mail for editing"""
+    """Create a new blank email for editing"""
     SYNOPSIS = ('C', 'compose', 'message/compose', "[ephemeral]")
     ORDER = ('Composing', 0)
     HTTP_CALLABLE = ('POST', )
@@ -821,7 +821,7 @@ class Sendit(CompositionCommand):
     HTTP_POST_VARS = {
         'mid': 'metadata-ID',
         'to': 'recipients',
-        'from': 'sender e-mail'
+        'from': 'sender email'
     }
 
     # We set our events' source class explicitly, so subclasses don't

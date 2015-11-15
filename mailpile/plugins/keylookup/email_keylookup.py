@@ -87,7 +87,7 @@ def _get_keydata(data):
 
 
 class EmailKeyLookupHandler(LookupHandler, Search):
-    NAME = _("E-mail keys")
+    NAME = _("Email keys")
     PRIORITY = 5
     TIMEOUT = 25  # 5 seconds per message we are willing to parse
     LOCAL = True
@@ -101,7 +101,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         _PRUNE_GLOBAL_KEY_CACHE()
 
     def _score(self, key):
-        return (1, _('Found key in local e-mail'))
+        return (1, _('Found key in local email'))
 
     def _lookup(self, address, strict_email_match=False):
         results = {}

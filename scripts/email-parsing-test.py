@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # This is code which tries very hard to interpret the From:, To: and Cc:
-# lines found in real-world e-mail addresses and make sense of them.
+# lines found in real-world email addresses and make sense of them.
 #
 # The general strategy of this script is to:
 #    1. parse header into tokens

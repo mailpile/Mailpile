@@ -1,7 +1,7 @@
 /* Message */
 
 Mailpile.Message.AnalyzeMessageInline = function(mid) {
-  // Iterate through all plain-text parts of the e-mail
+  // Iterate through all plain-text parts of the email
   $('#message-' + mid).find('.thread-item-text').each(function(i, text_part) {
     var content = $(text_part).html();
 

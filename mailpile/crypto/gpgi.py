@@ -639,10 +639,10 @@ class GnuPG:
         #       details about key capabilities or expiry for
         #       --list-secret-keys unless a selector is provided. A dot
         #       is reasonably likely to appear in all PGP keys, as it is
-        #       a common component of e-mail addresses (and @ does not
+        #       a common component of email addresses (and @ does not
         #       work as a selector for some reason...)
         #
-        #       The downside of this workaround is that keys with no e-mail
+        #       The downside of this workaround is that keys with no email
         #       address or an address like alice@localhost won't be found.
         #       Therefore, this paramter should be removed when GnuPG >= 2.1
         #       becomes commonplace.

@@ -25,7 +25,7 @@ from mailpile.plugins.search import Search
 _plugins = PluginManager(builtin=__file__)
 
 
-##[ GnuPG e-mail processing ]#################################################
+##[ GnuPG email processing ]#################################################
 
 class ContentTxf(EmailTransform):
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
@@ -317,7 +317,7 @@ class GPGKeyList(Command):
     SYNOPSIS = (None, 'crypto/gpg/keylist',
                 'crypto/gpg/keylist', '<address>')
     HTTP_CALLABLE = ('GET', )
-    HTTP_QUERY_VARS = {'address': 'E-mail address'}
+    HTTP_QUERY_VARS = {'address': 'Email address'}
 
     def command(self):
         args = list(self.args)
@@ -327,10 +327,10 @@ class GPGKeyList(Command):
             addr = self.data.get("address", None)
 
         if addr is None:
-            return self._error("Must supply e-mail address", None)
+            return self._error("Must supply email address", None)
 
         res = self._gnupg().address_to_keys(addr)
-        return self._success("Searched for keys for e-mail address", res)
+        return self._success("Searched for keys for email address", res)
 
 
 class GPGKeyListSecret(Command):
@@ -351,7 +351,7 @@ class GPGUsageStatistics(Search):
     SYNOPSIS = (None, 'crypto/gpg/statistics',
                 'crypto/gpg/statistics', '<address>')
     HTTP_CALLABLE = ('GET', )
-    HTTP_QUERY_VARS = {'address': 'E-mail address'}
+    HTTP_QUERY_VARS = {'address': 'Email address'}
     COMMAND_CACHE_TTL = 0
 
     class CommandResult(Command.CommandResult):
@@ -360,7 +360,7 @@ class GPGUsageStatistics(Search):
 
         def as_text(self):
             if self.result:
-                return "%d%% of e-mail from %s has PGP signatures (%d/%d)" % (
+                return "%d%% of email from %s has PGP signatures (%d/%d)" % (
                     100*self.result["ratio"],
                     self.result["address"],
                     self.result["pgpsigned"],

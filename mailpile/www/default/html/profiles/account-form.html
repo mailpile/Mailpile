@@ -4,7 +4,7 @@
   This is a single form which handles profiles, routes and basic source
   configuration.
 
-  The basic section of the form captures name, e-mail and password.
+  The basic section of the form captures name, email and password.
 
   If the user allows auto-detection of settings, the Thunderbird ISPDB
   will be queried and possibly other heuristics employed to figure out
@@ -41,7 +41,7 @@
             $(pf + 'input[name=name], ' + pf + 'input[name=email]'
               ).on('change', _fpa.validate);
           }
-          // FIXME: Validate other things too, improve e-mail validation
+          // FIXME: Validate other things too, improve email validation
           //_fpa.display($('.fpa-basics-ok'), basic_problems < 1);
           _fpa.display($('.fpa-basics-bad'), basic_problems > 0);
           _fpa.display($('#fpa-submit'),
@@ -115,7 +115,7 @@
           }
         },
         email_changed: function() {
-          // If the e-mail in basics changes, try to select the matching
+          // If the email in basics changes, try to select the matching
           // PGP key, if there is one. This may override user selections,
           // which might be lame but should rarely be an issue because of
           // the "order of progression" of the form.
@@ -141,7 +141,7 @@
           var email = $(pf + '.fpa-email').val();
           if (!email) {
             // FIXME: Improve validation...
-            alert('{{_("You need at least an e-mail address to proceed.")|escapejs}}');
+            alert('{{_("You need at least an email address to proceed.")|escapejs}}');
           }
           else if ($(pf + '.fpa-autoconfig').is(':checked')) {
             $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
@@ -246,7 +246,7 @@
        onclick='javascript:_fpa.next("profile-add-basics");'>
       <span class="icon-user"></span> {{_("Basic Details")}}
       <span class="icon-signature-unknown fpa-basics-bad right hide" style="padding: 5px; color: #ff5;"
-            title="{{_('At least a name and e-mail are required!')}}"></span>
+            title="{{_('At least a name and email are required!')}}"></span>
       <span class="icon-checkmark fpa-basics-ok right hide" style="padding: 5px; color: #0d0;"></span>
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
@@ -267,7 +267,7 @@
       </div>
       <div class="basics old">
         <div class="left" style="margin-right: 1em; width: 14em;">
-          <label>{{_("E-mail")}}</label>
+          <label>{{_("Email")}}</label>
           <input type="text" name="email" class='fpa-email fpa-basic-username'
                  placeholder="chelsea@manning.com" value="{{ result.email }}"
                  onchange="javascript:_fpa.email_changed();">
@@ -556,7 +556,7 @@
                {%- if protocol != 'local' %} hide{% endif %}"
                style="margin-right: 0; width: 29em;">
             <p><i>
-              {{_("Use this setting if you would like Mailpile to read e-mails already downloaded by Thunderbird, Mac Mail or another local application on this machine.")}}
+              {{_("Use this setting if you would like Mailpile to read emails already downloaded by Thunderbird, Mac Mail or another local application on this machine.")}}
             </i></p>
             <p>
               {{_("Use the Browse tool to import local mailboxes later on.")}}

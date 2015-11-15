@@ -7,14 +7,14 @@ from mailpile.commands import Command
 from mailpile.mailutils import Email
 
 # FIXME: Perhaps this plugin should be named ESQL and implement an SQL
-#        syntax for extracting data from e-mails...
+#        syntax for extracting data from emails...
 #
 #  SELECT from,to,body=Regards\,(.*) FROM search=to:bre
 #
 
 
 class dataDigCommand(Command):
-    """Extract tables of structured data from e-mail content"""
+    """Extract tables of structured data from email content"""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'datadig', 'datadig', '<terms ...> -- <messages ...>')
     HTTP_CALLABLE = ('GET', )

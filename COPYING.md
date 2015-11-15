@@ -1,4 +1,4 @@
-# Mailpile - a program for doing stuff with e-mail
+# Mailpile - a program for doing stuff with email
 
 Copyright (C) 2011-2015, Bjarni R. Einarsson, Mailpile ehf and friends.
 

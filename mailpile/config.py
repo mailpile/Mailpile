@@ -545,7 +545,7 @@ def _EmailCheck(email):
 def _GPGKeyCheck(value):
     """
     Strip a GPG fingerprint of all spaces, make sure it seems valid.
-    Will also accept e-mail addresses, for legacy reasons.
+    Will also accept email addresses, for legacy reasons.
 
     >>> _GPGKeyCheck('User@Foo.com')
     'User@Foo.com'

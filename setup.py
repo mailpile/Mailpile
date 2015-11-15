@@ -61,7 +61,7 @@ setup(
     author_email="team@mailpile.is",
     url="https://www.mailpile.is/",
     description="""\
-An e-mail search engine and webmail client, with easy encryption and privacy.
+An email search engine and webmail client, with easy encryption and privacy.
 """,
     long_description=open('README.md', 'r').read(),
     classifiers=[

@@ -15,7 +15,7 @@ approved Free Software license.
 Mailpile places great emphasis on providing a clean, elegant user
 interface and pleasant user experience. In particular, Mailpile aims to
 make it easy and convenient to receive and send PGP encrypted or signed
-e-mail.
+email.
 
 Mailpile's primary user interface is web-based, but it also has a basic
 command-line interface and an API for developers. Using web technology
@@ -24,8 +24,8 @@ application (accessed by visiting `localhost` in the browser) or a
 remote web-mail on a personal server or VPS.
 
 The core of Mailpile is a fast search engine, custom written to deal
-with large volumes of e-mail on consumer hardware. The search engine
-allows e-mail to be organized using tags (similar to GMail's labels) and
+with large volumes of email on consumer hardware. The search engine
+allows email to be organized using tags (similar to GMail's labels) and
 the application can be configured to automatically tag incoming mail
 either based on static rules or bayesian classifiers.
 

@@ -175,7 +175,7 @@ def ExtractEmails(string, strip_keys=True):
                     w = w.split('?')[0]
             if strip_keys and '#' in w[atpos:]:
                 w = w[:atpos] + w[atpos:].split('#', 1)[0]
-            # E-mail addresses are only allowed to contain ASCII
+            # Email addresses are only allowed to contain ASCII
             # characters, so we just strip everything else away.
             emails.append(CleanText(w,
                                     banned=CleanText.WHITESPACE,
@@ -205,7 +205,7 @@ def CleanHeaders(msg, copy_all=True, tombstones=False):
             if tombstones:
                 clean_headers.append((key, None))
 
-        # Strip the #key part off any e-mail addresses:
+        # Strip the #key part off any email addresses:
         elif lkey in ('from', 'to', 'cc', 'reply-to'):
             if '#' in value:
                 clean_headers.append((key, re.sub(
@@ -283,7 +283,7 @@ def PrepareMessage(config, msg,
         crypto_format = ('prefer_inline' if config.prefs.inline_pgp else
                          'pgpmime')
 
-    # Extract just the e-mail addresses from the RCPT list, make unique
+    # Extract just the email addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
     for r in rr:
         for e in ExtractEmails(r, strip_keys=False):
@@ -1224,7 +1224,7 @@ class Email(object):
         return tree
 
     # FIXME: This should be configurable by the user, depending on where
-    #        he lives and what kind of e-mail he gets.
+    #        he lives and what kind of email he gets.
     CHARSET_PRIORITY_LIST = ['utf-8', 'iso-8859-1']
 
     def decode_text(self, payload, charset='utf-8', binary=True):
@@ -1456,7 +1456,7 @@ class Email(object):
 class AddressHeaderParser(list):
     """
     This is a class which tries very hard to interpret the From:, To:
-    and Cc: lines found in real-world e-mail and make sense of them.
+    and Cc: lines found in real-world email and make sense of them.
 
     The general strategy of this parser is to:
        1. parse header data into tokens
@@ -1558,11 +1558,11 @@ class AddressHeaderParser(list):
     # This is stuff we ignore (undisclosed-recipients, etc)
     RE_IGNORED_GROUP_TOKENS = re.compile('(?i)undisclosed')
 
-    # Things we strip out to try and un-mangle e-mail addresses when
+    # Things we strip out to try and un-mangle email addresses when
     # working with bad data.
     RE_MUNGE_STRIP = re.compile('(?i)(?:\\bmailto:|[\\s"\']|\?$)')
 
-    # This a simple regular expression for detecting e-mail addresses.
+    # This a simple regular expression for detecting email addresses.
     RE_MAYBE_EMAIL = re.compile('^[^()<>@,;:\\\\"\\[\\]\\s\000-\031]+'
                                 '@[a-zA-Z0-9_\\.-]+(?:#[A-Za-z0-9]+)?$')
 
@@ -1682,7 +1682,7 @@ class AddressHeaderParser(list):
             token = token.strip()
             if token in (',', ';'):
                 # Those tokens SHOULD separate groups, but we don't like to
-                # create groups that have no e-mail addresses at all.
+                # create groups that have no email addresses at all.
                 if groups[-1]:
                     if [g for g in groups[-1] if '@' in g]:
                         groups.append([])

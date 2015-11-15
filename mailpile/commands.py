@@ -1,5 +1,5 @@
 # These are the Mailpile commands, the public "API" we expose for searching,
-# tagging and editing e-mail.
+# tagging and editing email.
 #
 import copy
 import datetime
@@ -2222,10 +2222,10 @@ class ConfigureMailboxes(Command):
     HTTP_CALLABLE = ('GET', 'POST', 'UPDATE')
     HTTP_QUERY_VARS = {
         'path': 'Path to mailbox',
-        'profile': 'Profile/account ID or e-mail',
+        'profile': 'Profile/account ID or email',
         'recurse': 'y/n: search subdirectories?',
         'apply_tags': 'Mailbox tags',
-        'auto_index': 'Account e-mail or ID',
+        'auto_index': 'Account email or ID',
         'tag_visible': 'Make new tags visible in sidebar',
         'local_copy': 'Make local copy of mail'
     }
@@ -2422,7 +2422,7 @@ class Output(Command):
 
 
 class Pipe(Command):
-    """Pipe a command to a shell command, file or e-mail"""
+    """Pipe a command to a shell command, file or email"""
     SYNOPSIS = (None, 'pipe', None,
                 "[e@mail.com|command|>filename] -- [<cmd> [args ... ]]")
     ORDER = ('Internals', 5)
