@@ -383,7 +383,9 @@ class RelativeCompose(Compose):
     @staticmethod
     def prefix_subject(subject, prefix, prefix_regex):
         """Avoids stacking several consecutive Fw: Re: Re: Re:"""
-        if prefix_regex.match(subject):
+        if subject is None:
+            return prefix
+        elif prefix_regex.match(subject):
             return subject
         else:
             return '%s %s' % (prefix, subject)
