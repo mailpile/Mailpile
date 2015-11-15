@@ -5,7 +5,7 @@
 %}{%  endif
 %}{%  set metadata = result.data.metadata[mid]
 %}{%  set thread = result.data.threads[metadata.thread_mid]
-%}{%  set conversation_count = thread|length + 1
+%}{%  set conversation_count = thread|length
 %}{%  set from = result.data.addresses[metadata.from.aid]
 %}{%  if not from
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
