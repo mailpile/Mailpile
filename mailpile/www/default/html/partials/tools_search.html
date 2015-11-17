@@ -1,15 +1,72 @@
+{%- set oc = {state.query_args.get('order', [config.prefs.default_order])[0]: ' selected'} %}
+{%- set ou = {
+    'rev-freshness': U(add_state_query_string(state.command_url, state, {
+                           'url_args_remove': [['order', '']],
+                           'url_args_add': [['order', 'rev-freshness']]
+                       })),
+    'rev-date':      U(add_state_query_string(state.command_url, state, {
+                           'url_args_remove': [['order', '']],
+                           'url_args_add': [['order', 'rev-date']]
+                       })),
+    'date':          U(add_state_query_string(state.command_url, state, {
+                           'url_args_remove': [['order', '']],
+                           'url_args_add': [['order', 'date']]
+                       })),
+    'rev-flat-date': U(add_state_query_string(state.command_url, state, {
+                           'url_args_remove': [['order', '']],
+                           'url_args_add': [['order', 'rev-flat-date']]
+                       })),
+    'rev-index':     U(add_state_query_string(state.command_url, state, {
+                           'url_args_remove': [['order', '']],
+                           'url_args_add': [['order', 'rev-index']]
+                       })),
+}%}
+{%- set dm = {config.web.display_density: ' selected'} %}
 {%- set hard_coded_display_modes = safe('
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="navigation-icon icon-eye"></span> ' + _("Display") + '</a>
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-list"></span> ' + _("Order") + '</a>
       <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
         <li role="presentation">
-          <a class="change-view-size" data-view_size="snug" href="#">' + _("Snug") + '</a>
+          <a class="change-search-order' + oc.get('rev-freshness', '') + '"
+             data-order="rev-freshness"
+             href="' + ou['rev-freshness'] + '">' +  _("Freshness") + '</a>
         </li>
         <li role="presentation">
-          <a class="change-view-size" data-view_size="cozy" href="#">' + _("Cozy") + '</a>
+          <a class="change-search-order' + oc.get('rev-date', '') + '"
+             data-order="rev-date"
+             href="' + ou['rev-date'] + '">' + _("Newest First") + '</a>
         </li>
         <li role="presentation">
-          <a class="change-view-size" data-view_size="comfy" href="#">' + _("Comfy") + '</a>
+          <a class="change-search-order' + oc.get('date', '') + '"
+             data-order="date"
+             href="' + ou['date'] + '">' + _("Oldest First") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-search-order' + oc.get('rev-flat-date', '') + '"
+             data-order="rev-flat-date"
+             href="' + ou['rev-flat-date'] + '">' + _("Messages") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-search-order' + oc.get('rev-index', '') + '"
+             data-order="rev-index"
+             href="' + ou['rev-index'] + '">' + _("Unsorted") + '</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-eye"></span> ' + _("Display") + '</a>
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
+        <li role="presentation">
+          <a class="change-view-size' + dm.get('snug', '') + '"
+             data-view_size="snug" href="#">' + _("Snug") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-view-size' + dm.get('cozy', '') + '"
+             data-view_size="cozy" href="#">' + _("Cozy") + '</a>
+        </li>
+        <li role="presentation">
+          <a class="change-view-size' + dm.get('comfy', '') + '"
+             data-view_size="comfy" href="#">' + _("Comfy") + '</a>
         </li>
       </ul>
     </li>
@@ -103,14 +160,14 @@
     'name': 'display_all',
     'icon': 'inbox',
     'url': '/search/',
-    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
     'text': _("All"),
     'description': _("All messages")
 },{
     'name': 'unread',
     'icon': 'new',
     'url': '/search/',
-    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
     'url_args_add': [['qr', 'is:unread']],
     'text': _("Unread"),
     'description': _("Unread messages")
@@ -118,7 +175,7 @@
     'name': 'has_attachment',
     'icon': 'attachment',
     'url': '/search/',
-    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', '']],
+    'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
     'url_args_add': [['qr', 'has:attachment']],
     'text': _("Attachments"),
     'description': _("Messages with attachments")
