@@ -1,5 +1,7 @@
 Mailpile.Message.Tooltips.Crypto = function($content) {
-  $content.find('.thread-item-crypto-info').qtip({
+  $content.find('.message-part-crypto-info, ' +
+                '.message-inline-crypto-info, ' +
+                '.message-metadata-crypto-info').qtip({
     content: {
       title: false,
       text: function(event, api) {
@@ -15,8 +17,8 @@ Mailpile.Message.Tooltips.Crypto = function($content) {
     style: {
       classes: 'qtip-thread-crypto',
       tip: {
-        corner: 'bottom right',
-        mimic: 'bottom right',
+        corner: 'bottom center',
+        mimic: 'bottom center',
         border: 1,
         width: 12,
         height: 12,
@@ -24,11 +26,11 @@ Mailpile.Message.Tooltips.Crypto = function($content) {
       }
     },
     position: {
-      my: 'bottom right',
-      at: 'top left',
+      my: 'bottom center',
+      at: 'top center',
 			viewport: $(window),
 			adjust: {
-				x: 7, y: -5
+				y: -5
 			}
     },
     show: { delay: 100 },

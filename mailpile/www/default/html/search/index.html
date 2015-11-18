@@ -22,7 +22,7 @@
     {% set newend = newstart+result.stats.count-1 %}
     {% set prv = {
       'url': '/search/',
-      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
       'url_args_add': [['start', newstart], ['end', newend]]
     } %}
     <a href="{{prv.url|add_state_query_string(state, prv)|url_path_fix}}"
@@ -41,7 +41,7 @@
     {% set newend = newstart+result.stats.count-1 %}
     {% set nxt = {
       'url': '/search/',
-      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
       'url_args_add': [['start', newstart], ['end', newend]]
     } %}
     <a href="{{nxt.url|add_state_query_string(state, nxt)|url_path_fix}}"

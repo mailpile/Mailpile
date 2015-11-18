@@ -2,7 +2,7 @@
    either message.crypto.encryption or part.crypto.encryption ...
 #}
 {% set crypto = show_message_encryption(failed_crypto.status) %}
-<div class="thread-item-crypto-error text-center">
+<div class="message-inline-crypto-error text-center">
   <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
   <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
   <p>{{ crypto.message }}</p>

@@ -2,7 +2,7 @@
 
 Mailpile.Message.AnalyzeMessageInline = function(mid) {
   // Iterate through all plain-text parts of the e-mail
-  $('#message-' + mid).find('.thread-item-text').each(function(i, text_part) {
+  $('#message-' + mid).find('.message-part-text').each(function(i, text_part) {
     var content = $(text_part).html();
 
     // Check & Extract Inline PGP Key
@@ -34,10 +34,10 @@ Mailpile.Message.ShowHTML = function(mid) {
   if (html_data) {
 
     // Inject iframe
-    $('#message-' + mid).find('.thread-item-text').hide();
+    $('#message-' + mid).find('.message-part-text').hide();
     $('#message-' + mid).find('.thread-message-body').append(
-      '<iframe id="thread-message-iframe-' + mid +
-      '" class="thread-item-html" sandbox="allow-same-origin ' +
+      '<iframe id="message-iframe-' + mid +
+      '" class="message-part-html" sandbox="allow-same-origin ' +
       'allow-scripts allow-popups allow-top-navigation" ' +
       'seamless target="_blank" srcdoc=""></iframe>');
 
@@ -46,13 +46,13 @@ Mailpile.Message.ShowHTML = function(mid) {
     _.each(html_data, function(part, key) {
       html_parts += part.data;
     });
-    $('#thread-message-iframe-' + mid).attr('srcdoc', html_parts);
+    $('#message-iframe-' + mid).attr('srcdoc', html_parts);
 
     // Resize & Style
     setTimeout(function() {
-      var iframe_height = $('#thread-message-iframe-' + mid).contents().height();
-      $('#thread-message-iframe-' + mid).height(iframe_height);
-      $('#thread-message-iframe-' + mid).contents().find('body').addClass('thread-item-html-text');
+      var iframe_height = $('#message-iframe-' + mid).contents().height();
+      $('#message-iframe-' + mid).height(iframe_height);
+      $('#message-iframe-' + mid).contents().find('body').addClass('message-part-html-text');
     }, 100);
   } else {
     $('#message-' + mid).find('.thread-message-body').append('<em>Message does not have any HTML parts</em>');
@@ -61,33 +61,55 @@ Mailpile.Message.ShowHTML = function(mid) {
 
 
 Mailpile.Message.ShowPlain = function(mid) {
-  $('#thread-message-iframe-' + mid).remove();
-  $('#message-' + mid).find('.thread-item-text').show();
+  $('#message-iframe-' + mid).remove();
+  $('#message-' + mid).find('.message-part-text').show();
 };
 
 
-/* Message -  */
-$(document).on('click', '.message-action-reply', function() {
-  var mid = $(this).data('mid');
+/* Message - Replies  */
+Mailpile.Message.ShowReplyComposer = function(mid, response) {
+  var $msg = $('#message-' + mid);
+  if ($msg.hasClass('pile-message')) {
+    $msg.closest('td').html(response.result);
+  }
+  else {
+    $msg.append(response.result);
+  }
+  var new_mid = $msg.find('.form-compose').data('mid');
+  $('#compose-details-' + new_mid).hide();
+  $('#compose-to-summary-' + new_mid).show();
+  $('#compose-show-details-' + new_mid).show();
+};
+$(document).on('click', '.message-action-reply-all', function(e) {
+  e.preventDefault();
+  var mid = $(this).closest('.has-mid').data('mid');
   Mailpile.API.message_reply_post({
     mid: mid,
     reply_all: 'True',
     _output: 'composer.jhtml'
-  },
-  function(result) {
-    $('#message-' + mid).append(result.result);
-    var new_mid = $('#message-' + mid).find('.form-compose').data('mid');
-    $('#compose-details-' + new_mid).hide();
-    $('#compose-to-summary-' + new_mid).show();
-    $('#compose-show-details-' + new_mid).show();
+  }, function(response) {
+    return Mailpile.Message.ShowReplyComposer(mid, response);
+  });
+});
+$(document).on('click', '.message-action-reply', function(e) {
+  e.preventDefault();
+  var mid = $(this).closest('.has-mid').data('mid');
+  Mailpile.API.message_reply_post({
+    mid: mid,
+    reply_all: 'False',
+    _output: 'composer.jhtml'
+  }, function(response) {
+    return Mailpile.Message.ShowReplyComposer(mid, response);
   });
 });
 
 
 
+
 /* Message - Create forward and go to composer */
-$(document).on('click', '.message-action-forward', function() {
-  var mid = $(this).parent().parent().data('mid');
+$(document).on('click', '.message-action-forward', function(e) {
+  e.preventDefault();
+  var mid = $(this).closest('.has-mid').data('mid');
   $.ajax({
     url      : '{{ config.sys.http_path }}/api/0/message/forward/',
     type     : 'POST',
@@ -108,8 +130,9 @@ $(document).on('click', '.message-action-forward', function() {
 
 
 /* Message - Move message to inbox */
-$(document).on('click', '.message-action-inbox', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+$(document).on('click', '.message-action-inbox', function(e) {
+  e.preventDefault();
+  var mid = $(this).closest('.has-mid').data('mid');
   Mailpile.API.tag_post({ add: ['inbox'],  del: ['spam', 'trash'], mid: mid}, function() {
     Mailpile.go('/in/inbox/');
   });
@@ -118,7 +141,7 @@ $(document).on('click', '.message-action-inbox', function() {
 
 /* Message - Move message to archive */
 $(document).on('click', '.message-action-archive', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var mid = $(this).closest('.has-mid').data('mid');
   Mailpile.API.tag_post({ add: '', del: ['inbox'], mid: mid}, function(response) {
     Mailpile.go('/in/inbox/');
   });
@@ -127,7 +150,7 @@ $(document).on('click', '.message-action-archive', function() {
 
 /* Message - Mark message as spam */
 $(document).on('click', '.message-action-spam', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var mid = $(this).closest('.has-mid').data('mid');
   Mailpile.API.tag_post({ add: ['spam'], del: ['trash', 'inbox'], mid: mid}, function() {
     Mailpile.go('/in/inbox/');
   });
@@ -136,7 +159,7 @@ $(document).on('click', '.message-action-spam', function() {
 
 /* Message - Unthread a message from thread */
 $(document).on('click', '.message-action-unthread', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var mid = $(this).closest('.has-mid').data('mid');
   $.ajax({
     url      : '{{ config.sys.http_path }}/api/0/message/unthread/',
     type     : 'POST',
@@ -162,7 +185,7 @@ $(document).on('click', '.message-action-unthread', function() {
 
 /* Message - Move a message to trash */
 $(document).on('click', '.message-action-trash', function() {
-  var mid = $(this).parent().parent().data('mid');
+  var mid = $(this).closest('.has-mid').data('mid');
   Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
     Mailpile.go('/in/inbox/');
   });
@@ -174,11 +197,11 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 
   // FIXME: Does not work from Dropdown
   e.preventDefault();
-  var mid = $(this).parent().parent().data('mid');
+  var mid = $(this).closest('.has-mid').data('mid');
   var modal_data = {
     name: $(this).data('name'),
     address: $(this).data('address'),
-    signature: 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html(),
+    signature: 'FIXME: ' + $('#message-' + mid).find('.message-part-signature').html(),
     mid: mid
   };
 

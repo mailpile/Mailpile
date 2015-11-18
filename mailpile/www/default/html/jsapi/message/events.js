@@ -20,7 +20,7 @@ $(document).on('click', '.show-thread-tags', function() {
 {% endif %}
 
 /* Thread - Show Metadata Info */
-$(document).on('click', '.thread-message-metadata-details-toggle', function() {
+$(document).on('click', '.message-metadata-details-toggle', function() {
   var mid = $(this).data('mid');
   var target = '#metadata-details-' + mid;
   if ($(target).css('display') === 'none') {
@@ -37,17 +37,17 @@ $(document).on('click', '.thread-message-metadata-details-toggle', function() {
 /* Thread - Expand Snippet */
 $(document).on('click', 'div.thread-snippet', function(e) {  
   var mid = $(this).data('mid');
-  if (e.target.href === undefined && $(e.target).data('expand') !== 'no' && $(e.target).hasClass('show-thread-message-metadata-details') === false) {
+  if (e.target.href === undefined && $(e.target).data('expand') !== 'no' && $(e.target).hasClass('show-message-metadata-details') === false) {
     Mailpile.UI.Message.ShowMessage(mid);
   }
 });
 
 
 /* Thread - Message Quote */
-$(document).on('click', '.thread-message-actions-quote', function() {
+$(document).on('click', '.message-actions-quote', function() {
   var mid = $(this).parent().parent().data('mid');
-  $('#message-' + mid).find('.thread-item-quote').removeClass('hide');
-  $('#message-' + mid).find('.thread-item-signature').removeClass('hide');
+  $('#message-' + mid).find('.message-part-quote').removeClass('hide');
+  $('#message-' + mid).find('.message-part-signature').removeClass('hide');
   $(this).parent().hide();
 });
 
@@ -58,7 +58,7 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
-$(document).on('click', '.thread-message-toggle-html', function(e) {
+$(document).on('click', '.message-toggle-html', function(e) {
   var state = $(this).data('state');
   var mid = $(this).data('mid');
   if (state === 'plain') {

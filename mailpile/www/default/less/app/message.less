@@ -1,0 +1,349 @@
+/* Message */
+
+  @readable-max-width: 50em;
+
+  .crypto-color-gray   { color: @gray !important; }
+  .crypto-color-red    { color: @red !important; }
+  .crypto-color-orange { color: @orange !important; }
+  .crypto-color-blue   { color: @blue !important; }
+  .crypto-color-green  { color: @green !important; }
+
+  .border-crypto-color-gray   { border-color: @gray !important; }
+  .border-crypto-color-red    { border-color: @red !important; }
+  .border-crypto-color-orange { border-color: @orange !important; }
+  .border-crypto-color-blue   { border-color: @blue !important; }
+  .border-crypto-color-green  { border-color: @green !important; }
+
+  .message-metadata {
+    width: 100%;
+    max-width: (1em + @readable-max-width);
+    display: table;
+    margin: 0px;
+  }
+
+  .message-from-avatar {
+    .global-user-avatar();
+    display: table-cell;
+    padding-top: 15px;
+    padding-left: 15px;
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .message-from-avatar a img {
+    .global-user-avatar-img();
+  }
+
+  .message-from {
+    min-width: 175px;
+    max-width: 200px;
+    display: table-cell;
+    padding-top: 13px;
+    padding-left: 15px;
+    vertical-align: text-top;
+    text-align: left;
+  }
+
+  .message-from a.name {
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 5px;
+    padding-top: 0px;
+    color: @grayDark;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 16px;
+  }
+
+  .message-from a:hover {
+    color: @blue;
+  }
+
+  .message-metadata-address {
+    font-size: 12px;
+    line-height: 12px;
+    color: @gray;
+    display: block;
+  }
+
+  .message-details {
+    width: 200px;
+    display: table-cell;
+    vertical-align: top;
+    text-align: right;
+    padding-top: 15px;
+    padding-left: 15px;
+  }
+
+
+  .message-details a.datetime,
+  .message-details a.datetime:visited {
+    display: block;
+    margin-bottom: 5px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: bold;
+    color: @gray;
+    line-height: 14px;
+  }
+
+  .message-details a.datetime:active,
+  .message-details a.datetime:hover {
+    color: @blue;
+  }
+
+  .message-details span.icon {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .message-details .icon-circle-info {
+    color: @grayMid;
+  }
+
+  .message-details span.datetime.message {
+    color: @grayDark;
+  }
+
+  .message-details a.outbox {
+    background: @grayMid;
+    padding: 2px 5px;
+    border-radius: @base-border-radius;
+    font-size: 11px;
+    font-weight: bold;
+    color: @white;
+  }
+
+  .feedback-expand {
+    display: none;
+    color: @gray;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 12px;
+  }
+
+  .message-metadata-details {
+    display: none;
+    padding-bottom: 5px;
+  }
+
+  .message-metadata-details ul {
+    margin: 10px 0px 10px 20px;
+  }
+
+  .message-metadata-details ul li {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 14px;
+  }
+
+  .message-metadata-details a:hover {
+    color: @blue;
+  }
+
+  .message-metadata-details.border-bottom {
+    border-bottom: 1px solid @grayMid;
+  }
+
+  .message-metadata-contact {
+    color: @grayDark;
+    display: table;
+  }
+
+  .message-metadata-contact a {
+    font-size: 14px;
+    line-height: 14px;
+    display: table-cell;
+    vertical-align: middle;
+    padding-right: 5px;
+  }
+
+  .message-metadata-contact a span {
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 11px;
+    color: @gray;
+  }
+
+  .message-metadata-contact a img {
+     width: 24px;
+     height: 24px;
+     border-radius: @base-border-radius;
+     margin-right: 5px;
+  }
+
+  .message-inline-crypto {
+    width: 95%;
+    margin-top: 10px;
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
+
+  .message-inline-crypto-info       { margin-right: 10px; }
+  .message-inline-crypto-info .icon { font-size: 14px; }
+  .message-inline-crypto-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
+
+  .message-inline-crypto-error {
+    width: 50%;
+    text-align: center;
+    color: @gray;
+    margin: 0px auto @base-margin auto;
+  }
+
+  .message-inline-crypto-error p {
+    line-height: 18px;
+  }
+
+  .message-inline-crypto-error .icon {
+    font-size: 48px;
+    line-height: 48px;
+    display: block;
+    margin: @base-margin auto;
+  }
+
+  .message-inline-crypto-error .status {
+    margin-bottom: @base-margin;
+    font-size: 21px;
+    line-height: 24px;
+    font-family: @mailpile-text-font-family-bold;
+    font-weight: bold;
+  }
+
+  .font-style-item-text() {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  iframe.message-part-html {
+    width: 65%;
+    min-width: 500px;
+    margin-top: 0px;
+    margin-left: @base-margin;
+    margin-right: 15px;
+    margin-bottom: 15px;
+  }
+
+  .message-part-html-text {
+    margin: 0px;
+    padding: 0px;
+    .font-style-item-text();
+  }
+
+  .message-part-text {
+    max-width: @readable-max-width;
+    margin-top: 5px;
+    margin-left: @base-margin;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    .font-style-item-text();
+    color: @black;
+  }
+
+  .message-part-text a {
+    color: @blue;
+    font-weight: bold;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .message-part-text a:hover {
+    color: @blueDark;
+  }
+
+  .message-part-quote,
+  .message-part-quote-text {
+    max-width: @readable-max-width;
+    margin-left: 20px;
+    margin-bottom: 15px;
+    .font-style-item-text();
+    color: lighten(@black, 30%);
+   }
+
+  .message-part-quote a,
+  .message-part-quote a:visited {
+    color: lighten(@black, 40%);
+  }
+
+  .message-part-quote a:hover {
+    color: @grayDark;
+  }
+
+
+  .message-part-signature {
+    margin-left: 20px;
+    margin-bottom: 15px;
+    .font-style-item-text();
+    border: 1px solid @white;
+  }
+
+
+  // Undo some of the margins when displayed inline in search results
+  #pile-results .message-part-quote,
+  #pile-results .message-part-quote-text,
+  #pile-results .message-part-signature,
+  #pile-results .message-part-text {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+
+/* Thread Message Actions */
+
+  div.message-actions {
+    width: 100%;
+    max-width: (1em + @readable-max-width);
+  }
+
+  ul.message-actions {
+    display: inline-block;
+    margin-left: 20px;
+    margin-bottom: 10px;
+  }
+
+  ul.message-actions.right {
+    margin-right: (2 - @base-margin);
+  }
+
+  ul.message-actions li.action {
+    margin-right: @base-margin;
+  }
+
+  ul.message-actions li.action a {
+    min-width: none;
+  }
+
+  ul.message-actions li.action ul.dropdown-menu li {
+    display: block;
+    float: none;
+  }
+
+  ul.message-actions li.action ul.dropdown-menu li.hide {
+    display: none;
+  }
+
+  a.message-actions-quote {
+    display: inline-block;
+    padding: 0px 4px;
+    border: 1px solid @grayMid;
+    border-radius: 3px;
+    color: @grayDark;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 14px;
+  }
+
+  a.message-actions-quote:hover {
+    background: @grayLight;
+  }
+
+
