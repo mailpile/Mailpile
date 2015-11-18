@@ -1,6 +1,15 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
+  {%- set profiles = mailpile('profiles').result %}
+  {%- set with_top_composer = [] %}
+  {%- for tid in result.search_tag_ids -%}
+    {% if config.tags[tid].type == 'drafts' %}{% do with_top_composer.append(tid) %}{% endif %}
+  {%- endfor %}
+  {%- for qv in state.query_args.q -%}
+    {% if '@' in qv|list %}{% do with_top_composer.append(tid) %}{% endif %}
+  {%- endfor %}
+  {%- set with_top_composer = (False and profiles.profiles and with_top_composer) %}
   <table id="pile-results"
          data-tids="{{ result.search_tag_ids|join(' ') }}"
          data-tags="{% for tid in result.search_tag_ids -%}
@@ -9,9 +18,20 @@
                     {%- endfor %}"
          class="pile-results {{ config.web.display_density }}">
   <tbody>
- {% for mid in result.thread_ids %}
-   {% include("partials/search_item.html") %}
- {% endfor %}
+ {% if not result.data or not result.data.messages %}
+   {# This puts a handy composer at the top of some search results #}
+   {%- if with_top_composer %}
+     {%- include("partials/pile_compose.html") %}
+   {%- endif %}
+ {%- endif %}
+ {%- for previous_mid, this_mid, next_mid in result.thread_ids|with_context %}
+   {%- set mid = result.view_pairs.get(this_mid, this_mid) %}
+   {%- if mid in result.data.messages and result.data.metadata[mid].urls.editing %}
+     {%- include("partials/pile_compose.html") %}
+   {%- else %}
+     {%- include("partials/search_item.html") %}
+   {%- endif %}
+ {%- endfor %}
   </tbody>
   </table>
  {% if result.stats.total > 0 %}
@@ -60,10 +80,9 @@
                                         number=mailpile_size, elapsed=elapsed)}}
     {% if elapsed < "0.25" %}{{_("Vroom!")}}{% endif %}
   </div>
- {% else %}
+ {% elif not with_top_composer %}
   <div id="pile-empty" class="clearfix add-bottom text-center">
-  {%- set profiles = mailpile('profiles').result.profiles %}
-  {%- if profiles|length <= 0 %}
+  {%- if profiles.profiles|length <= 0 %}
     <h3 class="add-top">{{_("Nothing Happened.")}}</h3>
     <p><i>{{_("Usually, matching e-mails would be listed here.")}}</i></p>
     <br>
