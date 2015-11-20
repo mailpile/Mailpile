@@ -7,7 +7,7 @@ function preview() {
   $('#modal-full .datadig-working').show();
   $('#modal-full .datadig-preview-area').show();
   Mailpile.API.datadig_get({
-    _output: 'as.jhtml',
+    _output: 'as.jhtml!minimal',
     _serialized: $('#modal-full .datadig-form').serialize() + '&timeout=3'
   }, function(data) {
     $('#modal-full .datadig-working').hide();
@@ -44,6 +44,11 @@ function download() {
   var track_id = '@' + (new Date()).getTime();
   var input = $('<input class="datadig-track-id" type="hidden" name="track-id" value="' + track_id + '">');
   mf.find('.datadig-track-id').remove();
+  mf.find('.datadig-form').append(input);
+
+  // Add form-field for search context
+  var input = $('<input class="datadig-search-context" type="hidden" name="context" value="' + $('#search-query').data('context') + '">');
+  mf.find('.datadig-search-context').remove();
   mf.find('.datadig-form').append(input);
 
   // Change state of UI...

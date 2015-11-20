@@ -1,10 +1,14 @@
 <div class="modal-dialog">
- <form class="datadig-form" action="{{ config.sys.http_path }}/datadig/as.csv" method="GET"
-       target="datadig-post-target">
+ <form class="datadig-form" action="{{ config.sys.http_path }}/datadig/as.csv"
+       method="GET" target="datadig-post-target">
   <div class="modal-content">
     <div class="modal-header">
-      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title"><span class="icon-spreadsheet"></span> {{_("Extract CSV data from e-mail")}}</h4>
+      <button type="button" class="close button-info" data-dismiss="modal"
+              aria-hidden="true">&times;</button>
+      <h4 class="modal-title">
+        <span class="icon-spreadsheet"></span>
+        {{_("Extract CSV data from e-mail")}}
+      </h4>
     </div>
     <div class="modal-body clearfix">
       <p class="datadig-help">
