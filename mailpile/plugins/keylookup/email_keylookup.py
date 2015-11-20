@@ -53,11 +53,12 @@ def _get_keydata(data):
             ak = pgpdump.AsciiData(data)
         else:
             ak = pgpdump.BinaryData(data)
+        packets = ak.packets()
     except (TypeError, pgpdump.utils.PgpdumpException):
         return []
 
     now = time.time()
-    for m in ak.packets():
+    for m in packets:
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *
