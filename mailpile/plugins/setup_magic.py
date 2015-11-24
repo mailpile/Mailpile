@@ -660,7 +660,8 @@ class SetupGetEmailSettings(TestableWebbable):
         with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
                                       ConnBroker.OUTGOING_CLEARTEXT]) as cb:
             try:
-                socket.create_connection((host, port)).close()
+                # FIXME: magic number follows
+                socket.create_connection((host, port), timeout=9).close()
                 return True
             except (AssertionError, IOError, OSError, socket.error):
                 pass
