@@ -294,7 +294,7 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
 
 $(document).on('click', '.encryption-helper-find-key', function(e) {
   var mid = $(this).data('mid');
-  var address = $(this).attr('href');
+  var address = $(this).data('email');
   Mailpile.crypto_keylookup = [];  // Reset Model
 
   e.preventDefault();
