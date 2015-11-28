@@ -354,10 +354,6 @@ class TestableWebbable(SetupMagic):
         'testing': 'Yes or No, if testing',
         'advance': 'Yes or No, advance setup flow',
     }
-    TRUTHY = {
-        '0': False, 'no': False, 'fuckno': False, 'false': False,
-        '1': True, 'yes': True, 'hellyeah': True, 'true': True,
-    }
 
     def _advance(self):
         path = self.data.get('_path', [None])[0]
@@ -378,8 +374,7 @@ class TestableWebbable(SetupMagic):
         raise UrlRedirectException(''.join([self.session.config.sys.http_path, url, '?%s' % qs if qs else '']))
 
     def _success(self, message, result=True, advance=False):
-        if (advance or
-                self.TRUTHY.get(self.data.get('advance', ['no'])[0].lower())):
+        if advance or truthy(self.data.get('advance', ['no'])[0], default=False):
             self._advance()
         return SetupMagic._success(self, message, result=result)
 
@@ -391,8 +386,7 @@ class TestableWebbable(SetupMagic):
         testination = self.data.get('testing')
         if testination:
             self.testing = random.randint(0, 1)
-            if testination[0].lower() in self.TRUTHY:
-                self.testing = self.TRUTHY[testination[0].lower()]
+            self.testing = truthy(testination[0], default=self.testing)
             return self.testing
         self.testing = None
         return method(*args, **kwargs)
@@ -1188,7 +1182,7 @@ class SetupCrypto(TestableWebbable):
                 try:
                     val = self.data.get(key, [''])[0]
                     if val:
-                        session.config.prefs[key] = self.TRUTHY[val.lower()]
+                        session.config.prefs[key] = truthy(val)
                         changed = True
                 except (ValueError, KeyError):
                     error_info = (_('Invalid preference'), {

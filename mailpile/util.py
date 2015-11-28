@@ -432,6 +432,28 @@ def intlist_to_string(intlist):
         return chars
 
 
+def truthy(txt, default=False, special=None):
+    try:
+        # Floats are fun! :-P
+        return (abs(float(txt)) >= 0.00001)
+    except (ValueError, TypeError):
+        pass
+
+    txt = unicode(txt).lower()
+    if special is not None and txt in special:
+        return special[txt]
+    elif txt in ('n', 'no', 'false', 'off'):
+        return False
+    elif txt in ('y', 'yes', 'true', 'on'):
+        return True
+    elif txt in (_('false'), _('no'), _('off')):
+        return False
+    elif txt in (_('true'), _('yes'), _('on')):
+        return True
+    else:
+        return default
+
+
 def randomish_uid():
     """
     Generate a weakly random unique ID. Might not actually be unique.

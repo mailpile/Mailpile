@@ -785,8 +785,7 @@ def ProfileVCard(parent):
         DEFAULT_KEYTYPE = 'RSA2048'
 
         def _yn(self, val, default='no'):
-            return (self.data.get(val, [default])[0][:2].lower()
-                    in ('ye', '1', 'on', 'tr'))
+            return truthy(self.data.get(val, [default])[0])
 
         def _sendmail_command(self):
             # FIXME - figure out where sendmail is for reals

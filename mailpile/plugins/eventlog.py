@@ -40,14 +40,11 @@ class Events(Command):
     DEFAULT_WAIT_TIME = 10.0
     GATHER_TIME = 0.5
 
-    _FALSE = ('0', 'off', 'no', 'false')
-
     def command(self):
         session, config, index = self.session, self.session.config, self._idx()
         event_log = config.event_log
 
-        incomplete = (self.data.get('incomplete', ['no']
-                                    )[0].lower() not in self._FALSE)
+        incomplete = truthy(self.data.get('incomplete', ['no'])[0])
         waiting = int(self.data.get('wait', [0])[0])
         gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
 

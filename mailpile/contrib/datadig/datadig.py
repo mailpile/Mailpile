@@ -5,6 +5,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
 from mailpile.mailutils import Email
+from mailpile.util import truthy
 
 # FIXME: Perhaps this plugin should be named ESQL and implement an SQL
 #        syntax for extracting data from e-mails...
@@ -69,9 +70,6 @@ class dataDigCommand(Command):
 
         return ['']
 
-    def _truthy(self, val):
-        return val.lower() in ('1', 'true', 'y', 'yes', 'on')
-
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
@@ -97,8 +95,8 @@ class dataDigCommand(Command):
 
         # Form arguments...
         timeout = float(self.data.get('timeout', [timeout])[0])
-        with_header |= self._truthy(self.data.get('header', [''])[0])
-        without_mid |= self._truthy(self.data.get('no-mid', [''])[0])
+        with_header |= truthy(self.data.get('header', [''])[0])
+        without_mid |= truthy(self.data.get('no-mid', [''])[0])
         tracking_id = self.data.get('track-id', [tracking_id])[0]
         columns.extend(self.data.get('term', []))
         msgs.extend(['=%s' % mid.replace('=', '')

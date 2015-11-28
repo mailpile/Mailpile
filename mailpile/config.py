@@ -267,15 +267,10 @@ def _BoolCheck(value):
         ...
     ValueError: Invalid boolean: wiggle
     """
-    if value in (True, False):
-        return value
-    if value.lower() in ('1', 'true', 'yes', 'on',
-                         _('true'), _('yes'), _('on')):
-        return True
-    if value.lower() in ('0', 'false', 'no', 'off',
-                         _('false'), _('no'), _('off')):
-        return False
-    raise ValueError(_('Invalid boolean: %s') % value)
+    bool_val = truthy(value, default=None)
+    if bool_val is None:
+        raise ValueError(_('Invalid boolean: %s') % value)
+    return bool_val
 
 
 def _SlugCheck(slug, allow=''):

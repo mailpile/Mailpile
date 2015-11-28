@@ -37,6 +37,8 @@ class MailpileCommand(Extension):
         e.globals['make_rid'] = randomish_uid
         e.filters['random'] = s._random
         e.globals['random'] = s._random
+        e.filters['truthy'] = s._truthy
+        e.globals['truthy'] = s._truthy
         e.filters['with_context'] = s._with_context
         e.globals['with_context'] = s._with_context
         e.filters['url_path_fix'] = s._url_path_fix
@@ -596,6 +598,10 @@ class MailpileCommand(Extension):
 
     def _random(self, sequence):
         return sequence[random.randint(0, len(sequence)-1)]
+
+    @classmethod
+    def _truthy(cls, txt, default=False):
+        return truthy(txt, default=default)
 
     def _with_context(self, sequence, context=1):
         return [[(sequence[j] if (0 <= j < len(sequence)) else None)

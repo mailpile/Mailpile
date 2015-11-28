@@ -2309,8 +2309,7 @@ class ConfigureMailboxes(Command):
     MAX_PATHS = 50000
 
     def _truthy(self, var, default='n'):
-        return (self.data.get(var, [default])[0].lower()
-                in ('y', 'yes', 'true', 'on'))
+        return truthy(self.data.get(var, [default])[0])
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
