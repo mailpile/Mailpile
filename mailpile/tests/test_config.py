@@ -284,3 +284,31 @@ class TestConfig(MailPileUnittest):
 
         for i in invalid_emails:
             self.assertRaises(ValueError, lambda: mailpile.config._EmailCheck(i))
+            
+    def test_GPGKeyCheck_valid(self):
+        valid_fingerprints = [
+          'User@Foo.com',
+          '1234 5678 abcd EF00',
+          '12345678'
+        ]
+        
+        res = mailpile.config._GPGKeyCheck(valid_fingerprints[0])
+        self.assertEqual(res, 'User@Foo.com')
+        
+        res = mailpile.config._GPGKeyCheck(valid_fingerprints[1])
+        self.assertEqual(res, '12345678ABCDEF00')
+        
+        res = mailpile.config._GPGKeyCheck(valid_fingerprints[2])
+        self.assertEqual(res, '12345678')
+        
+    def test_GPGKeyCheck_invalid(self):
+        invalid_fingerprints = [
+          '123456789',                                             # length of key not 8 or 16 or 40
+          'B906 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179',         # length is 36 i.e not 40
+          'zzzz zzzz zzzz zzzz zzzz  zzzz zzzz zzzz zzzz zzzz' # contains invalid character z characters should be within a-f
+        ]
+        
+        for i in invalid_fingerprints:
+            self.assertRaises(ValueError, lambda: mailpile.config._GPGKeyCheck(i))
+        
+        
