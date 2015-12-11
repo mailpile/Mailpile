@@ -155,7 +155,7 @@
             });
             Mailpile.API.setup_email_servers_get({
               'track-id': new_src_id,
-              'timeout': 120,
+              'timeout': 120000,
               'password': $(pf + '.fpa-basic-password').val(),
               'email': email
             }, function(data) {

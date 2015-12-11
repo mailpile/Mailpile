@@ -47,6 +47,7 @@ except ImportError:
 
 org_cconn = socket.create_connection
 org_sslwrap = ssl.wrap_socket
+org_context_wrap_socket = ssl.SSLContext.wrap_socket
 
 monkey_lock = threading.RLock()
 
@@ -552,7 +553,17 @@ if __name__ != "__main__":
             return sock
         return org_sslwrap(sock, *args, **kwargs)
 
+    def SslContextWrapOnlyOnce(self, sock, *args, **kwargs):
+        """
+        Since we like to wrap things our own way, this make ssl.wrap_socket
+        into a no-op in the cases where we've alredy wrapped a socket.
+        """
+        if isinstance(sock, ssl.SSLSocket):
+            return sock
+        return org_context_wrap_socket(self, sock, *args, **kwargs)
+
     ssl.wrap_socket = SslWrapOnlyOnce
+    ssl.SSLContext.wrap_socket = SslContextWrapOnlyOnce
 
 else:
     import doctest

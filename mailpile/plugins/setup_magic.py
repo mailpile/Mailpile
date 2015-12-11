@@ -559,6 +559,9 @@ class SetupGetEmailSettings(TestableWebbable):
                 result['routes'].sort(key=self._rank)
                 return result
         except (IOError, ValueError, AttributeError):
+            # don't forget to delete this
+            # import traceback
+            # traceback.print_exc()
             return None
 
     def _get_ispdb(self, email, domain):
@@ -886,7 +889,7 @@ class SetupGetEmailSettings(TestableWebbable):
         self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
         self.tracking_id = self.data.get('track-id', [None])[0]
         self.password = self.data.get('password', [None])[0]
-        emails = list(self.args) + self.data.get('email')
+        emails = list(self.args) + self.data.get('email', [])
         if self.password and len(emails) != 1:
             return self._error(_('Can only test settings for one account '
                                  'at a time'))
