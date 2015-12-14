@@ -47,7 +47,12 @@ except ImportError:
 
 org_cconn = socket.create_connection
 org_sslwrap = ssl.wrap_socket
-org_context_wrap_socket = ssl.SSLContext.wrap_socket
+try:
+    org_context_wrap_socket = ssl.SSLContext.wrap_socket
+    have_ssl_context = True
+except AttributeError:
+    org_context_wrap_socket = None
+    have_ssl_context = False
 
 monkey_lock = threading.RLock()
 
@@ -409,6 +414,8 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     def _wrap_ssl(self, conn):
         if self._debug is not None:
             self._debug('%s: Wrapping socket with SSL' % (self, ))
+        # FIXME: We're losing the SNI stuff here, which is super lame.
+        #        We should on Python 2.7.9+ try to fix that somehow.
         return org_sslwrap(conn, None, None, ssl_version=self.SSL_VERSION)
 
     def _create_connection(self, context, address, *args, **kwargs):
@@ -553,17 +560,17 @@ if __name__ != "__main__":
             return sock
         return org_sslwrap(sock, *args, **kwargs)
 
-    def SslContextWrapOnlyOnce(self, sock, *args, **kwargs):
-        """
-        Since we like to wrap things our own way, this make ssl.wrap_socket
-        into a no-op in the cases where we've alredy wrapped a socket.
-        """
-        if isinstance(sock, ssl.SSLSocket):
-            return sock
-        return org_context_wrap_socket(self, sock, *args, **kwargs)
-
     ssl.wrap_socket = SslWrapOnlyOnce
-    ssl.SSLContext.wrap_socket = SslContextWrapOnlyOnce
+
+    if have_ssl_context:
+        # Same again with SSLContext, if we have it.
+
+        def SslContextWrapOnlyOnce(self, sock, *args, **kwargs):
+            if isinstance(sock, ssl.SSLSocket):
+                return sock
+            return org_context_wrap_socket(self, sock, *args, **kwargs)
+
+        ssl.SSLContext.wrap_socket = SslContextWrapOnlyOnce
 
 else:
     import doctest
