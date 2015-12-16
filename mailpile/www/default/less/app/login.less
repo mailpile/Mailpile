@@ -73,12 +73,18 @@
   .form-text {
     display: inline-block;
     position: relative;
-    top: -12px;
+    vertical-align: top;
+    top: 15px;
     left: 0px;
     font-family: @mailpile-text-font-family-bold;
     font-size: 18px;
     line-height: 18px;
     color: @grayDark;
+  }
+
+  #form-login {
+    width: 246px;
+    display: inline-block;
   }
 
   .form-login {
@@ -95,12 +101,18 @@
     width: 178px;
     height: 18px;
     padding: 9px 12px;
+    margin-bottom: 5px;
     float: left;    
     font: normal 18px @text-font-family-bold;
     border: 0;
     background: @white;
     border-radius: 5px 0 0 5px;
     color: @grayMid;   
+  }
+
+  .form-login input#login-username {
+    border-radius: 5px 5px 5px 5px;
+    width: 222px;
   }
    
   .form-login input:focus {
