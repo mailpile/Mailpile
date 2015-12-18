@@ -25,9 +25,9 @@ class TestConfig(MailPileUnittest):
         res = mailpile.smtp_client.sha512_512kCheck(random_challenge, bits, random_solution)
         self.assertEqual(res, False)
         
-    def sha512_512kCollide(self):
-        bits = random.randint(1, 100)
+    def test_sha512_512kCollide(self):
+        bits = random.randint(1, 10)
         length = random.randint(1, 10)
         random_challenge = randomword(length)
         res = mailpile.smtp_client.sha512_512kCollide(random_challenge, bits)
-        self.assertEqual(res, 'abc')
+        self.assertEqual(res, '0-1')
