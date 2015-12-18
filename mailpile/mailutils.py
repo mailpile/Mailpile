@@ -1484,7 +1484,8 @@ class AddressHeaderParser(list):
     u'Bjarni'
     >>> ai.address
     u'bre@klaki.net'
-    >>> ahp.normalized_addresses() == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES
+    >>> ahpn = ahp.normalized_addresses()
+    >>> (ahpn == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES) or ahpn
     True
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
@@ -1512,8 +1513,9 @@ class AddressHeaderParser(list):
         Bjarni [mailto:bre@klaki.net],
         "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
-        Bjarni is bre @klaki.net,
+        Bjarni =?iso-8859-1?Q??=is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
+        "Einarsson, Bjarni" <bre@klaki.net>,
     """
     TEST_EXPECT_NORMALIZED_ADDRESSES = [
         '<bre@klaki.net>',
@@ -1526,15 +1528,16 @@ class AddressHeaderParser(list):
         '"This is a key test" <bre@klaki.net>',
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
-        '"Bjarni Runar Einarsson" <bre@klaki.net>']
+        '"Bjarni Runar Einarsson" <bre@klaki.net>',
+        '"Einarsson, Bjarni" <bre@klaki.net>']
 
     # Escaping and quoting
-    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]+)\\?='
+    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]*)\\?='
     TXT_RE_QUOTE_NG = TXT_RE_QUOTE.replace('(', '(?:')
     RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
     RE_QUOTED = re.compile(TXT_RE_QUOTE)
     RE_SHOULD_ESCAPE = re.compile('([\\\\"\'])')
-    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.:/_ \'"+@-]')
+    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.,:/_ \'"+@-]')
 
     # This is how we normally break a header line into tokens
     RE_TOKENIZER = re.compile('(<[^<>]*>'                    # <stuff>
@@ -1652,7 +1655,7 @@ class AddressHeaderParser(list):
         if re.search(self.RE_SHOULD_QUOTE, strng):
             enc = quopri.encodestring(strng.encode('utf-8'), False,
                                       header=True)
-            return '=?utf-8?Q?%s?=' % enc
+            return '"=?utf-8?Q?%s?="' % enc
         else:
             return '"%s"' % self.escape(strng)
 
@@ -1712,7 +1715,8 @@ class AddressHeaderParser(list):
             for j in range(0, len(g)):
                 if g[j][:1] == '(' and g[j][-1:] == ')':
                     g[j] = g[j][1:-1]
-            rest = ' '.join([g[j] for j in range(0, len(g)) if j != i
+            rest = ' '.join([g[j] for j in range(0, len(g))
+                             if (j != i) and g[j]
                              ]).replace(' ,', ',').replace(' ;', ';')
             email, keys = g[i], None
             if '#' in email[email.index('@'):]:
