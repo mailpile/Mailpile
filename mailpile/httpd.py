@@ -82,8 +82,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def http_host(self):
         """Return the current server host, e.g. 'localhost'"""
-        #rsplit removes port
-        return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        try:
+            # rsplit removes port
+            return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        except AttributeError:
+            return 'unknown'
 
     def _load_cookies(self):
         """Robustified cookie parser that silently drops invalid cookies."""
@@ -107,8 +110,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
-        return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
-                            self.headers.get('host', 'localhost'))
+        try:
+            surl = '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
+                                self.headers.get('host', 'localhost'))
+            self.server.server_url = surl
+        except AttributeError:
+            surl = self.server.server_url
+        return surl
 
     def send_http_response(self, code, msg):
         """Send the HTTP response header"""
@@ -483,6 +491,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.sessions = {}
         self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_url = 'http://UNKNOWN/'
         self.sspec = (sspec[0] or 'localhost',
                       self.socket.getsockname()[1],
                       sspec[2])
@@ -525,6 +534,8 @@ class HttpWorker(threading.Thread):
                 self.httpd.serve_forever()
             except KeyboardInterrupt:
                 return
+            except socket.error:
+                pass
             except:
                 time.sleep(1)
                 if self.httpd:
