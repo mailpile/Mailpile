@@ -40,6 +40,10 @@ MAILPILE_START_SCRIPT = [
         ' "--pid=%(pidfile)s"'
         ' --interact']
 
+MAILPILE_DELETE_SCRIPT = [
+    'rm -rf ~/.local/share/Mailpile/default']
+
+
 INSTALL_APACHE_SCRIPT = [
     '"%(packager)s" install screen expect',
     'a2enmod headers rewrite proxy proxy_http',
@@ -114,6 +118,9 @@ def app_arguments():
     ga.add_argument(
         '--stop', action='store_true',
         help='Stop a running Mailpile')
+    ga.add_argument(
+        '--delete', action='store_true',
+        help='Delete a user\'s Mailpile data (requires --force)')
     ga.add_argument(
         '--install-apache', action='store_true',
         help='Configure Apache for use with Mailpile (run with sudo)')
@@ -349,6 +356,18 @@ def run_as_user(user, password, command):
     return script.communicate(input=expects)
 
 
+def run_user_command_or_script(args, user_settings, command_args, script):
+    if args.user:
+        command = '"%s" %s' % (
+            _escape(os.path.realpath(sys.argv[0])), command_args)
+        if args.password:
+            print '%s%s' % run_as_user(args.user, args.password, command)
+            return
+        script = ['sudo -u "%(user)s" -- ' + command]
+
+    run_script(args, user_settings, script)
+
+
 def start_mailpile(app_args, args):
     os_settings = get_os_settings(args)
     mailpiles = parse_htaccess(args, os_settings)
@@ -383,23 +402,26 @@ def start_mailpile(app_args, args):
 
 def stop_mailpile(app_args, args):
     user_settings = get_user_settings(args, user=args.user)
-    script = []
-    if args.user:
-        command = '"%s" --stop' % (
-            _escape(os.path.realpath(sys.argv[0])))
-        if args.password:
-            print '%s%s' % run_as_user(args.user, args.password, command)
-            return
-        script = ['sudo -u "%(user)s" -- ' + command]
-    else:
-        script += MAILPILE_STOP_SCRIPT
-        if args.force:
-            script += MAILPILE_FORCE_STOP_SCRIPT
-
-    if user_settings.get('pid'):
-        run_script(args, user_settings, script)
-    else:
+    if not user_settings.get('pid'):
         usage(app_args, 'No PID found, cannot stop Mailpile', code=0)
+
+    script = MAILPILE_STOP_SCRIPT
+    if args.force:
+        script += MAILPILE_FORCE_STOP_SCRIPT
+
+    run_user_command_or_script(
+        args, user_settings, '--stop', script)
+
+
+def delete_mailpile(app_args, args):
+    user_settings = get_user_settings(args, user=args.user)
+    if user_settings.get('pid'):
+        usage(app_args, 'PID found, please stop Mailpile first', code=0)
+    if not args.force:
+        usage(app_args, 'This command is scary, use --force if sure', code=0)
+
+    run_user_command_or_script(
+        args, user_settings, '--delete', MAILPILE_DELETE_SCRIPT)
 
 
 def usage(ap, reason, code=3):
@@ -422,6 +444,9 @@ def main():
 
     elif parsed_args.stop:
         stop_mailpile(app_args, parsed_args)
+
+    elif parsed_args.delete:
+        delete_mailpile(app_args, parsed_args)
 
 
 def handle_cgi_post():
