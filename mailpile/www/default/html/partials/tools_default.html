@@ -9,18 +9,12 @@
   {%- set have_initial_prompt = False %}
 {%- endif %}
 
-{%- if tools_all_in_bulk_actions %}
-<div class="bulk-actions clearfix">
-{%- endif %}
-
 {%- if (activities or display_refiners or display_modes or
         hard_coded_activities or
         have_initial_prompt or
         hard_coded_display_refiners or
         hard_coded_display_modes) %}
-{%- if not tools_all_in_bulk_actions %}
 <nav class="sub-navigation clearfix">
-{%- endif %}
   <ul class="left horizontal">
   {{ hard_coded_activities|safe }}{% for elem in activities %}
     <li class="btn-activity-{{elem.name}} {{elem.class}}
@@ -81,21 +75,17 @@
     }});
   </script>{% endif %}
   </ul>
-{%- if not tools_all_in_bulk_actions %}
 </nav>
 {%- endif %}
-{%- endif %}
 {%- if selection_actions or hard_coded_selection_actions or have_initial_prompt %}
-{%- if not tools_all_in_bulk_actions %}
 <div class="bulk-actions clearfix">
-{%- endif %}
   {%- if have_initial_prompt or not tools_disable_checkbox %}
   <div id="bulk-actions-message" class="left"
        data-bulk_selected="{{_("conversations selected")}}"
        data-select_all="{{_("conversations selected, click to select all matching this search")}}"
        data-unselect_all="{{_("Entire search selected, click to undo")}}"
        data-bulk_selected_none="{{ selection_initial_prompt }}">
-    {{ selection_initial_prompt }}
+    {{ selection_initial_prompt|safe }}
   </div>
   {%- endif %}
   <div class="bulk-actions-hints" style='display: inline-block;'></div>
@@ -113,7 +103,7 @@
       </a>
     </li>
   {%- endfor %}{{ hard_coded_selection_actions|safe }}
-  {%- if not tools_disable_checkbox %}
+  {%- if (not tools_disable_checkbox) and (selection_actions or hard_coded_selection_actions) %}
     <li><input type="checkbox" id="pile-select-all-action"
                class="bulk-action-select-all" tabindex="-1"
                value=""></li>
@@ -124,11 +114,5 @@
       ui_elements_setup('.btn-selection-action-%(name)s', selection_actions)
     }});
   </script>{% endif %}
-{%- if not tools_all_in_bulk_actions %}
-</div>
-{%- endif %}
-{%- endif %}
-
-{%- if tools_all_in_bulk_actions %}
 </div>
 {%- endif %}

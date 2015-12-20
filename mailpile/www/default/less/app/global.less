@@ -40,10 +40,10 @@
   }
 
   .sub-navigation > ul > li > a {
-    display: block;  
+    display: block;
     padding: 5px;
     font-family: @text-font-family-bold;
-    font-weight: normal;    
+    font-weight: normal;
     color: @grayDark;
     line-height: 14px;
   }
@@ -91,18 +91,19 @@
     box-sizing: border-box;
     color: @grayDark;
     font-size: 14px;
-    line-height: 14px;
+    line-height: 16px;
+    padding: 11px 5px;
   }
 
   .bulk-actions div,
   .bulk-actions ul {
-    margin: 10px 15px 0px 15px;
+    margin: 0px 15px;
   }
 
   .bulk-actions li {
     padding: 0 15px;
   }
-  
+
   .bulk-actions li.left {
     padding-left: 0px;
   }
@@ -117,21 +118,29 @@
 
   .bulk-actions a {
     color: @grayDark;
+    line-height: 16px;
   }
 
   .bulk-actions a img {
+    padding: 0; margin-top: 0;
     height: 16px;
   }
 
   .bulk-actions a:hover {
     color: @red;
   }
-  
+
   .bulk-actions a span.icon {
+    padding: 0; margin-top: 0;
     font-size: 16px;
     line-height: 16px;
   }
-  
+
+  .bulk-actions-hints a span.icon {
+    font-size: 14px;
+    line-height: 16px;
+  }
+
   .bulk-actions li.hide {
     visibility: hidden;
   }
@@ -141,7 +150,7 @@
 
   #content-view {
     position: absolute;
-    top: 88px;
+    top: 84px;
     bottom: 0;
     right: 0;
     left: 0;
@@ -271,7 +280,7 @@
   }
 
   ul.radio-list li {
-    margin-bottom: 0px; 
+    margin-bottom: 0px;
     border-top: 1px solid @gray;
   }
 
@@ -380,7 +389,7 @@
     display: inline-block;
     color: @gray;
     font-size: @size;
-    font-weight: normal;    
+    font-weight: normal;
   }
 
   .user .avatar {
