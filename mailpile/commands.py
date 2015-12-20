@@ -816,10 +816,8 @@ class SearchResults(dict):
         cids = set()
 
         for ai in addresses:
-            try:
-                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
-            except KeyError:
-                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+            eid = self.idx.EMAIL_IDS.get(ai.address.lower())
+            cids.add(b36(self.idx._add_email(ai.address, name=ai.fn, eid=eid)))
 
         if msg_info:
             if not no_to:
@@ -831,10 +829,8 @@ class SearchResults(dict):
             if not no_from:
                 fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
                 if fe:
-                    try:
-                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                    except KeyError:
-                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+                    eid = self.idx.EMAIL_IDS.get(fe.lower())
+                    cids.add(b36(self.idx._add_email(fe, name=fn, eid=eid)))
 
         return sorted(list(cids))
 

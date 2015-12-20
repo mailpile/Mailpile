@@ -516,6 +516,7 @@ class Email(object):
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
     MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
                          'Encryption', 'Attach-PGP-Pubkey')
+    ADDRESS_HEADERS = ('From', 'To', 'Cc', 'Bcc')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -559,10 +560,14 @@ class Email(object):
         keys = hdrs.keys()
         keys.sort(key=lambda k: (self.HEADER_ORDER.get(k.lower(), 99), k))
         lowman = [m.lower() for m in self.MANDATORY_HEADERS]
+        lowadr = [m.lower() for m in self.ADDRESS_HEADERS]
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
-            if hdr.lower() in lowman:
-                strings[hdr.lower()] = unicode(data)
+            lhdr = hdr.lower()
+            if lhdr in lowadr and lhdr in lowman:
+                strings[lhdr] = AddressHeaderParser(data).normalized()
+            elif lhdr in lowman:
+                strings[lhdr] = unicode(data)
             else:
                 header_lines.append(unicode('%s: %s' % (hdr, data)))
 
@@ -1476,6 +1481,10 @@ class AddressHeaderParser(list):
     This parser is NOT (yet) fully RFC2822 compliant - in particular it
     will get confused by nested comments (see FIXME in tests below).
 
+    The normalization will take pains to ensure that < and , are never
+    present inside a name/comment (even if legal), to make life easier
+    for lame parsers down the line.
+
     Examples:
 
     >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
@@ -1507,6 +1516,8 @@ class AddressHeaderParser(list):
         bre@klaki.net Bjarni ,
         bre@klaki.net bre@klaki.net,
         bre@klaki.net (bre@notmail.com),
+        "<bre@notmail.com>" <bre@klaki.net>,
+        =?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>,
         bre@klaki.net ((nested) bre@notmail.com comment),
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
@@ -1523,6 +1534,8 @@ class AddressHeaderParser(list):
         '"Bjarni" <bre@klaki.net>',
         '"bre@klaki.net" <bre@klaki.net>',
         '"bre@notmail.com" <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
         '"(nested bre@notmail.com comment)" <bre@klaki.net>',
         '"(FIXME: nested parser breaker) bre@klaki.net" <bre@wrongmail.com>',
         '"Bjarni" <bre@klaki.net>',
@@ -1530,7 +1543,7 @@ class AddressHeaderParser(list):
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
         '"Bjarni Runar Einarsson" <bre@klaki.net>',
-        '"Einarsson, Bjarni" <bre@klaki.net>',
+        '=?utf-8?Q?Einarsson=2C_Bjarni?= <bre@klaki.net>',
         '"Bjarni @ work" <bre@pagekite.net>']
 
     # Escaping and quoting
@@ -1539,7 +1552,7 @@ class AddressHeaderParser(list):
     RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
     RE_QUOTED = re.compile(TXT_RE_QUOTE)
     RE_SHOULD_ESCAPE = re.compile('([\\\\"\'])')
-    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.,:/_ \'"+@-]')
+    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.:/_ \'"+@-]')
 
     # This is how we normally break a header line into tokens
     RE_TOKENIZER = re.compile('(<[^<>]*>'                    # <stuff>
@@ -1657,7 +1670,9 @@ class AddressHeaderParser(list):
         if re.search(self.RE_SHOULD_QUOTE, strng):
             enc = quopri.encodestring(strng.encode('utf-8'), False,
                                       header=True)
-            return '"=?utf-8?Q?%s?="' % enc
+            enc = enc.replace('<', '=3C').replace('>', '=3E')
+            enc = enc.replace(',', '=2C')
+            return '=?utf-8?Q?%s?=' % enc
         else:
             return '"%s"' % self.escape(strng)
 
@@ -1741,7 +1756,11 @@ class AddressHeaderParser(list):
                     g[i:i+2] = [g[i]+g[i+1]]
 
         # 1st, look for <email@domain.com>
-        for i in range(0, len(g)):
+        #
+        # We search from the end, to make the algorithm stable in the case
+        # that the name part also starts with a < (is that allowed?).
+        #
+        for i in reversed(range(0, len(g))):
             if g[i][:1] == '<' and g[i][-1:] == '>':
                 maybemail = munger(g[i][1:-1])
                 if re.match(self.RE_MAYBE_EMAIL, maybemail):
