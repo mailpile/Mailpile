@@ -1516,6 +1516,7 @@ class AddressHeaderParser(list):
         Bjarni =?iso-8859-1?Q??=is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
         "Einarsson, Bjarni" <bre@klaki.net>,
+        "Bjarni @ work" <bre@pagekite.net>,
     """
     TEST_EXPECT_NORMALIZED_ADDRESSES = [
         '<bre@klaki.net>',
@@ -1529,7 +1530,8 @@ class AddressHeaderParser(list):
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
         '"Bjarni Runar Einarsson" <bre@klaki.net>',
-        '"Einarsson, Bjarni" <bre@klaki.net>']
+        '"Einarsson, Bjarni" <bre@klaki.net>',
+        '"Bjarni @ work" <bre@pagekite.net>']
 
     # Escaping and quoting
     TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]*)\\?='
