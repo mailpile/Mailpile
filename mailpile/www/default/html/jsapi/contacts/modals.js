@@ -19,7 +19,7 @@ Mailpile.UI.Modals.ContactAddProcess = function() {
       // If Contacts List
       var $clist = $('#contacts-list');
       if ($clist.length > 0) {
-        var contact_template = _.template($('#template-contact-list-item').html());
+        var contact_template = Mailpile.safe_template($('#template-contact-list-item').html());
         var contact_html = contact_template(result.result.contact);
         $clist.append(contact_html);
       }

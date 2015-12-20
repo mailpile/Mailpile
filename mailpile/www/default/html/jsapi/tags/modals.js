@@ -9,7 +9,7 @@ Mailpile.UI.Modals.TagAdd = function(add_tag_data) {
 Mailpile.UI.Modals.TagAddProcess = function(location) {
   var tag_data = $('#modal-form-tag-add').serialize();
   Mailpile.API.tags_add_post(tag_data, function(result) {
-    var tag_template = _.template($('#template-sidebar-item').html());
+    var tag_template = Mailpile.safe_template($('#template-sidebar-item').html());
     if (result.status == 'success' && location == 'sidebar') {
       var tag_html = tag_template(result.result.added[0]);
       $('#sidebar-tag').prepend(tag_html);

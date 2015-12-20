@@ -17,7 +17,8 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
       var pgp_href = 'data:application/pgp-keys;charset=ascii,' + encodeURIComponent(pgp_key.replace(/<\/?[^>]+(>|$)/g, ''));
 
       // Replace Text
-      var key_template = _.template($('#template-messsage-inline-pgp-key-import').html());
+      // FIXME: Unsafe template, please audit
+      var key_template = Mailpile.unsafe_template($('#template-messsage-inline-pgp-key-import').html());
       var name = Mailpile.instance.metadata[mid].from.fn;
       var import_key_html = key_template({ pgp_key: pgp_key, pgp_href: pgp_href, mid: mid, name: name });
       var new_content = content.replace(pgp_key, import_key_html);
@@ -170,7 +171,7 @@ $(document).on('click', '.message-action-unthread', function() {
     success  : function(response) {
       if (response.status === 'success') {
         var notification_data     = { url: Mailpile.urls.message_sent + mid + '/' };
-        var notification_template = _.template($('#template-thread-notification-unthreaded').html());
+        var notification_template = Mailpile.safe_template($('#template-thread-notification-unthreaded').html());
         var notification_html     = notification_template(notification_data);
         $('#message-' + mid).removeClass('thread-snippet thread-message')
                             .addClass('thread-notification')
@@ -245,8 +246,8 @@ $(document).on('click', '.message-crypto-action', function() {
     Mailpile.API.with_template('modal-send-public-key', function(modal) {
       var key_html = '';
       _.each(result.result, function(key) {
-        var key_template = _.template($('#template-modal-private-key-item').html());
-        key_html +=  key_template(key);
+        var key_template = Mailpile.safe_template($('#template-modal-private-key-item').html());
+        key_html += key_template(key);
       });
 
       $('#modal-full').html(modal(modal_data));
@@ -271,7 +272,8 @@ $(document).on('click', '.message-crypto-investigate', function() {
     // this is tricky as searching multiple calls to keyservers
     // can have much latency and slowness
     Mailpile.API.crypto_gpg_searchkey_get(missing_keys[0], function(data) {
-      var modal_template = _.template($("#modal-search-keyservers").html());
+      // FIXME: Unsafe template, please audit
+      var modal_template = Mailpile.unsafe_template($("#modal-search-keyservers").html());
       Mailpile.UI.show_modal(modal_template({
         keys: '<li>Key of User #1</li>'
       }));

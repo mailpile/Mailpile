@@ -7,7 +7,7 @@ Mailpile.Tags.Tooltips.CardSubtags = function() {
       text: function(event, api) {
         Mailpile.API.tags_get({ tid: $(this).data('tid').toString() },
                               function(response) {
-          var tooltip_template = _.template($('#tooltip-tag-subtags').html());
+          var tooltip_template = Mailpile.safe_template($('#tooltip-tag-subtags').html());
           var tooltip_data = response.result.tags[0];
           api.set('content.text', tooltip_template(tooltip_data));
         });

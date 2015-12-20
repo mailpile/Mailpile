@@ -107,7 +107,7 @@ Mailpile.notification = function(result) {
 
   // Show Notification
   var $elem = Mailpile.cancel_notification(result.event_id, undefined, 'keep');
-  var notification_template = _.template($('#template-notification-bubble').html());
+  var notification_template = Mailpile.unsafe_template($('#template-notification-bubble').html());
   if ($elem) {
       $elem.replaceWith(notification_template(result));
   }

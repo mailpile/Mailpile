@@ -6,7 +6,7 @@ Mailpile.Crypto.Import.Key = function(import_data) {
   if (import_data.file === undefined) import_data.file = false;
 
   // Show Processing UI feedback
-  var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
+  var importing_template = Mailpile.safe_template($('#template-crypto-encryption-key-importing').html());
   var importing_html     = importing_template(import_data);
   $('#item-encryption-key-' + import_data.fingerprint).replaceWith(importing_html);
 
@@ -30,7 +30,7 @@ Mailpile.Crypto.Import.Key = function(import_data) {
 
       console.log(key_result);
       if (key_result) {
-        var key_template = _.template($('#template-crypto-encryption-key').html());
+        var key_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
         var key_html = key_template(key_result);
 
         var $key_elem = $('#item-encryption-key-' + import_data.fingerprint);
@@ -79,7 +79,7 @@ Mailpile.Crypto.Import.Uploader = function() {
             alert(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")|escapejs}}');
           } else {
 
-            var importing_template = _.template($('#template-crypto-encryption-key-importing').html());
+            var importing_template = Mailpile.safe_template($('#template-crypto-encryption-key-importing').html());
             var importing_html = importing_template({fingerprint: 'UPLOADING', file: file });            
             $('#upload-key-list').removeClass('hide').html(importing_html);
             $('#form-upload-key').addClass('hide');

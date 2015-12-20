@@ -113,7 +113,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
     // Add Tags to UI
     if (result.status === 'success') {
 
-      var tag_link_template = _.template($('#template-search-tags-link').html());
+      var tag_link_template = Mailpile.safe_template($('#template-search-tags-link').html());
 
       // Affected MID's
       _.each(result.result.msg_ids, function(mid, key) {

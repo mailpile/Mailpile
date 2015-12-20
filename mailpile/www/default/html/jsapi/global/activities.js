@@ -82,7 +82,7 @@ Mailpile.activities.render_typeahead = function() {
     source: baseMatcher(helpers),
     templates: {
       suggestion: function(data) {
-        var template = _.template('<div class="tt-suggestion"><p><span class="icon-search"></span> <%= term %> <span class="helper"><%= helper %></span></p></div>');
+        var template = Mailpile.safe_template('<div class="tt-suggestion"><p><span class="icon-search"></span> <%= term %> <span class="helper"><%= helper %></span></p></div>');
         return template(data);
       }
     }
@@ -96,7 +96,7 @@ Mailpile.activities.render_typeahead = function() {
       empty: '<div class="tt-suggestion"><p><span class="icon-tag"></span> No tags match your search</p></div>',
       suggestion: function(data) {
         if (data.display !== 'invisible') {
-          var template = _.template('<div class="tt-suggestion"><p><span class="color-<%= label_color %> <%= icon %>"></span> <%= name %></p></div>');
+          var template = Mailile.safe_template('<div class="tt-suggestion"><p><span class="color-<%= label_color %> <%= icon %>"></span> <%= name %></p></div>');
           return template(data);
         }
       }
@@ -112,7 +112,7 @@ Mailpile.activities.render_typeahead = function() {
       empty: '<div class="tt-suggestion"><p><span class="icon-user"></span> No people match your search</p></div>',
       suggestion: function(data) {
         if (data.photo === undefined) { data.photo = '{{ config.sys.http_path }}/static/img/avatar-default.png'; }
-        var template = _.template('<div class="tt-suggestion"><p><img class="avatar" src="<%= photo %>"> <%= term %> <%= fn %></p></div>');
+        var template = Mailpile.safe_template('<div class="tt-suggestion"><p><img class="avatar" src="<%= photo %>"> <%= term %> <%= fn %></p></div>');
         return template(data);
       }
     }
@@ -122,7 +122,7 @@ Mailpile.activities.render_typeahead = function() {
     source: baseMatcher([{ term: 'keys: team@mailpile.is' },{ term: 'keys: 707775F9' }]),
     templates: {
       suggestion: function(data) {
-        var template = _.template('<div class="tt-suggestion"><p><span class="icon-key"></span> <%= term %></p></div>');
+        var template = Mailpile.safe_template('<div class="tt-suggestion"><p><span class="icon-key"></span> <%= term %></p></div>');
         return template(data);
       }
     }

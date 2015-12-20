@@ -131,7 +131,7 @@ Mailpile.Composer.Tooltips.ContactDetails = function() {
             contact_data.photo = '';
           }
 
-          var contact_template = _.template($('#tooltip-contact-details').html());
+          var contact_template = Mailpile.safe_template($('#tooltip-contact-details').html());
           return contact_template(contact_data);
         }
       }

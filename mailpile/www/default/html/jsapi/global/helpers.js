@@ -21,7 +21,8 @@ $(document).on('click', '.btn-helper', function(e) {
   console.log(helper);
   console.log(helper_data);
 
-  var modal_template = _.template($('#template-modal-helper').html());
+  // FIXME: Unsafe template, this should be audited
+  var modal_template = Mailpile.unsafe_template($('#template-modal-helper').html());
   Mailpile.UI.show_modal(modal_template(helper_data));
 });
 

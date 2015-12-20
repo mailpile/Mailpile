@@ -134,15 +134,16 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       var avatar = '<span class="icon-user"></span>';
       var secure = '';
       if (state.photo) {
-        avatar = '<img src="' + state.photo + '">';
+        avatar = '<img src="' + _.escape(state.photo) + '">';
       }
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed"></span>';
       }
-      return '<span class="compose-select-avatar">' + avatar + '</span>\
-              <span class="compose-select-name">' + state.fn + secure + '<br>\
-              <span class="compose-select-address">' + state.address + '</span>\
-              </span>';
+      return ('<span class="compose-select-avatar">' + avatar + '</span>' +
+              '<span class="compose-select-name">' + 
+              _.escape(state.fn) + secure + '<br>' +
+              '<span class="compose-select-address">' + state.address +
+              '</span></span>');
     },
     formatSelection: function(state, elem) {
       // Update Model
@@ -167,21 +168,21 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       }
 
       // Create HTML
-      var avatar = '<span class="avatar icon-user" data-address="' + state.address + '"></span>';
+      var avatar = '<span class="avatar icon-user" data-address="' + _.escape(state.address) + '"></span>';
       var name   = state.fn;
       var secure = '';
 
       if (state.photo) {
-        avatar = '<span class="avatar"><img src="' + state.photo + '" data-address="' + state.address + '"></span>';
+        avatar = '<span class="avatar"><img src="' + _.escape(state.photo) + '" data-address="' + state.address + '"></span>';
       }
       if (!state.fn) {
         name = state.address;
       }
       if (state.flags.secure) {
-        secure = '<span class="icon-lock-closed" data-address="' + state.address + '"></span>';
+        secure = '<span class="icon-lock-closed" data-address="' + _.escape(state.address) + '"></span>';
       }
 
-      return avatar + ' <span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span>';
+      return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(name) + secure + '</span>';
     },
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';

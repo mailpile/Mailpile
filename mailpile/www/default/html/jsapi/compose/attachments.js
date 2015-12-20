@@ -18,7 +18,7 @@ Mailpile.Composer.Attachments.UploaderImagePreview = function(attachment, file) 
     // Grab preloaded the Base64 encoded image data
     attachment['attachment_data'] = preloader.getAsDataURL();
 
-    var attachment_image_template = _.template($('#template-composer-attachment-image').html());
+    var attachment_image_template = Mailpile.safe_template($('#template-composer-attachment-image').html());
     var attachment_image_html = attachment_image_template(attachment);
 
     // Append template to view
@@ -36,7 +36,7 @@ Mailpile.Composer.Attachments.ExistingImagePreview = function(attachment, file) 
   // Load static preview
   attachment['attachment_data'] = '/message/download/preview/=' + attachment.mid + '/' + attachment.aid + '/';
 
-  var attachment_image_template = _.template($('#template-composer-attachment-image').html());
+  var attachment_image_template = Mailpile.safe_template($('#template-composer-attachment-image').html());
   var attachment_image_html = attachment_image_template(attachment);
 
   // Append template to view
@@ -88,7 +88,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
         Mailpile.Composer.Attachments.ExistingImagePreview(attachment);
       }
       else {
-        var attachment_template = _.template($('#template-composer-attachment').html());
+        var attachment_template = Mailpile.safe_template($('#template-composer-attachment').html());
         var attachment_html = attachment_template(attachment);
       	$('#compose-attachments-files-' + mid).append(attachment_html);
       }

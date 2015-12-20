@@ -49,7 +49,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
                                  uid: uid,
                                  address: options.query,
                                  action: options.action }, key);
-      var item_template = _.template($('#template-crypto-encryption-key').html());
+      var item_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
       var item_html = item_template(item_data);
 
       // Only show results with positive score (hide others)
@@ -85,7 +85,7 @@ Mailpile.Crypto.Find.KeysDone = function(options) {
 
   // FIXME: doesn't work for 2nd and third lookups returning empty results
   if (!Mailpile.crypto_keylookup.length) {
-    var message_template = _.template($('#template-find-keys-none').html());
+    var message_template = Mailpile.safe_template($('#template-find-keys-none').html());
     var message_html = message_template(options);
     $container.find('.message')
       .html(message_html)
@@ -107,7 +107,7 @@ Mailpile.Crypto.Find.KeysError = function(options) {
   var $container = $(options.container);
   $container.find('.loading').fadeOut();
   setTimeout(function() {
-    var message_template = _.template($('#template-find-keys-error').html());
+    var message_template = Mailpile.safe_template($('#template-find-keys-error').html());
     var message_html = message_template(options);
     $container.find('.message')
       .html(message_html)
@@ -153,7 +153,7 @@ Mailpile.Crypto.Find.Keys = function(options) {
           .addClass('paragraph-important');
       }
       else {
-        var searching_template = _.template($('#template-find-keys-running').html());
+        var searching_template = Mailpile.safe_template($('#template-find-keys-running').html());
         var searching_html     = searching_template(options);
         $(options.container).find('.message').html(searching_html);
       }

@@ -8,7 +8,7 @@ Mailpile.Search.Tooltips.MessageTags = function() {
         var mid = $(this).data('mid').toString();
         var tid = $(this).data('tid').toString();
         Mailpile.API.tags_get({ tid: tid }, function(response) {
-          var tooltip_template = _.template($('#tooltip-pile-tag-details').html());
+          var tooltip_template = Mailpile.safe_template($('#tooltip-pile-tag-details').html());
           var tooltip_data = response.result.tags[0];
           tooltip_data['mid'] = mid;
           api.set('content.text', tooltip_template(tooltip_data));

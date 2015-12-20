@@ -93,7 +93,15 @@ Mailpile = {
   plugins: [],
   theme: {},
   activities: {},
-  local_storage: localStorage || {}
+  local_storage: localStorage || {},
+  unsafe_template: function(tpl) { return _.template(tpl); },
+  safe_template: function(tpl) {
+    return _.template(tpl, undefined, {
+      evaluate: /<%([\s\S]+?)%>/g,
+      // interpolate: /<%=([\s\S]+?)%>/g, <- DISABLED FOR SAFETY :)
+      escape: /<%[-=]([\s\S]+?)%>/g
+    });
+  }
 };
 {% set theme_settings = theme_settings() %}
 Mailpile.theme = {{ theme_settings|json|safe }};
@@ -122,7 +130,7 @@ Mailpile.API = {
                   : '{{_("Restart the app?")|escapejs}}');
     if (fullscreen) {
       if (!$('#connection-down').length) {
-        var template = _.template($('#template-connection-down').html());
+        var template = Mailpile.safe_template($('#template-connection-down').html());
         $('body').append(template({
           message: message,
           advice: advice
@@ -244,7 +252,7 @@ Mailpile.API = {
         dataType: 'json',
         success: function(response, status) {
           Mailpile.API._ajax_is_alive();
-          return callback(response, status);
+          if (callback) return callback(response, status);
         },
         error: function(response, status) {
           Mailpile.API._ajax_error(base_url, command, data,
@@ -275,7 +283,7 @@ Mailpile.API = {
         dataType: 'json',
         success: function(response, status) {
           Mailpile.API._ajax_is_alive();
-          return callback(response, status);
+          if (callback) return callback(response, status);
         },
         error: function(response, status) {
           Mailpile.API._ajax_error(base_url, command, data,
@@ -331,7 +339,7 @@ Mailpile.API = {
       $.ajax({
         url: url,
         type: 'GET',
-        success: function(data) { action(_.template(data)); },
+        success: function(data) { action(Mailpile.safe_template(data)); },
         error: error
       });
   },

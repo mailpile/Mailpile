@@ -351,7 +351,7 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
             .addClass('icon-lock-closed color-08-green')
             .html('{{_("Yay, Can Now Encrypt")|escapejs}}');
 
-          var success_template = _.template($('#template-encryption-helper-complete-message').html());
+          var success_template = Mailpile.safe_template($('#template-encryption-helper-complete-message').html());
           var success_html = success_template({ mid: mid });
 
           $('#modal-full').find('div.modal-body').html(success_html);
