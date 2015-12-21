@@ -181,7 +181,7 @@ dpkg: clean
 	    sudo rm ./dist/*.deb; \
 	fi;
 	sudo docker build \
-	    --file=./debian/Dockerfile \
+	    --file=./packages/debian_docker/Dockerfile \
 	    --tag=mailpile-deb-builder \
 	    ./
 	sudo docker run \
