@@ -11,6 +11,7 @@ RUN add-apt-repository ppa:dh-virtualenv/stable
 RUN apt-get update && apt-get install -y -qq build-essential debhelper devscripts equivs
 
 ADD ./ /root/mailpile
+RUN mv /root/mailpile/packages/debian_docker /root/mailpile/debian
 
 RUN apt-get update && mk-build-deps --install /root/mailpile/debian/control --tool "apt-get --force-yes -y"
 
