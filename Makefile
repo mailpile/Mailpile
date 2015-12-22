@@ -107,6 +107,7 @@ clean:
 
 mrproper: clean
 	@rm -rf dist/ bower_components/
+	git reset --hard && git clean -dfx
 
 sdist: clean
 	@python setup.py sdist
@@ -127,14 +128,15 @@ bower_components:
 
 js: bower_components
 	# Warning: Horrible hack to extract rules from Gruntfile.js
+	rm -f mailpile/www/default/js/libraries.min.js
 	cat `cat Gruntfile.js \
                 |sed -e '1,/concat:/d ' \
                 |sed -e '1,/src:/d' -e '/dest:/,$$d' \
                 |grep / \
                 |sed -e "s/[',]/ /g"` \
           >> mailpile/www/default/js/mailpile-min.js.tmp
-	uglify -s `pwd`/mailpile/www/default/js/mailpile-min.js.tmp \
-               -o `pwd`/mailpile/www/default/js/libraries.min.js
+	uglify -s mailpile/www/default/js/mailpile-min.js.tmp \
+               -o mailpile/www/default/js/libraries.min.js
 	#@cp -va mailpile/www/default/js/mailpile-min.js.tmp \
         #        mailpile/www/default/js/libraries.min.js
 	@rm -f mailpile/www/default/js/mailpile-min.js.tmp
@@ -171,6 +173,12 @@ compilemessages:
 # BUILD
 # -----------------------------------------------------------------------------
 
+tarball: mrproper js
+	#TODO: get transifex files
+	git submodule update --init --recursive
+	git submodule foreach 'git reset --hard && git clean -dfx'
+	tar --exclude-vcs -czf /tmp/mailpile.tar.gz -C $(shell pwd) .
+	mv /tmp/mailpile.tar.gz .
 
 dpkg: clean
 	if [ ! -d dist ]; then \
