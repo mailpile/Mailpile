@@ -115,7 +115,7 @@ Mailpile.auto_modal = function(params) {
         }
       }
     });
-  }, undefined, params.flags);
+  }, undefined, params.flags, 'Unsafe');
 };
 
 

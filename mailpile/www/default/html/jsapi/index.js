@@ -331,7 +331,7 @@ Mailpile.API = {
     return new_url;
   },
 
-  with_template: function(name, action, error, flags) {
+  with_template: function(name, action, error, flags, unsafe) {
       var url = "{{ config.sys.http_path }}/jsapi/templates/" + name + ".html";
       if (flags) {
         url += '?ui_flags=' + flags.replace(' ', '+');
@@ -339,7 +339,10 @@ Mailpile.API = {
       $.ajax({
         url: url,
         type: 'GET',
-        success: function(data) { action(Mailpile.safe_template(data)); },
+        success: function(data) {
+          action((unsafe) ? Mailpile.unsafe_template(data)
+                          : Mailpile.safe_template(data));
+        },
         error: error
       });
   },
