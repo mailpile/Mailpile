@@ -228,9 +228,13 @@ class UserInteraction:
         elif level == self.LOG_PROGRESS:
             c, clip = self.term.BLUE, 78
 
+        try:
+            unicode_text = unicode(text[:clip]).encode('utf-8', 'replace')
+        except UnicodeDecodeError:
+            unicode_text = 'ENCODING ERROR'
+
         formatted = self.term.replace_line(self.term.color(
-            unicode(text[:clip]).encode('utf-8'), color=c, weight=w),
-            chars=len(text[:clip]))
+            unicode_text, color=c, weight=w), chars=len(text[:clip]))
         if level != self.LOG_PROGRESS:
             formatted += '\n'
 
