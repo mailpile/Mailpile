@@ -387,6 +387,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             'http_hostname': self.http_host(),
             'http_method': method,
             'http_session': http_session,
+            'http_request': self,
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',

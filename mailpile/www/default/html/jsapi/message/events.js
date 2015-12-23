@@ -71,3 +71,17 @@ $(document).on('click', '.message-toggle-html', function(e) {
     Mailpile.Message.ShowPlain(mid);
   }
 });
+
+
+$(document).on('click', '.message-show-html', function(e) {
+  var mid = $(this).closest('.has-mid').data('mid');
+  console.log('Should show message HTML parts for ' + mid);
+  Mailpile.Message.ShowHTML(mid);
+});
+
+
+$(document).on('click', '.message-show-text', function(e) {
+  var mid = $(this).closest('.has-mid').data('mid');
+  console.log('Should show message text parts ' + mid);
+  Mailpile.Message.ShowPlain(mid);
+});

@@ -28,45 +28,6 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
 };
 
 
-Mailpile.Message.ShowHTML = function(mid) {
-
-  // HTML Parts Exist
-  var html_data = $('#message-' + mid).data('html');
-  if (html_data) {
-
-    // Inject iframe
-    $('#message-' + mid).find('.message-part-text').hide();
-    $('#message-' + mid).find('.thread-message-body').append(
-      '<iframe id="message-iframe-' + mid +
-      '" class="message-part-html" sandbox="allow-same-origin ' +
-      'allow-scripts allow-popups allow-top-navigation" ' +
-      'seamless target="_blank" srcdoc=""></iframe>');
-
-    // Add html parts
-    var html_parts = '';
-    _.each(html_data, function(part, key) {
-      html_parts += part.data;
-    });
-    $('#message-iframe-' + mid).attr('srcdoc', html_parts);
-
-    // Resize & Style
-    setTimeout(function() {
-      var iframe_height = $('#message-iframe-' + mid).contents().height();
-      $('#message-iframe-' + mid).height(iframe_height);
-      $('#message-iframe-' + mid).contents().find('body').addClass('message-part-html-text');
-    }, 100);
-  } else {
-    $('#message-' + mid).find('.thread-message-body').append('<em>Message does not have any HTML parts</em>');
-  }
-};
-
-
-Mailpile.Message.ShowPlain = function(mid) {
-  $('#message-iframe-' + mid).remove();
-  $('#message-' + mid).find('.message-part-text').show();
-};
-
-
 /* Message - Replies  */
 Mailpile.Message.ShowReplyComposer = function(mid, response) {
   var $msg = $('#message-' + mid);
@@ -75,11 +36,11 @@ Mailpile.Message.ShowReplyComposer = function(mid, response) {
   }
   else {
     $msg.append(response.result);
+    var new_mid = $msg.find('.form-compose').data('mid');
+    $('#compose-details-' + new_mid).hide();
+    $('#compose-to-summary-' + new_mid).show();
+    $('#compose-show-details-' + new_mid).show();
   }
-  var new_mid = $msg.find('.form-compose').data('mid');
-  $('#compose-details-' + new_mid).hide();
-  $('#compose-to-summary-' + new_mid).show();
-  $('#compose-show-details-' + new_mid).show();
 };
 $(document).on('click', '.message-action-reply-all', function(e) {
   e.preventDefault();
@@ -87,7 +48,7 @@ $(document).on('click', '.message-action-reply-all', function(e) {
   Mailpile.API.message_reply_post({
     mid: mid,
     reply_all: 'True',
-    _output: 'composer.jhtml'
+    _output: 'composer.jhtml!minimal'
   }, function(response) {
     return Mailpile.Message.ShowReplyComposer(mid, response);
   });
@@ -98,13 +59,11 @@ $(document).on('click', '.message-action-reply', function(e) {
   Mailpile.API.message_reply_post({
     mid: mid,
     reply_all: 'False',
-    _output: 'composer.jhtml'
+    _output: 'composer.jhtml!minimal'
   }, function(response) {
     return Mailpile.Message.ShowReplyComposer(mid, response);
   });
 });
-
-
 
 
 /* Message - Create forward and go to composer */

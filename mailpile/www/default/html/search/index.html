@@ -10,6 +10,7 @@
     {% if '@' in qv|list %}{% do with_top_composer.append(tid) %}{% endif %}
   {%- endfor %}
   {%- set with_top_composer = (False and profiles.profiles and with_top_composer) %}
+  {# FIXME! ^^ false #}
   <table id="pile-results"
          data-tids="{{ result.search_tag_ids|join(' ') }}"
          data-tags="{% for tid in result.search_tag_ids -%}
@@ -26,7 +27,8 @@
  {%- endif %}
  {%- for previous_mid, this_mid, next_mid in result.thread_ids|with_context %}
    {%- set mid = result.view_pairs.get(this_mid, this_mid) %}
-   {%- if mid in result.data.messages and result.data.metadata[mid].urls.editing %}
+   {%- if false and mid in result.data.messages and result.data.metadata[mid].urls.editing %}
+     {# FIXME! ^^ false #}
      {%- include("partials/pile_compose.html") %}
    {%- else %}
      {%- include("partials/search_item.html") %}

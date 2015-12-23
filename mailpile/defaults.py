@@ -115,9 +115,13 @@ CONFIG_RULES = {
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
-        'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
+        'nag_backup_key':   (_('Nag user to backup their key'), int, 0),
         'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, []),
-        'donate_visibility': (_('Hide donate link in topbar'), bool, True)
+        'donate_visibility': (_('Display donate link in topbar?'), bool, True),
+        'email_html_hint':   (_('Display HTML hints?'), bool, True),
+        'email_crypto_hint': (_('Display crypto hints?'), bool, True),
+        'email_reply_hint':  (_('Display reply hints?'), bool, True),
+        'email_tag_hint':    (_('Display tagging hints?'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')

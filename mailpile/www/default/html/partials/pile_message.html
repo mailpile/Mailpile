@@ -2,36 +2,31 @@
   {%- set from = metadata.from %}
   {%- set encryption_status = [] %}
   {%- set signature_status = [] %}
-  <div class="pile-message-content">
-  {%- if message.text_parts %}
-    {%- set special_text_parts = [] %}
-    {%- set last_part = message.text_parts|length - 1 %}
-    {%- for part in message.text_parts %}
-      {#
-       # Parts that do not have own crypto attribute inherit from message itself
-       # Watch for changes to the "status" which is present in each encryption and
-       # signature section - if either has changed, then we have moved from
-       # one security context to the next, and need to let the user know.
-       #}
-      {%- if part.data|trim %}
-        {%- set part_encryption = (part.crypto and part.crypto.encryption or message.crypto.encryption) %}
-        {%- set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
-        {%- set encryption = show_text_part_encryption(part_encryption and part_encryption.status) %}
-        {%- set signature = show_text_part_signature(part_signature and part_signature.status) %}
+  {%- macro msg_crypto(part) %}
+    {#-
+     # Parts that do not have own crypto attribute inherit from message itself
+     # Watch for changes to the "status" which is present in each encryption and
+     # signature section - if either has changed, then we have moved from
+     # one security context to the next, and need to let the user know.
+     #}
+    {%- set part_encryption = (part.crypto and part.crypto.encryption or message.crypto.encryption) %}
+    {%- set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
+    {%- set encryption = show_text_part_encryption(part_encryption and part_encryption.status) %}
+    {%- set signature = show_text_part_signature(part_signature and part_signature.status) %}
 
-        {%- if encryption_status and part_encryption.status != encryption_status[-1] %}
+    {%- if encryption_status and part_encryption.status != encryption_status[-1] %}
     <div class="part-crypto-status clearfix crypto-changed border-{{ encryption.color }}">
       <span class="message-inline-crypto-info {{encryption.color}}">&#x2198;</span>
-        {%- elif signature_status and part_signature.status != signature_status[-1] %}
+    {%- elif signature_status and part_signature.status != signature_status[-1] %}
     <div class="part-crypto-status clearfix crypto-changed border-{{ signature.color }}">
       <span class="message-inline-crypto-info {{signature.color}}">&#x2198;</span>
-        {%- else %}
+    {%- else %}
     <div class="part-crypto-status clearfix border-{{ encryption.color }}">
-        {%- endif %}
+    {%- endif %}
 
-        {%- if part_encryption %}
-          {%- if not encryption_status or part_encryption.status != encryption_status[-1] %}
-      <span class="message-inline-crypto-info"
+    {%- if part_encryption %}
+      {%- if not encryption_status or part_encryption.status != encryption_status[-1] %}
+      <span class="message-inline-crypto-info inline-encryption-info"
             title="{{ encryption.text }}"
             data-crypto_color="{{ encryption.color }}"
             data-crypto_icon="{{ encryption.icon }}"
@@ -39,13 +34,13 @@
         <span class="icon {{ encryption.color }} {{ encryption.icon }}"></span>
         <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
       </span>
-          {%- endif %}
-          {%- do encryption_status.append(part_encryption.status) %}
-        {%- endif %}
+      {%- endif %}
+      {%- do encryption_status.append(part_encryption.status) %}
+    {%- endif %}
 
-        {%- if part_signature %}
-          {%- if not signature_status or part_signature.status != signature_status[-1] %}
-      <span class="message-inline-crypto-info"
+    {%- if part_signature %}
+      {%- if not signature_status or part_signature.status != signature_status[-1] %}
+      <span class="message-inline-crypto-info inline-signature-info"
             title="{{ signature.text }}"
             data-crypto_color="{{ signature.color }}"
             data-crypto_icon="{{ signature.icon }}"
@@ -53,46 +48,66 @@
         <span class="icon {{ signature.color + ' ' + signature.icon }}"></span>
         <span class="text {{ signature.color }}">{{ signature.text }}</span>
       </span>
-          {%- endif %}
-          {%- do signature_status.append(part_signature.status) %}
-        {%- endif %}
+      {%- endif %}
+      {%- do signature_status.append(part_signature.status) %}
+    {%- endif %}
     </div>
-
+  {%- endmacro %}
+  <div class="pile-message-content">
+  {%- if message.text_parts %}
+    {%- set special_text_parts = [] %}
+    {%- set last_part = message.text_parts|length - 1 %}
+    {%- for part in message.text_parts %}
+    <div class="pile-message-text-part">
+      {%- if part.data|trim %}
+        {{- msg_crypto(part) }}
         {%- autoescape false %}
         {%- set part_text = part.data|nice_text|e|urlize|fix_urls(40, metadata.flags.spam) %}
         {%- if part.type in ("text", "pgpsignedtext") %}
-          <div class="message-part-text">{{ part_text|to_br }}</div>
+      <div class="message-part-text">{{ part_text|to_br }}</div>
         {%- elif part.type in ("pgptext",) %}
           {%- if part.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
             {%- set failed_crypto = part.crypto.encryption %}
             {%- include("partials/thread_message_cryptofail.html") %}
           {%- else %}
-          <div class="message-part-text">{{ part_text|to_br }}</div>
+      <div class="message-part-text">{{ part_text|to_br }}</div>
           {%- endif %}
         {%- elif part.type in ("pgpbegin", "pgpend") %}
-          <div class="message-part-{{part.type}} hide">{{part.data}}</div>
+      <div class="message-part-{{part.type}} hide">{{part.data}}</div>
         {%- elif part.type == "quote" %}
           {# If this is the 2nd-to-last part, and the LAST part is a quote
              or signature, we shall also hide. #}
           {%- if loop.index == (loop.length - 1) and
                  message.text_parts[last_part].type in ("signature", "quote") -%}
             {% do special_text_parts.append("quote") %}
-            <div class="message-part-quote hide">{{ part_text|to_br }}</div>
+      <div class="message-part-quote hide">{{ part_text|to_br }}</div>
           {# If this part is a quote at end of message, hide #}
           {%- elif loop.last %}
             {%- do special_text_parts.append("quote") %}
-            <div class="message-part-quote hide">{{ part_text|to_br }}</div>
+      <div class="message-part-quote hide">{{ part_text|to_br }}</div>
           {%- else %}
-            <div class="message-part-quote">{{ part_text|to_br }}</div>
+      <div class="message-part-quote">{{ part_text|to_br }}</div>
           {%- endif -%}
         {%- elif part.type == "signature" %}
           {%- do special_text_parts.append("signature") %}
-          <div class="message-part-signature hide">{{ part_text|to_br }}</div>
+      <div class="message-part-signature hide">{{ part_text|to_br }}</div>
         {%- else %}
-          <div class="message-part-text"><em>{{_("Unknown Text Part")}}</em></div>
+      <div class="message-part-text"><em>{{_("Unknown Text Part")}}</em></div>
         {%- endif %}
         {%- endautoescape %}
       {%- endif %}
+    </div>
+    {%- endfor %}
+    {%- set encryption_status = [] %}
+    {%- set signature_status = [] %}
+    {%- for part in message.html_parts %}
+    <div id="html-part-{{ mid }}-{{ loop.index }}"
+         class="pile-message-html-part hide">
+      {{ msg_crypto(part) }}
+      <div class="message-part-html">
+        <i class="noframe">{{ _("HTML rendering requires Javascript, sorry!") }}</i>
+      </div>
+    </div>
     {%- endfor %}
   {%- else %}
     {%- if message.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
@@ -178,5 +193,9 @@
 $(document).ready(function() {
   Mailpile.Message.AnalyzeMessageInline('{{mid}}');
   $('#message-{{mid}}').data('html', {{ message.html_parts|json|safe }});
+{%- if message.html_parts|length > 0 and
+       from.get('html-policy', 'none') != 'none' %}
+  Mailpile.Message.ShowHTML('{{mid}}', '{{from["html-policy"]}}');
+ {%- endif %}
 });
 </script>

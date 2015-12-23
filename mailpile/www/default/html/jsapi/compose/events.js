@@ -93,6 +93,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
   var $send_btn = $(send_btn);
   var action = $send_btn.val();
   var mid = $send_btn.parent().data('mid');
+  var post_send_url = $send_btn.closest('.has-url').data('url');
   var form_data = $('#form-compose-' + mid).serialize();
 
   if (action === 'send') {
@@ -103,13 +104,13 @@ Mailpile.Composer.SendMessage = function(send_btn) {
   }
   else if (action == 'save') {
 	  var action_url     = Mailpile.api.compose_save;
-	  var action_status  =  'info';
+	  var action_status  = 'info';
 	  var action_message = 'Your message was saved';
     var done_working = Mailpile.notify_working("{{_('Saving...')|escapejs}}", 500);
   }
   else if (action == 'reply') {
 	  var action_url     = Mailpile.api.compose_send;
-	  var action_status  =  'success';
+	  var action_status  = 'success';
 	  var action_message = 'Your reply was sent';
     var done_working = Mailpile.notify_working("{{_('Preparing to send...')|escapejs}}", 100);
   }
@@ -131,7 +132,12 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 	    // Is A New Message (or Forward)
       done_working();
       if (action === 'send' && response.status === 'success') {
-        Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");
+        if (post_send_url) {
+          Mailpile.go(post_send_url + "/" + mid);
+        }
+        else {
+          Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");
+        }
       }
       // Is Thread Reply
       else if (action === 'reply' && response.status === 'success') {

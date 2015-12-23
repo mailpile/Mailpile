@@ -120,7 +120,7 @@
 
   #pile-results td.subject a.item-subject {
     width: 370px;
-    display: inline-block;
+    display: block;
   }
 
   /* This is because relative % positioning inside a table doesn't work
@@ -151,6 +151,7 @@
     text-align: center;
     padding-top: 2px;
     padding-bottom: 0px;
+    color: @gray;
   }
   #pile-results.cozy td.checkbox { padding-top: 6px; }
   #pile-results.comfy td.checkbox { padding-top: 10px; }
@@ -186,7 +187,7 @@
   #pile-results .thread-container {
     position: relative;
     overflow: hidden;
-    margin-bottom: 1.5em;
+    margin-bottom: 2em;
     padding: 4px 4px;
   }
 
@@ -195,6 +196,7 @@
   #pile-results .thread-container h3 {
     text-align: left;
     font-size: 16px; line-height: 18px; font-weight: bold;
+    padding: 0 2px;
     margin: 0 10px 6px 10px;
     color: @gray;
   }
@@ -219,14 +221,14 @@
   #pile-results .thread-container {
     display: block;
     width: 245px;
-    margin: 0 10px; padding: 0; border: 0;
+    margin: 10px 4px 0 4px; padding: 0; border: 0;
     overflow: hidden;
   }
 
   #pile-results .thread-container .thread-message {
     overflow: visible;
-    margin: 0;
-    width: 241px;
+    margin: 0 0 0 16px;
+    width: 225px;
   }
 
   #pile-results .message-details .header-cooked { margin-bottom: 5px; }
@@ -270,7 +272,7 @@
   #pile-results .thread-container a.show-hide {
     color: @gray;
     font-weight: bold;
-    margin: 10px 0 0 5px;
+    margin: 10px 0 0 20px;
   }
 
   #pile-results .thread-container .thread-selected .thread-tree {
@@ -318,15 +320,19 @@
   #pile-results .message-details .header-to .header-value,
   #pile-results .message-details .header-from .header-value { height: 35px; }
 
-  #pile-results td.subject .message-container .message-subject,
   #pile-results .message-details .header-to .address-name,
   #pile-results .message-details .header-from .address-name {
     font-size: 18px; line-height: 18px;
   }
 
+  #pile-results td.subject .message-container .message-subject {
+    font-size: 22px; line-height: 22px;
+    margin: 0px 10px 4px 12px;
+    display: block;
+  }
+
   #pile-results .message-details .header-to .address-email,
   #pile-results .message-details .header-from .address-email {
-    //color: @grayDark;
     margin-bottom: 2px;
   }
 
@@ -339,12 +345,14 @@
     margin: 0; padding: 2px;
     white-space: nowrap;
     background: @white;
+    transition: opacity 1s;
     opacity: 0;
   }
   #pile-results .message-details .header-from .message-sender-actions li {
     display: inline-block;
   }
   #pile-results .message-details .header-from:hover .message-sender-actions {
+    transition: opacity 1s;
     opacity: 1.0;
   }
 
@@ -356,7 +364,11 @@
   #pile-results .message-details .header-bcc:hover { opacity: 1.0; }
 
   // Hide certain things, but leave them for copy-paste awesomeness
-  #pile-results .message-details .header-value span.punct { position: absolute; opacity: 0; }
+  #pile-results .message-details .header-value span.punct {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s;
+  }
 
   #pile-results .full-message td.crypto-and-tags {
     white-space: normal;
@@ -373,7 +385,6 @@
     display: block; margin-bottom: 0 0 5px 0;
   }
 
-  #pile-results td.subject .message-container .message-subject,
   #pile-results td.subject .message-container h3 {
     display: inline-block;
     margin-right: 5px;
@@ -382,7 +393,7 @@
   #pile-results td.subject .message-container {
     display: block;
     max-width: 50em;
-    padding: 5px 1em 5px 0px;
+    padding: 5px 2px 5px 0px;
     white-space: normal;
     line-height: 16px;
     font-size: 14px;
@@ -395,13 +406,23 @@
   }
   #pile-results .full-message .part-crypto-status {
     border: 0; padding: 0;
-    margin: -3px 0 0 -10px;
+    margin: 0 0 -4px -10px;
   }
   #pile-results .full-message .part-crypto-status .crypto-color-gray {
-    display: none;
+    transition: all 1s ease-in;
+    opacity: 0;
   }
   #pile-results .full-message .part-crypto-status:hover .crypto-color-gray,
   #pile-results .full-message .pile-message-content div.crypto-changed .crypto-color-gray {
+    transition: all 1s ease-in;
+    opacity: 1;
+  }
+  #pile-results .full-message .part-crypto-status .inline-encryption-info .crypto-color-gray {
+    /* We need this so individual signature status align nicely */
+    display: none;
+  }
+  #pile-results .full-message .part-crypto-status:hover .inline-encryption-info .crypto-color-gray {
+    /* FIXME: Doesn't fade in, boo hoo */
     display: inline-block;
   }
   #pile-results .full-message .pile-message-content div.crypto-changed {
@@ -437,14 +458,16 @@
 
   #pile-results .full-message .crypto-color-gray .message-metadata-crypto-info,
   #pile-results .full-message .message-metadata-crypto-info.crypto-color-gray {
-    display: none;
+    transition: opacity 1s;
+    opacity: 0;
   }
 
   #pile-results .full-message .crypto-color-gray:hover .message-metadata-crypto-info,
   #pile-results .full-message .message-subject-container:hover .message-metadata-crypto-info,
   #pile-results .full-message .thread-container:hover .message-metadata-crypto-info,
   #pile-results .full-message .header-cooked:hover .message-metadata-crypto-info {
-    display: inline-block;
+    transition: opacity 1s;
+    opacity: 1;
   }
 
   #pile-results .message-actions-padding {
@@ -456,6 +479,14 @@
     position: absolute; bottom: 0;
   }
 
+  #pile-results iframe.message-part-html {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    //width: 111%;
+    //transform: scale(0.9); 
+    //transform-origin: 0 0;
+  }
 
 
 /* Pile Bottom */

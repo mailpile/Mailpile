@@ -101,7 +101,7 @@
                        value="{{ editing_strings.get('attach-pgp-pubkey', 'no')
                                 }}">
                 <input type="checkbox" id="compose-attach-key-{{mid}}"
-                       {%- if truthy(editing_strings['attach-pgp-pubkey']) %} checked{% endif %}>
+                       {%- if truthy(editing_strings.get('attach-pgp-pubkey', 'no')) %} checked{% endif %}>
                 {{_("Attach Key")}}
               </label>
             </li>{% endif %}

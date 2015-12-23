@@ -885,6 +885,8 @@ class SearchResults(dict):
         thread = []
         seen = set()
         def by_date(p):
+            if p not in par_map:
+                return 0;
             return int(par_map[p][1][self.idx.MSG_DATE], 36)
         def render(prefix, mid, first=False):
             kids = thr_map.get(mid, [])

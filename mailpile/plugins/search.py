@@ -76,6 +76,12 @@ class Search(Command):
             return Command.CommandResult.as_dict(self._fixup(),
                                                  *args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        Command.__init__(self, *args, **kwargs)
+        self._email_views = []
+        self._email_view_pairs = {}
+        self._emails = []
+
     def state_as_query_args(self):
         try:
             return self._search_state

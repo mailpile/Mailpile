@@ -47,6 +47,7 @@
 {% include("jsapi/message/init.js") %}
 {% include("jsapi/message/events.js") %}
 {% include("jsapi/message/message.js") %}
+{% include("jsapi/message/html-sandbox.js") %}
 {% include("jsapi/message/tooltips.js") %}
 {% include("jsapi/message/ui.js") %}
 

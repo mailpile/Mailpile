@@ -29,7 +29,8 @@ module.exports = function(grunt) {
           'bower_components/bootstrap/js/modal.js',
           'bower_components/listjs/dist/list.js',
           'bower_components/favico.js/favico.js',
-          'bower_components/select2/select2.js'
+          'bower_components/select2/select2.js',
+          'bower_components/dompurify/dist/purify.min.js'
         ],
         dest: 'mailpile/www/default/js/libraries.min.js'
       }

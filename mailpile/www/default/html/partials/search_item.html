@@ -22,8 +22,11 @@
 %}{%  endmacro %}
 <tr class="pile-message pile-message-{{mid}} result has-mid
            {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
-           {%- if message %} full-message{% endif %}
+           {%- if message %} full-message has-url{% endif %}
            {%- if metadata.flags.replied %} replied{% endif %}"
+{%- if message %}
+    data-url="{{ msg_url(this_mid) }}"
+{%- endif %}
     data-state="normal"
 {%- if metadata.body and metadata.body.list and
        ('list:' + metadata.body.list) not in state.query_args.q %}
@@ -55,7 +58,10 @@
        data-noblank=1 class="icon">&#x25BC;</a><br>
   {%- endif %}
   </td>
-  <td class="from">
+  <td class="from" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
+  {%- if message.editing_strings %}
+    <!-- FIXME -->
+  {%- else %}
     <div class="message-details">
       <div class="header-cooked header-from">
         <h3 class="header-name {{ unsigned.color }}">
@@ -104,10 +110,14 @@
       </div>
       {%- endif %}
     {%- endfor %}
-    </div>
-    {%- if thread|length > 1 %}
-      {%- include "partials/pile_threading.html" %}
+    {%- if thread|length < 2 %}
+      {%- include "partials/pile_email_hints.html" %}
     {%- endif %}
+    </div>
+  {%- endif %}
+  {%- if thread|length > 1 %}
+    {%- include "partials/pile_threading.html" %}
+  {%- endif %}
   </td>
 {% else %}
   <td class="avatar">
@@ -152,10 +162,15 @@
        href="{{msg_url(mid)}}">{{ nice_subject(metadata) }}</a>
 {%- else %}
     <div class="message-container">
+    {%- if message.editing_strings %}
+      {% set editing_strings = message.editing_strings %}
+      {% set editing_addresses = result.data.addresses %}
+      {% set attachments = message.attachments %}
+      {% include("partials/compose.html") %}
+    {%- else %}
       <div class="message-subject-container">
-        <h3 class="{{ (cleartext.color == 'crypto-color-gray') and unsigned.color or cleartext.color }}">{{_("Subject")}}:</h3>
-        <div class="message-subject">
-          {{ nice_subject(metadata) }}
+        <h3 class="{{ (cleartext.color == 'crypto-color-gray') and unsigned.color or cleartext.color }}">
+          {{_("Subject")}}:
           <span class="icon message-metadata-crypto-info {{ cleartext.color }} {{ cleartext.icon }}"
                 title="{{ cleartext.text }}"
                 data-crypto_icon="{{ cleartext.icon }}"
@@ -166,10 +181,47 @@
                 data-crypto_icon="{{ unsigned.icon }}"
                 data-crypto_color="{{ unsigned.color }}"
                 data-crypto_message="{{ unsigned.message }}"></span>
+        </h3>
+        {%- if message.html_parts|length > 0 %}
+        <ul class="display-modes">
+          <li><a title="{{ _('Display HTML formatted message content') }}"
+                 class="message-show-html">
+            <span class="icon icon-news"></span></a></li>
+          {%- if message.text_parts|length > 0 %}
+          <li><a title="{{ _('Display plain-text message content') }}"
+                 class="message-show-text">
+            <span class="icon icon-document"></span></a></li>
+          {%- endif %}
+        </ul>
+        {%- endif %}
+        <ul class="alternate-views">
+          {%- for elem in get_ui_elements('display_modes', state, context='/message/') %}
+          <li><a title="{{ elem.description }}" data-noblank=1
+                 href="{{ elem.url|add_state_query_string({'query_args': {'mid': [mid]}}, elem)|url_path_fix }}">
+            {%- if elem.icon and '.' in elem.icon -%}
+            <img class="navigation-icon" src="{{ U(elem.icon) }}">
+            {%- elif elem.icon -%}
+            <span class="navigation-icon icon-{{elem.icon}}"></span>
+            {%- endif %}
+          </li>
+          {%- endfor %}
+          <li><a title="{{ _('Switch to full conversation view') }}"
+                 data-noblank=1 href="{{ U('/thread/=', mid, '/') }}">
+            <span class="icon icon-forum"></span></a></li>
+          <li><a title="{{ _('Display message source code') }}"
+                 target=_blank href="{{ U('/message/raw/=', mid, '/as.text') }}">
+            <span class="icon icon-work"></span></a></li>
+          <li><a title="{{ _('Display technical message data as JSON') }}"
+                 target=_blank href="{{ U('/message/=', mid, '/as.json') }}">
+            <span class="icon icon-code"></span></a></li>
+        </ul>
+        <div class="message-subject">
+          {{ nice_subject(metadata) }}
         </div>
       </div>
 {%- include('partials/pile_message.html') -%}
     </div>
+    {%- endif %}
 {%- endif %}
   </td>
   <td class="date">
