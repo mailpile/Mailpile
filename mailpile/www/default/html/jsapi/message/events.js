@@ -1,5 +1,3 @@
-{%- if config.version >= '0.6.0' %}
-
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
   // FIXME: Old/unreliable modal code
@@ -17,7 +15,6 @@ $(document).on('click', '.show-thread-tags', function() {
   $('#modal-full').modal(Mailpile.UI.modal_options);
 });
 
-{% endif %}
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.message-metadata-details-toggle', function() {
