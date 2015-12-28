@@ -397,7 +397,6 @@ def start_mailpile(app_args, args):
                                user_settings['port'],
                                False, None, None)
         save_htaccess(args, os_settings, mailpiles)
-        run_script(args, os_settings, FIX_PERMS_SCRIPT)
 
 
 def stop_mailpile(app_args, args):
