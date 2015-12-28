@@ -3358,7 +3358,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   clear: both;
 }
 .select2-results .select2-highlighted {
-  background: #f6f6f6;
+  background: #e6e6e6;
   color: #333333;
 }
 .select2-results li em {
