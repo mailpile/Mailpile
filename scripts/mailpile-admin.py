@@ -290,7 +290,10 @@ def save_htaccess(args, os_settings, mailpiles):
     with open(APACHE_HTACCESS_PATH + '.new', 'w') as fd:
         os_settings['rewriterules'] = '\n'.join(rules)
         fd.write(APACHE_HTACCESS_TEMPLATE % os_settings)
-    os.remove(APACHE_HTACCESS_PATH)
+
+    if os.path.isfile(APACHE_HTACCESS_PATH):
+        os.remove(APACHE_HTACCESS_PATH)
+
     os.rename(APACHE_HTACCESS_PATH + '.new', APACHE_HTACCESS_PATH)
 
 
