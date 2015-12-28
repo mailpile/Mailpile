@@ -177,10 +177,10 @@ tarball: mrproper js
 	#TODO: get transifex files
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
-	tar --exclude-vcs -czf /tmp/mailpile.tar.gz -C $(shell pwd) .
+	tar --exclude='./packages/debian' --exclude-vcs -czf /tmp/mailpile.tar.gz -C $(shell pwd) .
 	mv /tmp/mailpile.tar.gz .
 
-dpkg: clean
+dpkg: tarball
 	if [ ! -d dist ]; then \
 	    mkdir dist; \
 	fi;
@@ -188,7 +188,7 @@ dpkg: clean
 	    sudo rm ./dist/*.deb; \
 	fi;
 	sudo docker build \
-	    --file=./packages/debian_docker/Dockerfile \
+	    --file=packages/Dockerfile_debian \
 	    --tag=mailpile-deb-builder \
 	    ./
 	sudo docker run \

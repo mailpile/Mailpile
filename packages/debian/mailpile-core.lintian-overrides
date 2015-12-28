@@ -1,0 +1,2 @@
+# Package depends on python, there is no python2 package to depend on.
+python-script-but-no-python-dep
