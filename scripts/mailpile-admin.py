@@ -399,6 +399,9 @@ def start_mailpile(app_args, args):
                                user_settings['port'],
                                False, None, None)
         save_htaccess(args, os_settings, mailpiles)
+        # FIXME: If/when run_script raises exceptions, this call should
+        #        be try/except wrapped to not be considered critical, as
+        #        we expect some chmods to fail when not run as root.
         run_script(args, os_settings, FIX_PERMS_SCRIPT)
 
 
