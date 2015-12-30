@@ -48,11 +48,12 @@ MAILPILE_DELETE_SCRIPT = [
 INSTALL_APACHE_SCRIPT = [
     '"%(packager)s" install screen expect',
     'a2enmod headers rewrite proxy proxy_http cgi',
-    'mkdir -p /var/lib/mailpile/apache/ /var/lib/mailpile/pids/',
+    'mkdir -p /var/lib/mailpile/apache/ /var/lib/mailpile/pids/ /usr/lib/cgi-bin/mailpile/ /usr/share/mailpile/',
     'cp -a "%(mailpile-www)s"/* /var/lib/mailpile/apache/',
-    'rm -f /var/lib/mailpile/apache/shared',
-    'ln -fs "%(mailpile-static)s" /var/lib/mailpile/apache/shared',
-    'ln -fs "%(mailpile-admin)s" /var/lib/mailpile/apache/admin.cgi',
+    'rm -f /usr/share/mailpile/default',
+    'ln -fs "%(mailpile-static)s" /usr/share/mailpile/default',
+    'rm -f /usr/lib/cgi-bin/mailpile/admin.cgi',
+    'cp "%(mailpile-admin)s" /usr/lib/cgi-bin/mailpile/admin.cgi',
     'ln -fs "%(mailpile-conf)s" /etc/apache2/conf-enabled/',
     'apache2ctl restart']
 
