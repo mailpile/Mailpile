@@ -47,11 +47,9 @@
   {%- endif %}
 
   <!-- JS Global Libraries -->
-  <script src="{{ U('/static/js/jquery.min.js?ts=', config.version) }}"></script>
   <script src="{{ U('/static/js/libraries.min.js?ts=', config.version) }}"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
   <script src="{{ U('/api/0/jsapi/as.js?ts=', config.version, '-', config.timestamp) }}"></script>
-  <script src="{{ U('/static/js/plupload.full.min.js?ts=', config.version) }}" defer></script>
 
   <!-- JS - App Specific -->
   <script>

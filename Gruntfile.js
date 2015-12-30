@@ -10,6 +10,9 @@ module.exports = function(grunt) {
         },
         src: [
           'mailpile/www/default/js/libraries.js',
+          'mailpile/www/default/js/jquery.js',
+          'mailpile/www/default/js/moxie.js',
+          'mailpile/www/default/js/plupload.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/jquery-autosize/jquery.autosize.js',
