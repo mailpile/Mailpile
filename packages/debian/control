@@ -1,13 +1,69 @@
 Source: mailpile
-Maintainer: Mailpile <team@mailpile.is>
+Maintainer: Alexandre Viau <aviau@debian.org>
 Section: mail
 Priority: optional
-Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 8), python (>= 2.7), python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2, node-less, python-setuptools, python-nose
-X-Python-Version: >= 2.7
+Build-Depends: debhelper (>= 9),
+               dh-exec,
+               dh-python,
+               python-all,
+               python-setuptools,
+# requirements.txt
+               python-lxml,
+               python-jinja2,
+               spambayes,
+               python-markupsafe,
+               python-dns,
+               python-pgpdump,
+# requirements-dev.txt
+               python-mock,
+               python-selenium,
+               python-nose
+Standards-Version: 3.9.6
+Vcs-Git: git://anonscm.debian.org/collab-maint/mailpile.git
+Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/mailpile.git
+Homepage: https://www.mailpile.is/
 
 Package: mailpile
+Section: metapackages
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2, spambayes (>= 1.1b), spambayes (<< 1.1c~), gnupg
-Homepage: https://www.mailpile.is
-Description: Mail client with a web-mail interface, fast integrated search engine, and encryption.
+Depends: ${misc:Depends}
+Description: email client with user-friendly encryption and privacy features
+ Mailpile is a modern, fast web-mail client with user-friendly encryption and
+ privacy features. Mailpile places great emphasis on providing a clean, elegant
+ user interface and pleasant user experience. In particular, Mailpile aims to
+ make it easy and convenient to receive and send PGP encrypted or signed e-mail.
+ .
+ This package installs the desktop client.
+
+Package: mailpile-core
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-lxml,
+         python-jinja2,
+         spambayes,
+         python-markupsafe,
+         python-dns,
+         python-pgpdump
+Description: library and command-line interface for mailpile
+ Mailpile is a modern, fast web-mail client with user-friendly encryption and
+ privacy features. Mailpile places great emphasis on providing a clean, elegant
+ user interface and pleasant user experience. In particular, Mailpile aims to
+ make it easy and convenient to receive and send PGP encrypted or signed e-mail.
+ .
+ This package contains the core library and command-line interface
+
+Package: mailpile-server
+Architecture: all
+Depends: ${misc:Depends},
+         mailpile-core,
+         apache2,
+         screen,
+         expect
+Description: multi-user mailpile web server
+ Mailpile is a modern, fast web-mail client with user-friendly encryption and
+ privacy features. Mailpile places great emphasis on providing a clean, elegant
+ user interface and pleasant user experience. In particular, Mailpile aims to
+ make it easy and convenient to receive and send PGP encrypted or signed e-mail.
+ .
+ This package contains the server.

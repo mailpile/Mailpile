@@ -1,0 +1,22 @@
+#!/bin/sh
+# postrm script for mailpile-server
+
+set -e
+
+apache_remove() {
+    if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+        . /usr/share/apache2/apache2-maintscript-helper
+        apache2_invoke disconf mailpile
+    fi
+    rm -f /etc/apache2/conf-available/mailpile.conf
+}
+
+if [ "$1" = "purge" ]; then
+    rm -rf /var/lib/mailpile
+fi
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    apache_remove $@
+fi
+
+exit 0
