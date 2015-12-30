@@ -8,6 +8,7 @@
 #
 import argparse
 import cgi
+import distutils.spawn
 import getpass
 import json
 import os
@@ -196,7 +197,7 @@ def get_os_settings(args):
         'apache-user': args.apache_user or 'www-data',
         'apache-group': args.apache_group or 'www-data',
         'webroot': args.webroot,
-        'mailpile': os.path.join(mp_root, 'mp'),
+        'mailpile': (distutils.spawn.find_executable('mailpile') or os.path.join(mp_root, 'mp')),
         'mailpile-root': mp_root,
         'mailpile-admin': os.path.realpath(sys.argv[0]),
         'mailpile-static': os.path.join(mp_root, 'mailpile', 'www', 'default'),
