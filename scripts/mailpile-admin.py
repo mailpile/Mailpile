@@ -46,16 +46,25 @@ MAILPILE_DELETE_SCRIPT = [
 
 
 INSTALL_APACHE_SCRIPT = [
+    # Install dependencies
     '"%(packager)s" install screen expect',
+    # Enable apache modules
     'a2enmod headers rewrite proxy proxy_http cgi',
+    # Create directories
     'mkdir -p /var/lib/mailpile/apache/ /var/lib/mailpile/pids/ /usr/lib/cgi-bin/mailpile/ /usr/share/mailpile/',
+    # Install multipile pages
     'cp -a "%(mailpile-www)s"/* /var/lib/mailpile/apache/',
+    # Install shared data
     'rm -f /usr/share/mailpile/default',
     'ln -fs "%(mailpile-static)s" /usr/share/mailpile/default',
+    # Install cgi script
     'rm -f /usr/lib/cgi-bin/mailpile/admin.cgi',
-    'cp "%(mailpile-admin)s" /usr/lib/cgi-bin/mailpile/admin.cgi',
+    'ln -fs "%(mailpile-admin)s" /usr/lib/cgi-bin/mailpile/admin.cgi',
+    'chown -R --reference="%(mailpile-admin)s" /usr/lib/cgi-bin/mailpile',
+     # Install apache conf and restart
     'ln -fs "%(mailpile-conf)s" /etc/apache2/conf-enabled/',
-    'apache2ctl restart']
+    'apache2ctl restart'
+]
 
 FIX_PERMS_SCRIPT = [
     'chown -R %(apache-user)s:%(apache-group)s /var/lib/mailpile/apache/',
