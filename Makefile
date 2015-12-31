@@ -99,9 +99,10 @@ pytests:
 clean:
 	@rm -f `find . -name \\*.pyc` \
 	       `find . -name \\*.mo` \
-               mailpile-tmp.py mailpile.py \
-	       .appver MANIFEST setup.cfg .SELF .*deps \
-	       scripts/less-compiler.mk ghostdriver.log
+	        mailpile-tmp.py mailpile.py \
+	        ChangeLog AUTHORS \
+	        .appver MANIFEST .SELF .*deps \
+	        scripts/less-compiler.mk ghostdriver.log
 	@rm -rf *.egg-info build/ mp-virtualenv/ bower_components/ \
                mailpile/tests/data/tmp/ testing/tmp/
 
@@ -117,7 +118,7 @@ bdist-prep: compilemessages
 	@true
 
 bdist:
-	@python setup.py bdist
+	@python setup.py bdist_wheel
 
 virtualenv:
 	virtualenv -p python2 mp-virtualenv

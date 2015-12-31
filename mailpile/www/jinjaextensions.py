@@ -593,7 +593,7 @@ class MailpileCommand(Extension):
             return ''.join([m.group(1), 'href="mailto:', m.group(3),
                             '" class="compose-to-email">',
                             m.group(5), m.group(6)])
-        
+
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
@@ -808,7 +808,7 @@ class MailpileCommand(Extension):
         elif mime in [
             "application/pgp-signature"
             ]:
-            attachment = "signature" 
+            attachment = "signature"
         elif mime in [
             "application/pgp-keys"
             ]:

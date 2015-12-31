@@ -10,6 +10,7 @@ Free Software Foundation. See the file COPYING.md for details.
 """
 #############################################################################
 import os
+import sys
 import time
 
 from mailpile.config import PathDict
@@ -18,6 +19,11 @@ from mailpile.config import CriticalConfigRule as X
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
 
+def get_share_path():
+    local_path =  os.path.join(sys.prefix, 'local', 'share', 'mailpile')
+    if os.path.exists(local_path):
+        return local_path
+    return os.path.join(sys.prefix, 'share', 'mailpile')
 
 _ = lambda string: string
 
@@ -54,8 +60,7 @@ CONFIG_RULES = {
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
-            'html_theme': [_('Default theme'),
-                           'dir', os.path.join('mailpile', 'www', 'default')],
+            'html_theme': [_('Default theme'), 'dir', os.path.join(get_share_path(), 'default')],
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
