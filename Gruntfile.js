@@ -9,15 +9,15 @@ module.exports = function(grunt) {
           separator: ';'
         },
         src: [
-          'mailpile/www/default/js/libraries.js',
-          'mailpile/www/default/js/jquery.js',
-          'mailpile/www/default/js/moxie.js',
-          'mailpile/www/default/js/plupload.js',
+          'static/default/js/libraries.js',
+          'static/default/js/jquery.js',
+          'static/default/js/moxie.js',
+          'static/default/js/plupload.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/jquery-autosize/jquery.autosize.js',
           'bower_components/mousetrap/mousetrap.js',
-          'mailpile/www/default/js/mousetrap.global.bind.js',
+          'static/default/js/mousetrap.global.bind.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',
           'bower_components/jquery.ui/ui/jquery.ui.widget.js',
           'bower_components/jquery.ui/ui/jquery.ui.mouse.js',
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
           'bower_components/select2/select2.js',
           'bower_components/dompurify/dist/purify.min.js'
         ],
-        dest: 'mailpile/www/default/js/libraries.min.js'
+        dest: 'static/default/js/libraries.min.js'
       }
     },
     uglify: {
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'mailpile/www/default/js/libraries.min.js': ['mailpile/www/default/js/libraries.min.js']
+          'static/default/js/libraries.min.js': ['static/default/js/libraries.min.js']
         }
       }
     },
@@ -54,13 +54,13 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "mailpile/www/default/css/default.css": "mailpile/www/default/less/default.less"
+          "static/default/css/default.css": "static/default/less/default.less"
         }
       }
     },
     watch: {
       js: {
-        files: ['mailpile/www/default/js/*.js'],
+        files: ['static/default/js/*.js'],
         tasks: ['concat:js', 'uglify:js'],
         options: {
           livereload: true,
@@ -68,10 +68,10 @@ module.exports = function(grunt) {
       },
       css: {
         files: [
-          'mailpile/www/default/less/config.less',
-          'mailpile/www/default/less/default.less',
-          'mailpile/www/default/less/app/*.less',
-          'mailpile/www/default/less/libraries/*.less'
+          'static/default/less/config.less',
+          'static/default/less/default.less',
+          'static/default/less/app/*.less',
+          'static/default/less/libraries/*.less'
         ],
         tasks: ['less:style'],
         options: {
