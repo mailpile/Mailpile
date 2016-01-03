@@ -54,7 +54,7 @@ $(document).on('click', '.compose-crypto-signature', function() {
   } else {
     change = 'sign';
   }
-  
+
   Mailpile.Composer.Crypto.SignatureToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Signature();
 });
@@ -267,7 +267,7 @@ $(document).on('click', '.compose-attachment-remove', function(e) {
 
 
 $(document).on('focus', '.compose-text', function() {
-  $(this).autosize();
+  autosize($(this));
 });
 
 
@@ -304,7 +304,7 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
   Mailpile.crypto_keylookup = [];  // Reset Model
 
   e.preventDefault();
-  
+
   // Reset and show progress area...
   //$('#encryption-helper-find-keys').find('ul.result').html('');
   $('#encryption-helper-find-keys').find('.loading').fadeIn();
@@ -330,7 +330,7 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
       if (status === 'none' || status === 'error') {
         $('#encryption-helper-missing-keys').slideDown();
         $('li[address="' + address + '"]').show();
-      } 
+      }
     },
     imported: function() {
       Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {
@@ -374,7 +374,7 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
       $('#encryption-helper-missing-keys').slideDown();
       $('li[address="' + address + '"]').show();
     }
-  };  
+  };
   Mailpile.Crypto.Find.Keys(find_options);
 });
 

@@ -15,7 +15,7 @@ module.exports = function(grunt) {
           'mailpile/www/default/js/plupload.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
-          'bower_components/jquery-autosize/jquery.autosize.js',
+          'bower_components/autosize/dist/autosize.js',
           'bower_components/mousetrap/mousetrap.js',
           'mailpile/www/default/js/mousetrap.global.bind.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',

@@ -23,7 +23,7 @@
     "favico.js": "~0.3.5",
     "html5shiv": "~3.7.0",
     "jquery": "~2.1.0",
-    "jquery-autosize": "~1.18.6",
+    "autosize": "~3.0.14",
     "jquery-confirm": "~2.1.1",
     "jquery-slugify": "~1.0.3",
     "jquery-timer": "*",
