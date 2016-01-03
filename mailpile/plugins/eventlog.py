@@ -86,7 +86,8 @@ class Events(Command):
         now = time.time()
         expire = now + waiting - gather
         if waiting:
-            if 'since' not in filters:
+            # JS sometimes sends us "undefined", handle it gracefully...
+            if filters.get('since', 'undefined') == 'undefined':
                 filters['since'] = now
             if float(filters['since']) < 0:
                 filters['since'] = float(filters['since']) + now
