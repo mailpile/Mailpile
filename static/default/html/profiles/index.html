@@ -9,23 +9,30 @@
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
 
 {%- block contenttools %}
-{%- set activities = [{
+  {%- set activities = [{
+    'name': 'relnotes',
+    'icon': 'logo',
+    'aclass': 'auto-modal',
+    'url': U('/page/release-notes/'),
+    'text': _("About", version=config.version),
+    'description': _("Welcome to Mailpile %(version)s", version=config.version)
+  },{
     'name': 'addprofile',
     'icon': 'plus',
     'aclass': 'auto-modal',
     'url': U('/profiles/add/'),
     'text': _("Add Account"),
     'description': _("Create a new Account")
-},{
+  },{
     'name': 'keys',
     'icon': 'key',
     'aclass': 'auto-modal',
     'url': U('/settings/set/password/'),
     'text': _("Keys"),
     'description': _("Manage Your Encryption Keys")
-}] %}
-{%- set selection_initial_prompt = _("Configure your accounts, profiles and other settings") %}
-{%- include("partials/tools_default.html") %}
+  }] %}
+  {%- set selection_initial_prompt = _("Configure your accounts, profiles and other settings") %}
+  {%- include("partials/tools_default.html") %}
 {%- endblock %}
 
 {%- block content %}<div id="page" class="content-normal">
@@ -188,4 +195,11 @@
 #}
 
 </div>
+{% if config.web.release_notes %}
+<script type='text/javascript'>
+  $(document).ready(function() {
+    $('.bulk-action-relnotes').click();
+  });
+</script>
+{% endif %}
 {%- endblock %}

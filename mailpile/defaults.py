@@ -126,7 +126,8 @@ CONFIG_RULES = {
         'email_html_hint':   (_('Display HTML hints?'), bool, True),
         'email_crypto_hint': (_('Display crypto hints?'), bool, True),
         'email_reply_hint':  (_('Display reply hints?'), bool, True),
-        'email_tag_hint':    (_('Display tagging hints?'), bool, True)
+        'email_tag_hint':    (_('Display tagging hints?'), bool, True),
+        'release_notes':     (_('Display release notes?'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
