@@ -24,7 +24,7 @@
         <li class="nav-search">
           <a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a>
         </li>
-  {%- if (config.version < '0.5.0') or ('0.6.0' <= config.version < '1.0.0') %}
+  {%- if is_dev_version() %}
         <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;">
           <a class="auto-modal" data-flags="" data-icon="icon-code"
              title="{{_('How to report bugs')}}"

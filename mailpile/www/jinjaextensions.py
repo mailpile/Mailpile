@@ -14,6 +14,7 @@ from jinja2.utils import contextfunction, import_string, escape
 #from markdown import markdown
 
 from mailpile.commands import Action
+from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
@@ -35,6 +36,7 @@ class MailpileCommand(Extension):
         e.globals['mailpile_render'] = s._command_render
         e.globals['U'] = s._url_path_fix
         e.globals['make_rid'] = randomish_uid
+        e.globals['is_dev_version'] = s._is_dev_version
         e.filters['random'] = s._random
         e.globals['random'] = s._random
         e.filters['truthy'] = s._truthy
@@ -602,6 +604,10 @@ class MailpileCommand(Extension):
     @classmethod
     def _truthy(cls, txt, default=False):
         return truthy(txt, default=default)
+
+    @classmethod
+    def _is_dev_version(cls):
+        return ('dev' in APPVER or 'github' in APPVER or 'test' in APPVER)
 
     def _with_context(self, sequence, context=1):
         return [[(sequence[j] if (0 <= j < len(sequence)) else None)

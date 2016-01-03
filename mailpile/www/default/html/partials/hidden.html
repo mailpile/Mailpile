@@ -298,14 +298,14 @@
   <div class="rectangles-outer" id="contact-card-<%= email %>">
     <div class="rectangles-inner">
       <a class="contact-card-avatar left"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
          href="{{ U('/contacts/view/<%= email %>/') }}"
 {%- endif %}
          >
         <img src="{{ U('/static/img/avatar-default.png') }}">
       </a>
       <a class="contact-card-name"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
          href="{{ U('/contacts/view/<%= email %>/') }}"
 {%- endif %}
          >

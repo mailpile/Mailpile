@@ -41,7 +41,7 @@
       </th><td width='1%'><span class="icon icon-new"></span>
       </td><td width='1%'><span class="icon icon-logo" style='font-size: 1.3em;'></span>
       </td><td width='1%'>
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
         <span class="icon icon-outbox"></span>
 {%- endif %}
       </td><td><i>settings</i>
@@ -96,7 +96,7 @@
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
        </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
        </td><td>
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
           <a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
 {%- endif %}
        </td><td>
@@ -131,7 +131,7 @@
                         {% else %}unconfigured icon icon-lock-open{% endif %}"></span>
          </a>
        </td><td>
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
          <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
             title="{{_("Delete or disable account")}}"
             onclick="javascript:alert('This does not work yet, sorry!');"

@@ -251,7 +251,7 @@
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
       {%- if not result.rid %}
       <select class="right" style="width: auto;"
               onchange="javascript:_fpa.select(this, 'basics');">
@@ -464,7 +464,7 @@
                    placeholder="{{_('sssh!')}}">
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
             <input type="checkbox" name="source-{{ new_rid }}-leave-on-server" value="yes"
                    {% if result['source-' + rid + '-leave-on-server'] %}checked{% endif %}>
             <span class="checkbox">
@@ -525,7 +525,7 @@
             <span class="checkbox">
               {{_("Copy mail to Mailpile secure storage")}}
             </span><br>
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
             <input type="checkbox" name="source-{{ new_rid }}-delete-source" value="yes"
                    onchange='javascript:_fpa.require(this, "source-{{ new_rid }}-copy-local");'
                    {% if result['source-' + rid + '-delete-source'] %}checked{% endif %}>
@@ -650,7 +650,9 @@
             {{key.uid}}
           </option>{% endfor %}
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
+{%- if is_dev_version() %}
           <option value="!CREATE:RSA1024">{{_("Create a new 1024 bit RSA key (weak)")}}</option>
+{%- endif %}
           <option {% if not result['security-pgp-key'] %}selected {% endif -%}
                   value="">{{_("Disable encryption for this account")}}</option>
         </select>
@@ -670,7 +672,7 @@
                {% if result['security-best-effort-crypto'] %}checked{% endif %}>
         <span class="checkbox">
           {{_("Best-effort digital signatures and encryption")}}
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
           (<a class='auto-help' href="{{ U('/help/crypto-policy.html') }}"
               target=_blank>details</a>)
 {%- endif %}
@@ -712,7 +714,7 @@
                  {% if result['security-openpgp-header-encrypt'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Signal a preference for encrypted mail")}}
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
             (<a class='auto-help' href="{{ U('/help/crypto-signaling.html') }}"
                 target=_blank>details</a>)
 {%- endif %}

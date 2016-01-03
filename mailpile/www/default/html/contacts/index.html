@@ -15,7 +15,7 @@
     <div class="rectangles-outer" id="contact-card-{{contact.email.0.email}}">
       <div class="rectangles-inner">
         <a class="contact-card-avatar left"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
            href="{{ U('/contacts/view/', contact.email.0.email, '/') }}"
 {%- endif %}
            >
@@ -26,7 +26,7 @@
           {% endif %}
         </a>
         <a class="contact-card-name"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
            href="{{ U('/contacts/view/', contact.email.0.email, '/') }}"
 {%- endif %}
            >

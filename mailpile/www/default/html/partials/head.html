@@ -23,8 +23,7 @@
     #modal-full h1 {display: none;}
   </style>
 
-  {%- if (config.version < '0.5.0') %}
-  <!-- Uglify dev versions -->
+  {%- if is_dev_version() %}{# Uglify dev versions ... #}
   <style type="text/css">
     .topbar { filter: blur(1px); -webkit-filter: blur(1px); }
     .topbar:hover { filter: none;; -webkit-filter: none; }

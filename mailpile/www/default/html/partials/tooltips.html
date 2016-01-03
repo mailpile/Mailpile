@@ -11,20 +11,20 @@
   <div class="user clearfix half-bottom">
     <% if (photo) { %>
     <a class="avatar"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
        href="{{ U('/contacts/view/<%= address %>/') }}"
 {%- endif %}
        target="_blank"><img src="<%= photo %>"></a>
     <% } else { %>
     <a target="_blank"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
        href="{{ U('/contacts/view/<%= address %>/') }}"
 {%- endif %}
        ><span class="icon-user"></span></a>
     <% } %>
     <div class="name">
       <a target="_blank"
-{%- if config.version >= '0.6.0' %}
+{%- if is_dev_version() %}
          href="{{ U('/contacts/view/<%= address %>/') }}"
 {%- endif %}
          ><%= fn %></a>

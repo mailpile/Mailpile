@@ -8,14 +8,11 @@
     Thank you for testing Mailpile! Have you found a bug?
   </p>
 
-{%- if config.version not in ('1.0.0', '0.5.0') %}
+{%- if is_dev_version() %}
   <h4>Warning: Men at work!</h4>
   <p>
-    Mailpile is currently
-    <a target=_blank href="https://github.com/mailpile/Mailpile/commits/master">under very heavy development</a>.
-    If your top bar is a bit blurry and has a "Report Bugs" link, then you're
-    running code which is being actively developed and many things are
-    expected to be broken.
+    This is a development verson of Mailpile! You are running code which is
+    being actively developed and many things are <b>expected</b> to be broken.
   </p>
   <p>
     So for now, we don't particularly recommend filing
