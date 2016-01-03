@@ -10,6 +10,7 @@ Free Software Foundation. See the file COPYING.md for details.
 """
 #############################################################################
 import os
+import sys
 import time
 
 from mailpile.config import PathDict
@@ -17,7 +18,6 @@ from mailpile.config import ConfigRule as c
 from mailpile.config import CriticalConfigRule as X
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
-
 
 _ = lambda string: string
 
@@ -54,8 +54,7 @@ CONFIG_RULES = {
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
-            'html_theme': [_('Default theme'),
-                           'dir', os.path.join('mailpile', 'www', 'default')],
+            'html_theme': [_('User interface theme'), 'dir', 'default-theme'],
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
@@ -121,7 +120,8 @@ CONFIG_RULES = {
         'email_html_hint':   (_('Display HTML hints?'), bool, True),
         'email_crypto_hint': (_('Display crypto hints?'), bool, True),
         'email_reply_hint':  (_('Display reply hints?'), bool, True),
-        'email_tag_hint':    (_('Display tagging hints?'), bool, True)
+        'email_tag_hint':    (_('Display tagging hints?'), bool, True),
+        'release_notes':     (_('Display release notes?'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')

@@ -1165,15 +1165,19 @@ class MailpileJinjaLoader(BaseLoader):
     def __init__(self, config):
         self.config = config
 
+    def get_template_path(self, tpl):
+        return self.config.data_file_and_mimetype('html_theme', tpl)[0]
+
     def get_source(self, environment, template):
         tpl = os.path.join('html', template)
-        path, mt = self.config.data_file_and_mimetype('html_theme', tpl)
+
+        path = self.get_template_path(tpl)
         if not path:
             raise TemplateNotFound(tpl)
 
         mtime = os.path.getmtime(path)
         unchanged = lambda: (
-            path == self.config.data_file_and_mimetype('html_theme', tpl)[0]
+            path == self.get_template_path(tpl)[0]
             and mtime == os.path.getmtime(path))
 
         with file(path) as f:
@@ -1222,11 +1226,33 @@ class ConfigManager(ConfigDict):
 
         return os.path.join(basedir, 'Mailpile', profile)
 
-    def __init__(self, workdir=None, rules={}):
-        ConfigDict.__init__(self, _rules=rules, _magic=False)
+    @classmethod
+    def DEFAULT_SHARED_DATADIR(self):
+        env_share = os.getenv('MAILPILE_SHARED')
+        if env_share is not None:
+            return env_share
 
+        # Check if we've been installed to /usr/local (or equivalent)
+        usr_local = os.path.join(sys.prefix, 'local')
+        if __file__.startswith(usr_local):
+            return os.path.join(usr_local, 'share', 'mailpile')
+
+        # If not, assume /usr/ (sys.prefix for virtualenv)
+        if __file__.startswith(sys.prefix):
+            return os.path.join(sys.prefix, 'share', 'mailpile')
+
+        # Else assume dev mode, source tree layout
+        return os.path.join(os.path.dirname(__file__), '..', 'shared-data')
+
+    def __init__(self, workdir=None, shareddatadir=None, rules={}):
+        ConfigDict.__init__(self, _rules=rules, _magic=False)
+ 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
+
+        self.shareddatadir = os.path.abspath(shareddatadir or
+                                             self.DEFAULT_SHARED_DATADIR())
+        mailpile.vfs.register_alias('/Share', self.shareddatadir)
 
         self.vfs_root = MailpileVfsRoot(self)
         mailpile.vfs.register_handler(0000, self.vfs_root)
@@ -2051,6 +2077,7 @@ class ConfigManager(ConfigDict):
         """Get the gettext translation object, no matter where our CWD is"""
         # NOTE: MO files are loaded from the directory where the
         #       scripts reside in
+        # FIXME: This needs changing
         return os.path.join(os.path.dirname(__file__), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
@@ -2059,7 +2086,7 @@ class ConfigManager(ConfigDict):
         data, optionally creating the directory if it is missing.
 
         >>> p = cfg.data_directory('html_theme', mode='r', mkdir=False)
-        >>> p == os.path.abspath('mailpile/www/default')
+        >>> p == os.path.abspath('shared-data/default-theme')
         True
         """
         # This should raise a KeyError if the ftype is unrecognized
@@ -2071,8 +2098,7 @@ class ConfigManager(ConfigDict):
                 if mkdir and not os.path.exists(cpath):
                     os.mkdir(cpath)
             else:
-                bpath = os.path.join(os.path.dirname(__file__),
-                                     '..', bpath)
+                bpath = os.path.join(self.shareddatadir, bpath)
         return os.path.abspath(bpath)
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
@@ -2080,7 +2106,7 @@ class ConfigManager(ConfigDict):
         core_path = self.data_directory(ftype, *args, **kwargs)
         path, mimetype = os.path.join(core_path, fpath), None
 
-        # If there's nothing there, check our plugins
+        # If there's still nothing there, check our plugins
         if not os.path.exists(path):
             from mailpile.plugins import PluginManager
             path, mimetype = PluginManager().get_web_asset(fpath, path)

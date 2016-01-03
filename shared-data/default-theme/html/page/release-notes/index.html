@@ -1,0 +1,16 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Mailpile %(version)s release notes", version=config.version)}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-donate"></span> {{_("Welcome to Mailpile %(version)s", version=config.version)}}</h1>
+  <p>
+    <b>FIXME:</b> Write release notes.
+  </p>
+
+  <p>
+    <i>This is the <a href="https://www.mailpile.is/blog/2016-01-01_Happy_Frozen_New_Year.html">Feature Freeze</a> in progress.</i>
+  </p>
+
+</div>
+{% endblock %}

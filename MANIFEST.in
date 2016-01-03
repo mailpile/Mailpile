@@ -1,11 +1,9 @@
-recursive-exclude static *
 recursive-exclude locale *
 recursive-exclude scripts *
 recursive-exclude testing *
 recursive-include mailpile/tests/data *
 recursive-exclude mailpile/tests/data *~
 recursive-include mailpile/locale *.mo *.po *.pot
-recursive-include mailpile/www *
 recursive-include mailpile/plugins *
 recursive-include mailpile/contrib *
 include Makefile
@@ -13,9 +11,12 @@ include README.md
 include AGPLv3.txt
 include LICENSE-2.0.txt
 include requirements.txt
+include test-requirements.txt
 include requirements-dev.txt
+include install_hooks.py
 include scripts/compile-messages.sh
 include scripts/make-messages.sh
 include scripts/mailpile-test.py
 include scripts/test-sendmail.sh
 include scripts/setup-test.sh
+recursive-include shared-data *
