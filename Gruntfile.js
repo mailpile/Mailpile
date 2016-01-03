@@ -10,9 +10,9 @@ module.exports = function(grunt) {
         },
         src: [
           'shared-data/default-theme/js/libraries.js',
-          'shared-data/default-theme/js/jquery.js',
-          'shared-data/default-theme/js/moxie.js',
-          'shared-data/default-theme/js/plupload.js',
+          'bower_components/jquery/dist/jquery.js',
+          'bower_components/moxie/bin/js/moxie.js',
+          'bower_components/plupload/js/plupload.dev.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/jquery-autosize/jquery.autosize.js',
