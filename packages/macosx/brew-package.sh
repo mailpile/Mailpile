@@ -1,23 +1,27 @@
 #!/bin/bash
 set -e
 export MAILPILE_BREW_ROOT="$(cd; pwd)/Mailpile-Brew"
+export OSX_MAJOR_VERSION="$(sw_vers -productVersion | cut -d . -f 2)"
 ##############################################################################
 cat <<tac
 
 This script will use Homebrew to build a complete environment for
 packaging Mailpile, here: $MAILPILE_BREW_ROOT
 
-This script is tested on Mac OS X 10.5.8, with XCode 3.1.6.
+This script is tested on Mac OS X 10.11.2, with XCode 7.2.
 
 tac
 ##############################################################################
 echo -n 'Press ENTER to continue, CTRL-C to bail out... '; read
 
-export CURL_CA_BUNDLE=/usr/share/curl/curl-ca-bundle.crt
+# See this mailing list post: http://curl.haxx.se/mail/archive-2013-10/0036.html
+if [ $(echo "$OSX_MAJOR_VERSION  < 9" | bc) == 1 ]; then
+   export CURL_CA_BUNDLE=/usr/share/curl/curl-ca-bundle.crt
+fi
+
 export PATH="$MAILPILE_BREW_ROOT"/bin:$PATH
 export GIT_SSL_NO_VERIFY=1
 export HOMEBREW_CC=gcc-4.2
-export MACOX_DEPLOYMENT_TARGET=10.5
 export MACOSX_DEPLOYMENT_TARGET=10.5
 
 mkdir -p "$MAILPILE_BREW_ROOT"
@@ -121,11 +125,11 @@ if [ ! -e "$MAILPILE_BREW_ROOT"/bin/symlinks ]; then
     TDIR=/tmp/symlinks-mailpile.$$
     mkdir $TDIR
     cd $TDIR
-    curl -O http://pkgs.fedoraproject.org/repo/pkgs/symlinks/symlinks-1.2.tar.gz/b4bab0a5140e977c020d96e7811cec61/symlinks-1.2.tar.gz
-    [ "$(md5 symlinks-1.2.tar.gz|cut -f4 -d\ )" = \
+    curl -O http://pkgs.fedoraproject.org/repo/pkgs/symlinks/symlinks-1.4.tar.gz/c38ef760574c25c8a06fd2b5b141307d/symlinks-1.4.tar.gz
+    [ "$(md5 symlinks-1.4.tar.gz|cut -f4 -d\ )" = \
       "b4bab0a5140e977c020d96e7811cec61" ] || exit 1
-    tar xvfz symlinks-1.2.tar.gz
-    cd symlinks-1.2
+    tar xvfz symlinks-1.4.tar.gz
+    cd symlinks-1.4
     perl -pi.bak -e 's/malloc.h/stdlib.h/' symlinks.c
     make
     cp symlinks "$MAILPILE_BREW_ROOT"/bin/
@@ -198,4 +202,3 @@ echo "== Tests passed, we are happy =="
 #
 cd "$MAILPILE_BREW_ROOT"
 find . -name *.pyc -or -name *.pyo -or -name *.a | xargs rm -f
-
