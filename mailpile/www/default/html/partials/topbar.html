@@ -1,11 +1,12 @@
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  {% set status = _("%(name)s's mailpile is version %(version)s with %(size)s messages", name=(name or _("Somebody")), size=mailpile_size, version=config.version) %}
+  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
     {% include("../img/logo-color.svg") %}
   </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{_("%(name)s's mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
     {% include("../img/logo-name.svg") %}
   </a>
   </div>
