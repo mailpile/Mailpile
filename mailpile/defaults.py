@@ -19,12 +19,6 @@ from mailpile.config import CriticalConfigRule as X
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
 
-def get_share_path():
-    local_path =  os.path.join(sys.prefix, 'local', 'share', 'mailpile')
-    if os.path.exists(local_path):
-        return local_path
-    return os.path.join(sys.prefix, 'share', 'mailpile')
-
 _ = lambda string: string
 
 
@@ -60,7 +54,7 @@ CONFIG_RULES = {
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
-            'html_theme': [_('Default theme'), 'dir', os.path.join(get_share_path(), 'default')],
+            'html_theme': [_('User interface theme'), 'dir', 'default-theme'],
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],

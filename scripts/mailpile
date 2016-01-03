@@ -11,16 +11,4 @@ mailpile_root = os.path.dirname(     # Mailpile root
 sys.path.append(mailpile_root)
 
 from mailpile.app import Main
-from mailpile import defaults
-
-# Override the config path
-html_theme_path = defaults.CONFIG_RULES['sys'][2]['path'][2]['html_theme']
-new_html_theme_path = (
-    html_theme_path[0],
-    html_theme_path[1],
-    os.path.join(mailpile_root, 'static', 'default')
-)
-defaults.CONFIG_RULES['sys'][2]['path'][2]['html_theme'] = new_html_theme_path
-
-
 Main(sys.argv[1:])

@@ -11,7 +11,7 @@ def symlink_develop(config):
         os.symlink(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                'static'
+                'shared-data'
             ),
             os.path.join(sys.prefix, 'share', 'mailpile')
         )

@@ -129,18 +129,18 @@ bower_components:
 
 js: bower_components
 	# Warning: Horrible hack to extract rules from Gruntfile.js
-	rm -f static/default/js/libraries.min.js
+	rm -f shared-data/default-theme/js/libraries.min.js
 	cat `cat Gruntfile.js \
                 |sed -e '1,/concat:/d ' \
                 |sed -e '1,/src:/d' -e '/dest:/,$$d' \
                 |grep / \
                 |sed -e "s/[',]/ /g"` \
-          >> static/default/js/mailpile-min.js.tmp
-	uglify -s static/default/js/mailpile-min.js.tmp \
-               -o static/default/js/libraries.min.js
-	#@cp -va static/default/js/mailpile-min.js.tmp \
-        #        static/default/js/libraries.min.js
-	@rm -f static/default/js/mailpile-min.js.tmp
+          >> shared-data/default-theme/js/mailpile-min.js.tmp
+	uglify -s shared-data/default-theme/js/mailpile-min.js.tmp \
+               -o shared-data/default-theme/js/libraries.min.js
+	#@cp -va shared-data/default-theme/js/mailpile-min.js.tmp \
+        #        shared-data/default-theme/js/libraries.min.js
+	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp
 
 less: less-compiler bower_components
 	@make -s -f scripts/less-compiler.mk
@@ -155,7 +155,7 @@ less-loop: less-compiler
 less-compiler:
 	bower install
 	@cp scripts/less-compiler.in scripts/less-compiler.mk
-	@find static/default/less/ -name '*.less' \
+	@find shared-data/default-theme/less/ -name '*.less' \
                 |perl -npe s'/^/\t/' \
 		|perl -npe 's/$$/\\/' \
                 >>scripts/less-compiler.mk

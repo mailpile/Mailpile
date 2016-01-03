@@ -19,4 +19,4 @@ include scripts/make-messages.sh
 include scripts/mailpile-test.py
 include scripts/test-sendmail.sh
 include scripts/setup-test.sh
-recursive-include static *
+recursive-include shared-data *

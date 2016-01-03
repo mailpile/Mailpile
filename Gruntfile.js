@@ -9,15 +9,15 @@ module.exports = function(grunt) {
           separator: ';'
         },
         src: [
-          'static/default/js/libraries.js',
-          'static/default/js/jquery.js',
-          'static/default/js/moxie.js',
-          'static/default/js/plupload.js',
+          'shared-data/default-theme/js/libraries.js',
+          'shared-data/default-theme/js/jquery.js',
+          'shared-data/default-theme/js/moxie.js',
+          'shared-data/default-theme/js/plupload.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/jquery-autosize/jquery.autosize.js',
           'bower_components/mousetrap/mousetrap.js',
-          'static/default/js/mousetrap.global.bind.js',
+          'shared-data/default-theme/js/mousetrap.global.bind.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',
           'bower_components/jquery.ui/ui/jquery.ui.widget.js',
           'bower_components/jquery.ui/ui/jquery.ui.mouse.js',
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
           'bower_components/select2/select2.js',
           'bower_components/dompurify/dist/purify.min.js'
         ],
-        dest: 'static/default/js/libraries.min.js'
+        dest: 'shared-data/default-theme/js/libraries.min.js'
       }
     },
     uglify: {
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'static/default/js/libraries.min.js': ['static/default/js/libraries.min.js']
+          'shared-data/default-theme/js/libraries.min.js': ['static/default/js/libraries.min.js']
         }
       }
     },
@@ -54,13 +54,13 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "static/default/css/default.css": "static/default/less/default.less"
+          "shared-data/default-theme/css/default.css": "static/default/less/default.less"
         }
       }
     },
     watch: {
       js: {
-        files: ['static/default/js/*.js'],
+        files: ['shared-data/default-theme/js/*.js'],
         tasks: ['concat:js', 'uglify:js'],
         options: {
           livereload: true,
@@ -68,10 +68,10 @@ module.exports = function(grunt) {
       },
       css: {
         files: [
-          'static/default/less/config.less',
-          'static/default/less/default.less',
-          'static/default/less/app/*.less',
-          'static/default/less/libraries/*.less'
+          'shared-data/default-theme/less/config.less',
+          'shared-data/default-theme/less/default.less',
+          'shared-data/default-theme/less/app/*.less',
+          'shared-data/default-theme/less/libraries/*.less'
         ],
         tasks: ['less:style'],
         options: {
