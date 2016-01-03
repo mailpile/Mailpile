@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'shared-data/default-theme/js/libraries.min.js': ['static/default/js/libraries.min.js']
+          'shared-data/default-theme/js/libraries.min.js': ['shared-data/default-theme/js/libraries.min.js']
         }
       }
     },
@@ -54,7 +54,7 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "shared-data/default-theme/css/default.css": "static/default/less/default.less"
+          "shared-data/default-theme/css/default.css": "shared-data/default-theme/less/default.less"
         }
       }
     },
