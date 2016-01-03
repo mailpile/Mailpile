@@ -201,7 +201,8 @@ def get_os_settings(args):
         'mailpile': (distutils.spawn.find_executable('mailpile') or os.path.join(mp_root, 'mp')),
         'mailpile-root': mp_root,
         'mailpile-admin': os.path.realpath(sys.argv[0]),
-        'mailpile-static': os.path.join(mp_root, 'mailpile', 'www', 'default'),
+        'mailpile-static': os.path.join(mp_root, 'mailpile',
+                                        'shared-data', 'default-theme'),
         'mailpile-www': os.path.join(mpa_root, 'www'),
         'mailpile-conf': os.path.join(mpa_root, 'mailpile.conf')}
 

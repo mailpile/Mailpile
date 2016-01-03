@@ -54,43 +54,8 @@ class Builder(build_py):
 ## "Main" ####################################################################
 
 setup(
-    name="mailpile",
+    setup_requires=['pbr'],
     version=APPVER,
-    license="AGPLv3+",
-    author="Mailpile ehf.",
-    author_email="team@mailpile.is",
-    url="https://www.mailpile.is/",
-    description="""\
-An e-mail search engine and webmail client, with easy encryption and privacy.
-""",
-    long_description=open('README.md', 'r').read(),
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: JavaScript',
-        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
-        'License :: OSI Approved :: Apache Software License',
-        'Intended Audience :: End Users/Desktop',
-        'Topic :: Communications :: Email :: Email Clients (MUA)',
-        'Topic :: Security :: Cryptography',
-        'Operating System :: POSIX',
-        'Environment :: Console',
-        'Environment :: Web Environment'],
-    keywords='email webmail search pgp',
-    packages=find_packages(
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    include_package_data=True,
-    install_requires=open('requirements.txt', 'r').read().strip().splitlines(),
+    pbr=True,
     cmdclass={'build_py': Builder},
-    entry_points={
-        'console_scripts': [
-            'mailpile = mailpile.__main__:main'
-        ]},
-    test_suite='nose.collector',
-    tests_require=[
-        'mock',
-        'nose',
-        # Pinned to 1.6.0 because otherwise tests will fail
-        # on newer versions.
-        'pbr==1.6.0',
-    ])
+)

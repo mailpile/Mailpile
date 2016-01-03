@@ -9,15 +9,15 @@ module.exports = function(grunt) {
           separator: ';'
         },
         src: [
-          'mailpile/www/default/js/libraries.js',
-          'mailpile/www/default/js/jquery.js',
-          'mailpile/www/default/js/moxie.js',
-          'mailpile/www/default/js/plupload.js',
+          'shared-data/default-theme/js/libraries.js',
+          'bower_components/jquery/dist/jquery.js',
+          'bower_components/moxie/bin/js/moxie.js',
+          'bower_components/plupload/js/plupload.dev.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/autosize/dist/autosize.js',
           'bower_components/mousetrap/mousetrap.js',
-          'mailpile/www/default/js/mousetrap.global.bind.js',
+          'shared-data/default-theme/js/mousetrap.global.bind.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',
           'bower_components/jquery.ui/ui/jquery.ui.widget.js',
           'bower_components/jquery.ui/ui/jquery.ui.mouse.js',
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
           'bower_components/select2/select2.js',
           'bower_components/dompurify/dist/purify.min.js'
         ],
-        dest: 'mailpile/www/default/js/libraries.min.js'
+        dest: 'shared-data/default-theme/js/libraries.min.js'
       }
     },
     uglify: {
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'mailpile/www/default/js/libraries.min.js': ['mailpile/www/default/js/libraries.min.js']
+          'shared-data/default-theme/js/libraries.min.js': ['shared-data/default-theme/js/libraries.min.js']
         }
       }
     },
@@ -54,13 +54,13 @@ module.exports = function(grunt) {
       },
       style: {
         files: {
-          "mailpile/www/default/css/default.css": "mailpile/www/default/less/default.less"
+          "shared-data/default-theme/css/default.css": "shared-data/default-theme/less/default.less"
         }
       }
     },
     watch: {
       js: {
-        files: ['mailpile/www/default/js/*.js'],
+        files: ['shared-data/default-theme/js/*.js'],
         tasks: ['concat:js', 'uglify:js'],
         options: {
           livereload: true,
@@ -68,10 +68,10 @@ module.exports = function(grunt) {
       },
       css: {
         files: [
-          'mailpile/www/default/less/config.less',
-          'mailpile/www/default/less/default.less',
-          'mailpile/www/default/less/app/*.less',
-          'mailpile/www/default/less/libraries/*.less'
+          'shared-data/default-theme/less/config.less',
+          'shared-data/default-theme/less/default.less',
+          'shared-data/default-theme/less/app/*.less',
+          'shared-data/default-theme/less/libraries/*.less'
         ],
         tasks: ['less:style'],
         options: {
