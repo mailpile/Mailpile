@@ -133,3 +133,21 @@ $(document).on('click', '.auto-modal', function(e) {
   });
   return false;
 });
+
+
+$(document).on('click', 'a.ok-got-it', function(e) {
+  var $elem = $(this);
+  var cfg_variable = $elem.data('variable');
+  var dom_remove = $elem.data('remove');
+  var cleanup = function() {
+    if (dom_remove) $('.' + dom_remove).remove();
+    $elem.closest('#modal-full').modal('hide');
+  };
+  if (cfg_variable) {
+    var args = {};
+    args[cfg_variable] = false;
+    Mailpile.API.settings_set_post(args, cleanup);
+  }
+  else cleanup();
+  return false;
+});
