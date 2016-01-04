@@ -9,7 +9,7 @@ shared-data/default-theme/css/default.css: .less-deps
             #lessc --02 -x default.less \
             lessc default.less \
               |perl -npe 's,(libraries|app)/,,g' \
-              |perl -npe 's,/mailpile/www/,../,g' \
+              |perl -npe 's,/shared-data/,../,g' \
 	    >../css/default.css)
 	@ls -l shared-data/default-theme/css/default.css
 
