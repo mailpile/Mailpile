@@ -10,7 +10,7 @@ Mailpile.Composer.Model = function(strings, addresses) {
 Mailpile.Composer.Body.Setup = function(mid) {
 
   // Add Autosize
-  $('#compose-text-' + mid).autosize();
+  autosize($('#compose-text-' + mid));
 
   // Is Ephemeral (means .compose-text has quoted_reply)
   if (/\breply-all\b/g.test(mid)) {
@@ -22,7 +22,7 @@ Mailpile.Composer.Body.Setup = function(mid) {
 
     // If Quoted Reply disabled, remove from field
     if ($('#compose-quoted-reply-' + mid).parent().data('quoted_reply') === 'disabled') {
-      $('#compose-text-' + mid).val('').trigger('autosize.resize');
+      $('#compose-text-' + mid).val('').trigger('autosize:update');
     }
     // Not disabled, add to model
     else {
@@ -52,17 +52,17 @@ Mailpile.Composer.Body.QuotedReply = function(mid, state) {
     // Check Quoted Setting State
     if (state === 'unset' && Mailpile.Composer.Drafts[mid].quoted_reply) {
       Mailpile.Composer.Body.QuotedReplySetup();
-      $('#compose-text-' + mid).val('').trigger('autosize.resize');
-    } 
+      $('#compose-text-' + mid).val('').trigger('autosize:update');
+    }
     // Empty body & .compose-text as it's just a quoted reply
     else if (Mailpile.Composer.Drafts[mid].body === Mailpile.Composer.Drafts[mid].quoted_reply) {
       Mailpile.Composer.Drafts[mid].body = '';
-      $('#compose-text-' + mid).val('').trigger('autosize.resize');
+      $('#compose-text-' + mid).val('').trigger('autosize:update');
     }
     // Replace composer with quoted reply
     else if (Mailpile.Composer.Drafts[mid].quoted_reply) {
       Mailpile.Composer.Drafts[mid].body = Mailpile.Composer.Drafts[mid].quoted_reply;
-      $('#compose-text-' + mid).val(Mailpile.Composer.Drafts[mid].quoted_reply).trigger('autosize.resize');
+      $('#compose-text-' + mid).val(Mailpile.Composer.Drafts[mid].quoted_reply).trigger('autosize:update');
     }
   }
 };

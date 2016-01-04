@@ -15,7 +15,7 @@ module.exports = function(grunt) {
           'bower_components/plupload/js/plupload.dev.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
-          'bower_components/jquery-autosize/jquery.autosize.js',
+          'bower_components/autosize/dist/autosize.js',
           'bower_components/mousetrap/mousetrap.js',
           'shared-data/default-theme/js/mousetrap.global.bind.js',
           'bower_components/jquery.ui/ui/jquery.ui.core.js',
