@@ -58,8 +58,8 @@ INSTALL_APACHE_SCRIPT = [
     'touch /var/lib/mailpile/apache/usermap.txt',
     # Install shared data
     'mkdir -p /usr/share/mailpile/',
-    'rm -f /usr/share/mailpile/default',
-    'ln -fs "%(mailpile-static)s" /usr/share/mailpile/default',
+    'rm -f /usr/share/mailpile/default-theme',
+    'ln -fs "%(mailpile-static)s" /usr/share/mailpile/default-theme',
     # Install cgi script
     'mkdir -p /usr/lib/cgi-bin/mailpile/',
     'rm -f /usr/lib/cgi-bin/mailpile/admin.cgi',
