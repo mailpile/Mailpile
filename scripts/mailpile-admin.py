@@ -173,7 +173,7 @@ def _parse_netstat():
 
 
 def _get_random_port():
-    ns = _parse_netstat()
+    ns = list(_parse_netstat())
     for tries in range(0, 100):
        port = '%s' % random.randint(34110, 64110)
        cport = ':' + port
