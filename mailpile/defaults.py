@@ -1,13 +1,13 @@
 APPVER = "1.0.0rc0"
 ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
-               for searching and                   <https://www.mailpile.is/>
-           organizing piles of e-mail
+Mailpile.py              a tool             Copyright 2013-2016, Mailpile ehf
+ v%8.0008s         for searching and               <https://www.mailpile.is/>
+               organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation. See the file COPYING.md for details.
-"""
+""" % APPVER
 #############################################################################
 import os
 import sys

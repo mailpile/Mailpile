@@ -156,8 +156,9 @@ def Main(args):
             config.clean_tempfile_dir()
             config.load(session)
         except IOError:
-            session.ui.error(_('Failed to decrypt configuration, '
-                               'please log in!'))
+            if config.sys.debug:
+                session.ui.error(_('Failed to decrypt configuration, '
+                                   'please log in!'))
         config.prepare_workers(session)
     except AccessError, e:
         session.ui.error('Access denied: %s\n' % e)

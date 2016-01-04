@@ -113,10 +113,10 @@ def ActivateTranslation(session, config, language):
         trans = translation("mailpile", config.getLocaleDirectory(),
                             codeset='utf-8', fallback=True)
 
-        if (session and language[:2] != 'en'
+        if (session and language[:2] not in ('en', '')
                 and isinstance(trans, NullTranslations)):
-            session.ui.debug('Failed to configure i18n. '
-                             'Using fallback.')
+            session.ui.debug('Failed to configure i18n (%s). '
+                             'Using fallback.' % language)
 
     if trans:
         with RECENTLY_TRANSLATED_LOCK:

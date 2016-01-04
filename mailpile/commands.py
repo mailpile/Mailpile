@@ -2634,6 +2634,9 @@ class Help(Command):
             text = [
                 self.result['splash']
             ]
+            if os.getenv('DISPLAY'):
+                # Launching the web browser often prints junk, move past it.
+                text[:0] = ['=' * 77]
 
             if self.result['http_url']:
                 text.append(_('The Web interface address is: %s'
