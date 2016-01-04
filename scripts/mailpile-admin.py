@@ -234,7 +234,7 @@ def get_user_settings(args, user=None, mailpiles=None):
         'mailpile': settings['mailpile'],
         'host': '127.0.0.1',
         'port': port,
-        'path': ('%s/user/%s/' % (args.webroot, user)).replace('//', '/'),
+        'path': ('%s/u/%s/' % (args.webroot, user)).replace('//', '/'),
         'pidfile': pidfile,
         'pid': os.path.exists(pidfile) and open(pidfile, 'r').read().strip()}
 
@@ -491,7 +491,7 @@ def handle_cgi_post():
         pwd.getpwnam(username)
 
         # Send headers now, so output doesn't confuse Apache
-        print 'Location: /mailpile/user/%s/' % username
+        print 'Location: /mailpile/u/%s/' % username
         print 'Expires: 0'
         print
 
