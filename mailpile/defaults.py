@@ -25,7 +25,7 @@ _ = lambda string: string
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), str, APPVER],
+    'version': p(_('Mailpile program version'), str, APPVER),
     'homedir': p(_('Location of Mailpile data'), False, '(unset)'),
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),

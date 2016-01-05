@@ -19,6 +19,7 @@ from mailpile.commands import Rescan
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.defaults import APPVER
 from mailpile.eventlog import EventLog, Event
 from mailpile.httpd import HttpWorker
 from mailpile.i18n import gettext as _
@@ -1386,9 +1387,19 @@ class ConfigManager(ConfigDict):
                     all_okay = okay = False
         return all_okay
 
-    def load(self, *args, **kwargs):
+    def load(self, session, *args, **kwargs):
         with self._lock:
-            return self._unlocked_load(*args, **kwargs)
+            rv = self._unlocked_load(session, *args, **kwargs)
+
+        # If the app version does not match the config, run setup.
+        if self.version != APPVER:
+            from mailpile.plugins.setup_magic import Setup
+            Setup(session, 'setup').run()
+
+        # Trigger background-loads of everything
+        Rescan(session, 'rescan')._idx(wait=False)
+
+        return rv
 
     def load_master_key(self, passphrase, _raise=None):
         keydata = []
@@ -1529,9 +1540,6 @@ class ConfigManager(ConfigDict):
 
         # OK, we're happy
         self.loaded_config = True
-
-        # Trigger background-loads of everything
-        Rescan(session, 'rescan')._idx(wait=False)
 
     def reset_rules_from_source(self):
         with self._lock:

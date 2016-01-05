@@ -10,7 +10,7 @@ from lxml import objectify
 import mailpile.auth
 import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import CONFIG_RULES
+from mailpile.defaults import CONFIG_RULES, APPVER
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -293,6 +293,9 @@ class SetupMagic(Command):
                 'trainer': 'spambayes'
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
+
+        # Mark config as up-to-date
+        session.config.version = APPVER
 
         if save_and_update_workers:
             session.config.save()
