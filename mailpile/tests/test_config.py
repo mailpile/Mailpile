@@ -151,8 +151,10 @@ class TestConfig(MailPileUnittest):
 
     #
     # config._PathCheck should verify that a string is a valid and existing path and make it absolute
+    # skipped for windows (should be added later)
     #
 
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_PathCheck_valid(self):
         valid_paths = {
           "posix" : [
@@ -163,6 +165,7 @@ class TestConfig(MailPileUnittest):
             res = mailpile.config._PathCheck(v[0])
             self.assertEqual(res, v[1])
 
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_PathCheck_invalid(self):
         invalid_paths = {
           "posix" : ["/asdf/asdf/asdf", ""]
@@ -172,7 +175,10 @@ class TestConfig(MailPileUnittest):
 
     #
     # config._FileCheck should verify that a string is an existing file and make it absolute
+    # skipped for windows (should be added later)
     #
+
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_FileCheck_valid(self):
       valid_paths = {
         "posix" : [
@@ -183,6 +189,7 @@ class TestConfig(MailPileUnittest):
           res = mailpile.config._FileCheck(v[0])
           self.assertEqual(res, v[1])
 
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_FileCheck_invalid(self):
         invalid_paths = {
           "posix" : ["/etc", "/", "", "laksh09hahs--x"]
@@ -192,7 +199,10 @@ class TestConfig(MailPileUnittest):
 
     #
     # config._DirCheck should verify that a string is an existing directory and make it absolute
+    # skipped for windows (should be added later)
     #
+
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_DirCheck_valid(self):
         valid_paths = {
           "posix" : [
@@ -203,6 +213,7 @@ class TestConfig(MailPileUnittest):
             res = mailpile.config._DirCheck(v[0])
             self.assertEqual(res, v[1])
 
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_DirCheck_invalid(self):
         invalid_paths = {
           "posix" : [ "/etc/group", "" ]
@@ -212,7 +223,10 @@ class TestConfig(MailPileUnittest):
 
     #
     # config._NewPathCheck should verify that a string is path to an existing directory and make it absolute
+    # skipped for windows (should be added later)
     #
+
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_NewPathCheck_valid(self):
         valid_paths = {
           "posix" : [
@@ -224,6 +238,7 @@ class TestConfig(MailPileUnittest):
             res = mailpile.config._NewPathCheck(v[0])
             self.assertEqual(res, v[1])
 
+    @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_NewPathCheck_invalid(self):
         invalid_paths = {
           "posix" : [ "/some/random/path/", "/etc/asdf/tmp.txt" ]
@@ -284,31 +299,29 @@ class TestConfig(MailPileUnittest):
 
         for i in invalid_emails:
             self.assertRaises(ValueError, lambda: mailpile.config._EmailCheck(i))
-            
+
     def test_GPGKeyCheck_valid(self):
         valid_fingerprints = [
           'User@Foo.com',
           '1234 5678 abcd EF00',
           '12345678'
         ]
-        
+
         res = mailpile.config._GPGKeyCheck(valid_fingerprints[0])
         self.assertEqual(res, 'User@Foo.com')
-        
+
         res = mailpile.config._GPGKeyCheck(valid_fingerprints[1])
         self.assertEqual(res, '12345678ABCDEF00')
-        
+
         res = mailpile.config._GPGKeyCheck(valid_fingerprints[2])
         self.assertEqual(res, '12345678')
-        
+
     def test_GPGKeyCheck_invalid(self):
         invalid_fingerprints = [
           '123456789',                                             # length of key not 8 or 16 or 40
           'B906 8A28 15C4 F859  6F9F 47C1 3F3F ED73 5179',         # length is 36 i.e not 40
           'zzzz zzzz zzzz zzzz zzzz  zzzz zzzz zzzz zzzz zzzz' # contains invalid character z characters should be within a-f
         ]
-        
+
         for i in invalid_fingerprints:
             self.assertRaises(ValueError, lambda: mailpile.config._GPGKeyCheck(i))
-        
-        
