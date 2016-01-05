@@ -11,8 +11,6 @@ module.exports = function(grunt) {
         src: [
           'shared-data/default-theme/js/libraries.js',
           'bower_components/jquery/dist/jquery.js',
-          'bower_components/moxie/bin/js/moxie.js',
-          'bower_components/plupload/js/plupload.dev.js',
           'bower_components/underscore/underscore.js',
           'bower_components/jquery-timer/jquery.timer.js',
           'bower_components/autosize/dist/autosize.js',
@@ -33,6 +31,8 @@ module.exports = function(grunt) {
           'bower_components/listjs/dist/list.js',
           'bower_components/favico.js/favico.js',
           'bower_components/select2/select2.js',
+          'bower_components/moxie/bin/js/moxie.js',
+          'bower_components/plupload/js/plupload.min.js',
           'bower_components/dompurify/dist/purify.min.js'
         ],
         dest: 'shared-data/default-theme/js/libraries.min.js'
