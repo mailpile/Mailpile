@@ -5,7 +5,6 @@ recursive-include mailpile/tests/data *
 recursive-exclude mailpile/tests/data *~
 recursive-include mailpile/locale *.mo *.po *.pot
 recursive-include mailpile/plugins *
-recursive-include mailpile/contrib *
 include Makefile
 include README.md
 include AGPLv3.txt
