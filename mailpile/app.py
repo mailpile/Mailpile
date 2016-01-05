@@ -7,7 +7,7 @@ import sys
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Command, Action
-from mailpile.commands import Help, HelpSplash, Load, Rescan
+from mailpile.commands import Help, HelpSplash, Load, Rescan, Quit
 from mailpile.config import ConfigManager
 from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
@@ -29,6 +29,22 @@ readline = None
 
 
 ##[ Main ]####################################################################
+
+
+def CatchUnixSignals(session):
+    def quit_app(sig, stack):
+        Quit(session, 'quit').run()
+
+    def reload_app(sig, stack):
+        pass
+
+    try:
+        import signal
+        signal.signal(signal.SIGTERM, quit_app)
+        signal.signal(signal.SIGQUIT, quit_app)
+        signal.signal(signal.SIGUSR1, reload_app)
+    except ImportError:
+        pass
 
 
 def Interact(session):
@@ -153,6 +169,7 @@ def Main(args):
         cli_ui = session.ui = UserInteraction(config)
         session.main = True
         try:
+            CatchUnixSignals(session)
             config.clean_tempfile_dir()
             config.load(session)
         except IOError:

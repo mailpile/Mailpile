@@ -2572,6 +2572,8 @@ class Quit(Command):
     def command(self):
         mailpile.util.QUITTING = True
         self._background_save(index=True, config=True, wait=True)
+        if self.session.config.http_worker:
+            self.session.config.http_worker.quit()
         try:
             import signal
             os.kill(mailpile.util.MAIN_PID, signal.SIGINT)

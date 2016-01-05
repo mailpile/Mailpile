@@ -325,6 +325,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         finally:
             threading.current_thread().name = 'DONE:%s' % path
             LIVE_HTTP_REQUESTS -= 1
+            if mailpile.util.QUITTING:
+                self.wfile.close()
 
     def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
