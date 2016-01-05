@@ -688,13 +688,10 @@ def RuledContainer(pcls):
                 if not keys or '_any' in keys:
                     keys.extend(self.keys())
 
-            if _xtype:
-                keys = [k for k in keys if _xtype not in self.key_types(k)]
-
             keys = [k for k in sorted(set(keys)) if k not in ignore]
             set_keys = set(self.keys())
 
-            for key in keys:
+            for key in [k for k in keys if _xtype not in self.key_types(k)]:
                 if not hasattr(self[key], 'as_config'):
                     if key in self.rules:
                         comment = self.rules[key][self.RULE_COMMENT]
@@ -1974,7 +1971,7 @@ class ConfigManager(ConfigDict):
     def open_local_mailbox(self, session):
         with self._lock:
             local_id = self.sys.get('local_mailbox_id', None)
-            if not local_id:
+            if local_id is None or local_id == '':
                 mailbox, mbx = self.create_local_mailstore(session, name='')
                 local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
                 self.sys.local_mailbox_id = local_id
