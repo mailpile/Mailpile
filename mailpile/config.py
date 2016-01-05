@@ -1246,7 +1246,7 @@ class ConfigManager(ConfigDict):
 
     def __init__(self, workdir=None, shareddatadir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
- 
+
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
 
@@ -1453,8 +1453,7 @@ class ConfigManager(ConfigDict):
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'contrib'),
+            os.path.join(self.shareddatadir, 'contrib'),
             os.path.join(self.workdir, 'plugins')
         ])
         self.sys.plugins.rules['_any'][self.RULE_CHECKER
