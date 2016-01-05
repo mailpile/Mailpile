@@ -21,7 +21,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
     # All mail
-    yield checkSearch(['all:mail'], 11)
+    yield checkSearch(['all:mail'], 13)
     # Full match
     yield checkSearch(['brennan'])
     # Partial match

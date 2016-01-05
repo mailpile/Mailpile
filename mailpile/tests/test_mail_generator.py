@@ -18,7 +18,7 @@ class TestMailGenerator(MailPileUnittest):
     def test_make_boundary(self):
         for input_types in [None, "abc"]:
             res = mail_generator._make_boundary()
-            self.assertEqual(len(res), 27)
+            self.assertEqual(len(res), 17 + mail_generator._width)
             self.assertEqual(res[:15], '===============')
-            self.assertEqual(res[15:25].isdigit(), True)
-            self.assertEqual(res[25:], '==')
+            self.assertEqual(res[15:-2].isdigit(), True)
+            self.assertEqual(res[-2:], '==')
