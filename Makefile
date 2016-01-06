@@ -10,7 +10,7 @@ help:
 	@echo ""
 
 
-all:	submodules alltests docs web compilemessages
+all:	submodules alltests docs web compilemessages transifex
 
 dev:
 	@echo export PYTHONPATH=`pwd`
@@ -97,6 +97,7 @@ pytests:
 	@echo
 
 clean:
+	@rm -rf mailpile/locale/?? mailpile/locale/??_*
 	@rm -f `find . -name \\*.pyc` \
 	       `find . -name \\*.mo` \
 	        mailpile-tmp.py mailpile.py \
@@ -107,7 +108,7 @@ clean:
                mailpile/tests/data/tmp/ testing/tmp/
 
 mrproper: clean
-	@rm -rf dist/ bower_components/
+	@rm -rf dist/ bower_components/ mailpile/locale/mailpile.pot
 	git reset --hard && git clean -dfx
 
 sdist: clean
@@ -168,14 +169,17 @@ genmessages:
 compilemessages:
 	@scripts/compile-messages.sh
 
+transifex:
+	tx pull -a --minimum-perc=50
+	tx pull -l is
+
 
 
 # -----------------------------------------------------------------------------
 # BUILD
 # -----------------------------------------------------------------------------
 
-tarball: mrproper js
-	#TODO: get transifex files
+tarball: mrproper js genmessages transifex
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
 	tar --exclude='./packages/debian' --exclude-vcs -czf /tmp/mailpile.tar.gz -C $(shell pwd) .
