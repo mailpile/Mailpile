@@ -3498,7 +3498,7 @@ msgid ""
 "Are you sure you want to continue?\\n"
 msgstr ""
 "Consejo de seguridad: \\n\\n Oh! Este sitio puede ser peligroso!\\n Seguro "
-"que deseas continuar?\n"
+"que deseas continuar?\\n"
 
 #: mailpile/www/jinjaextensions.py:645
 msgid "No Subject"
