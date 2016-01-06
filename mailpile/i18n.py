@@ -100,6 +100,9 @@ i18n_disabled = i18n_disabler()
 def ActivateTranslation(session, config, language):
     global ACTIVE_TRANSLATION, RECENTLY_TRANSLATED
 
+    if not language:
+        language = os.getenv('LANG', None)
+
     trans = None
     if language:
         try:
