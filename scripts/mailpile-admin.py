@@ -52,14 +52,15 @@ INSTALL_APACHE_SCRIPT = [
     'a2enmod headers rewrite proxy proxy_http cgi',
     # Create directories
     'mkdir -p  /var/lib/mailpile/pids/',
-    # Install multipile pages
+    # Create usermap file
     'mkdir -p /var/lib/mailpile/apache/',
-    'cp -a "%(mailpile-www)s"/* /var/lib/mailpile/apache/',
     'touch /var/lib/mailpile/apache/usermap.txt',
     # Install shared data
     'mkdir -p /usr/share/mailpile/',
     'rm -f /usr/share/mailpile/default-theme',
     'ln -fs "%(mailpile-static)s" /usr/share/mailpile/default-theme',
+    'rm -f /usr/share/mailpile/multipile',
+    'ln -fs "%(mailpile-multipile)s" /usr/share/mailpile/multipile',
     # Install cgi script
     'mkdir -p /usr/lib/cgi-bin/mailpile/',
     'rm -f /usr/lib/cgi-bin/mailpile/admin.cgi',
@@ -210,7 +211,7 @@ def get_os_settings(args):
         'mailpile-root': mp_root,
         'mailpile-admin': os.path.realpath(sys.argv[0]),
         'mailpile-static': os.path.join(mp_root, 'shared-data', 'default-theme'),
-        'mailpile-www': os.path.join(mpa_root, 'www'),
+        'mailpile-multipile': os.path.join(mp_root, 'shared-data', 'multipile'),
         'mailpile-conf': os.path.join(mpa_root, 'mailpile.conf')
     }
 
