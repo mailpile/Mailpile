@@ -5,15 +5,15 @@ cd "$(dirname $0)"/..
 
 pybabel extract --project=mailpile \
     -F babel.cfg \
-    -o mailpile/locale/mailpile.pot.tmp \
+    -o shared-data/locale/mailpile.pot.tmp \
     .
 
 sed -e 's/ORGANIZATION/Mailpile ehf/' \
     -e 's/FIRST AUTHOR <EMAIL@ADDRESS>/Mailpile Team <team@mailpile.is>/' \
-    < mailpile/locale/mailpile.pot.tmp \
-    > mailpile/locale/mailpile.pot \
-    && rm -f mailpile/locale/mailpile.pot.tmp
+    < shared-data/locale/mailpile.pot.tmp \
+    > shared-data/locale/mailpile.pot \
+    && rm -f shared-data/locale/mailpile.pot.tmp
 
-for L in $(find mailpile/locale -type d |grep "LC_MESSAGES"); do
-    msgmerge -U $L/mailpile.po mailpile/locale/mailpile.pot
+for L in $(find shared-data/locale -type d |grep "LC_MESSAGES"); do
+    msgmerge -U $L/mailpile.po shared-data/locale/mailpile.pot
 done

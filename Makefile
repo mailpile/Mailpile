@@ -97,7 +97,7 @@ pytests:
 	@echo
 
 clean:
-	@rm -rf mailpile/locale/?? mailpile/locale/??_*
+	@rm -rf shared-data/locale/?? shared-data/locale/??_*
 	@rm -f `find . -name \\*.pyc` \
 	       `find . -name \\*.mo` \
 	        mailpile-tmp.py mailpile.py \
@@ -108,7 +108,7 @@ clean:
                mailpile/tests/data/tmp/ testing/tmp/
 
 mrproper: clean
-	@rm -rf dist/ bower_components/ mailpile/locale/mailpile.pot
+	@rm -rf dist/ bower_components/ shared-data/locale/mailpile.pot
 	git reset --hard && git clean -dfx
 
 sdist: clean
