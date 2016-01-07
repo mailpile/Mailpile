@@ -2103,7 +2103,7 @@ class ConfigManager(ConfigDict):
         # NOTE: MO files are loaded from the directory where the
         #       scripts reside in
         # FIXME: This needs changing
-        return os.path.join(os.path.dirname(__file__), "locale")
+        return os.path.join(self.DEFAULT_SHARED_DATADIR(), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
