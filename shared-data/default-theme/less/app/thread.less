@@ -1,0 +1,164 @@
+/* Thread */
+
+/* Thread Title */
+
+  #thread-title {
+    display: table;
+    text-align: center;
+    padding: 0;
+  }
+
+  #thread-title h1 {
+    display: inline-block;
+    font-family: @mailpile-text-font-family-bold;
+    font-size: 21px;
+    line-height: 24px;
+    color: rgb(77, 77, 77); //@grayDark;
+  }
+
+  #thread-title ul li {
+    margin: 0 10px;
+  }
+
+  #thread-title ul a {
+    color: @gray;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+  #thread-title ul a:hover {
+    color: @grayDark;
+  }
+
+  #thread-title div.thread-draggable {
+    width: 12px;
+    height: 100%;
+    display: table-cell;
+    background: url('../../img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter:alpha(opacity=30);
+  }
+
+  #thread-title div.thread-draggable:hover {
+    cursor: move;
+  }
+
+  #thread-title div.thread-details {
+    display: table-cell;
+  }
+
+
+/* Thread New */
+
+  .thread-snippet.new,
+  .thread-message.new {
+    background: @colorNew;
+  }
+
+  .thread-snippet.new:hover,
+  .thread-message.new:hover {
+    background: @colorExpand;
+  }
+
+  .thread-snippet.new a.datetime,
+  .thread-snippet.new a.datetime:visited,
+  .thread-message.new a.datetime,
+  .thread-message.new a.datetime:visited {
+    color: @grayDark;
+  }
+
+
+/* Thread Snippet - Preview of messages */
+
+  .thread-snippet {
+    background: @white;
+    border-bottom: 1px solid @gray;
+  }
+
+  .thread-snippet:hover {
+    background: @colorExpand;
+    cursor: pointer;
+  }
+
+  .thread-snippet:hover .feedback-expand {
+    display: block;
+  }
+
+
+/* Thread Notification - Non message items */
+
+  .thread-notification {
+    padding: 10px 15px;
+    background: @white;
+    border-bottom: 1px solid @gray;
+    color: @gray;
+  }
+
+  .thread-notification span.instruction {
+    display: none;
+  }
+
+  .thread-notification a {
+    width: 100%;
+    height: 100%;
+    display: block;
+    color: @gray;
+    font-weight: normal;
+  }
+
+  .thread-notification:hover {
+    background: @colorExpand;
+  }
+
+  .thread-notification:hover span.instruction {
+    display: inline;
+  }
+
+  .thread-notification:hover a {
+    color: @grayDark;
+  }
+
+  .thread-notification a:hover,
+  .thread-notification:hover a:hover {
+    color: @blue;
+  }
+
+
+/* Thread Message - View of full message */
+
+  .thread-message {
+    background: @white;
+    border-bottom: 1px solid @gray;
+  }
+
+  .thread-line-subject {
+
+  }
+
+
+/* Thread Message Attachments */
+
+  div.thread-message-attachments {
+    margin-top: 15px;
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
+
+  ul.thread-message-attachments {
+    margin-left: 0px;
+    margin-bottom: 0px;
+  }
+
+  ul.thread-message-attachments li {
+    margin-right: 15px;
+    margin-bottom: 15px;
+    padding: 0;
+  }
+
+
+/* Thread - Reply */
+
+  div.thread-reply {
+    border-bottom: 1px solid @gray;
+  }

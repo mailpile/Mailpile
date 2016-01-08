@@ -4,6 +4,7 @@ from urlparse import parse_qs, urlparse
 from urllib import quote, urlencode
 
 import mailpile.auth
+import mailpile.security as security
 from mailpile.commands import Command, COMMANDS
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -380,7 +381,7 @@ class UrlMap:
             user_session = (mailpile.auth.SESSION_CACHE.get(sid)
                             if sid else None)
         else:
-            user_session = None
+            sid = user_session = None
 
         is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
         is_api = path.startswith('/%s/' % self.MAP_API)
@@ -393,6 +394,16 @@ class UrlMap:
                         user_session = None
                     else:
                         user_session.update_ts()
+                    if user_session and method == 'POST':
+                        if isinstance(post_data, cgi.FieldStorage):
+                            try:
+                                csrf = post_data['csrf'].value
+                            except KeyError:
+                                csrf = ''
+                        else:
+                            csrf = post_data.get('csrf', [''])[0]
+                        if not security.valid_csrf_token(request, sid, csrf):
+                            user_session = None
                 if not user_session or not user_session.auth:
                     for c in commands:
                         if (c.HTTP_AUTH_REQUIRED is True or

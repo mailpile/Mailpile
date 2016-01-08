@@ -10,7 +10,7 @@ from lxml import objectify
 import mailpile.auth
 import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import CONFIG_RULES
+from mailpile.defaults import CONFIG_RULES, APPVER
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -195,13 +195,16 @@ class SetupMagic(Command):
         for t, tag_settings in self.TAGS.iteritems():
             tag_settings = copy.copy(tag_settings)
 
-            tid = session.config.get_tag_id(t)
+            tid = session.config.get_tag_id(t.replace(' ', '-'))
             if not tid:
                 AddTag(session, arg=[t]).run(save=False)
                 tid = session.config.get_tag_id(t)
                 created.append(t)
+            if not tid:
+                session.ui.notify(_('Failed to create tag: %s') % t)
+                continue
+
             tag_info = session.config.tags[tid]
-            assert(tid)
 
             # Delete any old filters...
             old_fids = [f for f, v in session.config.filters.iteritems()
@@ -271,6 +274,9 @@ class SetupMagic(Command):
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
             session.ui.notify(_('Enabling gravatar image importer'))
+        if not vcard_importers.libravatar:
+            vcard_importers.libravatar.append({'active': True})
+            session.ui.notify(_('Enabling libravatar image importer'))
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
@@ -287,6 +293,9 @@ class SetupMagic(Command):
                 'trainer': 'spambayes'
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
+
+        # Mark config as up-to-date
+        session.config.version = APPVER
 
         if save_and_update_workers:
             session.config.save()
@@ -348,10 +357,6 @@ class TestableWebbable(SetupMagic):
         'testing': 'Yes or No, if testing',
         'advance': 'Yes or No, advance setup flow',
     }
-    TRUTHY = {
-        '0': False, 'no': False, 'fuckno': False, 'false': False,
-        '1': True, 'yes': True, 'hellyeah': True, 'true': True,
-    }
 
     def _advance(self):
         path = self.data.get('_path', [None])[0]
@@ -372,8 +377,7 @@ class TestableWebbable(SetupMagic):
         raise UrlRedirectException(''.join([self.session.config.sys.http_path, url, '?%s' % qs if qs else '']))
 
     def _success(self, message, result=True, advance=False):
-        if (advance or
-                self.TRUTHY.get(self.data.get('advance', ['no'])[0].lower())):
+        if advance or truthy(self.data.get('advance', ['no'])[0], default=False):
             self._advance()
         return SetupMagic._success(self, message, result=result)
 
@@ -385,8 +389,7 @@ class TestableWebbable(SetupMagic):
         testination = self.data.get('testing')
         if testination:
             self.testing = random.randint(0, 1)
-            if testination[0].lower() in self.TRUTHY:
-                self.testing = self.TRUTHY[testination[0].lower()]
+            self.testing = truthy(testination[0], default=self.testing)
             return self.testing
         self.testing = None
         return method(*args, **kwargs)
@@ -553,6 +556,9 @@ class SetupGetEmailSettings(TestableWebbable):
                 result['routes'].sort(key=self._rank)
                 return result
         except (IOError, ValueError, AttributeError):
+            # don't forget to delete this
+            # import traceback
+            # traceback.print_exc()
             return None
 
     def _get_ispdb(self, email, domain):
@@ -654,7 +660,8 @@ class SetupGetEmailSettings(TestableWebbable):
         with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
                                       ConnBroker.OUTGOING_CLEARTEXT]) as cb:
             try:
-                socket.create_connection((host, port)).close()
+                # FIXME: magic number follows
+                socket.create_connection((host, port), timeout=9).close()
                 return True
             except (AssertionError, IOError, OSError, socket.error):
                 pass
@@ -879,7 +886,7 @@ class SetupGetEmailSettings(TestableWebbable):
         self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
         self.tracking_id = self.data.get('track-id', [None])[0]
         self.password = self.data.get('password', [None])[0]
-        emails = list(self.args) + self.data.get('email')
+        emails = list(self.args) + self.data.get('email', [])
         if self.password and len(emails) != 1:
             return self._error(_('Can only test settings for one account '
                                  'at a time'))
@@ -1178,7 +1185,7 @@ class SetupCrypto(TestableWebbable):
                 try:
                     val = self.data.get(key, [''])[0]
                     if val:
-                        session.config.prefs[key] = self.TRUTHY[val.lower()]
+                        session.config.prefs[key] = truthy(val)
                         changed = True
                 except (ValueError, KeyError):
                     error_info = (_('Invalid preference'), {

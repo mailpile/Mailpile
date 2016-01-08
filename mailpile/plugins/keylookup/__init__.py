@@ -8,6 +8,7 @@ from mailpile.mailutils import ClearParseCache
 from mailpile.plugins import PluginManager
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.util import *
+from mailpile.vcard import AddressInfo
 
 
 __all__ = ['email_keylookup', 'nicknym', 'dnspka']
@@ -83,14 +84,21 @@ def _update_scores(key_id, key_info, known_keys_list):
                                * (-1 if (key_info['score'] < 0) else 1))
 
 
-def _normalize_key(key_info):
+def _normalize_key(session, key_info):
     """Make sure expected attributes are on all keys"""
     if not key_info.get("uids"):
         key_info["uids"] = [{"name": "", "email": "", "comment": ""}]
+    if key_info.get("vcards") is None:
+        key_info["vcards"] = {}
     for uid in key_info["uids"]:
         uid["name"] = uid.get("name", _('Anonymous'))
-        uid["email"] = uid.get("email", '')
+        uid["email"] = e = uid.get("email", '')
         uid["comment"] = uid.get("comment", '')
+        if e and e not in key_info["vcards"]:
+            vcard = session.config.vcards.get_vcard(e)
+            if vcard:
+                ai = AddressInfo(e, uid["name"], vcard=vcard)
+                key_info["vcards"][e] = ai
     for key, default in [('on_keychain', False),
                          ('keysize', '0'),
                          ('keytype_name', 'unknown'),
@@ -169,7 +177,7 @@ def lookup_crypto_keys(session, address,
                 found_keys[key_id]["origins"] = []
             found_keys[key_id]["origins"].append(h.NAME)
             _update_scores(key_id, found_keys[key_id], known_keys_list)
-            _normalize_key(found_keys[key_id])
+            _normalize_key(session, found_keys[key_id])
 
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.

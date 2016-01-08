@@ -1,0 +1,26 @@
+#!/bin/sh
+# postinst script for mailpile-server
+
+set -e
+
+apache_install() {
+    mkdir -p /etc/apache2/conf-available
+    ln -sf /etc/mailpile/mailpile.conf /etc/apache2/conf-available/mailpile.conf
+
+    a2enmod headers rewrite proxy proxy_http cgi
+    service apache2 restart
+
+    if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+        . /usr/share/apache2/apache2-maintscript-helper
+        apache2_invoke enconf mailpile
+    fi
+}
+
+
+if [ "$1" = "configure" ]; then
+    chown -R www-data:www-data /var/lib/mailpile/apache
+    chmod go+rwxt /var/lib/mailpile/pids
+    apache_install $@
+fi
+
+exit 0

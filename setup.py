@@ -10,6 +10,46 @@ from glob import glob
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+########################################################
+##################### PBR Fix ##########################
+## Issue: https://bugs.launchpad.net/pbr/+bug/1530867 ##
+## PR: https://review.openstack.org/#/c/263297/ ########
+########################################################
+
+import pbr.git
+
+def _get_submodules(git_dir):
+    submodules = pbr.git._run_git_command(['submodule', 'status'], git_dir)
+    submodules = [s.strip().split(' ')[1]
+                  for s in submodules.split('\n')
+                  if s != '']
+    return submodules
+
+def _find_git_files(dirname='', git_dir=None):
+    """Behave like a file finder entrypoint plugin.
+
+    We don't actually use the entrypoints system for this because it runs
+    at absurd times. We only want to do this when we are building an sdist.
+    """
+    file_list = []
+    if git_dir is None:
+        git_dir = pbr.git._run_git_functions()
+    if git_dir:
+        file_list = pbr.git._run_git_command(['ls-files', '-z'], git_dir)
+        file_list += pbr.git._run_git_command(
+            ['submodule', 'foreach', '--quiet', 'ls-files', '-z'],
+            git_dir
+        )
+        # Users can fix utf8 issues locally with a single commit, so we are
+        # strict here.
+        file_list = file_list.split(b'\x00'.decode('utf-8'))
+        submodules = _get_submodules(git_dir)
+    return [f for f in file_list if f and f not in submodules]
+
+pbr.git._find_git_files = _find_git_files
+
+########## end of pbr fix ######
+
 ## This figures out what version we want to call ourselves ###################
 try:
     GIT_HEAD = open('.git/HEAD').read().strip().split('/')[-1]
@@ -54,37 +94,8 @@ class Builder(build_py):
 ## "Main" ####################################################################
 
 setup(
-    name="mailpile",
+    setup_requires=['pbr'],
     version=APPVER,
-    license="AGPLv3+",
-    author="Mailpile ehf.",
-    author_email="team@mailpile.is",
-    url="https://www.mailpile.is/",
-    description="""\
-An e-mail search engine and webmail client, with easy encryption and privacy.
-""",
-    long_description=open('README.md', 'r').read(),
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: JavaScript',
-        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
-        'License :: OSI Approved :: Apache Software License',
-        'Intended Audience :: End Users/Desktop',
-        'Topic :: Communications :: Email :: Email Clients (MUA)',
-        'Topic :: Security :: Cryptography',
-        'Operating System :: POSIX',
-        'Environment :: Console',
-        'Environment :: Web Environment'],
-    keywords='email webmail search pgp',
-    packages=find_packages(
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    include_package_data=True,
-    install_requires=open('requirements.txt', 'r').read().strip().splitlines(),
+    pbr=True,
     cmdclass={'build_py': Builder},
-    entry_points={
-        'console_scripts': [
-            'mailpile = mailpile.__main__:main'
-        ]},
-    test_suite='nose.collector',
-    tests_require=['nose'])
+)

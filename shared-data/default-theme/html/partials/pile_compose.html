@@ -1,0 +1,212 @@
+{%- set mid = mid or 'ephemeral-new' %}
+{%- set editing_strings = editing_strings or {'to_aids': [], 'cc_aids': [], 'bcc_aids': []} %}
+{%- set editing_addresses = [] %}
+{%- set profiles = profiles or mailpile('profiles').result %}
+<form id="form-compose-{{mid}}" class="form-compose clearfix has-mid" data-mid="{{mid}}">
+{{ csrf_field|safe }}
+<tr class="pile-message pile-message-{{mid}} pile-composer full-message result">
+  <td class="{% if '-' not in mid %}draggable{% endif %}"></td>
+  <td class="message-nav">
+  {% if '-' not in mid %}
+    <a class="compose-message-trash" title="{{_("Move Draft to Trash")}}"
+       href="#"><span class="icon icon-trash"></span></a>
+    <br>
+  {% endif %}
+  </td>
+  <td class="from">
+    <div class="compose-headers message-details">
+      {%- for field, name in (('to', _("To")),
+                              ('cc', _("Cc")),
+                              ('bcc', _("Bcc"))) %}
+      <div class="header-cooked input-{{field}}">
+        <h3 class="header-name">{{name}}:</h3>
+        <div class="header-value header-input{% if loop.index != 1 %} hide{% endif %}">
+          <span class="icon icon-plus"></span>
+          <input type=text value="">
+        </div>
+      </div>
+      {%- endfor %}
+    </div>
+    <div class="composer-status">
+      <label id="compose-message-autosaving-{{mid}}"
+             data-autosave_msg="{{_("autosaving...")}}"
+             data-autosave_error_msg="{{_("error autosaving")}}"></label>
+    </div>
+  </td>
+  <td class="crypto-and-tags">
+    {# FIXME: List tags, add ability to add tags while composing #}
+  </td>
+  <td class="subject">
+    <div class="thread-reply" id="message-{{mid}}">
+
+      <div id="compose-details-{{mid}}" class="compose-subject-container">
+        <h3>{{_("Subject")}}:</h3>
+        <div class="compose-headers compose-subject">
+          <input id="compose-subject" name="subject" tabindex="4"
+                 placeholder="{{_("Subject")}}" alt="{{_("Subject")}}"
+                 type="text" value="{{editing_strings.subject}}">
+        </div>
+      </div>
+
+      <div id="compose-body-{{mid}}" class="compose-body clearfix">
+        <textarea id="compose-text-{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
+        <div id="compose-attachments-{{mid}}" class="compose-attachments">
+          <ul id="compose-attachments-files-{{mid}}" class="compose-attachments horizontal clearfix">
+            {% if editing_strings.attachments %}
+            {% for att in attachments %}
+            <li id="compose-attachment-{{mid}}-{{att.aid}}" class="left">
+              {% if att.mimetype in ["image/bmp", "image/gif", "image/jpg", "image/jpeg", "image/pjpeg", "image/svg+xml", "image/x-png", "image/png", "application/vnd.google-apps.photo"] %}
+              <div class="attachment-image">
+                <a href="#" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                  <span class="icon-circle-x"></span>
+                </a>
+                <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/', att.aid, '/') }}');"></div>
+              </div>
+              {% else %}
+              <div class="attachment">
+                <a href="#" data-aid="{{att.aid}}" class="compose-attachment-remove">
+                  <span class="icon-circle-x"></span>
+                </a>
+                <div class="preview">
+                  <span class="icon-mime" type="{{att.mimetype}}"></span>
+                  {% set file_parts = att.filename.split(".") %}
+                  {% set file_parts_length = file_parts|length %}
+                  <span class="extension">{{ file_parts[file_parts_length - 1] }}</span>
+                </div>
+                <div class="filename">
+                  {% if file_parts_length > 2 or att.filename|length > 20 %}
+                    {{ att.filename[0:16] }}...
+                  {% else %}
+                    {{ file_parts[0] }}
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+  
+            </li>
+            {% endfor %}
+            {% endif %}
+          </ul>
+          <div class="clearfix"></div>
+          <ul class="horizontal">
+            <li>
+              <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a>
+              <span class="attachment-browswer-unsupported">{{_("Unable to add attachments")}}, <a href="">{{_("update your browser")}}</a></span>
+            </li>
+            {% if config.prefs.gpg_email_key %}<li class="add-left compose-attach-key hide">
+              <label class="compose-attach-key"
+                     title="{{_("Attach your public encryption key to this message")}}">
+                <input type="hidden" id="compose-hidden-attach-key-{{mid}}"
+                       name="attach-pgp-pubkey"
+                       value="{{ editing_strings.get('attach-pgp-pubkey', 'no')
+                                }}">
+                <input type="checkbox" id="compose-attach-key-{{mid}}"
+                       {%- if truthy(editing_strings.get('attach-pgp-pubkey', 'no')) %} checked{% endif %}>
+                {{_("Attach Key")}}
+              </label>
+            </li>{% endif %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="compose-actions">
+        <div class="dropdown">
+          {% set from = editing_addresses and editing_strings.from_aids and editing_addresses[editing_strings.from_aids.0] or '' %}
+          <div class="dropup">
+            <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
+              <span id="compose-from-selected-{{mid}}" class="compose-from-selected">
+                {% if from.photo %}
+                <span class="avatar"><img src="{{from.photo}}"></span>
+                {% else %}
+                <span class="avatar"><img src="{{ U('/static/img/avatar-default-white.png') }}"></span>
+                {% endif %}
+                <span class="name">{{from.fn}}</span>
+                <span class="address">{{from.address}}</span>
+              </span>
+              <span class="compose-from-caret">
+                <span class="caret"></span>
+              </span>
+            </div>
+            <ul class="dropdown-menu">
+            {% set emails = profiles.emails|sort %}
+            {% set found = [] %}
+            {% if from.address not in emails %}
+              {% do emails.append(from.address) %}
+            {% endif %}
+            {% for profile_email in emails %}
+              {% set profile = (profile_email in profiles.emails)
+                               and profiles.profiles[profiles.emails[profile_email]]
+                               or {'fn': from.fn} -%}
+              {%- if profile['x-mailpile-profile-route'] -%}
+              <li role="presentation">
+                <a href="#" class="compose-from">
+                  <span class="avatar">
+                  {% if profile.photo %}
+                  <img src="{{profile.photo[0].photo}}">
+                  {% else %}
+                  <img src="{{ U('/static/img/avatar-default-white.png') }}">
+                  {% endif %}
+                  </span>
+                  <span class="name">{{profile.fn}}</span>
+                  <span class="address">{{ profile_email }}</span>
+                </a>
+              </li>
+              {%- do found.append(profile) -%}{%- endif %}
+            {% endfor %}
+            {% if found|length == 0 %}
+              <li role="presentation">
+                <a target='_blank' href="{{ U('/profiles/') }}">
+                  No usable profiles found, click to check your settings!
+                </a>
+              </li>
+            {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <div class="compose-buttons">
+          <button class="compose-action button-primary" type="submit" name="save" value="save" alt="{{_("Save")}}">
+            <span class="icon-compose"></span> {{_("Save")}}
+          </button>
+          <button class="compose-action button-secondary" type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}" alt="{{_("Send")}}">
+            <span class="icon-sent"></span> {{_("Send")}}
+          </button>
+        </div>
+
+        <div class="compose-options-crypto">
+          <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none">
+            <span class="icon icon-lock-open"></span>
+          </div>
+          <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none">
+            <span class="icon icon-signature-none"></span>
+          </div>
+          <div id="compose-message-settings-{{mid}}" class="compose-message-settings none">
+            <span class="icon icon-settings"></span>
+          </div>
+        </div>
+
+      </div>
+      <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
+      <input id="compose-mid-{{mid}}" type="hidden" name="mid" value="{{mid}}">
+      <input id="compose-crypto-{{mid}}" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+      <input id="compose-signature-{{mid}}" type="hidden" value="">
+      <input id="compose-encryption-{{mid}}" type="hidden" value="">
+    </div>
+  </td>
+  <td class="date"></td>
+  <td  class="checkbox">
+  {% if '-' not in mid %}
+    <input type="checkbox" name="mid" value="{{mid}}">
+  {% endif %}
+  </td>
+</tr>
+</form>
+<script>
+/*
+  $(document).ready(function() {
+    Mailpile.Composer.init('{{mid}}',
+                           {{ editing_strings|json|safe }},
+                           {{ editing_addresses|json|safe }});
+  });
+*/
+</script>

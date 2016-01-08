@@ -7,14 +7,14 @@
 #  * http://nedbatchelder.com/code/coverage/config.html
 # =========================================================================
 
-[run]
+[coverage:run]
 append  = .coverage
 include = mailpile*
 omit = nose
 branch  = True
 #parallel = True
 
-[report]
+[coverage:report]
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma
@@ -35,9 +35,9 @@ exclude_lines =
 
 ignore_errors = True
 
-[html]
+[coverage:html]
 directory = build/coverage.html
 
-[xml]
+[coverage:xml]
 outfile = build/coverage.xml
 

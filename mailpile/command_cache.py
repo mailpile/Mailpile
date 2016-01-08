@@ -1,11 +1,16 @@
 import time
 
 import mailpile.util
+from mailpile.commands import Command
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
+
+
+_plugins = PluginManager(builtin=__name__)
 
 
 class CommandCache(object):
@@ -34,7 +39,7 @@ class CommandCache(object):
     def __init__(self, debug=None):
         self.debug = debug or (lambda s: None)
         self.lock = UiRLock()
-        self._lag = 0.5
+        self._lag = 0.1
         self.cache = {}       # id -> [exp, req, ss, cmd_obj, res_obj, added]
         self.dirty = []       # (ts, req): Requirements that changed & when
         self._dirty_ttl = 10
@@ -53,24 +58,25 @@ class CommandCache(object):
                                        time.time()]
             self.debug('Cached %s, req=%s' % (fprint, sorted(list(req))))
 
-    def get_result(self, fprint, dirty_check=True, extend=60):
+    def get_result(self, fprint, dirty_check=True, extend=300):
         with self.lock:
             exp, req, ss, co, result_obj, a = match = self.cache[fprint]
-        recent = (a > time.time() - self._lag)
-        dirty = (dirty_check and (req & self.dirty_set(after=a)))
-        if recent or dirty:
-            # If item is too new, or requirements are dirty, pretend this
-            # item does not exist.
-            self.debug('Suppressing cache result %s, recent=%s dirty=%s'
-                       % (fprint, recent, sorted(list(dirty))))
-            raise KeyError(fprint)
-        match[0] = min(match[0] + extend, time.time() + 5 * extend)
+        if dirty_check:
+            recent = (a > time.time() - self._lag)
+            dirty = (req & self.dirty_set(after=a))
+            if recent or dirty:
+                # If item is too new, or requirements are dirty, pretend this
+                # item does not exist.
+                self.debug('Suppressing cache result %s, recent=%s dirty=%s'
+                           % (fprint, recent, sorted(list(dirty))))
+                raise KeyError(fprint)
+        match[0] = time.time() + extend
         co.session = result_obj.session = ss
         self.debug('Returning cached result for %s' % fprint)
         return result_obj
 
     def dirty_set(self, after=0):
-        dirty = set()
+        dirty = set(['!timedout'])
         with self.lock:
             for ts, req in self.dirty:
                 if (after == 0) or (ts > after):
@@ -82,7 +88,11 @@ class CommandCache(object):
             self.dirty.append((time.time(), set(requirements)))
         self.debug('Marked dirty: %s' % sorted(list(requirements)))
 
-    def refresh(self, extend=0, runtime=4, event_log=None):
+    def refresh(self, extend=0, runtime=5, event_log=None):
+        if mailpile.util.LIVE_USER_ACTIVITIES > 0:
+            self.debug('Skipping cache refresh, user is waiting.')
+            return
+
         started = now = time.time()
         with self.lock:
             # Expire things from the cache
@@ -98,7 +108,9 @@ class CommandCache(object):
             fingerprints = list(self.cache.keys())
 
         refreshed = []
+        fingerprints.sort(key=lambda k: -self.cache[k][0])
         for fprint in fingerprints:
+            req = None
             try:
                 e, req, ss, co, ro, a = self.cache[fprint]
                 now = time.time()
@@ -110,23 +122,22 @@ class CommandCache(object):
                         ro = co.refresh()
                         if extend > 0:
                             e = min(e + extend, now + 5*extend)
+                        if '!timedout' in req:
+                            req.remove('!timedout')
                         with self.lock:
                             # Make sure we do not overwrite new results from
                             # elsewhere at this time.
                             if self.cache[fprint][-1] == a:
+                                e = max(e, self.cache[fprint][0])  # Clobber?
                                 self.cache[fprint] = [e, req, ss, co, ro, now]
                             refreshed.append(fprint)
                     else:
-                        # Out of time, evict because otherwise it may be
-                        # assumed to be up-to-date.
-                        with self.lock:
-                            del self.cache[fprint]
+                        # Out of time, mark as dirty.
+                        req.add('!timedout')
             except (ValueError, IndexError, TypeError):
-                # Broken stuff just gets evicted
-                with self.lock:
-                    if fprint in self.cache:
-                        self.debug('Evicted: %s' % fprint)
-                        del self.cache[fprint]
+                # Treat broken things as if they had timed out
+                if req:
+                    req.add('!timedout')
 
         if refreshed and event_log:
             event_log.log(message=_('New results are available'),
@@ -134,3 +145,29 @@ class CommandCache(object):
                           data={'cache_ids': refreshed},
                           flags=Event.COMPLETE)
             self.debug('Refreshed: %s' % refreshed)
+
+
+class Cached(Command):
+    """Fetch results from the command cache."""
+    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
+    ORDER = ('Internals', 7)
+    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    # Warning: This depends on internals of Command, how things are run there.
+    def run(self):
+        try:
+            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
+            rv = self.session.config.command_cache.get_result(cid)
+            self.session.copy(rv.session)
+            rv.session.ui.render_mode = self.session.ui.render_mode
+            return rv
+        except:
+            self._starting()
+            self._error(self.FAILURE % {'name': self.name,
+                                        'args': ' '.join(self.args)})
+            return self._finishing(False)
+
+
+_plugins.register_commands(Cached)

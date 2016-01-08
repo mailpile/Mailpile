@@ -1,0 +1,95 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">
+        <span class="icon-lock-open color-10-orange"></span>
+        <span class="title">{{_("Cannot Encrypt")}}</span>
+      </h4>
+    </div>
+    <div class="modal-body clearfix">
+
+      <div id="encryption-helper-missing-keys">
+        <p class="paragraph-alert">
+          <span class="icon-signature-unknown"></span>
+          {{_("You are missing encryption keys for the following contacts")}}
+        </p>
+        <% if (unencryptables && unencryptables.length) { %>
+        <ul>
+          <% _.each(unencryptables, function(recipient, key) { %>
+          <li id="item-encryption-key-" address="<%= recipient.address %>"
+              class="searchkey-result-item animated fadeIn">
+            <div class="clearfix">
+              <div class="avatar"
+{%- if is_dev_version() %}
+                   href="{{ U('/contacts/view/') }}<%= recipient.address %>/"
+{%- endif %}
+                   target="_blank">
+                <img src="{{ U('/static/img/avatar-default.png') }}">
+              </div>
+              <div class="name">
+                <%= recipient.fn %><br>
+                <span><%= recipient.address %></span>
+              </div>
+              <div class="right text-right">
+              <ul class="none">
+                <li class="half-bottom">
+                  <a data-email="<%= recipient.address %>" data-mid="<%= mid %>"
+                     class="encryption-helper-find-key"
+                     ><span class="icon-search"></span>
+                      {{_("Find Encryption Keys")}}</a>
+                </li>
+              </ul>
+              </div>
+            </div>
+          </li>
+          <% }); %>
+        </ul>
+        <% } else { %>
+        <h2 class="text-center">
+          <b>{{_("Yourself!")}}</b>
+        </h2>
+        <p>
+          {{_("You cannot send encrypted or signed mail without an encryption key of your own.")}}
+          {{_("Check your account settings or send using a different profile.")}}
+        </p>
+        <% } %>
+      </div>
+
+      <div id="encryption-helper-find-keys" class="hide">
+        <p class="message paragraph-important animated">
+          <span class="icon-search"></span>
+          {{_("Searching for encryption keys for:")}}
+          <span class="color-01-gray-mid"></span>
+        </p>
+        <p class="loading text-center">
+        {% include("../img/loading-ellipsis.svg") %}
+        </p>
+      </div>
+
+      <div id="encryption-helper-found-keys" class="hide">
+        <p class="message paragraph-important animated">
+          <span class="icon-search"></span>
+          {{_("Searching for encryption keys...")}}
+          <span class="color-01-gray-mid"></span>
+        </p>
+        <p class="loading text-center">
+        {% include("../img/loading-ellipsis.svg") %}
+        </p>
+        <ul class="result"></ul>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"
+              class="modal-send-unencrypted button-info left">
+        <span class="icon-lock-open"></span> {{_("Send Unencrypted")}}
+      </button>
+      <button onclick="javascript:$('#modal-full').modal('hide');"
+              class="modal-retry-encryption button-primary right"
+              data-mid="<%= mid %>">
+        {{_("Try Again")}}
+      </button>
+    </div>
+  </div>
+</div>

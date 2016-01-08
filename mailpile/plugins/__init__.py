@@ -24,8 +24,8 @@ __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
     'setup_magic', 'exporters', 'plugins',
-    'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
+    'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
+    'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
     'keylookup'
 ]
 PLUGINS = __all__
@@ -66,7 +66,7 @@ class PluginManager(object):
     ]
     # Plugins we want, if they are discovered
     WANTED = [
-        'gui', 'print', 'datadig'
+        'autoajax', 'print', 'datadig'
     ]
     # Plugins that have been renamed from past releases
     RENAMED = {

@@ -1,0 +1,46 @@
+{%- block layout_top %}{% endblock -%}
+
+{%- block content_top %}
+<div class="selection-context">
+  <div id="content-tools">
+  {% block contenttools %}
+    {% if result %}
+      {% if command == "search" %}
+        <span id='search-terms' class='hide'
+              data-context="{{state.context}}"
+              data-q="{% for t in result.search_terms %}{{ t }} {% endfor %}">
+        </span>
+        {% include("partials/tools_search.html") %}
+      {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
+        {% include("partials/tools_contacts.html") %}
+      {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
+        {% include("partials/tools_tags.html") %}
+      {% elif state.command_url in ("/settings/") %}
+        {% include("partials/tools_settings.html") %}
+      {% elif state.command_url == "/message/" %}
+        {% include("partials/tools_message.html") %}
+      {% else %}
+        {% include("partials/tools_default.html") %}
+      {% endif %}
+    {% endif %}
+  {% endblock %}
+  </div>
+  <div id="content-view">
+{%- endblock %}
+
+    <div {% if state and state.cache_id -%}
+         data-template="{{ render_template }}"
+         class="search-context cached content-{{ state.cache_id }}"
+         {% else -%}
+         class="search-context"
+         {% endif -%}
+         data-context="{{state.context}}">
+{%- block content %}<h1>No Content</h1>{% endblock -%}
+    </div>
+
+{%- block content_bottom %}
+  </div>
+</div>
+{%- endblock %}
+
+{%- block layout_bottom %}{% endblock %}

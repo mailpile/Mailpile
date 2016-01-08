@@ -3,7 +3,9 @@
 #
 ###############################################################################
 import Cookie
+import cStringIO
 import hashlib
+import gzip
 import mimetypes
 import os
 import random
@@ -44,6 +46,8 @@ def Idle_HTTPD(allowed=1):
 
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
+    # Allow persistent HTTP/1.1 connections
+    protocol_version = 'HTTP/1.1'
 
     # We always recognize these extensions, no matter what the Python
     # mimetype module thinks.
@@ -78,8 +82,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def http_host(self):
         """Return the current server host, e.g. 'localhost'"""
-        #rsplit removes port
-        return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        try:
+            # rsplit removes port
+            return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        except AttributeError:
+            return 'unknown'
 
     def _load_cookies(self):
         """Robustified cookie parser that silently drops invalid cookies."""
@@ -103,8 +110,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
-        return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
-                            self.headers.get('host', 'localhost'))
+        try:
+            surl = '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
+                                self.headers.get('host', 'localhost'))
+            self.server.server_url = surl
+        except AttributeError:
+            surl = self.server.server_url
+        return surl
 
     def send_http_response(self, code, msg):
         """Send the HTTP response header"""
@@ -150,6 +162,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             cookies[self.server.session_cookie]['max-age'] = 24 * 3600
             self.send_header(*cookies.output().split(': ', 1))
             self.send_header('Cache-Control', 'no-cache="set-cookie"')
+        if mailpile.util.QUITTING:
+            self.send_header('Connection', 'close')
         self.end_headers()
 
     def send_full_response(self, message,
@@ -177,11 +191,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             self.send_header('WWW-Authenticate',
                              'Basic realm = MP%d' % (time.time() / 3600))
         # If suppress_body == True, we don't know the content length
-        contentLengthHeaders = []
+        headers = []
         if not suppress_body:
-            contentLengthHeaders = [('Content-Length', len(message or ''))]
-        self.send_standard_headers(header_list=(header_list +
-                                                contentLengthHeaders),
+            message, headers = self._maybe_gzip(message, len(message or ''), [])
+        self.send_standard_headers(header_list=(header_list + headers),
                                    mimetype=mimetype,
                                    cachectrl=(cachectrl or "no-cache"))
         # Response body
@@ -200,6 +213,25 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         # about the actual server configuration.
         data = '%s-%s' % (self.server.secret, '-'.join((str(a) for a in args)))
         return hashlib.md5(data).hexdigest()
+
+    def _maybe_gzip(self, data, msg_size, headers):
+        if (data and
+                (len(data) > 1400) and
+                (data[:2] not in ('\xff\xd8', '\x89\x50', # JPEG, PNG
+                                  '\x1f\x8b', 'BZ', 'PK' # GZIP, BZIP, PKZIP
+                                  )) and
+                ('gzip' in self.headers.get('accept-encoding', ''))):
+            gzipped = cStringIO.StringIO()
+            with gzip.GzipFile(fileobj=gzipped, mode='w') as fd:
+                fd.write(data)
+            gzipped = gzipped.getvalue()
+            if len(data) > len(gzipped):
+                headers.extend([('Content-Length', '%s' % len(gzipped)),
+                                ('X-Full-Size', '%s' % msg_size),
+                                ('Content-Encoding', 'gzip')])
+                return gzipped, headers
+        headers.append(('Content-Length', '%s' % msg_size))
+        return data, headers
 
     def send_file(self, config, filename, suppress_body=False):
         # FIXME: Do we need more security checks?
@@ -232,21 +264,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         #       on a given Mailpile instance, thuse the long TTL and no
         #       ETag for conditional loads.
 
+        message, headers = self._maybe_gzip(message, msg_size, [])
         self.log_request(code, msg_size if (message is not None) else '-')
         self.send_http_response(code, msg)
-        self.send_standard_headers(header_list=[('Content-Length', msg_size)],
+        self.send_standard_headers(header_list=headers,
                                    mimetype=mimetype,
                                    cachectrl='must-revalidate, max-age=36000')
         self.wfile.write(message or '')
-
-    def csrf(self):
-        """
-        Generate a hashed token from the current timestamp
-        and the server secret to avoid CSRF attacks
-        """
-        ts = '%x' % time.time()
-        return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret,
-                                                     ts]))))
 
     def do_POST(self, method='POST'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
@@ -299,7 +323,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             threading.current_thread().name = 'WORK:%s' % path
             return self._real_do_GET(*args, **kwargs)
         finally:
+            threading.current_thread().name = 'DONE:%s' % path
             LIVE_HTTP_REQUESTS -= 1
+            if mailpile.util.QUITTING:
+                self.wfile.close()
 
     def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
@@ -352,12 +379,17 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         else:
             name = 'Chelsea Manning'
 
+        http_session = self.http_session()
+        csrf_token = security.make_csrf_token(self, http_session)
         session.ui.html_variables = {
-            'csrf': self.csrf(),
+            'csrf_token': csrf_token,
+            'csrf_field': ('<input type="hidden" name="csrf" value="%s">'
+                           % csrf_token),
             'http_host': self.headers.get('host', 'localhost'),
             'http_hostname': self.http_host(),
             'http_method': method,
-            'http_session': self.http_session(),
+            'http_session': http_session,
+            'http_request': self,
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',
@@ -430,7 +462,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             e = traceback.format_exc()
             session.ui.debug(e)
             if not session.config.sys.debug:
-                e = _('Internal error')
+                e = _('Internal Error')
             self.send_full_response(e, code=500, mimetype='text/plain')
             return None
 
@@ -462,6 +494,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.sessions = {}
         self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_url = 'http://UNKNOWN/'
         self.sspec = (sspec[0] or 'localhost',
                       self.socket.getsockname()[1],
                       sspec[2])
@@ -504,6 +537,8 @@ class HttpWorker(threading.Thread):
                 self.httpd.serve_forever()
             except KeyboardInterrupt:
                 return
+            except socket.error:
+                pass
             except:
                 time.sleep(1)
                 if self.httpd:

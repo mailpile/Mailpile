@@ -1,8 +1,8 @@
 FROM ubuntu:14.04
 
 # Install dependencies
-RUN apt-get update -y
-RUN apt-get install -y openssl python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump spambayes
+RUN apt-get update -y && \
+    apt-get install -y openssl python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump spambayes
 
 # Add code
 WORKDIR /Mailpile

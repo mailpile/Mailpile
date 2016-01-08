@@ -1,0 +1,4 @@
+#!/usr/bin/dh-exec
+packages/apache/mailpile.conf etc/mailpile
+scripts/mailpile-admin.py => /var/lib/mailpile/apache/admin.cgi
+packages/apache/www/* var/lib/mailpile/apache

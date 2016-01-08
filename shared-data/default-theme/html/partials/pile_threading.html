@@ -1,0 +1,50 @@
+    <div class="thread-container">
+      <h3 class="{{ unsigned.color }}">
+        {{_("Conversation")}}:
+        <span class="icon message-metadata-crypto-info {{ unsigned.icon }}"
+              title="{{ unsigned.text }}"
+              data-crypto_icon="{{ unsigned.icon }}"
+              data-crypto_color="{{ unsigned.color }}"
+              data-crypto_message="{{ unsigned.message }}"></span>
+      </h3>
+      {%- set hidden = [] %}
+      {%- for p2_ti, p1_ti, tinfo, n1_ti, n2_ti
+              in thread|thread_upside_down|with_context(2) %}
+        {%- set tmid = tinfo[0] %}
+        {%- set ascii = tinfo[1] %}
+        {%- set tmeta = result.data.metadata[tmid] %}
+        {%- set tsubject = bare_subject(tmeta) %}
+        {%- set tfrom = result.data.addresses[tmeta.from.aid] %}
+        {%- set nearby = (mid in (p2_ti[0], p1_ti[0], tmid, n1_ti[0], n2_ti[0])) %}
+        {%- if not nearby %}{% do hidden.append(tmid) %}{% endif %}
+        {%- set new_subject = ((p1_ti and (tsubject !=
+                                bare_subject(result.data.metadata[p1_ti[0]]))) or
+                               (n1_ti and (tsubject !=
+                                bare_subject(result.data.metadata[n1_ti[0]])))) %}
+        <a class="thread-message
+                  {%- if tmid == mid %} thread-selected{% endif %}
+                  {%- if tmeta.flags.unread %} thread-unread{% endif %}
+                  {%- if not nearby %} hide{% endif %}"
+           title="{{tmeta.body.snippet}}
+ - &lt;{{tmeta.from.address}}&gt; ({{tmeta.timestamp|friendly_time}}, {{tmeta.timestamp|friendly_datetime}})"
+           href="{{msg_url(this_mid + '/' + tmid)}}" data-noblank=1>
+          <span class="thread-tree">{{ ascii }}</span>
+          <span class="thread-info{% if not new_subject %} thread-simple{% endif %}">
+            <span class="thread-avatar"><img src="{{ show_avatar(tfrom) }}"></span>
+            <span class="thread-from">{{ tmeta.from.fn }}</span>
+            {%- if new_subject %}
+              <span class="thread-details">{{ tsubject }}</span>
+            {%- endif %}
+          </span>
+        </a>
+      {%- endfor %}
+      {% if hidden %}
+        <div class="clearfix">
+          <a href="#" class="show-hide" title="{{_("Show entire conversation")}}"
+             data-show=".pile-message-{{mid}} .thread-container a.thread-message.hide"
+             data-hide=".pile-message-{{mid}} .thread-container a.show-hide">
+            &middot;&middot;&middot;&middot;
+          </a>
+        </div>
+      {% endif %}
+    </div>

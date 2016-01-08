@@ -1,0 +1,23 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Upload Encryption Key")}}</h4>
+    </div>
+    <div id="upload-key-container" class="modal-body clearfix">
+      <p class="message paragraph-alert animated hide">
+        <span class="icon-signature-unknown"></span> {{_("Something went wrong uploading encryption key. Try again?")}}
+      </p>
+      <ul id="upload-key-list" class="hide"></ul>
+      <form id="form-upload-key" class="standard add-bottom">{{ csrf_field|safe }}
+        <fieldset>
+          <label>{{_("Select or Drag Encryption Key")}} <span class="icon-signature-unverified" title="{{_("A file located on your computer usually ending in: .asc .key .pub")}}"></span></label>
+          <a id="upload-key-pick" class="hide half-top button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+            <span class="icon-upload"></span> {{_("Select Encryption Key")}}
+          </a>
+          <span id="upload-key-browswer-unsupported">{{_("Unable to create uploader")}}, <a href="">{{_("update your browser")}}</a></span>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>

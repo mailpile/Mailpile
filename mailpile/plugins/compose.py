@@ -377,6 +377,19 @@ class RelativeCompose(Compose):
     _TEXT_PARTTYPES = ('text', 'quote', 'pgpsignedtext', 'pgpsecuretext',
                        'pgpverifiedtext')
 
+    _FW_REGEXP = re.compile(r'^(fwd|fw):.*', re.IGNORECASE)
+    _RE_REGEXP = re.compile(r'^(rep|re):.*', re.IGNORECASE)
+
+    @staticmethod
+    def prefix_subject(subject, prefix, prefix_regex):
+        """Avoids stacking several consecutive Fw: Re: Re: Re:"""
+        if subject is None:
+            return prefix
+        elif prefix_regex.match(subject):
+            return subject
+        else:
+            return '%s %s' % (prefix, subject)
+
 
 class Reply(RelativeCompose):
     """Create reply(-all) drafts to one or more messages"""
@@ -507,7 +520,8 @@ class Reply(RelativeCompose):
 
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
-                             msg_subject=('Re: %s' % ref_subjs[-1]),
+                             msg_subject=cls.prefix_subject(
+                                 ref_subjs[-1], 'Re:', cls._RE_REGEXP),
                              msg_from=headers.get('from', None),
                              msg_to=headers.get('to', []),
                              msg_cc=headers.get('cc', []),
@@ -609,7 +623,8 @@ class Forward(RelativeCompose):
 
         email = Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
-                             msg_subject=('Fwd: %s' % ref_subjs[-1]),
+                             msg_subject=cls.prefix_subject(
+                                 ref_subjs[-1], 'Fwd:', cls._FW_REGEXP),
                              msg_id=msgid,
                              msg_atts=msg_atts,
                              save=(not ephemeral),

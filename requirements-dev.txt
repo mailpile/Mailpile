@@ -7,3 +7,5 @@ nose
 mock>=1.0.1
 pyDNS
 pgpdump
+pillow
+pbr

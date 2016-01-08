@@ -1,0 +1,18 @@
+<div class="modal-dialog">
+<form id="modal-form-tag-add" class="standard">{{ csrf_field|safe }}
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-tag"></span> {{_("Add Tag")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" value="" placeholder="{{_("Friends & Family")}}" class="input-medium">
+      <button id="button-modal-add-tag" title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add" data-location="<%= location %>">
+        <span class="icon-plus"></span> {{_("Add")}}
+      </button>
+    </div>
+    <!-- <div class="modal-footer"></div> -->
+  </div>
+</form>
+</div>

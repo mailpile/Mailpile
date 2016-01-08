@@ -3,8 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box     = 'debian7'
-  config.vm.box_url = 'http://puppet-vagrant-boxes.puppetlabs.com/debian-70rc1-x64-vbox4210.box'
+  config.vm.box     = 'bento/debian-8.2'
 
   config.vm.provider "virtualbox" do |v|
     v.customize ["modifyvm", :id, "--memory", 1024]

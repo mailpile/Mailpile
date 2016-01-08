@@ -33,10 +33,11 @@ class Search(Command):
         'start': 'start position',
         'end': 'end position',
         'full': 'return all metadata',
+        'view': 'MID/MID pairs to expand in place',
         'context': 'refine or redisplay an older search'
     }
     IS_USER_ACTIVITY = True
-    COMMAND_CACHE_TTL = 3600
+    COMMAND_CACHE_TTL = 900
     CHANGES_SESSION_CONTEXT = True
 
     class CommandResult(Command.CommandResult):
@@ -75,6 +76,12 @@ class Search(Command):
             return Command.CommandResult.as_dict(self._fixup(),
                                                  *args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        Command.__init__(self, *args, **kwargs)
+        self._email_views = []
+        self._email_view_pairs = {}
+        self._emails = []
+
     def state_as_query_args(self):
         try:
             return self._search_state
@@ -85,6 +92,11 @@ class Search(Command):
         Command._starting(self)
         session, idx = self.session, self._idx()
         self._search_args = args = []
+
+        self._email_views = self.data.get('view', [])
+        self._email_view_pairs = dict((m.split('/')[0], m.split('/')[-1])
+                                      for m in self._email_views)
+        self._emails = []
 
         self.context = self.data.get('context', [None])[0]
         if self.context:
@@ -101,7 +113,6 @@ class Search(Command):
                 except (IndexError, KeyError, TypeError):
                     pass
             return p+t
-
 
         args += [a for a in list(nq(a) for a in self.args) if a not in args]
         for q in self.data.get('q', []):
@@ -129,10 +140,12 @@ class Search(Command):
             args[:0] = ['@%s' % (d_end - num + 1)]
 
         start = 0
+        self._default_position = True
         while args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
+                self._default_position = False
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
 
@@ -144,10 +157,24 @@ class Search(Command):
             'qr': qrs,
             'order': [session.order],
             'start': [str(start + 1)] if start else [],
+            'view': self._email_views,
             'end': [str(start + num)] if (num != def_num) else []
         }
         if self.context:
             self._search_state['context'] = [self.context]
+
+    def _email_view_side_effects(self, emails):
+        session, config, idx = self.session, self.session.config, self._idx()
+        msg_idxs = [e.msg_idx_pos for e in emails]
+        if 'tags' in config:
+            for tag in config.get_tags(type='unread'):
+                idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
+            for tag in config.get_tags(type='read'):
+                idx.add_tag(session, tag._key, msg_idxs=msg_idxs)
+
+        idx.apply_filters(session, '@read',
+                          msg_idxs=[e.msg_idx_pos for e in emails])
+        return None
 
     def _do_search(self, search=None, process_args=False):
         session, idx = self.session, self._idx()
@@ -179,7 +206,44 @@ class Search(Command):
             if session.order:
                 idx.sort_results(session, session.results, session.order)
 
+        self._emails = []
+        pivot_pos = any_pos = len(session.results)
+        for pmid, emid in list(self._email_view_pairs.iteritems()):
+            try:
+                emid_idx = int(emid, 36)
+                for info in idx.get_conversation(msg_idx=emid_idx):
+                    cmid = info[idx.MSG_MID]
+                    self._email_view_pairs[cmid] = emid
+                    # Calculate visibility...
+                    try:
+                        cpos = session.results.index(int(cmid, 36))
+                    except ValueError:
+                        cpos = -1
+                    if cpos >= 0:
+                        any_pos = min(any_pos, cpos)
+                    if (cpos > self._start and
+                            cpos < self._start + self._num + 1):
+                        pivot_pos = min(cpos, pivot_pos)
+                self._emails.append(Email(idx, emid_idx))
+            except ValueError:
+                self._email_view_pairs = {}
+
+        # Adjust the visible window of results if we are expanding an
+        # individual message, to guarantee visibility.
+        if pivot_pos < len(session.results):
+            self._start = max(0, pivot_pos - max(self._num // 5, 2))
+        elif any_pos < len(session.results):
+            self._start = max(0, any_pos - max(self._num // 5, 2))
+
+        if self._emails:
+            self._email_view_side_effects(self._emails)
+
         return session, idx
+
+    def cache_id(self, *args, **kwargs):
+        if self._emails:
+            return ''
+        return Command.cache_id(self, *args, **kwargs)
 
     def cache_requirements(self, result):
         msgs = self.session.results[self._start:self._start + self._num]
@@ -207,6 +271,8 @@ class Search(Command):
         session.displayed = SearchResults(session, idx,
                                           start=self._start,
                                           num=self._num,
+                                          emails=self._emails,
+                                          view_pairs=self._email_view_pairs,
                                           full_threads=full_threads)
         session.ui.mark(_('Prepared %d search results (context=%s)'
                           ) % (len(session.results), self.context))
@@ -296,17 +362,8 @@ class View(Search):
             return '<pre>%s</pre>' % escape_html(self._decode())
 
     def _side_effects(self, emails):
-        session, config, idx = self.session, self.session.config, self._idx()
-        msg_idxs = [e.msg_idx_pos for e in emails]
-        if 'tags' in config:
-            for tag in config.get_tags(type='unread'):
-                idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
-            for tag in config.get_tags(type='read'):
-                idx.add_tag(session, tag._key, msg_idxs=msg_idxs)
-
-        idx.apply_filters(session, '@read',
-                          msg_idxs=[e.msg_idx_pos for e in emails])
-        return None
+        # A compatibility stub only
+        return self._email_view_side_effects(emails)
 
     def state_as_query_args(self):
         return Command.state_as_query_args(self)
@@ -315,6 +372,8 @@ class View(Search):
         session, config, idx = self.session, self.session.config, self._idx()
         results = []
         args = list(self.args)
+        args.extend(['=%s' % mid.replace('=', '')
+                     for mid in self.data.get('mid', [])])
         if args and args[0].lower() == 'raw':
             raw = args.pop(0)
         else:
@@ -342,21 +401,21 @@ class View(Search):
                     old_result.add_email(email)
                     continue
 
-                conv = [int(c[0], 36) for c
-                        in idx.get_conversation(msg_idx=email.msg_idx_pos)]
-                if email.msg_idx_pos not in conv:
-                    conv.append(email.msg_idx_pos)
+                # Get conversation
+                conv = idx.get_conversation(msg_idx=email.msg_idx_pos)
 
-                # FIXME: This is a hack. The indexer should just keep things
-                #        in the right order on rescan. Fixing threading is a
-                #        bigger problem though, so we do this for now.
-                def sort_conv_key(msg_idx_pos):
-                    info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                # Sort our results by date...
+                def sort_conv_key(info):
                     return -int(info[idx.MSG_DATE], 36)
                 conv.sort(key=sort_conv_key)
 
+                # Convert to index positions only
+                conv = [int(info[idx.MSG_MID], 36) for info in conv]
+
                 session.results = conv
-                results.append(SearchResults(session, idx, emails=[email]))
+                results.append(SearchResults(session, idx,
+                                             emails=[email],
+                                             num=len(conv)))
         if len(results) == 1:
             return self._success(_('Displayed a single message'),
                                  result=results[0])

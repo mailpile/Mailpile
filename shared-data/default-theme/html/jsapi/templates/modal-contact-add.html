@@ -1,0 +1,21 @@
+<div class="modal-dialog">
+<form id="form-contact-add" class="standard">{{ csrf_field|safe }}
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-user"></span> {{_("Add Contact")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <input type="hidden" class="contact-add-mid">
+        <label>{{_("Name")}}</label>
+        <input type="text" name="name" data-type="name" class="contact-add-name" value="<%= name %>" placeholder="Chelsea Manning">
+        <label>{{_("E-mail")}}</label>
+        <input type="text" name="email" data-type="email" class="contact-add-email" value="<%= address %>" placeholder="chelsea@manning.com">
+      <button title="{{_("Add")}}" alt="{{_("Add")}}" class="button-primary add-bottom" data-action="add">
+        <span class="icon-plus"></span> {{_("Add")}}
+      </button>
+    </div>
+    <!-- <div class="modal-footer"></div> -->
+  </div>
+</form>
+</div>

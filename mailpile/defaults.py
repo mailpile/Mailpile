@@ -1,15 +1,16 @@
-APPVER = "0.5.2"
+APPVER = "1.0.0rc0"
 ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2015, Mailpile ehf
-               for searching and                   <https://www.mailpile.is/>
-           organizing piles of e-mail
+Mailpile.py              a tool             Copyright 2013-2016, Mailpile ehf
+ v%8.0008s         for searching and               <https://www.mailpile.is/>
+               organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation. See the file COPYING.md for details.
-"""
+""" % APPVER
 #############################################################################
 import os
+import sys
 import time
 
 from mailpile.config import PathDict
@@ -18,19 +19,18 @@ from mailpile.config import CriticalConfigRule as X
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
 
-
 _ = lambda string: string
 
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), str, APPVER],
-    'homedir': [_('Location of Mailpile data'), False, '(unset)'],
+    'version': p(_('Mailpile program version'), str, APPVER),
+    'homedir': p(_('Location of Mailpile data'), False, '(unset)'),
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
-        'fd_cache_size':  (_('Max files kept open at once'), int,         500),
+        'fd_cache_size': p(_('Max files kept open at once'), int,         500),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_host':     p(_('Listening host for web UI'),
                            'hostname', 'localhost'),
@@ -54,8 +54,7 @@ CONFIG_RULES = {
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
-            'html_theme': [_('Default theme'),
-                           'dir', os.path.join('mailpile', 'www', 'default')],
+            'html_theme': [_('User interface theme'), 'dir', 'default-theme'],
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
@@ -79,16 +78,16 @@ CONFIG_RULES = {
         'gpg_use_agent':   (_('Use the local GnuPG agent'), bool,       False),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
-        'gpg_recipient':  p(_('Encrypt local data to ...'), 'gpgkeyid',    ''),
+        'gpg_recipient':   (_('Encrypt local data to ...'), 'gpgkeyid',    ''),
         'gpg_email_key':   (_('Enable e-mail based public key distribution'),
                             bool, True),
-        'openpgp_header': X(_('Advertise GPG preferences in a header?'),
+        'openpgp_header': X(_('Advertise PGP preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
         'crypto_policy':  X(_('Default encryption policy for outgoing mail'),
                             str, 'none'),
         'inline_pgp':      (_('Use inline PGP when possible'), bool,     True),
-        'default_order':   (_('Default sort order'), str,          'rev-date'),
+        'default_order':   (_('Default sort order'), str,     'rev-freshness'),
         'obfuscate_index':X(_('Key to use to scramble the index'), str,    ''),
         'index_encrypted':X(_('Make encrypted content searchable'),
                             bool, False),
@@ -115,9 +114,14 @@ CONFIG_RULES = {
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
-        'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
+        'nag_backup_key':   (_('Nag user to backup their key'), int, 0),
         'subtags_collapsed': (_('Collapsed subtags in sidebar'), str, []),
-        'donate_visibility': (_('Hide donate link in topbar'), bool, True)
+        'donate_visibility': (_('Display donate link in topbar?'), bool, True),
+        'email_html_hint':   (_('Display HTML hints?'), bool, True),
+        'email_crypto_hint': (_('Display crypto hints?'), bool, True),
+        'email_reply_hint':  (_('Display reply hints?'), bool, True),
+        'email_tag_hint':    (_('Display tagging hints?'), bool, True),
+        'release_notes':     (_('Display release notes?'), bool, True)
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')

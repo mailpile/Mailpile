@@ -1,0 +1,172 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block content %}
+{%- if result.policy %}
+
+{%- else %}
+<div class="content-normal" style="max-width: 42em; position: relative">
+
+ {% if result.key or not result.keylist %}
+  <div id="identity-vault-lock" class="vault-lock-outer">
+    <div class="vault-lock-inner">
+    {% if result.key %}
+      <div class="vault-lock icon-lock-closed animated"></div>
+    {% else %}
+      <div class="vault-lock animated"></div>
+    {% endif %}
+    </div>
+  </div>
+ {% endif %}
+
+ {% if result.key or result.keylist %}
+  <h1 class='text-center'>{{_("Mailpile Key Access")}}</h1>
+
+  <form id="form-set-password" class="standard text-center"
+        method="POST" action="{{ U("/settings/set/password/") }}">
+    {{ csrf_field|safe }}
+
+    <select name="policy-ttl" class="text-center"
+            onchange="javascript:_ssp.policy_changed(this);"
+            {% if result.key %}style="width: 42em; margin: 1px auto; border: 0; font-style: italic;"
+            {% else %}style="width: 42em; margin: 10px auto;"{% endif %}>
+      <option value="cache-only">{{_("Unlock Encryption Key")}}</option>
+      <option value="forget"></option>
+      <option value="cache-only:600">{{_("Unlock Encryption Key")}} ({{_("10 minutes")}})</option>
+      <option value="cache-only:3600">{{_("Unlock Encryption Key")}} ({{_("1 hour")}})</option>
+      <option value="cache-only:43200">{{_("Unlock Encryption Key")}} ({{_("12 hours")}})</option>
+      <option value="forget"></option>
+      <option value="store">{{_("Unlock Key and Remember Password")}}</option>
+      <option value="forget"></option>
+      <option value="forget">{{_("Lock Encryption Key")}}</option>
+    </select>
+    <ul class="radio-list add-bottom">
+      {%- macro render_key(key_info, first) %}
+        {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
+        <li class="text-left">
+        <label class="radio-list-item">
+          {%- if not result.key %}
+          <div class="radio text-right">
+            <input name="id" value="{{ key_info.fingerprint }}"
+                   type="radio" {% if first %}checked{% endif %} tabindex="1">
+          </div>
+          {%- endif %}
+          <div class="icon text-center">
+            <span class="icon-key"></span>
+          </div>
+          <div>
+            <strong class="half-bottom">{{ nice_fingerprint(key_info.fingerprint) }}</strong>
+            <br>
+            {% set uid_count = 0 %}
+            {% for uid in key_info.uids %}
+              {% set uid_count = uid_count + 1 %}
+              {% if uid_count <= 1 %}
+              <span>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+                {% if key_info.uids|length > 1 %}<a href="#" class="setup-crypto-more-uid">see more</a>{% endif %}
+              </span>
+              {% else %}
+              <span class="setup-crypto-uid-more hide"><br>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+              </span>
+              {% endif %}
+            {% endfor %}<br>
+            <span>
+              {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits &nbsp;
+              {{_("Created")}} {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}{{_("Expires")}} {{ key_info.expiration_date }}{% endif %}
+            </span>
+          </div>
+        </label>
+        </li>
+        {%- endif %}
+      {%- endmacro %}
+      {%- if result.key %}
+        {{ render_key(result.key, 1) }}
+        <input type="hidden" name="id" value="{{ result.key.fingerprint }}">
+      {%- else %}
+      {%- for key_info in result.keylist.values() %}
+        {{ render_key(key_info, loop.first) }}
+      {%- endfor %}
+      {%- endif %}
+    </ul>
+
+    <div class="ssp-unlock-key">
+    <label>{{_("Your Password")}}</label>
+      <div id="setup-passphrase-existing-confirm">
+        <span id="validation-passphrase_confirm">
+          <label class="validation-message"></label>
+          <input id="input-setup-passphrase_confirm"
+                 class="medium center" type="password" name="password"
+                 autocorrect="off" autocapitalize="off"
+                 placeholder="top secret super duper passphrase" tabindex="3">
+        </span>
+      </div>
+      <button class="button-primary" type="submit">{{_("Unlock Encryption Key")}}</button>
+
+    {% if state.query_args.ui_redirect_back %}
+      <input type="hidden" class="current-url" name="redirect" value="">
+    {% elif not result.key %}
+      <input type="hidden" name="redirect"
+             value="{{ U('/settings/set/password/') }}">
+      <p><i>
+         <br>
+         <b>WIP:</b> Password correctness is not checked immediately. This
+                     will be fixed later!                  
+      </i></p>
+    {% endif %}
+
+    </div>
+    <div class="ssp-lock-key hide">
+      <button class="button-primary" type="submit">{{_("Lock Encryption Key")}}</button>
+    </div>
+
+  </form>
+
+  <script>
+    var page_url = document.location.href;
+    var ui_hint = 'ui_key_auth=1';
+    if (page_url.indexOf(ui_hint) != -1) {
+      ui_hint = '';
+    }
+    else {
+      ui_hint = ((page_url.indexOf('?') == -1) ? '?' : '&') + ui_hint;
+    }
+    $('input.current-url').attr('value', page_url + ui_hint);
+
+    var _ssp = (function() {
+      return {
+        policy_changed: function(sel) {
+          var val = $(sel).val();
+          if (val == 'fail' || val == 'forget') {
+            $('.ssp-unlock-key').hide();
+            $('.ssp-lock-key').show();
+            $('input[type=radio]').focus();
+          }
+          else {
+            $('.ssp-unlock-key').show();
+            $('.ssp-lock-key').hide();
+            $('input[type=password]').focus();
+          }
+        }
+      }
+
+    })();
+
+    setTimeout("$('input[type=password]').focus();", 250);
+  </script>
+ {% else %}
+
+   <div class='text-center'>
+     <h3>{{_("No Keys Here!")}}</h3>
+     <p>
+       {{_("Encryption keys can be created during the account creation process.")}}
+     </p>
+   </div>
+
+ {% endif %}
+
+</div>
+{%- endif %}
+{%- endblock %}

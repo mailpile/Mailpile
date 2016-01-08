@@ -40,14 +40,11 @@ class Events(Command):
     DEFAULT_WAIT_TIME = 10.0
     GATHER_TIME = 0.5
 
-    _FALSE = ('0', 'off', 'no', 'false')
-
     def command(self):
         session, config, index = self.session, self.session.config, self._idx()
         event_log = config.event_log
 
-        incomplete = (self.data.get('incomplete', ['no']
-                                    )[0].lower() not in self._FALSE)
+        incomplete = truthy(self.data.get('incomplete', ['no'])[0])
         waiting = int(self.data.get('wait', [0])[0])
         gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
 
@@ -89,7 +86,8 @@ class Events(Command):
         now = time.time()
         expire = now + waiting - gather
         if waiting:
-            if 'since' not in filters:
+            # JS sometimes sends us "undefined", handle it gracefully...
+            if filters.get('since', 'undefined') == 'undefined':
                 filters['since'] = now
             if float(filters['since']) < 0:
                 filters['since'] = float(filters['since']) + now
@@ -189,12 +187,17 @@ class Watch(Command):
     SYNOPSIS = (None, 'eventlog/watch', None, None)
     ORDER = ('Internals', 9)
     IS_USER_ACTIVITY = False
+    CONFIG_REQUIRED = False
 
     def command(self):
+        config = self.session.config
+        unregister = False
         self.session.ui.notify(
             _('Watching logs: Press CTRL-C to return to the CLI'))
-        unregister = self.session.config.event_log.ui_watch(self.session.ui)
         try:
+            while not mailpile.util.QUITTING and not config.event_log:
+                time.sleep(1)
+            unregister = config.event_log.ui_watch(self.session.ui)
             self.session.ui.unblock(force=True)
             while not mailpile.util.QUITTING:
                 time.sleep(1)
@@ -202,7 +205,7 @@ class Watch(Command):
             pass
         finally:
             if unregister:
-                self.session.config.event_log.ui_unwatch(self.session.ui)
+                config.event_log.ui_unwatch(self.session.ui)
         return self._success(_('That was fun!'))
 
 

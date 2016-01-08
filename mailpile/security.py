@@ -6,8 +6,11 @@ security related decisions made by the app, in order to facilitate
 review and testing.
 
 """
+import time
+
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.util import *
 
 
 ##[ These are the sys.lockdown restrictions ]#################################
@@ -53,6 +56,8 @@ def forbid_command(command_obj, cc_list=None):
 
 ##[ Common web-server security code ]#################################
 
+CSRF_VALIDITY = 48 * 3600  # How long a CSRF token remains valid
+
 def http_content_security_policy(http_server):
     """
     Calculate the default Content Security Policy string.
@@ -63,4 +68,26 @@ def http_content_security_policy(http_server):
     # FIXME: Allow deviations in config, for integration purposes
     # FIXME: Clean up Javascript and then make this more strict
     return ("default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "img-src 'self' data://*")
+            "img-src 'self' data:")
+
+
+def make_csrf_token(req, session_id, ts=None):
+    """
+    Generate a hashed token from the current timestamp, session ID and
+    the server secret, to avoid CSRF attacks.
+    """
+    ts = '%x' % (ts if (ts is not None) else time.time())
+    payload = [req.server.secret, session_id, ts]
+    return '%s-%s' % (ts, b64w(sha512b64('-'.join(payload))))
+
+
+def valid_csrf_token(req, session_id, csrf_token):
+    """
+    Check the validity of a CSRF token.
+    """
+    try:
+        when = int(csrf_token.split('-')[0], 16)
+        return ((when > time.time() - CSRF_VALIDITY) and
+                (csrf_token == make_csrf_token(req, session_id, ts=when)))
+    except (ValueError, IndexError):
+        return False

@@ -1,0 +1,76 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{ message }}{% endblock %}
+{% block content %}
+<div id="mailbox-settings" class="content-normal"
+     style="position: relative; max-width: 42em;">
+<form class="standard" method="POST"
+      action="{{ U('/settings/mailbox/') }}">{{ csrf_field|safe }}
+
+  <script type="text/javascript">
+  </script>
+
+  <p class="message paragraph-important modal-basic-settings-title">
+    <span class="icon-settings"></span>
+    {{_("Mailbox Settings")}}:
+    {%- for path in result.adding %}
+      <input type="hidden" name="path" value="{{ path }}"> {{ path }}
+    {%- endfor %}
+    {%- for path, info in result.configure %}
+      <input type="hidden" name="path" value="{{ path }}"> {{ path }}
+    {%- endfor %}
+  </p>
+  <div class="modal-basic-settings">
+
+    <div class="left" style="width: 18em; margin-right: 1em;">
+      <label>Mailbox role</label>
+      <select name='apply_tags' style="width: 100%;">
+        <option value='' {% if not result.apply_tags %}selected{% endif %}>{{_("Archives")}}</option>
+        {% for tid in config.tags %}
+          {%- set tag = config.tags[tid] %}
+          {%- if tag.display == 'priority' %}
+        <option value='{{ tid }}' {% if tid in result.apply_tags %}selected{% endif %}>{{ tag.name }}</option>
+          {%- endif %}
+        {%- endfor %}
+      </select>
+
+    {%- if not result.has_source %}
+      <label>Account</label>
+      <select name='profile' style="width: 100%;">
+        {% set profile_data = mailpile('profiles').result %}
+        {% for rid in profile_data.rids %}
+          {% set profile = profile_data.profiles[profile_data.rids[rid]] %}
+        <option value='{{ rid }}' {% if rid == result.profile %}selected{% endif %}>{{ profile.fn }} &lt;{{ profile.email.0.email }}&gt;</option>
+        {% endfor %}
+      </select>
+    {%- endif %}
+    </div>
+
+    <div class="right">
+      <label>Search settings</label>
+      <ul>
+        <li><input type="checkbox" name="auto_index" value="true" {% if result.auto_index %}checked{% endif %}>
+            <span class="checkbox">{{_("Add messages to search engine")}}</span></li>
+        <li><input type="checkbox" name="tag_visible" value="true" {% if result.tag_visible %}checked{% endif %}>
+            <span class="checkbox">{{_("Show mailbox tag in sidebar")}}</span></li>
+      </ul>
+
+      <label>Mailbox settings</label>
+      <ul>
+        <li><input type="checkbox" name="local_copy" value="true" {% if result.local_copy %}checked{% endif %}>
+            <span class="checkbox">{{_("Copy mail to Mailpile secure storage")}}</span></li>
+        {# FIXME: delete from source #}
+      </ul>
+    </div>
+
+  </div>
+
+  <div>
+    <hr style="margin-bottom: 10px;">
+    <button class="button-primary right" type="submit">
+      <span class="icon-checkmark"></span> {{_("Save")}}
+    </button>
+  </div>
+
+</form>
+</div>
+{% endblock %}

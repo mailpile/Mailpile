@@ -1,0 +1,110 @@
+/* Mobile - All Sizes (devices and browser) */
+@media only screen and (max-width: 767px), (orientation: portrait) {
+
+  .topbar-logo-name { display: none; }
+
+  .form-search { width: auto; }
+  .form-search input { width: 50%; }
+
+  .topbar-nav .nav-search { display: list-item; }
+  .topbar-nav { display: none; }
+
+  #sidebar, #sidebar-wrapper { width: 72px; }
+  #sidebar-scroll-area { bottom: 0; }
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar a.sidebar-tag > span.notification { display: none; }
+  #sidebar-bottom { display: none; }
+  #sidebar-lists ul,
+  #sidebar a.sidebar-tag,
+  #sidebar-lists ul li {
+    display: inline-block;
+    text-align: center; vertical-align: top;
+    padding: 0; margin: 0;
+  }
+  #sidebar-lists ul { display: block; }
+  #sidebar-lists li {
+    width: 72px; height: 72px;
+    padding: 3px; margin: 0;
+    overflow: hidden;
+    height: 56px;
+  }
+  #sidebar li.sidebar-subtag a.sidebar-tag span.name,
+  #sidebar li.sidebar-subtag a.sidebar-tag span.notification,
+  #sidebar a.sidebar-tag > span.name,
+  #sidebar.snug a.sidebar-tag > span.name,
+  #sidebar.cozy a.sidebar-tag > span.name {
+    display: block; font-size: 12px; line-height: 14px; width: 72px;
+    padding: 0; margin: 0;
+  }
+  #sidebar a.sidebar-tag > span.notification,
+  #sidebar.snug a.sidebar-tag > span.notification,
+  #sidebar.cozy a.sidebar-tag > span.notification {
+    display: block; width: 72px; text-align: center;
+    position: absolute; top: 20px;
+    color: @black;
+    text-shadow: 1px  1px 0px @white,
+                -1px -1px 0px @white,
+                -1px  1px 0px @white,
+                 1px -1px 0px @white;
+    opacity: 0.75;
+    font-size: 11px; font-weight: bold;
+  }
+  #sidebar li.sidebar-subtag a.sidebar-tag span.icon,
+  #sidebar.cozy a.sidebar-tag span.icon,
+  #sidebar.snug a.sidebar-tag span.icon,
+  #sidebar a.sidebar-tag span.icon {
+    display: block;
+    width: auto; height: 28px; font-size: 28px; line-height: 28px;
+    padding: 6px; margin: 0;
+  }
+  #sidebar a.sidebar-tag-expand { top: 25%; left: 0; }
+
+  #content { left: 72px; }
+
+  #pile-results td.checkbox,
+  #pile-results td.crypto-and-tags { display: none; }
+  #pile-results td.from,
+  #pile-results td.date { padding-right: 3px; }
+
+  #content-tools nav li { padding: 2px; margin: 0; }
+  #content-tools nav .navigation-text { display: none; }
+
+  #bulk-actions-message { position: absolute; }
+}
+
+/* This is too small for the tabular result list, switch to card-style */
+@media only screen and (max-width: 480px), (orientation: portrait) {
+  #content {
+    left: 0;
+    bottom: 72px;
+  }
+  #sidebar {
+    position: fixed; display: block;
+    top: auto; left: 0; right: 0; bottom: 0;
+    padding: 0;
+    height: 73px; width: 100%; vertical-align: center;
+    border-top: 1px solid @gray; border-right: 0;
+    z-index: 10;
+  }
+  #sidebar-wrapper {
+    width: 100%; height: 72px; margin: 0; padding: 0;
+  }
+  #sidebar-scroll-area {
+    overflow-x: scroll; overflow-y: hidden; padding: 0; margin: 0;
+  }
+  #sidebar-lists { width: 5000px; }
+  #sidebar-lists ul { display: inline-block; }
+  #sidebar-lists li { width: 72px; height: 72px; margin-bottom: 0; }
+
+  #notifications {
+    top: 0; right: 15%; left: 15%; width: 70%; bottom: auto;
+    border-bottom-left-radius: (@base-border-radius);
+    border-bottom-right-radius: (@base-border-radius);
+  }
+
+  /* Stuff we just hide... */
+  #sidebar hr,
+  #notifications-header,
+  #pile-results td.from { display: none; }
+
+}

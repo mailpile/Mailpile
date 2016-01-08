@@ -2,11 +2,13 @@
 import sys, os
 
 # Make imports work without PYTHONPATH
-sys.path.append(
-  os.path.dirname(              # Mailpile root
-    os.path.dirname(              # scripts/
-      os.path.realpath(__file__)))) # this script
+mailpile_root = os.path.dirname(     # Mailpile root
+    os.path.dirname(                 # scripts/
+        os.path.realpath(__file__)   # this script
+    )
+)
+
+sys.path.append(mailpile_root)
 
 from mailpile.app import Main
-
 Main(sys.argv[1:])

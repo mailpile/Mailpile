@@ -19,6 +19,7 @@ from mailpile.commands import Rescan
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.defaults import APPVER
 from mailpile.eventlog import EventLog, Event
 from mailpile.httpd import HttpWorker
 from mailpile.i18n import gettext as _
@@ -267,15 +268,10 @@ def _BoolCheck(value):
         ...
     ValueError: Invalid boolean: wiggle
     """
-    if value in (True, False):
-        return value
-    if value.lower() in ('1', 'true', 'yes', 'on',
-                         _('true'), _('yes'), _('on')):
-        return True
-    if value.lower() in ('0', 'false', 'no', 'off',
-                         _('false'), _('no'), _('off')):
-        return False
-    raise ValueError(_('Invalid boolean: %s') % value)
+    bool_val = truthy(value, default=None)
+    if bool_val is None:
+        raise ValueError(_('Invalid boolean: %s') % value)
+    return bool_val
 
 
 def _SlugCheck(slug, allow=''):
@@ -664,9 +660,9 @@ def RuledContainer(pcls):
         def __unicode__(self):
             return json.dumps(self, sort_keys=True, indent=2)
 
-        def as_config_bytes(self, _type=None):
+        def as_config_bytes(self, _type=None, _xtype=None):
             of = io.BytesIO()
-            self.as_config(_type=_type).write(of)
+            self.as_config(_type=_type, _xtype=_xtype).write(of)
             return of.getvalue()
 
         def key_types(self, key):
@@ -677,7 +673,7 @@ def RuledContainer(pcls):
             else:
                 return []
 
-        def as_config(self, config=None, _type=None):
+        def as_config(self, config=None, _type=None, _xtype=None):
             config = config or CommentedEscapedConfigParser()
             section = self._name
             if self._comment:
@@ -692,10 +688,11 @@ def RuledContainer(pcls):
             if not _type:
                 if not keys or '_any' in keys:
                     keys.extend(self.keys())
+
             keys = [k for k in sorted(set(keys)) if k not in ignore]
             set_keys = set(self.keys())
 
-            for key in keys:
+            for key in [k for k in keys if _xtype not in self.key_types(k)]:
                 if not hasattr(self[key], 'as_config'):
                     if key in self.rules:
                         comment = self.rules[key][self.RULE_COMMENT]
@@ -712,7 +709,7 @@ def RuledContainer(pcls):
                         config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    self[key].as_config(config=config, _type=_type)
+                    self[key].as_config(config=config, _type=_type, _xtype=_xtype)
 
             return config
 
@@ -1170,15 +1167,19 @@ class MailpileJinjaLoader(BaseLoader):
     def __init__(self, config):
         self.config = config
 
+    def get_template_path(self, tpl):
+        return self.config.data_file_and_mimetype('html_theme', tpl)[0]
+
     def get_source(self, environment, template):
         tpl = os.path.join('html', template)
-        path, mt = self.config.data_file_and_mimetype('html_theme', tpl)
+
+        path = self.get_template_path(tpl)
         if not path:
             raise TemplateNotFound(tpl)
 
         mtime = os.path.getmtime(path)
         unchanged = lambda: (
-            path == self.config.data_file_and_mimetype('html_theme', tpl)[0]
+            path == self.get_template_path(tpl)[0]
             and mtime == os.path.getmtime(path))
 
         with file(path) as f:
@@ -1227,11 +1228,38 @@ class ConfigManager(ConfigDict):
 
         return os.path.join(basedir, 'Mailpile', profile)
 
-    def __init__(self, workdir=None, rules={}):
+    @classmethod
+    def DEFAULT_SHARED_DATADIR(self):
+        env_share = os.getenv('MAILPILE_SHARED')
+        if env_share is not None:
+            return env_share
+
+        # Check if we have been installed in a virtual env
+        # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
+        if hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix'):
+            return os.path.join(sys.prefix, 'share', 'mailpile')
+
+        # Check if we've been installed to /usr/local (or equivalent)
+        usr_local = os.path.join(sys.prefix, 'local')
+        if __file__.startswith(usr_local):
+            return os.path.join(usr_local, 'share', 'mailpile')
+
+        # Check if we are in /usr/ (sys.prefix)
+        if __file__.startswith(sys.prefix):
+            return os.path.join(sys.prefix, 'share', 'mailpile')
+
+        # Else assume dev mode, source tree layout
+        return os.path.join(os.path.dirname(__file__), '..', 'shared-data')
+
+    def __init__(self, workdir=None, shareddatadir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
+
+        self.shareddatadir = os.path.abspath(shareddatadir or
+                                             self.DEFAULT_SHARED_DATADIR())
+        mailpile.vfs.register_alias('/Share', self.shareddatadir)
 
         self.vfs_root = MailpileVfsRoot(self)
         mailpile.vfs.register_handler(0000, self.vfs_root)
@@ -1364,9 +1392,19 @@ class ConfigManager(ConfigDict):
                     all_okay = okay = False
         return all_okay
 
-    def load(self, *args, **kwargs):
+    def load(self, session, *args, **kwargs):
         with self._lock:
-            return self._unlocked_load(*args, **kwargs)
+            rv = self._unlocked_load(session, *args, **kwargs)
+
+        # If the app version does not match the config, run setup.
+        if self.version != APPVER:
+            from mailpile.plugins.setup_magic import Setup
+            Setup(session, 'setup').run()
+
+        # Trigger background-loads of everything
+        Rescan(session, 'rescan')._idx(wait=False)
+
+        return rv
 
     def load_master_key(self, passphrase, _raise=None):
         keydata = []
@@ -1392,79 +1430,94 @@ class ConfigManager(ConfigDict):
                 raise _raise('Failed to decrypt master key')
             return False
 
-    def _unlocked_load(self, session, filename=None, public=False):
-        self._mkworkdir(session)
-        if self.index:
-            self.index_check.acquire()
-            self.index = None
-        self.loaded_config = False
+    def _load_config_lines(self, filename, lines):
+        collector = lambda ll: lines.extend(ll)
+        if os.path.exists(filename):
+            with open(filename, 'rb') as fd:
+                decrypt_and_parse_lines(fd, collector, self)
 
-        # Set the homedir default
-        self.rules['homedir'][2] = self.workdir
-        self._rules_source['homedir'][2] = self.workdir
-        self.reset(rules=False, data=True)
-
-        filename = filename or self.conffile
-        lines = []
-        try:
-            if os.path.exists(self.conf_key) and not public:
-                self.load_master_key(self.passphrases['DEFAULT'],
-                                     _raise=IOError)
-
-            collector = lambda ll: lines.extend(ll)
-            if os.path.exists(filename):
-                with open(filename, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, collector, self)
-        except IOError:
-            if public:
-                raise
-            try:
-                # Probably unauthenticated, load the public subset instead.
-                self._unlocked_load(session,
-                                    filename=self.conf_pub,
-                                    public=True)
-            finally:
-                self.loaded_config = False
-        except (ValueError, OSError):
-            # Bad data in config or config doesn't exist: just forge onwards
-            pass
-
+    def _discover_plugins(self):
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'contrib'),
+            os.path.join(self.shareddatadir, 'contrib'),
             os.path.join(self.workdir, 'plugins')
         ])
         self.sys.plugins.rules['_any'][self.RULE_CHECKER
                                        ] = [None] + self.plugins.loadable()
 
-        # Parse once (silently), to figure out which plugins to load...
-        self.parse_config(None, '\n'.join(lines), source=filename)
+    def _configure_default_plugins(self):
+        if len(self.sys.plugins) == 0:
+            self.sys.plugins.extend(self.plugins.DEFAULT)
+            for plugin in self.plugins.WANTED:
+                if plugin in self.plugins.available():
+                    self.sys.plugins.append(plugin)
+        else:
+            for pos in range(0, len(self.sys.plugins)):
+                name = self.sys.plugins[pos]
+                if name in self.plugins.RENAMED:
+                    self.sys.plugins[pos] = self.plugins.RENAMED[name]
 
-        # Enable translations
-        mailpile.i18n.ActivateTranslation(session, self, self.prefs.language)
+    def _unlocked_load(self, session):
+        # This method will attempt to load the full configuration.
+        #
+        # The Mailpile configuration is in two parts:
+        #    - public data in "mailpile.rc"
+        #    - private data in "mailpile.cfg" (encrypted)
+        #
+        # This method may successfully load and process from the public part,
+        # but fail to load the encrypted part due to a lack of authentication.
+        # In this case IOError will be raised.
+        #
+        self._mkworkdir(session)
+        if self.index:
+            self.index_check.acquire()
+            self.index = None
 
-        with mailpile.i18n.i18n_disabled:
-            if len(self.sys.plugins) == 0:
-                self.sys.plugins.extend(self.plugins.DEFAULT)
-                for plugin in self.plugins.WANTED:
-                    if plugin in self.plugins.available():
-                        self.sys.plugins.append(plugin)
-            else:
-                for pos in range(0, len(self.sys.plugins)):
-                    name = self.sys.plugins[pos]
-                    if name in self.plugins.RENAMED:
-                        self.sys.plugins[pos] = self.plugins.RENAMED[name]
-            self.load_plugins(session)
+        # Set the homedir default
+        self.rules['homedir'][2] = self.workdir
+        self._rules_source['homedir'][2] = self.workdir
+        self.reset(rules=False, data=True)
+        self.loaded_config = False
+        pub_lines, prv_lines = [], []
+        try:
+            self._load_config_lines(self.conf_pub, pub_lines)
+            if os.path.exists(self.conf_key):
+                self.load_master_key(self.passphrases['DEFAULT'],
+                                     _raise=IOError)
+            self._load_config_lines(self.conffile, prv_lines)
+        except IOError:
+            self.loaded_config = False
+            raise
+        except (ValueError, OSError):
+            # Bad data in config or config doesn't exist: just forge onwards
+            pass
+        finally:
+            ## The following things happen, no matter how loading went...
 
-        # Now all the plugins are loaded, reset and parse again!
-        self.reset_rules_from_source()
-        self.parse_config(session, '\n'.join(lines), source=filename)
+            # Discover plugins first, as this affects what is or is not valid
+            # in the configuration file.
+            self._discover_plugins()
 
-        if public:
-            # Stop here when loading the public config...
-            raise IOError('Failed to load main config')
+            # Parse once (silently), to figure out which plugins to load...
+            self.parse_config(None, '\n'.join(pub_lines), source=self.conf_pub)
+            self.parse_config(None, '\n'.join(prv_lines), source=self.conffile)
+
+            # Enable translations!
+            mailpile.i18n.ActivateTranslation(session, self, self.prefs.language)
+
+            # Configure and load plugins as per config requests
+            with mailpile.i18n.i18n_disabled:
+                self._configure_default_plugins()
+                self.load_plugins(session)
+
+            # Now all the plugins are loaded, reset and parse again!
+            self.reset_rules_from_source()
+            self.parse_config(session, '\n'.join(pub_lines), source=self.conf_pub)
+            self.parse_config(session, '\n'.join(prv_lines), source=self.conffile)
+
+        ## The following events only happen when we've successfully loaded
+        ## both config files!
 
         # Open event log
         dec_key_func = lambda: self.master_key
@@ -1491,10 +1544,8 @@ class ConfigManager(ConfigDict):
         self.search_history = SearchHistory.Load(self,
                                                  merge=self.search_history)
 
+        # OK, we're happy
         self.loaded_config = True
-
-        # Trigger background-loads of everything
-        Rescan(session, 'rescan')._idx(wait=False)
 
     def reset_rules_from_source(self):
         with self._lock:
@@ -1583,13 +1634,17 @@ class ConfigManager(ConfigDict):
             else:
                 self.event_log.ui_unwatch(session.ui)
 
+        # Save the public config data first
+        with open(pubfile, 'wb') as fd:
+            fd.write(self.as_config_bytes(_type='public'))
+
         # Save the master key if necessary (and possible)
         master_key_saved = self._save_master_key(keyfile)
 
         # This slight over-complication, is a reaction to segfaults in
         # Python 2.7.5's fd.write() method.  Let's just feed it chunks
         # of data and hope for the best. :-/
-        config_bytes = self.as_config_bytes()
+        config_bytes = self.as_config_bytes(_xtype='public')
         config_chunks = (config_bytes[i:i + 4096]
                          for i in range(0, len(config_bytes), 4096))
 
@@ -1618,9 +1673,6 @@ class ConfigManager(ConfigDict):
             except WindowsError:
                 pass
         os.rename(newfile, self.conffile)
-
-        with open(pubfile, 'wb') as fd:
-            fd.write(self.as_config_bytes(_type='public'))
 
         if not mailpile.util.QUITTING:
             # Enable translations
@@ -1933,7 +1985,7 @@ class ConfigManager(ConfigDict):
     def open_local_mailbox(self, session):
         with self._lock:
             local_id = self.sys.get('local_mailbox_id', None)
-            if not local_id:
+            if local_id is None or local_id == '':
                 mailbox, mbx = self.create_local_mailstore(session, name='')
                 local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
                 self.sys.local_mailbox_id = local_id
@@ -2054,9 +2106,7 @@ class ConfigManager(ConfigDict):
     @classmethod
     def getLocaleDirectory(self):
         """Get the gettext translation object, no matter where our CWD is"""
-        # NOTE: MO files are loaded from the directory where the
-        #       scripts reside in
-        return os.path.join(os.path.dirname(__file__), "locale")
+        return os.path.join(self.DEFAULT_SHARED_DATADIR(), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
@@ -2064,7 +2114,7 @@ class ConfigManager(ConfigDict):
         data, optionally creating the directory if it is missing.
 
         >>> p = cfg.data_directory('html_theme', mode='r', mkdir=False)
-        >>> p == os.path.abspath('mailpile/www/default')
+        >>> p == os.path.abspath('shared-data/default-theme')
         True
         """
         # This should raise a KeyError if the ftype is unrecognized
@@ -2076,8 +2126,7 @@ class ConfigManager(ConfigDict):
                 if mkdir and not os.path.exists(cpath):
                     os.mkdir(cpath)
             else:
-                bpath = os.path.join(os.path.dirname(__file__),
-                                     '..', bpath)
+                bpath = os.path.join(self.shareddatadir, bpath)
         return os.path.abspath(bpath)
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
@@ -2085,7 +2134,7 @@ class ConfigManager(ConfigDict):
         core_path = self.data_directory(ftype, *args, **kwargs)
         path, mimetype = os.path.join(core_path, fpath), None
 
-        # If there's nothing there, check our plugins
+        # If there's still nothing there, check our plugins
         if not os.path.exists(path):
             from mailpile.plugins import PluginManager
             path, mimetype = PluginManager().get_web_asset(fpath, path)
@@ -2289,7 +2338,7 @@ class ConfigManager(ConfigDict):
                 config.async_worker.add_unique_task(
                     config.background, 'refresh_command_cache',
                     lambda: config.command_cache.refresh(
-                        extend=60, event_log=config.event_log))
+                        event_log=config.event_log))
             config.cron_worker.add_task('refresh_command_cache', 5,
                                         refresh_command_cache)
 

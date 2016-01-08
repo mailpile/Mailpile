@@ -1,0 +1,86 @@
+<div class="modal-dialog">
+<form id="modal-save-search" class="standard"
+      method="POST" action="{{ U('/filter/') }}">{{ csrf_field|safe }}
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-star"></span>
+        {{_("Save Search")}}: <%= terms %>
+      </h4>
+    </div>
+    <div class="modal-body clearfix">
+      <p>
+        {{_("Saved Searches appear as Tags in the sidebar.")}}
+        {{_("New matching messages will be tagged automatically as they arrive, but you can also add or remove messages by hand.")}}
+      </p>
+      <p class="message paragraph-important modal-basic-settings-title">
+        <span class="icon-settings"></span> {{_("Configure new Saved Search")}}</h4>
+      </p>
+      <div class="modal-basic-settings">
+        <div class="left">
+          <div class="right">
+            <a class="icon-star modal-open-choose-tag-icon" title='{{_("Change Icon")}}'></a>
+            <input type="hidden" class="choose-tag-icon" name="tag-icon" value="icon-star">
+            <a class="modal-open-choose-tag-color" title='{{_("Change Color")}}'>{{_("Color")}}</a>
+            <input type="hidden" class="choose-tag-color" name="tag-color" value="black">
+          </div>
+          <label>{{_("Save as")}} ...</label>
+          <input type="text" name="comment" id='ss-comment' value="" placeholder="{{_("Tag Name")}}" class="input-medium">
+          <input type="hidden" name="terms" id='ss-search-terms'>
+          <input type="hidden" name="create-tag" value='yes'>
+          <input type="hidden" name="add-tag" value="!PRIMARY">
+        </div>
+        <ul class="right">
+          <li><input type="checkbox" name="mark-read" value="yes">
+              <span class="checkbox">{{_("Mark as Read")}}</span></li>
+          <li><input type="checkbox" name="skip-inbox" value="yes">
+              <span class="checkbox">{{_("Remove from Inbox")}}</span></li>
+          <li><input type="checkbox" name="never-spam" value="yes">
+              <span class="checkbox">{{_("Never send to Spam")}}</span></li>
+        </ul>
+        <br clear="both">
+      </div>
+      <div class="modal-choose-tag-icon hide">
+        <p class="message paragraph-important">
+          <span class="icon-settings"></span> {{_("Choose an Icon")}}</h4>
+        </p>
+        <ul class="horizontal tag-icons"></ul>
+      </div>
+      <div class="modal-choose-tag-color hide">
+        <p class="message paragraph-important">
+          <span class="icon-settings"></span> {{_("Choose a Color")}}</h4>
+        </p>
+        <div class="text-center">
+          <ul class="horizontal tag-colors"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="right ss-save-group">
+        &nbsp;
+        <button class="button-secondary right ss-save">
+          <span class="icon-star"></span>
+          {{_("Save Search")}}
+        </button>
+      </div>
+      {% if config.filters %}
+      <div class="right ss-save-group">
+        <small><select name="replace" style="padding: 8px;">
+           <option value=''>{{_("Create new Saved Search")}}</option>
+           <option value=''></option>
+           {% for f in config.filters %}
+           <option value='{{f}}'>{{_("Replace")}}: {{config.filters[f].comment}}</option>
+           {% endfor %}
+        </select></small>
+      </div>
+      {% endif %}
+      <div class="left">
+        <button class="close button-info" type="button" data-dismiss="modal">
+          <span class="icon-close"></span>
+          {{_("Cancel")}}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+</div>

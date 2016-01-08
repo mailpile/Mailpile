@@ -1,0 +1,209 @@
+<div id="tags-settings" class="content-normal" style="position: relative; max-width: 42em;">
+<form class="standard" method="POST"
+{%- if state.command_url == "/tags/add/" %}
+      action="{{ U('/tags/add/') }}"
+{%- else %}
+      action="{{ U('/settings/set/') }}"
+{%- endif %}>
+  {{- csrf_field|safe }}
+
+  <div class="clearfix half-bottom">
+    <h1 class="contact-name half-bottom">
+      <span id="tag-editor-icon" class="{{tag.icon}}"
+            style="color: {{ theme_settings().colors[tag.label_color] }}"></span>
+      {{form_title}}
+    </h1>
+  </div>
+
+  {# Note: See jsapi/search/events.js for Javascript relating to this form;
+   #       it is largely shared with the "Save Search" modal.
+   #}
+  <script type="text/javascript">
+  </script>
+
+  <p class="message paragraph-important modal-basic-settings-title">
+    <span class="icon-settings"></span> {{_("Tag Settings")}}</h4>
+  </p>
+  <div class="modal-basic-settings">
+
+    <div class="left">
+      <div class="right">
+        <a class="{{ tag.icon }} modal-open-choose-tag-icon"
+           title='{{_("Change Icon")}}'
+           style="color: {{ theme_settings().colors[tag.label_color] }}"></a>
+        <input type="hidden" class='choose-tag-icon'
+               name="{{prefix}}icon" value="{{ tag.icon }}">
+        <a class="modal-open-choose-tag-color"
+           style="color: {{ theme_settings().colors[tag.label_color] }}"
+           title='{{_("Change Color")}}'>{{_("Color")}}</a>
+        <input type="hidden" class='choose-tag-color'
+               name="{{prefix}}label_color" value="{{tag.label_color}}">
+      </div>
+      <label>{{_("Tag")}}</label>
+      <input type="text" name="{{prefix}}name"
+             value="{{tag.name}}" placeholder="{{_("Friends & Family")}}">
+    </div>
+    <div class="right">
+      <ul>
+        <li><input type="radio" name="{{prefix}}display" value="priority" {% if tag.display == 'priority' %}checked{% endif %}>
+            <span class="checkbox">{{_("Show in top of sidebar")}}</span></li>
+        <li><input type="radio" name="{{prefix}}display" value="tag" {% if tag.display == 'tag' %}checked{% endif %}>
+            <span class="checkbox">{{_("Show in sidebar")}}</span></li>
+        <li><input type="radio" name="{{prefix}}display" {% if tag.display in ('archive', 'invisible') %}value="{{tag.display}}" checked{% else %}value="archive"{% endif %}>
+            <span class="checkbox">{{_("Hide from sidebar")}}</span></li>
+      </ul>
+      <ul>
+        <li><input type="radio" name="{{prefix}}label" value="true" {% if tag.label %}checked{% endif %}>
+            <span class="checkbox">{{_("Show in search results")}}</span></li>
+        <li><input type="radio" name="{{prefix}}label" value="false" {% if not tag.label %}checked{% endif %}>
+            <span class="checkbox">{{_("Hide from search results")}}</span></li>
+      </ul>
+
+{# ## FIXME ## %- if tag.type in ('tag', 'attribute', 'spam') %}
+      <ul>
+        <li title="
+{{- _("Enable to tag messages automatically, like spam.")}}
+{{  _("Tag or un-tag mail by hand to train the system.")}}">
+            <input type="checkbox" name="{{prefix}}autotag"
+                   value="true" {% if tag.autotag %}checked{% endif %}>
+            <span class="checkbox">{{_("Magic tagging")}}</span>
+            (<a href="">help</a>)
+        </li>
+      </ul>
+{%- endif % #}
+    </div>
+    <br clear="left">
+
+    <p class="hide">
+      <a>{{_("Technical settings...")}}</a>
+    </p>
+    <div id="form-tag-advanced" class="content-medium">
+
+{%- if tag.type in ('tag', 'attribute') %}
+  {%- if state.command_url != "/tags/add/" %}
+      <div>
+        <label>{{_("Keyword")}}</label>
+        <input type="text" name="{{prefix}}slug" value="{{tag.slug}}">
+      </div>
+  {%- endif %}
+
+  {%- if not tag.subtags %}
+      <div>
+        <label>{{_("Parent")}}</label>
+        <select name="{{prefix}}parent">
+          <option value="">-- {{_("None")}} --</option>
+    {%- for ptag in mailpile("tags", "mode=tree").result.tags %}
+      {%- if (ptag.display == "priority" or ptag.display == "tag")
+             and ptag.slug != tag.slug
+             and not ptag.parent %}
+          <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
+      {%- endif %}
+    {%- endfor %}
+        </select>
+      </div>
+  {%- endif %}
+{%- endif %}
+
+{%- if tag.subtags %}
+      <br clear="both"><h3 class="add-top">{{_("Subtags")}}</h3>
+      <ul class="items grouped">
+  {%- for sub in tag.subtags %}
+        <li class="grouped">
+          <a href="{{ sub.url }}">
+            <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span>
+          {{sub.name}}
+          </a>
+          <a href="{{ U('/tags/edit.html?only=', sub.slug) }}"
+             title='Edit: {{ sub.name }}'
+             class="auto-modal auto-modal-reload right">
+            <span class="icon-settings"></span> {{_("Settings")}}
+          </a>
+        </li>
+  {%- endfor %}
+      </ul>
+{%- endif %}
+
+    </div>
+  </div>
+  <div class="modal-choose-tag-icon hide">
+    <p class="message paragraph-important">
+      <span class="icon-settings"></span> {{_("Choose an Icon")}}</h4>
+    </p>
+    <ul class="horizontal tag-icons"></ul>
+    </ul>
+  </div>
+  <div class="modal-choose-tag-color hide">
+    <p class="message paragraph-important">
+      <span class="icon-settings"></span> {{_("Choose an Color")}}</h4>
+    </p>
+    <div class="text-center">
+      <ul class="horizontal tag-colors"></ul>
+    </div>
+  </div>
+
+{%- for src_id, source in config.sources.iteritems() %}
+  {%- for mbx_id, settings in source.mailbox.iteritems() %}
+    {%- if tag.tid and settings.primary_tag == tag.tid %}
+  <br clear="both">
+  <p class="message paragraph-important modal-mailbox-settings-title">
+    <span class="icon-mailsource"></span> {{_("Mailbox settings")}}:
+    {{ config.sys.mailbox[mbx_id] }}
+  </p>
+  <div class="modal-mailbox-settings">
+
+    <div class="right">
+      <ul>
+        <li><input type="radio"
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
+                   {% if settings.policy != 'ignore' -%}
+                   value="{{settings.policy}}" checked
+                   {% else %}value="read"{% endif %}>
+            <span class="checkbox">{{_("Add messages to search engine")}}</span></li>
+        <li><input type="radio" value="ignore"
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
+                   {% if settings.policy == "ignore" %}checked{% endif %}>
+            <span class="checkbox">{{_("Stop adding messages to search engine")}}</span></li>
+      </ul>
+    </div>
+
+  </div>
+    {%- endif %}
+  {%- endfor %}
+{%- endfor %}
+
+
+{################ FIXME - THIS IS THE FUN STUFF!  #####################
+
+{%- if tag.type == 'mailbox' %}
+  <p class="message paragraph-important tag-edit-title">
+    <span class="icon-mailsource"></span> {{_("Mailbox Settings")}}</h4>
+  </p>
+  <div class="tag-edit-mailbox hide">
+  </div>
+{%- endif %}
+{%- if tag.type == 'tag' %}
+  <p class="message paragraph-important tag-edit-title">
+    <span class="icon-star"></span> {{_("Filters and Saved Searches")}}</h4>
+  </p>
+  <div class="tag-edit-filters hide">
+  </div>
+{%- endif %}
+######################################################################}
+
+  <div>
+    <hr style="margin-bottom: 10px;">
+{%- if state.command_url == "/tags/add/" %}
+    <button class="button-primary right" type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+{%- else %}
+    <button class="button-primary right" type="submit"><span class="icon-checked"></span> {{_("Save")}}</button>
+{%- endif %}
+{%- if state.command_url == "/tags/" and tag.type in ('tag', 'attribute') %}
+    <button class="button-warning" type="button" id="button-tag-delete"
+            data-slug="{{tag.slug}}" data-dismiss="modal" aria-hidden="true">
+      <span class="icon-minus"></span> {{_("Delete Tag")}}
+    </button>
+{%- endif %}
+  </div>
+
+</form>
+</div>

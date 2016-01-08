@@ -1,0 +1,30 @@
+<div class="modal-dialog">
+ <form id="form-tag-picker">{{ csrf_field|safe }}
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
+    </div>
+    <div class="modal-body modal-body-light-gray">
+      <table class="modal-tag-picker-items">
+      <%= priority %>
+      <!--
+      <tr class="modal-tag-picker-header" data-display="tag">
+        <td colspan="2">{{_("Tags")}}</td>
+        <td class="text-center"><a class="modal-tag-picker-expand">&middot;&middot;&middot;&middot;</a></td>
+      </tr> -->
+      <%= tags %>
+      <%= archive %>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="left button-warning" title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">
+        <span class="icon-minus"></span> {{_("Remove")}}
+      </button>
+      <button class="button-primary" title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">
+        <span class="icon-plus"></span> {{_("Apply")}}
+      </button>
+    </div>
+  </div>
+ </form>
+</div>

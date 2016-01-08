@@ -9,17 +9,19 @@ import shlex
 import time
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
-from jinja2.utils import contextfunction, import_string
+from jinja2.utils import contextfunction, import_string, escape
 
 #from markdown import markdown
 
 from mailpile.commands import Action
+from mailpile.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 from mailpile.ui import HttpUserInteraction
 from mailpile.urlmap import UrlMap
 from mailpile.plugins import PluginManager
+from mailpile.vcard import AddressInfo
 
 
 class MailpileCommand(Extension):
@@ -34,7 +36,13 @@ class MailpileCommand(Extension):
         e.globals['mailpile_render'] = s._command_render
         e.globals['U'] = s._url_path_fix
         e.globals['make_rid'] = randomish_uid
+        e.globals['is_dev_version'] = s._is_dev_version
+        e.filters['random'] = s._random
         e.globals['random'] = s._random
+        e.filters['truthy'] = s._truthy
+        e.globals['truthy'] = s._truthy
+        e.filters['with_context'] = s._with_context
+        e.globals['with_context'] = s._with_context
         e.filters['url_path_fix'] = s._url_path_fix
         e.globals['use_data_view'] = s._use_data_view
         e.globals['regex_replace'] = s._regex_replace
@@ -63,6 +71,8 @@ class MailpileCommand(Extension):
         e.filters['contact_url'] = s._contact_url
         e.globals['contact_name'] = s._contact_name
         e.filters['contact_name'] = s._contact_name
+        e.globals['thread_upside_down'] = s._thread_upside_down
+        e.filters['thread_upside_down'] = s._thread_upside_down
         e.globals['fix_urls'] = s._fix_urls
         e.filters['fix_urls'] = s._fix_urls
 
@@ -77,6 +87,7 @@ class MailpileCommand(Extension):
         # These are helpers for injecting plugin elements
         e.globals['get_ui_elements'] = s._get_ui_elements
         e.globals['ui_elements_setup'] = s._ui_elements_setup
+        e.globals['add_state_query_string'] = s._add_state_query_string
         e.filters['add_state_query_string'] = s._add_state_query_string
 
         # This is a worse versin of urlencode, but without it we require
@@ -96,9 +107,16 @@ class MailpileCommand(Extension):
         e.globals['nice_text'] = s._nice_text
         e.filters['nice_text'] = s._nice_text
 
+        # Transforms \n into HTML <br />
+        e.globals['to_br'] = s._to_br
+        e.filters['to_br'] = s._to_br
+
         # Strip Re: Fwd: from subject lines
         e.globals['nice_subject'] = s._nice_subject
         e.filters['nice_subject'] = s._nice_subject
+        # And [list] headings as well
+        e.globals['bare_subject'] = s._bare_subject
+        e.filters['bare_subject'] = s._bare_subject
 
         # Make unruly names a lil bit nicer
         e.globals['nice_name'] = s._nice_name
@@ -167,8 +185,8 @@ class MailpileCommand(Extension):
         ctx = context or state.get('context_url', '')
         return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
-    def _add_state_query_string(self, url, state, elem=None):
-        self._debug('add_state_query_string(%s, %s, ...)' % (url, state))
+    @classmethod
+    def _add_state_query_string(cls, url, state, elem=None):
         if not url:
             url = state.get('command_url', '')
         if '#' in url:
@@ -191,7 +209,7 @@ class MailpileCommand(Extension):
                     for ak, av in elem.get('url_args_add', []):
                         if ak == key and av not in values:
                             values.append(av)
-                args.extend([(key, v.encode("utf-8")) for v in values])
+                args.extend([(key, unicode(v).encode("utf-8")) for v in values])
             return url + '?' + urllib.urlencode(args) + frag
         else:
             return url + frag
@@ -256,13 +274,13 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-signature-none",
             _("Not Signed"),
-            _("This message contains no signature, which means it could "
+            _("This data has no digital signature, which means it could "
               "have come from anyone, not necessarily the real sender")],
         "error": [
             "crypto-color-red",
             "icon-signature-error",
             _("Error"),
-            _("There was a weird error with this signature")],
+            _("There was a weird error with this digital signature")],
         "mixed-error": [
             "crypto-color-red",
             "icon-signature-error",
@@ -272,44 +290,44 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-invalid",
             _("Invalid"),
-            _("The signature was invalid or bad")],
+            _("The digital signature was invalid or bad")],
         "mixed-invalid": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Invalid"),
-            _("Parts of this message have a signature that is invalid"
+            _("Parts of this message have a digital signature that is invalid"
               " or bad")],
         "revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Revoked"),
-            _("Watch out, the signature was made with a key that has been "
+            _("Watch out, the digital signature was made with a key that has been "
               "revoked - this is not a good thing")],
         "mixed-revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Mixed Revoked"),
-            _("Watch out, parts of this message were signed from a key that "
-              "has been revoked")],
+            _("Watch out, parts of this message were digitally signed with a key "
+              "that has been revoked")],
         "expired": [
-            "crypto-color-red",
+            "crypto-color-orange",
             "icon-signature-expired",
             _("Expired"),
-            _("The signature was made with an expired key")],
+            _("The digital signature was made with an expired key")],
         "mixed-expired": [
-            "crypto-color-red",
+            "crypto-color-orange",
             "icon-signature-expired",
             _("Mixed Expired"),
-            _("Parts of this message have a signature made with an "
+            _("Parts of this message have a digital signature made with an "
               "expired key")],
         "unknown": [
-            "crypto-color-orange",
+            "crypto-color-gray",
             "icon-signature-unknown",
             _("Unknown"),
-            _("The signature was made with an unknown key, so we can not "
+            _("The digital signature was made with an unknown key, so we can not "
               "verify it")],
         "mixed-unknown": [
-            "crypto-color-orange",
+            "crypto-color-gray",
             "icon-signature-unknown",
             _("Mixed Unknown"),
             _("Parts of this message have a signature made with an unknown "
@@ -377,13 +395,13 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-lock-open",
             _("Not Encrypted"),
-            _("This message was not encrypted. It may have been intercepted "
+            _("This content was not encrypted. It could have been intercepted "
               "and read by an unauthorized party")],
         "decrypted": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Encrypted"),
-            _("This message was encrypted, great job being secure")],
+            _("This content was encrypted, great job being secure")],
         "mixed-decrypted": [
             "crypto-color-blue",
             "icon-lock-closed",
@@ -394,7 +412,7 @@ class MailpileCommand(Extension):
             "crypto-color-green",
             "icon-lock-closed",
             _("Locked Key"),
-            _("You have the encryption key to decrypt this message, "
+            _("You have the encryption key to decrypt this, "
               "but the key itself is locked.")],
         "mixed-lockedkey": [
             "crypto-color-green",
@@ -406,7 +424,7 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You don't have the encryption key to decrypt this message, "
+            _("You don't have the encryption key to decrypt this, "
               "perhaps it was encrypted to an old key you don't have anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
@@ -419,7 +437,7 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-error",
             _("Error"),
-            _("We failed to decrypt message and are unsure why.")],
+            _("We failed to decrypt and are unsure why.")],
         "mixed-error": [
             "crypto-color-red",
             "icon-lock-error",
@@ -515,6 +533,10 @@ class MailpileCommand(Extension):
                 return vcard.fn
         return name
 
+    @classmethod
+    def _thread_upside_down(self, thread):
+        return [(i, flip_unicode_boxes(a), c) for i, a, c in reversed(thread)]
+
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
                              '(href=["\'])'           # 2:    href="
                              '(https?:[^>]+)'         # 3:  URL!
@@ -571,13 +593,26 @@ class MailpileCommand(Extension):
             return ''.join([m.group(1), 'href="mailto:', m.group(3),
                             '" class="compose-to-email">',
                             m.group(5), m.group(6)])
-        
+
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
 
     def _random(self, sequence):
         return sequence[random.randint(0, len(sequence)-1)]
+
+    @classmethod
+    def _truthy(cls, txt, default=False):
+        return truthy(txt, default=default)
+
+    @classmethod
+    def _is_dev_version(cls):
+        return ('dev' in APPVER or 'github' in APPVER or 'test' in APPVER)
+
+    def _with_context(self, sequence, context=1):
+        return [[(sequence[j] if (0 <= j < len(sequence)) else None)
+                 for j in range(i - context, i + context + 1)]
+                for i in range(0, len(sequence))]
 
     def _url_path_fix(self, *urlparts):
         url = ''.join([unicode(p) for p in urlparts])
@@ -646,10 +681,29 @@ class MailpileCommand(Extension):
                     previous = 'blank'
         return trimmed.strip()
 
+    _TEXT_LINEBREAK_RE = re.compile(r'(?:\r\n|\r|\n)')
+
+    @classmethod
+    def _to_br(self, text):
+        """ Replaces \n by <br />
+
+        Inspired from http://jinja.pocoo.org/docs/dev/api/#custom-filters
+        """
+        result = '<br />'.join(p for p in self._TEXT_LINEBREAK_RE.split(escape(text)))
+        return Markup(result)
+
     @classmethod
     def _nice_subject(self, metadata):
         if metadata['subject']:
             output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
+        else:
+            output = '(' + _("No Subject") + ')'
+        return output
+
+    @classmethod
+    def _bare_subject(self, metadata):
+        if metadata['subject']:
+            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+|\[\S+\]\s+)+', '', metadata['subject'])
         else:
             output = '(' + _("No Subject") + ')'
         return output
@@ -754,7 +808,7 @@ class MailpileCommand(Extension):
         elif mime in [
             "application/pgp-signature"
             ]:
-            attachment = "signature" 
+            attachment = "signature"
         elif mime in [
             "application/pgp-keys"
             ]:

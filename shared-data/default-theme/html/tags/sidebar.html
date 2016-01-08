@@ -1,0 +1,95 @@
+{% extends "layouts/" + render_mode + "-wide.html" %}
+{% block title %}{{_("Tags")}}{% endblock %}
+{% block content %}
+
+{% macro render_sidebar_tag(tag) -%}
+{#  Show proper classes #}
+{%  if tag.type in ("drafts", "sent") %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+    class="sidebar-tag sidebar-tags-default">
+{%  elif tag.type == "outbox" %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+    class="sidebar-tag sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
+{%  else %}
+<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+    class="sidebar-tag sidebar-tags-draggable">
+{%  endif %}
+
+{%- if tag.slug == "outbox" or tag.slug == "drafts" %}
+{%   set tag_new_count = tag.stats.all %}
+{%  elif tag.stats.get("sum_new") %}
+{%   set tag_new_count = tag.stats.sum_new %}
+{%  else %}
+{%   set tag_new_count = tag.stats.new %}
+{%  endif %}
+  <a href="{{tag.url}}"
+     data-tid="{{tag.tid}}" data-color="{{ tag.label_color }}"
+     data-new="{{ tag_new_count }}" data-icon="{{ tag.icon }}"
+     class="sidebar-tag sidebar-tag-{{tag.slug}} color-{{tag.label_color}}
+            {% if tag_new_count %}has-unread{% endif %}
+            {{ navigation_on(result.search_tag_ids, tag.tid) }}"
+     title="{{tag.name}} {{friendly_number(tag_new_count)}}">
+    <span class="icon {{tag.icon}}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
+    <span class="name">{{tag.name}}</span>
+    <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
+  </a>
+
+{%- set subtags_collapsed = (tag.tid in config.web.subtags_collapsed) %}
+{%- if tag.get("subtags") %}
+    <a class="sidebar-tag-expand" data-tid="{{tag.tid}}"
+       data-collapsed="{{ subtags_collapsed }}">
+  {% if subtags_collapsed %}
+      <span class="icon-arrow-right"></span>
+  {% else %}
+      <span class="icon-arrow-down"></span>
+  {% endif %}
+   </a>
+{% endif %}
+
+</li>
+{%  if tag.subtags %}
+{%   for subtag in tag.subtags %}
+<li id="sidebar-tag-{{subtag.tid}}"
+    data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
+    class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}
+           {%- if subtags_collapsed %} hide{% endif %}">
+  <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
+    <span class="icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
+    <span class="name">{{subtag.name}}</span>
+    {% if subtag.stats.new %}
+    <span class="notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
+    {% endif %}
+  </a>
+</li>
+{%   endfor %}
+{%  endif %}
+{% endmacro %}
+
+<nav>
+  <ul id="sidebar-priority" class="sidebar-sortable">
+    {%- for tag in result.tags -%}
+      {%- if tag.display == 'priority' -%}
+        {{ render_sidebar_tag(tag) }}
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+  <hr>
+  <ul id="sidebar-tag" class="sidebar-sortable">
+    {%- for tag in result.tags -%}
+      {%- if tag.display == 'tag' -%}
+        {{ render_sidebar_tag(tag) }}
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+</nav>
+
+<script id="template-sidebar-item" type="text/template">
+  <li id="sidebar-tag-<%= tid %>" data-tid="<%= tid %>" data-display_order="<%= display_order %>" class="sidebar-tags-draggable">
+    <a href="{{ U('/in/<%= slug %>/') }}" class="sidebar-tag color-<%= label_color %>" title="<%= name %>" data-tid="<%= tid %>">
+      <span class="icon <%= icon %>" style="color: <%= label_color %>;"></span>
+      <span class="name"><%= name %></span>
+      <span class="notification"></span>
+    </a>
+  </li>
+</script>
+{% endblock %}

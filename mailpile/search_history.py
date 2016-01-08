@@ -106,10 +106,14 @@ class SearchHistory(object):
                 if 'results' not in search:
                     continue
                 if 'c' not in search:
-                    search['c'] = self._compress(search['results'],
-                                                 search['order'])
-                del search['results']
-                del search['order']
+                    try:
+                        search['c'] = self._compress(search['results'],
+                                                     search['order'])
+                    except TypeError:
+                        pass
+                if 'c' in search:
+                    del search['results']
+                    del search['order']
                 # Note: do not set self.changed, as the actual data being
                 # cached is still the same - we just changed the format.
 

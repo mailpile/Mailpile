@@ -4,3 +4,5 @@ spambayes>=1.1b1
 markupsafe
 pyDNS
 pgpdump
+pillow
+pbr

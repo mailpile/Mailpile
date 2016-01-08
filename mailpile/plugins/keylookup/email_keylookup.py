@@ -25,6 +25,16 @@ def _PRUNE_GLOBAL_KEY_CACHE():
         del GLOBAL_KEY_CACHE[k]
 
 
+PGP_KEY_SUFFIXES = ('pub', 'asc', 'key', 'pgp')
+
+def _might_be_pgp_key(filename, mimetype):
+    filename = (filename or '').lower()
+    return ((mimetype == "application/pgp-keys") or
+            (filename.lower().split('.')[-1] in PGP_KEY_SUFFIXES and
+             'encrypted' not in filename and
+             'signature' not in filename))
+
+
 def _get_creation_time(m):
     """Compatibility shim, for differing versions of pgpdump"""
     try:
@@ -43,11 +53,12 @@ def _get_keydata(data):
             ak = pgpdump.AsciiData(data)
         else:
             ak = pgpdump.BinaryData(data)
+        packets = ak.packets()
     except (TypeError, pgpdump.utils.PgpdumpException):
         return []
 
     now = time.time()
-    for m in ak.packets():
+    for m in packets:
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *
@@ -63,7 +74,9 @@ def _get_keydata(data):
                     "keysize": size,
                     "uids": [],
                 })
-            if isinstance(m, pgpdump.packet.UserIDPacket):
+            if isinstance(m, pgpdump.packet.UserIDPacket) and results:
+                # FIXME: This used to happen with results=[], does that imply
+                #        UIDs sometimes come before the PublicKeyPacket?
                 results[-1]["uids"].append({"name": m.user_name,
                                             "email": m.user_email})
         except (TypeError, AttributeError, KeyError, IndexError, NameError):
@@ -93,6 +106,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
     def _lookup(self, address, strict_email_match=False):
         results = {}
+        address = address.lower()
         terms = ['from:%s' % address, 'has:pgpkey', '+pgpkey:%s' % address]
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
@@ -100,7 +114,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for key_data in self._get_keys(messageid):
                 if strict_email_match:
                     match = [u for u in key_data.get('uids', [])
-                             if u['email'].lower() == address]
+                             if (u['email'] or '').lower() == address]
                     if not match:
                         continue
                 results[key_data["fingerprint"]] = copy.copy(key_data)
@@ -122,7 +136,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             attachments = email.get_message_tree(want=["attachments"]
                                                  )["attachments"]
             for part in attachments:
-                if part["mimetype"] == "application/pgp-keys":
+                if _might_be_pgp_key(part["filename"], part["mimetype"]):
                     key = part["part"].get_payload(None, True)
                     for keydata in _get_keydata(key):
                         keys.append(keydata)
@@ -133,17 +147,23 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         return keys
 
 
-def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader):
+def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader,
+                                 body_info=None, **kwargs):
     kws = []
-    if mimetype == "application/pgp-keys":
-        kws += ['pgpkey:has']
-        for keydata in _get_keydata(part.get_payload(None, True)):
+    if _might_be_pgp_key(filename, mimetype):
+        data = _get_keydata(part.get_payload(None, True))
+        for keydata in data:
             for uid in keydata.get('uids', []):
                 if uid.get('email'):
-                    kws.append('%s:pgpkey' % uid['email'])
+                    kws.append('%s:pgpkey' % uid['email'].lower())
+        if data:
+            body_info['pgp_key'] = filename
+            kws += ['pgpkey:has']
+
     # FIXME: If this part is a signature, record which signatures we've
     #        seen from which keys, for historic profiling purposes. Keys
     #        used more often are less likely to be forgeries.
+
     return kws
 
 

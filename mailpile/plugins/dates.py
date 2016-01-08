@@ -11,7 +11,7 @@ _plugins = PluginManager(builtin=__name__)
 
 ##[ Keywords ]################################################################
 
-def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
+def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     mdate = datetime.date.fromtimestamp(msg_ts)
     keywords = [
         '%s:year' % mdate.year,

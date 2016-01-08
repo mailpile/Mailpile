@@ -516,6 +516,7 @@ class Email(object):
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
     MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
                          'Encryption', 'Attach-PGP-Pubkey')
+    ADDRESS_HEADERS = ('From', 'To', 'Cc', 'Bcc')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -559,10 +560,14 @@ class Email(object):
         keys = hdrs.keys()
         keys.sort(key=lambda k: (self.HEADER_ORDER.get(k.lower(), 99), k))
         lowman = [m.lower() for m in self.MANDATORY_HEADERS]
+        lowadr = [m.lower() for m in self.ADDRESS_HEADERS]
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
-            if hdr.lower() in lowman:
-                strings[hdr.lower()] = unicode(data)
+            lhdr = hdr.lower()
+            if lhdr in lowadr and lhdr in lowman:
+                strings[lhdr] = AddressHeaderParser(data).normalized()
+            elif lhdr in lowman:
+                strings[lhdr] = unicode(data)
             else:
                 header_lines.append(unicode('%s: %s' % (hdr, data)))
 
@@ -905,7 +910,7 @@ class Email(object):
         msg = self.get_msg()
         count = 0
         for part in (msg.walk() if msg else []):
-            mimetype = part.get_content_type() or 'text/plain'
+            mimetype = (part.get_content_type() or 'text/plain').lower()
             if mimetype.startswith('multipart/'):
                 continue
 
@@ -1099,6 +1104,7 @@ class Email(object):
             tree['conversation'] = {}
             conv_id = self.get_msg_info(self.index.MSG_THREAD_MID)
             if conv_id:
+                conv_id = conv_id.split('/')[0]
                 conv = Email(self.index, int(conv_id, 36))
                 tree['conversation'] = convs = [conv.get_msg_summary()]
                 for rid in conv.get_msg_info(self.index.MSG_REPLIES
@@ -1142,7 +1148,7 @@ class Email(object):
                 'encryption': part.encryption_info,
             }
 
-            mimetype = part.get_content_type() or 'text/plain'
+            mimetype = (part.get_content_type() or 'text/plain').lower()
             if (mimetype.startswith('multipart/')
                     or mimetype == "application/pgp-encrypted"):
                 continue
@@ -1154,7 +1160,8 @@ class Email(object):
                 pass
 
             count += 1
-            if (part.get('content-disposition', 'inline')[:6] == 'inline'
+            disposition = part.get('content-disposition', 'inline').lower()
+            if (disposition[:6] == 'inline'
                     and mimetype.startswith('text/')):
                 payload, charset = self.decode_payload(part)
                 start = payload[:100].strip()
@@ -1440,6 +1447,7 @@ class Email(object):
         tree['crypto']['encryption'].mix_bubbles()
         if crypto_state_feedback:
             self._update_crypto_state()
+
         return tree
 
     def _decode_gpg(self, message, decrypted):
@@ -1473,6 +1481,10 @@ class AddressHeaderParser(list):
     This parser is NOT (yet) fully RFC2822 compliant - in particular it
     will get confused by nested comments (see FIXME in tests below).
 
+    The normalization will take pains to ensure that < and , are never
+    present inside a name/comment (even if legal), to make life easier
+    for lame parsers down the line.
+
     Examples:
 
     >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
@@ -1481,7 +1493,8 @@ class AddressHeaderParser(list):
     u'Bjarni'
     >>> ai.address
     u'bre@klaki.net'
-    >>> ahp.normalized_addresses() == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES
+    >>> ahpn = ahp.normalized_addresses()
+    >>> (ahpn == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES) or ahpn
     True
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
@@ -1503,30 +1516,38 @@ class AddressHeaderParser(list):
         bre@klaki.net Bjarni ,
         bre@klaki.net bre@klaki.net,
         bre@klaki.net (bre@notmail.com),
+        "<bre@notmail.com>" <bre@klaki.net>,
+        =?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>,
         bre@klaki.net ((nested) bre@notmail.com comment),
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
         "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
-        Bjarni is bre @klaki.net,
+        Bjarni =?iso-8859-1?Q??=is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
+        "Einarsson, Bjarni" <bre@klaki.net>,
+        "Bjarni @ work" <bre@pagekite.net>,
     """
     TEST_EXPECT_NORMALIZED_ADDRESSES = [
         '<bre@klaki.net>',
         '"Bjarni" <bre@klaki.net>',
         '"bre@klaki.net" <bre@klaki.net>',
         '"bre@notmail.com" <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
         '"(nested bre@notmail.com comment)" <bre@klaki.net>',
         '"(FIXME: nested parser breaker) bre@klaki.net" <bre@wrongmail.com>',
         '"Bjarni" <bre@klaki.net>',
         '"This is a key test" <bre@klaki.net>',
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
-        '"Bjarni Runar Einarsson" <bre@klaki.net>']
+        '"Bjarni Runar Einarsson" <bre@klaki.net>',
+        '=?utf-8?Q?Einarsson=2C_Bjarni?= <bre@klaki.net>',
+        '"Bjarni @ work" <bre@pagekite.net>']
 
     # Escaping and quoting
-    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]+)\\?='
+    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]*)\\?='
     TXT_RE_QUOTE_NG = TXT_RE_QUOTE.replace('(', '(?:')
     RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
     RE_QUOTED = re.compile(TXT_RE_QUOTE)
@@ -1649,6 +1670,8 @@ class AddressHeaderParser(list):
         if re.search(self.RE_SHOULD_QUOTE, strng):
             enc = quopri.encodestring(strng.encode('utf-8'), False,
                                       header=True)
+            enc = enc.replace('<', '=3C').replace('>', '=3E')
+            enc = enc.replace(',', '=2C')
             return '=?utf-8?Q?%s?=' % enc
         else:
             return '"%s"' % self.escape(strng)
@@ -1709,7 +1732,8 @@ class AddressHeaderParser(list):
             for j in range(0, len(g)):
                 if g[j][:1] == '(' and g[j][-1:] == ')':
                     g[j] = g[j][1:-1]
-            rest = ' '.join([g[j] for j in range(0, len(g)) if j != i
+            rest = ' '.join([g[j] for j in range(0, len(g))
+                             if (j != i) and g[j]
                              ]).replace(' ,', ',').replace(' ;', ';')
             email, keys = g[i], None
             if '#' in email[email.index('@'):]:
@@ -1732,7 +1756,11 @@ class AddressHeaderParser(list):
                     g[i:i+2] = [g[i]+g[i+1]]
 
         # 1st, look for <email@domain.com>
-        for i in range(0, len(g)):
+        #
+        # We search from the end, to make the algorithm stable in the case
+        # that the name part also starts with a < (is that allowed?).
+        #
+        for i in reversed(range(0, len(g))):
             if g[i][:1] == '<' and g[i][-1:] == '>':
                 maybemail = munger(g[i][1:-1])
                 if re.match(self.RE_MAYBE_EMAIL, maybemail):

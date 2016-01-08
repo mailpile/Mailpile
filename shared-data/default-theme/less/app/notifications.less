@@ -1,0 +1,84 @@
+/* Notification Bubbles */
+
+  #notifications {
+    position: fixed;
+    bottom: 0px;
+    right: 15px;
+    width: 250px;
+    display: inline-block;
+    z-index: 1000;
+    box-sizing: content-box;
+    max-height: 30%;
+    overflow: auto;
+  }
+
+  #notification-bubbles, #notifications-header {
+    background: @grayDark;
+    color: @gray;
+    font-weight: normal;
+    font-size: 14px;
+  }
+
+  #notifications-header {
+    margin: 0;
+    border-top-left-radius: (@base-border-radius);
+    border-top-right-radius: (@base-border-radius);
+    border-bottom: 0;
+    padding: (@base-padding / 4) @base-padding;
+    padding-bottom: 2px;
+    box-sizing: padding-box;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  div.notification-bubble {
+    display: table;
+    margin-top: 0;
+    padding: (@base-padding / 2) @base-padding;
+    border-top: 1px solid @black;
+    box-sizing: padding-box;
+  }
+
+  div.notification-bubble span.icon {
+    display: table-cell;
+    vertical-align: text-top;
+    color: @white;
+    margin-right: 5px;
+    font-size: 14px;
+    line-height: 14px;
+  }
+
+  div.notification-bubble.error   .icon { color: @red; }
+  div.notification-bubble.warning .icon { color: @orange; }
+  div.notification-bubble.success .icon { color: @green; }
+
+  #notifications-header span.text,
+  div.notification-bubble span.text {
+    width: 100%;
+    display: table-cell;
+    vertical-align: text-top;
+    padding-left: 10px;
+    padding-bottom: 3px;
+    line-height: 18px;
+    color: @white;
+  }
+  #notifications-header span.text { padding-bottom: 0; margin: 0; }
+
+  div.notification-bubble span.message {
+    font-weight: bold;
+  }
+
+  div.notification-bubble span.action {
+    font-weight: normal;
+    font-style: italic;
+    color: @gray;
+  }
+
+  #notifications a         { color: @gray; }
+  #notifications a:visited { color: @gray; }
+  #notifications a:hover   { color: @grayLight; }
+
+  #notifications a.notifications-close-all,
+  #notifications a.notification-close {
+    display: table-cell; vertical-align: text-top;
+  }

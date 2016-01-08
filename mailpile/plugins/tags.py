@@ -134,10 +134,16 @@ def GetTags(cfg, tn=None, default=None, **kwargs):
     if kwargs:
         tv = cfg.tags.values()
         for kw in kwargs:
-            want = unicode(kwargs[kw]).lower()
-            results.append([t._key for t in tv
-                            if (want == '*' or
-                                unicode(t[kw]).lower() == want)])
+            want = kwargs[kw]
+            if not isinstance(want, (list, tuple)):
+                want = [want]
+            want = [unicode(w).lower() for w in want]
+            if kw == 'tid':
+                results.append([str(k) for k in want if str(k) in cfg.tags])
+            else:
+                results.append([t._key for t in tv
+                                if ('*' in want or
+                                    unicode(t[kw]).lower() in want)])
 
     if (tn or kwargs) and not results:
         return default
@@ -278,9 +284,8 @@ class Tag(TagCommand):
         adding = set(self.data.get('add', []))
         ops = (['-%s' % t for t in (deling-adding) if t] +
                ['+%s' % t for t in (adding-deling) if t])
-        conversations = {'yes': True, 'no': False, 'auto': None
-                         }[self.data.get('conversations',
-                                         ['auto'])[0].lower()]
+        conversations = truthy(self.data.get('conversations', ['auto'])[0],
+                               special={'auto': None})
         if 'mid' in self.data:
             words = ['=%s' % m for m in self.data['mid']]
         else:
@@ -335,7 +340,8 @@ class Tag(TagCommand):
                                                       for i in added])))
                 # Record behavior
                 if len(msg_ids) < 15:
-                    for t in self.session.config.get_tags(type='tagged'):
+                    for t in self.session.config.get_tags(type='tagged',
+                                                          default=[]):
                         idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
@@ -546,8 +552,11 @@ class ListTags(TagCommand):
             else:
                 args.append(arg)
         for kw in self.data:
-            if kw in self.session.config.tags.rules:
+            if kw in ('tid', 'mode') or kw in self.session.config.tags.rules:
                 search[kw] = self.data[kw]
+            elif kw not in ('only', 'not', '_method', '_recursion', 'context'):
+                from mailpile.urlmap import BadDataError
+                raise BadDataError('Bad variable (%s)' % (kw))
 
         wanted = [t.lower() for t in args if not t.startswith('!')]
         unwanted = [t[1:].lower() for t in args if t.startswith('!')]
@@ -555,17 +564,18 @@ class ListTags(TagCommand):
         unwanted.extend([t.lower() for t in self.data.get('not', [])])
 
         unread_messages = set()
-        for tag in self.session.config.get_tags(type='unread'):
+        for tag in self.session.config.get_tags(type='unread', default=[]):
             unread_messages |= idx.TAGS.get(tag._key, set())
 
         excluded_messages = set()
-        for tag in self.session.config.get_tags(flag_hides=True):
+        for tag in self.session.config.get_tags(flag_hides=True, default=[]):
             excluded_messages |= idx.TAGS.get(tag._key, set())
 
         mode = search.get('mode', 'default')
         if 'mode' in search:
             del search['mode']
 
+        search['default'] = []
         for tag in self.session.config.get_tags(**search):
             if wanted and tag.slug.lower() not in wanted:
                 continue
@@ -705,8 +715,7 @@ class Filter(FilterCommand):
     COMMAND_SECURITY = security.CC_CHANGE_FILTERS
 
     def _truthy(self, var):
-        return (self.data.get(var, ['n'])[0][:1].lower()
-                in ('y', 't', 'o', '1'))
+        return truthy(self.data.get(var, ['no'])[0])
 
     def command(self, save=True):
         session, config = self.session, self.session.config

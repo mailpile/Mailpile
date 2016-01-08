@@ -235,7 +235,10 @@ class BaseMailSource(threading.Thread):
 
         all_completed = True
         ostate = self._state
-        for mbx_cfg in self._sorted_mailboxes():
+        plan = self._sorted_mailboxes()
+        self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
+        event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
+        for mbx_cfg in plan:
             if self._check_interrupt(clear=False):
                 all_completed = False
                 break
@@ -246,14 +249,19 @@ class BaseMailSource(threading.Thread):
                     policy = self._policy(mbx_cfg)
                     if (path in ('/dev/null', '', None)
                             or policy in ('ignore', 'unknown')):
+                        event_plan[mbx_cfg._key][1] = _('Skipped')
                         continue
 
                 # Generally speaking, we only rescan if a mailbox looks like
-                # it has changed. However, 1/50th of the time we take a look
+                # it has changed. However, every once in a while time we check
                 # anyway just in case looks are deceiving.
                 state = {}
-                if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
-                                  random.randint(0, 50) == 10):
+                if batch < 1:
+                    event_plan[mbx_cfg._key][1] = _('Postponed')
+
+                elif (self._has_mailbox_changed(mbx_cfg, state) or
+                        random.randint(0, 25 + len(plan)*5) == 1):
+                    event_plan[mbx_cfg._key][1] = _('Working ...')
 
                     this_batch = max(5, int(0.7 * batch))
                     self._state = 'Waiting... (rescan)'
@@ -286,17 +294,29 @@ class BaseMailSource(threading.Thread):
 
                         # OK, everything looks complete, mark it!
                         if complete:
+                            event_plan[mbx_cfg._key][1] = _('Completed')
                             self._mark_mailbox_rescanned(mbx_cfg, state)
                         else:
+                            event_plan[mbx_cfg._key][1] = _('Indexed %d'
+                                                            ) % count
                             all_completed = False
+                            if count == 0:
+                                time.sleep(60)
                     else:
+                        event_plan[mbx_cfg._key][1] = _('Failed')
                         self._last_rescan_failed = True
                         all_completed = False
                         errors += 1
+
+                else:
+                    event_plan[mbx_cfg._key][1] = _('Unchanged')
+
             except (NoSuchMailboxError, IOError, OSError):
+                event_plan[mbx_cfg._key][1] = _('Error')
                 self._last_rescan_failed = True
                 errors += 1
             except:
+                event_plan[mbx_cfg._key][1] = _('Internal error')
                 self._last_rescan_failed = True
                 self._log_status(_('Internal error'))
                 raise
@@ -375,11 +395,13 @@ class BaseMailSource(threading.Thread):
                 if not os.path.exists(fn):
                     continue
 
+                is_mailbox = False
                 if (raw_fn not in existing and
                         fn not in existing and
                         fn not in adding):
                     if self.is_mailbox(fn):
                         adding.append(fn)
+                        is_mailbox = True
                     if len(adding) > max_mailboxes:
                         break
 
@@ -388,16 +410,23 @@ class BaseMailSource(threading.Thread):
                         for f in [f for f in os.listdir(fn)
                                   if f not in ('.', '..')]:
                             nfn = os.path.join(fn, f)
-                            if (len(paths) <= self.MAX_PATHS and
+                            if is_mailbox and f in ('cur', 'new', 'tmp'):
+                                pass  # Skip Maildir special directories
+                            elif (len(paths) <= self.MAX_PATHS and
                                     os.path.isdir(nfn)):
                                 paths.append(nfn)
                             elif self.is_mailbox(nfn):
                                 paths.append(nfn)
                     except OSError:
                         pass
+
+                    # This may have been a bit of work, take a break.
+                    play_nice_with_threads()
+
                 if len(adding) > max_mailboxes:
                     break
 
+            play_nice_with_threads()
             new = {}
             for path in adding:
                 new[config.sys.mailbox.append(path)] = path
@@ -571,6 +600,8 @@ class BaseMailSource(threading.Thread):
         """This converts a path to a tag name."""
         parts = self._mailbox_path_split(path)
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
+        if not parts:
+            return _('Unnamed')
         tagname = self._strip_file_extension(parts.pop(-1))
         while tagname[:1] == '.':
             tagname = tagname[1:]
@@ -643,6 +674,9 @@ class BaseMailSource(threading.Thread):
         return ProcessNew(self.session, msg, msg_metadata_kws, msg_ts,
                           keywords, snippet)
 
+    def _msg_key_order(self, key):
+        return key
+
     def _copy_new_messages(self, mbx_key, mbx_cfg, src,
                            stop_after=-1, scan_args=None):
         session, config = self.session, self.session.config
@@ -673,7 +707,8 @@ class BaseMailSource(threading.Thread):
                 del loc.source_map[key]
 
             # Figure out what actually needs to be downloaded, log it
-            keys = sorted(src_keys - set(loc.source_map.keys()))
+            keys = list(src_keys - set(loc.source_map.keys()))
+            keys.sort(key=self._msg_key_order)
             progress.update({
                 'total': len(src_keys),
                 'total_local': len(loc_keys),
@@ -706,6 +741,7 @@ class BaseMailSource(threading.Thread):
                 progress['copied_messages'] += 1
                 progress['copied_bytes'] += len(data)
                 progress['uncopied'] -= 1
+                count += 1
 
                 # This forks off a scan job to index the message
                 config.index.scan_one_message(

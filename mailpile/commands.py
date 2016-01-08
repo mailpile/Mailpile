@@ -155,6 +155,9 @@ class Command(object):
                 'event_id': self.command_obj.event.event_id,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
+            csrf_token = self.session.ui.html_variables.get('csrf_token')
+            if csrf_token:
+                rv['state']['csrf_token'] = csrf_token
             if self.error_info:
                 rv['error'] = self.error_info
             for ui_key in [k for k in self.command_obj.data.keys()
@@ -212,6 +215,7 @@ class Command(object):
             data = self.as_dict()
             data['title'] = self.message
             data['render_mode'] = mode or 'full'
+            data['render_template'] = template or 'index'
 
             rendering = self.session.ui.render_web(self.session.config,
                                                    [tpath], data)
@@ -621,6 +625,14 @@ class Command(object):
         else:
             return self._run_sync(True, *args, **kwargs)
 
+    def _maybe_trigger_cache_refresh(self):
+        if self.data.get('_method') == 'POST':
+            def refresher():
+                self.session.config.command_cache.refresh(
+                    event_log=self.session.config.event_log)
+            self.session.config.async_worker.add_unique_task(
+                self.session, 'post-refresh', refresher)
+
     def run(self, *args, **kwargs):
         if self.COMMAND_SECURITY is not None:
             forbidden = security.forbid_command(self)
@@ -632,11 +644,15 @@ class Command(object):
                 try:
                     mailpile.util.LAST_USER_ACTIVITY = time.time()
                     mailpile.util.LIVE_USER_ACTIVITIES += 1
-                    return self._run(*args, **kwargs)
+                    rv = self._run(*args, **kwargs)
+                    self._maybe_trigger_cache_refresh()
+                    return rv
                 finally:
                     mailpile.util.LIVE_USER_ACTIVITIES -= 1
             else:
-                return self._run(*args, **kwargs)
+                rv = self._run(*args, **kwargs)
+                self._maybe_trigger_cache_refresh()
+                return rv
 
     def refresh(self):
         self._create_event()
@@ -709,6 +725,7 @@ class SearchResults(dict):
         'drafts': 'draft',
         'blank': 'draft',
         'sent': 'from_me',
+        'unread': 'unread',
         'outbox': 'from_me',
         'replied': 'replied',
         'fwded': 'forwarded'
@@ -724,6 +741,9 @@ class SearchResults(dict):
         f_info = self._address(e=fe, n=fn)
         f_info['aid'] = (self._msg_addresses(msg_info, no_to=True, no_cc=True)
                          or [''])[0]
+        thread_mid = parent_mid = msg_info[MailIndex.MSG_THREAD_MID]
+        if '/' in thread_mid:
+            thread_mid, parent_mid = thread_mid.split('/')
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
@@ -733,7 +753,8 @@ class SearchResults(dict):
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
             'tag_tids': sorted(self._msg_tags(msg_info)),
-            'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
+            'thread_mid': thread_mid,
+            'parent_mid': parent_mid,
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': MailIndex.get_body(msg_info),
             'flags': {
@@ -795,10 +816,8 @@ class SearchResults(dict):
         cids = set()
 
         for ai in addresses:
-            try:
-                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
-            except KeyError:
-                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+            eid = self.idx.EMAIL_IDS.get(ai.address.lower())
+            cids.add(b36(self.idx._add_email(ai.address, name=ai.fn, eid=eid)))
 
         if msg_info:
             if not no_to:
@@ -810,10 +829,8 @@ class SearchResults(dict):
             if not no_from:
                 fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
                 if fe:
-                    try:
-                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                    except KeyError:
-                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+                    eid = self.idx.EMAIL_IDS.get(fe.lower())
+                    cids.add(b36(self.idx._add_email(fe, name=fn, eid=eid)))
 
         return sorted(list(cids))
 
@@ -833,17 +850,85 @@ class SearchResults(dict):
     def _tag(self, tid, attributes={}):
         return dict_merge(self.session.config.get_tag_info(tid), attributes)
 
-    def _thread(self, thread_mid):
-        msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
-        thread = [i for i in msg_info[MailIndex.MSG_REPLIES].split(',') if i]
+    _BAR = u'\u2502'
+    _FORK = u'\u251c'
+    _FIRST = u'\u256d'
+    _LAST = u'\u2570'
+    _BLANK = u' '
+    _DASH = u'\u2500'
+    _TEE = u'\u252c'
 
-        # FIXME: This is a hack, the indexer should just keep things
-        #        in the right order on rescan. Fixing threading is a bigger
-        #        problem though, so we do this for now.
-        def thread_sort_key(idx):
-            info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
-            return int(info[self.idx.MSG_DATE], 36)
-        thread.sort(key=thread_sort_key)
+    def _thread(self, thread_mid):
+        thr_info = self.idx.get_conversation(msg_idx=int(thread_mid, 36))
+        thr_info.sort(key=lambda i: int(i[self.idx.MSG_DATE], 36))
+
+        # Map messages to parents
+        par_map = {}
+        for info in thr_info:
+            parent = (info[self.idx.MSG_THREAD_MID].split('/') + [None])[1]
+            par_map[info[self.idx.MSG_MID]] = (parent, info)
+
+        # Reverse the mapping
+        thr_map = {}
+        first_mid = thr_info[0][self.idx.MSG_MID]
+        for msg_mid, (par_mid, m_info) in par_map.iteritems():
+            if par_mid is None:
+                # If we have no parent, pretend the first message in the
+                # thread is the parent.
+                par_mid = first_mid
+            if par_mid != msg_mid:
+                thr_map[par_mid] = (thr_map.get(par_mid, []) + [msg_mid])
+            else:
+                thr_map[par_mid] = thr_map.get(par_mid, [])
+
+        # Render threads in thread order, including ascii art
+        thread = []
+        seen = set()
+        def by_date(p):
+            if p not in par_map:
+                return 0;
+            return int(par_map[p][1][self.idx.MSG_DATE], 36)
+        def render(prefix, mid, first=False):
+            kids = thr_map.get(mid, [])
+            if mid not in seen:
+                # This guarantees that if we somehow end up with a loop, we
+                # just skip over the repeated message and make progress.
+                seen.add(mid)
+                thread.append([mid,
+                               prefix + ((self._FIRST if first else self._TEE)
+                                         if kids else ''),
+                               kids])
+                if prefix.endswith(self._LAST):
+                    prefix = prefix[:-len(self._BAR)] + self._BLANK
+                elif prefix:
+                    prefix = prefix[:-len(self._BAR)] + self._BAR
+
+            if kids:
+                # This delete also prevents us from repeating ourselves.
+                del thr_map[mid]
+                kids.sort(key=by_date)
+                for i, kmid in enumerate(kids):
+                    if prefix.endswith(self._BLANK):
+                        if thread[-1][1].endswith(self._TEE):
+                            thread[-1][1] = thread[-1][1][:-len(self._TEE)]
+                            thread[-1][1] = thread[-1][1][:-len(self._LAST)]
+                            thread[-1][1] += self._FORK
+                            prefix = prefix[:-len(self._BLANK)]
+                    if i < len(kids) - 1:
+                        render(prefix + self._FORK, kmid)
+                    else:
+                        if prefix.endswith(self._BLANK):
+                            if thread[-1][1].endswith(self._LAST):
+                                thread[-1][1] = thread[-1][1][:-len(self._LAST)]
+                                prefix = prefix[:-len(self._BLANK)]
+                        render(prefix + self._LAST, kmid)
+        thr_keys = thr_map.keys()
+        thr_keys.sort(key=by_date)
+        first = True
+        for par_mid in thr_keys:
+            if par_mid in thr_map:
+                render('', par_mid, first=first)
+                first = False
 
         return thread
 
@@ -855,6 +940,9 @@ class SearchResults(dict):
         for k in tree.keys():
             if k not in self.WANT_MSG_TREE or k in self.PRUNE_MSG_TREE:
                 del tree[k]
+        for att in tree.get('attachments', []):
+            if 'part' in att:
+                del att['part']
         return tree
 
     def _message(self, email):
@@ -879,12 +967,13 @@ class SearchResults(dict):
 
     def __init__(self, session, idx,
                  results=None, start=0, end=None, num=None,
-                 emails=None, people=None,
+                 emails=None, view_pairs=None, people=None,
                  suppress_data=False, full_threads=True):
         dict.__init__(self)
         self.session = session
         self.people = people
-        self.emails = emails
+        self.emails = emails or []
+        self.view_pairs = view_pairs or {}
         self.idx = idx
         self.urlmap = mailpile.urlmap.UrlMap(self.session)
 
@@ -919,6 +1008,7 @@ class SearchResults(dict):
             'search_terms': session.searched,
             'address_ids': [],
             'message_ids': [],
+            'view_pairs': view_pairs,
             'thread_ids': threads,
         })
         if 'tags' in self.session.config:
@@ -953,29 +1043,35 @@ class SearchResults(dict):
                     th[tid] = self._tag(tid, {'searched': True})
 
         idxs = results[start:start + num]
+
+        for e in emails or []:
+            self.add_email(e, idxs)
+
+        done_idxs = set()
         while idxs:
-            idx_pos = idxs.pop(0)
-            msg_info = idx.get_msg_at_idx_pos(idx_pos)
-            self.add_msg_info(b36(idx_pos), msg_info,
-                              full_threads=full_threads, idxs=idxs)
+            idxs = list(set(idxs) - done_idxs)
+            for idx_pos in idxs:
+                done_idxs.add(idx_pos)
+                msg_info = idx.get_msg_at_idx_pos(idx_pos)
+                self.add_msg_info(b36(idx_pos), msg_info,
+                                  full_threads=full_threads, idxs=idxs)
 
         if emails and len(emails) == 1:
             self['summary'] = emails[0].get_msg_info(MailIndex.MSG_SUBJECT)
-
-        for e in emails or []:
-            self.add_email(e)
 
     def add_msg_info(self, mid, msg_info, full_threads=False, idxs=None):
         # Populate data.metadata
         self['data']['metadata'][mid] = self._metadata(msg_info)
 
         # Populate data.thread
-        thread_mid = msg_info[self.idx.MSG_THREAD_MID]
+        thread_mid = parent_mid = msg_info[MailIndex.MSG_THREAD_MID]
+        if '/' in thread_mid:
+            thread_mid, parent_mid = thread_mid.split('/')
         if thread_mid not in self['data']['threads']:
             thread = self._thread(thread_mid)
             self['data']['threads'][thread_mid] = thread
             if full_threads and idxs:
-                idxs.extend([int(t, 36) for t in thread
+                idxs.extend([int(t, 36) for t, bar, kids in thread
                              if t not in self['data']['metadata']])
 
         # Populate data.person
@@ -990,7 +1086,7 @@ class SearchResults(dict):
                     self['data']['tags'][tid] = self._tag(tid,
                                                           {"searched": False})
 
-    def add_email(self, e):
+    def add_email(self, e, idxs):
         if e not in self.emails:
             self.emails.append(e)
         mid = e.msg_mid()
@@ -1000,7 +1096,8 @@ class SearchResults(dict):
             self['message_ids'].append(mid)
         # This happens last, as the parsing above may have side-effects
         # which matter once we get this far.
-        self.add_msg_info(mid, e.get_msg_info(uncached=True))
+        self.add_msg_info(mid, e.get_msg_info(uncached=True),
+                          full_threads=True, idxs=idxs)
 
     def __nonzero__(self):
         return True
@@ -1040,7 +1137,7 @@ class SearchResults(dict):
 
         text = []
         count = self['stats']['start']
-        expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
+        expand_ids = [e.msg_idx_pos for e in self.emails]
         addresses = self.get('data', {}).get('addresses', {})
 
         for mid in self['thread_ids']:
@@ -1086,8 +1183,8 @@ class SearchResults(dict):
             if not expand_ids:
                 def gg(pos):
                     return (pos < 10) and pos or '>'
-                thread = [m['thread_mid']]
-                thread += self['data']['threads'][m['thread_mid']]
+                thr_mid = m['thread_mid']
+                thread = [ti[0] for ti in self['data']['threads'][thr_mid]]
                 if m['mid'] not in thread:
                     thread.append(m['mid'])
                 pos = thread.index(m['mid']) + 1
@@ -1378,12 +1475,15 @@ class Rescan(Command):
                     src_ids = config.sources.keys()
                     src_ids.sort(key=lambda k: random.randint(0, 100))
                     for src_id in src_ids:
-                        src = config.get_mail_source(src_id, start=True)
-                        if mailpile.util.QUITTING:
-                            ocount = msg_count
-                            break
-                        session.ui.mark(_('Rescanning: %s') % (src, ))
-                        count = src.rescan_now(session)
+                        try:
+                            src = config.get_mail_source(src_id, start=True)
+                            if mailpile.util.QUITTING:
+                                ocount = msg_count
+                                break
+                            session.ui.mark(_('Rescanning: %s') % (src, ))
+                            count = src.rescan_now(session)
+                        except ValueError:
+                            count = 0
                         if count > 0:
                             msg_count += count
                             mbox_count += 1
@@ -1440,6 +1540,8 @@ class BrowseOrLaunch(Command):
             MakePopenUnsafe()
             webbrowser.open(http_url)
             return http_url
+        except:
+            pass
         finally:
             MakePopenSafe()
         return False
@@ -1793,8 +1895,9 @@ class ListDir(Command):
                     info['source'] = src._key
                 if src and src.mailbox[mid] and src.mailbox[mid].primary_tag:
                     tid = src.mailbox[mid].primary_tag
-                    info['tag'] = self.session.config.tags[tid].slug
-                    info['icon'] = self.session.config.tags[tid].icon
+                    if tid in self.session.config.tags:
+                        info['tag'] = self.session.config.tags[tid].slug
+                        info['icon'] = self.session.config.tags[tid].icon
             elif info.get('flag_mailsource'):
                 if path.startswith('/src:'):
                     info['source'] = path[5:]
@@ -2204,8 +2307,7 @@ class ConfigureMailboxes(Command):
     MAX_PATHS = 50000
 
     def _truthy(self, var, default='n'):
-        return (self.data.get(var, [default])[0].lower()
-                in ('y', 'yes', 'true', 'on'))
+        return truthy(self.data.get(var, [default])[0])
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
@@ -2366,29 +2468,6 @@ class ConfigureMailboxes(Command):
 
 ###############################################################################
 
-class Cached(Command):
-    """Fetch results from the command cache."""
-    SYNOPSIS = (None, 'cached', 'cached', '[<cache-id>]')
-    ORDER = ('Internals', 7)
-    HTTP_QUERY_VARS = {'id': 'Cache ID of command to redisplay'}
-    IS_USER_ACTIVITY = False
-    LOG_NOTHING = True
-
-    def run(self):
-        try:
-            cid = self.args[0] if self.args else self.data.get('id', [None])[0]
-            rv = self.session.config.command_cache.get_result(cid)
-            self.session.copy(rv.session)
-            rv.session.ui.render_mode = self.session.ui.render_mode
-            return rv
-        except:
-            self._starting()
-            self._ignore_exception()
-            self._error(self.FAILURE % {'name': self.name,
-                                        'args': ' '.join(self.args)})
-            return self._finishing(False)
-
-
 class Output(Command):
     """Choose format for command results."""
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
@@ -2493,6 +2572,8 @@ class Quit(Command):
     def command(self):
         mailpile.util.QUITTING = True
         self._background_save(index=True, config=True, wait=True)
+        if self.session.config.http_worker:
+            self.session.config.http_worker.quit()
         try:
             import signal
             os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
@@ -2555,6 +2636,9 @@ class Help(Command):
             text = [
                 self.result['splash']
             ]
+            if os.getenv('DISPLAY'):
+                # Launching the web browser often prints junk, move past it.
+                text[:0] = ['=' * 77]
 
             if self.result['http_url']:
                 text.append(_('The Web interface address is: %s'
@@ -2799,10 +2883,13 @@ def Action(session, opt, arg, data=None):
 
     # Tags are commands
     if config.loaded_config:
-        tag = config.get_tag(opt)
-        if tag:
-            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
-            return GetCommand('search')(session, opt, arg=a, data=data).run()
+        for tag in config.tags.values():
+            if opt.lower() in (tag.name.lower(),
+                               tag.slug.lower(),
+                               _(tag.name).lower()):
+                a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
+                return GetCommand('search')(session, opt,
+                                            arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
@@ -2813,7 +2900,7 @@ COMMANDS = [
     Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
-    RenderPage, Cached, Output, Pipe,
+    RenderPage, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

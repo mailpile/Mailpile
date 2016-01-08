@@ -829,6 +829,7 @@ class MailpileVCard(SimpleVCard):
         return d
 
     MPCARD_SINGLETONS = ('fn', 'kind', 'note',
+                         'x-mailpile-html-policy',
                          'x-mailpile-crypto-policy',
                          'x-mailpile-crypto-format',
                          'x-mailpile-profile-tag',
@@ -1012,6 +1013,10 @@ class MailpileVCard(SimpleVCard):
         lambda self: self._vcard_get('x-mailpile-last-pgp-key-share'),
         lambda self, v: self._vcard_set('x-mailpile-last-pgp-key-share', v))
 
+    html_policy = property(
+        lambda self: self._vcard_get('x-mailpile-html-policy'),
+        lambda self, v: self._vcard_set('x-mailpile-html-policy', v))
+
     crypto_policy = property(
         lambda self: self._vcard_get('x-mailpile-crypto-policy'),
         lambda self, v: self._vcard_set('x-mailpile-crypto-policy', v))
@@ -1116,6 +1121,10 @@ class AddressInfo(dict):
         lambda self: self.get('keys'),
         lambda self, v: self.__setitem__('keys', v))
 
+    html_policy = property(
+        lambda self: self.get('html-policy'),
+        lambda self, v: self.__setitem__('html-policy', v))
+
     crypto_policy = property(
         lambda self: self.get('crypto-policy'),
         lambda self, v: self.__setitem__('crypto-policy', v))
@@ -1159,6 +1168,10 @@ class AddressInfo(dict):
         crypto_policy = vcard.crypto_policy
         if crypto_policy:
             self['crypto-policy'] = crypto_policy
+
+        html_policy = vcard.html_policy
+        if html_policy:
+            self['html-policy'] = html_policy
 
         self['x-mailpile-rid'] = vcard.random_uid
         self['rank'] += base_rank + 25 * len(keys) + 5 * len(photos)
