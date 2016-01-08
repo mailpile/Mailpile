@@ -1234,12 +1234,17 @@ class ConfigManager(ConfigDict):
         if env_share is not None:
             return env_share
 
+        # Check if we have been installed in a virtual env
+        # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
+        if hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix'):
+            return os.path.join(sys.prefix, 'share', 'mailpile')
+
         # Check if we've been installed to /usr/local (or equivalent)
         usr_local = os.path.join(sys.prefix, 'local')
         if __file__.startswith(usr_local):
             return os.path.join(usr_local, 'share', 'mailpile')
 
-        # If not, assume /usr/ (sys.prefix for virtualenv)
+        # Check if we are in /usr/ (sys.prefix)
         if __file__.startswith(sys.prefix):
             return os.path.join(sys.prefix, 'share', 'mailpile')
 
@@ -2100,10 +2105,7 @@ class ConfigManager(ConfigDict):
     @classmethod
     def getLocaleDirectory(self):
         """Get the gettext translation object, no matter where our CWD is"""
-        # NOTE: MO files are loaded from the directory where the
-        #       scripts reside in
-        # FIXME: This needs changing
-        return os.path.join(os.path.dirname(__file__), "locale")
+        return os.path.join(self.DEFAULT_SHARED_DATADIR(), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """

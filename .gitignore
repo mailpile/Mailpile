@@ -1,6 +1,6 @@
 *.pyc
 *~
-*.mo
+*.po
 *.debhelper
 *.iml
 *.ipr
