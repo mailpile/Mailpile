@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mailpile VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-07 00:47+0000\n"
+"POT-Creation-Date: 2016-01-08 04:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -444,7 +444,7 @@ msgstr ""
 msgid "Displayed welcome message"
 msgstr ""
 
-#: mailpile/commands.py:2892
+#: mailpile/commands.py:2895
 #, python-format
 msgid "Unknown command: %s"
 msgstr ""
@@ -551,59 +551,59 @@ msgstr ""
 msgid "Cannot append to fixed dict"
 msgstr ""
 
-#: mailpile/config.py:1316
+#: mailpile/config.py:1321
 #, python-format
 msgid "Creating: %s"
 msgstr ""
 
-#: mailpile/config.py:1373
+#: mailpile/config.py:1378
 #, python-format
 msgid "Invalid (%s): section %s does not exist"
 msgstr ""
 
-#: mailpile/config.py:1384
+#: mailpile/config.py:1389
 #, python-format
 msgid "Invalid (%s): section %s, variable %s=%s"
 msgstr ""
 
-#: mailpile/config.py:1556
+#: mailpile/config.py:1562
 #, python-format
 msgid "Loading plugin: %s"
 msgstr ""
 
-#: mailpile/config.py:1558
+#: mailpile/config.py:1564
 msgid "Processing manifests"
 msgstr ""
 
-#: mailpile/config.py:1793
+#: mailpile/config.py:1799
 #, python-format
 msgid "No such mailbox: %s"
 msgstr ""
 
-#: mailpile/config.py:1918
+#: mailpile/config.py:1924
 #, python-format
 msgid "%s: Updating: %s"
 msgstr ""
 
-#: mailpile/config.py:1937
+#: mailpile/config.py:1943
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
 msgstr ""
 
-#: mailpile/config.py:2025
+#: mailpile/config.py:2031
 msgid "Please enter your password"
 msgstr ""
 
-#: mailpile/config.py:2046
+#: mailpile/config.py:2052
 msgid "Sent using Mailpile, Free Software from www.mailpile.is"
 msgstr ""
 
-#: mailpile/config.py:2097
+#: mailpile/config.py:2103
 #, python-format
 msgid "Route %s for %s does not exist."
 msgstr ""
 
-#: mailpile/config.py:2220
+#: mailpile/config.py:2226
 msgid "Parent paths are not allowed"
 msgstr ""
 
@@ -746,21 +746,15 @@ msgstr ""
 #: shared-data/default-theme/html/profiles/account-form.html:368
 #: shared-data/default-theme/html/profiles/account-form.html:460
 #: shared-data/default-theme/html/settings/index.html:22
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:15
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:16
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:57
 msgid "Password"
 msgstr ""
 
 #: mailpile/defaults.py:70 mailpile/defaults.py:144 mailpile/defaults.py:164
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:63
 msgid "Host"
 msgstr ""
 
 #: mailpile/defaults.py:71 mailpile/defaults.py:145 mailpile/defaults.py:165
 #: shared-data/default-theme/html/settings/index.html:26
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:24
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:78
 msgid "Port"
 msgstr ""
 
@@ -797,7 +791,7 @@ msgid "Enable e-mail based public key distribution"
 msgstr ""
 
 #: mailpile/defaults.py:84
-msgid "Advertise GPG preferences in a header?"
+msgid "Advertise PGP preferences in a header?"
 msgstr ""
 
 #: mailpile/defaults.py:87
@@ -1086,7 +1080,7 @@ msgstr ""
 msgid "Unknown content-type"
 msgstr ""
 
-#: mailpile/httpd.py:309
+#: mailpile/httpd.py:309 mailpile/httpd.py:465
 msgid "Internal Error"
 msgstr ""
 
@@ -1096,11 +1090,6 @@ msgstr ""
 
 #: mailpile/httpd.py:458
 msgid "Access Denied"
-msgstr ""
-
-#: mailpile/httpd.py:465 mailpile/mail_source/__init__.py:319
-#: mailpile/mail_source/__init__.py:321
-msgid "Internal error"
 msgstr ""
 
 #: mailpile/i18n.py:135
@@ -1770,7 +1759,6 @@ msgid "Starting up"
 msgstr ""
 
 #: mailpile/mail_source/__init__.py:149
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:2
 msgid "Mail Source"
 msgstr ""
 
@@ -1806,6 +1794,10 @@ msgstr ""
 
 #: mailpile/mail_source/__init__.py:312
 msgid "Unchanged"
+msgstr ""
+
+#: mailpile/mail_source/__init__.py:319 mailpile/mail_source/__init__.py:321
+msgid "Internal error"
 msgstr ""
 
 #: mailpile/mail_source/__init__.py:332
@@ -2864,6 +2856,7 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:963 mailpile/plugins/setup_magic.py:1004
 #: shared-data/default-theme/html/setup/welcome/index.html:2
+#: shared-data/default-theme/html/setup/welcome/index.html:5
 msgid "Welcome to Mailpile!"
 msgstr ""
 
@@ -3558,8 +3551,6 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/index.html:58
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:12
-#: shared-data/default-theme/html/setup/partials/sources_list.html:13
 msgid "Previous"
 msgstr ""
 
@@ -3567,11 +3558,6 @@ msgstr ""
 #: shared-data/default-theme/html/profiles/account-form.html:305
 #: shared-data/default-theme/html/profiles/account-form.html:402
 #: shared-data/default-theme/html/profiles/account-form.html:601
-#: shared-data/default-theme/html/setup/crypto/index.html:18
-#: shared-data/default-theme/html/setup/crypto/index.html:34
-#: shared-data/default-theme/html/setup/partials/key_generated.html:8
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:14
-#: shared-data/default-theme/html/setup/partials/sources_list.html:15
 msgid "Next"
 msgstr ""
 
@@ -3601,7 +3587,6 @@ msgstr ""
 #: shared-data/default-theme/html/partials/hidden.html:44
 #: shared-data/default-theme/html/profiles/account-form.html:264
 #: shared-data/default-theme/html/settings/index.html:4
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:6
 msgid "Name"
 msgstr ""
 
@@ -3635,7 +3620,6 @@ msgstr ""
 #: shared-data/default-theme/html/contacts/view/index.html:9
 #: shared-data/default-theme/html/jsapi/crypto/find.js:28
 #: shared-data/default-theme/html/partials/search_item.html:129
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:25
 msgid "No Name"
 msgstr ""
 
@@ -3699,23 +3683,12 @@ msgstr ""
 #: shared-data/default-theme/html/partials/tools_search.html:156
 #: shared-data/default-theme/html/settings/index.html:48
 #: shared-data/default-theme/html/settings/index.html:71
-#: shared-data/default-theme/html/setup/partials/home.html:7
-#: shared-data/default-theme/html/setup/partials/home.html:14
-#: shared-data/default-theme/html/setup/partials/home.html:21
-#: shared-data/default-theme/html/setup/partials/home.html:28
-#: shared-data/default-theme/html/setup/partials/home.html:35
-#: shared-data/default-theme/html/setup/partials/home.html:42
-#: shared-data/default-theme/html/setup/partials/home.html:57
-#: shared-data/default-theme/html/setup/partials/profiles_list_item.html:13
-#: shared-data/default-theme/html/setup/partials/sending_list_item.html:13
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:23
 msgid "Edit"
 msgstr ""
 
 #: shared-data/default-theme/html/filter/list/index.html:31
 #: shared-data/default-theme/html/settings/index.html:49
 #: shared-data/default-theme/html/settings/index.html:72
-#: shared-data/default-theme/html/setup/partials/sending_list_item.html:15
 msgid "Delete"
 msgstr ""
 
@@ -3786,11 +3759,7 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:18
-#: shared-data/default-theme/html/setup/index.html:2
-#: shared-data/default-theme/html/setup/crypto/index.html:2
-#: shared-data/default-theme/html/setup/partials/configure_key.html:2
 #: shared-data/default-theme/html/setup/password/index.html:2
-#: shared-data/default-theme/html/setup/profiles/index.html:2
 msgid "Setup"
 msgstr ""
 
@@ -3801,7 +3770,6 @@ msgstr ""
 #: shared-data/default-theme/html/help/index.html:21
 #: shared-data/default-theme/html/page/gmail-access-non-google-accounts/index.html:2
 #: shared-data/default-theme/html/page/gmail-access-non-google-accounts/index.html:10
-#: shared-data/default-theme/html/setup/partials/modals.html:33
 msgid "Enable Access for Non-Google Apps"
 msgstr ""
 
@@ -3826,7 +3794,6 @@ msgid "Mailpile timed out..."
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/compose/attachments.js:144
-#: shared-data/default-theme/html/jsapi/crypto/import.js:79
 msgid "is"
 msgstr ""
 
@@ -3924,6 +3891,10 @@ msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:29
 msgid "No Email"
+msgstr ""
+
+#: shared-data/default-theme/html/jsapi/crypto/import.js:79
+msgid "is too large:"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:79
@@ -4516,11 +4487,6 @@ msgstr ""
 #: shared-data/default-theme/html/partials/tools_search.html:147
 #: shared-data/default-theme/html/profiles/edit/index.html:8
 #: shared-data/default-theme/html/settings/mailbox/index.html:70
-#: shared-data/default-theme/html/setup/partials/access.html:12
-#: shared-data/default-theme/html/setup/partials/keys.html:13
-#: shared-data/default-theme/html/setup/partials/language.html:14
-#: shared-data/default-theme/html/setup/partials/passphrase.html:20
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:59
 #: shared-data/default-theme/html/tags/form.html:198
 msgid "Save"
 msgstr ""
@@ -4636,8 +4602,6 @@ msgid "Replace"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:80
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:39
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:129
 msgid "Cancel"
 msgstr ""
 
@@ -4683,14 +4647,12 @@ msgstr ""
 #: shared-data/default-theme/html/partials/tools_message.html:9
 #: shared-data/default-theme/html/partials/tools_tags.html:4
 #: shared-data/default-theme/html/partials/topbar.html:43
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:22
 #: shared-data/default-theme/html/tags/sidebar.html:2
 msgid "Tags"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-tag-picker.html:21
 #: shared-data/default-theme/html/jsapi/templates/modal-tag-picker.html:22
-#: shared-data/default-theme/html/setup/partials/profiles_list_item.html:14
 msgid "Remove"
 msgstr ""
 
@@ -4917,7 +4879,6 @@ msgstr ""
 
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:2
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:10
-#: shared-data/default-theme/html/setup/partials/modals.html:38
 msgid "Gmail's 2-Step App Passwords"
 msgstr ""
 
@@ -4934,8 +4895,6 @@ msgstr ""
 #: shared-data/default-theme/html/page/multipile/index.html:33
 #: shared-data/default-theme/html/profiles/account-form.html:361
 #: shared-data/default-theme/html/profiles/account-form.html:452
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:12
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:53
 msgid "Username"
 msgstr ""
 
@@ -5045,7 +5004,6 @@ msgstr ""
 #: shared-data/default-theme/html/partials/hidden.html:109
 #: shared-data/default-theme/html/partials/hidden.html:173
 #: shared-data/default-theme/html/settings/set/password/index.html:78
-#: shared-data/default-theme/html/setup/crypto/index.html:93
 msgid "Created"
 msgstr ""
 
@@ -5202,7 +5160,7 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:23
 msgid ""
-"If want to send a private reply, only to the author of this message, "
+"If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
 msgstr ""
 
@@ -6012,7 +5970,6 @@ msgid "Chelsea Manning"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:6
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:11
 msgid "Email"
 msgstr ""
 
@@ -6025,7 +5982,6 @@ msgid "Delivery route"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:19
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:9
 msgid "my delivery route"
 msgstr ""
 
@@ -6034,24 +5990,20 @@ msgid "Login"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:21
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:13
 msgid "username@smtp.mailserver.org"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:24
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:20
 msgid "Server"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:25
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:21
 msgid "smtp.mailserver.org"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:39
 #: shared-data/default-theme/html/settings/index.html:118
 #: shared-data/default-theme/html/settings/index.html:124
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:4
 msgid "Add Profile"
 msgstr ""
 
@@ -6070,7 +6022,6 @@ msgstr ""
 #: shared-data/default-theme/html/settings/index.html:63
 #: shared-data/default-theme/html/settings/index.html:137
 #: shared-data/default-theme/html/settings/index.html:143
-#: shared-data/default-theme/html/setup/partials/sending.html:4
 msgid "Add Route"
 msgstr ""
 
@@ -6080,7 +6031,6 @@ msgid "Routes"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:75
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:30
 msgid "Edit Route"
 msgstr ""
 
@@ -6098,10 +6048,6 @@ msgid "Advanced Settings"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/index.html:152
-#: shared-data/default-theme/html/setup/partials/home.html:6
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:3
-#: shared-data/default-theme/html/setup/partials/sending_list_item.html:8
-#: shared-data/default-theme/html/setup/profiles/index.html:2
 msgid "Profiles"
 msgstr ""
 
@@ -6169,7 +6115,6 @@ msgid "Lock Encryption Key"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/set/password/index.html:78
-#: shared-data/default-theme/html/setup/crypto/index.html:93
 msgid "Expires"
 msgstr ""
 
@@ -6185,569 +6130,8 @@ msgstr ""
 msgid "Encryption keys can be created during the account creation process."
 msgstr ""
 
-#: shared-data/default-theme/html/setup/crypto/index.html:2
-#: shared-data/default-theme/html/setup/partials/passphrase.html:3
 #: shared-data/default-theme/html/setup/password/index.html:2
 msgid "Passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:16
-msgid "Creating Encryption Keys"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:17
-msgid ""
-"Your encryption keys are being created. You may proceed with setting up "
-"your Mailpile while this is happening in the background as this process "
-"will take a while."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:22
-msgid "Successfully Authenticated"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:23
-msgid ""
-"Below is the unique fingerprint of your encryption key. Use this to help "
-"other people verify your encryption key by reading it to them in person, "
-"phone, or video chat, and have them compare it to the fingerprint on the "
-"encryption key they have!"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:41
-msgid "Create your passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:43
-msgid "Your passphrase should be something really hard to guess but memorable"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:44
-msgid ""
-"This passphrase will be used to unlock your Mailpile and for your "
-"encryption keys"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:50
-msgid "Note: this passphrase is also what you use to log in to your Mailpile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:52
-msgid "Confirm your passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:59
-msgid "Select the encryption key you would like to use"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:105
-msgid "Passphrase you entered is incorrect"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:107
-msgid "Enter passphrase for the encryption you selected"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/crypto/index.html:121
-#: shared-data/default-theme/html/setup/password/index.html:35
-msgid "Authenticate"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/access.html:11
-#: shared-data/default-theme/html/setup/partials/keys.html:12
-#: shared-data/default-theme/html/setup/partials/language.html:13
-#: shared-data/default-theme/html/setup/partials/passphrase.html:19
-#: shared-data/default-theme/html/setup/partials/security.html:66
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:44
-msgid "Back"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:4
-msgid "Great Job!"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:5
-msgid "You have successfully setup your Mailpile!"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:8
-msgid "You can wait until importing is finished, see a brief tour, or"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:8
-msgid "Skip To Inbox"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:9
-msgid "Begin Tour"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:12
-msgid "Can't wait any longer and want to start using your Mailpile?"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/complete.html:13
-msgid "Go to Inbox"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/configure_key.html:2
-msgid "Create Encryption Key"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:2
-msgid "Your Setup"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:9
-msgid ""
-"Manage profiles that you send messages from and that get stored on your "
-"encryption key."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:13
-#: shared-data/default-theme/html/setup/partials/sources_list.html:3
-msgid "Mail Sources"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:16
-msgid "Mail Sources of where your messages come from and how they're organized."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:20
-#: shared-data/default-theme/html/setup/partials/sending.html:3
-msgid "Sending Routes"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:23
-msgid "Sending Routes are the means of how you send messages to other people."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:27
-#: shared-data/default-theme/html/setup/partials/language.html:3
-msgid "Language"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:30
-msgid "Change the default language of your Mailpile."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:34
-#: shared-data/default-theme/html/setup/partials/keys.html:3
-#: shared-data/default-theme/html/setup/partials/security.html:44
-msgid "Encryption Keys"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:37
-msgid "Your encryption keys and the passphrase you access your Mailpile with."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:41
-msgid "Security"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:44
-msgid ""
-"Security settings of how you keep things safe and away from unwanted "
-"prying eyes."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:48
-msgid "Backups"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:49
-msgid "View"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:51
-msgid ""
-"Configure how your Mailpile is backed up so you never lose your emails "
-"and contacts."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/home.html:56
-msgid "Access"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/key_generated.html:3
-msgid "Encryption Key Generated"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/key_generated.html:4
-msgid ""
-"This is your key's unique fingerprint. Fingerprints are used to verify "
-"encryption keys. You can learn more about this later."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/key_generated.html:6
-msgid "View Encryption Key Details"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/keys.html:5
-msgid "Select which encryption key to use"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/language.html:5
-msgid "Select your language"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:21
-msgid "Connecting To Gmail"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:25
-msgid "Check your"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:25
-msgid "Google Security Settings"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:25
-msgid ""
-"before entering your password, otherwise you might not be able to connect"
-" your Mailpile."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:29
-msgid "Make sure you have enabled at least one of the following Google settings"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:53
-msgid "Could Not Connect To Gmail"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/modals.html:110
-#: shared-data/default-theme/html/setup/partials/modals.html:111
-#: shared-data/default-theme/html/setup/partials/security.html:67
-#: shared-data/default-theme/html/setup/partials/security.html:68
-msgid "Save Changes"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/passphrase.html:4
-msgid "Your passphrase is what you use to login to your Mailpile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/passphrase.html:7
-msgid "Current Passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/passphrase.html:11
-msgid "New Passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/passphrase.html:15
-msgid "Confirm New Passphrase"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:8
-msgid ""
-"Profiles define how you send e-mail, which addresses and identities you "
-"use for your different roles in life: work, school, family..."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:8
-msgid ""
-"You don't need new email addresses to use Mailpile, just add profiles for"
-" your existing addresses!"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_list.html:15
-msgid "You need one profile to send mail from"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_list_item.html:19
-msgid "Needs Sending Route"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_list_item.html:20
-msgid "Configure Now"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:6
-msgid "The name used in outgoing mail and on your public key"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:11
-msgid "One of your existing e-mail addresses (not a new one)"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:21
-msgid "Sending Route"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:21
-msgid "Technical details of how mail is sent"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:23
-msgid "Select..."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:27
-msgid "Add New Route"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:34
-msgid "Note"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:34
-msgid "A short note describing the role of this profile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:35
-msgid "Personal, Work"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/profiles_settings.html:41
-msgid "Save Profile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:3
-msgid "Security Settings"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:5
-msgid "What are your security & privacy preferences?"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:8
-msgid "Custom"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:9
-msgid "You collect tinfoil hats"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:10
-msgid "Relatively paranoid"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:11
-msgid "Above average paranoia"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:12
-msgid "Privacy concerned"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:13
-msgid "Normal person"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:14
-msgid "Totally unconcerned"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:20
-msgid "Encrypt system events & notifications"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:24
-msgid "Encrypt your search index of terms"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:28
-msgid "Encrypt messages after they're downloaded"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:32
-msgid "Encrypt your address book & contacts"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:36
-msgid "Index messages that were encrypted"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:40
-msgid "Encrypt various other things"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:47
-msgid "Attach public key to outgoing emails"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:52
-msgid "Send requests through Tor for better anonymity and privacy"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:56
-msgid "Upload your public encryption key to keyservers"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/security.html:60
-msgid "Download contact pictures via Gravatar (over HTTPS)"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_list_item.html:8
-msgid "No"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:8
-msgid "Route Name"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:29
-msgid "Other"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:33
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:67
-msgid "Protocol"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:38
-msgid "Test Route"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sending_settings.html:46
-msgid "Save Route"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:10
-msgid "Source of these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:11
-msgid "Create a Tag in your Mailpile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:12
-msgid "Apply the Inbox tag to these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:13
-msgid "Apply the Drafts tag to these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:14
-msgid "Apply the Sent tag to these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:15
-msgid "Apply the Spam tag to these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:16
-msgid "Apply the Trash tag to these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:17
-msgid "Import these Messages"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_configure.html:30
-#: shared-data/default-theme/html/tags/edit.html:8
-msgid "Edit Tag"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list.html:4
-msgid "Add Source"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list.html:8
-msgid ""
-"Mail Sources are where your email comes from. You can import mail from "
-"another program on the same computer, like Thunderbird, or you can "
-"connect to a remote source like Gmail, Yahoo, Outlook, or your own "
-"server."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list.html:17
-msgid "Analyzing mail sources..."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:9
-msgid "source"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:14
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:16
-msgid "Disabled"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:14
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:16
-msgid "Enabled"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_list_item.html:20
-msgid "Getting Status..."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:9
-msgid "Name mail source"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:10
-msgid "My Gmail, Work Server"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:15
-msgid "Where is this source located?"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:17
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:29
-msgid "select..."
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:18
-msgid "On same computer as Mailpile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:19
-msgid "On different computer (server)"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:27
-msgid "What app (or format) is this mail stored in?"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:40
-msgid "Where is the mail on this computer located?"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:42
-msgid "Copy messages to Mailpile"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:44
-msgid "Do Not Copy"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:45
-msgid "Copy"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:82
-msgid "Downloading"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:84
-msgid "Download & leave on server"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:85
-msgid "Download & delete from server"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:86
-msgid "Do not download (index only)"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/sources_settings.html:130
-msgid "Save Source"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/various.html:25
-#: shared-data/default-theme/html/setup/welcome/index.html:20
-msgid "You're about to experience secure email like never before!"
-msgstr ""
-
-#: shared-data/default-theme/html/setup/partials/various.html:26
-msgid "Begin"
 msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:15
@@ -6770,6 +6154,10 @@ msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:33
 msgid "Change your password"
+msgstr ""
+
+#: shared-data/default-theme/html/setup/password/index.html:35
+msgid "Authenticate"
 msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:40
@@ -6802,12 +6190,24 @@ msgstr ""
 msgid "Set Password"
 msgstr ""
 
+#: shared-data/default-theme/html/setup/welcome/index.html:20
+msgid "You're about to experience secure email like never before!"
+msgstr ""
+
 #: shared-data/default-theme/html/setup/welcome/index.html:24
 msgid "Select Language"
 msgstr ""
 
+#: shared-data/default-theme/html/setup/welcome/index.html:36
+msgid "Begin"
+msgstr ""
+
 #: shared-data/default-theme/html/tags/edit.html:6
 msgid "Edit: "
+msgstr ""
+
+#: shared-data/default-theme/html/tags/edit.html:8
+msgid "Edit Tag"
 msgstr ""
 
 #: shared-data/default-theme/html/tags/form.html:25
