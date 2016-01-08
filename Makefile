@@ -97,7 +97,7 @@ pytests:
 	@echo
 
 clean:
-	@rm -rf shared-data/locale/?? shared-data/locale/??_*
+	@rm -rf shared-data/locale/?? shared-data/locale/??[_@]*
 	@rm -f `find . -name \\*.pyc` \
 	       `find . -name \\*.mo` \
 	        mailpile-tmp.py mailpile.py \
@@ -171,8 +171,7 @@ compilemessages:
 
 transifex:
 	tx pull -a --minimum-perc=50
-	tx pull -l is
-
+	tx pull -l is,en_GB
 
 
 # -----------------------------------------------------------------------------
