@@ -76,7 +76,7 @@ Mailpile.Crypto.Import.Uploader = function() {
           // Show Warning for 50 mb or larger
           if (file.size > 52428800) {
             start_upload = false;
-            alert(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")|escapejs}}');
+            alert(file.name + ' {{_("is too large:")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")|escapejs}}');
           } else {
 
             var importing_template = Mailpile.safe_template($('#template-crypto-encryption-key-importing').html());

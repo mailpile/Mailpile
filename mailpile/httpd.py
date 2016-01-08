@@ -462,7 +462,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             e = traceback.format_exc()
             session.ui.debug(e)
             if not session.config.sys.debug:
-                e = _('Internal error')
+                e = _('Internal Error')
             self.send_full_response(e, code=500, mimetype='text/plain')
             return None
 

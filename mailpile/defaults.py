@@ -81,7 +81,7 @@ CONFIG_RULES = {
         'gpg_recipient':   (_('Encrypt local data to ...'), 'gpgkeyid',    ''),
         'gpg_email_key':   (_('Enable e-mail based public key distribution'),
                             bool, True),
-        'openpgp_header': X(_('Advertise GPG preferences in a header?'),
+        'openpgp_header': X(_('Advertise PGP preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
         'crypto_policy':  X(_('Default encryption policy for outgoing mail'),

@@ -1500,6 +1500,7 @@ class ConfigManager(ConfigDict):
             self._discover_plugins()
 
             # Parse once (silently), to figure out which plugins to load...
+            self.parse_config(None, '\n'.join(pub_lines), source=self.conf_pub)
             self.parse_config(None, '\n'.join(prv_lines), source=self.conffile)
 
             # Enable translations!

@@ -2,7 +2,7 @@
 {% block title %}{{_("Welcome to Mailpile!")}}{% endblock %}
 {% block content %}
 <div id="setup-welcome" class="text-center add-top">
-  <h1 class="animated fadeIn">Welcome to Mailpile!</h1>
+  <h1 class="animated fadeIn">{{_("Welcome to Mailpile!")}}</h1>
   <div class="add-top half-bottom">
     <img src="{{ config.sys.http_path }}/static/img/logo-color.svg" class="animated bounceIn welcome-logo">
   </div>
@@ -33,7 +33,7 @@
        the flow. AJAXY use will probably not send this variable.
     #}
     <input type="hidden" name="advance" value="Yes">
-    <input type="submit" value="Begin" class="button-primary">
+    <input type="submit" value="{{_("Begin")}}" class="button-primary">
   </form>
 </div>
 {% endblock %}
