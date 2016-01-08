@@ -2883,10 +2883,13 @@ def Action(session, opt, arg, data=None):
 
     # Tags are commands
     if config.loaded_config:
-        tag = config.get_tag(opt)
-        if tag:
-            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
-            return GetCommand('search')(session, opt, arg=a, data=data).run()
+        for tag in config.tags.values():
+            if opt.lower() in (tag.name.lower(),
+                               tag.slug.lower(),
+                               _(tag.name).lower()):
+                a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
+                return GetCommand('search')(session, opt,
+                                            arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
