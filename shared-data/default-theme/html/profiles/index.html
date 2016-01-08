@@ -185,6 +185,7 @@
     </tr>
     {%- endif %}
   </table>
+  <p></p>
 
 {#
   <div style="display: inline-block; width: 45%; padding: 0 1em;">
@@ -193,31 +194,6 @@
   </div>
 #}
 
-{%- if result.profiles|length == 0 %}
- {%- set opa = '0.9' %}
- {%- set mrg = '-' %}
-{%- else %}
- {%- set opa = '0.5' %}
- {%- set mrg = '' %}
-{%- endif %}
-  <div style="margin: {{mrg}}40px 0; width: 38em; padding: 0 1em; opacity: {{opa}}">
-    <h4>
-      {{_("Welcome to Mailpile Beta III")}} :-)
-      <small class='right'>v{{ config.version }}</small>
-    </h4>
-    <p>
-      {{_("This release is a technology preview release, meant for developers, early adopters, usability testers and our community of translators.")}}
-      {{_("It might also be useful for reading and writing e-mail, you never know!")}}
-      {{_("Read all about it:")}}
-    </p>
-    <ul class='list' style='margin-left: 2em; list-style: disc'>
-      <li><a target=_blank href="https://www.mailpile.is/blog/2015-07-20_Mailpile_Beta_III.html">{{_("Annoucement blog post")}}</a></li>
-      <li><a target=_blank href="https://github.com/mailpile/Mailpile/wiki/Release-Notes-201507-Beta-III">{{_("Release Notes")}}</a></li>
-      <li><a target=_blank href="https://github.com/mailpile/Mailpile/wiki/Security-roadmap">{{_("Security Roadmap")}}</a></li>
-    </ul>
-  </div>
-
-  <p></p>
 </div>
 {% if config.web.release_notes %}
 <script type='text/javascript'>
