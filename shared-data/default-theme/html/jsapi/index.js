@@ -183,10 +183,12 @@ Mailpile.API = {
       Mailpile.API._ajax_dead_count = 0;
       return;
     }
-    if (response.status == 0 || response.status == 503) {
-      // FIXME: 503 actually means pagekite or some other reverse proxy is
-      //        down - we tell the user to check the network, but could
-      //        probably provide clearer feedback.
+    if (response.status == 0 ||    // Some internal error state
+        response.status == 503 ||  // PageKite or reverse proxy down
+        status == 'parsererror' || // Server replaced with sth. else?
+        response.status == 302) {  // Server gone somewhere else?
+      // Tell the user to check the network, but could probably provide clearer
+      // feedback.
       Mailpile.API._ajax_dead_count += 1;
     }
 
@@ -251,8 +253,15 @@ Mailpile.API = {
         timeout: timeout,
         dataType: 'json',
         success: function(response, status) {
-          Mailpile.API._ajax_is_alive();
-          if (callback) return callback(response, status);
+          if (response.result) {
+            Mailpile.API._ajax_is_alive();
+            if (callback) return callback(response, status);
+          }
+          else {
+            Mailpile.API._ajax_error(base_url, command, data,
+                                     method, response, status);
+            if (error_callback) error_callback(response, status);
+          }
         },
         error: function(response, status) {
           Mailpile.API._ajax_error(base_url, command, data,
