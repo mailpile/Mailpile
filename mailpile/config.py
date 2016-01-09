@@ -692,7 +692,7 @@ def RuledContainer(pcls):
             keys = [k for k in sorted(set(keys)) if k not in ignore]
             set_keys = set(self.keys())
 
-            for key in [k for k in keys if _xtype not in self.key_types(k)]:
+            for key in keys:
                 if not hasattr(self[key], 'as_config'):
                     if key in self.rules:
                         comment = self.rules[key][self.RULE_COMMENT]
@@ -706,7 +706,8 @@ def RuledContainer(pcls):
                         if not added_section:
                             config.add_section(str(section))
                             added_section = True
-                        config.set(section, key, value, comment)
+                        if _xtype not in self.key_types(key) or not _xtype:
+                            config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
                     self[key].as_config(config=config, _type=_type, _xtype=_xtype)
@@ -1618,9 +1619,6 @@ class ConfigManager(ConfigDict):
         return False
 
     def _unlocked_save(self, session=None):
-        if not self.loaded_config:
-            return
-
         newfile = '%s.new' % self.conffile
         pubfile = self.conf_pub
         keyfile = self.conf_key
@@ -1628,7 +1626,7 @@ class ConfigManager(ConfigDict):
         self._mkworkdir(None)
         self.timestamp = int(time.time())
 
-        if session:
+        if session and self.event_log:
             if 'log' in self.sys.debug:
                 self.event_log.ui_watch(session.ui)
             else:
@@ -1637,6 +1635,9 @@ class ConfigManager(ConfigDict):
         # Save the public config data first
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
+
+        if not self.loaded_config:
+            return
 
         # Save the master key if necessary (and possible)
         master_key_saved = self._save_master_key(keyfile)
