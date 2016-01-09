@@ -74,7 +74,7 @@ Mailpile.Crypto.Import.Uploader = function() {
       	plupload.each(files, function(file) {
   
           // Show Warning for 50 mb or larger
-          if (file.size > 52428800) {
+          if (file.size > 5242880) {
             start_upload = false;
             alert(file.name + ' {{_("is too large:")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("You can not upload a key larger than 5 Megabytes.")|escapejs}}');
           } else {

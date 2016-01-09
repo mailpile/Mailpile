@@ -724,7 +724,7 @@ class MailpileCommand(Extension):
         if len(summary) > truncate:
             others = ''
             if len(recipients) > 1:
-                others = _("and") + ' ' + str(len(recipients) - 1) + ' ' + _("others")
+                others = _("and %d others") % str(len(recipients) - 1)
             summary = summary[:truncate] + '... ' + others
         return summary
 
