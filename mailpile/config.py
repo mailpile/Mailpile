@@ -2265,8 +2265,9 @@ class ConfigManager(ConfigDict):
                                   daemons=False, httpd_spec=None):
 
         # Set our background UI to something that can log.
-        config.background.ui = BackgroundInteraction(config,
-                                                     log_parent=session.ui)
+        if session:
+            config.background.ui = BackgroundInteraction(config,
+                                                         log_parent=session.ui)
 
         # Tell conn broker that we exist
         from mailpile.conn_brokers import Master as ConnBroker
