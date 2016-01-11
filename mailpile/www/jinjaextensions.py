@@ -717,14 +717,16 @@ class MailpileCommand(Extension):
     @classmethod
     def _recipient_summary(self, editing_strings, addresses, truncate):
         summary_list = []
-        recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
+        recipients = (editing_strings['to_aids'] +
+                      editing_strings['cc_aids'] +
+                      editing_strings['bcc_aids'])
         for aid in recipients:
             summary_list.append(addresses[aid].fn)
         summary = ', '.join(summary_list)
         if len(summary) > truncate:
             others = ''
             if len(recipients) > 1:
-                others = _("and %d others") % str(len(recipients) - 1)
+                others = _("and %d others") % (len(recipients) - 1)
             summary = summary[:truncate] + '... ' + others
         return summary
 
