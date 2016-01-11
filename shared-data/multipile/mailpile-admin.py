@@ -183,6 +183,9 @@ def app_arguments():
     ga.add_argument(
         '--configure-apache', action='store_true',
         help='Configure Apache for use with Mailpile (run with sudo)')
+    ga.add_argument(
+        '--generate-apache', action='store_true',
+        help='Print the apache config')
 
     app_arguments_config_arg(ap)
     ap.add_argument('--force', action='store_true',
@@ -558,6 +561,9 @@ def list_mailpiles(args):
             user, pid or '', rss or '',
             'apache' if in_usermap else 'direct', port, url)
 
+def generate_apache(app_args, args):
+    os_settings = get_os_settings(args)
+    print (APACHE_CONFIG_TEMPLATE % os_settings)
 
 def configure_apache(app_args, args):
     if os.getuid() == 0:
@@ -664,6 +670,9 @@ def main():
 
     elif parsed_args.configure_apache:
         configure_apache(app_args, parsed_args)
+
+    elif parsed_args.generate_apache:
+        generate_apache(app_args, parsed_args)
 
     elif parsed_args.start:
         start_mailpile(app_args, parsed_args)
