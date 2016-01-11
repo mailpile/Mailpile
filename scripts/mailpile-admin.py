@@ -8,6 +8,7 @@
 #
 import argparse
 import cgi
+import ConfigParser
 import distutils.spawn
 import getpass
 import json
@@ -75,6 +76,9 @@ RUN_AS_EXPECT_SCRIPT = """\
     expect heat_death_of_universe
 """
 
+DEFAULT_CONFIG_FILE = '/etc/mailpile/mailpile.rc'
+DEFAULT_CONFIG_SECTION = 'Multipile'
+
 MAILPILE_PIDS_PATH = "/var/lib/mailpile/pids"
 APACHE_DEFAULT_WEBROOT = "/mailpile/"
 APACHE_HTACCESS_PATH = "/var/lib/mailpile/apache/.htaccess"
@@ -106,6 +110,11 @@ def _escaped(idict):
     return dict((k, _escape(v)) for k, v in idict.iteritems())
 
 
+def app_arguments_config_arg(ap):
+    ap.add_argument(
+        '--config', default='', help='Path to a configuration file')
+
+
 def app_arguments():
     ap = argparse.ArgumentParser(
         description="Mailpile installation and integration tool")
@@ -127,6 +136,7 @@ def app_arguments():
         '--install-apache', action='store_true',
         help='Configure Apache for use with Mailpile (run with sudo)')
 
+    app_arguments_config_arg(ap)
     ap.add_argument('--force', action='store_true',
         help='With --stop, will kill -9 a running Mailpile')
     ap.add_argument('--password', default=None,
@@ -148,6 +158,34 @@ def app_arguments():
     ap.add_argument('--apache-user', default=None)
     ap.add_argument('--apache-group', default=None)
     return ap
+
+
+def usage(ap, reason, code=3):
+    print 'error: %s' % reason
+    ap.print_usage()
+    sys.exit(code)
+
+
+def parse_arguments_and_config(app_args,
+                               config=DEFAULT_CONFIG_FILE,
+                               section=DEFAULT_CONFIG_SECTION):
+    # We create a separate parser just to check for --help
+    conf_parser = argparse.ArgumentParser(add_help=False)
+    app_arguments_config_arg(conf_parser)
+    conf_parsed, unused_rest = conf_parser.parse_known_args()
+
+    # Okay, if we have a config file, parse it!
+    conf_file = conf_parsed.config or config
+    if conf_file:
+        if os.path.exists(conf_file):
+            config = ConfigParser.SafeConfigParser()
+            config.read([conf_file])
+            app_args.set_defaults(**dict(config.items[section]))
+        elif conf_parsed.config:
+            usage(app_args, 'Config file not found: %s' % conf_file)
+
+    parsed_args = app_args.parse_args()
+    return parsed_args
 
 
 def _parse_ps():
@@ -430,15 +468,10 @@ def delete_mailpile(app_args, args):
         args, user_settings, '--delete', MAILPILE_DELETE_SCRIPT)
 
 
-def usage(ap, reason, code=3):
-    print 'error: %s' % reason
-    ap.print_usage()
-    sys.exit(code)
-
-
 def main():
     app_args = app_arguments()
-    parsed_args = app_args.parse_args()
+    parsed_args = parse_arguments_and_config(app_args)
+
     if parsed_args.list:
         list_mailpiles(parsed_args)
 
