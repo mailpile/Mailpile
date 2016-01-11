@@ -1,0 +1,26 @@
+# Hello admin!
+#
+# This is an example of a configuration for the "multipile", multi-user
+# mailpile system.
+#
+# If you install this file into /etc/mailpile/multipile.rc, the contents will
+# be used as defaults by mailpile-admin.py, both when running as a CGI and
+# when used by the admin directly. This is useful for:
+#
+#   1. Changing the Mailpile idle-quit timeout
+#   2. Moving Mailpile to an alternate URL path
+#   3. Correcting mailpile-admin.py's defaults for your system
+#   4. Other Stuff
+#
+# Any of the CLI arguments (see mailpile-admin.py --help) can be given
+# new defaults in the Multipile section here below. Note dashes in argument
+# names must be converted to underscores.
+#
+# Unrecognized values are silently ignored.
+#
+
+[Multipile]
+idlequit = 900
+webroot = /mulepale
+apache_user = www-data
+apache_group = root

@@ -1,0 +1,16 @@
+<h1>Oops, Apache RewiteMap is Broken</h1>
+<ul>
+  <li>Your Apache does not appear to be respecting the <tt>RewriteMap</tt>
+      configured by <tt>mailpile-admin.py</tt>.
+  <li>This probable means this <tt>VirtualHost</tt> has <tt>RewriteEngine On</tt>
+      for its own purposes.
+  <li>To inherit the Mailpile rewrite rules, add this to your virtual host config:
+      <tt>RewriteOptions Inherit</tt>
+  <li>Restart Apache: <tt>apache2ctl restart</tt>
+</ul>
+<p>
+  Good luck! :-)
+</p>
+<p>
+  <a href=".">Return to the login page</a>
+</p>

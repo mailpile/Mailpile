@@ -1231,6 +1231,8 @@ class ConfigManager(ConfigDict):
 
     @classmethod
     def DEFAULT_SHARED_DATADIR(self):
+        # IMPORTANT: This code is duplicated in mailpile-admin.py.
+        #            If it needs changing please change both places!
         env_share = os.getenv('MAILPILE_SHARED')
         if env_share is not None:
             return env_share
