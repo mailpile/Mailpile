@@ -1274,11 +1274,13 @@ class ConfigManager(ConfigDict):
         self._master_key_ondisk = None
         self._master_key_passgen = -1
 
+        # Make sure we have a silent background session
+        self.background = Session(self)
+        self.background.ui = BackgroundInteraction(self)
+
         self.plugins = None
-        self.background = None
-        self.cron_worker = None
         self.http_worker = None
-        self.dumb_worker = DumbWorker('Dumb worker', None)
+        self.dumb_worker = DumbWorker('Dumb worker', self.background)
         self.slow_worker = self.dumb_worker
         self.scan_worker = self.dumb_worker
         self.save_worker = self.dumb_worker
@@ -1313,6 +1315,11 @@ class ConfigManager(ConfigDict):
                         'jinja2.ext.do', 'jinja2.ext.autoescape',
                         'mailpile.www.jinjaextensions.MailpileCommand']
         )
+
+        self.cron_schedule = {}
+        self.cron_worker = Cron(self.cron_schedule, 'Cron worker', self.background)
+        self.cron_worker.daemon = True
+        self.cron_worker.start()
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -2254,11 +2261,10 @@ class ConfigManager(ConfigDict):
 
     def _unlocked_prepare_workers(config, session=None,
                                   daemons=False, httpd_spec=None):
-        # Make sure we have a silent background session
-        if not config.background:
-            config.background = Session(config)
-            config.background.ui = BackgroundInteraction(config,
-                                                         log_parent=session.ui)
+
+        # Set our background UI to something that can log.
+        config.background.ui = BackgroundInteraction(config,
+                                                     log_parent=session.ui)
 
         # Tell conn broker that we exist
         from mailpile.conn_brokers import Master as ConnBroker
@@ -2303,7 +2309,8 @@ class ConfigManager(ConfigDict):
                                                      config.background)
                 config.save_worker.start()
             if not config.cron_worker:
-                config.cron_worker = Cron('Cron worker', config.background)
+                self.cron_worker = Cron(
+                    self.cron_schedule, 'Cron worker', self.background)
                 config.cron_worker.start()
             if not config.http_worker:
                 start_httpd(httpd_spec)

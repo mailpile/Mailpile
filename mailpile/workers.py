@@ -16,7 +16,7 @@ class Cron(threading.Thread):
     that manages and executes tasks in regular intervals
     """
 
-    def __init__(self, name=None, session=None):
+    def __init__(self, schedule, name=None, session=None):
         """
         Initializes a new Cron instance.
         Note that the thread will not be started automatically, so
@@ -33,7 +33,7 @@ class Cron(threading.Thread):
         self.session = session
         self.last_run = time.time()
         self.running = 'Idle'
-        self.schedule = {}
+        self.schedule = schedule
         self.sleep = 10
         # This lock is used to synchronize
         self.lock = WorkerLock()
@@ -92,8 +92,7 @@ class Cron(threading.Thread):
 
         """
         # Main thread loop
-        with self.session.config.index_check:
-            self.ALIVE = True
+        self.ALIVE = True
         while self.ALIVE and not mailpile.util.QUITTING:
             tasksToBeExecuted = []  # Contains tuples (name, func)
             now = time.time()
