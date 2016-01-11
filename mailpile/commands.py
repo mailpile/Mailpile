@@ -633,6 +633,9 @@ class Command(object):
             self.session.config.async_worker.add_unique_task(
                 self.session, 'post-refresh', refresher)
 
+    def record_user_activity(self):
+        mailpile.util.LAST_USER_ACTIVITY = time.time()
+
     def run(self, *args, **kwargs):
         if self.COMMAND_SECURITY is not None:
             forbidden = security.forbid_command(self)
@@ -642,7 +645,7 @@ class Command(object):
         with MultiContext(self.WITH_CONTEXT):
             if self.IS_USER_ACTIVITY:
                 try:
-                    mailpile.util.LAST_USER_ACTIVITY = time.time()
+                    self.record_user_activity()
                     mailpile.util.LIVE_USER_ACTIVITIES += 1
                     rv = self._run(*args, **kwargs)
                     self._maybe_trigger_cache_refresh()
@@ -2585,6 +2588,26 @@ class Quit(Command):
 
         return self._success(_('Shutting down...'))
 
+class IdleQuit(Command):
+    """Shut down Mailpile if it has been idle for a while"""
+    SYNOPSIS = (None, "idlequit", None, "[<timeout>]")
+    ORDER = ("Internals", 2)
+    CONFIG_REQUIRED = False
+
+    def check(self):
+        idle = time.time() - max(self.started, mailpile.util.LAST_USER_ACTIVITY)
+        if idle > self.timeout:
+            Quit(self.session, 'quit').run()
+
+    def command(self):
+        config = self.session.config
+        self.timeout = int(self.args[0]) if self.args else 600
+        self.started = time.time()
+        config.cron_worker.add_task('idlequit', self.timeout / 5, self.check)
+        return self._success(
+            _('Will shut down if idle for over %s seconds') % self.timeout,
+            {'timeout': self.timeout})
+
 
 class TrustingQQQ(Command):
     """Allow anybody to quit the app"""
@@ -2901,6 +2924,6 @@ COMMANDS = [
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,
-    Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
+    Help, HelpVars, HelpSplash, Quit, IdleQuit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
