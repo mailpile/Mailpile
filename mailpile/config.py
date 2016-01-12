@@ -243,10 +243,9 @@ def _MakeCheck(pcls, name, comment, rules):
         _COMMENT = comment
     return Checker
 
-
 def _BoolCheck(value):
     """
-    Convert common yes/no strings into booleal values.
+    Convert common yes/no strings into boolean values.
 
     >>> _BoolCheck('yes')
     True

@@ -35,7 +35,7 @@ def test_generator():
     # with attachment
     #  - Note: this differs from mailpile-test.py because we do not have the
     #          keys required to decrypt, so encrypted mail => attachment.
-    yield checkSearch(['has:attachment'], 4)
+    yield checkSearch(['has:attachment'], 5)
     # In attachment name
     yield checkSearch(['att:jpg'])
     # term + term

@@ -451,7 +451,7 @@ def truthy(txt, default=False, special=None):
     elif txt in (_('true'), _('yes'), _('on')):
         return True
     else:
-        return default
+        return None
 
 
 def randomish_uid():
