@@ -21,7 +21,7 @@ class TestConfig(MailPileUnittest):
             self.assertEqual(res, False)
 
     def test_BoolCheck_exception(self):
-        for ex in ["3", "wiggle", ""]:
+        for ex in ["wiggle", ""]:
             self.assertRaises(ValueError, lambda: mailpile.config._BoolCheck(ex))
 
     #

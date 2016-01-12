@@ -21,7 +21,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
     # All mail
-    yield checkSearch(['all:mail'], 11)
+    yield checkSearch(['all:mail'], 12)
     # Full match
     yield checkSearch(['brennan'])
     # Partial match
@@ -35,7 +35,7 @@ def test_generator():
     # with attachment
     #  - Note: this differs from mailpile-test.py because we do not have the
     #          keys required to decrypt, so encrypted mail => attachment.
-    yield checkSearch(['has:attachment'], 4)
+    yield checkSearch(['has:attachment'], 5)
     # In attachment name
     yield checkSearch(['att:jpg'])
     # term + term
