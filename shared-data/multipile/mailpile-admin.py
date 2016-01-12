@@ -314,9 +314,11 @@ def get_mailpile_shared_datadir():
     if env_share is not None:
         return env_share
 
-    # Check if we have been installed in a virtual env
-    # http://stackoverflow.com/questions/1871549/python-determine-if-running-insi
-    if hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix'):
+    # Check if we are running in a virtual env
+    # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
+    # We must also check that we are installed in the virtual env,
+    # not just that we are running in a virtual env.
+    if (hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix')) and __file__.startswith(sys.prefix):
         return os.path.join(sys.prefix, 'share', 'mailpile')
 
     # Check if we've been installed to /usr/local (or equivalent)
