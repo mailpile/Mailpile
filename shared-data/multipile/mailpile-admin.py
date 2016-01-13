@@ -61,6 +61,8 @@ CONFIGURE_APACHE_SCRIPT = [
     '"%(a2enmod)s" headers rewrite proxy proxy_http cgi',
     'mkdir -p /var/lib/mailpile/apache/ /var/lib/mailpile/pids/',
     'touch /var/lib/mailpile/apache/usermap.txt',
+    'touch %(multipile-www)s/admin.cgi',
+    'chmod +x %(multipile-www)s/admin.cgi',
     '"%(a2enconf)s" mailpile',
     '"%(apache2ctl)s" restart']
 
@@ -100,7 +102,7 @@ RewriteMap mailpile_u2hp "txt:%(rewritemap)s"
 <Directory "%(multipile-www)s">
     AllowOverride All
     Options FollowSymLinks ExecCGI
-    AddHandler cgi-script .py
+    AddHandler cgi-script .cgi
     LogLevel alert rewrite:trace8
     Require all granted
 
@@ -123,6 +125,13 @@ RewriteMap mailpile_u2hp "txt:%(rewritemap)s"
     Header always set Cache-Control "no-store, no-cache, must-revalidate" env=nocache
     Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT" env=nocache
 </Directory>
+"""
+
+# This is needed to ensure that we run mailpile-admin with the
+# right python interpreter
+CGI_SCRIPT_TEMPLATE = """\
+#!/bin/bash
+exec %(interpreter)s "$(dirname $0)"/../mailpile-admin.py "$@"
 """
 
 # This is the (hopefully unneeded) .htaccess-based rewrite logic
@@ -216,6 +225,8 @@ def app_arguments():
         help='Apache config: discover & configure running Mailpiles')
     ap.add_argument('--packager', default=None,
         help='Apache config: OS packaging tool (apt-get)')
+    ap.add_argument('--interpreter', default=None,
+        help='Python interpreter: python interpreter to use')
     ap.add_argument('--a2enmod', default=None,
         help='Apache config: path to a2enmod utility')
     ap.add_argument('--a2enconf', default=None,
@@ -338,16 +349,29 @@ def get_mailpile_shared_datadir():
     return os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 
+def find_mailpile_executable():
+    mailpile = distutils.spawn.find_executable(
+        'mailpile',
+        os.path.join(sys.prefix, 'bin') + ':' + os.environ.get('PATH')
+    )
+
+    if mailpile:
+        return mailpile
+
+    # NOTE: mp_root is only correct when running from source!
+    mp_root = os.path.join(os.path.join(os.path.dirname(__file__), '..', '..'))
+    mp_root = os.path.realpath(mp_root)
+    return os.path.join(mp_root, 'mp')
+
+
 def get_os_settings(args):
     # FIXME: Detect OS, choose settings; these are the Ubuntu/Debian defaults.
 
-    # FIXME: This may be quite wrong...
-    mp_root = os.path.join(os.path.join(os.path.dirname(__file__), '..', '..'))
-    mp_root = os.path.realpath(mp_root)
     mp_share = args.mailpile_share or get_mailpile_shared_datadir()
 
     return {
         'packager': args.packager or 'apt-get',
+        'interpreter': args.interpreter or sys.executable,
         'a2enmod': args.a2enmod or 'a2enmod',
         'a2enconf': args.a2enconf or 'a2enconf',
         'apache2ctl': args.apache2ctl or 'apache2ctl',
@@ -356,15 +380,12 @@ def get_os_settings(args):
         'apache-confs': args.apache_confs or '/etc/apache2/conf-available',
         'webroot': args.webroot,
         'rewritemap': args.rewritemap,
-        'mailpile': (args.mailpile
-                     or distutils.spawn.find_executable(
-                         'mailpile', os.path.join(sys.prefix, 'bin') + ':' + os.environ.get('PATH'))
-                     or os.path.join(mp_root, 'mp')),
+        'mailpile': args.mailpile or find_mailpile_executable(),
         'mailpile-admin': os.path.realpath(sys.argv[0]),
         'mailpile-theme': (args.mailpile_theme
                            or os.path.join(mp_share, 'default-theme')),
         'multipile-www': (args.multipile_www
-                          or os.path.join(mp_share, 'multipile'))}
+                          or os.path.join(mp_share, 'multipile', 'www'))}
 
 
 def get_user_settings(args, user=None, mailpiles=None):
@@ -524,6 +545,11 @@ def save_usermap(args, os_settings, mailpiles):
         return save_rewritemap(args, os_settings, mailpiles)
 
 
+def save_cgi(os_settings):
+    with open(os.path.join(os_settings['multipile-www'], 'admin.cgi'), 'w') as fd:
+        fd.write(CGI_SCRIPT_TEMPLATE % os_settings)
+
+
 def run_script(args, settings, script):
     for line in script:
         line = line % _escaped(settings)
@@ -576,6 +602,7 @@ def configure_apache(app_args, args):
             fd.write(APACHE_CONFIG_TEMPLATE % os_settings)
 
         run_script(args, os_settings, CONFIGURE_APACHE_SCRIPT)
+        save_cgi(os_settings)
         save_usermap(args, os_settings, _get_mailpiles(args))
         run_script(args, os_settings, FIX_PERMS_SCRIPT)
     else:
@@ -612,7 +639,8 @@ def start_mailpile(app_args, args):
     assert(re.match('^[0-9]+$', user_settings['port']) is not None)
     assert(re.match('^[a-z0-9\.]+$', user_settings['host']) is not None)
     if args.user:
-        command = '"%s" --start --port="%s" --host="%s"' % (
+        command = '%s "%s" --start --port="%s" --host="%s"' % (
+            _escape(os_settings['interpreter']),
             _escape(os_settings['mailpile-admin']),
             _escape(user_settings['port']),
             _escape(user_settings['host']))
