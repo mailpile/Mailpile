@@ -1,2 +1,2 @@
 #!/bin/bash
-exec "$(dirname $0)"/../shared-data/multipile/mailpile-admin.py "$@"
+exec python "$(dirname $0)"/../shared-data/multipile/mailpile-admin.py "$@"

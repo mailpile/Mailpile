@@ -106,6 +106,7 @@ clean:
 	        scripts/less-compiler.mk ghostdriver.log
 	@rm -rf *.egg-info build/ mp-virtualenv/ bower_components/ \
                mailpile/tests/data/tmp/ testing/tmp/
+	@rm -f shared-data/multipile/www/admin.cgi
 
 mrproper: clean
 	@rm -rf dist/ bower_components/ shared-data/locale/mailpile.pot
