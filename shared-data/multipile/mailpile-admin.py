@@ -357,7 +357,8 @@ def get_os_settings(args):
         'webroot': args.webroot,
         'rewritemap': args.rewritemap,
         'mailpile': (args.mailpile
-                     or distutils.spawn.find_executable('mailpile')
+                     or distutils.spawn.find_executable(
+                         'mailpile', os.path.join(sys.prefix, 'bin') + ':' + os.environ.get('PATH'))
                      or os.path.join(mp_root, 'mp')),
         'mailpile-admin': os.path.realpath(sys.argv[0]),
         'mailpile-theme': (args.mailpile_theme
