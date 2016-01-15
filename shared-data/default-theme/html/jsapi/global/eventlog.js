@@ -5,6 +5,23 @@ var EventLog = {
   timer: null
 };
 
+EventLog.last_poll = function(new_value) {
+  if (new_value !== undefined) {
+    Mailpile.local_storage['eventlog_last_poll'] = new_value;
+  }
+  else {
+    return Mailpile.local_storage['eventlog_last_poll'] || 0;
+  }
+}
+
+EventLog.last_result = function(new_result) {
+  if (new_result !== undefined) {
+    Mailpile.local_storage['eventlog_last_result'] = JSON.stringify(new_result);
+  }
+  else {
+    return JSON.parse(Mailpile.local_storage['eventlog_last_result'] || '{}');
+  }
+}
 
 EventLog.pause = function() {
   return EventLog.timer.pause();
@@ -21,32 +38,38 @@ EventLog.request = function(conditions, callback) {
     Mailpile.API.eventlog_get({incomplete: true}, EventLog.invoke_callbacks);
     EventLog.first_load = false;
   }
-  var conditions = conditions || {};
-  conditions._error_callback = EventLog.process_error;
-  Mailpile.API.eventlog_get(conditions, callback || EventLog.process_result);
+  // We check localStorage here, to see if any other tab has a poll in
+  // flight. If it does, we just don't do anything as our localStorage
+  // subscription will get the data that way and we don't want too many
+  // requests in-flight to the backend at once, both for performance
+  // reasons and because of browser simultaneous connection limits.
+  var now = new Date().getTime();
+  if (now - EventLog.last_poll() > 30000) {
+    var conditions = conditions || {};
+    EventLog.last_poll(now);
+    conditions._error_callback = EventLog.process_error;
+    Mailpile.API.eventlog_get(conditions, callback || EventLog.process_result);
+  }
+  else {
+    // Keep checking every 5 seconds, in case the other tab gets closed.
+    setTimeout(function() {EventLog.poll();}, 5000);
+  }
 };
 
 
 EventLog.poll = function() {
-  // BRE: disabled the filtering for now, as the eventlog filter language
-  //      is not flexible enough to watch for all the different events
-  //      we need in one call. It also has the issue that if subscriptions
-  //      change then we need the ability to immediately terminate the
-  //      outstanding request and fire off a new one. So for now we just
-  //      use the firehose, but increase the gather time to 1 second.
   //
-  // Request news about updates to the mail sources and command cache
-  //var source_re = '~(.mail_source|.command_cache';
+  // Note: This is unfiltered for these reasons:
   //
-  // ... and any other things we consider exciting
-  //for (id in EventLog.eventbindings) {
-  //   binding = EventLog.eventbindings[id][0];
-  //   source_re += '|' + binding.source;
-  //}
-  //source_re += ')';
-
+  // 1) The eventlog filter language is not flexible enough to watch for all
+  //    the different events we need in one call.
+  // 2) It also has the issue that if subscriptions change then we need the
+  //    ability to immediately terminate the outstanding request and fire off
+  //    a new one.
+  // 3) Other tabs may rely on us putting things in localStorage that we
+  //    ourselves don't care about.
+  //
   EventLog.request({
-  //source: source_re,
     since: EventLog.last_ts,
     gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
     wait: 30,
@@ -79,14 +102,17 @@ EventLog.invoke_callbacks = function(response) {
 
 
 EventLog.process_error = function(result, textstatus) {
+  EventLog.last_poll(0);
   setTimeout(function() {EventLog.poll();}, 5000);
 };
 
 
 EventLog.process_result = function(result, textstatus) {
+  EventLog.last_poll(0);
   EventLog.last_ts = EventLog.invoke_callbacks(result);
   EventLog.poll();
   Mailpile.local_storage['eventlog_last_ts'] = EventLog.last_ts;
+  EventLog.last_result(result);
 };
 
 
@@ -122,3 +148,18 @@ EventLog.unsubscribe = function(ev, func_or_id) {
   }
   return false;
 };
+
+
+$(document).ready(function () {
+  window.addEventListener('storage', function(evt) {
+    // When the localStorage result sharing object gets updated, we parse
+    // as if we'd run the API call ourselves. However, we do so after a 150ms
+    // delay, to let the main tab prime the cache for us.
+    if (evt.key == 'eventlog_last_result') {
+      var result = JSON.parse(evt.newValue);
+      setTimeout(function() {
+        EventLog.last_ts = EventLog.invoke_callbacks(result);
+      }, 150);
+    }
+  }, false);
+});
