@@ -2314,8 +2314,8 @@ class ConfigManager(ConfigDict):
                                                      config.background)
                 config.save_worker.start()
             if not config.cron_worker:
-                self.cron_worker = Cron(
-                    self.cron_schedule, 'Cron worker', self.background)
+                config.cron_worker = Cron(
+                    config.cron_schedule, 'Cron worker', config.background)
                 config.cron_worker.start()
             if not config.http_worker:
                 start_httpd(httpd_spec)
