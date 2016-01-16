@@ -40,9 +40,12 @@ def CatchUnixSignals(session):
 
     try:
         import signal
-        signal.signal(signal.SIGTERM, quit_app)
-        signal.signal(signal.SIGQUIT, quit_app)
-        signal.signal(signal.SIGUSR1, reload_app)
+        if os.name != 'nt':
+            signal.signal(signal.SIGTERM, quit_app)
+            signal.signal(signal.SIGQUIT, quit_app)
+            signal.signal(signal.SIGUSR1, reload_app)
+        else:
+            signal.signal(signal.SIGTERM, quit_app)
     except ImportError:
         pass
 
