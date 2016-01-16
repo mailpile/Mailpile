@@ -689,7 +689,7 @@ def delete_mailpile(app_args, args):
         usage(app_args, 'This command is scary, use --force if sure', code=0)
 
     run_user_command_or_script(
-        args, user_settings, '--delete', MAILPILE_DELETE_SCRIPT)
+        args, user_settings, '--delete --force', MAILPILE_DELETE_SCRIPT)
 
 
 def main():
