@@ -1,6 +1,7 @@
 import cStringIO
 import email
 import lxml.html
+import random
 import re
 import rfc822
 import time
@@ -1629,15 +1630,18 @@ class MailIndex(object):
     def get_msg_at_idx_pos(self, msg_idx):
         try:
             crv = self.CACHE.get(msg_idx, {})
-            if 'msg_info' not in crv:
-                if len(self.CACHE) > 5000:
-                    self.CACHE = dict([(k, v) for k, v in self.CACHE.iteritems()
-                                       ][:500])
+            if 'msg_info' in crv:
+                rv = crv['msg_info']
+            else:
+                if len(self.CACHE) > 2500:
+                    try:
+                        for k in random.sample(self.CACHE.keys(), 50):
+                            del self.CACHE[k]
+                    except KeyError:
+                        pass
                 rv = self.l2m(self.INDEX[msg_idx])
                 crv['msg_info'] = rv
                 self.CACHE[msg_idx] = crv
-            else:
-                rv = crv['msg_info']
             if len(rv) != self.MSG_FIELDS_V2:
                 raise ValueError()
             return rv
