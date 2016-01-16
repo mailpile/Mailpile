@@ -151,7 +151,10 @@ def GetTextPayload(part):
         # in particular isn't aware of base64 encoding. Compensate!
         payload = part.get_payload(None, False) or ''
         parts = payload.split('\n--')
-        parts[0] = base64.b64decode(parts[0])
+        try:
+            parts[0] = base64.b64decode(parts[0])
+        except TypeError:
+            pass
         return '\n--'.join(parts)
     else:
         return part.get_payload(None, True) or ''
