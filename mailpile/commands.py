@@ -1157,7 +1157,8 @@ class SearchResults(dict):
 
         for mid in self['thread_ids']:
             m = self['data']['metadata'][mid]
-            tags = [self['data']['tags'][t] for t in m['tag_tids']]
+            tags = [self['data']['tags'].get(t) for t in m['tag_tids']]
+            tags = [t for t in tags if t]
             tag_names = [t['name'] for t in tags
                          if not t.get('searched', False)
                          and t.get('label', True)

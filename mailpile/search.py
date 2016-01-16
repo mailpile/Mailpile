@@ -1759,6 +1759,8 @@ class MailIndex(object):
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
+                    if msg_idx in self.CACHE:
+                        del self.CACHE[msg_idx]
                     added.add(msg_idx)
                     threads.add(msg_info[self.MSG_THREAD_MID].split('/')[0])
                 eids.add(msg_idx)
@@ -1813,6 +1815,8 @@ class MailIndex(object):
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
+                    if msg_idx in self.CACHE:
+                        del self.CACHE[msg_idx]
                     removed.add(msg_idx)
                     threads.add(msg_info[self.MSG_THREAD_MID].split('/')[0])
                 eids.add(msg_idx)
