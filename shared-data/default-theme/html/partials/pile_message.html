@@ -13,6 +13,7 @@
     {%- set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
     {%- set encryption = show_text_part_encryption(part_encryption and part_encryption.status) %}
     {%- set signature = show_text_part_signature(part_signature and part_signature.status) %}
+    {%- set special_text_parts = [] %}
 
     {%- if encryption_status and part_encryption.status != encryption_status[-1] %}
     <div class="part-crypto-status clearfix crypto-changed border-{{ encryption.color }}">
@@ -55,7 +56,6 @@
   {%- endmacro %}
   <div class="pile-message-content">
   {%- if message.text_parts %}
-    {%- set special_text_parts = [] %}
     {%- set last_part = message.text_parts|length - 1 %}
     {%- for part in message.text_parts %}
     <div class="pile-message-text-part">
