@@ -1288,7 +1288,6 @@ class ConfigManager(ConfigDict):
         self.slow_worker = self.dumb_worker
         self.scan_worker = self.dumb_worker
         self.save_worker = self.dumb_worker
-        self.async_worker = self.dumb_worker
         self.other_workers = []
         self.mail_sources = {}
 
@@ -2302,13 +2301,14 @@ class ConfigManager(ConfigDict):
 
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', config.background)
+                config.slow_worker.wait_until = lambda: (
+                    (not config.save_worker) or config.save_worker.is_idle())
                 config.slow_worker.start()
             if config.scan_worker == config.dumb_worker:
                 config.scan_worker = Worker('Scan worker', config.background)
+                config.slow_worker.wait_until = lambda: (
+                    (not config.save_worker) or config.save_worker.is_idle())
                 config.scan_worker.start()
-            if config.async_worker == config.dumb_worker:
-                config.async_worker = Worker('Async worker', config.background)
-                config.async_worker.start()
             if config.save_worker == config.dumb_worker:
                 config.save_worker = ImportantWorker('Save worker',
                                                      config.background)
@@ -2348,10 +2348,11 @@ class ConfigManager(ConfigDict):
                                         search_history_saver)
 
             def refresh_command_cache():
-                config.async_worker.add_unique_task(
+                config.scan_worker.add_unique_task(
                     config.background, 'refresh_command_cache',
                     lambda: config.command_cache.refresh(
-                        event_log=config.event_log))
+                        event_log=config.event_log),
+                    first=True)
             config.cron_worker.add_task('refresh_command_cache', 5,
                                         refresh_command_cache)
 
@@ -2399,7 +2400,6 @@ class ConfigManager(ConfigDict):
             worker_list = (config.mail_sources.values() +
                            config.other_workers +
                            [config.http_worker,
-                            config.async_worker,
                             config.slow_worker,
                             config.scan_worker,
                             config.cron_worker])
@@ -2407,7 +2407,6 @@ class ConfigManager(ConfigDict):
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
             config.scan_worker = config.dumb_worker
-            config.async_worker = config.dumb_worker
 
         for wait in (False, True):
             for w in worker_list:

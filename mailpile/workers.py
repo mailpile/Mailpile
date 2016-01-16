@@ -1,3 +1,4 @@
+import os
 import threading
 import traceback
 import time
@@ -169,6 +170,7 @@ class Worker(threading.Thread):
         self.pauses = 0
         self.session = session
         self.important = False
+        self.wait_until = None
 
     def __str__(self):
         return ('%s: %s (%ds, jobs=%s, jobs_after=%s)'
@@ -202,12 +204,12 @@ class Worker(threading.Thread):
     def add_unique_task(self, session, name, task, **kwargs):
         return self.add_task(session, name, task, unique=True, **kwargs)
 
-    def do(self, session, name, task, unique=False):
+    def do(self, session, name, task, unique=False, first=False):
         if session and session.main:
             # We run this in the foreground on the main interactive session,
             # so CTRL-C has a chance to work.
             try:
-                self.pause(session)
+                self.pause(session, first=first)
                 rv = task()
             finally:
                 self.unpause(session)
@@ -220,6 +222,9 @@ class Worker(threading.Thread):
         return rv
 
     def _pause_for_user_activities(self):
+        if self.wait_until is not None:
+            while not self.wait_until():
+                time.sleep(self.PAUSE_DEADLINE)
         play_nice_with_threads(deadline=time.time() + self.PAUSE_DEADLINE)
 
     def _keep_running(self, **ignored_kwargs):
@@ -232,6 +237,11 @@ class Worker(threading.Thread):
         if session:
             session.report_task_failed(name)
 
+    def is_idle(self):
+        return (len(self.JOBS) + len(self.JOBS_LATER) < 1 and
+                self.running.startswith('Finished') or
+                self.running.startswith('Idle'))
+
     def run(self):
         self.ALIVE = True
         while self._keep_running():
@@ -240,6 +250,8 @@ class Worker(threading.Thread):
                     if not self._keep_running(locked=True):
                         return
                     self.LOCK.wait()
+
+            self._pause_for_user_activities()
 
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
@@ -250,7 +262,6 @@ class Worker(threading.Thread):
                     self.JOBS_LATER = [(ts, snt) for ts, snt
                                        in self.JOBS_LATER if ts > now]
 
-            self._pause_for_user_activities()
             try:
                 self.last_run = time.time()
                 self.running = name
@@ -272,7 +283,7 @@ class Worker(threading.Thread):
                 self.last_run = time.time()
                 self.running = 'Finished %s' % self.running
 
-    def pause(self, session):
+    def pause(self, session, first=False):
         with self.LOCK:
             self.pauses += 1
             first = (self.pauses == 1)
@@ -282,7 +293,7 @@ class Worker(threading.Thread):
                 session.report_task_completed('Pause', True)
                 session.wait_for_task('Unpause', quiet=True)
 
-            self.add_task(None, 'Pause', pause_task)
+            self.add_task(None, 'Pause', pause_task, first=first)
             session.wait_for_task('Pause', quiet=True)
 
     def unpause(self, session):

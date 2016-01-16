@@ -362,14 +362,17 @@ class Command(object):
         session, cfg = self.session, self.session.config
         aut = cfg.save_worker.add_unique_task
         if everything or config:
-            aut(session, 'Save config', lambda: cfg.save(session))
+            aut(session, 'Save config', lambda: cfg.save(session), first=True)
         if cfg.index:
             cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:
-                aut(session, 'Save index', lambda: self._idx().save(session))
+                aut(session, 'Save index',
+                    lambda: self._idx().save(session),
+                    first=True)
             elif everything or index:
                 aut(session, 'Save index changes',
-                    lambda: self._idx().save_changes(session))
+                    lambda: self._idx().save_changes(session),
+                    first=True)
         if wait:
             wait_callback = wait_callback or (lambda: True)
             cfg.save_worker.do(session, 'Waiting', wait_callback)
@@ -461,7 +464,7 @@ class Command(object):
 
     def _background(self, name, function):
         session, config = self.session, self.session.config
-        return config.slow_worker.add_task(session, name, function)
+        return config.scan_worker.add_task(session, name, function)
 
     def _update_event_state(self, state, log=False):
         self.event.flags = state
@@ -618,8 +621,8 @@ class Command(object):
                                            "success",
                                            "Running in background")
 
-            self.session.config.async_worker.add_task(self.session, self.name,
-                                                      streetcar)
+            self.session.config.scan_worker.add_task(self.session, self.name,
+                                                     streetcar, first=True)
             return result
 
         else:
@@ -630,8 +633,8 @@ class Command(object):
             def refresher():
                 self.session.config.command_cache.refresh(
                     event_log=self.session.config.event_log)
-            self.session.config.async_worker.add_unique_task(
-                self.session, 'post-refresh', refresher)
+            self.session.config.scan_worker.add_unique_task(
+                self.session, 'post-refresh', refresher, first=True)
 
     def record_user_activity(self):
         mailpile.util.LAST_USER_ACTIVITY = time.time()
