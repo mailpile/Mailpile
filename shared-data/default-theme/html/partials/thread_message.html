@@ -4,6 +4,7 @@
   {% include("partials/thread_metadata.html") %}
   {% set encryption_status = [message.crypto.encryption.status] %}
   {% set signature_status = [message.crypto.signature.status] %}
+  {% set special_text_parts = [] %}
   <div class="thread-message-body">
 {#### If no text_part, show html_part }
     {% if not message.text_parts %}
@@ -18,7 +19,6 @@
     {% endif
 #####}
     {% if message.text_parts %}
-      {% set special_text_parts = [] %}
       {% set last_part = message.text_parts|length - 1 %}
       {% for part in message.text_parts %}
         {# Parts that do not have own crypto attribute inherit from message itself
