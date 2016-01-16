@@ -768,14 +768,20 @@ def dict_merge(*dicts):
     return final
 
 
-def play_nice_with_threads(sleep=True, deadline=None):
+def play_nice(niceness):
+    if hasattr(os, 'nice'):
+        os.nice(niceness)
+
+
+def play_nice_with_threads(sleep=True, weak=False, deadline=None):
     """
     Long-running batch jobs should call this now and then to pause
     their activities in case there are other threads that would like to
     run. Recent user activity increases the delay significantly, to
     hopefully make the app more responsive when it is in use.
     """
-    if threading.activeCount() < 4:
+    if weak or threading.activeCount() < 4:
+        time.sleep(0)
         return 0
 
     deadline = (time.time() + 5) if (deadline is None) else deadline

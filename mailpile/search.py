@@ -736,6 +736,7 @@ class MailIndex(object):
         if reverse:
             messages.reverse()
         for ui in range(0, len(messages)):
+            play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
                 self.interrupt = None
                 return finito(-1, _('Rescan interrupted: %s'

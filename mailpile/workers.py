@@ -1,4 +1,3 @@
-import os
 import threading
 import traceback
 import time
@@ -92,6 +91,8 @@ class Cron(threading.Thread):
         Thread main function for a Cron instance.
 
         """
+        play_nice(19)  # Reduce our priority as much as possible
+
         # Main thread loop
         self.ALIVE = True
         while self.ALIVE and not mailpile.util.QUITTING:
@@ -156,6 +157,7 @@ class Cron(threading.Thread):
 class Worker(threading.Thread):
 
     PAUSE_DEADLINE = 2
+    NICE_PRIORITY = 15
 
     def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
@@ -243,6 +245,7 @@ class Worker(threading.Thread):
                 self.running.startswith('Idle'))
 
     def run(self):
+        play_nice(self.NICE_PRIORITY)  # Reduce priority
         self.ALIVE = True
         while self._keep_running():
             with self.LOCK:
@@ -319,6 +322,7 @@ class Worker(threading.Thread):
 class ImportantWorker(Worker):
 
     PAUSE_DEADLINE = 0.5
+    NICE_PRIORITY = 5
 
     def _pause_for_user_activities(self):
         # Our jobs are important, if we have too many we stop playing nice
