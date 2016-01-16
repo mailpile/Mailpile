@@ -735,6 +735,13 @@ class SearchResults(dict):
     }
 
     def _metadata(self, msg_info):
+        msg_mid = msg_info[MailIndex.MSG_MID]
+        msg_idx = int(msg_mid, 36)
+
+        cache = self.idx.CACHE.get(msg_idx, {})
+        if 'metadata' in cache:
+            return cache['metadata']
+
         import mailpile.urlmap
         nz = lambda l: [v for v in l if v]
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
@@ -748,7 +755,7 @@ class SearchResults(dict):
         if '/' in thread_mid:
             thread_mid, parent_mid = thread_mid.split('/')
         expl = {
-            'mid': msg_info[MailIndex.MSG_MID],
+            'mid': msg_mid,
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
             'from': f_info,
@@ -812,6 +819,8 @@ class SearchResults(dict):
             else:
                 del expl['flags']['draft']
 
+        cache['metadata'] = expl
+        self.idx.CACHE[msg_idx] = cache
         return expl
 
     def _msg_addresses(self, msg_info=None, addresses=[],

@@ -1627,11 +1627,16 @@ class MailIndex(object):
 
     def get_msg_at_idx_pos(self, msg_idx):
         try:
-            rv = self.CACHE.get(msg_idx)
-            if rv is None:
-                if len(self.CACHE) > 20000:
-                    self.CACHE = {}
-                rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
+            crv = self.CACHE.get(msg_idx, {})
+            if 'msg_info' not in crv:
+                if len(self.CACHE) > 5000:
+                    self.CACHE = dict([(k, v) for k, v in self.CACHE.iteritems()
+                                       ][:500])
+                rv = self.l2m(self.INDEX[msg_idx])
+                crv['msg_info'] = rv
+                self.CACHE[msg_idx] = crv
+            else:
+                rv = crv['msg_info']
             if len(rv) != self.MSG_FIELDS_V2:
                 raise ValueError()
             return rv
@@ -2101,12 +2106,14 @@ class MailIndex(object):
         if 'flat' not in how:
             # This filters away all but the first result in each conversation.
             session.ui.mark(_('Collapsing conversations...'))
-            seen, r2 = {}, []
-            for i in range(0, len(results)):
-                if self.INDEX_THR[results[i]] not in seen:
-                    r2.append(results[i])
-                    seen[self.INDEX_THR[results[i]]] = True
-            results[:] = r2
+            seen, pi = {}, 0
+            for ri in results:
+                ti = self.INDEX_THR[ri]
+                if ti not in seen:
+                    results[pi] = ri
+                    seen[ti] = True
+                    pi += 1
+            results[pi:] = []
             session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count
