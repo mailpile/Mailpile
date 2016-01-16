@@ -153,13 +153,9 @@ EventLog.unsubscribe = function(ev, func_or_id) {
 $(document).ready(function () {
   window.addEventListener('storage', function(evt) {
     // When the localStorage result sharing object gets updated, we parse
-    // as if we'd run the API call ourselves. However, we do so after a 150ms
-    // delay, to let the main tab prime the cache for us.
+    // as if we'd run the API call ourselves.
     if (evt.key == 'eventlog_last_result') {
-      var result = JSON.parse(evt.newValue);
-      setTimeout(function() {
-        EventLog.last_ts = EventLog.invoke_callbacks(result);
-      }, 150);
+      EventLog.last_ts = EventLog.invoke_callbacks(JSON.parse(evt.newValue));
     }
   }, false);
 });

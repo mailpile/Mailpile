@@ -438,7 +438,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     else:
                         http_headers.append(('ETag', etag))
                 max_age = min(max_ages) if max_ages else 10
-                cachectrl = 'must-revalidate, max-age=%d' % max_age
+                cachectrl = 'must-revalidate, no-store, max-age=%d' % max_age
 
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
@@ -494,6 +494,9 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.sessions = {}
         self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # We set a large sending buffer to avoid blocking, because the GIL and
+        # scheduling interact badly when we have busy background jobs.
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 128 * 1024)
         self.server_url = 'http://UNKNOWN/'
         self.sspec = (sspec[0] or 'localhost',
                       self.socket.getsockname()[1],

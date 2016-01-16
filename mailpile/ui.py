@@ -636,7 +636,7 @@ class HttpUserInteraction(UserInteraction):
             if len(self.results) == 1:
                 return self._ttype_to_mimetype(*self.results[0])
             if len(self.results) > 1:
-               raise Exception(_('FIXME: Multiple results, OMG WTF'))
+                raise Exception('FIXME: Multiple results, OMG WTF')
             return ""
 
     def edit_messages(self, session, emails):
