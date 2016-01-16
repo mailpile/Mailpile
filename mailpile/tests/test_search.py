@@ -21,7 +21,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
     # All mail
-    yield checkSearch(['all:mail'], 12)
+    yield checkSearch(['all:mail'], 13)
     # Full match
     yield checkSearch(['brennan'])
     # Partial match
@@ -35,7 +35,7 @@ def test_generator():
     # with attachment
     #  - Note: this differs from mailpile-test.py because we do not have the
     #          keys required to decrypt, so encrypted mail => attachment.
-    yield checkSearch(['has:attachment'], 4)
+    yield checkSearch(['has:attachment'], 5)
     # In attachment name
     yield checkSearch(['att:jpg'])
     # term + term
@@ -44,7 +44,7 @@ def test_generator():
     yield checkSearch(['brennan', 'from:twitter'])
     # Not found
     yield checkSearch(['subject:Moderation', 'kde-isl'], 0)
-    yield checkSearch(['has:crypto'], 3)
+    yield checkSearch(['has:crypto'], 4)
 
     # Test that we do not crash when searching for a non-existant tag.
     yield checkSearch(['in:doesnotexist'], 0)
