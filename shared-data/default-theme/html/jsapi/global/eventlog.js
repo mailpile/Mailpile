@@ -2,17 +2,10 @@ var EventLog = {
   eventbindings: [],  // All the subscriptions
   last_ts: Mailpile.local_storage['eventlog_last_ts'] || -1800,
   first_load: true,
+  other_tab: 0,
+  timeOut: null,
   timer: null
 };
-
-EventLog.last_poll = function(new_value) {
-  if (new_value !== undefined) {
-    Mailpile.local_storage['eventlog_last_poll'] = new_value;
-  }
-  else {
-    return Mailpile.local_storage['eventlog_last_poll'] || 0;
-  }
-}
 
 EventLog.last_result = function(new_result) {
   if (new_result !== undefined) {
@@ -44,15 +37,14 @@ EventLog.request = function(conditions, callback) {
   // requests in-flight to the backend at once, both for performance
   // reasons and because of browser simultaneous connection limits.
   var now = new Date().getTime();
-  if (now - EventLog.last_poll() > 30000) {
+  if (now - EventLog.other_tab > 30000) {
     var conditions = conditions || {};
-    EventLog.last_poll(now);
     conditions._error_callback = EventLog.process_error;
     Mailpile.API.eventlog_get(conditions, callback || EventLog.process_result);
   }
   else {
     // Keep checking every 5 seconds, in case the other tab gets closed.
-    setTimeout(function() {EventLog.poll();}, 5000);
+    EventLog.timeOut = setTimeout(function() {EventLog.poll();}, 5000);
   }
 };
 
@@ -81,6 +73,7 @@ EventLog.poll = function() {
 EventLog.invoke_callbacks = function(response) {
   // Update the API CSRF token
   Mailpile.csrf_token = response.state.csrf_token;
+  // DEBUGGING: console.log('Update CSRF: ' + Mailpile.csrf_token);
 
   // Iterate through the events, calling callbacks...
   var last_ts = response.result.ts;
@@ -102,13 +95,11 @@ EventLog.invoke_callbacks = function(response) {
 
 
 EventLog.process_error = function(result, textstatus) {
-  EventLog.last_poll(0);
-  setTimeout(function() {EventLog.poll();}, 5000);
+  EventLog.timeOut = setTimeout(function() {EventLog.poll();}, 5000);
 };
 
 
 EventLog.process_result = function(result, textstatus) {
-  EventLog.last_poll(0);
   EventLog.last_ts = EventLog.invoke_callbacks(result);
   EventLog.poll();
   Mailpile.local_storage['eventlog_last_ts'] = EventLog.last_ts;
@@ -155,6 +146,7 @@ $(document).ready(function () {
     // When the localStorage result sharing object gets updated, we parse
     // as if we'd run the API call ourselves.
     if (evt.key == 'eventlog_last_result') {
+      EventLog.other_tab = new Date().getTime();
       EventLog.last_ts = EventLog.invoke_callbacks(JSON.parse(evt.newValue));
     }
   }, false);
