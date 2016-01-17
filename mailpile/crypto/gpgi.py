@@ -681,7 +681,7 @@ class GnuPG:
         if not selectors:
             list_keys += ["--list-keys"]
         self.event.running_gpg(_('Fetching GnuPG public key list (selectors=%s)'
-                                 ) % ', '.join(selectors))
+                                 ) % ', '.join(selectors or []))
         retvals = self.run(list_keys)
         return self.parse_keylist(retvals[1]["stdout"])
 
@@ -713,7 +713,7 @@ class GnuPG:
             list_keys += ["--list-secret-keys", sel]
 
         self.event.running_gpg(_('Fetching GnuPG secret key list (selectors=%s)'
-                                 ) % ', '.join(selectors))
+                                 ) % ', '.join(selectors or []))
         retvals = self.run(list_keys)
         secret_keys = self.parse_keylist(retvals[1]["stdout"])
 
@@ -1015,7 +1015,7 @@ class GnuPG:
 
     def get_pubkey(self, keyid):
         self.event.running_gpg(_('Searching for key for %s in key servers'
-                                 ) % (term))
+                                 ) % (keyid))
         retvals = self.run(['--armor',
                             '--export', keyid]
                             )[1]["stdout"]

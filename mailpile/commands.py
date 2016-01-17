@@ -739,11 +739,14 @@ class SearchResults(dict):
 
     def _metadata(self, msg_info):
         msg_mid = msg_info[MailIndex.MSG_MID]
-        msg_idx = int(msg_mid, 36)
-
-        cache = self.idx.CACHE.get(msg_idx, {})
-        if 'metadata' in cache:
-            return cache['metadata']
+        if '-' in msg_mid:
+            # Ephemeral...
+            msg_idx = None
+        else:
+            msg_idx = int(msg_mid, 36)
+            cache = self.idx.CACHE.get(msg_idx, {})
+            if 'metadata' in cache:
+                return cache['metadata']
 
         import mailpile.urlmap
         nz = lambda l: [v for v in l if v]
@@ -822,8 +825,9 @@ class SearchResults(dict):
             else:
                 del expl['flags']['draft']
 
-        cache['metadata'] = expl
-        self.idx.CACHE[msg_idx] = cache
+        if msg_idx is not None:
+            cache['metadata'] = expl
+            self.idx.CACHE[msg_idx] = cache
         return expl
 
     def _msg_addresses(self, msg_info=None, addresses=[],

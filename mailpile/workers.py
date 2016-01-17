@@ -363,7 +363,7 @@ class DumbWorker(Worker):
         with self.LOCK:
             return task()
 
-    def add_unique_task(self, session, name, task):
+    def add_unique_task(self, session, name, task, **kwargs):
         return self.add_task(session, name, task)
 
     def do(self, session, name, task, unique=False):
