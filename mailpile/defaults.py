@@ -58,8 +58,8 @@ CONFIG_RULES = {
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
-        'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
-        'login_banner':   [_('A custom banner for the login page'), str,   ''],
+        'lockdown':      p(_('Demo mode, disallow changes'), bool,      False),
+        'login_banner':  p(_('A custom banner for the login page'), str,   ''),
         'proxy':          [_('Proxy settings'), False, {
             'protocol':   (_('Proxy protocol'),
                            ["tor", "socks5", "socks4", "http", "none"],
