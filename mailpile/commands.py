@@ -1873,10 +1873,15 @@ class ListDir(Command):
             args = ['.']
 
         def lsf(f):
-            info = vfs.getinfo(f, self.session.config)
-            info['icon'] = ''
-            for k in info.get('flags', []):
-                info['flag_%s' % unicode(k).lower().replace('.', '_')] = True
+            info = {'path': f}
+            try:
+                info = vfs.getinfo(f, self.session.config)
+                info['icon'] = ''
+                for k in info.get('flags', []):
+                    info['flag_%s' % unicode(k).lower().replace('.', '_')
+                         ] = True
+            except (OSError, IOError, UnicodeDecodeError):
+                info['flag_error'] = True
             return info
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
