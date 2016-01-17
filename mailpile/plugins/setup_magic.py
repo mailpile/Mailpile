@@ -1076,7 +1076,8 @@ class SetupCrypto(TestableWebbable):
 
             editor = GnuPGKeyEditor(key_id, set_uids=uids,
                                     sps=self.session.config.passphrases['DEFAULT'],
-                                    deletes=max(10, 2*len(uids)))
+                                    deletes=max(10, 2*len(uids)),
+                                    event=self.event)
 
             def start_editor(*unused_args):
                 with Setup.KEY_WORKER_LOCK:
@@ -1167,7 +1168,8 @@ class SetupCrypto(TestableWebbable):
                         gk = GnuPGKeyGenerator(
                             sps=session.config.passphrases['DEFAULT'],
                             on_complete=('notify',
-                                         lambda: self.gpg_key_ready(gk)))
+                                         lambda: self.gpg_key_ready(gk)),
+                            event=self.event)
                         Setup.KEY_CREATING_THREAD = gk
                         Setup.KEY_CREATING_THREAD.start()
 

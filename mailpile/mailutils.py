@@ -30,6 +30,7 @@ from datetime import datetime, timedelta
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
@@ -93,7 +94,7 @@ def ClearParseCache(cache_id=None, pgpmime=False, full=False):
 
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
-                     pgpmime=True, config=None):
+                     pgpmime=True, config=None, event=None):
     global GLOBAL_PARSE_CACHE
     if not GnuPG:
         pgpmime = False
@@ -115,6 +116,9 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             # of this message with a fancy decrypted one.
             message = copy.deepcopy(message)
         def MakeGnuPG(*args, **kwargs):
+            ev = event or GetThreadEvent()
+            if ev and 'event' not in kwargs:
+                kwargs['event'] = ev
             return GnuPG(config, *args, **kwargs)
         UnwrapMimeCrypto(message, protocols={
             'openpgp': MakeGnuPG
@@ -815,7 +819,8 @@ class Email(object):
         return ParseMessage(self.get_file, cache_id=cache_id,
                                            update_cache=update_cache,
                                            pgpmime=pgpmime,
-                                           config=self.config)
+                                           config=self.config,
+                                           event=GetThreadEvent())
 
     def _update_crypto_state(self):
         if not (self.config.tags and
@@ -1381,7 +1386,8 @@ class Email(object):
     }
 
     def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
-                                 crypto_state_feedback=True):
+                                 crypto_state_feedback=True,
+                                 event=None):
         if 'text_parts' not in tree:
             return tree
 
@@ -1399,7 +1405,7 @@ class Email(object):
                 elif part['type'] == 'pgpsignature':
                     pgpdata.append(part)
                     try:
-                        gpg = GnuPG(self.config)
+                        gpg = GnuPG(self.config, event=event)
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
                         si = gpg.verify(message)
@@ -1417,7 +1423,7 @@ class Email(object):
                     pgpdata.append(part)
 
                     data = ''.join([p['data'] for p in pgpdata])
-                    gpg = GnuPG(self.config)
+                    gpg = GnuPG(self.config, event=event)
                     si, ei, text = gpg.decrypt(data)
 
                     # FIXME: If the data is binary, we should provide some

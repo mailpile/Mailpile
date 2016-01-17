@@ -10,11 +10,12 @@ from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import EventRLock, EventLock, CleanText, json_helper
-from mailpile.util import safe_remove
+from mailpile.util import safe_remove, thread_context
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
 EVENT_COUNTER = 0
+
 
 
 def NewEventId():
@@ -164,6 +165,16 @@ class Event(object):
                 return self.PRIVATE_HTML % self.as_dict(private=True)
             else:
                 return self.PUBLIC_HTML % self.as_dict(private=False)
+
+
+def GetThreadEvent(create=False, message=None, source=None):
+    ctx = thread_context()
+    if ctx and 'event' in ctx[-1]:
+        return ctx[-1]['event']
+    elif create:
+        return Event(message=message, source=source)
+    else:
+        return None
 
 
 class EventLog(object):

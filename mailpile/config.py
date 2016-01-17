@@ -20,7 +20,7 @@ from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.defaults import APPVER
-from mailpile.eventlog import EventLog, Event
+from mailpile.eventlog import EventLog, Event, GetThreadEvent
 from mailpile.httpd import HttpWorker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -1608,6 +1608,7 @@ class ConfigManager(ConfigDict):
             # Without recipients or a passphrase, we cannot save!
             return False
 
+        # FIXME: Create event and capture GnuPG state?
         status, encrypted_key = GnuPG(self).encrypt(self.master_key,
                                                     tokeys=tokeys)
         if status == 0:
@@ -2035,12 +2036,10 @@ class ConfigManager(ConfigDict):
             # This will either record details to the event of the currently
             # running command/operation, or register a new event. This does
             # not work as one might hope if ops cross a thread boundary...
-            ctx = thread_context()
-            if ctx and 'event' in ctx[-1]:
-                ev = ctx[-1]['event']
-            else:
-                ev = Event(message=prompt or _('Please enter your password'),
-                           source=self)
+            ev = GetThreadEvent(
+                create=True,
+                message=prompt or _('Please enter your password'),
+                source=self)
 
             details = {'id': keyid}
             if prompt: details['msg'] = prompt

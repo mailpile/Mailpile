@@ -13,6 +13,7 @@ import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.crypto.streamer import EncryptingStreamer
+from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -328,7 +329,8 @@ class MailIndex(object):
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
         if tokeys:
-            stat, edata = GnuPG(self.config).encrypt(data, tokeys=tokeys)
+            stat, edata = GnuPG(self.config, event=GetThreadEvent()
+                                ).encrypt(data, tokeys=tokeys)
             if stat == 0:
                 return edata
 

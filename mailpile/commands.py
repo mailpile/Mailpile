@@ -306,7 +306,7 @@ class Command(object):
         return os.path.join(*path_parts)
 
     def _gnupg(self):
-        return GnuPG(self.session.config)
+        return GnuPG(self.session.config, event=self.event)
 
     def _config(self):
         session, config = self.session, self.session.config

@@ -3,6 +3,7 @@ import os
 
 import mailpile.security as security
 from mailpile.commands import Command
+from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -42,12 +43,17 @@ class GnuPGImporter(VCardImporter):
                                            *args, **kwargs)
 
     def get_vcards(self,
-                   selectors=None, public=True, secret=True, vcards=None):
+                   selectors=None, public=True, secret=True, vcards=None,
+                   event=None):
         if not self.config.active:
             return []
 
+        # Event magic
+        event = event or GetThreadEvent()
+
         # Generate all the nice new cards!
-        new_cards = self.gnupg_keys_as_vcards(GnuPG(self.session.config),
+        new_cards = self.gnupg_keys_as_vcards(GnuPG(self.session.config,
+                                                    event=event),
                                               selectors=selectors,
                                               public=public,
                                               secret=secret)
