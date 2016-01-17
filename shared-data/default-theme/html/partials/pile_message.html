@@ -2,6 +2,7 @@
   {%- set from = metadata.from %}
   {%- set encryption_status = [] %}
   {%- set signature_status = [] %}
+  {%- set special_text_parts = [] %}
   {%- macro msg_crypto(part) %}
     {#-
      # Parts that do not have own crypto attribute inherit from message itself
@@ -13,7 +14,6 @@
     {%- set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
     {%- set encryption = show_text_part_encryption(part_encryption and part_encryption.status) %}
     {%- set signature = show_text_part_signature(part_signature and part_signature.status) %}
-    {%- set special_text_parts = [] %}
 
     {%- if encryption_status and part_encryption.status != encryption_status[-1] %}
     <div class="part-crypto-status clearfix crypto-changed border-{{ encryption.color }}">
