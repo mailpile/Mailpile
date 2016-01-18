@@ -1404,6 +1404,7 @@ class ConfigManager(ConfigDict):
         return all_okay
 
     def load(self, session, *args, **kwargs):
+        keep_lockdown = self.sys.lockdown
         with self._lock:
             rv = self._unlocked_load(session, *args, **kwargs)
 
@@ -1415,6 +1416,8 @@ class ConfigManager(ConfigDict):
         # Trigger background-loads of everything
         Rescan(session, 'rescan')._idx(wait=False)
 
+        if keep_lockdown:
+            self.sys.lockdown = keep_lockdown
         return rv
 
     def load_master_key(self, passphrase, _raise=None):

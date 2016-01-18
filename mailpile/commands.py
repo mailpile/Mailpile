@@ -1840,7 +1840,7 @@ class ListDir(Command):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
-    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
+    COMMAND_SECURITY = security.CC_BROWSE_FILESYSTEM
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1890,6 +1890,11 @@ class ListDir(Command):
         file_list = []
         errors = 0
         for path in args:
+            if (security.forbid_command(self, security.CC_ACCESS_FILESYSTEM)
+                    and (path != '/')
+                    and (not path.endswith('$'))
+                    and ('$/' not in path)):
+                continue
             try:
                 path = os.path.expanduser(path.encode('utf-8'))
                 if vfs.isdir(path) and '*' not in path:
@@ -2072,6 +2077,15 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        # Access controls...
+        if not force:
+            for path, value in ops:
+                fb = security.forbid_config_change(config, path)
+                if fb:
+                    return self._error(fb)
+                elif path == 'master_key' and config.master_key:
+                    return self._error(_('I refuse to change the master key!'))
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
@@ -2141,6 +2155,14 @@ class ConfigAdd(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        # Access controls...
+        for path, value in ops:
+            fb = security.forbid_config_change(config, path)
+            if fb:
+                return self._error(fb)
+            elif path == 'master_key' and config.master_key:
+                return self._error(_('I refuse to change the master key!'))
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
@@ -2187,15 +2209,21 @@ class ConfigUnset(Command):
             else:
                 del cfg[key]
 
+        # Access controls...
+        vlist = list(self.args) + (self.data.get('var', None) or [])
+        # Access controls...
+        for v in vlist:
+            fb = security.forbid_config_change(config, v)
+            if fb:
+                return self._error(fb)
+            elif v == 'master_key' and config.master_key:
+                return self._error(_('I refuse to change the master key!'))
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = []
-            vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
-                if v == 'master_key':
-                    if config.master_key:
-                        raise ValueError('I refuse to change the master key!')
                 cfg, vn = config.walk(v, parent=True)
                 unset(cfg, vn)
                 updated.append(v)

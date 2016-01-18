@@ -58,7 +58,7 @@ CONFIG_RULES = {
             'vcards':     [_('Location of vCards'), 'dir', 'vcards'],
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
-        'lockdown':      p(_('Demo mode, disallow changes'), bool,      False),
+        'lockdown':      p(_('Demo mode, disallow changes'), str,          ''),
         'login_banner':  p(_('A custom banner for the login page'), str,   ''),
         'proxy':          [_('Proxy settings'), False, {
             'protocol':   (_('Proxy protocol'),
