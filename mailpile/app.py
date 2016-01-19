@@ -13,6 +13,7 @@ from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.plugins.motd import MessageOfTheDay
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
@@ -140,7 +141,15 @@ class InteractCommand(Command):
         else:
             config.prepare_workers(session, daemons=True)
 
-        session.ui.display_result(HelpSplash(session, 'help', []).run())
+        # Note: We do *not* update the MOTD on startup, to keep things
+        #       fast, and to avoid leaking our IP on setup, before Tor
+        #       has been configured.
+        splash = HelpSplash(session, 'help', []).run()
+        motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
+        session.ui.display_result(splash)
+        print  # FIXME: This is a hack!
+        session.ui.display_result(motd)
+
         Interact(session)
 
         return self._success(_('Ran interactive shell'))

@@ -1784,9 +1784,9 @@ class ConfigManager(ConfigDict):
             else:
                 return cPickle.loads(fd.read())
 
-    def save_pickle(self, obj, pfn):
+    def save_pickle(self, obj, pfn, encrypt=True):
         ppath = os.path.join(self.workdir, pfn)
-        if self.master_key and self.prefs.encrypt_misc:
+        if encrypt and self.master_key and self.prefs.encrypt_misc:
             from mailpile.crypto.streamer import EncryptingStreamer
             with EncryptingStreamer(self.master_key,
                                     dir=self.tempfile_dir(),
