@@ -45,6 +45,11 @@ except ImportError:
         socks = None
 
 
+KNOWN_ONION_MAP = {
+    'www.mailpile.is': 'clgs64523yi2bkhz.onion'
+}
+
+
 org_cconn = socket.create_connection
 org_sslwrap = ssl.wrap_socket
 try:
@@ -337,20 +342,28 @@ class SocksConnBroker(TcpConnectionBroker):
             self.proxy_config = None
             self.supports = []
 
+    def _auth_args(self):
+        return {
+            'username': self.proxy_config.username or None,
+            'password': self.proxy_config.username or None
+        }
+
+    def _fix_address_tuple(self, address):
+        return (str(address[0]), address[1])
+
     def _conn(self, address, timeout=None, source_address=None):
         sock = socks.socksocket()
         sock.setproxy(proxytype=self.typemap[self.proxy_config.protocol],
                       addr=self.proxy_config.host,
                       port=self.proxy_config.port,
                       rdns=True,
-                      username=self.proxy_config.username or None,
-                      password=self.proxy_config.password or None)
+                      **self._auth_args())
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
             sock.settimeout(float(timeout))
         if source_address:
             raise IOError('Cannot bind source address')
         try:
-            address = (str(address[0]), address[1])
+            address = self._fix_address_tuple(address)
             sock.connect(address)
         except socks.ProxyError:
             if self._debug is not None:
@@ -365,6 +378,9 @@ class TorConnBroker(SocksConnBroker):
 
     This removes the "trackable" capability, so requests that reject it can
     find their way here safely...
+
+    This broker only volunteers to carry encrypted traffic, because Tor
+    exit nodes may be hostile.
     """
     SUPPORTS = []
     CONFIGURED = (Capability.ALL_OUTGOING_ENCRYPTED
@@ -373,25 +389,40 @@ class TorConnBroker(SocksConnBroker):
     DEBUG_FMT = '%s: Raw Tor conn to: %s'
     PROXY_TYPES = ('tor', )
 
+    def _auth_args(self):
+        # FIXME: Tor uses the auth information as a signal to change
+        #        circuits. We may have use for this at some point.
+        return {}
+
+    def _fix_address_tuple(self, address):
+        host = str(address[0])
+        return (KNOWN_ONION_MAP.get(host.lower(), host), address[1])
+
     def _avoid(self, address):
         pass
 
 
-class TorOnionBroker(SocksConnBroker):
+class TorOnionBroker(TorConnBroker):
     """
     This broker offers the same services as the TcpConnBroker, but over Tor.
+
     This removes the "trackable" capability, so requests that reject it can
     find their way here safely...
+
+    This differs from the TorConnBroker in that it will allow "cleartext"
+    traffic, since we trust the traffic never leaves the Tor network and
+    we don't have hostile exits to worry about.
     """
     SUPPORTS = []
     CONFIGURED = (Capability.ALL_OUTGOING
                   - set([Capability.OUTGOING_TRACKABLE]))
     REJECTS = None
-    DEBUG_FMT = '%s: Raw Tor conn to: %s'
+    DEBUG_FMT = '%s: Tor onion conn to: %s'
     PROXY_TYPES = ('tor', )
 
     def _avoid(self, address):
-        if not address[0].endswith('.onion'):
+        host = KNOWN_ONION_MAP.get(address[0], address[0])
+        if not host.endswith('.onion'):
             raise CapabilityFailure('Can only connect to .onion addresses')
 
 

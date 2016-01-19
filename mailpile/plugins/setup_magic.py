@@ -2,6 +2,7 @@ import copy
 import datetime
 import os
 import random
+import socket
 import sys
 from urllib import urlencode
 from urllib2 import urlopen
@@ -184,6 +185,35 @@ class SetupMagic(Command):
                    'flag_msg_only': True},
     }
 
+    def auto_configure_tor(self, session):
+        need_raw = [ConnBroker.OUTGOING_RAW]
+        try:
+            with ConnBroker.context(need=need_raw) as context:
+                tor = socket.create_connection(('localhost', 9050))
+        except IOError:
+            return
+
+        # If that succeeded, we might have Tor!
+        session.config.sys.proxy.protocol = 'tor'
+        session.config.sys.proxy.host = 'localhost'
+        session.config.sys.proxy.port = 9050
+        session.config.sys.proxy.fallback = True
+        ConnBroker.configure()
+
+        # Test it...
+        need_tor = [ConnBroker.OUTGOING_HTTPS]
+        try:
+            with ConnBroker.context(need=need_tor) as context:
+                url = 'http://clgs64523yi2bkhz.onion/motd/latest/motd.json'
+                motd = urlopen(url, data=None, timeout=10).read()
+                assert(motd.strip().endswith('}'))
+            session.ui.notify(_('Successfully configured and enabled Tor!'))
+        except (IOError, AssertionError):
+            # If it failed, revert the config changes
+            session.config.sys.proxy.protocol = 'none'
+            session.ui.notify(_('Failed configure Tor'))
+            ConnBroker.configure()
+
     def basic_app_config(self, session,
                          save_and_update_workers=True,
                          want_daemons=True):
@@ -293,6 +323,10 @@ class SetupMagic(Command):
                 'trainer': 'spambayes'
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
+
+        # Enable Tor if we have it
+        if session.config.sys.proxy.protocol == 'none':
+            self.auto_configure_tor(session)
 
         # Mark config as up-to-date
         session.config.version = APPVER

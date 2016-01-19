@@ -60,16 +60,16 @@ CONFIG_RULES = {
         }],
         'lockdown':      p(_('Demo mode, disallow changes'), str,          ''),
         'login_banner':  p(_('A custom banner for the login page'), str,   ''),
-        'proxy':          [_('Proxy settings'), False, {
-            'protocol':   (_('Proxy protocol'),
+        'proxy':         p(_('Proxy settings'), False, {
+            'protocol':  p(_('Proxy protocol'),
                            ["tor", "socks5", "socks4", "http", "none"],
                            'none'),
-            'fallback':   (_('Allow fallback to direct conns'), bool, False),
+            'fallback':  p(_('Allow fallback to direct conns'), bool, False),
             'username':   (_('User name'), str, ''),
             'password':   (_('Password'), str, ''),
-            'host':       (_('Host'), str, ''),
-            'port':       (_('Port'), int, 8080)
-        }],
+            'host':      p(_('Host'), str, ''),
+            'port':      p(_('Port'), int, 8080)
+        }),
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),
