@@ -22,7 +22,7 @@ _plugins.register_config_variables('prefs', {
     'motd_url': p(
         _('URL to the Message Of The Day'),
         'url',
-        'https://www.mailpile.is/motd/%(ver)s/motd.json?l=%(lang)s&p=%(py)s'
+        'https://www.mailpile.is/motd/%(ver)s-%(os)s/motd.json?l=%(lang)s&p=%(py)s'
     )
 })
 
@@ -105,7 +105,8 @@ class MessageOfTheDay(Command):
             url = config.prefs.motd_url % {
                 'ver': APPVER,
                 'lang': config.prefs.language or 'en',
-                'py': '%s-%s' % (sys.platform, sys.version.split()[0])
+                'os': sys.platform,
+                'py': sys.version.split()[0]
             }
             try:
                 motd = json.loads(self._get(url))
