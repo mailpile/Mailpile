@@ -391,20 +391,25 @@ class UserInteraction:
 
     def display_result(self, result):
         """Render command result objects to the user"""
-        if self.render_mode in ('json', 'as.json'):
-            return self._display_result('json', result.as_('json'))
-        if self.render_mode in ('text', 'as.text'):
-            return self._display_result('text', unicode(result))
-        if self.render_mode in ('csv', 'as.csv'):
-            return self._display_result('csv', result.as_csv())
+        try:
+            if self.render_mode in ('json', 'as.json'):
+                return self._display_result('json', result.as_('json'))
+            if self.render_mode in ('text', 'as.text'):
+                return self._display_result('text', unicode(result))
+            if self.render_mode in ('csv', 'as.csv'):
+                return self._display_result('csv', result.as_csv())
 
-        ttype, mode, wrap_in_json, template = self._parse_render_mode()
-        rendering = result.as_template(ttype,
-                                       mode=mode,
-                                       wrap_in_json=wrap_in_json,
-                                       template=template)
+            ttype, mode, wrap_in_json, template = self._parse_render_mode()
+            rendering = result.as_template(ttype,
+                                           mode=mode,
+                                           wrap_in_json=wrap_in_json,
+                                           template=template)
 
-        return self._display_result(ttype, rendering)
+            return self._display_result(ttype, rendering)
+        except (TypeError, ValueError, KeyError, IndexError,
+                UnicodeDecodeError):
+            traceback.print_exc()
+            return '[%s]' % _('Internal Error')
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
