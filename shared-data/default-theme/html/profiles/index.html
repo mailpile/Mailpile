@@ -17,6 +17,12 @@
     'text': _("About", version=config.version),
     'description': _("Welcome to Mailpile %(version)s", version=config.version)
   },{
+    'name': 'browser',
+    'icon': 'list',
+    'url': U('/browse/'),
+    'text': _("Browse"),
+    'description': _("Browse files, mailboxes and settings")
+  },{
     'name': 'addprofile',
     'icon': 'plus',
     'aclass': 'auto-modal',
@@ -171,7 +177,8 @@
         </a>
       </td><td colspan=5>
 {%- if result.profiles|length > 0 %}
-        <a href="{{ U('/browse/') }}">
+        <a href="{{ U('/browse/') }}"
+           title="{{_('Browse your files, mailboxes and settings')}}">
           <span class="icon icon-list"></span> {{_("Browse")}}
         </a>
         &nbsp;&nbsp;
