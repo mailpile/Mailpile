@@ -97,18 +97,18 @@ pytests:
 	@echo
 
 clean:
-	@rm -rf shared-data/locale/?? shared-data/locale/??[_@]*
 	@rm -f `find . -name \\*.pyc` \
 	       `find . -name \\*.mo` \
 	        mailpile-tmp.py mailpile.py \
 	        ChangeLog AUTHORS \
 	        .appver MANIFEST .SELF .*deps \
 	        scripts/less-compiler.mk ghostdriver.log
-	@rm -rf *.egg-info build/ mp-virtualenv/ bower_components/ \
+	@rm -rf *.egg-info build/ mp-virtualenv/ \
                mailpile/tests/data/tmp/ testing/tmp/
 	@rm -f shared-data/multipile/www/admin.cgi
 
 mrproper: clean
+	@rm -rf shared-data/locale/?? shared-data/locale/??[_@]*
 	@rm -rf dist/ bower_components/ shared-data/locale/mailpile.pot
 	git reset --hard && git clean -dfx
 
