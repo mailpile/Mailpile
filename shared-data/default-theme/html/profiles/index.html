@@ -10,13 +10,6 @@
 
 {%- block contenttools %}
   {%- set activities = [{
-    'name': 'relnotes',
-    'icon': 'logo',
-    'aclass': 'auto-modal',
-    'url': U('/page/release-notes/'),
-    'text': _("About", version=config.version),
-    'description': _("Welcome to Mailpile %(version)s", version=config.version)
-  },{
     'name': 'browser',
     'icon': 'list',
     'url': U('/browse/'),

@@ -36,6 +36,25 @@
          {% endif -%}
          data-context="{{state.context}}">
 {%- block content %}<h1>No Content</h1>{% endblock -%}
+{%- block footer_nav %}
+      <div class="footer-nav text-center clearfix">
+        <a href="{{ U("/page/release-notes/license.html") }}"
+           title="{{_("The AGPLv3 License")}}"
+           >{{_("Copyright")}} 2013-2016</a>,
+        <a href="https://www.mailpile.is/" target=_blank
+           title="{{_("Visit www.mailpile.is")}}"
+           >Mailpile ehf</a> &amp;
+        <a href="{{ U("/page/release-notes/credits.html") }}"
+           title="{{_("Credits and Thanks")}}"
+           >{{_("the community")}}</a> &dash;
+        <a href="{{ U("/page/release-notes/") }}" class="auto-modal"
+           title="{{_("Welcome to Mailpile %(version)s", version=config.version)}}"
+           >{{_("About")}}</a>&dash;
+        <a href="{{ U("/settings/privacy.html") }}"
+           title="{{_("Security and Privacy Settings")}}"
+           >{{_("Privacy")}}</a>
+      </div>
+{%- endblock %}
     </div>
 
 {%- block content_bottom %}
