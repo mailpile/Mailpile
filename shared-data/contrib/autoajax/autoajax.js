@@ -16,7 +16,7 @@ var update_using_jhtml;
 var prepare_new_content;
 var refresh_from_cache;
 
-var ajaxable_commands = ['search', 'ls', 'profiles'];
+var ajaxable_commands = ['search', 'ls', 'profiles', 'settings', 'page'];
 var refresh_history = {};
 var U = Mailpile.API.U;
 
@@ -30,6 +30,8 @@ ajaxable_url = function(url) {
                     (url.indexOf(U("/browse/")) == 0) ||
                     (url.indexOf(U("/thread/")) == 0) ||
                     (url.indexOf(U("/profiles/")) == 0) ||
+                    (url.indexOf(U("/settings/")) == 0) ||
+                    (url.indexOf(U("/page/")) == 0) ||
                     (url.indexOf(U("/search/")) == 0)));
 };
 
