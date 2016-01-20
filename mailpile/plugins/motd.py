@@ -113,7 +113,8 @@ class MessageOfTheDay(Command):
                 motd = None
 
         if not motd:
-            if '--noupdate' in self.args or self._disable_updates(session):
+            if (('--update' not in self.args and self._disable_updates(session))
+                    or '--noupdate' in self.args):
                 return self._success('', result={})
 
             url = config.prefs.motd_url % {
