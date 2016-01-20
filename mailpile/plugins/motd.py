@@ -80,7 +80,7 @@ class MessageOfTheDay(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            motd = self.result.get('_motd')
+            motd = (self.result or {}).get('_motd')
             if not motd:
                 return ''
 
@@ -132,7 +132,7 @@ class MessageOfTheDay(Command):
                     config.save_pickle(motd, 'last_motd', encrypt=False)
                     motd['_is_new'] = True
                     message = '%s: %s' % (_('Message Of The Day'), _('Updated'))
-            except (IOError, OSError):
+            except (IOError, OSError, ValueError):
                 pass
 
         if not motd:
