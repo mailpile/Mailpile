@@ -30,14 +30,18 @@ MOTD_URL_DEFAULT          = 'https://www.mailpile.is' + MOTD_MARS
 MOTD_URL_TOR_ONLY         = 'http://clgs64523yi2bkhz.onion' + MOTD_MARS
 MOTD_URL_NO_MARS          = 'https://www.mailpile.is' + MOTD_NO_MARS
 MOTD_URL_TOR_ONLY_NO_MARS = 'http://clgs64523yi2bkhz.onion' + MOTD_NO_MARS
+MOTD_URLS = {
+    "default": MOTD_URL_DEFAULT,
+    "tor-only": MOTD_URL_TOR_ONLY,
+    "generic": MOTD_URL_NO_MARS,
+    "tor-generic": MOTD_URL_TOR_ONLY_NO_MARS,
+    "unknown": "",
+    "none": ""
+}
 
 
 _plugins.register_config_variables('prefs', {
-    'motd_url': p(
-        _('URL to the Message Of The Day'),
-        'url',
-        MOTD_URL_DEFAULT
-    )
+    'motd_url': p(_('URL to the Message Of The Day'), 'str', 'unknown')
 })
 
 
@@ -73,8 +77,7 @@ class MessageOfTheDay(Command):
         else:
             return _('Unsupported URL for message of the day: %s') % url
 
-        conn_reject = [ConnBroker.OUTGOING_TRACKABLE]
-        with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
+        with ConnBroker.context(need=conn_need) as ctx:
             self.session.ui.mark('Getting: %s' % url)
             return urlopen(url, data=None, timeout=10).read()
 
@@ -96,7 +99,8 @@ class MessageOfTheDay(Command):
         session, config = self.session, self.session.config
 
         # If not configured, do nothing.
-        if not config.prefs.motd_url:
+        url = MOTD_URLS.get(config.prefs.motd_url, config.prefs.motd_url)
+        if not url:
             return self._success('', result={})
 
         old_motd = motd = None
@@ -117,14 +121,13 @@ class MessageOfTheDay(Command):
                     or '--noupdate' in self.args):
                 return self._success('', result={})
 
-            url = config.prefs.motd_url % {
-                'ver': APPVER,
-                'lang': config.prefs.language or 'en',
-                'os': sys.platform,
-                'py': sys.version.split()[0]
-            }
             try:
-                motd = json.loads(self._get(url))
+                motd = json.loads(self._get(url % {
+                    'ver': APPVER,
+                    'lang': config.prefs.language or 'en',
+                    'os': sys.platform,
+                    'py': sys.version.split()[0]
+                }))
                 motd['_updated'] = int(time.time())
                 motd['_is_new'] = False
                 if (not old_motd
