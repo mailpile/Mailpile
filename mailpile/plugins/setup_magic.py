@@ -205,7 +205,7 @@ class SetupMagic(Command):
         need_tor = [ConnBroker.OUTGOING_HTTPS]
         try:
             with ConnBroker.context(need=need_tor) as context:
-                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS
+                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
                                data=None, timeout=10).read()
                 assert(motd.strip().endswith('}'))
             session.ui.notify(_('Successfully configured and enabled Tor!'))
