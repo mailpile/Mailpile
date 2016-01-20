@@ -193,8 +193,11 @@ def app_arguments():
         '--configure-apache', action='store_true',
         help='Configure Apache for use with Mailpile (run with sudo)')
     ga.add_argument(
-        '--generate-apache', action='store_true',
+        '--generate-apache-config', action='store_true',
         help='Print the apache config')
+    ga.add_argument(
+        '--generate-apache-rewritemap', action='store_true',
+        help='Prints an empty rewritemap file')
 
     app_arguments_config_arg(ap)
     ap.add_argument('--force', action='store_true',
@@ -590,7 +593,10 @@ def list_mailpiles(args):
             user, pid or '', rss or '',
             'apache' if in_usermap else 'direct', port, url)
 
-def generate_apache(app_args, args):
+def generate_apache_rewritemap(app_args, args):
+    print(APACHE_REWRITEMAP_TEMPLATE % {'rewriterules': ''})
+
+def generate_apache_config(app_args, args):
     os_settings = get_os_settings(args)
     print (APACHE_CONFIG_TEMPLATE % os_settings)
 
@@ -702,8 +708,11 @@ def main():
     elif parsed_args.configure_apache:
         configure_apache(app_args, parsed_args)
 
-    elif parsed_args.generate_apache:
-        generate_apache(app_args, parsed_args)
+    elif parsed_args.generate_apache_config:
+        generate_apache_config(app_args, parsed_args)
+
+    elif parsed_args.generate_apache_rewritemap:
+        generate_apache_rewritemap(app_args, parsed_args)
 
     elif parsed_args.start:
         start_mailpile(app_args, parsed_args)
