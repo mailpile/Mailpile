@@ -39,7 +39,7 @@ arch-dev:
 
 fedora-dev:
 	sudo yum install python-imaging python-lxml python-jinja2 python-pep8 \
-	                     ruby-devel python-yui python-nose spambayes \
+	                     ruby ruby-devel python-yui python-nose spambayes \
 	                     phantomjs python-pip python-mock npm
 	sudo yum install rubygems; \
 	sudo yum install python-pgpdump || pip install pgpdump
