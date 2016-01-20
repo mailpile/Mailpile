@@ -111,6 +111,27 @@ def forbid_config_change(config, config_key):
     return forbid_command(None, cc_list=cc_list, config=config)
 
 
+##[ Securely download content from the web ]##########################
+
+def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
+    from mailpile.conn_brokers import Master as ConnBroker
+    from urllib2 import urlopen
+
+    if session.config.prefs.web_content not in ("on", "anon"):
+        raise IOError("Web content is disabled by policy")
+
+    if url.startswith('https:'):
+        conn_need, conn_reject = [ConnBroker.OUTGOING_HTTPS], []
+    else:
+        conn_need, conn_reject = [ConnBroker.OUTGOING_HTTP], []
+
+    if session.config.prefs.web_content == "anon" or anonymous:
+        conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
+
+    with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
+        return urlopen(url, data=None, timeout=timeout).read()
+
+
 ##[ Common web-server security code ]#################################
 
 CSRF_VALIDITY = 48 * 3600  # How long a CSRF token remains valid

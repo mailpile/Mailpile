@@ -75,6 +75,8 @@ CONFIG_RULES = {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('Misc. data refresh frequency'), int,       900),
         'open_in_browser':p(_('Open in browser on startup'), bool,       True),
+        'web_content':     (_('Download content from the web'),
+                            ["off", "anon", "on"],                     "anon"),
         'gpg_use_agent':   (_('Use the local GnuPG agent'), bool,       False),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
