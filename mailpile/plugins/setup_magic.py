@@ -20,6 +20,7 @@ from mailpile.plugins import PLUGINS
 from mailpile.plugins.contacts import AddProfile, ListProfiles
 from mailpile.plugins.contacts import ListProfiles
 from mailpile.plugins.migrate import Migrate
+from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
@@ -204,8 +205,8 @@ class SetupMagic(Command):
         need_tor = [ConnBroker.OUTGOING_HTTPS]
         try:
             with ConnBroker.context(need=need_tor) as context:
-                url = 'http://clgs64523yi2bkhz.onion/motd/latest/motd.json'
-                motd = urlopen(url, data=None, timeout=10).read()
+                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS
+                               data=None, timeout=10).read()
                 assert(motd.strip().endswith('}'))
             session.ui.notify(_('Successfully configured and enabled Tor!'))
         except (IOError, AssertionError):

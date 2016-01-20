@@ -18,11 +18,25 @@ _ = lambda t: t
 _plugins = PluginManager(builtin=__file__)
 
 
+# MARS is the Mailpile Analytics Reporting System. Pretty fancy, huh?
+#
+# Details:
+#  https://github.com/mailpile/Mailpile/wiki/Mailpile-Analytics-Reporting-System
+#
+MOTD_MARS    = '/motd/%(ver)s-%(os)s/motd.json?lang=%(lang)s&py=%(py)s'
+MOTD_NO_MARS = '/motd/latest/motd.json'
+#
+MOTD_URL_DEFAULT          = 'https://www.mailpile.is' + MOTD_MARS
+MOTD_URL_TOR_ONLY         = 'http://clgs64523yi2bkhz.onion' + MOTD_MARS
+MOTD_URL_NO_MARS          = 'https://www.mailpile.is' + MOTD_NO_MARS
+MOTD_URL_TOR_ONLY_NO_MARS = 'http://clgs64523yi2bkhz.onion' + MOTD_NO_MARS
+
+
 _plugins.register_config_variables('prefs', {
     'motd_url': p(
         _('URL to the Message Of The Day'),
         'url',
-        'https://www.mailpile.is/motd/%(ver)s-%(os)s/motd.json?l=%(lang)s&p=%(py)s'
+        MOTD_URL_DEFAULT
     )
 })
 
@@ -35,16 +49,17 @@ class MessageOfTheDay(Command):
     IS_USER_ACTIVITY = False
 
     @classmethod
-    def _seen_release_notes(cls, session):
-        return not session.config.web.release_notes
+    def _disable_updates(cls, session):
+        # Don't auto-update the MOTD if the user hasn't configured any
+        # accounts yet - no point bothering the user or the MOTD server.
+        #
+        # FIXME: Check other conditions?
+        #
+        return (len(session.config.sources) < 1)
 
     @classmethod
     def update(cls, session):
-        # Don't auto-update the MOTD if the user hasn't seen the release
-        # notes. This keeps us from hitting the network right away on first
-        # install, and keeps this from triggering in test code. Also, we
-        # don't want to overload the user with new stuff.
-        if cls._seen_release_notes(session):
+        if not cls._disable_updates(session):
             cls(session, arg=['--silent', '--update']).run()
 
     def _get(self, url):
@@ -80,16 +95,16 @@ class MessageOfTheDay(Command):
     def command(self):
         session, config = self.session, self.session.config
 
+        # If not configured, do nothing.
+        if not config.prefs.motd_url:
+            return self._success('', result={})
+
         old_motd = motd = None
         try:
             old_motd = motd = config.load_pickle('last_motd')
             message = '%s: %s' % (_('Message Of The Day'), _('Loaded'))
         except (OSError, IOError):
             pass
-
-        if '--ifnew' in self.args and not self._seen_release_notes(session):
-            # Silently return nothing in this case.
-            return self._success('', result={})
 
         if '--update' in self.args:
             motd = None
@@ -98,8 +113,7 @@ class MessageOfTheDay(Command):
                 motd = None
 
         if not motd:
-            if '--noupdate' in self.args:
-                # Silently return nothing in this case.
+            if '--noupdate' in self.args or self._disable_updates(session):
                 return self._success('', result={})
 
             url = config.prefs.motd_url % {
