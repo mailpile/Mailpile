@@ -1,0 +1,213 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+
+{% block title %}{{_("Security and Privacy Settings")}}{% endblock %}
+
+{% block content %}
+<div class="content-normal settings-page">
+ <form method="POST"
+{% if ui_from_profiles %}
+       action="{{ U('/settings/set/') }}?ui_return={{ U('/profiles/') }}"
+{% else %}
+       action="{{ U('/settings/set/') }}?ui_return={{ U('/settings/privacy.html?ui_saved=True') }}"
+{% endif %}
+       >{{ csrf_field|safe }}
+
+  <h1>
+    <span class="icon icon-settings"></span>
+    {{_("Security and Privacy Settings")}}
+  </h1>
+
+  <div class="notices">
+  {% if "unknown" in (config.prefs.motd_url, config.prefs.web_content) %}
+    <p>
+      <span class="icon icon-lightbulb"></span>
+      {{_("Please review and save your settings.")}}
+      {{_("Some features may not be enabled until you have saved.")}}
+    </p>
+    {% elif ui_saved %}
+    <p>
+      <span class="icon icon-checkmark"></span>
+      {{_("Your settings have been saved.")}}
+    </p>
+    {% endif %}
+    {% if config.sys.proxy.protocol == "tor" %}
+      <span class="icon icon-checkmark"></span>
+      {{_("Tor is configured correctly, good job being anonymous!")}}
+    </p>
+    {% endif %}
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Message Of The Day")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-lightbulb"></span>
+        {{_("The Mailpile Team publishes updates to notify users of available upgrades and potential security vulnerabilities in Mailpile.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("Update subscriptions help the Mailpile Team keep track of how many people use Mailpile, what operating systems are in use and which languages users speak.")}}
+        {{_("If Tor is not installed, this may leak your IP address.")}}
+      </p>
+      <p class="more">
+        <a href="https://github.com/mailpile/Mailpile/wiki/Mailpile-Analytics-Reporting-System"
+           target=_blank>{{_("Consult the Mailpile wiki for more details")}}</a>.
+      </p>
+    </div>
+    <p class="settings">
+      <input name="prefs.motd_url" type="radio" value="default"
+             {%- if config.prefs.motd_url in ("default", "unknown") %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Subscribe to Message Of The Day updates from the Mailpile Team.")}}
+        <span title="{{_('Recommended setting')}}"
+              class="icon default icon-star"></span>
+      </span><br>
+      <input name="prefs.motd_url" type="radio" value="tor-only"
+             {%- if config.prefs.motd_url == "tor-only" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Only download updates anonymously over Tor.")}}
+      </span><br>
+      <input name="prefs.motd_url" type="radio" value="tor-generic"
+             {%- if config.prefs.motd_url == "tor-generic" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Download generic updates only, over Tor, to keep all details about your setup private.")}}
+      </span><br>
+  {%- if config.prefs.motd_url not in ("default", "unknown", "tor-only",
+                                       "tor-generic", "none") %}
+      <input name="prefs.motd_url" type="radio" value="{{config.prefs.motd_url}}" checked>
+      <span class="checkbox">
+        {{_("Keep your custom settings:")}} <tt>{{config.prefs.motd_url}}</tt>
+      </span><br>
+  {% endif %}
+      <input name="prefs.motd_url" type="radio" value="none"
+             {%- if config.prefs.motd_url == "none" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Disable the Message Of The Day.")}}
+      </span><br>
+      <br>
+      <b>{{_("Note:")}}</b> {{_("Tor will be used to protect your IP address, if it is available.")}}
+    </p>
+    <br clear="both">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Third Party Content")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-lightbulb"></span>
+        {{_("Mailpile can download content from the web to augment your mail.")}}
+        {{_("This includes user photos from Gravatar, key material from key servers, and potentially other sources.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("This may leak information about your address book and use of Mailpile to the providers of these services.")}}
+        {{_("If Tor is not installed, this may leak your IP address.")}}
+      </p>
+    </div>
+    <p class="settings">
+      <input name="prefs.web_content" type="radio" value="on"
+             {%- if config.prefs.web_content == "on" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Enable downloading of third party content from the web.")}}
+      </span><br>
+      <input name="prefs.web_content" type="radio" value="anon"
+             {%- if config.prefs.web_content in ("anon", "unknown") %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Only download third party content anonymously over Tor.")}}
+        <span title="{{_('Recommended setting')}}"
+              class="icon default icon-star"></span>
+      </span><br>
+      <input name="prefs.web_content" type="radio" value="off"
+             {%- if config.prefs.web_content == "off" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Do not download third party content.")}}
+      </span><br>
+      <br>
+      <b>{{_("Note:")}}</b> {{_("Tor will be used to protect your IP address, if it is available.")}}
+    </p>
+    <br clear="both">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Encrypting Your Data")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-like"></span>
+        {{_("Mailpile can encrypt your e-mail, search engine and settings.")}}
+        {{_("This protects your privacy, even if your computer gets lost or stolen.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-dislike"></span>
+        {{_("Encryption makes it harder to migrate your data to another e-mail client, slows things down and may increase the odds of data loss.")}}
+        {{_("Losing your encryption key becomes equivalent to losing all your mail.")}}
+      </p>
+    </div>
+    <p class="settings">
+
+      <input name="prefs.encrypt_mail" type="radio" value="true"
+            {%- if config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_mail" type="radio" value="false"
+             {%- if not config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt locally stored e-mail")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_vcards" type="radio" value="true"
+            {%- if config.prefs.encrypt_vcards %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_vcards" type="radio" value="false"
+             {%- if not config.prefs.encrypt_vcards %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt the contact database")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_events" type="radio" value="true"
+            {%- if config.prefs.encrypt_events %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_events" type="radio" value="false"
+             {%- if not config.prefs.encrypt_events %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt the system event log")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_misc" type="radio" value="true"
+            {%- if config.prefs.encrypt_misc %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_misc" type="radio" value="false"
+             {%- if not config.prefs.encrypt_misc %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt other (miscellaneous) data")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_index" type="radio" value="true"
+            {%- if config.prefs.encrypt_index %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_index" type="radio" value="false"
+             {%- if not config.prefs.encrypt_index %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Strongly encrypt the local search index (slow)")}}<br>
+
+      <br>
+      <b>{{_("Notes:")}}</b>
+      <ul class="notes">
+        <li>{{_("Changing these settings will only affect data created or edited from now on.")}}</li>
+        <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
+        <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
+      </ul>
+    </p>
+    <br clear="both">
+  </div>
+
+  <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+ </form>
+</div>
+{% endblock %}

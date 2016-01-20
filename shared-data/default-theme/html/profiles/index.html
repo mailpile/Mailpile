@@ -155,6 +155,15 @@
        </td>
     </tr>
     {%- endfor %}
+    {%- elif config.prefs.web_content == "unknown" %}
+    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+      <br>
+      <p><i>{{_("Please review your privacy settings before adding any accounts.")}}</i></p>
+      <p><a title="{{_("Security and Privacy Settings")}}"
+            href="{{ U('/settings/privacy.html?ui_from_profiles=True') }}"><button type=button class="button-secondary">
+        <span class="icon icon-settings"></span> {{_("Privacy & Security")}}
+      </button></a></p>
+    </div></td></tr>
     {%- elif result.profiles|length < 1 %}
     <tr style="background: #fff;"><td colspan=9><div class='text-center'>
       <br>
