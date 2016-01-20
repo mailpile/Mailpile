@@ -26,7 +26,7 @@ Mailpile.Tags.Tooltips.CardSubtags = function() {
     position: {
       my: 'top center',
       at: 'bottom center',
-      viewport: $('#content-view'),
+      viewport: $('#content-view, #content-tall-view'),
       adjust: {
         x: -5,  y: 0
       }

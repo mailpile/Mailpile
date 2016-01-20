@@ -113,8 +113,8 @@ Mailpile.UI.content_setup.push(prepare_new_content);
 
 restore_state = function(ev) {
     if (ev.state && ev.state.autoajax) {
-        $('#content-view').parent().replaceWith(ev.state.html).show();
-        var $context = $('#content-view');
+        $('#content-view, #content-tall-view').parent().replaceWith(ev.state.html).show();
+        var $context = $('#content-view, #content-tall-view');
         clear_selection_state($context);
         Mailpile.UI.prepare_new_content($context.parent());
         Mailpile.render();
@@ -123,7 +123,7 @@ restore_state = function(ev) {
 
 update_using_jhtml = function(original_url, callback, error_callback, noblank) {
     if (ajaxable_url(document.location.pathname)) {
-        var cv = $('#content-view').parent();
+        var cv = $('#content-view, #content-tall-view').parent();
         history.replaceState({autoajax: true, html: _outerHTML(cv)},
                              document.title);
         if (!noblank) cv.hide();
@@ -135,7 +135,7 @@ update_using_jhtml = function(original_url, callback, error_callback, noblank) {
                                   data['message'], original_url);
                 cv.replaceWith(data['result']).show();
                 clear_selection_state();
-                cv = $('#content-view');
+                cv = $('#content-view, #content-tall-view');
                 Mailpile.UI.prepare_new_content(cv.parent());
                 Mailpile.render();
                 // Work around bugs in drag/drop lib, nuke artefacts

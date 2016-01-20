@@ -2,7 +2,8 @@ Mailpile.render = function() {
 
   // Dynamic CSS Reiszing
   var dynamic_sizing = function() {
-    return;
+
+    return;  // THE FOLLOWING IS DISABLED!
 
     var sidebar_width  = $('#sidebar').width();
     var content_width  = $(window).width() - sidebar_width;

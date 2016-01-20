@@ -28,14 +28,14 @@ Mailpile.UI.Message.ShowMessage = function(mid) {
 Mailpile.UI.Message.ScrollToMessage = function() {
 
   var msg_top_pos = 0;
-  var check_new = $('#content-view').find('div.new');
+  var check_new = $('#content-view, #content-tall-view').find('div.new');
 
   if (check_new.length) {
     var unread_thread_id = $(check_new[0]).data('mid');
     msg_top_pos = $('#message-' + unread_thread_id).position().top + 1;
   } 
   else {
-    var full_message = $('#content-view').find('div.thread-message');
+    var full_message = $('#content-view, #content-tall-view').find('div.thread-message');
     if (full_message.length) {
       var thread_id = $(full_message[0]).data('mid');
       msg_top_pos = $('#message-' + thread_id).position().top + 1;
@@ -44,7 +44,7 @@ Mailpile.UI.Message.ScrollToMessage = function() {
 
   // Scroll To
   setTimeout(function(){
-    $('#content-view').animate({ scrollTop: msg_top_pos }, 450);
+    $('#content-view, #content-tall-view').animate({ scrollTop: msg_top_pos }, 450);
   }, 50);
 };
 
