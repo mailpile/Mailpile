@@ -1101,7 +1101,10 @@ class SetupTor(TestableWebbable):
         session.config.sys.proxy.host = hostport[0]
         session.config.sys.proxy.port = hostport[1]
         session.config.sys.proxy.fallback = True
+
+        # Configure connection broker, revert settings while we test
         ConnBroker.configure()
+        session.config.sys.proxy.protocol = old_proto
 
         # Test it...
         need_tor = [ConnBroker.OUTGOING_HTTPS]
@@ -1110,10 +1113,9 @@ class SetupTor(TestableWebbable):
                 motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
                                data=None, timeout=10).read()
                 assert(motd.strip().endswith('}'))
+            session.config.sys.proxy.protocol = 'tor'
             message = _('Successfully configured and enabled Tor!')
         except (IOError, AssertionError):
-            # If it failed, revert the config changes
-            session.config.sys.proxy.protocol = old_proto
             ConnBroker.configure()
             message = _('Failed to configure Tor on %s:%s. Is the network down?'
                         ) % hostport

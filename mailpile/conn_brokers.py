@@ -321,6 +321,7 @@ class SocksConnBroker(TcpConnectionBroker):
     CONFIGURED = Capability.ALL_OUTGOING
     DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
     PROXY_TYPES = ('socks5', 'http', 'socks4')
+    DEFAULT_PROTO = 'socks5'
 
     def __init__(self, *args, **kwargs):
         TcpConnectionBroker.__init__(self, *args, **kwargs)
@@ -336,7 +337,7 @@ class SocksConnBroker(TcpConnectionBroker):
                 'socks5': socks.PROXY_TYPE_SOCKS5,
                 'socks4': socks.PROXY_TYPE_SOCKS4,
                 'http': socks.PROXY_TYPE_HTTP,
-                'tor': socks.PROXY_TYPE_SOCKS5  # For TorConnBrokerk
+                'tor': socks.PROXY_TYPE_SOCKS5  # For TorConnBroker
             }
         else:
             self.proxy_config = None
@@ -353,7 +354,9 @@ class SocksConnBroker(TcpConnectionBroker):
 
     def _conn(self, address, timeout=None, source_address=None):
         sock = socks.socksocket()
-        sock.setproxy(proxytype=self.typemap[self.proxy_config.protocol],
+        proxytype = self.typemap.get(self.proxy_config.protocol,
+                                     self.typemap[self.DEFAULT_PROTO])
+        sock.setproxy(proxytype=proxytype,
                       addr=self.proxy_config.host,
                       port=self.proxy_config.port,
                       rdns=True,
@@ -388,6 +391,7 @@ class TorConnBroker(SocksConnBroker):
     REJECTS = None
     DEBUG_FMT = '%s: Raw Tor conn to: %s'
     PROXY_TYPES = ('tor', )
+    DEFAULT_PROTO = 'tor'
 
     def _auth_args(self):
         # FIXME: Tor uses the auth information as a signal to change
