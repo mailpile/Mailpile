@@ -3,7 +3,7 @@
 #                                                                             #
 # Usage: cd .. && make dpkg                                                   #
 # ----------------------------------------------------------------------------#
-FROM debian:testing
+FROM debian:unstable
 MAINTAINER Alexandre Viau <aviau@debian.org>
 
 RUN apt-get update && \

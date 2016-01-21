@@ -1,4 +1,3 @@
-#!/usr/bin/dh-exec
-packages/apache/mailpile.conf etc/mailpile
-scripts/mailpile-admin.py => /var/lib/mailpile/apache/admin.cgi
-packages/apache/www/* var/lib/mailpile/apache
+mailpile-apache.conf etc/mailpile
+shared-data/multipile/multipile.rc.sample etc/mailpile
+shared-data/multipile usr/share/mailpile

@@ -5,10 +5,15 @@ set -e
 
 apache_install() {
     mkdir -p /etc/apache2/conf-available
-    ln -sf /etc/mailpile/mailpile.conf /etc/apache2/conf-available/mailpile.conf
+
+    mkdir -p /var/lib/mailpile/apache
+    /usr/share/mailpile/multipile/mailpile-admin.py --generate-apache-rewritemap > /var/lib/mailpile/apache/usermap.txt
+    chown -R root:www-data /var/lib/mailpile/apache
+    chmod -R 670 /var/lib/mailpile/apache
+
+    ln -sf /etc/mailpile/mailpile-apache.conf /etc/apache2/conf-available/mailpile.conf
 
     a2enmod headers rewrite proxy proxy_http cgi
-    service apache2 restart
 
     if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
         . /usr/share/apache2/apache2-maintscript-helper
@@ -18,9 +23,11 @@ apache_install() {
 
 
 if [ "$1" = "configure" ]; then
-    chown -R www-data:www-data /var/lib/mailpile/apache
     chmod go+rwxt /var/lib/mailpile/pids
     apache_install $@
 fi
+
+
+#DEBHELPER#
 
 exit 0

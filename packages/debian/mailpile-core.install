@@ -1,0 +1,5 @@
+usr/lib usr
+usr/bin usr
+shared-data/contrib usr/share/mailpile
+shared-data/locale usr/share/mailpile
+shared-data/default-theme usr/share/mailpile
