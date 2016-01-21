@@ -29,6 +29,7 @@ class CryptoInfo(dict):
     def __init__(self, parent=None, copy=None, bubbly=True):
         self.parent = parent
         self.bubbly = bubbly
+        self.filename = None
         self.bubbles = []
         self._status = None
         if copy:
