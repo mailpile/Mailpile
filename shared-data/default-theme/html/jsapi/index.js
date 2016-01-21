@@ -28,8 +28,10 @@ Mailpile = {
     ["normal", "c",      function() { Mailpile.activities.compose(); }],
     ["normal", "g i",    function() { Mailpile.go("/in/inbox/"); }],
     ["normal", "g d",    function() { Mailpile.go("/in/drafts/"); }],
+{% if is_dev_version() %}
     ["normal", "g c",    function() { Mailpile.go("/contacts/"); }],
     ["normal", "g n c",  function() { Mailpile.go("/contacts/add/"); }],
+{% endif %}
     ["normal", "g t",    function() { Mailpile.go("/tags/"); }],
     ["normal", "g n t",  function() { Mailpile.go("/tags/add/"); }],
     ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],

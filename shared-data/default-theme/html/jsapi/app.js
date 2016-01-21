@@ -20,10 +20,12 @@
 {% include("jsapi/compose/body.js") %}
 
 /* JS - Contacts */
+{% if is_dev_version() %}
 {% include("jsapi/contacts/init.js") %}
 {% include("jsapi/contacts/display_modes.js") %}
 {% include("jsapi/contacts/events.js") %}
 {% include("jsapi/contacts/modals.js") %}
+{% endif %}
 
 /* JS - Search */
 {% include("jsapi/search/init.js") %}
