@@ -1180,7 +1180,7 @@ class MailpileJinjaLoader(BaseLoader):
 
         mtime = os.path.getmtime(path)
         unchanged = lambda: (
-            path == self.get_template_path(tpl)[0]
+            path == self.get_template_path(tpl)
             and mtime == os.path.getmtime(path))
 
         with file(path) as f:
@@ -1312,6 +1312,7 @@ class ConfigManager(ConfigDict):
 
         self.jinja_env = Environment(
             loader=MailpileJinjaLoader(self),
+            cache_size=400,
             autoescape=True,
             trim_blocks=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
