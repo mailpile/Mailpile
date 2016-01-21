@@ -2115,14 +2115,25 @@ class MailIndex(object):
             results.reverse()
 
         if 'flat' not in how:
-            # This filters away all but the first result in each conversation.
+            all_new = set()
+            if 'freshness' in how:
+                # FIXME: This calculation appears very cachable!
+                new_tags = session.config.get_tags(type='unread')
+                for tag in new_tags:
+                    all_new |= self.TAGS[tag._key]
+
+            # This filters away all but the first (or oldst unread) result in
+            # each conversation.
             session.ui.mark(_('Collapsing conversations...'))
             seen, pi = {}, 0
             for ri in results:
                 ti = self.INDEX_THR[ri]
-                if ti not in seen:
+                if ti in seen:
+                    if ti in all_new:
+                        results[seen[ti]] = ri
+                else:
                     results[pi] = ri
-                    seen[ti] = True
+                    seen[ti] = pi
                     pi += 1
             results[pi:] = []
             session.ui.mark(_n('Sorted %d message by %s',
