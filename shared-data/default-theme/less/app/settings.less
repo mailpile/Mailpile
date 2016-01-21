@@ -24,7 +24,7 @@
     margin: 0 25px 0 0;
     width: 40%;
     float: right;
-    opacity: 0.6;
+    opacity: 0.55;
   }
   .settings-page div.explanation p {
     position: relative;
@@ -37,12 +37,12 @@
     font-size: 24px;
     line-height: 24px;
   }
-  .settings-page .notices span.icon-checkmark { color: @blue; }
+  .settings-page span.icon-checkmark { color: @blue; }
   .settings-page .what span.icon { color: @green; }
   .settings-page .risks span.icon { color: @orangeRed; }
 
   .settings-page span.icon.default {
-    color: @green;
+    color: @blue;
     font-size: 12px;
     line-height: 12px;
     position: relative;
@@ -54,7 +54,9 @@
     left: 0;
   }
 
+  .settings-page div.settings,
   .settings-page p.settings {
+    display: block;
     padding: 10px 25px;
     line-height: 20px;
     clear: left;
@@ -62,8 +64,12 @@
 
   .settings-page ul.notes {
     list-style-type: circle;
+    font-size: 13px;
+  }
+
+  .settings-page .subsection,
+  .settings-page ul.notes {
     display: block;
     padding: 0;
-    margin: 0 0 0 4em;
-    font-size: 13px;
+    margin: 0 0 0 2em;
   }

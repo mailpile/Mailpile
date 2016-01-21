@@ -289,8 +289,8 @@ class TcpConnectionBroker(BaseConnectionBroker):
         #        INCOMING_INTERNET capability.
         # FIXME: If our coonfig indicates that the user does not care
         #        about anonymity at all, remove OUTGOING_TRACKABLE.
-        if (self.config().sys.proxy.protocol != 'none' and
-                not self.config().sys.proxy.fallback):
+        if (self.config().sys.proxy.protocol not in  ('none', 'unknown')
+                and not self.config().sys.proxy.fallback):
             self.supports = []
 
     def _describe(self, context, conn):

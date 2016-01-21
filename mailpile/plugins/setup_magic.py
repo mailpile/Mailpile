@@ -186,35 +186,6 @@ class SetupMagic(Command):
                    'flag_msg_only': True},
     }
 
-    def auto_configure_tor(self, session):
-        need_raw = [ConnBroker.OUTGOING_RAW]
-        try:
-            with ConnBroker.context(need=need_raw) as context:
-                tor = socket.create_connection(('localhost', 9050))
-        except IOError:
-            return
-
-        # If that succeeded, we might have Tor!
-        session.config.sys.proxy.protocol = 'tor'
-        session.config.sys.proxy.host = 'localhost'
-        session.config.sys.proxy.port = 9050
-        session.config.sys.proxy.fallback = True
-        ConnBroker.configure()
-
-        # Test it...
-        need_tor = [ConnBroker.OUTGOING_HTTPS]
-        try:
-            with ConnBroker.context(need=need_tor) as context:
-                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
-                               data=None, timeout=10).read()
-                assert(motd.strip().endswith('}'))
-            session.ui.notify(_('Successfully configured and enabled Tor!'))
-        except (IOError, AssertionError):
-            # If it failed, revert the config changes
-            session.config.sys.proxy.protocol = 'none'
-            session.ui.notify(_('Failed configure Tor'))
-            ConnBroker.configure()
-
     def basic_app_config(self, session,
                          save_and_update_workers=True,
                          want_daemons=True):
@@ -325,16 +296,16 @@ class SetupMagic(Command):
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
 
-        # Enable Tor if we have it
-        if session.config.sys.proxy.protocol == 'none':
-            self.auto_configure_tor(session)
-
         # Mark config as up-to-date
         session.config.version = APPVER
 
         if save_and_update_workers:
             session.config.save()
             session.config.prepare_workers(session, daemons=want_daemons)
+
+        # Enable Tor in the background, if we have it...
+        session.config.slow_worker.add_unique_task(
+            session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))
 
     def setup_command(self, session):
         pass  # Overridden by children
@@ -1105,6 +1076,62 @@ class SetupTestRoute(TestableWebbable):
                            result=route, info=error_info)
 
 
+class SetupTor(TestableWebbable):
+    """Check for Tor and auto-configure if possible."""
+    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto]")
+    HTTP_CALLABLE = ('POST',)
+
+    @classmethod
+    def autoconfig(cls, session):
+        cls(session, arg=['--auto']).run()
+
+    def auto_configure_tor(self, session, hostport=None):
+        need_raw = [ConnBroker.OUTGOING_RAW]
+        hostport = hostport or ('127.0.0.1', 9050)
+        try:
+            with ConnBroker.context(need=need_raw) as context:
+                tor = socket.create_connection(hostport, timeout=10)
+        except IOError:
+            return  _('Failed to connect to Tor on %s:%s. Is it installed?'
+                      ) % hostport
+
+        # If that succeeded, we might have Tor!
+        old_proto = session.config.sys.proxy.protocol
+        session.config.sys.proxy.protocol = 'tor'
+        session.config.sys.proxy.host = hostport[0]
+        session.config.sys.proxy.port = hostport[1]
+        session.config.sys.proxy.fallback = True
+        ConnBroker.configure()
+
+        # Test it...
+        need_tor = [ConnBroker.OUTGOING_HTTPS]
+        try:
+            with ConnBroker.context(need=need_tor) as context:
+                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
+                               data=None, timeout=10).read()
+                assert(motd.strip().endswith('}'))
+            message = _('Successfully configured and enabled Tor!')
+        except (IOError, AssertionError):
+            # If it failed, revert the config changes
+            session.config.sys.proxy.protocol = old_proto
+            ConnBroker.configure()
+            message = _('Failed to configure Tor on %s:%s. Is the network down?'
+                        ) % hostport
+        return message
+
+    def setup_command(self, session):
+        if ("--auto" not in self.args
+                or session.config.sys.proxy.protocol == 'unknown'):
+            message = self.auto_configure_tor(session)
+        else:
+            message = _('Proxy settings have already been configured.')
+
+        if session.config.sys.proxy.protocol == 'tor':
+            return self._success(message, result=session.config.sys.proxy)
+        else:
+            return self._error(message, result=session.config.sys.proxy)
+
+
 class Setup(SetupWelcome):
     """Enter setup flow"""
     SYNOPSIS = (None, 'setup', 'setup', '')
@@ -1203,4 +1230,5 @@ _plugins.register_commands(SetupMagic,
                            SetupWelcome,
                            SetupPassword,
                            SetupTestRoute,
+                           SetupTor,
                            Setup)
