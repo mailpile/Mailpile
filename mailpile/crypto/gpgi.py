@@ -105,6 +105,9 @@ class GnuPGResultParser:
                 if data[0] not in keylist:
                     keylist.append(data[1].strip())
                 encryption_info["have_keys"] = list(set(keylist))
+                
+            elif keyword == "PLAINTEXT":
+                encryption_info.filename = data[3].strip()
 
             elif signature_info.part_status == "none":
                 # Only one of these will ever be emitted per key, use
@@ -118,6 +121,8 @@ class GnuPGResultParser:
                     signature_info.part_status = ((keyword == "GOODSIG")
                                                   and "unverified"
                                                   or "invalid")
+                    rp.plaintext = "".join(retvals[1]["stdout"])
+                                                  
                 elif keyword == "ERRSIG":
                     signature_info.part_status = "error"
                     signature_info["keyinfo"] = data[1]
@@ -785,6 +790,44 @@ class GnuPG:
         rp = GnuPGResultParser().parse(retvals)
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
+
+    # DEBUG
+    def sniff(self, data):
+        """
+        Checks arbitrary data to see if it is a PGP object and returns a set
+        that indicates the kind(s) of object found. The names of the set
+        elements are based on RFC3156 content types with 'pgp-' stripped so
+        they can be used in sniffers for other protocols, e.g. S/MIME.
+        There are additional set elements 'armored' and 'unencrypted'.
+        """
+     
+        found = set();       
+
+        retvals = self.run(["--list-packets"], gpg_input=data,
+                                              outputfd=None,
+                                              send_passphrase=False)
+                    
+        for line in retvals[1]['stdout']:
+            if line.startswith(':literal data packet:'):
+                found.add('unencrypted')           
+            if line.startswith(':encrypted data packet:'):
+                found.add('encrypted')
+            elif line.startswith(':pubkey enc packet:'):
+                found.add('encrypted')
+            elif line.startswith(':onepass_sig packet:'):
+                found.add('signature')
+            elif line.startswith(':signature packet:'):
+                found.add('signature')
+            elif line.startswith(':public key packet:'):
+                found.add('keys')
+            elif line.startswith(':public sub key packet:'):
+                found.add('keys')
+        if found and data.startswith('-----BEGIN PGP'):
+            found.add('armored')
+
+        return found
+         
+    # DEBUG END
 
     def remove_armor(self, text):
         lines = text.strip().splitlines(True)
