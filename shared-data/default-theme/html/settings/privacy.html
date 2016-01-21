@@ -19,15 +19,23 @@
 
   <div class="notices">
   {% if "unknown" in (config.prefs.motd_url, config.prefs.web_content) %}
-    <p>
+    <p style="text-align: center">
       <span class="icon icon-lightbulb"></span>
       {{_("Please review and save your settings.")}}
       {{_("Some features may not be enabled until you have saved.")}}
+      <br>
+    </p>
+    <p style="text-align: center">
+      <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
     </p>
     {% elif ui_saved %}
     <p>
       <span class="icon icon-checkmark"></span>
       {{_("Your settings have been saved.")}}
+    </p>
+    {% else %}
+    <p>
+      {{_("Choose your own privacy policy!")}}
     </p>
     {% endif %}
   </div>
