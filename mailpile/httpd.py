@@ -359,11 +359,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
-
         if 'context' in post_data:
             session.load_context(post_data['context'][0])
         elif 'context' in query_data:
             session.load_context(query_data['context'][0])
+
+        mark_name = 'Processing HTTP API request at %s' % time.time()
+        session.ui.start_command(mark_name, [], {})
 
         if 'http' in config.sys.debug:
             session.ui.warning = server_session.ui.warning
@@ -445,10 +447,23 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                              ) else 0
             try:
                 LIVE_HTTP_REQUESTS -= hang_fix
+
+                session.ui.mark('Running %d commands' % len(commands))
                 results = [cmd.run() for cmd in commands]
+
+                session.ui.mark('Displaying final result')
                 session.ui.display_result(results[-1])
             finally:
                 LIVE_HTTP_REQUESTS += hang_fix
+
+            session.ui.mark('Rendering response')
+            mimetype, content = session.ui.render_response(session.config)
+
+            session.ui.mark('Sending response')
+            self.send_full_response(content,
+                                    mimetype=mimetype,
+                                    header_list=http_headers,
+                                    cachectrl=cachectrl)
 
         except UrlRedirectException, e:
             return self.send_http_redirect(e.url)
@@ -466,11 +481,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             self.send_full_response(e, code=500, mimetype='text/plain')
             return None
 
-        mimetype, content = session.ui.render_response(session.config)
-        self.send_full_response(content,
-                                mimetype=mimetype,
-                                header_list=http_headers,
-                                cachectrl=cachectrl)
+        finally:
+            session.ui.report_marks(
+                details=('timing' in session.config.sys.debug))
+            session.ui.finish_command(mark_name)
 
     def do_PUT(self):
         return self.do_POST(method='PUT')
