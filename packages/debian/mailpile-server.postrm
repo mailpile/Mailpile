@@ -19,4 +19,7 @@ if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
     apache_remove $@
 fi
 
+
+#DEBHELPER#
+
 exit 0
