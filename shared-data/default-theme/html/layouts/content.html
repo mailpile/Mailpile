@@ -38,6 +38,9 @@
 {%- block content %}<h1>No Content</h1>{% endblock -%}
 {%- block footer_nav %}
       <div class="footer-nav text-center clearfix">
+        <noscript><b>
+          {{_("Uh oh! You have Javascript disabled. This will cause problems.")}}
+        </b><br></noscript>
         <a href="{{ U("/page/release-notes/license.html") }}"
            title="{{_("The AGPLv3 License")}}"
            >{{_("Copyright")}} 2013-2016</a>,

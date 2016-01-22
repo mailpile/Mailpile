@@ -7,7 +7,7 @@
     <img src="{{ config.sys.http_path }}/static/img/logo-color.svg" class="animated bounceIn welcome-logo">
   </div>
   <div class="welcome-icons add-top half-bottom clearfix">
-  <ul class="animated fadeIn horizontal clearfix">
+  <ul class="animated fadeIn horizontal clearfix needjs hide">
     <li><span class="icon-mailsource"></span></li>
     <li><span class="icon-inbox"></span></li>
     <li><span class="icon-lock-closed"></span></li>
@@ -18,6 +18,9 @@
   </ul>
   </div>
   <h4 class="text-detail animated fadeIn">{{_("You're about to experience secure email like never before!")}}</h4>
+  <noscript><p>
+    {{_("Uh oh! You have Javascript disabled. This will cause problems.")}}
+  </p></noscript>
   <form method="POST" action="{{ config.sys.http_path }}/setup/welcome/" class="animated bounceIn">
     <p>
     <select name="language">
@@ -36,4 +39,5 @@
     <input type="submit" value="{{_("Begin")}}" class="button-primary">
   </form>
 </div>
+<script>$(document).ready(function() {$('.needjs').show()});</script>
 {% endblock %}
