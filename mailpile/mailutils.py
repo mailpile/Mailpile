@@ -203,6 +203,7 @@ def ExtractEmailAndName(string):
 
 def CleanHeaders(msg, copy_all=True, tombstones=False):
     clean_headers = []
+    address_headers_lower = [h.lower() for h in Email.ADDRESS_HEADERS]
     for key, value in msg.items():
         lkey = key.lower()
 
@@ -213,7 +214,7 @@ def CleanHeaders(msg, copy_all=True, tombstones=False):
                 clean_headers.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
-        elif lkey in ('from', 'to', 'cc', 'reply-to'):
+        elif lkey in address_headers_lower:
             if '#' in value:
                 clean_headers.append((key, re.sub(
                     r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
@@ -523,7 +524,7 @@ class Email(object):
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
     MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
                          'Encryption', 'Attach-PGP-Pubkey')
-    ADDRESS_HEADERS = ('From', 'To', 'Cc', 'Bcc')
+    ADDRESS_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Reply-To')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -551,7 +552,7 @@ class Email(object):
         return aid
 
     def get_editing_strings(self, tree=None):
-        tree = tree or self.get_message_tree()
+        tree = tree or self.get_message_tree(want=['editing_strings'])
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
             'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
@@ -572,7 +573,10 @@ class Email(object):
             data = tree['headers'].get(hdr, '')
             lhdr = hdr.lower()
             if lhdr in lowadr and lhdr in lowman:
-                strings[lhdr] = AddressHeaderParser(data).normalized()
+                adata = tree.get('addresses', {}).get(lhdr, None)
+                if adata is None:
+                    adata = AddressHeaderParser(data)
+                strings[lhdr] = adata.normalized()
             elif lhdr in lowman:
                 strings[lhdr] = unicode(data)
             else:
@@ -710,7 +714,7 @@ class Email(object):
             attachments = [h for h in newmsg.keys()
                            if h.lower().startswith('attachment')]
             if attachments:
-                oldtree = self.get_message_tree()
+                oldtree = self.get_message_tree(want=['attchments'])
                 for att in oldtree['attachments']:
                     hdr = 'Attachment-%s' % self._attachment_aid(att)
                     if hdr in attachments:
@@ -1096,7 +1100,8 @@ class Email(object):
 
         if want is not None:
             if 'editing_strings' in want or 'editing_string' in want:
-                want.extend(['text_parts', 'headers', 'attachments'])
+                want.extend(['text_parts', 'headers', 'attachments',
+                             'addresses'])
 
         for p in 'text_parts', 'html_parts', 'attachments':
             if want is None or p in want:
@@ -1136,10 +1141,11 @@ class Email(object):
                                    for k, v in msg.items()]
 
         if want is None or 'addresses' in want:
+            address_headers_lower = [h.lower() for h in self.ADDRESS_HEADERS]
             tree['addresses'] = {}
             for hdr in msg.keys():
                 hdrl = hdr.lower()
-                if hdrl in ('reply-to', 'from', 'to', 'cc', 'bcc'):
+                if hdrl in address_headers_lower:
                     tree['addresses'][hdrl] = AddressHeaderParser(msg[hdr])
 
         # FIXME: Decide if this is strict enough or too strict...?
@@ -1536,6 +1542,7 @@ class AddressHeaderParser(list):
         Bjarni =?iso-8859-1?Q??=is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
         "Einarsson, Bjarni" <bre@klaki.net>,
+        =?iso-8859-1?Q?Lonia_l=F6gmannsstofa?= <lonia@example.com>,
         "Bjarni @ work" <bre@pagekite.net>,
     """
     TEST_EXPECT_NORMALIZED_ADDRESSES = [
@@ -1553,6 +1560,7 @@ class AddressHeaderParser(list):
         '"Bjarni is" <bre@klaki.net>',
         '"Bjarni Runar Einarsson" <bre@klaki.net>',
         '=?utf-8?Q?Einarsson=2C_Bjarni?= <bre@klaki.net>',
+        '=?utf-8?Q?Lonia_l=C3=B6gmannsstofa?= <lonia@example.com>',
         '"Bjarni @ work" <bre@pagekite.net>']
 
     # Escaping and quoting
