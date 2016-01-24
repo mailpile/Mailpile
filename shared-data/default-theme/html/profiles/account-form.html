@@ -155,7 +155,8 @@
             });
             Mailpile.API.setup_email_servers_get({
               'track-id': new_src_id,
-              'timeout': 120000,
+              '_timeout': 300000, // AJAX timeout
+              'timeout': 240000,  // Server-side deadline
               'password': $(pf + '.fpa-basic-password').val(),
               'email': email
             }, function(data) {
@@ -179,7 +180,10 @@
                 $(pf + '.fpa-detection-failed').slideDown();
               }
             }, function(error) {
+              console.log("Detection error " + error);
               EventLog.unsubscribe(ev_source, watch_id);
+              _fpa.next('profile-add-route');
+               $(pf + '.fpa-detection-failed').slideDown();
             });
             return false;
           }
@@ -312,6 +316,9 @@
         <span class="icon-robot"></span> {{_("Auto-detecting settings")}} ...
       </p>
       <div class="text-center">
+      {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+        <p>{{_("Connecting over Tor, this may take a while.")}}</p>
+      {% endif %}
         <p>{% include("../img/loading-ellipsis.svg") %}</p>
         <p><i class='fpa-detection-progress'></i></p>
       </div>
