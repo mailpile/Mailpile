@@ -41,12 +41,12 @@
   </div>
 
   <div class="setting-group">
-    <h3>{{_("Anonymous Tor Networking")}}</h3>
+    <h3>{{_("Networking Privacy")}}</h3>
     <div class="explanation">
       <p class="what">
         <span class="icon icon-like"></span>
         {{_("Tor is a community-run system for making anonymous network connections.")}}
-        {{_("It masks your IP address and prevents many forms of surveillance and tracking.")}}
+        {{_("It masks your IP address and location, thus preventing many forms of surveillance and tracking.")}}
       </p>
       <p class="risks">
         <span class="icon icon-privacy"></span>
@@ -59,32 +59,68 @@
       </p>
     </div>
     <div class="settings">
-    {% if config.sys.proxy.protocol == "tor" %}
+    {% set proxy = {"tor": "Tor", "tor-risky": "Tor"}.get(config.sys.proxy.protocol, _("proxy")) %}
+    {% if config.sys.proxy.protocol not in ("none", "unknown") %}
 
-      <input name="sys.proxy.protocol" type="radio" value="tor" checked>
-      <span class="checkbox">
-        {{_("Enable anonymous Tor networking.")}}
-        <span title="{{_('Recommended setting')}}"
-              class="icon default icon-star"></span>
-      </span><br>
-      <div class="subsection">
+      <p>
+        {{_("When sending and receiving mail, or downloading from the web:")}}
+      </p>
+      <div class="basic-settings">
+        <input name="sys.proxy.protocol" type="radio" value="tor"
+               {%- if config.sys.proxy.protocol in ("tor", "unknown") %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Prefer anonymous Tor networking for encrypted connections.")}}
+          <span title="{{_('Recommended setting')}}"
+                class="icon default icon-star"></span>
+        </span><br>
+        <input name="sys.proxy.protocol" type="radio" value="tor-risky"
+               {%- if config.sys.proxy.protocol == "tor-risky" %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Prefer anonymous Tor networking for all connections.")}}
+        </span><br>
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky", "unknown") %}
+        <input name="sys.proxy.protocol" type="radio" value="{{config.sys.proxy.protocol}}" checked>
+        <span class="checkbox">
+          {{_("Custom proxy setting (%(proto)s)", proto=config.sys.proxy.protocol)}}
+        </span><br>
+    {% endif %}
+        <input name="sys.proxy.protocol" type="radio" value="none">
+        <span class="checkbox">
+          {{_("Do not use %(proxy)s.", proxy=proxy)}}
+        </span><br>
+      </div>
+
+      <h6 id="tor-advanced-heading"><a>{{_("Advanced Settings")}} ...</a></h6>
+      <div id="tor-advanced" class="advanced-settings">
         <input name="sys.proxy.fallback" type="radio" value="true"
                {%- if config.sys.proxy.fallback %} checked{% endif %}>
         <span class="checkbox">
-          {{_("Use Tor for encrypted outgoing connections.")}}
+          {{_("Fall back to direct networking if connecting over %(proxy)s fails.",
+              proxy=proxy)}}
           <span title="{{_('Recommended setting')}}"
                 class="icon default icon-star"></span>
         </span><br>
         <input name="sys.proxy.fallback" type="radio" value="false"
                {%- if not config.sys.proxy.fallback %} checked{% endif %}>
         <span class="checkbox">
-          {{_("Use Tor for all outgoing connections.")}}
+          {{_("Disable direct networking connections completely.")}}
         </span><br>
+        <br>
+
+        {{_("Never use %(proxy)s for these hosts:", proxy=proxy)}}
+        <input name="sys.proxy.no_proxy" type="text"
+               value="{{config.sys.proxy.no_proxy}}">
+        <br>
+        {{_("Host:")}} <input name="sys.proxy.host" type="text" size=12
+                              value="{{config.sys.proxy.host}}">
+        <br>
+        {{_("Port:")}} <input name="sys.proxy.port" type="text" size=4
+                              value="{{config.sys.proxy.port}}">
       </div>
-      <input name="sys.proxy.protocol" type="radio" value="none">
-      <span class="checkbox">
-        {{_("Do not use Tor.")}}
-      </span><br>
+      <script>
+        $('#tor-advanced').hide();
+        $('#tor-advanced-heading').click(function() {$('#tor-advanced').slideDown()});
+      </script>
 
     {% else %}
       <p>
@@ -119,7 +155,7 @@
         &nbsp; <i id="enable-tor-result"></i>
       </p>
       <p>
-        {{_("Some of Mailpile's privacy and security features do not work without Tor.")}}
+        {{_("Without Tor, Mailpile can not prevent service providers and network operators from monitoring or tracking your IP address and communications.")}}
       </p>
     {% endif %}
     </div>
@@ -151,7 +187,7 @@
         <span title="{{_('Recommended setting')}}"
               class="icon default icon-star"></span>
       </span><br>
-    {% if config.sys.proxy.protocol == "tor" %}
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
       <input name="prefs.motd_url" type="radio" value="tor-only"
              {%- if config.prefs.motd_url == "tor-only" %} checked{% endif %}>
       <span class="checkbox">
@@ -211,12 +247,12 @@
              {%- if config.prefs.web_content == "on" %} checked{% endif %}>
       <span class="checkbox">
         {{_("Enable downloading of third party content from the web.")}}
-    {% if config.sys.proxy.protocol != "tor" %}
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky") %}
         <span title="{{_('Recommended setting')}}"
               class="icon default icon-star"></span>
     {% endif %}
       </span><br>
-    {% if config.sys.proxy.protocol == "tor" %}
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
       <input name="prefs.web_content" type="radio" value="anon"
              {%- if config.prefs.web_content in ("anon", "unknown") %} checked{% endif %}>
       <span class="checkbox">
