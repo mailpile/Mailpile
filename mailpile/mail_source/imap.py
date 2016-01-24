@@ -522,7 +522,11 @@ def _connect_imap(session, settings, event,
             req_stls = want_ssl = False
 
         def mkconn():
-            with ConnBroker.context(need=[ConnBroker.OUTGOING_IMAP]):
+            if want_ssl:
+                need = [ConnBroker.OUTGOING_IMAPS]
+            else:
+                need = [ConnBroker.OUTGOING_IMAP]
+            with ConnBroker.context(need=need):
                 return conn_cls(settings.get('host'),
                                 int(settings.get('port')))
         conn = timed(mkconn)

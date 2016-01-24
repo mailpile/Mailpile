@@ -660,14 +660,16 @@ class SetupGetEmailSettings(TestableWebbable):
 
         return service_domains
 
-    def _probe_port(self, host, port):
+    def _probe_port(self, host, port, encrypted=False):
         import socket
-        # FIXME: This is neither secured nor anonymized.
-        with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
-                                      ConnBroker.OUTGOING_CLEARTEXT]) as cb:
+        if encrypted:
+            needs = [ConnBroker.OUTGOING_RAW, ConnBroker.OUTGOING_ENCRYPTED]
+        else:
+            needs = [ConnBroker.OUTGOING_RAW, ConnBroker.OUTGOING_CLEARTEXT]
+        with ConnBroker.context(need=needs) as cb:
             try:
                 # FIXME: magic number follows
-                socket.create_connection((host, port), timeout=9).close()
+                socket.create_connection((host, port), timeout=15).close()
                 return True
             except (AssertionError, IOError, OSError, socket.error):
                 pass
@@ -703,7 +705,7 @@ class SetupGetEmailSettings(TestableWebbable):
             for host in service_domains.get(service, []):
                 if len(result[section]) > 3:
                     break
-                if self._probe_port(host, port):
+                if self._probe_port(host, port, encrypted=('ssl' not in proto)):
                     result[section].append({
                         'protocol': proto,
                         'host': str(host),

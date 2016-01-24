@@ -62,13 +62,15 @@ CONFIG_RULES = {
         'login_banner':  p(_('A custom banner for the login page'), str,   ''),
         'proxy':         p(_('Proxy settings'), False, {
             'protocol':  p(_('Proxy protocol'),
-                           ["tor", "socks5", "socks4", "http", "none",
-                            "unknown"], 'unknown'),
+                           ["tor", "tor-risky", "socks5", "socks4", "http",
+                            "none", "unknown"], 'unknown'),
             'fallback':  p(_('Allow fallback to direct conns'), bool, False),
             'username':   (_('User name'), str, ''),
             'password':   (_('Password'), str, ''),
             'host':      p(_('Host'), str, ''),
-            'port':      p(_('Port'), int, 8080)
+            'port':      p(_('Port'), int, 8080),
+            'no_proxy':  p(_('List of hosts to avoid proxying'), str,
+                           'localhost, 127.0.0.1, ::1')
         }),
     }),
     'prefs': p(_("User preferences"), False, {
