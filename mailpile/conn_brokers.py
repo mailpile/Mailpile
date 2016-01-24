@@ -49,6 +49,7 @@ except ImportError:
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
+from mailpile.util import dict_merge
 
 
 _ = lambda s: s
@@ -182,8 +183,10 @@ class BrokeredContext(object):
             network = self.on_darknet
         elif self.on_localnet:
             network = _('the local network')
-        else:
+        elif self.on_internet:
             network = _('the Internet')
+        else:
+            return _('Connection in progress to %(host)s') % {'host': hostport}
 
         return _('Connected to %(host)s over %(network)s with %(encryption)s.'
                  ) % {
@@ -345,7 +348,7 @@ class TcpConnectionBroker(BaseConnectionBroker):
         no_proxy = (self.FIXED_NO_PROXY_LIST +
                     [a.lower().strip()
                      for a in self.config().sys.proxy.no_proxy.split(',')])
-        return (address in no_proxy)
+        return (address[0].lower() in no_proxy)
 
     def _avoid(self, address):
         if (self.config().sys.proxy.protocol not in  ('none', 'unknown')
@@ -358,7 +361,9 @@ class TcpConnectionBroker(BaseConnectionBroker):
             raise CapabilityFailure('Cannot connect to .onion addresses')
 
     def _conn(self, address, *args, **kwargs):
-        return org_cconn(address, *args, **kwargs)
+        clean_kwargs = dict((k, v) for k, v in kwargs.iteritems()
+                            if not k.startswith('_'))
+        return org_cconn(address, *args, **clean_kwargs)
 
     def _create_connection(self, context, address, *args, **kwargs):
         self._avoid(address)
@@ -375,9 +380,16 @@ class SocksConnBroker(TcpConnectionBroker):
     """
     SUPPORTS = []
     CONFIGURED = Capability.ALL_OUTGOING
-    DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
     PROXY_TYPES = ('socks5', 'http', 'socks4')
     DEFAULT_PROTO = 'socks5'
+
+    DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
+    IOERROR_FMT = _('Socks error, %s')
+    IOERROR_MSG = {
+        'timed out': _('timed out'),
+        'Host unreachable': _('host unreachable'),
+        'Connection refused': _('connection refused')
+    }
 
     def __init__(self, *args, **kwargs):
         TcpConnectionBroker.__init__(self, *args, **kwargs)
@@ -426,14 +438,16 @@ class SocksConnBroker(TcpConnectionBroker):
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
             sock.settimeout(float(timeout))
         if source_address:
-            raise IOError('Cannot bind source address')
+            raise CapabilityFailure('Cannot bind source address')
         try:
             address = self._fix_address_tuple(address)
             sock.connect(address)
-        except socks.ProxyError:
+        except socks.ProxyError as e:
             if self._debug is not None:
                 self._debug(traceback.format_exc())
-            raise IOError('Proxy failed for %s:%s' % address)
+            code, msg = e.message
+            raise IOError(_(self.IOERROR_FMT
+                            ) % (_(self.IOERROR_MSG.get(msg, msg)), ))
         return sock
 
 
@@ -451,9 +465,14 @@ class TorConnBroker(SocksConnBroker):
     CONFIGURED = (Capability.ALL_OUTGOING_ENCRYPTED
                   - set([Capability.OUTGOING_TRACKABLE]))
     REJECTS = None
-    DEBUG_FMT = '%s: Raw Tor conn to: %s'
-    PROXY_TYPES = ('tor', 'tor-risky')
+    PROXY_TYPES = ('tor', )
     DEFAULT_PROTO = 'tor'
+
+    DEBUG_FMT = '%s: Raw Tor conn to: %s'
+    IOERROR_FMT = _('Tor error, %s')
+    IOERROR_MSG = dict_merge(SocksConnBroker.IOERROR_MSG, {
+        'bad input': _('connection refused')  # FIXME: Is this right?
+    })
 
     def _describe(self, context, conn):
         context.is_darknet = 'Tor'
@@ -630,12 +649,12 @@ class MasterBroker(BaseConnectionBroker):
 
     def create_conn_with_caps(self, address, context, need, reject,
                               *args, **kwargs):
-        history_event = kwargs.get('history_event')
+        history_event = kwargs.get('_history_event')
         if history_event is None:
             history_event = [int(time.time()), None, context]
             self.history = self.history[-50:]
             self.history.append(history_event)
-            kwargs['history_event'] = history_event
+            kwargs['_history_event'] = history_event
         else:
             history_event[-1] = context
 
@@ -648,13 +667,17 @@ class MasterBroker(BaseConnectionBroker):
                 if conn:
                     history_event[1] = conn.fileno()
                     return conn
-            except (IOError, NotImplementedError) as e:
+            except (CapabilityFailure, NotImplementedError):
+                # These are internal; we assume they're already logged
+                # for debugging but don't bother the user with them.
+                pass
+            except:
                 et, v, t = sys.exc_info()
         if et is not None:
-            context.error = v
+            context.error = '%s' % v
             raise et, v, t
 
-        context.error = _('No connection broker found')
+        context.error = _('No connection method found')
         raise CapabilityFailure(context.error)
 
     def get_urls(self, listening_fd, need=None, reject=None):

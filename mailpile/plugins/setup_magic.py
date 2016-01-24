@@ -574,7 +574,8 @@ class SetupGetEmailSettings(TestableWebbable):
             return None
 
         self._progress(_('Checking ISPDB for %s') % domain)
-        settings = self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
+        settings = self._get_xml_autoconfig(
+            self.ISPDB_URL % {'domain': domain}, email)
         if settings:
             self._log_result(_('Found %s in ISPDB') % domain)
             return settings
@@ -583,7 +584,8 @@ class SetupGetEmailSettings(TestableWebbable):
             domain = '.'.join(dparts[1:])
             # FIXME: Make a longer list of 2nd-level public TLDs to ignore
             if domain not in ('co.uk', 'pagekite.me'):
-                return self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
+                return self._get_xml_autoconfig(
+                    self.ISPDB_URL % {'domain': domain}, email)
         return None
 
     def _get_mx1(self, domain):
@@ -612,7 +614,9 @@ class SetupGetEmailSettings(TestableWebbable):
             for dom in (domain, mx1):
                 if dom:
                     self._progress(_('Checking for autoconfig on %s') % dom)
-                    settings = self._get_xml_autoconfig(url % {'protocol': protocol, 'domain': dom, 'email': email}, email)
+                    settings = self._get_xml_autoconfig(
+                        url % {'protocol': protocol, 'domain': dom, 'email': email},
+                        email)
                     if settings:
                         self._log_result(_('Found autoconfig on %s') % dom)
                         return settings
@@ -705,7 +709,7 @@ class SetupGetEmailSettings(TestableWebbable):
             for host in service_domains.get(service, []):
                 if len(result[section]) > 3:
                     break
-                if self._probe_port(host, port, encrypted=('ssl' not in proto)):
+                if self._probe_port(host, port, encrypted=('ssl' in proto)):
                     result[section].append({
                         'protocol': proto,
                         'host': str(host),
@@ -736,7 +740,8 @@ class SetupGetEmailSettings(TestableWebbable):
         mx1 = None
 
         if not settings and self.deadline > time.time():
-            #FIXME: actually we want mx1 here but since DNS lack security that would compromise security when ISPDB gives us a result
+            # FIXME: actually we want mx1 here but since DNS lack security that
+            #        would compromise security when ISPDB gives us a result
             settings = self._get_domain_autoconfig(email, domain, None, ssl=True)
 
         if not settings and self.deadline > time.time():
@@ -749,8 +754,12 @@ class SetupGetEmailSettings(TestableWebbable):
 
         if not settings and self.deadline > time.time():
             settings = self._get_domain_autoconfig(email, None, mx1, ssl=True)
+
+        # Try the unencrypted lookups next...
         if not settings and self.deadline > time.time():
             settings = self._get_domain_autoconfig(email, domain, mx1, ssl=False)
+        if not settings and self.deadline > time.time():
+            settings = self._get_domain_autoconfig(email, None, mx1, ssl=False)
 
         if not settings and self.deadline > time.time():
             settings = self._guess_settings(email, domain, mx1)

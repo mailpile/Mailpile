@@ -110,12 +110,14 @@
         {{_("Never use %(proxy)s for these hosts:", proxy=proxy)}}
         <input name="sys.proxy.no_proxy" type="text"
                value="{{config.sys.proxy.no_proxy}}">
+{# DISABLED FOR NOW ...
         <br>
         {{_("Host:")}} <input name="sys.proxy.host" type="text" size=12
                               value="{{config.sys.proxy.host}}">
         <br>
         {{_("Port:")}} <input name="sys.proxy.port" type="text" size=4
                               value="{{config.sys.proxy.port}}">
+#}
       </div>
       <script>
         $('#tor-advanced').hide();
