@@ -5868,9 +5868,17 @@ label.radio-list-item .icon-key {
   line-height: 100px;
 }
 /* Mailpile - Settings */
+div.settings-page,
+.settings-page .setting-group,
+.settings-page .setting-group .settings {
+  max-width: 80em;
+  position: relative;
+}
+.settings-page .setting-group .settings {
+  max-width: 50%;
+}
 .settings-page .setting-group {
   border-top: 1px solid #cccccc;
-  position: relative;
   margin: 15px 0;
   padding: 10px 0;
 }
@@ -5884,6 +5892,16 @@ label.radio-list-item .icon-key {
   padding: 5px 0 0 0;
   width: 50%;
   float: left;
+}
+.settings-page p {
+  margin: 0 0 0.5em 0;
+  padding: 0;
+}
+.settings-page h4,
+.settings-page h5,
+.settings-page h6 {
+  margin: 1.25em 0 0.5em 0;
+  padding: 0;
 }
 .settings-page div.explanation {
   margin: 0 25px 0 0;
@@ -5910,6 +5928,9 @@ label.radio-list-item .icon-key {
 }
 .settings-page .risks span.icon {
   color: #f15a24;
+}
+.settings-page .actions span.icon {
+  color: #7d4837;
 }
 .settings-page span.icon.default {
   color: #337fb2;
@@ -5938,6 +5959,73 @@ label.radio-list-item .icon-key {
   display: block;
   padding: 0;
   margin: 0 0 0 2em;
+}
+/* Event Log specifics */
+.settings-page p.event-summary span {
+  margin-right: 1em;
+}
+.settings-page p.event-summary .event-source {
+  float: right;
+  font-size: 11px;
+  color: #777;
+}
+/* Mailpile - Settings */
+table.account-list {
+  margin: 3em 0;
+  background: none;
+  border: 0;
+  text-align: right;
+}
+table.account-list th {
+  background: none;
+  border: 0;
+  text-align: left;
+}
+table.account-list tr.message {
+  background: #ffffff;
+}
+table.account-list tr:hover {
+  background: none;
+}
+table.account-list h3 {
+  margin: 0;
+}
+table.account-list .icon-logo {
+  font-size: 1.3em;
+}
+div.motd {
+  max-width: 35em;
+  opacity: 0.5;
+  transition: opacity 1s;
+}
+div.motd.recent,
+div.motd:hover {
+  opacity: 1.0;
+  transition: opacity 1s;
+}
+div.motd p,
+div.motd h4 {
+  margin: 0.5em 0 0 0;
+}
+div.motd.recent,
+div.motd.recent h4 {
+  color: #225577;
+}
+div.motd.recent p.motd,
+div.motd.recent p.motd a.motd-signed {
+  color: #4b9441;
+}
+div.motd .updated {
+  color: #be1c21;
+}
+div.motd p.motd {
+  margin-left: 1em;
+}
+div.motd a.motd-signed {
+  display: block;
+  margin-top: 0.5em;
+  text-align: right;
+  padding-right: 2em;
 }
 /* Connection Down */
 #connection-down {
