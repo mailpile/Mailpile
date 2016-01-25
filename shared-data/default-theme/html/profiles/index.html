@@ -39,13 +39,13 @@
     <span class="icon icon-home"></span> {{_("Welcome Home")}}
   </h1>
 
-  <table width='100%' style='margin: 3em 0; background: none; border: 0; text-align: right;'>
+  <table width='100%' class="account-list">
     <tr>
-      <th colspan=4 style='background: none; border: 0; text-align: left;'>
-        <h3 style='margin: 0;'>{{_("E-mail Accounts")}}</h3>
+      <th colspan=4>
+        <h3>{{_("E-mail Accounts")}}</h3>
 {%- if result.profiles|length > 0 %}
       </th><td width='1%'><span class="icon icon-new"></span>
-      </td><td width='1%'><span class="icon icon-logo" style='font-size: 1.3em;'></span>
+      </td><td width='1%'><span class="icon icon-logo"></span>
       </td><td width='1%'>
 {%- if is_dev_version() %}
         <span class="icon icon-outbox"></span>
@@ -58,7 +58,7 @@
       </td>
     </tr>
     {%- if result.loading or not result.loaded %}
-    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+    <tr class="message"><td colspan=9><div class='text-center'>
       <p style='margin: 1em; padding: 0;'>
         <i>{{_("Still loading profiles and contacts, please wait...")}}</i>
       </p>
@@ -79,7 +79,7 @@
      {%- else %}
       {%- set route = '' %}
      {%- endif %}
-    <tr valign="top" style="background: #fff;">
+    <tr valign="top" class="message">
        <td width='1%'>
          {%- if route %}
          <a data-from="{{ p.email.0.email }}" class="button-compose" href="#">
@@ -149,7 +149,7 @@
     </tr>
     {%- endfor %}
     {%- elif config.prefs.web_content == "unknown" %}
-    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+    <tr class="message"><td colspan=9><div class='text-center'>
       <br>
       <p><i>{{_("Please review your privacy settings before adding any accounts.")}}</i></p>
       <p><a title="{{_("Security and Privacy Settings")}}"
@@ -158,7 +158,7 @@
       </button></a></p>
     </div></td></tr>
     {%- elif result.profiles|length < 1 %}
-    <tr style="background: #fff;"><td colspan=9><div class='text-center'>
+    <tr class="message"><td colspan=9><div class='text-center'>
       <br>
       <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
       <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
@@ -196,12 +196,27 @@
   </table>
   <p></p>
 
-{#
-  <div style="display: inline-block; width: 45%; padding: 0 1em;">
-    <h3>Conversations</h3>
-    {{ mailpile_render('as.html!minimal', 'search', 'in:mp_rpl')[1]|safe }}
+  {% set motd = mailpile('motd', '--noupdate').result %}
+  {% if motd._motd %}
+  <div class="motd {%- if motd.timestamp > config.timestamp %} recent{% endif %}">
+    <h4>
+      {{_("Message Of The Day, %(date)s", date=motd.timestamp|friendly_datetime)}}
+    </h4>
+    <p class="motd">
+      {{ motd._motd|to_br }}
+    {% if motd.source %}
+      <a class="motd-signed" target=_blank href="{{ motd.source }}">
+        - {{ motd.signed }}
+      </a>
+    {% endif %}
+    </p>
+    <p class="version-info">
+      {{_("This is Mailpile version %(version)s", version=config.version)}}:
+      <i {% if config.version|string() != motd.latest_version|string() -%}
+         class="updated"{% endif %}>{{ motd._version_info }}</i>.
+    </p>
   </div>
-#}
+  {% endif %}
 
 </div>
 {% if config.web.release_notes %}
