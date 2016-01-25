@@ -27,7 +27,7 @@ def NewEventId():
     with EVENT_COUNTER_LOCK:
         EVENT_COUNTER = EVENT_COUNTER+1
         EVENT_COUNTER %= 0x100000
-        return '%8.8x.%5.5x.%x' % (time.time(), EVENT_COUNTER, os.getpid())
+        return '%8.8x-%5.5x-%x' % (time.time(), EVENT_COUNTER, os.getpid())
 
 
 def _ClassName(obj, ignore_regexps=False):
@@ -73,7 +73,7 @@ class Event(object):
                  source=None, data=None, private_data=None):
         self._data = [
             '',
-            event_id or NewEventId(),
+            (event_id or NewEventId()).replace('.', '-'),
             flags,
             message,
             _ClassName(source),
