@@ -2,7 +2,16 @@
 {% block title %}The GNU Affero General Public License, version 3{% endblock %}
 {% block content %}
 <div class="content-normal" style="max-width: 46em;">
-</p><p>
+
+{% if config.prefs.language not in ('en', 'en_US', 'en_GB', 'C') %}
+<p class="text-center"><i>
+  <a target=_blank href="https://www.gnu.org/licenses/translations.html">
+    {{_("The Mailpile license is in English.")}}
+    {{_("Translations may be available on the FSF web site.")}}
+  </a>
+</i></p>
+{% endif %}
+
 <p class="text-center"><big>
                     GNU AFFERO GENERAL PUBLIC LICENSE<br>
                        Version 3, 19 November 2007
