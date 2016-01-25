@@ -1,0 +1,85 @@
+{% extends "logs/layout.html" %}
+
+{% block title %}{{_("Recent Network Activity")}}{% endblock %}
+{% block logs_content %}
+  <h1>
+    <span class="icon icon-force-graph"></span>
+    {{_("Recent Network Activity")}}
+  </h1>
+
+  <div class="notices">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Recent Activity")}}</h3>
+
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-lightbulb"></span>
+        {{_("Here you can see a log of recent network activity, both successful and failed attempts.")}}
+      </p>
+{% if config.sys.proxy.protocol not in ("none", "unknown") %}
+      <p class="what">
+        {{_("You have a proxy (%(proxy)s) configured at %(host)s:%(port)s.",
+            proxy=config.sys.proxy.protocol,
+            host=config.sys.proxy.host,
+            port=config.sys.proxy.port)}}
+      </p>
+  {% if not config.sys.proxy.fallback %}
+      <p class="risks">
+        <span class="icon icon-signature-unknown"></span>
+        {{_("Proxy fallback is disabled, so if the proxy cannot connect to a given server, the connection will fail.")}}
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+        {{_("Some service providers block connections from Tor, so this may prevent you from accessing your mail or other data.")}}
+    {% endif %}
+      </p>
+      <p class="actions">
+        <span class="icon icon-work"></span>
+        {{_("You can configure destinations to bypass the proxy in the Advanced section of Networking in your Privacy Policy.")}}
+      </p>
+  {% else %}
+      <p class="risks">
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+        <span class="icon icon-privacy"></span>
+        {{_("Fall-back is enabled, so a direct connection will be made if Tor cannot connect.")}}
+        {{_("This may leak your IP address and allow monitoring of which servers you communicate with.")}}
+    {% else %}
+        {{_("Fall-back is enabled, so a direct connection will be made if the proxy cannot connect.")}}
+    {% endif %}
+      </p>
+  {% endif %}
+  {% if config.sys.proxy.protocol == "tor-risky" %}
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("You are using Tor for unencrypted traffic.")}}
+        {{_("This may allow exit-node operators to listen in or modify your communications.")}}
+      </p>
+  {% endif %}
+{% elif config.sys.proxy.protocol not in ("tor", "tor-risky") %}
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("You are not using Tor.")}}
+        {{_("This may leak your IP address and allow monitoring of which servers you communicate with.")}}
+      </p>
+{% endif %}
+      <p><a href="{{ U('/settings/privacy.html') }}">
+        {{_("Edit your Privacy Policy.")}}
+      </a></p>
+    </div>
+
+    <div class="settings">
+    {%- set lines = ['uncle'] %}
+    {%- for ts, fd, text in result|reverse %}
+      <p class="event-summary" title="{{ ts|friendly_datetime }}"
+         {%- if lines[-1]|string() == text|string() %} style="color: #777;"
+         {%- endif %}>
+        <span class="event-time">{{ ts|friendly_time }}</span>
+        <span class="event-message">{{ text }}</span>
+      </p>
+      {%- do lines.append(text) %}
+    {%- endfor %}{%- if result|length < 1 %}
+      <p style="text-align: center;"><i>No activity</i></p>
+    {%- endif %}
+    </div>
+  </div>
+{% endblock %}

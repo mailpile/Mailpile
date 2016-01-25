@@ -1,8 +1,18 @@
 /* Mailpile - Settings */
 
+  div.settings-page,
+  .settings-page .setting-group,
+  .settings-page .setting-group .settings {
+    max-width: 80em;
+    position: relative;
+  }
+
+  .settings-page .setting-group .settings {
+    max-width: 50%;
+  }
+
   .settings-page .setting-group {
     border-top: 1px solid @grayMid;
-    position: relative;
     margin: 15px 0;
     padding: 10px 0;
   }
@@ -52,6 +62,7 @@
   .settings-page span.icon-checkmark { color: @blue; }
   .settings-page .what span.icon { color: @green; }
   .settings-page .risks span.icon { color: @orangeRed; }
+  .settings-page .actions span.icon { color: @brown; }
 
   .settings-page span.icon.default {
     color: @blue;
@@ -85,3 +96,11 @@
     padding: 0;
     margin: 0 0 0 2em;
   }
+
+/* Event Log specifics */
+
+  .settings-page p.event-summary span {margin-right: 1em;}
+  .settings-page p.event-summary .event-source {
+    float: right; font-size: 11px; color: #777;
+  }
+

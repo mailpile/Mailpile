@@ -31,6 +31,7 @@ ajaxable_url = function(url) {
                     (url.indexOf(U("/thread/")) == 0) ||
                     (url.indexOf(U("/profiles/")) == 0) ||
                     (url.indexOf(U("/settings/")) == 0) ||
+                    (url.indexOf(U("/logs/")) == 0) ||
                     (url.indexOf(U("/page/")) == 0) ||
                     (url.indexOf(U("/search/")) == 0)));
 };

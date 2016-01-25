@@ -103,6 +103,13 @@ Mailpile = {
       // interpolate: /<%=([\s\S]+?)%>/g, <- DISABLED FOR SAFETY :)
       escape: /<%[-=]([\s\S]+?)%>/g
     });
+  },
+  safe_jinjaish_template: function(tpl) {
+    return _.template(tpl, undefined, {
+      evaluate: /[{]%([\s\S]+?)%[}]/g,
+      // interpolate: /<%=([\s\S]+?)%>/g, <- DISABLED FOR SAFETY :)
+      escape: /{[{]([\s\S]+?)[}]}/g
+    });
   }
 };
 {% set theme_settings = theme_settings() %}
@@ -175,7 +182,7 @@ Mailpile.API = {
     }
     else if (response.status == 500) {
       // 500 internal errors and timeouts...
-      if (command != '/0/cached/' && command != '/0/eventlog/') {
+      if (command != '/0/cached/' && command != '/0/logs/events/') {
         Mailpile.notification({
           status: 'error',
           message: '{{_("Oops. Mailpile failed to complete your task.")|escapejs}}',

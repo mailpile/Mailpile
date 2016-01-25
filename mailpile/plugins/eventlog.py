@@ -14,7 +14,7 @@ _plugins = PluginManager(builtin=__file__)
 
 class Events(Command):
     """Display events from the event log"""
-    SYNOPSIS = (None, 'eventlog', 'eventlog',
+    SYNOPSIS = (None, 'eventlog', 'logs/events',
                 '[incomplete] [wait] [<count>] '
                 '[<field>=<val> <f>!=<v> <f>=~<re> ...]')
     ORDER = ('Internals', 9)
@@ -121,7 +121,7 @@ class Events(Command):
 
 class Cancel(Command):
     """Cancel events"""
-    SYNOPSIS = (None, 'eventlog/cancel', 'eventlog/cancel', 'all|<eventIDs>')
+    SYNOPSIS = (None, 'eventlog/cancel', 'logs/events/cancel', 'all|<eventIDs>')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
@@ -152,7 +152,7 @@ class Cancel(Command):
 
 class Undo(Command):
     """Undo either the last action or one specified by Event ID"""
-    SYNOPSIS = ('u', 'undo', 'eventlog/undo', '[<Event ID>]')
+    SYNOPSIS = ('u', 'undo', 'logs/events/undo', '[<Event ID>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {

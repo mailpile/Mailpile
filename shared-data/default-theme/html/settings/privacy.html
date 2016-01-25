@@ -44,7 +44,7 @@
     <h3>{{_("Networking Privacy")}}</h3>
     <div class="explanation">
       <p class="what">
-        <span class="icon icon-like"></span>
+        <span class="icon icon-tor"></span>
         {{_("Tor is a community-run system for making anonymous network connections.")}}
         {{_("It masks your IP address and location, thus preventing many forms of surveillance and tracking.")}}
       </p>
@@ -90,7 +90,10 @@
         </span><br>
       </div>
 
-      <h6 id="tor-advanced-heading"><a>{{_("Advanced Settings")}} ...</a></h6>
+      <h6 id="tor-advanced-heading"><a>
+        <span class="icon icon-settings"></span>
+        {{_("Advanced Settings")}} ...
+      </a></h6>
       <div id="tor-advanced" class="advanced-settings">
         <input name="sys.proxy.fallback" type="radio" value="true"
                {%- if config.sys.proxy.fallback %} checked{% endif %}>
@@ -160,6 +163,10 @@
         {{_("Without Tor, Mailpile can not prevent service providers and network operators from monitoring or tracking your IP address and communications.")}}
       </p>
     {% endif %}
+      <h6><a href="{{ U("/logs/network/") }}">
+        <span class="icon icon-work"></span>
+        {{_("Troubleshoot recent Network Activity.")}}
+      </a></h6>
     </div>
     <br clear="both">
   </div>
@@ -198,7 +205,7 @@
       <input name="prefs.motd_url" type="radio" value="tor-generic"
              {%- if config.prefs.motd_url == "tor-generic" %} checked{% endif %}>
       <span class="checkbox">
-        {{_("Download generic updates only, over Tor, to keep all details about your setup private.")}}
+        {{_("Generic updates only, over Tor - keeps all details about your setup private.")}}
       </span><br>
     {% else %}
       <input name="prefs.motd_url" type="radio" value="generic"
@@ -229,7 +236,7 @@
     <h3>{{_("Third Party Content")}}</h3>
     <div class="explanation">
       <p class="what">
-        <span class="icon icon-lightbulb"></span>
+        <span class="icon icon-news"></span>
         {{_("Mailpile can download content from the web to augment your mail.")}}
         {{_("This includes user photos from Gravatar, key material from key servers, and potentially other sources.")}}
       </p>
@@ -278,7 +285,7 @@
     <h3>{{_("Encrypting Your Data")}}</h3>
     <div class="explanation">
       <p class="what">
-        <span class="icon icon-like"></span>
+        <span class="icon icon-lock-closed"></span>
         {{_("Mailpile can encrypt your e-mail, search engine and settings.")}}
         {{_("This protects your privacy, even if your computer gets lost or stolen.")}}
       </p>
@@ -353,7 +360,9 @@
     <br clear="both">
   </div>
 
-  <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+  <span style="position: fixed; bottom: 15px; border: 5px solid #eee;">
+    <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+  </span>
  </form>
 </div>
 {% endblock %}

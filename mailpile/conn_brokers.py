@@ -186,7 +186,7 @@ class BrokeredContext(object):
         elif self.on_internet:
             network = _('the Internet')
         else:
-            return _('Connection in progress to %(host)s') % {'host': hostport}
+            return _('Attempting to connect to %(host)s') % {'host': hostport}
 
         return _('Connected to %(host)s over %(network)s with %(encryption)s.'
                  ) % {
@@ -702,7 +702,7 @@ def DisableUnbrokeredConnections():
 
 class NetworkHistory(Command):
     """Show recent network history"""
-    SYNOPSIS = (None, 'netlog', 'netlog', None)
+    SYNOPSIS = (None, 'logs/network', 'logs/network', None)
     ORDER = ('Internals', 6)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False

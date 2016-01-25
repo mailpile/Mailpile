@@ -180,7 +180,7 @@ $(document).on('click', '.notification-close', function() {
 /* Notification - Undo */
 $(document).on('click', '.notification-undo', function() {
   var event_id = $(this).data('event_id').split('-').join('.');
-  Mailpile.API.eventlog_undo_post({ event_id: event_id }, function(result) {
+  Mailpile.API.logs_events_undo_post({ event_id: event_id }, function(result) {
     if (result.status === 'success') {
       window.location.reload(true);
     }

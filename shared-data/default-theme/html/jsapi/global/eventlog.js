@@ -28,7 +28,7 @@ EventLog.play = function() {
 
 EventLog.request = function(conditions, callback) {
   if (EventLog.first_load) {
-    Mailpile.API.eventlog_get({incomplete: true}, EventLog.invoke_callbacks);
+    Mailpile.API.logs_events_get({incomplete: true}, EventLog.invoke_callbacks);
     EventLog.first_load = false;
   }
   // We check localStorage here, to see if any other tab has a poll in
@@ -40,7 +40,7 @@ EventLog.request = function(conditions, callback) {
   if (now - EventLog.other_tab > 30000) {
     var conditions = conditions || {};
     conditions._error_callback = EventLog.process_error;
-    Mailpile.API.eventlog_get(conditions, callback || EventLog.process_result);
+    Mailpile.API.logs_events_get(conditions, callback || EventLog.process_result);
   }
   else {
     // Keep checking every 5 seconds, in case the other tab gets closed.
@@ -75,6 +75,11 @@ EventLog.invoke_callbacks = function(response) {
   Mailpile.csrf_token = response.state.csrf_token;
   // DEBUGGING: console.log('Update CSRF: ' + Mailpile.csrf_token);
 
+  var event_template = $('#template-event').html();
+  if (event_template) {
+    event_template = Mailpile.safe_jinjaish_template(event_template);
+  }
+
   // Iterate through the events, calling callbacks...
   var last_ts = response.result.ts;
   for (event in response.result.events) {
@@ -86,6 +91,25 @@ EventLog.invoke_callbacks = function(response) {
           && (!binding.event_id || ev.event_id == binding.event_id)
           && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))) {
         callback(ev);
+      }
+    }
+
+    // This will update any event-log viewer
+    if (event_template) {
+      var d = new Date(ev.ts * 1000);
+      ev.ts_hhmm = (('0' + d.getHours()).substr(-2) + ':' +
+                    ('0' + d.getMinutes()).substr(-2));
+      var $existing = $('#'+ ev.event_id +'.event-summary');
+      if ($existing.data('flags') != ev.flags) {
+        $existing.remove();
+        $existing = [];
+      }
+      if ($existing.length > 0) {
+        $existing.replaceWith($(event_template(ev)));
+      }
+      else {
+        $('.events-' + ev.flags + ' p:gt(49)').remove();
+        $('.events-' + ev.flags).prepend($(event_template(ev)).slideDown());
       }
     }
     last_ts = response.result.ts;
