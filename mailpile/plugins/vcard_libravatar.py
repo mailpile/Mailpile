@@ -36,7 +36,7 @@ class LibravatarImporter(VCardImporter):
                    ['g', 'pg', 'r', 'x'], 'g'],
         'size': [_('Preferred thumbnail size'), 'int', 80],
         'url': [_('Libravatar server URL'), 'url',
-                'https://seccdn.libravatar.com'],
+                'https://seccdn.libravatar.org'],
     }
     VCARD_TS = 'x-libravatar-ts'
     VCARD_IMG = ''
