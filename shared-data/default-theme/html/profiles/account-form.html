@@ -158,16 +158,25 @@
               '_timeout': 300000, // AJAX timeout
               'timeout': 240000,  // Server-side deadline
               'password': $(pf + '.fpa-basic-password').val(),
-              'email': email
+              'email': email,
+              '_error_callback': function(response, _status) {
+                console.log("Detection error " + _status);
+                $(pf + 'div.fpa-detection-in-progress').slideUp();
+                $(pf + 'div.fpa-network-settings').slideDown();
+                _fpa.next('profile-add-route');
+                $(pf + '.fpa-detection-failed').slideDown();
+                EventLog.unsubscribe(ev_source, watch_id);
+              }
             }, function(data) {
               EventLog.unsubscribe(ev_source, watch_id);
               $(pf + 'div.fpa-detection-in-progress').slideUp();
               $(pf + 'div.fpa-network-settings').slideDown();
               $('.edit-provider-settings').hide();
               var nxt = undefined;
-              var result = data.result[email];
+              var result = undefined;
+              if (data.result) result = data.result[email];
               if (result) nxt = _fpa.copy_email_settings(result);
-              if (data.result['login_failed']) {
+              if (data.result && data.result['login_failed']) {
                 _fpa.next('profile-add-basics');
                 $(pf + '.fpa-autoconfig').prop('checked', true);
                 $(pf + '.fpa-login-failed').slideDown();
@@ -179,11 +188,6 @@
                 _fpa.next('profile-add-route');
                 $(pf + '.fpa-detection-failed').slideDown();
               }
-            }, function(error) {
-              console.log("Detection error " + error);
-              EventLog.unsubscribe(ev_source, watch_id);
-              _fpa.next('profile-add-route');
-               $(pf + '.fpa-detection-failed').slideDown();
             });
             return false;
           }
@@ -325,10 +329,19 @@
     </div>
 
     <div class="fpa-network-settings">
-      <p class="message paragraph-alert fpa-detection-failed hide">
-        <span class="icon-robot"></span> <b>{{_("Failed to detect settings, manual configuration required")}}!</b>
-        <span class="description" href=""></span>
-      </p>
+      <div class="fpa-detection-failed hide">
+        <p class="message paragraph-alert">
+          <span class="icon-robot"></span>
+          <b>{{_("Failed to detect settings, manual configuration required")}}!</b>
+          <span class="description" href=""></span>
+        </p>
+        <p class="text-center">
+          <a href="{{ U('/logs/network/') }}" data-dismiss="modal">
+             <span class="icon icon-work"></span>
+             {{_("Troubleshoot recent Network Activity.")}}
+          </a>
+        </p>
+      </div>
       <p class="message paragraph-alert fpa-login-failed hide">
         <span class="icon-robot"></span> <b>{{_("Failed to log in, check the username and password")}}!</b>
         <span class="description" href=""></span>
