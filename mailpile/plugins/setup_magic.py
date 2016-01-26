@@ -588,13 +588,20 @@ class SetupGetEmailSettings(TestableWebbable):
                     self.ISPDB_URL % {'domain': domain}, email)
         return None
 
+    def _want_anonymity(self):
+        return (self.session.config.sys.proxy.protocol in ('tor', 'tor-risky')
+                and not self.session.config.sys.proxy.fallback)
+
     def _get_mx1(self, domain):
         if domain in ('localhost',):
             return None
 
+        # This would bypasses the connection broker and is not secured or
+        # anonymized, so if the user really wants anonymity we just punt.
+        if self._want_anonymity():
+            return None
+
         import DNS
-        # FIXME: This bypasses the connection broker and is not secured or
-        #        anonymized.
         DNS.DiscoverNameServers()
         try:
             timeout = (self.deadline - time.time()) // 2
@@ -643,9 +650,14 @@ class SetupGetEmailSettings(TestableWebbable):
                     name = '%s.%s' % (prefix, domain)
                 else:
                     name = domain
-                # FIXME: This bypasses the connection broker and is
-                #        not secured or anonymized.
-                ip = socket.gethostbyname(name)
+
+                if not self._want_anonymity():
+                    ip = socket.gethostbyname(name)
+                else:
+                    # We just try to connect to everything if anonymity
+                    # was requested - otherwise we'd be leaking over DNS.
+                    ip = '%s-%s' % (prefix, protos)
+
                 if ip:
                     for proto in protos:
                         if ip not in seen_ips[proto]:
