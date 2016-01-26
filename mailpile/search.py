@@ -17,6 +17,7 @@ from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.mailutils import decode_header
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser, GetTextPayload
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
@@ -490,6 +491,16 @@ class MailIndex(object):
 
         >>> hdr(None, None, '"G\\xc3\\xadsli R \\xc3\\x93la"\\n <f@b.is>')
         u'"G\\xedsli R \\xd3la"  <f@b.is>'
+
+        # See https://bugs.python.org/issue1079
+
+        # encoded word enclosed in parenthesis (comment syntax)
+        >>> hdr(None, None, 'rene@example.com (=?utf-8?Q?Ren=C3=A9?=)')
+        u'rene@example.com ( Ren\\xe9 )'
+
+        # no space after encoded word
+        >>> hdr(None, None, '=?UTF-8?Q?Direction?=<dir@example.com>')
+        u'Direction <dir@example.com>'
         """
         if value is None:
             value = msg and msg[name] or ''
@@ -507,10 +518,8 @@ class MailIndex(object):
             try:
                 # decode_header wants an unquoted str (not unicode)
                 value = value.encode('utf-8').replace('"', '')
-                # decode_header gets confused by newlines
-                value = value.replace('\r', ' ').replace('\n', ' ')
                 # Decode!
-                pairs = email.header.decode_header(value)
+                pairs = decode_header(value)
                 value = ' '.join([self.try_decode(t, cs or charset)
                                   for t, cs in pairs])
             except email.errors.HeaderParseError:
