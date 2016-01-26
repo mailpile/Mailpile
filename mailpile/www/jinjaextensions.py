@@ -24,6 +24,23 @@ from mailpile.plugins import PluginManager
 from mailpile.vcard import AddressInfo
 
 
+VERSION_IDENTIFIER = None
+
+# This looks for a .git folder and uses the current state to augment
+# our version... cachebusting during development.
+dirname, tail = os.path.split(__file__)
+while dirname and tail and os.path.exists(dirname):
+    fetch_head = os.path.join(dirname, '.git', 'FETCH_HEAD')
+    if os.path.exists(fetch_head):
+        try:
+            md5 = md5_hex(open(fetch_head, 'r').read())
+            VERSION_IDENTIFIER = '%s-%s' % (APPVER, md5[:8])
+            break
+        except (OSError, IOError):
+            break
+    dirname, tail = os.path.split(dirname)
+
+
 class MailpileCommand(Extension):
     """Run Mailpile Commands, """
     tags = set(['mpcmd'])
@@ -37,6 +54,7 @@ class MailpileCommand(Extension):
         e.globals['U'] = s._url_path_fix
         e.globals['make_rid'] = randomish_uid
         e.globals['is_dev_version'] = s._is_dev_version
+        e.globals['version_identifier'] = s._version_identifier
         e.filters['random'] = s._random
         e.globals['random'] = s._random
         e.filters['truthy'] = s._truthy
@@ -611,6 +629,10 @@ class MailpileCommand(Extension):
     @classmethod
     def _is_dev_version(cls):
         return ('dev' in APPVER or 'github' in APPVER or 'test' in APPVER)
+
+    @classmethod
+    def _version_identifier(cls):
+        return VERSION_IDENTIFIER or APPVER
 
     def _with_context(self, sequence, context=1):
         return [[(sequence[j] if (0 <= j < len(sequence)) else None)

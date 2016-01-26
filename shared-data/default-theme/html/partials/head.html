@@ -2,10 +2,10 @@
   <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="{{ U('/static/css/default.css?ts=', config.version) }}" />
-  <link rel="stylesheet" href="{{ U('/static/css/print.css?ts=', config.version) }}" media="print" />
+  <link rel="stylesheet" href="{{ U('/static/css/default.css?ts=', version_identifier()) }}" />
+  <link rel="stylesheet" href="{{ U('/static/css/print.css?ts=', version_identifier()) }}" media="print" />
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
-  <link rel="stylesheet" href="{{ U('/jsapi/as.css?ts=', config.version, '-', config.timestamp) }}" />
+  <link rel="stylesheet" href="{{ U('/jsapi/as.css?ts=', version_identifier(), '-', config.timestamp) }}" />
   {% endif %}
 
   <!-- Apple Icons -->
@@ -46,9 +46,9 @@
   {%- endif %}
 
   <!-- JS Global Libraries -->
-  <script src="{{ U('/static/js/libraries.min.js?ts=', config.version) }}"></script>
+  <script src="{{ U('/static/js/libraries.min.js?ts=', version_identifier()) }}"></script>
   {% if state.command_url not in ("/auth/login/", "/auth/logout/", "/setup/welcome/") %}
-  <script src="{{ U('/api/0/jsapi/as.js?ts=', config.version, '-', config.timestamp) }}"></script>
+  <script src="{{ U('/api/0/jsapi/as.js?ts=', version_identifier(), '-', config.timestamp) }}"></script>
 
   <!-- JS - App Specific -->
   <script>
@@ -85,5 +85,5 @@
     {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
   );
   </script>
-  <script src="{{ U('/api/0/jsapi/app.js?ts=', config.version, '-', config.timestamp) }}"></script>
+  <script src="{{ U('/api/0/jsapi/app.js?ts=', version_identifier(), '-', config.timestamp) }}"></script>
   {% endif %}
