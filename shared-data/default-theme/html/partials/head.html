@@ -69,15 +69,6 @@
     });
     {% endif %}
 #}
-    // HTML5 Browser Notifications
-    if (Notification.permission == "granted") {
-      $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
-    }
-
-    $('#notifications-permission-option').click(function() {
-      Notification.requestPermission();
-    });
-
   });
 
   /* Plugins */
