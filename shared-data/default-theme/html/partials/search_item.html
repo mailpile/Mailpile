@@ -72,9 +72,11 @@
                 data-crypto_color="{{ unsigned.color }}"
                 data-crypto_message="{{ unsigned.message }}"></span>
           <ul class="message-sender-actions">
+{%- if is_dev_version() %}
           {%- if not metadata.from.flags.contact and not metadata.from.flags.profile %}
             <li class="action"><a title="{{_("Add Contact")}}" class="message-action-add-contact" href="#" data-name="{{metadata.from.fn}}" data-address="{{metadata.from.address}}"><span class="icon icon-plus"></span></a></li>
           {%- endif %}
+{%- endif %}
             <li class="action"><a title="{{_("Private Reply")}}" class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon icon-reply"></span></a></li>
           </ul>
         </h3>
