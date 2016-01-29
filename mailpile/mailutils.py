@@ -143,7 +143,7 @@ def decode_header(header):
             last_word = word
             last_charset = charset
         elif last_charset is None:
-            last_word += BSPACE + word
+            last_word += b' ' + word
         else:
             last_word += word
     collapsed.append((last_word, last_charset))
