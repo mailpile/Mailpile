@@ -9,6 +9,9 @@ import tempfile
 import threading
 import traceback
 import select
+import pgpdump
+import base64
+import quopri
 from datetime import datetime
 from email.parser import Parser
 from email.message import Message
@@ -416,10 +419,12 @@ class GnuPG:
     ARMOR_BEGIN_SIGNED    = '-----BEGIN PGP SIGNED MESSAGE-----'
     ARMOR_BEGIN_SIGNATURE = '-----BEGIN PGP SIGNATURE-----'
     ARMOR_END_SIGNATURE   = '-----END PGP SIGNATURE-----'
-    ARMOR_END_SIGNED      = '-----END PGP SIGNATURE-----'
 
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
+
+    ARMOR_BEGIN_PUB_KEY   = '-----BEGIN PGP PUBLIC KEY BLOCK-----'
+    ARMOR_END_PUB_KEY     = '-----END PGP PUBLIC KEY BLOCK-----'
 
     LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
 
@@ -790,44 +795,264 @@ class GnuPG:
         rp = GnuPGResultParser().parse(retvals)
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
+                
+    def base64_segment(self, dec_start, dec_end, skip, line_len, line_end = 2):
+        """
+        Given the start and end index of a desired segment of decoded data,
+        this function finds smallest segment of an encoded base64 array that
+        when decoded will include the desired decoded segment.
+        It's assumed that the base64 data has a uniform line structure of
+        line_len encoded characters followed by line_end eol characters,
+        and that there are skip header characters preceding the base64 data.
+        """
+        enc_start =  4*(dec_start/3)
+        dec_skip  =  dec_start - 3*enc_start/4
+        enc_start += line_end*(enc_start/(line_len-line_end))
+        enc_end =    4*(dec_end/3)
+        enc_end +=   line_end*(enc_end/(line_len-line_end))
+
+        return enc_start, enc_end, dec_skip
+        
+    def pgp_packet_hdr_parse(self, header):
+        """
+        Parse the header of a PGP packet to get the packet type, header length,
+        and data length.  Extra trailing characters in header are ignored.
+        An illegal header returns type -1, lengths 0.
+        Header format is defined in RFC4880 section 4.
+        """
+        hdr = header.ljust( 6, chr(0))
+        
+        if (ord(hdr[0]) & 0xC0) == 0x80:
+            # Old format packet
+            ptag = (ord(hdr[0]) & 0x3C) >> 2
+            lengthtype = ord(hdr[0]) & 0x03
+            if lengthtype < 3:
+                hdr_len = 2
+                body_len = ord(hdr[1])
+                if lengthtype > 0:
+                    hdr_len = 3
+                    body_len = (body_len << 8) + ord(hdr[2])
+                if lengthtype > 1:
+                    hdr_len = 5
+                    body_len = ( 
+                        (body_len << 16) + (ord(hdr[3]) << 8) + ord(hdr[4]) )
+            else:
+                # Kludgy extra test for compressed packets w/ "unknown" length
+                # gpg generates these in signed-only files. Check for valid
+                # compression algorithm id to minimize false positives.
+                if ptag == 8 and (ord(hdr[1]) < 1 or ord(hdr[1]) > 3):
+                    return (-1, 0, 0)
+                hdr_len = 1
+                body_len = -1
+                
+        elif (ord(hdr[0]) & 0xC0) == 0xC0:
+            # New format packet
+            ptag = ord(hdr[0]) & 0x3F
+            body_len = ord(hdr[1])
+            lengthtype = 0
+            hdr_len = 2
+            if body_len >= 192 and body_len <= 223:
+                hdr_len = 3
+                body_len = ((body_len - 192) << 8) + ord(hdr[2]) + 192
+            elif body_len == 255:
+                hdr_len = 6
+                body_len =  ( (ord(hdr[2]) << 24) + (ord(hdr[3]) << 16) +
+                                (ord(hdr[4]) << 8)  + ord(hdr[5]) )
+            else:
+                # Partial packet headers are only legal for data packets.
+                if not ptag in {8,9,11,18}:
+                    return (-1, 0, 0)
+                # Could do extra testing here.
+                # body_len = 1 << (ord(hdr[1]) & 0x1F)
+                body_len = -1
+        else:
+            return (-1, 0, 0)
+        
+        if hdr_len > len(header):
+            return (-1, 0, 0)    
+    
+        return ptag, hdr_len, body_len
+
 
     # DEBUG
-    def sniff(self, data):
+    def sniff(self, data, encoding = None):
         """
         Checks arbitrary data to see if it is a PGP object and returns a set
         that indicates the kind(s) of object found. The names of the set
         elements are based on RFC3156 content types with 'pgp-' stripped so
         they can be used in sniffers for other protocols, e.g. S/MIME.
         There are additional set elements 'armored' and 'unencrypted'.
+        
+        This code should give no false negatives, but may give false positives.
+        For efficient handling of encoded data, only small segments are decoded.
+        Armored files are detected by their armor header alone.
+        Non-armored data is detected by looking for a sequence of valid PGP
+        packet headers.
         """
      
-        found = set();       
-
-        retvals = self.run(["--list-packets"], gpg_input=data,
-                                              outputfd=None,
-                                              send_passphrase=False)
-                    
-        for line in retvals[1]['stdout']:
-            if line.startswith(':literal data packet:'):
-                found.add('unencrypted')           
-            if line.startswith(':encrypted data packet:'):
-                found.add('encrypted')
-            elif line.startswith(':pubkey enc packet:'):
-                found.add('encrypted')
-            elif line.startswith(':onepass_sig packet:'):
-                found.add('signature')
-            elif line.startswith(':signature packet:'):
-                found.add('signature')
-            elif line.startswith(':public key packet:'):
-                found.add('keys')
-            elif line.startswith(':public sub key packet:'):
-                found.add('keys')
-        if found and data.startswith('-----BEGIN PGP'):
+        found = set()
+        is_base64 = False
+        is_quopri = False
+        line_len = 0
+        line_end = 1
+        enc_start = 0
+        enc_end = 0
+        dec_start = 0
+        skip = 0
+        ptag = 0
+        hdr_len = 0
+        body_len = 0
+        offset_enc = 0
+        offset_dec = 0
+        offset_packet = 0
+        
+        # Identify encoding and base64 line length.                                      
+        if encoding and encoding.lower() == 'base64':
+            line_len = data.find('\n') + 1          # Assume uniform length           
+            if line_len < 0:
+                line_len = len(data)
+            elif line_len > 1 and data[line_len-2] == '\r':
+                line_end = 2
+            if line_len > 76:                       # Maximum per RFC2045 6.8
+                return found 
+            enc_end = line_len
+            try:
+                segment = base64.b64decode(data[enc_start:enc_end])
+            except TypeError:
+                return found
+            is_base64 = True
+                            
+        elif encoding and encoding.lower() == 'quoted-printable':
+            # Can't selectively decode quopri because encoded length is data
+            # dependent due to escapes!  Just decode one medium length segment.
+            try:
+                segment = quopri.decodestring(data[0:1000])
+            except TypeError:                         
+                return found                # *** ? Docs don't list exceptions
+            is_quopri = True
+        else:
+            line_len = len(data)
+            segment = data                          # *** Shallow copy?
+                  
+        if not (ord(segment[0]) & 0x80):
+            # Not a packet header if MSbit is 0.  Check for armoured data.
             found.add('armored')
-
+            if segment.startswith(self.ARMOR_BEGIN_SIGNED):
+                # Clearsigned
+                found.add('unencrypted')                           
+                found.add('signature')                
+            elif segment.startswith(self.ARMOR_BEGIN_SIGNATURE):
+                # Detached signature
+                found.add('signature')                               
+            elif segment.startswith(self.ARMOR_BEGIN_ENCRYPTED):
+                # PGP uses the same armor header for encrypted and signed only
+                # Fortunately gpg --decrypt handles both!
+                found.add('encrypted')           
+            elif segment.startswith(self.ARMOR_BEGIN_PUB_KEY):
+                found.add('key')              
+            else:
+                found = set()
+        else:
+             while skip < len( segment ) and body_len <> -1:
+                # Check this packet header.
+                ptag, hdr_len, body_len = self.pgp_packet_hdr_parse(
+                                                                segment[skip:])
+                
+                if ptag == 11:               
+                    found.add('unencrypted')    # Literal Data
+                elif ptag ==  1:
+                    found.add('encrypted')      # Encrypted Session Key
+                elif ptag ==  9:
+                    found.add('encrypted')      # Symmetrically Encrypted Data
+                elif ptag ==  18:
+                    found.add('encrypted')      # Symmetrically Encrypted & MDC
+                elif ptag ==  2:
+                    found.add('signature')      # Signature
+                elif ptag ==  4:
+                    found.add('signature')      # One-Pass Signature
+                elif ptag ==  6:
+                    found.add('key')            # Public Key
+                elif ptag ==  14:
+                    found.add('key')            # Public Subkey
+                elif ptag == 8:                 # Compressed Data Packet
+                    # This is a kludge.  Signed, non-encrypted files made by gpg
+                    # (but no other gpg files) consist of one compressed data
+                    # packet of unknown length which contains the signature
+                    # and data packets.
+                    # This appears to be an interpretation of RFC4880 2.3.
+                    # The compression prevents selective parsing of headers.
+                    # So such packets are assumed to be signed messages.
+                    if dec_start == 0 and body_len == -1: 
+                        found.add('signature')
+                        found.add('unencrypted')
+                elif ptag < 0  or ptag > 19:
+                    found = set()
+                    return found
+                    
+                dec_start += hdr_len + body_len
+                skip = dec_start    
+                if is_base64:    
+                    enc_start, enc_end, skip = self.base64_segment( dec_start, 
+                                        dec_start + 6, 0, line_len, line_end )
+                    segment = base64.b64decode(data[enc_start:enc_end])
+ 
         return found
          
     # DEBUG END
+    
+    
+    def sniff2(self, data, encoding = None):
+        """
+        Check arbitrary data to see if it is a PGP object and return a set
+        that indicates the kind(s) of object found, if any. The names of the set
+        elements are based on RFC3156 content types with 'pgp-' stripped so
+        they can be used in sniffers for other protocols, e.g. S/MIME.
+        There are additional set elements 'armored' and 'unencrypted'.
+        """
+     
+        found = set();
+        
+        try:
+        
+            # Certain packet types define the kind of PGP file.
+            # The types that are checked are based on tests with gpg.
+            # Possibly other packet combinations are legal!
+            # Tag numbers for packet types are defined in RFC4880.
+            
+            if data.startswith( '-----BEGIN' ):
+                packetlist = pgpdump.AsciiData(data)
+                found.add('armored')
+            else:
+                packetlist = pgpdump.BinaryData(data)
+                
+            for apacket in packetlist.packets():
+            
+                if apacket.raw == 11:               
+                    found.add('unencrypted')    # Literal Data
+                elif apacket.raw ==  1:
+                    found.add('encrypted')      # Encrypted Session Key
+                elif apacket.raw ==  9:
+                    found.add('encrypted')      # Symmetrically Encrypted Data
+                elif apacket.raw ==  18:
+                    found.add('encrypted')      # Symmetrically Encrypted & MDC
+                elif apacket.raw ==  2:
+                    found.add('signature')      # Signature
+                elif apacket.raw ==  4:
+                    found.add('signature')      # One-Pass Signature
+                elif apacket.raw ==  6:
+                    found.add('key')            # Public Key
+                elif apacket.raw ==  14:
+                    found.add('key')            # Public Subkey
+                else:
+                    pass
+        except (TypeError, pgpdump.utils.PgpdumpException):
+            found = set()
+
+        if not (found - {'armored'}):
+           found = set()
+        
+        return found
+         
 
     def remove_armor(self, text):
         lines = text.strip().splitlines(True)

@@ -143,6 +143,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
     part.encryption_info = EncryptionInfo(parent=pei)
     mimetype = part.get_content_type() or 'text/plain'
     disposition = part['content-disposition'] or ""
+    encoding = part['content-transfer-encoding'] or ""
         
     # FIXME: Check the protocol. PGP? Something else?
     # FIXME: This is where we add hooks for other MIME encryption
@@ -237,7 +238,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
         # So - sniff to detect parts that need processing and identify protocol.
         for protocol in protocols:
             crypto_cls = protocols[protocol]
-            kind = crypto_cls().sniff(payload)
+            kind = crypto_cls().sniff(part.get_payload(), encoding)
             if kind:
                 break
 
