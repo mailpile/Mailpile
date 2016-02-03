@@ -929,7 +929,7 @@ class GnuPG:
                 # Kludgy extra test for compressed packets w/ "unknown" length
                 # gpg generates these in signed-only files. Check for valid
                 # compression algorithm id to minimize false positives.
-                if ptag == 8 and (hdr[1] < 1 or hdr[1] > 3):
+                if ptag != 8 or (hdr[1] < 1 or hdr[1] > 3):
                     return (-1, 0, 0, False)
                 hdr_len = 1
                 body_len = -1               
