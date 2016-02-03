@@ -860,7 +860,7 @@ class GnuPG:
         this function finds smallest segment of an encoded base64 array that
         when decoded will include the desired decoded segment.
         It's assumed that the base64 data has a uniform line structure of
-        line_len encoded characters followed by line_end eol characters,
+        line_len encoded characters including line_end eol characters,
         and that there are skip header characters preceding the base64 data.
         """
         enc_start =  4*(dec_start/3)
@@ -871,68 +871,77 @@ class GnuPG:
 
         return enc_start, enc_end, dec_skip
         
-    def pgp_packet_hdr_parse(self, header):
+    def pgp_packet_hdr_parse(self, header, prev_partial = False):
         """
         Parse the header of a PGP packet to get the packet type, header length,
         and data length.  Extra trailing characters in header are ignored.
+        prev_partial indicates that the previous packet was a partial packet.
         An illegal header returns type -1, lengths 0.
         Header format is defined in RFC4880 section 4.
         """
-        hdr = header.ljust( 6, chr(0))
+        hdr = bytearray(header.ljust( 6, chr(0)))
+        if not prev_partial:
+            hdr_len = 1
+        else:
+            hdr[1:] = hdr           # Partial block headers don't have a tag
+            hdr[0] = 0              # Insert a dummy tag.
+            hdr_len = 0
+        is_partial = False
         
-        if (ord(hdr[0]) & 0xC0) == 0x80:
+        if prev_partial or (hdr[0] & 0xC0) == 0xC0:
+            # New format packet
+            ptag = hdr[0] & 0x3F
+            body_len = hdr[1]
+            lengthtype = 0
+            hdr_len += 1
+            if body_len < 192:
+                pass
+            elif body_len <= 223:
+                hdr_len += 1
+                body_len = ((body_len - 192) << 8) + hdr[2] + 192
+            elif body_len == 255:
+                hdr_len += 4
+                body_len =  ( (hdr[2] << 24) + (hdr[3] << 16) +
+                                (hdr[4] << 8)  + hdr[5] )
+            else:
+                # Partial packet headers are only legal for data packets.
+                if not prev_partial and not ptag in {8,9,11,18}:
+                    return (-1, 0, 0, False)
+                # Could do extra testing here.
+                is_partial = True
+                body_len = 1 << (hdr[1] & 0x1F)
+                
+        elif (hdr[0] & 0xC0) == 0x80:
             # Old format packet
-            ptag = (ord(hdr[0]) & 0x3C) >> 2
-            lengthtype = ord(hdr[0]) & 0x03
+            ptag = (hdr[0] & 0x3C) >> 2
+            lengthtype = hdr[0] & 0x03
             if lengthtype < 3:
                 hdr_len = 2
-                body_len = ord(hdr[1])
+                body_len = hdr[1]
                 if lengthtype > 0:
                     hdr_len = 3
-                    body_len = (body_len << 8) + ord(hdr[2])
+                    body_len = (body_len << 8) + hdr[2]
                 if lengthtype > 1:
                     hdr_len = 5
                     body_len = ( 
-                        (body_len << 16) + (ord(hdr[3]) << 8) + ord(hdr[4]) )
+                        (body_len << 16) + (hdr[3] << 8) + hdr[4] )
             else:
                 # Kludgy extra test for compressed packets w/ "unknown" length
                 # gpg generates these in signed-only files. Check for valid
                 # compression algorithm id to minimize false positives.
-                if ptag == 8 and (ord(hdr[1]) < 1 or ord(hdr[1]) > 3):
-                    return (-1, 0, 0)
+                if ptag == 8 and (hdr[1] < 1 or hdr[1] > 3):
+                    return (-1, 0, 0, False)
                 hdr_len = 1
-                body_len = -1
-                
-        elif (ord(hdr[0]) & 0xC0) == 0xC0:
-            # New format packet
-            ptag = ord(hdr[0]) & 0x3F
-            body_len = ord(hdr[1])
-            lengthtype = 0
-            hdr_len = 2
-            if body_len >= 192 and body_len <= 223:
-                hdr_len = 3
-                body_len = ((body_len - 192) << 8) + ord(hdr[2]) + 192
-            elif body_len == 255:
-                hdr_len = 6
-                body_len =  ( (ord(hdr[2]) << 24) + (ord(hdr[3]) << 16) +
-                                (ord(hdr[4]) << 8)  + ord(hdr[5]) )
-            else:
-                # Partial packet headers are only legal for data packets.
-                if not ptag in {8,9,11,18}:
-                    return (-1, 0, 0)
-                # Could do extra testing here.
-                # body_len = 1 << (ord(hdr[1]) & 0x1F)
-                body_len = -1
+                body_len = -1               
         else:
-            return (-1, 0, 0)
+            return (-1, 0, 0, False)
         
         if hdr_len > len(header):
-            return (-1, 0, 0)    
+            return (-1, 0, 0, False)    
     
-        return ptag, hdr_len, body_len
+        return ptag, hdr_len, body_len, is_partial
 
 
-    # DEBUG
     def sniff(self, data, encoding = None):
         """
         Checks arbitrary data to see if it is a PGP object and returns a set
@@ -960,6 +969,7 @@ class GnuPG:
         ptag = 0
         hdr_len = 0
         body_len = 0
+        partial = False
         offset_enc = 0
         offset_dec = 0
         offset_packet = 0
@@ -983,8 +993,9 @@ class GnuPG:
         elif encoding and encoding.lower() == 'quoted-printable':
             # Can't selectively decode quopri because encoded length is data
             # dependent due to escapes!  Just decode one medium length segment.
+            # This is enough to contain the first few packets of a long file.
             try:
-                segment = quopri.decodestring(data[0:1000])
+                segment = quopri.decodestring(data[0:1500])
             except TypeError:                         
                 return found                # *** ? Docs don't list exceptions
             is_quopri = True
@@ -993,7 +1004,7 @@ class GnuPG:
             segment = data                          # *** Shallow copy?
                   
         if not (ord(segment[0]) & 0x80):
-            # Not a packet header if MSbit is 0.  Check for armoured data.
+            # Not a PGP packet header if MSbit is 0.  Check for armoured data.
             found.add('armored')
             if segment.startswith(self.ARMOR_BEGIN_SIGNED):
                 # Clearsigned
@@ -1011,12 +1022,16 @@ class GnuPG:
             else:
                 found = set()
         else:
-             while skip < len( segment ) and body_len <> -1:
+            # Could be PGP packet header. Check for sequence of legal headers.
+            while skip < len(segment) and body_len <> -1:
                 # Check this packet header.
-                ptag, hdr_len, body_len = self.pgp_packet_hdr_parse(
-                                                                segment[skip:])
-                
-                if ptag == 11:               
+                prev_partial = partial
+                ptag, hdr_len, body_len, partial = ( 
+                    self.pgp_packet_hdr_parse(segment[skip:], prev_partial) )
+                    
+                if prev_partial or partial:
+                    pass
+                elif ptag == 11:               
                     found.add('unencrypted')    # Literal Data
                 elif ptag ==  1:
                     found.add('encrypted')      # Encrypted Session Key
@@ -1042,76 +1057,24 @@ class GnuPG:
                     # So such packets are assumed to be signed messages.
                     if dec_start == 0 and body_len == -1: 
                         found.add('signature')
-                        found.add('unencrypted')
+                        found.add('unencrypted')                   
                 elif ptag < 0  or ptag > 19:
                     found = set()
                     return found
                     
                 dec_start += hdr_len + body_len
                 skip = dec_start    
-                if is_base64:    
+                if is_base64 and body_len <> -1:    
                     enc_start, enc_end, skip = self.base64_segment( dec_start, 
                                         dec_start + 6, 0, line_len, line_end )
                     segment = base64.b64decode(data[enc_start:enc_end])
  
+            if is_base64 and body_len <> -1 and skip <> len(segment):
+                # End of last packet does not match end of data.
+                found = set()
         return found
-         
-    # DEBUG END
     
     
-    def sniff2(self, data, encoding = None):
-        """
-        Check arbitrary data to see if it is a PGP object and return a set
-        that indicates the kind(s) of object found, if any. The names of the set
-        elements are based on RFC3156 content types with 'pgp-' stripped so
-        they can be used in sniffers for other protocols, e.g. S/MIME.
-        There are additional set elements 'armored' and 'unencrypted'.
-        """
-     
-        found = set();
-        
-        try:
-        
-            # Certain packet types define the kind of PGP file.
-            # The types that are checked are based on tests with gpg.
-            # Possibly other packet combinations are legal!
-            # Tag numbers for packet types are defined in RFC4880.
-            
-            if data.startswith( '-----BEGIN' ):
-                packetlist = pgpdump.AsciiData(data)
-                found.add('armored')
-            else:
-                packetlist = pgpdump.BinaryData(data)
-                
-            for apacket in packetlist.packets():
-            
-                if apacket.raw == 11:               
-                    found.add('unencrypted')    # Literal Data
-                elif apacket.raw ==  1:
-                    found.add('encrypted')      # Encrypted Session Key
-                elif apacket.raw ==  9:
-                    found.add('encrypted')      # Symmetrically Encrypted Data
-                elif apacket.raw ==  18:
-                    found.add('encrypted')      # Symmetrically Encrypted & MDC
-                elif apacket.raw ==  2:
-                    found.add('signature')      # Signature
-                elif apacket.raw ==  4:
-                    found.add('signature')      # One-Pass Signature
-                elif apacket.raw ==  6:
-                    found.add('key')            # Public Key
-                elif apacket.raw ==  14:
-                    found.add('key')            # Public Subkey
-                else:
-                    pass
-        except (TypeError, pgpdump.utils.PgpdumpException):
-            found = set()
-
-        if not (found - {'armored'}):
-           found = set()
-        
-        return found
-         
-
     def remove_armor(self, text):
         lines = text.strip().splitlines(True)
         if lines[0].startswith(self.ARMOR_BEGIN_SIGNED):
