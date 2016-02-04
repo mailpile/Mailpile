@@ -143,6 +143,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
     part.encryption_info = EncryptionInfo(parent=pei)
     mimetype = part.get_content_type() or 'text/plain'
     disposition = part['content-disposition'] or ""
+    encoding = part['content-transfer-encoding'] or ""
         
     # FIXME: Check the protocol. PGP? Something else?
     # FIXME: This is where we add hooks for other MIME encryption
@@ -229,21 +230,20 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                              depth = depth + 1 )
 
     elif not part.is_multipart() and disposition.startswith('attachment'):
-        payload = part.get_payload( None, True )
         
-    
         # The sender can attach signed/encrypted/key files without following
         # rules for naming or mime type.
         # So - sniff to detect parts that need processing and identify protocol.
         for protocol in protocols:
             crypto_cls = protocols[protocol]
-            kind = crypto_cls().sniff(payload)
+            kind = crypto_cls().sniff(part.get_payload(), encoding)
             if kind:
                 break
 
         if 'encrypted' in kind or 'unencrypted' in kind and 'signature' in kind:
-            # Messy! The PGP decrypt operation is also needed for files which are
-            # encrypted and signed, and files that are signed only.
+            # Messy! The PGP decrypt operation is also needed for files which
+            # are encrypted and signed, and files that are signed only.
+            payload = part.get_payload( None, True )
             try:               
                 (part.signature_info, part.encryption_info, decrypted
                  ) = crypto_cls().decrypt(payload)
@@ -256,7 +256,6 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
             
             if (part.encryption_info['status'] == 'decrypted' or 
                     part.signature_info['status'] == 'verified'):
-                # *** Shouldn't we also display if file can't be processed?
             
                 newpart = email.parser.Parser().parse(
                     StringIO.StringIO(decrypted))
@@ -281,7 +280,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                                  pei=part.encryption_info,
                                  charsets=charsets,
                                  depth = depth + 1 )
-    
+            else:
+                # FIXME: Best action for unsuccessful attachment processing?
+                pass   
     elif mimetype == 'text/plain':
         return UnwrapPlainTextCrypto(part,
                                      protocols=protocols,
