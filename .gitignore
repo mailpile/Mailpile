@@ -1,6 +1,6 @@
 *.pyc
 *~
-*.mo
+*.po
 *.debhelper
 *.iml
 *.ipr
@@ -12,7 +12,7 @@ mp-virtualenv
 .tox
 mailpile.egg-info/
 mailpile-tmp.py
-mailpile/www/default/plugins/
+static/default/plugins/
 mailpile/tests/data/tmp
 mailpile/tests/data/gpg-keyring/random_seed
 scripts/less-compiler.mk
@@ -22,7 +22,12 @@ scripts/less-compiler.mk
 ghostdriver.log
 build/
 dist/
+.eggs/
 cover/
 bower_components/
 node_modules/
 testing/
+mailpile.tar.gz
+AUTHORS
+ChangeLog
+shared-data/multipile/www/admin.cgi

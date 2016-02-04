@@ -214,7 +214,7 @@ class UserInteraction:
     # Logging
 
     def _fmt_log(self, text, level=LOG_URGENT):
-        c, w, clip = self.term.NONE, self.term.NORMAL, 2048
+        c, w, clip = self.term.NONE, self.term.NORMAL, 1024
         if level == self.LOG_URGENT:
             c, w = self.term.RED, self.term.BOLD
         elif level == self.LOG_ERROR:
@@ -228,9 +228,13 @@ class UserInteraction:
         elif level == self.LOG_PROGRESS:
             c, clip = self.term.BLUE, 78
 
+        try:
+            unicode_text = unicode(text[-clip:]).encode('utf-8', 'replace')
+        except UnicodeDecodeError:
+            unicode_text = 'ENCODING ERROR'
+
         formatted = self.term.replace_line(self.term.color(
-            unicode(text[:clip]).encode('utf-8'), color=c, weight=w),
-            chars=len(text[:clip]))
+            unicode_text, color=c, weight=w), chars=len(text[-clip:]))
         if level != self.LOG_PROGRESS:
             formatted += '\n'
 
@@ -387,20 +391,25 @@ class UserInteraction:
 
     def display_result(self, result):
         """Render command result objects to the user"""
-        if self.render_mode in ('json', 'as.json'):
-            return self._display_result('json', result.as_('json'))
-        if self.render_mode in ('text', 'as.text'):
-            return self._display_result('text', unicode(result))
-        if self.render_mode in ('csv', 'as.csv'):
-            return self._display_result('csv', result.as_csv())
+        try:
+            if self.render_mode in ('json', 'as.json'):
+                return self._display_result('json', result.as_('json'))
+            if self.render_mode in ('text', 'as.text'):
+                return self._display_result('text', unicode(result))
+            if self.render_mode in ('csv', 'as.csv'):
+                return self._display_result('csv', result.as_csv())
 
-        ttype, mode, wrap_in_json, template = self._parse_render_mode()
-        rendering = result.as_template(ttype,
-                                       mode=mode,
-                                       wrap_in_json=wrap_in_json,
-                                       template=template)
+            ttype, mode, wrap_in_json, template = self._parse_render_mode()
+            rendering = result.as_template(ttype,
+                                           mode=mode,
+                                           wrap_in_json=wrap_in_json,
+                                           template=template)
 
-        return self._display_result(ttype, rendering)
+            return self._display_result(ttype, rendering)
+        except (TypeError, ValueError, KeyError, IndexError,
+                UnicodeDecodeError):
+            traceback.print_exc()
+            return '[%s]' % _('Internal Error')
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -632,7 +641,7 @@ class HttpUserInteraction(UserInteraction):
             if len(self.results) == 1:
                 return self._ttype_to_mimetype(*self.results[0])
             if len(self.results) > 1:
-               raise Exception(_('FIXME: Multiple results, OMG WTF'))
+                raise Exception('FIXME: Multiple results, OMG WTF')
             return ""
 
     def edit_messages(self, session, emails):

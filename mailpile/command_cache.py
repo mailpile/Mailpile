@@ -155,6 +155,11 @@ class Cached(Command):
     IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
+    def max_age(self):
+        # Allow result to be cached by the browser for 2 seconds; we do
+        # this to facilitate cross-tab sharing of cache results.
+        return 2
+
     # Warning: This depends on internals of Command, how things are run there.
     def run(self):
         try:

@@ -14,6 +14,12 @@ class TestVCard(MailPileUnittest):
         vcl.name = "FN"
         vcl.value = "Lebowski"
         self.assertEqual(vcl.as_vcardline(), "FN:Lebowski")
+        
+    def test_VCardLine_args_too_long(self): # when input is greater than 75 chars
+        vcl = mailpile.vcard.VCardLine()
+        vcl.name = "FN"
+        vcl.value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim"
+        self.assertEqual(vcl.as_vcardline(), "FN:Lorem ipsum dolor sit amet\\, consectetur adipiscing elit\\, sed do eiusm\n od tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim")
 
     def test_VCardLine_with_vcard_data(self):
         vcl = mailpile.vcard.VCardLine("FN;type=Nickname:Bjarni")

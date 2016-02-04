@@ -1,0 +1,368 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+
+{% block title %}{{_("Security and Privacy Settings")}}{% endblock %}
+
+{% block content %}
+<div class="content-normal settings-page">
+ <form method="POST"
+{% if ui_from_profiles %}
+       action="{{ U('/settings/set/') }}?ui_return={{ U('/profiles/') }}"
+{% else %}
+       action="{{ U('/settings/set/') }}?ui_return={{ U('/settings/privacy.html?ui_saved=True') }}"
+{% endif %}
+       >{{ csrf_field|safe }}
+
+  <h1>
+    <span class="icon icon-settings"></span>
+    {{_("Security and Privacy Settings")}}
+  </h1>
+
+  <div class="notices">
+  {% if "unknown" in (config.prefs.motd_url, config.prefs.web_content) %}
+    <p style="text-align: center">
+      <span class="icon icon-lightbulb"></span>
+      {{_("Please review and save your settings.")}}
+      {{_("Some features may not be enabled until you have saved.")}}
+      <br>
+    </p>
+    <p style="text-align: center">
+      <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+    </p>
+    {% elif ui_saved %}
+    <p>
+      <span class="icon icon-checkmark"></span>
+      {{_("Your settings have been saved.")}}
+    </p>
+    {% else %}
+    <p>
+      {{_("Choose your own privacy policy!")}}
+    </p>
+    {% endif %}
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Networking Privacy")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-tor"></span>
+        {{_("Tor is a community-run system for making anonymous network connections.")}}
+        {{_("It masks your IP address and location, thus preventing many forms of surveillance and tracking.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("Using Tor may be considered suspicious or even illegal in some countries.")}}
+        {{_("Since the Tor network is run by volunteers, bad actors can (and do) volunteer to run exit-nodes so they can listen in on traffic; as a result Tor is not suitable for accessing the unencrypted web.")}}
+      </p>
+      <p class="more">
+        <a href="https://www.torproject.org/"
+           target=_blank>{{_("Visit the Tor project's web-site")}}</a>.
+      </p>
+    </div>
+    <div class="settings">
+    {% set proxy = {"tor": "Tor", "tor-risky": "Tor"}.get(config.sys.proxy.protocol, _("proxy")) %}
+    {% if config.sys.proxy.protocol not in ("none", "unknown") %}
+
+      <p>
+        {{_("When sending and receiving mail, or downloading from the web:")}}
+      </p>
+      <div class="basic-settings">
+        <input name="sys.proxy.protocol" type="radio" value="tor"
+               {%- if config.sys.proxy.protocol in ("tor", "unknown") %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Prefer anonymous Tor networking for encrypted connections.")}}
+          <span title="{{_('Recommended setting')}}"
+                class="icon default icon-star"></span>
+        </span><br>
+        <input name="sys.proxy.protocol" type="radio" value="tor-risky"
+               {%- if config.sys.proxy.protocol == "tor-risky" %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Prefer anonymous Tor networking for all connections.")}}
+        </span><br>
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky", "unknown") %}
+        <input name="sys.proxy.protocol" type="radio" value="{{config.sys.proxy.protocol}}" checked>
+        <span class="checkbox">
+          {{_("Custom proxy setting (%(proto)s)", proto=config.sys.proxy.protocol)}}
+        </span><br>
+    {% endif %}
+        <input name="sys.proxy.protocol" type="radio" value="none">
+        <span class="checkbox">
+          {{_("Do not use %(proxy)s.", proxy=proxy)}}
+        </span><br>
+      </div>
+
+      <h6 id="tor-advanced-heading"><a>
+        <span class="icon icon-settings"></span>
+        {{_("Advanced Settings")}} ...
+      </a></h6>
+      <div id="tor-advanced" class="advanced-settings">
+        <input name="sys.proxy.fallback" type="radio" value="true"
+               {%- if config.sys.proxy.fallback %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Fall back to direct networking if connecting over %(proxy)s fails.",
+              proxy=proxy)}}
+          <span title="{{_('Recommended setting')}}"
+                class="icon default icon-star"></span>
+        </span><br>
+        <input name="sys.proxy.fallback" type="radio" value="false"
+               {%- if not config.sys.proxy.fallback %} checked{% endif %}>
+        <span class="checkbox">
+          {{_("Disable direct networking connections completely.")}}
+        </span><br>
+        <br>
+
+        {{_("Never use %(proxy)s for these hosts:", proxy=proxy)}}
+        <input name="sys.proxy.no_proxy" type="text"
+               value="{{config.sys.proxy.no_proxy}}">
+{# DISABLED FOR NOW ...
+        <br>
+        {{_("Host:")}} <input name="sys.proxy.host" type="text" size=12
+                              value="{{config.sys.proxy.host}}">
+        <br>
+        {{_("Port:")}} <input name="sys.proxy.port" type="text" size=4
+                              value="{{config.sys.proxy.port}}">
+#}
+      </div>
+      <script>
+        $('#tor-advanced').hide();
+        $('#tor-advanced-heading').click(function() {$('#tor-advanced').slideDown()});
+      </script>
+
+    {% else %}
+      <p>
+        {{_("Tor is currently disabled.")}}
+        {{_("To enable Tor, click the button below.")}}
+        {{_("You need to have already installed and enabled the Tor service on your computer.")}}
+      </p>
+      <p>
+        <script type="text/javascript">
+          function enable_tor(ev) {
+            ev.preventDefault();
+            $('#enable-tor').hide();
+            $('#enable-tor-working').show();
+            $('#enable-tor-result').html('');
+            Mailpile.API.setup_tor_post({
+              _timeout: 300000
+            }, function(result) {
+              $('#enable-tor-working').hide();
+              $('#enable-tor').show();
+              $('#enable-tor-result').html(result.message);
+              if (result.status == "success") {
+                document.location.href = document.location.href + '?ui_tor=ok';
+              }
+            });
+          }
+          $(document).ready(function() {$('#enable-tor').click(enable_tor)});
+        </script>
+        <span id="enable-tor-working" class="hide">
+          {% include("../img/loading-ellipsis.svg") %}
+        </span>
+        <button id="enable-tor">{{_("Enable Tor")}}</button>
+        &nbsp; <i id="enable-tor-result"></i>
+      </p>
+      <p>
+        {{_("Without Tor, Mailpile can not prevent service providers and network operators from monitoring or tracking your IP address and communications.")}}
+      </p>
+    {% endif %}
+      <h6><a href="{{ U("/logs/network/") }}">
+        <span class="icon icon-work"></span>
+        {{_("Troubleshoot recent Network Activity.")}}
+      </a></h6>
+    </div>
+    <br clear="both">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Message Of The Day")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-lightbulb"></span>
+        {{_("The Mailpile Team publishes updates to notify users of available upgrades and potential security vulnerabilities in Mailpile.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("Update subscriptions help the Mailpile Team keep track of how many people use Mailpile, what operating systems are in use and which languages users speak.")}}
+        {{_("If Tor is not installed, this may leak your IP address.")}}
+      </p>
+      <p class="more">
+        <a href="https://github.com/mailpile/Mailpile/wiki/Mailpile-Analytics-Reporting-System"
+           target=_blank>{{_("Consult the Mailpile wiki for more details")}}</a>.
+      </p>
+    </div>
+    <p class="settings">
+      <input name="prefs.motd_url" type="radio" value="default"
+             {%- if config.prefs.motd_url in ("default", "unknown") %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Subscribe to Message Of The Day updates from the Mailpile Team.")}}
+        <span title="{{_('Recommended setting')}}"
+              class="icon default icon-star"></span>
+      </span><br>
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+      <input name="prefs.motd_url" type="radio" value="tor-only"
+             {%- if config.prefs.motd_url == "tor-only" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Only download updates anonymously over Tor.")}}
+      </span><br>
+      <input name="prefs.motd_url" type="radio" value="tor-generic"
+             {%- if config.prefs.motd_url == "tor-generic" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Generic updates only, over Tor - keeps all details about your setup private.")}}
+      </span><br>
+    {% else %}
+      <input name="prefs.motd_url" type="radio" value="generic"
+             {%- if config.prefs.motd_url == "generic" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Download generic updates only, to keep details about your setup private.")}}
+      </span><br>
+    {% endif %}
+    {%- if config.prefs.motd_url not in ("default", "unknown", "tor-only",
+                                         "tor-generic", "generic", "none") %}
+      <input name="prefs.motd_url" type="radio" value="{{config.prefs.motd_url}}" checked>
+      <span class="checkbox">
+        {{_("Keep your custom settings:")}} <tt>{{config.prefs.motd_url}}</tt>
+      </span><br>
+    {% endif %}
+      <input name="prefs.motd_url" type="radio" value="none"
+             {%- if config.prefs.motd_url == "none" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Disable the Message Of The Day.")}}
+      </span><br>
+      <br>
+      {{_("Tor will be used to protect your IP address, if it is available.")}}
+    </p>
+    <br clear="both">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Third Party Content")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-news"></span>
+        {{_("Mailpile can download content from the web to augment your mail.")}}
+        {{_("This includes user photos from Gravatar, key material from key servers, and potentially other sources.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-privacy"></span>
+        {{_("This may leak information about your address book and use of Mailpile to the providers of these services.")}}
+        {{_("If Tor is not installed, this may leak your IP address.")}}
+      </p>
+      <p class="info">
+        {{_("Learn more about:")}}
+        <a target=_blank href="https://en.gravatar.com/">Gravatar</a>,
+        <a target=_blank href="https://en.wikipedia.org/wiki/Key_server_%28cryptographic%29">Key Servers</a>
+      </p>
+    </div>
+    <p class="settings">
+      <input name="prefs.web_content" type="radio" value="on"
+             {%- if config.prefs.web_content == "on" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Enable downloading of third party content from the web.")}}
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky") %}
+        <span title="{{_('Recommended setting')}}"
+              class="icon default icon-star"></span>
+    {% endif %}
+      </span><br>
+    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+      <input name="prefs.web_content" type="radio" value="anon"
+             {%- if config.prefs.web_content in ("anon", "unknown") %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Only download third party content anonymously over Tor.")}}
+        <span title="{{_('Recommended setting')}}"
+              class="icon default icon-star"></span>
+      </span><br>
+    {% endif %}
+      <input name="prefs.web_content" type="radio" value="off"
+             {%- if config.prefs.web_content == "off" %} checked{% endif %}>
+      <span class="checkbox">
+        {{_("Do not download third party content.")}}
+      </span><br>
+      <br>
+      {{_("Tor will be used to protect your IP address, if it is available.")}}
+    </p>
+    <br clear="both">
+  </div>
+
+  <div class="setting-group">
+    <h3>{{_("Encrypting Your Data")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-lock-closed"></span>
+        {{_("Mailpile can encrypt your e-mail, search engine and settings.")}}
+        {{_("This protects your privacy, even if your computer gets lost or stolen.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-dislike"></span>
+        {{_("Encryption makes it harder to migrate your data to another e-mail client, slows things down and may increase the odds of data loss.")}}
+        {{_("Losing your encryption key becomes equivalent to losing all your mail.")}}
+      </p>
+    </div>
+    <div class="settings">
+
+      <input name="prefs.encrypt_mail" type="radio" value="true"
+            {%- if config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_mail" type="radio" value="false"
+             {%- if not config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt locally stored e-mail.")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_vcards" type="radio" value="true"
+            {%- if config.prefs.encrypt_vcards %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_vcards" type="radio" value="false"
+             {%- if not config.prefs.encrypt_vcards %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt the contact database.")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_events" type="radio" value="true"
+            {%- if config.prefs.encrypt_events %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_events" type="radio" value="false"
+             {%- if not config.prefs.encrypt_events %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt the system event log.")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_misc" type="radio" value="true"
+            {%- if config.prefs.encrypt_misc %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_misc" type="radio" value="false"
+             {%- if not config.prefs.encrypt_misc %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Encrypt other (miscellaneous) data.")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br>
+
+      <input name="prefs.encrypt_index" type="radio" value="true"
+            {%- if config.prefs.encrypt_index %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.encrypt_index" type="radio" value="false"
+             {%- if not config.prefs.encrypt_index %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Strongly encrypt the local search index (slow).")}}<br>
+
+      <br>
+      <b>{{_("Notes:")}}</b>
+      <ul class="notes">
+        <li>{{_("Changing these settings will only affect data created or edited from now on.")}}</li>
+        <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
+        <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
+      </ul>
+    </div>
+    <br clear="both">
+  </div>
+
+  <span style="position: fixed; bottom: 15px; border: 5px solid #eee;">
+    <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+  </span>
+ </form>
+</div>
+{% endblock %}

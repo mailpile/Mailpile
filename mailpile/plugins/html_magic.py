@@ -1,27 +1,24 @@
 # This plugin generates Javascript, HTML or CSS fragments based on the
 # current theme, skin and active plugins.
 #
+# It also takes care of safely downloading random stuff from the Internet,
+# using the appropriate proxying policies.
+#
+from urllib2 import urlopen, HTTPError
+
 import mailpile.config
+import mailpile.security as security
 from mailpile.commands import Command, RenderPage
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.ui import SuppressHtmlOutput
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 
 _plugins = PluginManager(builtin=__file__)
-
-
-##[ Configuration ]###########################################################
-
-#mailpile.plugins.register_config_section('tags', ["Tags", {
-#    'name': ['Tag name', 'str', ''],
-#}, {}])
-#
-#mailpile.plugins.register_config_variables('sys', {
-#    'writable_tags': ['DEPRECATED', 'str', []],
-#})
 
 
 ##[ Commands ]################################################################
@@ -115,4 +112,59 @@ class JsApi(RenderPage):
         return self._success(_('Generated Javascript API'), result=res)
 
 
-_plugins.register_commands(JsApi)
+class HttpProxyGetRequest(Command):
+    """HTTP GET content from the public web"""
+    SYNOPSIS = (None, None, 'http_proxy', None)
+    ORDER = ('Internals', 0)
+    RAISES = (AccessError, SuppressHtmlOutput)
+    HTTP_CALLABLE = ('GET', )
+    HTTP_AUTH_REQUIRED = True
+    HTTP_QUERY_VARS = {
+        'ts': 'Cache busting timestamp',
+        'timeout': 'Timeout in seconds',
+        'url': 'URL to fetch',
+        'csrf': 'CSRF token'
+    }
+
+    def command(self):
+        html_variables = self.session.ui.html_variables
+        request = html_variables['http_request']
+
+        if not (html_variables and
+                security.valid_csrf_token(request,
+                                          html_variables['http_session'],
+                                          self.data.get('csrf', [''])[0])):
+            raise AccessError('Invalid CSRF token')
+
+        url = self.data['url'][0]
+        timeout = float(self.data.get('timeout', ['10'])[0])
+
+        conn_reject = []  # FIXME: reject ConnBroker.OUTGOING_TRACKABLE ?
+        if url[:6].lower() == 'https:':
+            conn_need = [ConnBroker.OUTGOING_HTTP]
+        elif url[:5].lower() == 'http:':
+            conn_need = [ConnBroker.OUTGOING_HTTPS]
+        else:
+            raise AccessError('Invalid URL scheme')
+
+        try:
+            with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
+                self.session.ui.mark('Getting: %s' % url)
+                response = urlopen(url, data=None, timeout=timeout)
+        except HTTPError, e:
+            response = e
+
+        data = response.read()
+        headers = response.headers
+        contenttype = headers.get('content-type', 'application/octet-stream')
+        request.send_http_response(response.code, response.msg)
+        request.send_standard_headers(mimetype=contenttype,
+                                      header_list=[('Content-Length',
+                                                    len(data))])
+        request.wfile.write(data)
+        request.send_full_response(response.code, response.msg)
+
+        raise SuppressHtmlOutput()
+
+
+_plugins.register_commands(JsApi, HttpProxyGetRequest)

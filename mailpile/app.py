@@ -7,12 +7,13 @@ import sys
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Command, Action
-from mailpile.commands import Help, HelpSplash, Load, Rescan
+from mailpile.commands import Help, HelpSplash, Load, Rescan, Quit
 from mailpile.config import ConfigManager
 from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.plugins.motd import MessageOfTheDay
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
@@ -29,6 +30,25 @@ readline = None
 
 
 ##[ Main ]####################################################################
+
+
+def CatchUnixSignals(session):
+    def quit_app(sig, stack):
+        Quit(session, 'quit').run()
+
+    def reload_app(sig, stack):
+        pass
+
+    try:
+        import signal
+        if os.name != 'nt':
+            signal.signal(signal.SIGTERM, quit_app)
+            signal.signal(signal.SIGQUIT, quit_app)
+            signal.signal(signal.SIGUSR1, reload_app)
+        else:
+            signal.signal(signal.SIGTERM, quit_app)
+    except ImportError:
+        pass
 
 
 def Interact(session):
@@ -121,7 +141,15 @@ class InteractCommand(Command):
         else:
             config.prepare_workers(session, daemons=True)
 
-        session.ui.display_result(HelpSplash(session, 'help', []).run())
+        # Note: We do *not* update the MOTD on startup, to keep things
+        #       fast, and to avoid leaking our IP on setup, before Tor
+        #       has been configured.
+        splash = HelpSplash(session, 'help', []).run()
+        motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
+        session.ui.display_result(splash)
+        print  # FIXME: This is a hack!
+        session.ui.display_result(motd)
+
         Interact(session)
 
         return self._success(_('Ran interactive shell'))
@@ -153,11 +181,13 @@ def Main(args):
         cli_ui = session.ui = UserInteraction(config)
         session.main = True
         try:
+            CatchUnixSignals(session)
             config.clean_tempfile_dir()
             config.load(session)
         except IOError:
-            session.ui.error(_('Failed to decrypt configuration, '
-                               'please log in!'))
+            if config.sys.debug:
+                session.ui.error(_('Failed to decrypt configuration, '
+                                   'please log in!'))
         config.prepare_workers(session)
     except AccessError, e:
         session.ui.error('Access denied: %s\n' % e)

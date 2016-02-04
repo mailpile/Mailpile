@@ -284,9 +284,8 @@ class Tag(TagCommand):
         adding = set(self.data.get('add', []))
         ops = (['-%s' % t for t in (deling-adding) if t] +
                ['+%s' % t for t in (adding-deling) if t])
-        conversations = {'yes': True, 'no': False, 'auto': None
-                         }[self.data.get('conversations',
-                                         ['auto'])[0].lower()]
+        conversations = truthy(self.data.get('conversations', ['auto'])[0],
+                               special={'auto': None})
         if 'mid' in self.data:
             words = ['=%s' % m for m in self.data['mid']]
         else:
@@ -716,8 +715,7 @@ class Filter(FilterCommand):
     COMMAND_SECURITY = security.CC_CHANGE_FILTERS
 
     def _truthy(self, var):
-        return (self.data.get(var, ['n'])[0][:1].lower()
-                in ('y', 't', 'o', '1'))
+        return truthy(self.data.get(var, ['no'])[0])
 
     def command(self, save=True):
         session, config = self.session, self.session.config

@@ -1,0 +1,237 @@
+{%    set message = result.data.messages.get(mid)
+%}{%  set metadata = result.data.metadata[mid]
+%}{%  set thread = result.data.threads[metadata.thread_mid]
+%}{%  set conversation_count = thread|length
+%}{%  set cleartext = show_text_part_encryption('none')
+%}{%  set unsigned = show_text_part_signature('none')
+%}{%  set from = result.data.addresses[metadata.from.aid]
+%}{%  if not from
+%}{%    set from = {'fn': 'Unknown sender', 'email': ''}
+%}{%  endif
+%}{%  macro msg_url(msg_mid)
+%}{%    set m_metadata = result.data.metadata.get(msg_mid)
+%}{%    if m_metadata and m_metadata.urls.editing:
+%}{{      m_metadata.urls.editing
+}}{%    elif True:
+%}{{      U(add_state_query_string(state.command_url, state, {
+             'url_args_remove': [['view','']],
+             'url_args_add': [['view', msg_mid]]}))
+}}{%    else:
+%}{{      m_metadata.urls.thread
+}}{%    endif
+%}{%  endmacro %}
+<tr class="pile-message pile-message-{{mid}} result has-mid
+           {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
+           {%- if message %} full-message has-url{% endif %}
+           {%- if metadata.flags.replied %} replied{% endif %}"
+{%- if message %}
+    data-url="{{ msg_url(this_mid) }}"
+{%- endif %}
+    data-state="normal"
+{%- if metadata.body and metadata.body.list and
+       ('list:' + metadata.body.list) not in state.query_args.q %}
+    data-context-hint="{{ _('View e-mail from this mailing list') }}"
+    data-context-icon="groups"
+    data-context-url="{{ U('/search/?q=list:', metadata.body.list) }}"
+{%- else %}
+  {%- if from and from.address and
+         ('from:' + from.address) not in state.query_args.q %}
+    data-context-hint="{{ _('Search for e-mail from:') }} {{metadata.from.fn}}"
+    data-context-icon="user"
+    data-context-url="{{ U('/search/?q=from:', from.address) }}"
+  {%- endif %}
+{%- endif %}
+    data-mid="{{mid}}">
+  <td class="draggable"></td>
+{% if message %}
+  <td class="message-nav">
+  {%- if previous_mid %}
+    <a href="{{msg_url(previous_mid)}}" title="{{_('Previous Conversation')}}"
+       data-noblank=1 class="icon">&#x25B2;</a><br>
+  {%- endif %}
+    <a href="{{ U(add_state_query_string(state.command_url, state, {
+                    'url_args_remove': [['view','']]}))}}"
+       title="{{_('Close')}}"
+       data-noblank=1><span class='icon icon-circle-x'></span></a><br>
+  {%- if next_mid %}
+    <a href="{{msg_url(next_mid)}}" title="{{_('Next Conversation')}}"
+       data-noblank=1 class="icon">&#x25BC;</a><br>
+  {%- endif %}
+  </td>
+  <td class="from" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
+  {%- if message.editing_strings %}
+    <!-- FIXME -->
+  {%- else %}
+    <div class="message-details">
+      <div class="header-cooked header-from">
+        <h3 class="header-name {{ unsigned.color }}">
+          {{_("From")}}:
+          <span class="icon message-metadata-crypto-info {{ unsigned.icon }}"
+                title="{{ unsigned.text }}"
+                data-crypto_icon="{{ unsigned.icon }}"
+                data-crypto_color="{{ unsigned.color }}"
+                data-crypto_message="{{ unsigned.message }}"></span>
+          <ul class="message-sender-actions">
+{%- if is_dev_version() %}
+          {%- if not metadata.from.flags.contact and not metadata.from.flags.profile %}
+            <li class="action"><a title="{{_("Add Contact")}}" class="message-action-add-contact" href="#" data-name="{{metadata.from.fn}}" data-address="{{metadata.from.address}}"><span class="icon icon-plus"></span></a></li>
+          {%- endif %}
+{%- endif %}
+            <li class="action"><a title="{{_("Private Reply")}}" class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon icon-reply"></span></a></li>
+          </ul>
+        </h3>
+        <span class="header-value" title='{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;'>
+          <span class="address-avatar"><img src="{{ show_avatar(metadata.from) }}"></span>
+          <span class="address-name"><span class="punct">"</span>{{metadata.from.fn}}<span class="punct">"</span></span>
+          <span class="address-email"><span class="punct">&lt;</span>{{metadata.from.address}}<span class="punct">&gt;</span></span>
+        </span>
+      </div>
+    {%- for txt, which, rcpts in (('To', 'to', metadata.to_aids),
+                                  ('CC', 'cc', metadata.cc_aids),
+                                  ('BCC', 'bcc', [])) %}{# FIXME #}
+      {%- if rcpts %}
+      <div class="header-cooked header-{{which}}">
+        <h3 class="header-name {{ unsigned.color }}">
+          {{_(txt)}}:
+          <span class="icon message-metadata-crypto-info {{ unsigned.icon }}"
+                title="{{ unsigned.text }}"
+                data-crypto_icon="{{ unsigned.icon }}"
+                data-crypto_color="{{ unsigned.color }}"
+                data-crypto_message="{{ unsigned.message }}"></span>
+        </h3>
+        {%- for aid in rcpts %}
+          {%- set ai = result.data.addresses[aid] %}
+          {%- if ai %}
+        <span class="header-value" title='{{ai.fn}} &lt;{{ai.address}}&gt;'>
+          <span class="address-avatar"><img src="{{ show_avatar(ai) }}"></span>
+          <span class="address-name"><span class="punct">"</span>{{ai.fn}}<span class="punct">"</span></span>
+          <span class="address-email"><span class="punct">&lt;</span>{{ai.address}}<span class="punct">&gt;</span></span><span class="punct">,</span>
+        </span>
+          {%- endif %}
+        {%- endfor %}
+      </div>
+      {%- endif %}
+    {%- endfor %}
+    {%- if thread|length < 2 %}
+      {%- include "partials/pile_email_hints.html" %}
+    {%- endif %}
+    </div>
+  {%- endif %}
+  {%- if thread|length > 1 %}
+    {%- include "partials/pile_threading.html" %}
+  {%- endif %}
+  </td>
+{% else %}
+  <td class="avatar">
+    <a><img src="{{ show_avatar(from) }}"></a>
+  </td>
+  <td class="from">
+    <a href="{{msg_url(mid)}}" data-noblank=1
+       title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+      {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
+      {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
+      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
+      {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
+      {% endif %}
+    </a>
+  </td>
+{%endif %}
+  <td class="crypto-and-tags">
+    <span class="item-tags" style="opacity: 0.5"> {# FIXME #}
+    {% for tid in metadata.tag_tids %}
+      {% set tag = result.data.tags[tid] %}
+      {% if tag.label and not tag.searched %}
+      <span class="pile-message-tag pile-message-tag-{{tag.tid}}
+                   color-{{tag.label_color}}"
+            data-tid="{{tag.tid}}" data-mid="{{mid}}">
+        <span class="icon pile-message-tag-icon {{tag.icon}}"></span>
+      </span>
+      {% endif %}
+    {% endfor %}
+    </span>
+
+  {%- if not message %}
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
+    <span class="icon crypto icon-lock-closed color-08-green"></span>
+    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
+    <span class="icon crypto icon-lock-closed color-12-red"></span>
+    {% endif %}
+  {%- endif %}
+  </td>
+  <td class="subject">
+{%- if not message %}
+    <a class="item-subject" title="{{metadata.body.snippet}}" data-noblank=1
+       href="{{msg_url(mid)}}">{{ nice_subject(metadata) }}</a>
+{%- else %}
+    <div class="message-container">
+    {%- if message.editing_strings %}
+      {% set editing_strings = message.editing_strings %}
+      {% set editing_addresses = result.data.addresses %}
+      {% set attachments = message.attachments %}
+      {% include("partials/compose.html") %}
+    {%- else %}
+      <div class="message-subject-container">
+        <h3 class="{{ (cleartext.color == 'crypto-color-gray') and unsigned.color or cleartext.color }}">
+          {{_("Subject")}}:
+          <span class="icon message-metadata-crypto-info {{ cleartext.color }} {{ cleartext.icon }}"
+                title="{{ cleartext.text }}"
+                data-crypto_icon="{{ cleartext.icon }}"
+                data-crypto_color="{{ cleartext.color }}"
+                data-crypto_message="{{ cleartext.message }}"></span>
+          <span class="icon message-metadata-crypto-info {{ unsigned.color }} {{ unsigned.icon }}"
+                title="{{ unsigned.text }}"
+                data-crypto_icon="{{ unsigned.icon }}"
+                data-crypto_color="{{ unsigned.color }}"
+                data-crypto_message="{{ unsigned.message }}"></span>
+        </h3>
+        {%- if message.html_parts|length > 0 %}
+        <ul class="display-modes">
+          <li><a title="{{ _('Display HTML formatted message content') }}"
+                 class="message-show-html">
+            <span class="icon icon-news"></span></a></li>
+          {%- if message.text_parts|length > 0 %}
+          <li><a title="{{ _('Display plain-text message content') }}"
+                 class="message-show-text">
+            <span class="icon icon-document"></span></a></li>
+          {%- endif %}
+        </ul>
+        {%- endif %}
+        <ul class="alternate-views">
+          {%- for elem in get_ui_elements('display_modes', state, context='/message/') %}
+          <li><a title="{{ elem.description }}" data-noblank=1
+                 href="{{ elem.url|add_state_query_string({'query_args': {'mid': [mid]}}, elem)|url_path_fix }}">
+            {%- if elem.icon and '.' in elem.icon -%}
+            <img class="navigation-icon" src="{{ U(elem.icon) }}">
+            {%- elif elem.icon -%}
+            <span class="navigation-icon icon-{{elem.icon}}"></span>
+            {%- endif %}
+          </li>
+          {%- endfor %}
+          <li><a title="{{ _('Switch to full conversation view') }}"
+                 data-noblank=1 href="{{ U('/thread/=', mid, '/') }}">
+            <span class="icon icon-forum"></span></a></li>
+          <li><a title="{{ _('Display message source code') }}"
+                 target=_blank href="{{ U('/message/raw/=', mid, '/as.text') }}">
+            <span class="icon icon-work"></span></a></li>
+          <li><a title="{{ _('Display technical message data as JSON') }}"
+                 target=_blank href="{{ U('/message/=', mid, '/as.json') }}">
+            <span class="icon icon-code"></span></a></li>
+        </ul>
+        <div class="message-subject">
+          {{ nice_subject(metadata) }}
+        </div>
+      </div>
+{%- include('partials/pile_message.html') -%}
+    </div>
+    {%- endif %}
+{%- endif %}
+  </td>
+  <td class="date">
+    <span title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">
+      {{metadata.timestamp|elapsed_datetime}}
+    </span>
+  </td>
+  <td class="checkbox">
+    <input type="checkbox" name="mid" value="{{mid}}">
+  </td>
+</tr>

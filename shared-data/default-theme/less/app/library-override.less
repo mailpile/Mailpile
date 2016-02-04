@@ -1,0 +1,138 @@
+/* Compose - Custom Styles */
+.select2-hidden-accessible {
+  visibility: hidden;
+}
+.select2-result-label .compose-select-avatar {
+  display: inline-block;
+  margin-right: 8px;
+}
+.select2-result-label .compose-select-avatar img {
+  width: 32px;
+  height: 32px;
+}
+.select2-result-label .compose-select-avatar .icon-user {
+  font-size: 32px;
+  line-height: 32px;
+}
+.select2-result-label .compose-select-name {
+  display: inline-block;
+  margin-top: 0px;
+  padding-top: 0px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #4d4d4d;
+}
+.select2-result-label .icon-lock-closed {
+  color: #4b9441;
+  margin-left: 8px;
+}
+.select2-result-label .compose-select-address {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 12px;
+  color: #8c8c8c;
+}
+.select2-search-choice .compose-choice-name {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #4d4d4d;
+}
+.select2-search-choice .avatar {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 10px;
+}
+.select2-search-choice .avatar img {
+  width: 24px;
+  height: 24px;
+}
+.select2-search-choice .icon-user {
+  font-size: 24px;
+  line-height: 24px;
+  margin-right: 10px;
+}
+.select2-search-choice .icon-blank {
+  width: 0px;
+  height: 14px;
+  display: inline-block;
+}
+.select2-search-choice .icon-lock-closed {
+  color: #4b9441;
+  margin-left: 8px;
+}
+
+/* Tipped style */
+.qtip-tipped {
+  border: 0px solid #444;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
+  background-color: #444;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Arial;
+  line-height: 14px;
+  padding: 4px 6px;
+}
+.qtip-tipped .qtip-titlebar {
+  border-bottom-width: 0;
+  color: white;
+  background: #3A79B8;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#3a79b8), to(#2e629d));
+  background-image: -webkit-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -moz-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -ms-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -o-linear-gradient(top, #3a79b8, #2e629d);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#3a79b8, endColorstr=#2e629d);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#3A79B8,endColorstr=#2E629D)";
+}
+.qtip-tipped .qtip-content {
+  text-align: center;
+}
+.qtip-tipped .qtip-icon {
+  border: 2px solid #285589;
+  background: #285589;
+}
+.qtip-tipped .qtip-icon .ui-icon {
+  background-color: #FBFBFB;
+  color: #555;
+}
+/* IE9 fix - removes all filters */
+.qtip:not(.ie9haxors) div.qtip-content,
+.qtip:not(.ie9haxors) div.qtip-titlebar {
+  filter: none;
+  -ms-filter: none;
+}
+.qtip .qtip-tip {
+  margin: 0 auto;
+  overflow: hidden;
+  z-index: 10;
+}
+/* Opera bug #357 - Incorrect tip position https://github.com/Craga89/qTip2/issues/367 */
+x:-o-prefocus,
+.qtip .qtip-tip {
+  visibility: hidden;
+}
+.qtip .qtip-tip,
+.qtip .qtip-tip .qtip-vml,
+.qtip .qtip-tip canvas {
+  position: absolute;
+  color: #123456;
+  background: transparent;
+  border: 0 dashed transparent;
+}
+.qtip .qtip-tip canvas {
+  top: 0;
+  left: 0;
+}
+.qtip .qtip-tip .qtip-vml {
+  behavior: url(#default#VML);
+  display: inline-block;
+  visibility: visible;
+}

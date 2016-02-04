@@ -239,6 +239,8 @@ class BaseMailSource(threading.Thread):
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
         event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
         for mbx_cfg in plan:
+            play_nice_with_threads(weak=True)
+
             if self._check_interrupt(clear=False):
                 all_completed = False
                 break
@@ -417,14 +419,17 @@ class BaseMailSource(threading.Thread):
                                 paths.append(nfn)
                             elif self.is_mailbox(nfn):
                                 paths.append(nfn)
+                            play_nice_with_threads(weak=True)
                     except OSError:
                         pass
+
+                    # This may have been a bit of work, take a break.
+                    play_nice_with_threads()
+
                 if len(adding) > max_mailboxes:
                     break
 
-                # This may actually be a big list, let's play nice.
-                play_nice_with_threads()
-
+            play_nice_with_threads()
             new = {}
             for path in adding:
                 new[config.sys.mailbox.append(path)] = path
@@ -854,6 +859,8 @@ class BaseMailSource(threading.Thread):
         return False
 
     def run(self):
+        play_nice(18)  # Reduce priority quite a lot
+
         with self.session.config.index_check:
             self.alive = True
 

@@ -163,14 +163,17 @@ class MailpileVfsBase(object):
     def getinfo_(cls, fp, config):
         fp = FilePath(fp)
         ap = cls.abspath(fp)
-        return {
-            'path': ap,
-            'flags': cls.getflags(fp, config),
-            'bytes': cls.getsize(fp),
-            'display_name': cls.display_name(fp, config),
-            'display_path': unicode(ap),
-            'encoded': ap.encoded()
-        }
+        info = {'path': ap}
+        for f, m, args in (('flags', cls.getflags, (fp, config)),
+                           ('bytes', cls.getsize, (fp,)),
+                           ('display_name', cls.display_name, (ap, config)),
+                           ('display_path', unicode, (ap,)),
+                           ('encoded', ap.encoded, [])):
+            try:
+                info[f] = m(*args)
+            except (IOError, OSError, UnicodeDecodeError):
+                info[f] = info.get(f)
+        return info
 
     def display_name(cls, fp, config):
         return cls.display_name_(FilePath(fp).raw_fp, config)

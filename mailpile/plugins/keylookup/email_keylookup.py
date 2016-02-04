@@ -1,6 +1,7 @@
 import datetime
 import time
 import copy
+from pgpdump.utils import PgpdumpException
 
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
@@ -53,11 +54,12 @@ def _get_keydata(data):
             ak = pgpdump.AsciiData(data)
         else:
             ak = pgpdump.BinaryData(data)
-    except (TypeError, pgpdump.utils.PgpdumpException):
+        packets = list(ak.packets())
+    except (TypeError, PgpdumpException):
         return []
 
     now = time.time()
-    for m in ak.packets():
+    for m in packets:
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *

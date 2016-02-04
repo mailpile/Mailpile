@@ -1,0 +1,117 @@
+{%- extends "logs/layout.html" %}
+{%- block title %}{{_("Mailpile Event Log")}}{% endblock %}
+
+{%- macro event_flags_icon(event) %}
+      {%- if 'R' in event.flags -%}
+        <span class="icon icon-robot"></span>
+      {%- elif 'c' in event.flags -%}
+        <span class="icon icon-checkmark"></span>
+      {%- else -%}
+        {{- event.flags -}}
+      {%- endif -%}
+{%- endmacro %}
+
+{%- macro event_source(event) %}
+  {{ event.source }}
+{%- endmacro %}
+
+{%- macro event_details(event) %}
+      <pre>{{ event|json }}</pre>
+{%- endmacro %}
+
+{%- macro show_event(event) %}
+  <p id="{{ event.event_id }}" data-flags="{{ event.flags }}"
+     class="event-summary" data-source="{{ event.source }}">
+    <span class="event-time">{{ event.ts_hhmm or event.ts|friendly_time }}</span>
+    <span class="event-source">{{ event_source(event) }}</span>
+    <a title="{{ event.source }}" class="event-message"
+       href="?ui_expand={{ event.event_id }}#{{ event.event_id }}">
+      {{ event.message }}
+    </a>
+  </p>
+  {%- if ui_expand == event.event_id %}
+  <p class="subsection">
+    {{ event_details(event) }}
+  </p>
+  {%- endif %}
+{# FIXME:
+    <td class="undo">
+      {%- if event.data.undo %}
+      <a href="/logs/events/undo/?event_id={{ event.event_id }}"
+         title="{{ event.data.undo }}"
+         class="auto-modal">{{ _('Undo') }}</a>
+      {%- endif %}
+    </td>
+    <td class="checkbox">
+      <input type="checkbox" name="mid" value="{{ event.event_id }}">
+    </td>
+#}
+{%- endmacro %}
+
+{%- block logs_content %}
+<h1>
+  <span class="icon icon-notifications"></span>
+  {{_("Mailpile Event Log")}}
+</h1>
+<div class="setting-group">
+  <h3>{{_("Ongoing Events")}}</h3>
+  <div class="explanation">
+    <p class="what">
+      <span class="icon icon-robot"></span>
+      {{_("Ongoing events represent current actions taken by Mailpile on your behalf, such as watching a Mail Source for new mail or refreshing your contact database.")}}
+    </p>
+    <p class="actions">
+      <span class="icon icon-work"></span>
+      {{_("Browsing the event details can help with troubleshooting if Mailpile is not behaving as you expect.")}}
+    </p>
+  </div>
+  <div class="settings events-R">
+  {%- set displayed = [] %}
+  {%- for event in result.events|reverse %}
+    {%- if 'R' in event.flags %}
+      {{- show_event(event) }}
+      {% do displayed.append(1) %}
+    {% endif %}
+  {%- endfor %}
+  {%- if not displayed %}
+    <div class="add-top add-bottom" style="text-align: center;">
+      <p><i>{{_("No Events Found")}}</i></p>
+    </div>
+  {%- endif %}
+  </div>
+  <br clear="both">
+</div>
+
+<div class="setting-group">
+  <h3>{{_("Completed Events")}}</h3>
+  <div class="explanation">
+    <p class="what">
+      <span class="icon icon-notifications"></span>
+      {{_("The Event Log gives an overview over what has happened in your Mailpile recently.")}}
+    </p>
+    <p class="actions">
+      <span class="icon icon-work"></span>
+      {{_("Some events, such as Tagging operations, can be undone.")}}
+    </p>
+  </div>
+  <div class="settings events-c">
+  {%- for event in result.events[-50:]|reverse %}
+    {%- if 'R' not in event.flags %}
+      {{- show_event(event) }}
+    {% endif %}
+  {%- endfor %}
+  </div>
+  <br clear="both">
+</div>
+<script id="template-event" type="text/template">
+  {{- show_event({
+    'flags': '{{ flags }}',
+    'event_id': '{{ event_id }}',
+    'message': '{{ message }}',
+    'source': '{{ source }}',
+    'ts_hhmm': '{{ ts_hhmm }}',
+    'ts': '0',
+  })|safe }}
+</script>
+
+{%- endblock %}

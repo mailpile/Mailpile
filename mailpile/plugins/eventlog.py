@@ -14,7 +14,7 @@ _plugins = PluginManager(builtin=__file__)
 
 class Events(Command):
     """Display events from the event log"""
-    SYNOPSIS = (None, 'eventlog', 'eventlog',
+    SYNOPSIS = (None, 'eventlog', 'logs/events',
                 '[incomplete] [wait] [<count>] '
                 '[<field>=<val> <f>!=<v> <f>=~<re> ...]')
     ORDER = ('Internals', 9)
@@ -40,14 +40,11 @@ class Events(Command):
     DEFAULT_WAIT_TIME = 10.0
     GATHER_TIME = 0.5
 
-    _FALSE = ('0', 'off', 'no', 'false')
-
     def command(self):
         session, config, index = self.session, self.session.config, self._idx()
         event_log = config.event_log
 
-        incomplete = (self.data.get('incomplete', ['no']
-                                    )[0].lower() not in self._FALSE)
+        incomplete = truthy(self.data.get('incomplete', ['no'])[0])
         waiting = int(self.data.get('wait', [0])[0])
         gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
 
@@ -89,7 +86,8 @@ class Events(Command):
         now = time.time()
         expire = now + waiting - gather
         if waiting:
-            if 'since' not in filters:
+            # JS sometimes sends us "undefined", handle it gracefully...
+            if filters.get('since', 'undefined') == 'undefined':
                 filters['since'] = now
             if float(filters['since']) < 0:
                 filters['since'] = float(filters['since']) + now
@@ -123,7 +121,7 @@ class Events(Command):
 
 class Cancel(Command):
     """Cancel events"""
-    SYNOPSIS = (None, 'eventlog/cancel', 'eventlog/cancel', 'all|<eventIDs>')
+    SYNOPSIS = (None, 'eventlog/cancel', 'logs/events/cancel', 'all|<eventIDs>')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
@@ -154,7 +152,7 @@ class Cancel(Command):
 
 class Undo(Command):
     """Undo either the last action or one specified by Event ID"""
-    SYNOPSIS = ('u', 'undo', 'eventlog/undo', '[<Event ID>]')
+    SYNOPSIS = ('u', 'undo', 'logs/events/undo', '[<Event ID>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {

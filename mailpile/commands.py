@@ -306,7 +306,7 @@ class Command(object):
         return os.path.join(*path_parts)
 
     def _gnupg(self):
-        return GnuPG(self.session.config)
+        return GnuPG(self.session.config, event=self.event)
 
     def _config(self):
         session, config = self.session, self.session.config
@@ -362,14 +362,17 @@ class Command(object):
         session, cfg = self.session, self.session.config
         aut = cfg.save_worker.add_unique_task
         if everything or config:
-            aut(session, 'Save config', lambda: cfg.save(session))
+            aut(session, 'Save config', lambda: cfg.save(session), first=True)
         if cfg.index:
             cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:
-                aut(session, 'Save index', lambda: self._idx().save(session))
+                aut(session, 'Save index',
+                    lambda: self._idx().save(session),
+                    first=True)
             elif everything or index:
                 aut(session, 'Save index changes',
-                    lambda: self._idx().save_changes(session))
+                    lambda: self._idx().save_changes(session),
+                    first=True)
         if wait:
             wait_callback = wait_callback or (lambda: True)
             cfg.save_worker.do(session, 'Waiting', wait_callback)
@@ -461,7 +464,7 @@ class Command(object):
 
     def _background(self, name, function):
         session, config = self.session, self.session.config
-        return config.slow_worker.add_task(session, name, function)
+        return config.scan_worker.add_task(session, name, function)
 
     def _update_event_state(self, state, log=False):
         self.event.flags = state
@@ -618,8 +621,8 @@ class Command(object):
                                            "success",
                                            "Running in background")
 
-            self.session.config.async_worker.add_task(self.session, self.name,
-                                                      streetcar)
+            self.session.config.scan_worker.add_task(self.session, self.name,
+                                                     streetcar, first=True)
             return result
 
         else:
@@ -630,8 +633,11 @@ class Command(object):
             def refresher():
                 self.session.config.command_cache.refresh(
                     event_log=self.session.config.event_log)
-            self.session.config.async_worker.add_unique_task(
-                self.session, 'post-refresh', refresher)
+            self.session.config.scan_worker.add_unique_task(
+                self.session, 'post-refresh', refresher, first=True)
+
+    def record_user_activity(self):
+        mailpile.util.LAST_USER_ACTIVITY = time.time()
 
     def run(self, *args, **kwargs):
         if self.COMMAND_SECURITY is not None:
@@ -642,7 +648,7 @@ class Command(object):
         with MultiContext(self.WITH_CONTEXT):
             if self.IS_USER_ACTIVITY:
                 try:
-                    mailpile.util.LAST_USER_ACTIVITY = time.time()
+                    self.record_user_activity()
                     mailpile.util.LIVE_USER_ACTIVITIES += 1
                     rv = self._run(*args, **kwargs)
                     self._maybe_trigger_cache_refresh()
@@ -725,12 +731,23 @@ class SearchResults(dict):
         'drafts': 'draft',
         'blank': 'draft',
         'sent': 'from_me',
+        'unread': 'unread',
         'outbox': 'from_me',
         'replied': 'replied',
         'fwded': 'forwarded'
     }
 
     def _metadata(self, msg_info):
+        msg_mid = msg_info[MailIndex.MSG_MID]
+        if '-' in msg_mid:
+            # Ephemeral...
+            msg_idx = None
+        else:
+            msg_idx = int(msg_mid, 36)
+            cache = self.idx.CACHE.get(msg_idx, {})
+            if 'metadata' in cache:
+                return cache['metadata']
+
         import mailpile.urlmap
         nz = lambda l: [v for v in l if v]
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
@@ -744,7 +761,7 @@ class SearchResults(dict):
         if '/' in thread_mid:
             thread_mid, parent_mid = thread_mid.split('/')
         expl = {
-            'mid': msg_info[MailIndex.MSG_MID],
+            'mid': msg_mid,
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
             'from': f_info,
@@ -808,6 +825,9 @@ class SearchResults(dict):
             else:
                 del expl['flags']['draft']
 
+        if msg_idx is not None:
+            cache['metadata'] = expl
+            self.idx.CACHE[msg_idx] = cache
         return expl
 
     def _msg_addresses(self, msg_info=None, addresses=[],
@@ -815,10 +835,8 @@ class SearchResults(dict):
         cids = set()
 
         for ai in addresses:
-            try:
-                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
-            except KeyError:
-                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+            eid = self.idx.EMAIL_IDS.get(ai.address.lower())
+            cids.add(b36(self.idx._add_email(ai.address, name=ai.fn, eid=eid)))
 
         if msg_info:
             if not no_to:
@@ -830,10 +848,8 @@ class SearchResults(dict):
             if not no_from:
                 fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
                 if fe:
-                    try:
-                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                    except KeyError:
-                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+                    eid = self.idx.EMAIL_IDS.get(fe.lower())
+                    cids.add(b36(self.idx._add_email(fe, name=fn, eid=eid)))
 
         return sorted(list(cids))
 
@@ -853,17 +869,85 @@ class SearchResults(dict):
     def _tag(self, tid, attributes={}):
         return dict_merge(self.session.config.get_tag_info(tid), attributes)
 
-    def _thread(self, thread_mid):
-        msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
-        thread = [i for i in msg_info[MailIndex.MSG_REPLIES].split(',') if i]
+    _BAR = u'\u2502'
+    _FORK = u'\u251c'
+    _FIRST = u'\u256d'
+    _LAST = u'\u2570'
+    _BLANK = u' '
+    _DASH = u'\u2500'
+    _TEE = u'\u252c'
 
-        # FIXME: This is a hack, the indexer should just keep things
-        #        in the right order on rescan. Fixing threading is a bigger
-        #        problem though, so we do this for now.
-        def thread_sort_key(idx):
-            info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
-            return int(info[self.idx.MSG_DATE], 36)
-        thread.sort(key=thread_sort_key)
+    def _thread(self, thread_mid):
+        thr_info = self.idx.get_conversation(msg_idx=int(thread_mid, 36))
+        thr_info.sort(key=lambda i: int(i[self.idx.MSG_DATE], 36))
+
+        # Map messages to parents
+        par_map = {}
+        for info in thr_info:
+            parent = (info[self.idx.MSG_THREAD_MID].split('/') + [None])[1]
+            par_map[info[self.idx.MSG_MID]] = (parent, info)
+
+        # Reverse the mapping
+        thr_map = {}
+        first_mid = thr_info[0][self.idx.MSG_MID]
+        for msg_mid, (par_mid, m_info) in par_map.iteritems():
+            if par_mid is None:
+                # If we have no parent, pretend the first message in the
+                # thread is the parent.
+                par_mid = first_mid
+            if par_mid != msg_mid:
+                thr_map[par_mid] = (thr_map.get(par_mid, []) + [msg_mid])
+            else:
+                thr_map[par_mid] = thr_map.get(par_mid, [])
+
+        # Render threads in thread order, including ascii art
+        thread = []
+        seen = set()
+        def by_date(p):
+            if p not in par_map:
+                return 0;
+            return int(par_map[p][1][self.idx.MSG_DATE], 36)
+        def render(prefix, mid, first=False):
+            kids = thr_map.get(mid, [])
+            if mid not in seen:
+                # This guarantees that if we somehow end up with a loop, we
+                # just skip over the repeated message and make progress.
+                seen.add(mid)
+                thread.append([mid,
+                               prefix + ((self._FIRST if first else self._TEE)
+                                         if kids else ''),
+                               kids])
+                if prefix.endswith(self._LAST):
+                    prefix = prefix[:-len(self._BAR)] + self._BLANK
+                elif prefix:
+                    prefix = prefix[:-len(self._BAR)] + self._BAR
+
+            if kids:
+                # This delete also prevents us from repeating ourselves.
+                del thr_map[mid]
+                kids.sort(key=by_date)
+                for i, kmid in enumerate(kids):
+                    if prefix.endswith(self._BLANK):
+                        if thread[-1][1].endswith(self._TEE):
+                            thread[-1][1] = thread[-1][1][:-len(self._TEE)]
+                            thread[-1][1] = thread[-1][1][:-len(self._LAST)]
+                            thread[-1][1] += self._FORK
+                            prefix = prefix[:-len(self._BLANK)]
+                    if i < len(kids) - 1:
+                        render(prefix + self._FORK, kmid)
+                    else:
+                        if prefix.endswith(self._BLANK):
+                            if thread[-1][1].endswith(self._LAST):
+                                thread[-1][1] = thread[-1][1][:-len(self._LAST)]
+                                prefix = prefix[:-len(self._BLANK)]
+                        render(prefix + self._LAST, kmid)
+        thr_keys = thr_map.keys()
+        thr_keys.sort(key=by_date)
+        first = True
+        for par_mid in thr_keys:
+            if par_mid in thr_map:
+                render('', par_mid, first=first)
+                first = False
 
         return thread
 
@@ -902,12 +986,13 @@ class SearchResults(dict):
 
     def __init__(self, session, idx,
                  results=None, start=0, end=None, num=None,
-                 emails=None, people=None,
+                 emails=None, view_pairs=None, people=None,
                  suppress_data=False, full_threads=True):
         dict.__init__(self)
         self.session = session
         self.people = people
-        self.emails = emails
+        self.emails = emails or []
+        self.view_pairs = view_pairs or {}
         self.idx = idx
         self.urlmap = mailpile.urlmap.UrlMap(self.session)
 
@@ -942,6 +1027,7 @@ class SearchResults(dict):
             'search_terms': session.searched,
             'address_ids': [],
             'message_ids': [],
+            'view_pairs': view_pairs,
             'thread_ids': threads,
         })
         if 'tags' in self.session.config:
@@ -976,17 +1062,21 @@ class SearchResults(dict):
                     th[tid] = self._tag(tid, {'searched': True})
 
         idxs = results[start:start + num]
+
+        for e in emails or []:
+            self.add_email(e, idxs)
+
+        done_idxs = set()
         while idxs:
-            idx_pos = idxs.pop(0)
-            msg_info = idx.get_msg_at_idx_pos(idx_pos)
-            self.add_msg_info(b36(idx_pos), msg_info,
-                              full_threads=full_threads, idxs=idxs)
+            idxs = list(set(idxs) - done_idxs)
+            for idx_pos in idxs:
+                done_idxs.add(idx_pos)
+                msg_info = idx.get_msg_at_idx_pos(idx_pos)
+                self.add_msg_info(b36(idx_pos), msg_info,
+                                  full_threads=full_threads, idxs=idxs)
 
         if emails and len(emails) == 1:
             self['summary'] = emails[0].get_msg_info(MailIndex.MSG_SUBJECT)
-
-        for e in emails or []:
-            self.add_email(e)
 
     def add_msg_info(self, mid, msg_info, full_threads=False, idxs=None):
         # Populate data.metadata
@@ -1000,7 +1090,7 @@ class SearchResults(dict):
             thread = self._thread(thread_mid)
             self['data']['threads'][thread_mid] = thread
             if full_threads and idxs:
-                idxs.extend([int(t, 36) for t in thread
+                idxs.extend([int(t, 36) for t, bar, kids in thread
                              if t not in self['data']['metadata']])
 
         # Populate data.person
@@ -1015,7 +1105,7 @@ class SearchResults(dict):
                     self['data']['tags'][tid] = self._tag(tid,
                                                           {"searched": False})
 
-    def add_email(self, e):
+    def add_email(self, e, idxs):
         if e not in self.emails:
             self.emails.append(e)
         mid = e.msg_mid()
@@ -1025,7 +1115,8 @@ class SearchResults(dict):
             self['message_ids'].append(mid)
         # This happens last, as the parsing above may have side-effects
         # which matter once we get this far.
-        self.add_msg_info(mid, e.get_msg_info(uncached=True))
+        self.add_msg_info(mid, e.get_msg_info(uncached=True),
+                          full_threads=True, idxs=idxs)
 
     def __nonzero__(self):
         return True
@@ -1065,12 +1156,13 @@ class SearchResults(dict):
 
         text = []
         count = self['stats']['start']
-        expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
+        expand_ids = [e.msg_idx_pos for e in self.emails]
         addresses = self.get('data', {}).get('addresses', {})
 
         for mid in self['thread_ids']:
             m = self['data']['metadata'][mid]
-            tags = [self['data']['tags'][t] for t in m['tag_tids']]
+            tags = [self['data']['tags'].get(t) for t in m['tag_tids']]
+            tags = [t for t in tags if t]
             tag_names = [t['name'] for t in tags
                          if not t.get('searched', False)
                          and t.get('label', True)
@@ -1111,8 +1203,8 @@ class SearchResults(dict):
             if not expand_ids:
                 def gg(pos):
                     return (pos < 10) and pos or '>'
-                thread = [m['thread_mid']]
-                thread += self['data']['threads'][m['thread_mid']]
+                thr_mid = m['thread_mid']
+                thread = [ti[0] for ti in self['data']['threads'][thr_mid]]
                 if m['mid'] not in thread:
                     thread.append(m['mid'])
                 pos = thread.index(m['mid']) + 1
@@ -1748,7 +1840,7 @@ class ListDir(Command):
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
-    COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
+    COMMAND_SECURITY = security.CC_BROWSE_FILESYSTEM
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1781,10 +1873,15 @@ class ListDir(Command):
             args = ['.']
 
         def lsf(f):
-            info = vfs.getinfo(f, self.session.config)
-            info['icon'] = ''
-            for k in info.get('flags', []):
-                info['flag_%s' % unicode(k).lower().replace('.', '_')] = True
+            info = {'path': f}
+            try:
+                info = vfs.getinfo(f, self.session.config)
+                info['icon'] = ''
+                for k in info.get('flags', []):
+                    info['flag_%s' % unicode(k).lower().replace('.', '_')
+                         ] = True
+            except (OSError, IOError, UnicodeDecodeError):
+                info['flag_error'] = True
             return info
         def ls(p):
             return [lsf(vfs.path_join(p, f)) for f in vfs.listdir(p)
@@ -1793,6 +1890,11 @@ class ListDir(Command):
         file_list = []
         errors = 0
         for path in args:
+            if (security.forbid_command(self, security.CC_ACCESS_FILESYSTEM)
+                    and (path != '/')
+                    and (not path.endswith('$'))
+                    and ('$/' not in path)):
+                continue
             try:
                 path = os.path.expanduser(path.encode('utf-8'))
                 if vfs.isdir(path) and '*' not in path:
@@ -1823,8 +1925,9 @@ class ListDir(Command):
                     info['source'] = src._key
                 if src and src.mailbox[mid] and src.mailbox[mid].primary_tag:
                     tid = src.mailbox[mid].primary_tag
-                    info['tag'] = self.session.config.tags[tid].slug
-                    info['icon'] = self.session.config.tags[tid].icon
+                    if tid in self.session.config.tags:
+                        info['tag'] = self.session.config.tags[tid].slug
+                        info['icon'] = self.session.config.tags[tid].icon
             elif info.get('flag_mailsource'):
                 if path.startswith('/src:'):
                     info['source'] = path[5:]
@@ -1952,7 +2055,8 @@ class ConfigSet(Command):
             ops.append((section, '!CREATE_SECTION'))
 
         for var in self.data.keys():
-            if var in ('_section', '_method', 'context', 'csrf'):
+            if (var in ('_section', '_method', 'context', 'csrf')
+                   or var.startswith('ui_')):
                 continue
             sep = '/' if ('/' in (section+var)) else '.'
             svar = (section+sep+var) if section else var
@@ -1973,6 +2077,15 @@ class ConfigSet(Command):
             else:
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
+
+        # Access controls...
+        if not force:
+            for path, value in ops:
+                fb = security.forbid_config_change(config, path)
+                if fb:
+                    return self._error(fb)
+                elif path == 'master_key' and config.master_key:
+                    return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
@@ -2043,6 +2156,14 @@ class ConfigAdd(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        # Access controls...
+        for path, value in ops:
+            fb = security.forbid_config_change(config, path)
+            if fb:
+                return self._error(fb)
+            elif path == 'master_key' and config.master_key:
+                return self._error(_('I refuse to change the master key!'))
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
@@ -2089,15 +2210,21 @@ class ConfigUnset(Command):
             else:
                 del cfg[key]
 
+        # Access controls...
+        vlist = list(self.args) + (self.data.get('var', None) or [])
+        # Access controls...
+        for v in vlist:
+            fb = security.forbid_config_change(config, v)
+            if fb:
+                return self._error(fb)
+            elif v == 'master_key' and config.master_key:
+                return self._error(_('I refuse to change the master key!'))
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = []
-            vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
-                if v == 'master_key':
-                    if config.master_key:
-                        raise ValueError('I refuse to change the master key!')
                 cfg, vn = config.walk(v, parent=True)
                 unset(cfg, vn)
                 updated.append(v)
@@ -2234,8 +2361,7 @@ class ConfigureMailboxes(Command):
     MAX_PATHS = 50000
 
     def _truthy(self, var, default='n'):
-        return (self.data.get(var, [default])[0].lower()
-                in ('y', 'yes', 'true', 'on'))
+        return truthy(self.data.get(var, [default])[0])
 
     def command(self):
         from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
@@ -2500,6 +2626,8 @@ class Quit(Command):
     def command(self):
         mailpile.util.QUITTING = True
         self._background_save(index=True, config=True, wait=True)
+        if self.session.config.http_worker:
+            self.session.config.http_worker.quit()
         try:
             import signal
             os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
@@ -2510,6 +2638,26 @@ class Quit(Command):
             threading.Thread(target=exiter).start()
 
         return self._success(_('Shutting down...'))
+
+class IdleQuit(Command):
+    """Shut down Mailpile if it has been idle for a while"""
+    SYNOPSIS = (None, "idlequit", None, "[<timeout>]")
+    ORDER = ("Internals", 2)
+    CONFIG_REQUIRED = False
+
+    def check(self):
+        idle = time.time() - max(self.started, mailpile.util.LAST_USER_ACTIVITY)
+        if idle > self.timeout:
+            Quit(self.session, 'quit').run()
+
+    def command(self):
+        config = self.session.config
+        self.timeout = int(self.args[0]) if self.args else 600
+        self.started = time.time()
+        config.cron_worker.add_task('idlequit', self.timeout / 5, self.check)
+        return self._success(
+            _('Will shut down if idle for over %s seconds') % self.timeout,
+            {'timeout': self.timeout})
 
 
 class TrustingQQQ(Command):
@@ -2562,6 +2710,9 @@ class Help(Command):
             text = [
                 self.result['splash']
             ]
+            if os.getenv('DISPLAY'):
+                # Launching the web browser often prints junk, move past it.
+                text[:0] = ['=' * 77]
 
             if self.result['http_url']:
                 text.append(_('The Web interface address is: %s'
@@ -2806,10 +2957,13 @@ def Action(session, opt, arg, data=None):
 
     # Tags are commands
     if config.loaded_config:
-        tag = config.get_tag(opt)
-        if tag:
-            a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
-            return GetCommand('search')(session, opt, arg=a, data=data).run()
+        for tag in config.tags.values():
+            if opt.lower() in (tag.name.lower(),
+                               tag.slug.lower(),
+                               _(tag.name).lower()):
+                a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
+                return GetCommand('search')(session, opt,
+                                            arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
@@ -2821,6 +2975,6 @@ COMMANDS = [
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,
-    Help, HelpVars, HelpSplash, Quit, TrustingQQQ, Abort
+    Help, HelpVars, HelpSplash, Quit, IdleQuit, TrustingQQQ, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

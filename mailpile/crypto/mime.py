@@ -351,8 +351,11 @@ class MimeWrapper:
     CONTAINER_TYPE = 'multipart/mixed'
     CONTAINER_PARAMS = ()
 
-    def __init__(self, config, cleaner=None, sender=None, recipients=None):
+    def __init__(self, config,
+                 event=None, cleaner=None,
+                 sender=None, recipients=None):
         self.config = config
+        self.event = event
         self.sender = sender
         self.cleaner = cleaner
         self.recipients = recipients or []

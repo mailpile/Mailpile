@@ -82,8 +82,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def http_host(self):
         """Return the current server host, e.g. 'localhost'"""
-        #rsplit removes port
-        return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        try:
+            # rsplit removes port
+            return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+        except AttributeError:
+            return 'unknown'
 
     def _load_cookies(self):
         """Robustified cookie parser that silently drops invalid cookies."""
@@ -107,8 +110,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
-        return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
-                            self.headers.get('host', 'localhost'))
+        try:
+            surl = '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
+                                self.headers.get('host', 'localhost'))
+            self.server.server_url = surl
+        except AttributeError:
+            surl = self.server.server_url
+        return surl
 
     def send_http_response(self, code, msg):
         """Send the HTTP response header"""
@@ -317,6 +325,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         finally:
             threading.current_thread().name = 'DONE:%s' % path
             LIVE_HTTP_REQUESTS -= 1
+            if mailpile.util.QUITTING:
+                self.wfile.close()
 
     def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
@@ -349,11 +359,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
-
         if 'context' in post_data:
             session.load_context(post_data['context'][0])
         elif 'context' in query_data:
             session.load_context(query_data['context'][0])
+
+        mark_name = 'Processing HTTP API request at %s' % time.time()
+        session.ui.start_command(mark_name, [], {})
 
         if 'http' in config.sys.debug:
             session.ui.warning = server_session.ui.warning
@@ -379,6 +391,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             'http_hostname': self.http_host(),
             'http_method': method,
             'http_session': http_session,
+            'http_request': self,
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',
@@ -427,17 +440,30 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     else:
                         http_headers.append(('ETag', etag))
                 max_age = min(max_ages) if max_ages else 10
-                cachectrl = 'must-revalidate, max-age=%d' % max_age
+                cachectrl = 'must-revalidate, no-store, max-age=%d' % max_age
 
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
                              ) else 0
             try:
                 LIVE_HTTP_REQUESTS -= hang_fix
+
+                session.ui.mark('Running %d commands' % len(commands))
                 results = [cmd.run() for cmd in commands]
+
+                session.ui.mark('Displaying final result')
                 session.ui.display_result(results[-1])
             finally:
                 LIVE_HTTP_REQUESTS += hang_fix
+
+            session.ui.mark('Rendering response')
+            mimetype, content = session.ui.render_response(session.config)
+
+            session.ui.mark('Sending response')
+            self.send_full_response(content,
+                                    mimetype=mimetype,
+                                    header_list=http_headers,
+                                    cachectrl=cachectrl)
 
         except UrlRedirectException, e:
             return self.send_http_redirect(e.url)
@@ -451,15 +477,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             e = traceback.format_exc()
             session.ui.debug(e)
             if not session.config.sys.debug:
-                e = _('Internal error')
+                e = _('Internal Error')
             self.send_full_response(e, code=500, mimetype='text/plain')
             return None
 
-        mimetype, content = session.ui.render_response(session.config)
-        self.send_full_response(content,
-                                mimetype=mimetype,
-                                header_list=http_headers,
-                                cachectrl=cachectrl)
+        finally:
+            session.ui.report_marks(
+                details=('timing' in session.config.sys.debug))
+            session.ui.finish_command(mark_name)
 
     def do_PUT(self):
         return self.do_POST(method='PUT')
@@ -483,6 +508,10 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.sessions = {}
         self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # We set a large sending buffer to avoid blocking, because the GIL and
+        # scheduling interact badly when we have busy background jobs.
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 128 * 1024)
+        self.server_url = 'http://UNKNOWN/'
         self.sspec = (sspec[0] or 'localhost',
                       self.socket.getsockname()[1],
                       sspec[2])
@@ -525,6 +554,8 @@ class HttpWorker(threading.Thread):
                 self.httpd.serve_forever()
             except KeyboardInterrupt:
                 return
+            except socket.error:
+                pass
             except:
                 time.sleep(1)
                 if self.httpd:

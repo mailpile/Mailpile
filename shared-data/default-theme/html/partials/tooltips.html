@@ -1,0 +1,56 @@
+<script id="tooltip-pile-tag-details" type="text/template">
+  <div>
+    <h4 class="text-center" style="color: <%= Mailpile.theme.colors[label_color] %> "><span class=" <%= icon %> "></span> <%= name %></h4>
+    <p><a href="<%= url %>" data-mid="<%= mid %>"><span class="icon-links"></span> {{_("Browse Tag")}}</a></p>
+    <p><a href="#" data-tid="<%= tid %>" data-mid="<%= mid %>" class="pile-tag-delete"><span class="icon-circle-x"></span> {{_("Remove Tag")}}</a></p>
+  </div>
+</script>
+
+
+<script id="tooltip-contact-details" type="text/template">
+  <div class="user clearfix half-bottom">
+    <% if (photo) { %>
+    <a class="avatar"
+{%- if is_dev_version() %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       target="_blank"><img src="<%= photo %>"></a>
+    <% } else { %>
+    <a target="_blank"
+{%- if is_dev_version() %}
+       href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+       ><span class="icon-user"></span></a>
+    <% } %>
+    <div class="name">
+      <a target="_blank"
+{%- if is_dev_version() %}
+         href="{{ U('/contacts/view/<%= address %>/') }}"
+{%- endif %}
+         ><%= fn %></a>
+      <span class="address"><%= address %></span>
+    </div>
+  </div>
+  <p class="half-bottom text-center">
+    <a data-email="<%= address %>" data-mid="<%= mid %>"
+       class="compose-contact-find-keys"><span class="icon-key"></span>
+    <% if (flags.secure) { %>
+      {{_("Show Encryption Keys")}}
+    <% } else { %>
+      {{_("Find Encryption Keys")}}
+    <% } %>
+    </a>
+  </p>
+</script>
+
+
+<script id="tooltip-tag-subtags" type="text/template">
+  <ul>
+    <% _.each(tag.subtag_ids, function(stid, key) { var subtag = _.findWhere(Mailpile.instance.tags, {tid: stid}); %>
+    <li class="clearfix">
+      <a href="{{ U('/in/<%= subtag.slug %>/') }}" style="color: <%= subtag.label_color %>" class="left"><span class="<%= subtag.icon %>"></span> <%= subtag.name %></a>
+      <a class="right link-detail" href="{{ U('/tags/edit.html?only=<%= subtag.slug %>') }}"><span class="icon-settings"></span></a>
+    </li>
+    <% }); %>
+  </ul>
+</script>

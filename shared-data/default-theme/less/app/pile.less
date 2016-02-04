@@ -1,0 +1,558 @@
+        /* Pile */
+
+  #pile-results {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    border: 0px;
+  }
+
+  #pile-results tr.result          { background: @white; }
+  #pile-results tr.result:hover    { background: @grayLight; }
+  #pile-results tr.result-hover    { background: @grayLight; }
+  #pile-results tr.result-on       { background: @colorSelect }
+  #pile-results tr.result-on:hover { background: @colorSelectHover }
+
+  #pile-results td {
+    vertical-align: top;
+    position: relative;
+    border-spacing: 0px;
+    border-top: 0px;
+    border-right: 0px;
+    border-bottom: 1px solid @grayMid;
+    border-left: 0px;
+    box-sizing: padding-box;
+    font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 14px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  #pile-results.comfy  td { padding-top: 13px; padding-bottom: 11px; }
+  #pile-results.cozy   td { padding-top: 9px; padding-bottom: 6px; }
+  #pile-results.snug   td { padding-top: 5px; padding-bottom: 2px; }
+
+  #pile-results tr a        { font-size: 14px; line-height: 14px; font-weight: normal; color: inherit; }
+  #pile-results tr.in_new a { font-weight: bold;}
+  #pile-results td span.pile-message-tag { font-weight: bold; margin-right: 5px; cursor: pointer; }
+
+  #pile-results        td.draggable       { width: 12px; cursor: move; }
+  #pile-results        td.draggable:hover { cursor: move; }
+  #pile-results        td.crypto-and-tags,
+  #pile-results        td.message-nav,
+  #pile-results        td.avatar       { min-width: 24px; text-align: center; white-space: nowrap; }
+  #pile-results        td.avatar a     { display: block; text-align: center; }
+  #pile-results        td.avatar a img { display: inline-block; border-radius: 2px; }
+
+  #pile-results.comfy  td.avatar,
+  #pile-results.cozy   td.avatar { padding-top: 6px; padding-bottom: 5px; }
+  #pile-results.snug   td.avatar { padding-top: 4px; padding-bottom: 3px; }
+  #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }
+  #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
+  #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
+
+  #pile-results td.message-nav a.icon,
+  #pile-results td.message-nav span.icon,
+  #pile-results td.message-nav { font-size: 18px; line-height: 18px; color: @grayMid; }
+  #pile-results td.message-nav span.icon { font-size: 16px; }
+  #pile-results.snug td.message-nav a.icon,
+  #pile-results.snug td.message-nav span.icon,
+  #pile-results.snug td.message-nav { font-size: 16px; line-height: 16px; }
+  #pile-results.snug td.message-nav span.icon { font-size: 14px; }
+
+  #pile-results td.from {
+    width: 255px;
+    overflow-x: hidden;
+    word-wrap: normal;
+    word-break: normal;
+  }
+
+  #pile-results td.from a {
+    display: inline-block;
+    white-space: nowrap;
+    border: 0; margin: 0;
+    background: none;
+  }
+
+  #pile-results td.from span.conversation-count {
+    text-align: center;
+    vertical-align: top;
+    position: relative;
+    top: 1px;
+    left: 3px;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    color: @grayDark;
+    background: @grayMid;
+    border-radius: @base-border-radius;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 11px;
+  }
+
+  #pile-results.cozy td.from span.conversation-count {
+    top: 2px;
+    padding: 3px 6px;
+  }
+
+  #pile-results.snug td.from span.conversation-count {
+    top: 2px;
+    padding: 2px 4px;
+  }
+
+  #pile-results td.from .icon-reply,
+  #pile-results td.from .icon-forward,
+  #pile-results td.from .icon-compose {
+    position: relative;
+    top: 0px;
+    left: 4px;
+    color: @grayMid;
+  }
+
+  #pile-results td.subject {
+    min-width: 374px;
+    overflow: hidden;
+    word-wrap: normal;
+    word-break: normal;
+    white-space: nowrap;
+  }
+
+  #pile-results td.subject a.item-subject {
+    width: 370px;
+    display: block;
+  }
+
+  /* This is because relative % positioning inside a table doesn't work
+   * because the table does not yet know its own size.
+   */
+  @media only screen and (max-width: 1500px) {
+    #pile-results td.subject .message-container { max-width: 700px; }}
+  @media only screen and (max-width: 1300px) {
+    #pile-results td.subject .message-container { max-width: 550px; }}
+  @media only screen and (max-width: 1150px) {
+    #pile-results td.subject .message-container { max-width: 370px; }}
+  @media only screen and (max-width: 950px) {
+    #pile-results td.subject .message-container { max-width: 310px; }}
+  @media only screen and (max-width: 800px) {
+    #pile-results td.subject .message-container { max-width: 250px; }}
+  @media only screen and (max-width: 700px) {
+    #pile-results td.subject .message-container { max-width: 214px; }}
+
+  #pile-results td.date {
+    width: 60px;
+    text-align: right;
+    white-space: nowrap;
+    color: @gray;
+  }
+
+  #pile-results td.checkbox {
+    width: 45px;
+    text-align: center;
+    padding-top: 2px;
+    padding-bottom: 0px;
+    color: @gray;
+  }
+  #pile-results.cozy td.checkbox { padding-top: 6px; }
+  #pile-results.comfy td.checkbox { padding-top: 10px; }
+
+
+/* Pile Inlined Messages */
+
+  // This will override the hovering behaviour from above
+  #pile-results tr.full-message td { background: @white; }
+
+  // And we replace it with a highlightable border
+  #pile-results tr.full-message {
+    border-top: 6px solid;
+    border-bottom: 6px solid;
+    border-color: @grayLight;
+  }
+  #pile-results tr.full-message td.draggable {
+    border-color: @grayLight;
+    background: @grayLight;
+  }
+  #pile-results tr.result-on.full-message,
+  #pile-results tr.result-on.full-message td.draggable {
+    border-color: @colorSelect;
+    background: @colorSelect;
+  }
+  #pile-results tr.result-on.full-message:hover,
+  #pile-results tr.result-on.full-message:hover td.draggable {
+    background: @colorSelectHover;
+    border-color: @colorSelectHover;
+  }
+
+  #pile-results .message-details,
+  #pile-results .thread-container {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2em;
+    padding: 4px 4px;
+  }
+
+  #pile-results td.subject .message-container h3,
+  #pile-results .message-details h3,
+  #pile-results .thread-container h3 {
+    text-align: left;
+    font-size: 16px; line-height: 18px; font-weight: bold;
+    padding: 0 2px;
+    margin: 0 10px 6px 10px;
+    color: @gray;
+  }
+
+  #pile-results .message-nav { color: @gray; }
+
+  #pile-results .message-details .header-raw,
+  #pile-results .message-details .header-cooked h3,
+  #pile-results .message-details .header-cooked .header-value,
+  #pile-results .thread-container .thread-message {
+    display: block;
+    width: 245px;
+    margin: 0 10px;
+    padding: 0px 2px;
+    border: 0;
+    word-wrap: normal;
+    word-break: normal;
+    text-align: left;
+    overflow: hidden;
+  }
+
+  #pile-results .thread-container {
+    display: block;
+    width: 245px;
+    margin: 10px 4px 0 4px; padding: 0; border: 0;
+    overflow: hidden;
+  }
+
+  #pile-results .thread-container .thread-message {
+    overflow: visible;
+    margin: 0 0 0 16px;
+    width: 225px;
+  }
+
+  #pile-results .message-details .header-cooked { margin-bottom: 5px; }
+
+  #pile-results .message-details .header-cooked .header-value {
+    padding: 2px 10px;
+  }
+
+  #pile-results .thread-container .thread-message:hover {
+    background: @grayLight;
+    border-radius: @base-border-radius;
+  }
+
+  #pile-results .message-details .header-raw.hide,
+  #pile-results .message-details .header-cooked.hide,
+  #pile-results .thread-container .thread-message.hide {
+    display: none;
+  }
+
+  #pile-results .thread-container .thread-selected:hover,
+  #pile-results .thread-container .thread-selected {
+    background: @gray;
+    border-radius: @base-border-radius;
+  }
+
+  #pile-results .message-details .address-avatar img,
+  #pile-results .thread-message .thread-avatar img {
+    margin: 0 4px -3px 0; padding: 0; border: 0;
+    width: 30px; height: 30px;
+  }
+
+  #pile-results .thread-message .thread-tree {
+    margin: 0; padding: 0; border: 0;
+    position: relative; top: 4px;
+    font-size: 34px; font-family: monospace;
+    line-height: 34px;
+    color: @gray;
+    white-space: pre;
+  }
+
+  #pile-results .thread-container a.show-hide {
+    color: @gray;
+    font-weight: bold;
+    margin: 10px 0 0 20px;
+  }
+
+  #pile-results .thread-container .thread-selected .thread-tree {
+    color: @grayDark;
+  }
+
+  #pile-results .message-details .header-value,
+  #pile-results .thread-message .thread-info {
+    margin: 0; padding: 0; border: 0;
+    position: relative;
+    display: inline-block;
+    height: 28px;
+  }
+
+  #pile-results .thread-unread .thread-from { font-weight: bold; }
+
+  #pile-results .header-value .address-name,
+  #pile-results .header-value .address-email,
+  #pile-results .thread-info .thread-from,
+  #pile-results .thread-info .thread-details {
+    position: absolute;
+    margin: 0; padding: 0; border: 0;
+    display: inline-block;
+    font-size: 14px;
+  }
+
+  #pile-results .header-value .address-name { top: 4px; }
+
+  #pile-results .thread-info .thread-from { top: 1px; }
+
+  #pile-results .header-value .address-email,
+  #pile-results .thread-info .thread-details {
+    bottom: 0px;
+    margin: 0 0 -1px 2px;
+    color: @grayDark;
+    font-size: 12px; line-height: 12px;
+  }
+
+  #pile-results .header-value .address-email { color: @gray; margin-bottom: 0px; }
+
+  #pile-results .thread-info.thread-simple .thread-from { top: 9px; font-size: 14px; }
+
+  #pile-results .thread-info.thread-simple .thread-details { display: none; }
+
+  #pile-results .message-details .header-to .header-value,
+  #pile-results .message-details .header-from .header-value { height: 35px; }
+
+  #pile-results .message-details .header-to .address-name,
+  #pile-results .message-details .header-from .address-name {
+    font-size: 18px; line-height: 18px;
+  }
+
+  #pile-results td.subject .message-container .message-subject {
+    font-size: 22px; line-height: 22px;
+    margin: 0px 10px 4px 12px;
+    display: block;
+  }
+
+  #pile-results .message-details .header-to .address-email,
+  #pile-results .message-details .header-from .address-email {
+    margin-bottom: 2px;
+  }
+
+  #pile-results .message-details .header-to .address-avatar img,
+  #pile-results .message-details .header-from .address-avatar img {
+    width: 36px; height: 36px;
+  }
+  #pile-results .message-details .header-from ul.message-sender-actions {
+    display: inline-block;
+    margin: 0; padding: 2px;
+    white-space: nowrap;
+    background: @white;
+    transition: opacity 1s;
+    opacity: 0;
+  }
+  #pile-results .message-details .header-from .message-sender-actions li {
+    display: inline-block;
+  }
+  #pile-results .message-details .header-from:hover .message-sender-actions {
+    transition: opacity 1s;
+    opacity: 1.0;
+  }
+
+  #pile-results .message-details .header-to { opacity: 0.8; }
+  #pile-results .message-details .header-cc,
+  #pile-results .message-details .header-bcc { opacity: 0.6; }
+  #pile-results .message-details .header-to:hover,
+  #pile-results .message-details .header-cc:hover,
+  #pile-results .message-details .header-bcc:hover { opacity: 1.0; }
+
+  // Hide certain things, but leave them for copy-paste awesomeness
+  #pile-results .message-details .header-value span.punct {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s;
+  }
+
+  #pile-results .full-message td.crypto-and-tags {
+    white-space: normal;
+    padding-top: 10px;
+  }
+
+  #pile-results .full-message td.crypto-and-tags .pile-message-tag,
+  #pile-results .full-message td.crypto-and-tags .icon.crypto {
+    display: block; margin: 0 0 5px 0; padding: 0; border: 0;
+    font-size: 16px; line-height: 16px;
+  }
+
+  #pile-results .full-message td.crypto-and-tags .item-tags {
+    display: block; margin-bottom: 0 0 5px 0;
+  }
+
+  #pile-results td.subject .message-container h3 {
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  #pile-results td.subject .message-container {
+    display: block;
+    max-width: 50em;
+    padding: 5px 2px 5px 0px;
+    white-space: normal;
+    line-height: 16px;
+    font-size: 14px;
+  }
+
+  #pile-results .full-message .pile-message-content {
+    margin: 5px 10px;
+    padding: 0 0 0 10px;
+    border: 0;
+  }
+  #pile-results .full-message .part-crypto-status {
+    border: 0; padding: 0;
+    margin: 0 0 -4px -10px;
+  }
+  #pile-results .full-message .part-crypto-status .crypto-color-gray {
+    transition: all 1s ease-in;
+    opacity: 0;
+  }
+  #pile-results .full-message .part-crypto-status:hover .crypto-color-gray,
+  #pile-results .full-message .pile-message-content div.crypto-changed .crypto-color-gray {
+    transition: all 1s ease-in;
+    opacity: 1;
+  }
+  #pile-results .full-message .part-crypto-status .inline-encryption-info .crypto-color-gray {
+    /* We need this so individual signature status align nicely */
+    display: none;
+  }
+  #pile-results .full-message .part-crypto-status:hover .inline-encryption-info .crypto-color-gray {
+    /* FIXME: Doesn't fade in, boo hoo */
+    display: inline-block;
+  }
+  #pile-results .full-message .pile-message-content div.crypto-changed {
+    margin: 10px 0 0 -10px;
+    padding-top: 1px;
+    border-top: 2px dotted;
+    border-top-color: @grayLight;
+  }
+
+  #pile-results .message-inline-crypto-info {
+    display: inline-block;
+    margin: 0 0 7px 0;
+    text-align: left;
+  }
+
+  #pile-results .full-message h3 { position: relative; }
+
+  #pile-results .full-message .message-metadata-crypto-info {
+    font-size: 14px;
+    padding: 0 5px;
+    display: inline-block;
+  }
+
+  #pile-results .full-message .message-metadata-crypto-info {
+    font-size: 14px;
+    padding: 0 5px;
+    display: inline-block;
+  }
+
+  #pile-results .message-subject-container .message-metadata-crypto-info {
+    padding-right: 0px;
+  }
+
+  #pile-results .full-message .crypto-color-gray .message-metadata-crypto-info,
+  #pile-results .full-message .message-metadata-crypto-info.crypto-color-gray {
+    transition: opacity 1s;
+    opacity: 0;
+  }
+
+  #pile-results .full-message .crypto-color-gray:hover .message-metadata-crypto-info,
+  #pile-results .full-message .message-subject-container:hover .message-metadata-crypto-info,
+  #pile-results .full-message .thread-container:hover .message-metadata-crypto-info,
+  #pile-results .full-message .header-cooked:hover .message-metadata-crypto-info {
+    transition: opacity 1s;
+    opacity: 1;
+  }
+
+  #pile-results .message-actions-padding {
+    display: block; line-height: 18px;
+    margin: 0; padding: 5px 0 0 0; border: 0;
+  }
+
+  #pile-results td .bottom {
+    position: absolute; bottom: 0;
+  }
+
+  #pile-results iframe.message-part-html {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    //width: 111%;
+    //transform: scale(0.9); 
+    //transform-origin: 0 0;
+  }
+
+
+/* Pile Bottom */
+
+  #pile-bottom {
+    margin: 15px 15px 0px 15px;
+  }
+
+  #pile-bottom h5 {
+    margin-top: 10px;
+    color: @grayDark;
+  }
+
+  #pile-bottom a {
+    margin-right: 15px;
+  }
+
+  #pile-empty {
+    padding: @base-padding;
+    background: @white;
+    border-bottom: 1px solid @grayMid;
+    font-size: 14px;
+  }
+
+  #pile-empty-search-terms {
+    font-size: 24px;
+    font-weight: bold;
+    color: @gray;
+  }
+
+
+/* Pile Speed */
+
+  #pile-speed {
+    margin-bottom: 50px;
+    font-family: @mailpile-text-font-family-bold;
+    color: @gray;
+  }
+
+  #pile-speed span {
+    font-size: 21px;
+    margin-right: 10px;
+    position: relative;
+    top: 3px;
+    left: 0px;
+  }
+
+
+/* Pile  - Drag & Drop */
+
+  #pile-results tr.result:hover    td.draggable,
+  #pile-results tr.result-hover    td.draggable,
+  #pile-results tr.result-on:hover td.draggable {
+    background: url('../../img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+  }
+
+  .pile-results-drag {
+    background: @white;
+    border: 1px solid @gray;
+    border-radius: 4px;
+    padding: 5px 10px;
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+

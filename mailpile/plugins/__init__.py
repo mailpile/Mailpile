@@ -23,7 +23,7 @@ from mailpile.util import *
 __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
-    'setup_magic', 'exporters', 'plugins',
+    'setup_magic', 'exporters', 'plugins', 'motd',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
     'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
     'keylookup'
@@ -62,11 +62,11 @@ class PluginManager(object):
     REQUIRED = [
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic',
-        'plugins', 'keylookup'
+        'plugins', 'keylookup', 'motd'
     ]
     # Plugins we want, if they are discovered
     WANTED = [
-        'gui', 'print', 'datadig'
+        'autoajax', 'print', 'datadig'
     ]
     # Plugins that have been renamed from past releases
     RENAMED = {

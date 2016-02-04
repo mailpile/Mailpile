@@ -379,4 +379,5 @@ if '-i' in sys.argv:
 
 
 ##[ Cleanup ]#################################################################
+config.stop_workers()
 os.system('rm -rf %s' % mailpile_home)

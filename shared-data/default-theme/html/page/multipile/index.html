@@ -1,0 +1,107 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Your Mailpile may not be running")}}{% endblock %}
+{% block content %}
+<div id="login">
+  <div id="login-left" class="animated"></div>
+  <div id="login-right" class="animated"></div>
+</div>
+
+<div id="login-logo" class="animated">
+{% include("../img/logo-color.svg") %}
+{% include("../img/logo-name.svg") %}
+</div>
+
+<!--
+<div id="login-messages" class="animated text-center">
+Decrypting Index, Messages, and Contacts
+</div>
+-->
+
+<div id="login-vault-lock" class="vault-lock-outer animated">
+  <div class="vault-lock-inner animated">
+    <div class="vault-lock icon-groups animated"></div>
+  </div>
+</div>
+
+<div id="login-details" class="animated">
+  <div class="form-text">{{_("Launch Mailpile as ...")}}</div>
+  <form method="POST" action='/cgi-bin/mailpile/admin.cgi'
+        id="form-login" class="clearfix animated">
+   <div class='form-login'>
+    <input id="login-username" type="text" name="username"
+           autocomplete="off" tabindex=1 alt="{{_("Username")}}"
+           placeholder="{{_("Username")}}">
+   </div>
+   <div class='form-login'>
+    <input id="login-passphrase" type="password" name="password"
+           autocomplete="off" tabindex=2 alt="{{_("Password")}}"
+           placeholder="{{_("Password")}}">
+    <button type="submit" class="submit">
+      <span class="icon-checkmark"></span>
+    </button>
+   </div>
+  </form>
+
+  <div class="logged-out-message not-running" style="margin-top: 50x;">
+    <p>{{_("Your Mailpile may not be running")}}</p>
+    <div style='font-weight: normal;'>
+      {{_("To launch the app please enter your account details above "
+          "or use a terminal (ssh) to start Mailpile manually.")}}
+    </div>
+  </div>
+<!--
+  <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
+-->
+</div>
+
+<script>
+$(document).ready(function() {
+
+  var height = $(window).height() - 16;
+  $('#content-wide').css({'height': height, 'margin-top': '0px'});
+  $('#login').height(height);
+  $('#login-left').height(height);
+  $('#login-right').height(height);
+
+  $('#login-username').focus();
+});
+
+// Login Form is submitted
+$(document).on('submit', '#form-login', function(e) {
+
+  // Details
+  $('#login-details').addClass('bounceOutDown');
+
+  // Lock
+  setTimeout(function() {
+    $('#login-vault-lock').find('div.vault-lock').addClass('fadeOut');
+  }, 250);
+
+  setTimeout(function() {
+    $('#login-vault-lock').addClass('bounceOutUp');
+  }, 500);
+
+  // Panels
+  setTimeout(function() {
+    $('#login-left').addClass('bounceOutLeft');
+    $('#login-right').addClass('bounceOutRight');
+  }, 850);
+
+  // Loading
+  setTimeout(function() {
+    $('#login-logo .logo-name').addClass('fadeOut');
+    $('#login-logo').css({'left': '40%'});
+  }, 1000);
+
+  setInterval(function() {
+    $("#logo-bluemail").fadeOut(2000);
+    $("#logo-redmail").hide(2000);
+    $("#logo-greenmail").hide(3000);
+    $("#logo-bluemail").fadeIn(2000);
+    $("#logo-greenmail").fadeIn(4000);
+    $("#logo-redmail").fadeIn(6000);
+  }, 1000);
+
+});
+</script>
+{% endblock %}
