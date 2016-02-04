@@ -3,8 +3,6 @@
 import re
 import StringIO
 import email.parser
-import quopri                                       # *** DEBUG
-
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -238,11 +236,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
         # So - sniff to detect parts that need processing and identify protocol.
         for protocol in protocols:
             crypto_cls = protocols[protocol]
-            # Test code
-            qppayload = quopri.encodestring(part.get_payload( None, True ))
-            print '$$$$$A', qppayload, '$$$$$A\r\n'
-            kind = crypto_cls().sniff(qppayload, 'quoted-printable')
-            # kind = crypto_cls().sniff(part.get_payload(), encoding)
+            kind = crypto_cls().sniff(part.get_payload(), encoding)
             if kind:
                 break
 
