@@ -49,10 +49,10 @@ Mailpile.silly_strings = {
     '{{_("Do you really need an e-mail to know when you have been retweeted?")|escapejs}}',
     '{{_("E-mail is the largest internet based social network on the planet")|escapejs}}',
     '{{_("Which other technology do you use that is 40 years old?")|escapejs}}',
-    '{{_("There are 2.5 billion e-mail users worldwide, thats double the amount of Facebook users!")|escapejs}}',
+    '{{_("There are 2.5 billion e-mail users worldwide, that is double the amount of Facebook users!")|escapejs}}',
     '{{_("Use Mailpile Tags to better organize and search your mail")|escapejs}}',
     '{{_("Remember getting your first e-mail address? Remember how it felt like something private?")|escapejs}}',
-    '{{_("E-mail is a decentralized by design, this means no one company or government owns it!")|escapejs}}',
+    '{{_("E-mail is decentralized by design, this means no one company or government owns it!")|escapejs}}',
     '{{_("Over 100 trillion e-mails are sent per year, wow!")|escapejs}}',
     '{{_("E-mail is the most widely used communication protocol ever created by humans")|escapejs}}',
     '{{_("E-mail uses an open standard agreed upon by the entire world & owned by no one")|escapejs}}'
