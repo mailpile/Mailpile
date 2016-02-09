@@ -1952,6 +1952,9 @@ class MailIndex(object):
                 if term.startswith('in:'):
                     rt.extend(self.search_tag(session, term, hits,
                                               recursion=recursion))
+                elif term.startswith('mid:'):
+                    rt.extend([int(t, 36) for t in
+                               term[4:].replace('=', '').split(',')])
                 elif term.startswith('body:'):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
