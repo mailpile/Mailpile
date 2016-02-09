@@ -118,7 +118,10 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
       Mailpile.ui_in_action += 1;
     },
     stop: function() {
-      setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);
+      setTimeout(function() {
+        Mailpile.ui_in_action -= 1;
+        console.log("Decremented ui_in_action: " + Mailpile.ui_in_action);
+      }, 250);
     }
   });
 };
@@ -130,7 +133,18 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
     activeClass: 'sidebar-tags-draggable-hover',
     hoverClass: 'sidebar-tags-draggable-active',
     tolerance: 'pointer',
+    greedy: true,
     drop: function(event, ui) {
+      // This is necessary to prevent drops on elements that aren't visible.
+      var t = $(this).droppable("widget")[0];
+      var e = document.elementFromPoint(event.clientX, event.clientY);
+      while (e && (t !== e)) {
+        e = e.parentNode;
+      }
+      if (t !== e) return false;
+
+      console.log("Dropped on sidebar!");
+
 {#    // What should happen:
       //    - The drop happens on a tag, this tells us which tag to *add*
       //    - If the drop happens on something else... are we just untagging?
@@ -138,8 +152,8 @@ Mailpile.UI.Sidebar.Droppable = function(element, accept) {
       //    - Can look at ui.draggable.parent() .closest()? to find container.
       //    - Container should be annotated with whatever tags we are looking
       //      at, to facilitate removal so the "move" really is a move.
-      //
-#}
+      // #}
+
       var $context = Mailpile.UI.Selection.context(ui.draggable);
       var tags_delete = (($context.find('.pile-results').data("tids") || ""
                           ) + "").split(/\s+/);

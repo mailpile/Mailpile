@@ -28,7 +28,6 @@ Mailpile.render = function() {
     $('#content-view').css({'height': new_content_view_height, 'top': content_tools_height});
   };
 
-
   // Resize Elements Start + On Drag
   dynamic_sizing();
   window.onresize = function(event) {
@@ -59,6 +58,9 @@ Mailpile.render = function() {
 		}
 	}
 
+  // This fixes some of the drag-drop misbehaviours; first we disable the
+  // native HTML5 drag-drop of <a> elements...
+  $('.pile-message a').on('dragstart', function(ev) {return false;});
 };
 
 

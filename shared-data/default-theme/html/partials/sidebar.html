@@ -1,6 +1,6 @@
 <!-- FIXME: make "density" class be pulled from user profile setting -->
 <div id="sidebar" class="{{ config.web.display_density }}"><div id="sidebar-wrapper">
-  <div id="sidebar-scroll-area">
+  <div id="sidebar-scroll-area" class="scroll-viewport">
     <div id="sidebar-lists">
       {{ mailpile_render("sidebar.html!minimal", "tags", "mode=tree")[1]|safe }}
       <nav id='sidebar-user-contacts'></nav>

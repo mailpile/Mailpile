@@ -148,6 +148,7 @@ Mailpile.UI.Search.Draggable = function(element) {
     containment: 'window',
     appendTo: 'body',
     cursor: 'move',
+    cursorAt: { left: -5, top: 15 },
     scroll: false,
     revert: false,
     refreshPositions: true,
@@ -156,18 +157,19 @@ Mailpile.UI.Search.Draggable = function(element) {
       var selected = Mailpile.UI.Selection.selected(element);
       if ((selected.length < 2) && (selected[0] != '!all')) {
         // Note: Dragging w/o selecting first may mean the length is zero
-        drag_count = '{{_("1 message")|escapejs}}';
+        drag_count = '{{_("1 conversation")|escapejs}}';
       }
       else {
         human_count = Mailpile.UI.Selection.human_length(selected);
-        drag_count = human_count + ' {{_("messages")|escapejs}}';
+        drag_count = human_count + ' {{_("conversations")|escapejs}}';
       }
       return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> {{_("Moving")|escapejs}} ' + drag_count + '</div>');
     },
     drag: function() {
-      if ((!initializing) && $element.draggable('option', 'refreshPositions')) {
+      var $e = $(this);
+      if ((!initializing) && $e.draggable('option', 'refreshPositions')) {
         setTimeout(function() {
-          $element.draggable('option', 'refreshPositions', initializing);
+          $e.draggable('option', 'refreshPositions', initializing);
         }, 10);
       }
     },
@@ -190,10 +192,13 @@ Mailpile.UI.Search.Draggable = function(element) {
       });
     },
     stop: function(event, ui) {
+      setTimeout(function() {
+        Mailpile.ui_in_action -= 1;
+        console.log("Decremented ui_in_action: " + Mailpile.ui_in_action);
+      }, 250);
       initializing = true;
-      $element.draggable('option', 'refreshPositions', initializing);
       $('.sidebar-untag-dropzone').slideUp();
-      setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);
+      $(this).draggable('option', 'refreshPositions', initializing);
     }
   });
 };
