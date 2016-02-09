@@ -41,6 +41,7 @@ CONFIG_RULES = {
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
         'snippet_max':    (_('Max length of metadata snippets'), int,     250),
         'debug':         p(_('Debugging flags'), str,                      ''),
+        'experiments':    (_('Enabled experiments'), str,                  ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),
                            str, 'pool.sks-keyservers.net'),
         'gpg_home':      p(_('Override the home directory of GnuPG'),
