@@ -1,4 +1,4 @@
-{% extends "layouts/" + render_mode + "-wide.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block title %}{{_("Contacts")}}{% endblock %}
 {% block contenttools %}
 <div id="content-tools">
@@ -6,10 +6,9 @@
 </div>
 {% endblock %}
 {% block content %}
-<div id="content-view">
-  <h1>
+  <h2>
     IMPORTANT: This page is unfinished. Please don't be surprised by bugs.
-  </h1>
+  </h2>
   {% if result.contacts %}
   <div id="contacts-list" class="container rectangles-container center">
     <div class="clearfix"></div>
@@ -54,7 +53,6 @@
     <!-- <button><span class="icon-upload"></span> Import Contacts</button> -->
   </div>
   {% endif %}
-</div>
 
 <div id="pile-bottom">
   {% if result.offset > 0 %}
