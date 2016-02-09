@@ -661,8 +661,10 @@ class Email(object):
                 aid = 'part:%s' % att['count']
         return aid
 
-    def get_editing_strings(self, tree=None):
-        tree = tree or self.get_message_tree(want=['editing_strings'])
+    def get_editing_strings(self, tree=None, build_tree=True):
+        if build_tree:
+            tree = self.get_message_tree(want=['editing_strings'], tree=tree)
+
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
             'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
@@ -709,13 +711,16 @@ class Email(object):
         strings['body'] = unicode(''.join([_fixup(t['data'])
                                            for t in tree['text_parts']])
                                   ).replace('\r\n', '\n')
+
         return strings
 
     def get_editing_string(self, tree=None,
                                  estrings=None,
-                                 attachment_headers=True):
+                                 attachment_headers=True,
+                                 build_tree=True):
         if estrings is None:
-            estrings = self.get_editing_strings(tree=tree)
+            estrings = self.get_editing_strings(tree=tree,
+                                                build_tree=build_tree)
 
         bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
@@ -824,7 +829,7 @@ class Email(object):
             attachments = [h for h in newmsg.keys()
                            if h.lower().startswith('attachment')]
             if attachments:
-                oldtree = self.get_message_tree(want=['attchments'])
+                oldtree = self.get_message_tree(want=['attachments'])
                 for att in oldtree['attachments']:
                     hdr = 'Attachment-%s' % self._attachment_aid(att)
                     if hdr in attachments:
@@ -1201,12 +1206,11 @@ class Email(object):
             traceback.print_exc()
             return html
 
-    def get_message_tree(self, want=None):
+    def get_message_tree(self, want=None, tree=None):
         msg = self.get_msg()
         want = list(want) if (want is not None) else None
-        tree = {
-            'id': self.get_msg_info(self.index.MSG_ID)
-        }
+        tree = tree or {}
+        tree['id'] = self.get_msg_info(self.index.MSG_ID)
 
         if want is not None:
             if 'editing_strings' in want or 'editing_string' in want:
@@ -1217,13 +1221,14 @@ class Email(object):
             if want is None or p in want:
                 tree[p] = []
 
-        if want is None or 'summary' in want:
+        if (want is None or 'summary' in want) and 'summary' not in tree:
             tree['summary'] = self.get_msg_summary()
 
-        if want is None or 'tags' in want:
+        if (want is None or 'tags' in want) and 'tags' not in tree:
             tree['tags'] = self.get_msg_info(self.index.MSG_TAGS).split(',')
 
-        if want is None or 'conversation' in want:
+        if (want is None or 'conversation' in want
+                ) and 'conversation' not in tree:
             tree['conversation'] = {}
             conv_id = self.get_msg_info(self.index.MSG_THREAD_MID)
             if conv_id:
@@ -1236,21 +1241,24 @@ class Email(object):
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
 
-        if (want is None or 'headers' in want):
+        if (want is None or 'headers' in want) and 'headers' not in tree:
             tree['headers'] = {}
             for hdr in msg.keys():
                 tree['headers'][hdr] = self.index.hdr(msg, hdr)
 
-        if want is None or 'headers_lc' in want:
+        if (want is None or 'headers_lc' in want
+                ) and 'headers_lc' not in tree:
             tree['headers_lc'] = {}
             for hdr in msg.keys():
                 tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
 
-        if want is None or 'header_list' in want:
+        if (want is None or 'header_list' in want
+                ) and 'header_list' not in tree:
             tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
                                    for k, v in msg.items()]
 
-        if want is None or 'addresses' in want:
+        if (want is None or 'addresses' in want
+                ) and 'addresses' not in tree:
             address_headers_lower = [h.lower() for h in self.ADDRESS_HEADERS]
             tree['addresses'] = {}
             for hdr in msg.keys():
@@ -1336,9 +1344,11 @@ class Email(object):
 
         if self.is_editable():
             if not want or 'editing_strings' in want:
-                tree['editing_strings'] = self.get_editing_strings(tree)
+                tree['editing_strings'] = self.get_editing_strings(
+                    tree, build_tree=False)
             if not want or 'editing_string' in want:
-                tree['editing_string'] = self.get_editing_string(tree)
+                tree['editing_string'] = self.get_editing_string(
+                    tree, build_tree=False)
 
         if want is None or 'crypto' in want:
             if 'crypto' not in tree:
