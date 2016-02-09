@@ -40,6 +40,12 @@ _outerHTML = function(elem) {
     return $('<div />').append(elem.clone()).html();
 };
 
+_update_title = function(message) {
+    var ct = document.title;
+    suffix = ct.substring(ct.indexOf('|') - 1);
+    document.title = message + suffix;
+};
+
 _scroll_up = function(elem) {
     setTimeout(function() { $(elem).scrollTop(0); }, 10);
 };
@@ -114,40 +120,51 @@ prepare_new_content = function(selector) {
 };
 Mailpile.UI.content_setup.push(prepare_new_content);
 
+render_result = function(data, cv, html) {
+    var cv = cv || $('#content-view, #content-tall-view').parent();
+
+    if (data) _update_title(data['message']);
+    cv.replaceWith(html || data['result']).show();
+
+    clear_selection_state();
+    cv = $('#content-view, #content-tall-view').parent();
+    Mailpile.UI.prepare_new_content(cv);
+    Mailpile.render();
+    // Work around bugs in drag/drop lib, nuke artefacts
+    $('div.ui-draggable-dragging').remove();
+};
+
 restore_state = function(ev) {
     if (ev.state && ev.state.autoajax) {
-        $('#content-view, #content-tall-view').parent().replaceWith(ev.state.html).show();
-        var $context = $('#content-view, #content-tall-view');
-        clear_selection_state($context);
-        Mailpile.UI.prepare_new_content($context.parent());
-        Mailpile.render();
+        update_using_jhtml(ev.state.url, function(cv) {
+                 // Success!
+            }, function(cv) {
+                 // Error?
+            }, false, true
+        );
     }
 };
 
-update_using_jhtml = function(original_url, callback, error_callback, noblank) {
+update_using_jhtml = function(original_url, callback, error_callback,
+                              noblank, nohistory) {
     if (ajaxable_url(document.location.pathname)) {
         var cv = $('#content-view, #content-tall-view').parent();
-        history.replaceState({autoajax: true, html: _outerHTML(cv)},
-                             document.title);
         if (!noblank) cv.hide();
+        if (!nohistory)
+            history.replaceState({autoajax: true, url: document.location.href},
+                                 document.title);
         return $.ajax({
             url: Mailpile.API.jhtml_url(original_url, 'content'),
             type: 'GET',
             success: function(data) {
-                history.pushState({autoajax: true, html: data['result']},
-                                  data['message'], original_url);
-                cv.replaceWith(data['result']).show();
-                clear_selection_state();
-                cv = $('#content-view, #content-tall-view');
-                Mailpile.UI.prepare_new_content(cv.parent());
-                Mailpile.render();
-                // Work around bugs in drag/drop lib, nuke artefacts
-                $('div.ui-draggable-dragging').remove();
-                // Invoke any callbacks, woo!
+                if (!nohistory)
+                    history.pushState({autoajax: true, url: original_url},
+                                      data['message'], original_url);
+                render_result(data, cv)
                 if (callback) { callback(cv) };
             },
             error: function() {
-                if (error_callback) error_callback();
+                if (error_callback) error_callback(cv);
                 cv.show();
             }
         });
@@ -219,7 +236,6 @@ $(document).ready(function() {
         for (var cidx in ev.data.cache_ids) {
             var cid = ev.data.cache_ids[cidx];
             refresh_history[cid] = 0; // Mark as needing a refresh!
-            console.log('Eventlog reports new data for ' + cid);
             // If the event log is reporting things actively, lower the
             // force-refresh interval as it's probably not needed.
             if (refresh_interval < 120000) {
