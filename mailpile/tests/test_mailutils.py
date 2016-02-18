@@ -28,6 +28,15 @@ class TestCommands(MailPileUnittest):
         res = FormatMbxId("abcd")
         self.assertEqual(res, "abcd")
 
+    def test_FormatMbxId_string_len_more_than_four(self):
+        self.assertRaises(ValueError, lambda: FormatMbxId("abcde"))
+
+    def test_FormatMbxId_number(self):
+        res = FormatMbxId(123)
+        self.assertEqual(res, '003f')
+        res = FormatMbxId(12345)
+        self.assertEqual(res, '09ix')
+
     def test_FormatMbxId_unicode(self):
         res = FormatMbxId('Ţ¼')
-        self.assertEqual(res, "\xc5\xa2\xc2\xbc")        
+        self.assertEqual(res, "\xc5\xa2\xc2\xbc")
