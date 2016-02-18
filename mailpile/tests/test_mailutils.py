@@ -5,6 +5,7 @@ import mailpile
 from mailpile.tests import MailPileUnittest
 from mailpile.mailutils import decode_header
 from mailpile.mailutils import FormatMbxId
+from mailpile.mailutils import MakeContentID
 
 
 class TestCommands(MailPileUnittest):
@@ -40,3 +41,7 @@ class TestCommands(MailPileUnittest):
     def test_FormatMbxId_unicode(self):
         res = FormatMbxId('Ţ¼')
         self.assertEqual(res, "\xc5\xa2\xc2\xbc")
+
+    def test_MakeContentID(self):
+        res = MakeContentID()
+        self.assertEqual(len(res), 7)
