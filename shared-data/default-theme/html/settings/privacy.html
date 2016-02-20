@@ -253,7 +253,11 @@
     </div>
     <p class="settings">
       <input name="prefs.web_content" type="radio" value="on"
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky") %}
+             {%- if config.prefs.web_content in ("on", "unknown") %} checked{% endif %}>
+    {% else %}
              {%- if config.prefs.web_content == "on" %} checked{% endif %}>
+    {% endif %}
       <span class="checkbox">
         {{_("Enable downloading of third party content from the web.")}}
     {% if config.sys.proxy.protocol not in ("tor", "tor-risky") %}

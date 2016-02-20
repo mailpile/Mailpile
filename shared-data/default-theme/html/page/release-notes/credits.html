@@ -1,0 +1,49 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{ _("Credits") }}{% endblock %}
+{% block content %}
+<div class="content-normal"
+     style="max-width: 46em; max-height: 450px; overflow-y: scroll;">
+  <h1>{{ _("Credits") }}</h1>
+
+  <h3>{{ _("Core Team") }}</h2>
+  <ul style="list-style-type: circle; padding-left: 2em;">
+    <li><b>Bjarni Rúnar Einarsson</b> - {{ _("lead developer") }}</li>
+    <li><b>Brennan Novak</b> - {{ _("UI and design") }}, 2013-2015</li>
+    <li><b>Smári McCarthy</b> - {{ _("security and community") }}, 2013-2015</li>
+  </ul>
+  <p>
+    {{_("The Mailpile team would like to thank all the people who contributed
+    money or volunteered their time to help create a truly free, secure
+    e-mail client. You're all awesome!") }}
+  </p>
+
+  <h3>{{ _("Financial Backers") }}</h3>
+  <p style="text-align: center">
+    PageKkite, Freedombox, Cloudfleet, Thoughtworks
+    <br><a target="_blank" href="https://www.mailpile.is/thank-you/">
+      {{_("... and many more!")}}
+    </a>
+  </p>
+  
+
+  <h3>{{ _("Code Contributions") }}</h2>
+  <ul style="list-style-type: circle; padding-left: 2em;">
+  {% include "page/release-notes/credits-code.html" %}
+  </ul>
+
+  <h3>{{ _("Graphics, Testing, Moral Support, ...") }}</h2>
+  <ul style="list-style-type: circle; padding-left: 2em;">
+    <li>Ásta Helgadóttir</li>
+    <li>Daniel Yeow</li>
+    <li>Emilia Telese</li>
+    <li>Karl Pálsson</li>
+    <li>Sveinbjörn Pálsson</li>
+  </ul>
+
+  <h3>{{ _("Translations") }}</h2>
+  <ul style="list-style-type: circle; padding-left: 2em;">
+  {% include "page/release-notes/credits-i18n.html" %}
+  </ul>
+
+</div>
+{% endblock %}
