@@ -1004,7 +1004,9 @@ class GnuPG:
             line_len = len(data)
             segment = data                          # *** Shallow copy?
                   
-        if not (ord(segment[0]) & 0x80):
+        if not segment:
+            found = set()
+        elif not (ord(segment[0]) & 0x80):
             # Not a PGP packet header if MSbit is 0.  Check for armoured data.
             found.add('armored')
             if segment.startswith(self.ARMOR_BEGIN_SIGNED):
