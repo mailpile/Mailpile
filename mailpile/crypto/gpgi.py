@@ -923,7 +923,7 @@ class GnuPG:
                 line_len = len(data)
             elif line_len > 1 and data[line_len-2] == '\r':
                 line_end = 2
-            if line_len > 76:                       # Maximum per RFC2045 6.8
+            if line_len - line_end > 76:            # Maximum per RFC2045 6.8
                 return found 
             enc_end = line_len
             try:

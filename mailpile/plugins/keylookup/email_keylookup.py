@@ -53,7 +53,7 @@ def _get_keydata(data):
             ak = pgpdump.AsciiData(data)
         else:
             ak = pgpdump.BinaryData(data)
-    except (TypeError, pgpdump.utils.PgpdumpException):
+    except (TypeError, IndexError, pgpdump.utils.PgpdumpException):
         return []
 
     now = time.time()
