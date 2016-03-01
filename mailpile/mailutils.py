@@ -30,6 +30,7 @@ from datetime import datetime, timedelta
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
@@ -37,6 +38,116 @@ from mailpile.vcard import AddressInfo
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
+
+
+""" Backport of Python > 3.3 email.header.decode_header()
+
+It includes fixes that have not been ported to py2
+https://bugs.python.org/issue1079
+"""
+
+# Match encoded-word strings in the form =?charset?q?Hello_World?=
+ecre = re.compile(r'''
+  =\?                   # literal =?
+  (?P<charset>[^?]*?)   # non-greedy up to the next ? is the charset
+  \?                    # literal ?
+  (?P<encoding>[qb])    # either a "q" or a "b", case insensitive
+  \?                    # literal ?
+  (?P<encoded>.*?)      # non-greedy up to the next ?= is the encoded string
+  \?=                   # literal ?=
+  ''', re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+
+
+def decode_header(header):
+    """ Decode a message header value without converting charset.
+    Returns a list of (string, charset) pairs containing each of the decoded
+    parts of the header.  Charset is None for non-encoded parts of the header,
+    otherwise a lower-case string containing the name of the character set
+    specified in the encoded string.
+    header may be a string that may or may not contain RFC2047 encoded words,
+    or it may be a Header object.
+    An email.errors.HeaderParseError may be raised when certain decoding error
+    occurs (e.g. a base64 decoding exception).
+    """
+    # If it is a Header object, we can just return the encoded chunks.
+    if hasattr(header, '_chunks'):
+        return [(_charset._encode(string, str(charset)), str(charset))
+                for string, charset in header._chunks]
+    # If no encoding, just return the header with no charset.
+    if not ecre.search(header):
+        return [(header, None)]
+    # First step is to parse all the encoded parts into triplets of the form
+    # (encoded_string, encoding, charset).  For unencoded strings, the last
+    # two parts will be None.
+    words = []
+    for line in header.splitlines():
+        parts = ecre.split(line)
+        first = True
+        while parts:
+            unencoded = parts.pop(0)
+            if first:
+                unencoded = unencoded.lstrip()
+                first = False
+            if unencoded:
+                words.append((unencoded, None, None))
+            if parts:
+                charset = parts.pop(0).lower()
+                encoding = parts.pop(0).lower()
+                encoded = parts.pop(0)
+                words.append((encoded, encoding, charset))
+    # Now loop over words and remove words that consist of whitespace
+    # between two encoded strings.
+    droplist = []
+    for n, w in enumerate(words):
+        if n > 1 and w[1] and words[n-2][1] and words[n-1][0].isspace():
+            droplist.append(n-1)
+    for d in reversed(droplist):
+        del words[d]
+
+    # The next step is to decode each encoded word by applying the reverse
+    # base64 or quopri transformation.  decoded_words is now a list of the
+    # form (decoded_word, charset).
+    decoded_words = []
+    for encoded_string, encoding, charset in words:
+        if encoding is None:
+            # This is an unencoded word.
+            decoded_words.append((encoded_string, charset))
+        elif encoding == 'q':
+            word = email.quoprimime.header_decode(encoded_string)
+            decoded_words.append((word, charset))
+        elif encoding == 'b':
+            # Postel's law: add missing padding
+            paderr = len(encoded_string) % 4
+            if paderr:
+                encoded_string += '==='[:4 - paderr]
+            try:
+                word = email.base64mime.decode(encoded_string)
+            except binascii.Error:
+                raise HeaderParseError('Base64 decoding error')
+            else:
+                decoded_words.append((word, charset))
+        else:
+            raise AssertionError('Unexpected encoding: ' + encoding)
+    # Now convert all words to bytes and collapse consecutive runs of
+    # similarly encoded words.
+    collapsed = []
+    last_word = last_charset = None
+    for word, charset in decoded_words:
+        if isinstance(word, unicode):
+            word = bytes(word, 'raw-unicode-escape')
+        if last_word is None:
+            last_word = word
+            last_charset = charset
+        elif charset != last_charset:
+            collapsed.append((last_word, last_charset))
+            last_word = word
+            last_charset = charset
+        elif last_charset is None:
+            last_word += b' ' + word
+        else:
+            last_word += word
+    collapsed.append((last_word, last_charset))
+    return collapsed
 
 
 def FormatMbxId(n):
@@ -93,7 +204,7 @@ def ClearParseCache(cache_id=None, pgpmime=False, full=False):
 
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
-                     pgpmime=True, config=None):
+                     pgpmime=True, config=None, event=None):
     global GLOBAL_PARSE_CACHE
     if not GnuPG:
         pgpmime = False
@@ -115,6 +226,9 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             # of this message with a fancy decrypted one.
             message = copy.deepcopy(message)
         def MakeGnuPG(*args, **kwargs):
+            ev = event or GetThreadEvent()
+            if ev and 'event' not in kwargs:
+                kwargs['event'] = ev
             return GnuPG(config, *args, **kwargs)
         UnwrapMimeCrypto(message, protocols={
             'openpgp': MakeGnuPG
@@ -151,7 +265,10 @@ def GetTextPayload(part):
         # in particular isn't aware of base64 encoding. Compensate!
         payload = part.get_payload(None, False) or ''
         parts = payload.split('\n--')
-        parts[0] = base64.b64decode(parts[0])
+        try:
+            parts[0] = base64.b64decode(parts[0])
+        except TypeError:
+            pass
         return '\n--'.join(parts)
     else:
         return part.get_payload(None, True) or ''
@@ -196,6 +313,7 @@ def ExtractEmailAndName(string):
 
 def CleanHeaders(msg, copy_all=True, tombstones=False):
     clean_headers = []
+    address_headers_lower = [h.lower() for h in Email.ADDRESS_HEADERS]
     for key, value in msg.items():
         lkey = key.lower()
 
@@ -206,7 +324,7 @@ def CleanHeaders(msg, copy_all=True, tombstones=False):
                 clean_headers.append((key, None))
 
         # Strip the #key part off any e-mail addresses:
-        elif lkey in ('from', 'to', 'cc', 'reply-to'):
+        elif lkey in address_headers_lower:
             if '#' in value:
                 clean_headers.append((key, re.sub(
                     r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
@@ -516,6 +634,7 @@ class Email(object):
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
     MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject',
                          'Encryption', 'Attach-PGP-Pubkey')
+    ADDRESS_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Reply-To')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -542,8 +661,10 @@ class Email(object):
                 aid = 'part:%s' % att['count']
         return aid
 
-    def get_editing_strings(self, tree=None):
-        tree = tree or self.get_message_tree()
+    def get_editing_strings(self, tree=None, build_tree=True):
+        if build_tree:
+            tree = self.get_message_tree(want=['editing_strings'], tree=tree)
+
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
             'encryption': '', 'attach-pgp-pubkey': '', 'attachments': {}
@@ -559,10 +680,17 @@ class Email(object):
         keys = hdrs.keys()
         keys.sort(key=lambda k: (self.HEADER_ORDER.get(k.lower(), 99), k))
         lowman = [m.lower() for m in self.MANDATORY_HEADERS]
+        lowadr = [m.lower() for m in self.ADDRESS_HEADERS]
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
-            if hdr.lower() in lowman:
-                strings[hdr.lower()] = unicode(data)
+            lhdr = hdr.lower()
+            if lhdr in lowadr and lhdr in lowman:
+                adata = tree.get('addresses', {}).get(lhdr, None)
+                if adata is None:
+                    adata = AddressHeaderParser(data)
+                strings[lhdr] = adata.normalized()
+            elif lhdr in lowman:
+                strings[lhdr] = unicode(data)
             else:
                 header_lines.append(unicode('%s: %s' % (hdr, data)))
 
@@ -583,13 +711,16 @@ class Email(object):
         strings['body'] = unicode(''.join([_fixup(t['data'])
                                            for t in tree['text_parts']])
                                   ).replace('\r\n', '\n')
+
         return strings
 
     def get_editing_string(self, tree=None,
                                  estrings=None,
-                                 attachment_headers=True):
+                                 attachment_headers=True,
+                                 build_tree=True):
         if estrings is None:
-            estrings = self.get_editing_strings(tree=tree)
+            estrings = self.get_editing_strings(tree=tree,
+                                                build_tree=build_tree)
 
         bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
@@ -698,7 +829,7 @@ class Email(object):
             attachments = [h for h in newmsg.keys()
                            if h.lower().startswith('attachment')]
             if attachments:
-                oldtree = self.get_message_tree()
+                oldtree = self.get_message_tree(want=['attachments'])
                 for att in oldtree['attachments']:
                     hdr = 'Attachment-%s' % self._attachment_aid(att)
                     if hdr in attachments:
@@ -807,7 +938,8 @@ class Email(object):
         return ParseMessage(self.get_file, cache_id=cache_id,
                                            update_cache=update_cache,
                                            pgpmime=pgpmime,
-                                           config=self.config)
+                                           config=self.config,
+                                           event=GetThreadEvent())
 
     def _update_crypto_state(self):
         if not (self.config.tags and
@@ -1074,28 +1206,29 @@ class Email(object):
             traceback.print_exc()
             return html
 
-    def get_message_tree(self, want=None):
+    def get_message_tree(self, want=None, tree=None):
         msg = self.get_msg()
         want = list(want) if (want is not None) else None
-        tree = {
-            'id': self.get_msg_info(self.index.MSG_ID)
-        }
+        tree = tree or {}
+        tree['id'] = self.get_msg_info(self.index.MSG_ID)
 
         if want is not None:
             if 'editing_strings' in want or 'editing_string' in want:
-                want.extend(['text_parts', 'headers', 'attachments'])
+                want.extend(['text_parts', 'headers', 'attachments',
+                             'addresses'])
 
         for p in 'text_parts', 'html_parts', 'attachments':
             if want is None or p in want:
                 tree[p] = []
 
-        if want is None or 'summary' in want:
+        if (want is None or 'summary' in want) and 'summary' not in tree:
             tree['summary'] = self.get_msg_summary()
 
-        if want is None or 'tags' in want:
+        if (want is None or 'tags' in want) and 'tags' not in tree:
             tree['tags'] = self.get_msg_info(self.index.MSG_TAGS).split(',')
 
-        if want is None or 'conversation' in want:
+        if (want is None or 'conversation' in want
+                ) and 'conversation' not in tree:
             tree['conversation'] = {}
             conv_id = self.get_msg_info(self.index.MSG_THREAD_MID)
             if conv_id:
@@ -1108,25 +1241,29 @@ class Email(object):
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
 
-        if (want is None or 'headers' in want):
+        if (want is None or 'headers' in want) and 'headers' not in tree:
             tree['headers'] = {}
             for hdr in msg.keys():
                 tree['headers'][hdr] = self.index.hdr(msg, hdr)
 
-        if want is None or 'headers_lc' in want:
+        if (want is None or 'headers_lc' in want
+                ) and 'headers_lc' not in tree:
             tree['headers_lc'] = {}
             for hdr in msg.keys():
                 tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
 
-        if want is None or 'header_list' in want:
+        if (want is None or 'header_list' in want
+                ) and 'header_list' not in tree:
             tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
                                    for k, v in msg.items()]
 
-        if want is None or 'addresses' in want:
+        if (want is None or 'addresses' in want
+                ) and 'addresses' not in tree:
+            address_headers_lower = [h.lower() for h in self.ADDRESS_HEADERS]
             tree['addresses'] = {}
             for hdr in msg.keys():
                 hdrl = hdr.lower()
-                if hdrl in ('reply-to', 'from', 'to', 'cc', 'bcc'):
+                if hdrl in address_headers_lower:
                     tree['addresses'][hdrl] = AddressHeaderParser(msg[hdr])
 
         # FIXME: Decide if this is strict enough or too strict...?
@@ -1207,9 +1344,11 @@ class Email(object):
 
         if self.is_editable():
             if not want or 'editing_strings' in want:
-                tree['editing_strings'] = self.get_editing_strings(tree)
+                tree['editing_strings'] = self.get_editing_strings(
+                    tree, build_tree=False)
             if not want or 'editing_string' in want:
-                tree['editing_string'] = self.get_editing_string(tree)
+                tree['editing_string'] = self.get_editing_string(
+                    tree, build_tree=False)
 
         if want is None or 'crypto' in want:
             if 'crypto' not in tree:
@@ -1373,7 +1512,8 @@ class Email(object):
     }
 
     def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
-                                 crypto_state_feedback=True):
+                                 crypto_state_feedback=True,
+                                 event=None):
         if 'text_parts' not in tree:
             return tree
 
@@ -1391,7 +1531,7 @@ class Email(object):
                 elif part['type'] == 'pgpsignature':
                     pgpdata.append(part)
                     try:
-                        gpg = GnuPG(self.config)
+                        gpg = GnuPG(self.config, event=event)
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
                         si = gpg.verify(message)
@@ -1409,7 +1549,7 @@ class Email(object):
                     pgpdata.append(part)
 
                     data = ''.join([p['data'] for p in pgpdata])
-                    gpg = GnuPG(self.config)
+                    gpg = GnuPG(self.config, event=event)
                     si, ei, text = gpg.decrypt(data)
 
                     # FIXME: If the data is binary, we should provide some
@@ -1476,6 +1616,10 @@ class AddressHeaderParser(list):
     This parser is NOT (yet) fully RFC2822 compliant - in particular it
     will get confused by nested comments (see FIXME in tests below).
 
+    The normalization will take pains to ensure that < and , are never
+    present inside a name/comment (even if legal), to make life easier
+    for lame parsers down the line.
+
     Examples:
 
     >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
@@ -1484,7 +1628,8 @@ class AddressHeaderParser(list):
     u'Bjarni'
     >>> ai.address
     u'bre@klaki.net'
-    >>> ahp.normalized_addresses() == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES
+    >>> ahpn = ahp.normalized_addresses()
+    >>> (ahpn == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES) or ahpn
     True
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
@@ -1506,30 +1651,40 @@ class AddressHeaderParser(list):
         bre@klaki.net Bjarni ,
         bre@klaki.net bre@klaki.net,
         bre@klaki.net (bre@notmail.com),
+        "<bre@notmail.com>" <bre@klaki.net>,
+        =?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>,
         bre@klaki.net ((nested) bre@notmail.com comment),
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
         "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
-        Bjarni is bre @klaki.net,
+        Bjarni =?iso-8859-1?Q??=is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
+        "Einarsson, Bjarni" <bre@klaki.net>,
+        =?iso-8859-1?Q?Lonia_l=F6gmannsstofa?= <lonia@example.com>,
+        "Bjarni @ work" <bre@pagekite.net>,
     """
     TEST_EXPECT_NORMALIZED_ADDRESSES = [
         '<bre@klaki.net>',
         '"Bjarni" <bre@klaki.net>',
         '"bre@klaki.net" <bre@klaki.net>',
         '"bre@notmail.com" <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
+        '=?utf-8?Q?=3Cbre@notmail.com=3E?= <bre@klaki.net>',
         '"(nested bre@notmail.com comment)" <bre@klaki.net>',
         '"(FIXME: nested parser breaker) bre@klaki.net" <bre@wrongmail.com>',
         '"Bjarni" <bre@klaki.net>',
         '"This is a key test" <bre@klaki.net>',
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
-        '"Bjarni Runar Einarsson" <bre@klaki.net>']
+        '"Bjarni Runar Einarsson" <bre@klaki.net>',
+        '=?utf-8?Q?Einarsson=2C_Bjarni?= <bre@klaki.net>',
+        '=?utf-8?Q?Lonia_l=C3=B6gmannsstofa?= <lonia@example.com>',
+        '"Bjarni @ work" <bre@pagekite.net>']
 
     # Escaping and quoting
-    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]+)\\?='
+    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]*)\\?='
     TXT_RE_QUOTE_NG = TXT_RE_QUOTE.replace('(', '(?:')
     RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
     RE_QUOTED = re.compile(TXT_RE_QUOTE)
@@ -1652,6 +1807,8 @@ class AddressHeaderParser(list):
         if re.search(self.RE_SHOULD_QUOTE, strng):
             enc = quopri.encodestring(strng.encode('utf-8'), False,
                                       header=True)
+            enc = enc.replace('<', '=3C').replace('>', '=3E')
+            enc = enc.replace(',', '=2C')
             return '=?utf-8?Q?%s?=' % enc
         else:
             return '"%s"' % self.escape(strng)
@@ -1712,7 +1869,8 @@ class AddressHeaderParser(list):
             for j in range(0, len(g)):
                 if g[j][:1] == '(' and g[j][-1:] == ')':
                     g[j] = g[j][1:-1]
-            rest = ' '.join([g[j] for j in range(0, len(g)) if j != i
+            rest = ' '.join([g[j] for j in range(0, len(g))
+                             if (j != i) and g[j]
                              ]).replace(' ,', ',').replace(' ;', ';')
             email, keys = g[i], None
             if '#' in email[email.index('@'):]:
@@ -1735,7 +1893,11 @@ class AddressHeaderParser(list):
                     g[i:i+2] = [g[i]+g[i+1]]
 
         # 1st, look for <email@domain.com>
-        for i in range(0, len(g)):
+        #
+        # We search from the end, to make the algorithm stable in the case
+        # that the name part also starts with a < (is that allowed?).
+        #
+        for i in reversed(range(0, len(g))):
             if g[i][:1] == '<' and g[i][-1:] == '>':
                 maybemail = munger(g[i][1:-1])
                 if re.match(self.RE_MAYBE_EMAIL, maybemail):

@@ -1,6 +1,7 @@
 import cStringIO
 import email
 import lxml.html
+import random
 import re
 import rfc822
 import time
@@ -12,9 +13,11 @@ import mailpile.util
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.state import CryptoInfo, SignatureInfo, EncryptionInfo
 from mailpile.crypto.streamer import EncryptingStreamer
+from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.mailutils import decode_header
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser, GetTextPayload
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
@@ -327,7 +330,8 @@ class MailIndex(object):
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
         if tokeys:
-            stat, edata = GnuPG(self.config).encrypt(data, tokeys=tokeys)
+            stat, edata = GnuPG(self.config, event=GetThreadEvent()
+                                ).encrypt(data, tokeys=tokeys)
             if stat == 0:
                 return edata
 
@@ -487,6 +491,16 @@ class MailIndex(object):
 
         >>> hdr(None, None, '"G\\xc3\\xadsli R \\xc3\\x93la"\\n <f@b.is>')
         u'"G\\xedsli R \\xd3la"  <f@b.is>'
+
+        # See https://bugs.python.org/issue1079
+
+        # encoded word enclosed in parenthesis (comment syntax)
+        >>> hdr(None, None, 'rene@example.com (=?utf-8?Q?Ren=C3=A9?=)')
+        u'rene@example.com ( Ren\\xe9 )'
+
+        # no space after encoded word
+        >>> hdr(None, None, '=?UTF-8?Q?Direction?=<dir@example.com>')
+        u'Direction <dir@example.com>'
         """
         if value is None:
             value = msg and msg[name] or ''
@@ -504,10 +518,8 @@ class MailIndex(object):
             try:
                 # decode_header wants an unquoted str (not unicode)
                 value = value.encode('utf-8').replace('"', '')
-                # decode_header gets confused by newlines
-                value = value.replace('\r', ' ').replace('\n', ' ')
                 # Decode!
-                pairs = email.header.decode_header(value)
+                pairs = decode_header(value)
                 value = ' '.join([self.try_decode(t, cs or charset)
                                   for t, cs in pairs])
             except email.errors.HeaderParseError:
@@ -736,6 +748,7 @@ class MailIndex(object):
         if reverse:
             messages.reverse()
         for ui in range(0, len(messages)):
+            play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
                 self.interrupt = None
                 return finito(-1, _('Rescan interrupted: %s'
@@ -1627,11 +1640,19 @@ class MailIndex(object):
 
     def get_msg_at_idx_pos(self, msg_idx):
         try:
-            rv = self.CACHE.get(msg_idx)
-            if rv is None:
-                if len(self.CACHE) > 20000:
-                    self.CACHE = {}
-                rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
+            crv = self.CACHE.get(msg_idx, {})
+            if 'msg_info' in crv:
+                rv = crv['msg_info']
+            else:
+                if len(self.CACHE) > 2500:
+                    try:
+                        for k in random.sample(self.CACHE.keys(), 50):
+                            del self.CACHE[k]
+                    except KeyError:
+                        pass
+                rv = self.l2m(self.INDEX[msg_idx])
+                crv['msg_info'] = rv
+                self.CACHE[msg_idx] = crv
             if len(rv) != self.MSG_FIELDS_V2:
                 raise ValueError()
             return rv
@@ -1749,6 +1770,8 @@ class MailIndex(object):
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
+                    if msg_idx in self.CACHE:
+                        del self.CACHE[msg_idx]
                     added.add(msg_idx)
                     threads.add(msg_info[self.MSG_THREAD_MID].split('/')[0])
                 eids.add(msg_idx)
@@ -1803,6 +1826,8 @@ class MailIndex(object):
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
+                    if msg_idx in self.CACHE:
+                        del self.CACHE[msg_idx]
                     removed.add(msg_idx)
                     threads.add(msg_info[self.MSG_THREAD_MID].split('/')[0])
                 eids.add(msg_idx)
@@ -1927,6 +1952,9 @@ class MailIndex(object):
                 if term.startswith('in:'):
                     rt.extend(self.search_tag(session, term, hits,
                                               recursion=recursion))
+                elif term.startswith('mid:'):
+                    rt.extend([int(t, 36) for t in
+                               term[4:].replace('=', '').split(',')])
                 elif term.startswith('body:'):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
@@ -2099,14 +2127,27 @@ class MailIndex(object):
             results.reverse()
 
         if 'flat' not in how:
-            # This filters away all but the first result in each conversation.
+            all_new = set()
+            if 'freshness' in how:
+                # FIXME: This calculation appears very cachable!
+                new_tags = session.config.get_tags(type='unread')
+                for tag in new_tags:
+                    all_new |= self.TAGS[tag._key]
+
+            # This filters away all but the first (or oldst unread) result in
+            # each conversation.
             session.ui.mark(_('Collapsing conversations...'))
-            seen, r2 = {}, []
-            for i in range(0, len(results)):
-                if self.INDEX_THR[results[i]] not in seen:
-                    r2.append(results[i])
-                    seen[self.INDEX_THR[results[i]]] = True
-            results[:] = r2
+            seen, pi = {}, 0
+            for ri in results:
+                ti = self.INDEX_THR[ri]
+                if ti in seen:
+                    if ti in all_new:
+                        results[seen[ti]] = ri
+                else:
+                    results[pi] = ri
+                    seen[ti] = pi
+                    pi += 1
+            results[pi:] = []
             session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count

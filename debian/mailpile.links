@@ -1,7 +1,0 @@
-# ------------------------------------------------------------------------- #
-# DEBIAN PACKAGE LINKS FILE                                                 #
-#                                                                           #
-# This file symlinks the mailpile command to the user's bin                 #
-# ------------------------------------------------------------------------- #
-
-/opt/mailpile/mailpile/bin/mailpile  /usr/bin/mailpile

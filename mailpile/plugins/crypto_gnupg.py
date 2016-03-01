@@ -16,6 +16,7 @@ from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils import Email, ExtractEmails, ClearParseCache
 from mailpile.mailutils import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
@@ -52,7 +53,7 @@ class ContentTxf(EmailTransform):
         if openpgp_header[0] != 'N' and not sender_keyid:
             # This is a fallback: this shouldn't happen much in normal use
             try:
-                gnupg = gnupg or GnuPG(self.config)
+                gnupg = gnupg or GnuPG(self.config, event=GetThreadEvent())
                 seckeys = dict([(uid["email"], fp) for fp, key
                                 in gnupg.list_secret_keys().iteritems()
                                 if key["capabilities_map"].get("encrypt")
@@ -76,7 +77,7 @@ class ContentTxf(EmailTransform):
 
         if ('attach-pgp-pubkey' in msg and
                 msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
-            gnupg = gnupg or GnuPG(self.config)
+            gnupg = gnupg or GnuPG(self.config, event=GetThreadEvent())
             if sender_keyid:
                 keys = gnupg.list_keys(selectors=[sender_keyid])
             else:

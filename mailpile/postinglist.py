@@ -505,6 +505,7 @@ class OldPostingList(object):
                     and len(data) > 0):
                 output.append(('%s\t%s\n'
                                ) % (word, '\t'.join(['%s' % x for x in data])))
+        play_nice_with_threads(weak=True)
         return ''.join(output)
 
     def _compact(self, prefix, output):

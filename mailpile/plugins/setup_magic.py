@@ -2,6 +2,7 @@ import copy
 import datetime
 import os
 import random
+import socket
 import sys
 from urllib import urlencode
 from urllib2 import urlopen
@@ -10,7 +11,7 @@ from lxml import objectify
 import mailpile.auth
 import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import CONFIG_RULES
+from mailpile.defaults import CONFIG_RULES, APPVER
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -19,6 +20,7 @@ from mailpile.plugins import PLUGINS
 from mailpile.plugins.contacts import AddProfile, ListProfiles
 from mailpile.plugins.contacts import ListProfiles
 from mailpile.plugins.migrate import Migrate
+from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
@@ -294,9 +296,16 @@ class SetupMagic(Command):
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
 
+        # Mark config as up-to-date
+        session.config.version = APPVER
+
         if save_and_update_workers:
             session.config.save()
             session.config.prepare_workers(session, daemons=want_daemons)
+
+        # Enable Tor in the background, if we have it...
+        session.config.slow_worker.add_unique_task(
+            session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))
 
     def setup_command(self, session):
         pass  # Overridden by children
@@ -354,10 +363,6 @@ class TestableWebbable(SetupMagic):
         'testing': 'Yes or No, if testing',
         'advance': 'Yes or No, advance setup flow',
     }
-    TRUTHY = {
-        '0': False, 'no': False, 'fuckno': False, 'false': False,
-        '1': True, 'yes': True, 'hellyeah': True, 'true': True,
-    }
 
     def _advance(self):
         path = self.data.get('_path', [None])[0]
@@ -378,8 +383,7 @@ class TestableWebbable(SetupMagic):
         raise UrlRedirectException(''.join([self.session.config.sys.http_path, url, '?%s' % qs if qs else '']))
 
     def _success(self, message, result=True, advance=False):
-        if (advance or
-                self.TRUTHY.get(self.data.get('advance', ['no'])[0].lower())):
+        if advance or truthy(self.data.get('advance', ['no'])[0], default=False):
             self._advance()
         return SetupMagic._success(self, message, result=result)
 
@@ -391,8 +395,7 @@ class TestableWebbable(SetupMagic):
         testination = self.data.get('testing')
         if testination:
             self.testing = random.randint(0, 1)
-            if testination[0].lower() in self.TRUTHY:
-                self.testing = self.TRUTHY[testination[0].lower()]
+            self.testing = truthy(testination[0], default=self.testing)
             return self.testing
         self.testing = None
         return method(*args, **kwargs)
@@ -559,6 +562,9 @@ class SetupGetEmailSettings(TestableWebbable):
                 result['routes'].sort(key=self._rank)
                 return result
         except (IOError, ValueError, AttributeError):
+            # don't forget to delete this
+            # import traceback
+            # traceback.print_exc()
             return None
 
     def _get_ispdb(self, email, domain):
@@ -568,7 +574,8 @@ class SetupGetEmailSettings(TestableWebbable):
             return None
 
         self._progress(_('Checking ISPDB for %s') % domain)
-        settings = self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
+        settings = self._get_xml_autoconfig(
+            self.ISPDB_URL % {'domain': domain}, email)
         if settings:
             self._log_result(_('Found %s in ISPDB') % domain)
             return settings
@@ -577,16 +584,24 @@ class SetupGetEmailSettings(TestableWebbable):
             domain = '.'.join(dparts[1:])
             # FIXME: Make a longer list of 2nd-level public TLDs to ignore
             if domain not in ('co.uk', 'pagekite.me'):
-                return self._get_xml_autoconfig(self.ISPDB_URL % {'domain': domain}, email)
+                return self._get_xml_autoconfig(
+                    self.ISPDB_URL % {'domain': domain}, email)
         return None
+
+    def _want_anonymity(self):
+        return (self.session.config.sys.proxy.protocol in ('tor', 'tor-risky')
+                and not self.session.config.sys.proxy.fallback)
 
     def _get_mx1(self, domain):
         if domain in ('localhost',):
             return None
 
+        # This would bypasses the connection broker and is not secured or
+        # anonymized, so if the user really wants anonymity we just punt.
+        if self._want_anonymity():
+            return None
+
         import DNS
-        # FIXME: This bypasses the connection broker and is not secured or
-        #        anonymized.
         DNS.DiscoverNameServers()
         try:
             timeout = (self.deadline - time.time()) // 2
@@ -606,7 +621,9 @@ class SetupGetEmailSettings(TestableWebbable):
             for dom in (domain, mx1):
                 if dom:
                     self._progress(_('Checking for autoconfig on %s') % dom)
-                    settings = self._get_xml_autoconfig(url % {'protocol': protocol, 'domain': dom, 'email': email}, email)
+                    settings = self._get_xml_autoconfig(
+                        url % {'protocol': protocol, 'domain': dom, 'email': email},
+                        email)
                     if settings:
                         self._log_result(_('Found autoconfig on %s') % dom)
                         return settings
@@ -633,9 +650,14 @@ class SetupGetEmailSettings(TestableWebbable):
                     name = '%s.%s' % (prefix, domain)
                 else:
                     name = domain
-                # FIXME: This bypasses the connection broker and is
-                #        not secured or anonymized.
-                ip = socket.gethostbyname(name)
+
+                if not self._want_anonymity():
+                    ip = socket.gethostbyname(name)
+                else:
+                    # We just try to connect to everything if anonymity
+                    # was requested - otherwise we'd be leaking over DNS.
+                    ip = '%s-%s' % (prefix, protos)
+
                 if ip:
                     for proto in protos:
                         if ip not in seen_ips[proto]:
@@ -654,13 +676,16 @@ class SetupGetEmailSettings(TestableWebbable):
 
         return service_domains
 
-    def _probe_port(self, host, port):
+    def _probe_port(self, host, port, encrypted=False):
         import socket
-        # FIXME: This is neither secured nor anonymized.
-        with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW,
-                                      ConnBroker.OUTGOING_CLEARTEXT]) as cb:
+        if encrypted:
+            needs = [ConnBroker.OUTGOING_RAW, ConnBroker.OUTGOING_ENCRYPTED]
+        else:
+            needs = [ConnBroker.OUTGOING_RAW, ConnBroker.OUTGOING_CLEARTEXT]
+        with ConnBroker.context(need=needs) as cb:
             try:
-                socket.create_connection((host, port)).close()
+                # FIXME: magic number follows
+                socket.create_connection((host, port), timeout=15).close()
                 return True
             except (AssertionError, IOError, OSError, socket.error):
                 pass
@@ -696,7 +721,7 @@ class SetupGetEmailSettings(TestableWebbable):
             for host in service_domains.get(service, []):
                 if len(result[section]) > 3:
                     break
-                if self._probe_port(host, port):
+                if self._probe_port(host, port, encrypted=('ssl' in proto)):
                     result[section].append({
                         'protocol': proto,
                         'host': str(host),
@@ -727,7 +752,8 @@ class SetupGetEmailSettings(TestableWebbable):
         mx1 = None
 
         if not settings and self.deadline > time.time():
-            #FIXME: actually we want mx1 here but since DNS lack security that would compromise security when ISPDB gives us a result
+            # FIXME: actually we want mx1 here but since DNS lack security that
+            #        would compromise security when ISPDB gives us a result
             settings = self._get_domain_autoconfig(email, domain, None, ssl=True)
 
         if not settings and self.deadline > time.time():
@@ -740,8 +766,12 @@ class SetupGetEmailSettings(TestableWebbable):
 
         if not settings and self.deadline > time.time():
             settings = self._get_domain_autoconfig(email, None, mx1, ssl=True)
+
+        # Try the unencrypted lookups next...
         if not settings and self.deadline > time.time():
             settings = self._get_domain_autoconfig(email, domain, mx1, ssl=False)
+        if not settings and self.deadline > time.time():
+            settings = self._get_domain_autoconfig(email, None, mx1, ssl=False)
 
         if not settings and self.deadline > time.time():
             settings = self._guess_settings(email, domain, mx1)
@@ -885,7 +915,7 @@ class SetupGetEmailSettings(TestableWebbable):
         self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
         self.tracking_id = self.data.get('track-id', [None])[0]
         self.password = self.data.get('password', [None])[0]
-        emails = list(self.args) + self.data.get('email')
+        emails = list(self.args) + self.data.get('email', [])
         if self.password and len(emails) != 1:
             return self._error(_('Can only test settings for one account '
                                  'at a time'))
@@ -1003,382 +1033,7 @@ class SetupPassword(TestableWebbable):
         return self._success(_('Welcome to Mailpile!'), results)
 
 
-class SetupCrypto(TestableWebbable):
-    SYNOPSIS = (None, None, 'setup/crypto', None)
-
-    HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
-        'choose_key': 'Select an existing key to use',
-        'passphrase': 'Specify a passphrase',
-        'passphrase_confirm': 'Confirm the passphrase',
-        'index_encrypted': 'y/n: index encrypted mail?',
-#       'obfuscate_index': 'y/n: obfuscate keywords?',  # Omitted do to DANGER
-        'encrypt_mail': 'y/n: encrypt locally stored mail?',
-        'encrypt_index': 'y/n: encrypt search index?',
-        'encrypt_vcards': 'y/n: encrypt vcards?',
-        'encrypt_events': 'y/n: encrypt event log?',
-        'encrypt_misc': 'y/n: encrypt plugin and misc data?'
-    })
-    TEST_DATA = {}
-
-    def list_secret_keys(self):
-        cutoff = (datetime.date.today() + datetime.timedelta(days=365)
-                  ).strftime("%Y-%m-%d")
-        keylist = {}
-        for key, details in self._gnupg().list_secret_keys().iteritems():
-            # Ignore (soon to be) revoked/expired/disabled keys.
-            revoked = details.get('revocation_date')
-            expired = details.get('expiration_date')
-            if (details.get('disabled') or
-                    (revoked and revoked <= cutoff) or
-                    (expired and expired <= cutoff)):
-                continue
-
-            # Ignore keys that cannot both encrypt and sign
-            caps = details["capabilities_map"]
-            if not caps["encrypt"] or not caps["sign"]:
-                continue
-
-            keylist[key] = details
-        return keylist
-
-    def gpg_key_ready(self, gpg_keygen):
-        if not gpg_keygen.failed:
-            self.session.config.prefs.gpg_recipient = gpg_keygen.generated_key
-            self.make_master_key()
-            self._background_save(config=True)
-            self.save_profiles_to_key()
-
-    def save_profiles_to_key(self, key_id=None, add_all=False, now=False,
-                                   profiles=None):
-        if key_id is None:
-            if (Setup.KEY_CREATING_THREAD and
-                    not Setup.KEY_CREATING_THREAD.failed):
-                key_id = Setup.KEY_CREATING_THREAD.generated_key
-                add_all = True
-
-        if not add_all:
-            self.session.ui.warning('FIXME: Not updating GPG key!')
-            return
-
-        if key_id is not None:
-            uids = []
-            data = ListProfiles(self.session).run().result
-            for profile in data['profiles']:
-                uids.append({
-                    'name': profile["fn"],
-                    'email': profile["email"][0]["email"],
-                    'comment': profile.get('note', '')
-                })
-            if not uids:
-                return
-
-            editor = GnuPGKeyEditor(key_id, set_uids=uids,
-                                    sps=self.session.config.passphrases['DEFAULT'],
-                                    deletes=max(10, 2*len(uids)))
-
-            def start_editor(*unused_args):
-                with Setup.KEY_WORKER_LOCK:
-                    Setup.KEY_EDITING_THREAD = editor
-                    editor.start()
-
-            with Setup.KEY_WORKER_LOCK:
-                 if now:
-                     start_editor()
-                 elif Setup.KEY_EDITING_THREAD is not None:
-                     Setup.KEY_EDITING_THREAD.on_complete('edit keys',
-                                                          start_editor)
-                 elif Setup.KEY_CREATING_THREAD is not None:
-                     Setup.KEY_CREATING_THREAD.on_complete('edit keys',
-                                                           start_editor)
-                 else:
-                     start_editor()
-
-    def setup_command(self, session):
-        changed = authed = False
-        results = {
-            'secret_keys': self.list_secret_keys(),
-        }
-        error_info = None
-
-        if self.data.get('_method') == 'POST' or self._testing():
-
-            # 1st, are we choosing or creating a new key?
-            choose_key = self.data.get('choose_key', [''])[0]
-            if choose_key and not error_info:
-                if (choose_key not in results['secret_keys'] and
-                        choose_key != '!CREATE'):
-                    error_info = (_('Invalid key'), {
-                        'invalid_key': True,
-                        'chosen_key': choose_key
-                    })
-
-            # 2nd, check authentication...
-            #
-            # FIXME: Creating a new key will allow a malicious actor to
-            #        bypass authentication and change settings.
-            #
-            try:
-                passphrase = self.data.get('passphrase', [''])[0]
-                passphrase2 = self.data.get('passphrase_confirm', [''])[0]
-                chosen_key = ((not error_info) and choose_key
-                              ) or session.config.prefs.gpg_recipient
-
-                if not error_info:
-                    assert(passphrase == passphrase2)
-                    if chosen_key == '!CREATE':
-                        assert(passphrase != '')
-                        sps = SecurePassphraseStorage(passphrase)
-                    elif chosen_key:
-                        sps = mailpile.auth.VerifyAndStorePassphrase(
-                            session.config,
-                            passphrase=passphrase,
-                            key=chosen_key)
-                    else:
-                        sps = mailpile.auth.VerifyAndStorePassphrase(
-                            session.config, passphrase=passphrase)
-                    if not chosen_key:
-                        choose_key = '!CREATE'
-                    results['updated_passphrase'] = True
-                    session.config.passphrases['DEFAULT'].copy(sps)
-                    mailpile.auth.SetLoggedIn(self)
-            except AssertionError:
-                error_info = (_('Invalid passphrase'), {
-                    'invalid_passphrase': True,
-                    'chosen_key': session.config.prefs.gpg_recipient
-                })
-
-            # 3rd, if necessary master key and/or GPG key
-            with BLOCK_HTTPD_LOCK, Idle_HTTPD():
-                if choose_key and not error_info:
-                    session.config.prefs.gpg_recipient = choose_key
-                    # FIXME: This should probably only happen if the GPG
-                    #        key was successfully created.
-                    self.make_master_key()
-                    changed = True
-
-                with Setup.KEY_WORKER_LOCK:
-                    if ((not error_info) and
-                            (session.config.prefs.gpg_recipient
-                             == '!CREATE') and
-                            (Setup.KEY_CREATING_THREAD is None or
-                             Setup.KEY_CREATING_THREAD.failed)):
-                        gk = GnuPGKeyGenerator(
-                            sps=session.config.passphrases['DEFAULT'],
-                            on_complete=('notify',
-                                         lambda: self.gpg_key_ready(gk)))
-                        Setup.KEY_CREATING_THREAD = gk
-                        Setup.KEY_CREATING_THREAD.start()
-
-            # Finally we update misc. settings
-            for key in self.HTTP_POST_VARS.keys():
-                # FIXME: This should probably only happen if the GPG
-                #        key was successfully created.
-
-                # Continue iff all is well...
-                if error_info:
-                    break
-                if key in (['choose_key', 'passphrase', 'passphrase_confirm'] +
-                           TestableWebbable.HTTP_POST_VARS.keys()):
-                    continue
-                try:
-                    val = self.data.get(key, [''])[0]
-                    if val:
-                        session.config.prefs[key] = self.TRUTHY[val.lower()]
-                        changed = True
-                except (ValueError, KeyError):
-                    error_info = (_('Invalid preference'), {
-                        'invalid_setting': True,
-                        'variable': key
-                    })
-
-        results.update({
-            'creating_key': (Setup.KEY_CREATING_THREAD is not None and
-                             Setup.KEY_CREATING_THREAD.running),
-            'creating_failed': (Setup.KEY_CREATING_THREAD is not None and
-                                Setup.KEY_CREATING_THREAD.failed),
-            'chosen_key': session.config.prefs.gpg_recipient,
-            'prefs': {
-                'index_encrypted': session.config.prefs.index_encrypted,
-                'obfuscate_index': session.config.prefs.obfuscate_index,
-                'encrypt_mail': session.config.prefs.encrypt_mail,
-                'encrypt_index': session.config.prefs.encrypt_index,
-                'encrypt_vcards': session.config.prefs.encrypt_vcards,
-                'encrypt_events': session.config.prefs.encrypt_events,
-                'encrypt_misc': session.config.prefs.encrypt_misc
-            }
-        })
-
-        if changed:
-            self._background_save(config=True)
-
-        if error_info:
-            return self._error(error_info[0],
-                               info=error_info[1], result=results)
-        elif changed:
-            return self._success(_('Updated crypto preferences'), results)
-        else:
-            return self._success(_('Configure crypto preferences'), results)
-
-
-class SetupProfiles(SetupCrypto):
-    SYNOPSIS = (None, None, 'setup/profiles', None)
-
-    HTTP_AUTH_REQUIRED = True
-    HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-    })
-    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
-        'email': 'Create a profile for this e-mail address',
-        'name': 'Name associated with this e-mail',
-        'note': 'Profile note',
-        'pass': 'Password for remote accounts',
-        'route_id': 'Route ID for sending mail',
-    })
-    TEST_DATA = {}
-
-    # This is where we cache the passwords we are given, for use later.
-    # This is deliberately made a singleton on the class.
-    PASSWORD_CACHE = {}
-
-    def _auto_configurable(self, email):
-        # FIXME: Actually look things up, this is super lame
-        return email.endswith('@gmail.com')
-
-    def get_profiles(self, secret_keys=None):
-        data = ListProfiles(self.session).run().result
-        profiles = {}
-        for rid, ofs in data["rids"].iteritems():
-            profile = data["profiles"][ofs]
-            email = profile["email"][0]["email"]
-            name = profile["fn"]
-            note = profile.get('note', '')
-            profiles[rid] = {
-                "name": name,
-                "note": note,
-                "pgp_keys": [],  # FIXME
-                "email": email,
-                "route_id": profile.get('x-mailpile-profile-route', ''),
-                "photo": profile.get('photo', [{}])[0].get('photo', ''),
-                "auto_configurable": self._auto_configurable(email)
-            }
-        for key, info in (secret_keys or {}).iteritems():
-            for uid in info['uids']:
-                email = uid.get('email')
-                if email in profiles:
-                    profiles[email]["pgp_keys"].append(key)
-        return profiles
-
-    def discover_new_email_addresses(self, profiles):
-        addresses = {}
-        existing = set([p['email'] for p in profiles.values()])
-        for key, info in self.list_secret_keys().iteritems():
-            for uid in info['uids']:
-                email = uid.get('email')
-                note = uid.get('comment')
-                if email:
-                    if email in existing:
-                        continue
-                    if email not in addresses:
-                        addresses[email] = {'pgp_keys': [],
-                                            'name': '', 'note': ''}
-                    ai = addresses[email]
-                    name = uid.get('name')
-                    ai['name'] = name if name else ai['name']
-                    ai['note'] = note if note else ai['note']
-                    ai['pgp_keys'].append(key)
-
-        # FIXME: Scan Thunderbird and MacMail for e-mails, other apps...
-
-        return addresses
-
-    def auto_create_profiles(self):
-        new_emails = self.discover_new_email_addresses(self.get_profiles())
-        for email, info in new_emails.iteritems():
-            AddProfile(self.session, data={
-                '_method': 'POST',
-                'email': [email],
-                'note': [info["note"]],
-                'name': [info['name']]
-            }).run()
-
-    def _result(self):
-        profiles = self.get_profiles()
-        return {
-            'new_emails': self.discover_new_email_addresses(profiles),
-            'profiles': profiles,
-            'routes': self.session.config.routes,
-            'default_email': self.session.config.prefs.default_email
-        }
-
-    def setup_command(self, session):
-        changed = False
-        if self.data.get('_method') == 'POST' or self._testing():
-            name, email, note, pwd = (self.data.get(k, [None])[0] for k in
-                                      ('name', 'email', 'note', 'pass'))
-            if email:
-                rv = AddProfile(session, data=self.data).run()
-                if rv.status == 'success':
-                    #
-                    # FIXME: We need to fire off a background process to
-                    #        try and auto-discover routes and sources.
-                    #
-                    if not session.config.prefs.default_email:
-                        session.config.prefs.default_email = email
-                        changed = True
-                    self.save_profiles_to_key()
-                else:
-                    return self._error(_('Failed to add profile'),
-                                       info=rv.error_info,
-                                       result=self._result())
-            if email and pwd:
-                sps = SecurePassphraseStorage(pwd)
-                SetupProfiles.PASSWORD_CACHE[email] = sps
-
-            result = self._result()
-            if not result['default_email']:
-                profiles = result['profiles'].values()
-                profiles.sort(key=lambda p: (len(p['pgp_keys']),
-                                             len(p['name'])))
-                e = result['default_email'] = profiles[-1]['email']
-                session.config.prefs.default_email = e
-                changed = True
-        else:
-            result = self._result()
-
-        if changed:
-            self._background_save(config=True)
-
-        return self._success(_('Your profiles'), result)
-
-
-class SetupConfigureKey(SetupProfiles):
-    SYNOPSIS = (None, None, 'setup/configure_key', None)
-
-    HTTP_AUTH_REQUIRED = True
-    HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-    })
-    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
-    })
-    TEST_DATA = {}
-
-    def _result(self):
-        keylist = self.list_secret_keys()
-        profiles = self.get_profiles(secret_keys=keylist)
-        return {
-            'secret_keys': keylist,
-            'profiles': profiles,
-        }
-
-    def setup_command(self, session):
-
-        # FIXME!
-
-        return self._success(_('Configuring a key'), self._result())
-
-
-class SetupTestRoute(SetupProfiles):
+class SetupTestRoute(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/test_route', None)
 
     HTTP_AUTH_REQUIRED = True
@@ -1444,6 +1099,64 @@ class SetupTestRoute(SetupProfiles):
                            result=route, info=error_info)
 
 
+class SetupTor(TestableWebbable):
+    """Check for Tor and auto-configure if possible."""
+    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto]")
+    HTTP_CALLABLE = ('POST',)
+
+    @classmethod
+    def autoconfig(cls, session):
+        cls(session, arg=['--auto']).run()
+
+    def auto_configure_tor(self, session, hostport=None):
+        need_raw = [ConnBroker.OUTGOING_RAW]
+        hostport = hostport or ('127.0.0.1', 9050)
+        try:
+            with ConnBroker.context(need=need_raw) as context:
+                tor = socket.create_connection(hostport, timeout=10)
+        except IOError:
+            return  _('Failed to connect to Tor on %s:%s. Is it installed?'
+                      ) % hostport
+
+        # If that succeeded, we might have Tor!
+        old_proto = session.config.sys.proxy.protocol
+        session.config.sys.proxy.protocol = 'tor'
+        session.config.sys.proxy.host = hostport[0]
+        session.config.sys.proxy.port = hostport[1]
+        session.config.sys.proxy.fallback = True
+
+        # Configure connection broker, revert settings while we test
+        ConnBroker.configure()
+        session.config.sys.proxy.protocol = old_proto
+
+        # Test it...
+        need_tor = [ConnBroker.OUTGOING_HTTPS]
+        try:
+            with ConnBroker.context(need=need_tor) as context:
+                motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
+                               data=None, timeout=10).read()
+                assert(motd.strip().endswith('}'))
+            session.config.sys.proxy.protocol = 'tor'
+            message = _('Successfully configured and enabled Tor!')
+        except (IOError, AssertionError):
+            ConnBroker.configure()
+            message = _('Failed to configure Tor on %s:%s. Is the network down?'
+                        ) % hostport
+        return message
+
+    def setup_command(self, session):
+        if ("--auto" not in self.args
+                or session.config.sys.proxy.protocol == 'unknown'):
+            message = self.auto_configure_tor(session)
+        else:
+            message = _('Proxy settings have already been configured.')
+
+        if session.config.sys.proxy.protocol == 'tor':
+            return self._success(message, result=session.config.sys.proxy)
+        else:
+            return self._error(message, result=session.config.sys.proxy)
+
+
 class Setup(SetupWelcome):
     """Enter setup flow"""
     SYNOPSIS = (None, 'setup', 'setup', '')
@@ -1460,41 +1173,13 @@ class Setup(SetupWelcome):
     KEY_EDITING_THREAD = None
 
     @classmethod
-    def _check_profiles(self, config):
-        session = Session(config)
-        session.ui = SilentInteraction(config)
-        session.ui.block()
-        data = ListProfiles(session).run().result
-        okay = routes = bad = 0
-        for rid, ofs in data["rids"].iteritems():
-            profile = data["profiles"][ofs]
-            if profile.get('email', None):
-                okay += 1
-                route_id = profile.get('x-mailpile-profile-route', '')
-                if route_id:
-                    if route_id in config.routes:
-                        routes += 1
-                    else:
-                        bad += 1
-            else:
-                bad += 1
-        return (routes > 0) and (okay > 0) and (bad == 0)
-
-    @classmethod
     def _CHECKPOINTS(self, config):
         return [
             # Stage 0: Welcome: Choose app language
             ('language', lambda: config.prefs.language, SetupWelcome),
 
             # Stage 1: Basic security - a password
-            ('security', lambda: config.master_key, SetupPassword),
-
-            # Stage 2-5: Legacy stuff, fake it
-            ('crypto',   lambda: True, SetupCrypto),
-            ('profiles', lambda: True, Setup),
-            ('routes',   lambda: True, Setup),
-            ('sources',  lambda: True, Setup),
-            ('complete', lambda: False, ListProfiles),
+            ('security', lambda: config.master_key, SetupPassword)
         ]
 
     @classmethod
@@ -1569,8 +1254,6 @@ _plugins.register_commands(SetupMagic,
                            SetupGetEmailSettings,
                            SetupWelcome,
                            SetupPassword,
-                           SetupCrypto,
-                           SetupProfiles,
-                           SetupConfigureKey,
                            SetupTestRoute,
+                           SetupTor,
                            Setup)

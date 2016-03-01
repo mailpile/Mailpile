@@ -1,12 +1,11 @@
 #coding:utf-8
 import random
 import time
-from urllib2 import urlopen
 
 import mailpile.util
-from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.plugins import PluginManager
+from mailpile.security import secure_urlget
 from mailpile.vcard import VCardImporter, MailpileVCard, VCardLine
 
 
@@ -36,7 +35,8 @@ class LibravatarImporter(VCardImporter):
         'rating': [_('Preferred thumbnail rating'),
                    ['g', 'pg', 'r', 'x'], 'g'],
         'size': [_('Preferred thumbnail size'), 'int', 80],
-        'url': [_('Libravatar server URL'), 'url', 'https://cdn.libravatar.com'],
+        'url': [_('Libravatar server URL'), 'url',
+                'https://seccdn.libravatar.org'],
     }
     VCARD_TS = 'x-libravatar-ts'
     VCARD_IMG = ''
@@ -65,12 +65,10 @@ class LibravatarImporter(VCardImporter):
         return want
 
     def _get(self, url):
-        conn_need, conn_reject = [ConnBroker.OUTGOING_HTTP], []
-        if self.config.anonymous:
-            conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
-        with ConnBroker.context(need=conn_need, reject=conn_reject):
-            self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url, data=None, timeout=3).read()
+        self.session.ui.mark('Getting: %s' % url)
+        return secure_urlget(self.session, url,
+                             timeout=5,
+                             anonymous=self.config.anonymous)
 
     def check_libravatar(self, vcard, email):
         img = vcf = json = None

@@ -2,13 +2,12 @@
 import os
 import random
 import time
-from urllib2 import urlopen
 
 import mailpile.util
-from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.security import secure_urlget
 from mailpile.util import *
 from mailpile.vcard import *
 
@@ -67,12 +66,10 @@ class GravatarImporter(VCardImporter):
         return want
 
     def _get(self, url):
-        conn_need, conn_reject = [ConnBroker.OUTGOING_HTTP], []
-        if self.config.anonymous:
-            conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
-        with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
-            self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url, data=None, timeout=3).read()
+        self.session.ui.mark('Getting: %s' % url)
+        return secure_urlget(self.session, url,
+                             timeout=5,
+                             anonymous=self.config.anonymous)
 
     def check_gravatar(self, vcard, email):
         img = vcf = json = None

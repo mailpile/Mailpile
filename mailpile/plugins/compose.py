@@ -383,7 +383,9 @@ class RelativeCompose(Compose):
     @staticmethod
     def prefix_subject(subject, prefix, prefix_regex):
         """Avoids stacking several consecutive Fw: Re: Re: Re:"""
-        if prefix_regex.match(subject):
+        if subject is None:
+            return prefix
+        elif prefix_regex.match(subject):
             return subject
         else:
             return '%s %s' % (prefix, subject)
@@ -915,7 +917,8 @@ class Sendit(CompositionCommand):
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
-                to = email.get_msg().get('x-mp-internal-rcpts').split(',')[0]
+                to = email.get_msg().get('x-mp-internal-rcpts',
+                                         '').split(',')[0]
                 if to:
                     message = _('Could not send mail to %s') % to
                 else:

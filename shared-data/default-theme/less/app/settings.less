@@ -1,0 +1,106 @@
+/* Mailpile - Settings */
+
+  div.settings-page,
+  .settings-page .setting-group,
+  .settings-page .setting-group .settings {
+    max-width: 80em;
+    position: relative;
+  }
+
+  .settings-page .setting-group .settings {
+    max-width: 50%;
+  }
+
+  .settings-page .setting-group {
+    border-top: 1px solid @grayMid;
+    margin: 15px 0;
+    padding: 10px 0;
+  }
+
+  .settings-page .notices {
+    font-size: 20px;
+    line-height: 24px;
+    padding: 0 0 6px 30px;
+  }
+
+  .settings-page h3 {
+    margin: 0 0 15px 0;
+    padding: 5px 0 0 0;
+    width: 50%;
+    float: left;
+  }
+
+  .settings-page p {
+    margin: 0 0 0.5em 0;
+    padding: 0;
+  }
+
+  .settings-page h4,
+  .settings-page h5,
+  .settings-page h6 {
+    margin: 1.25em 0 0.5em 0;
+    padding: 0;
+  }
+
+  .settings-page div.explanation {
+    margin: 0 25px 0 0;
+    width: 40%;
+    float: right;
+    opacity: 0.55;
+  }
+  .settings-page div.explanation p {
+    position: relative;
+    padding: 0 0 6px 30px;
+    margin:  5px 0 0 0;
+  }
+  .settings-page div.notices span.icon,
+  .settings-page div.explanation span.icon {
+    position: relative;
+    font-size: 24px;
+    line-height: 24px;
+  }
+  .settings-page span.icon-checkmark { color: @blue; }
+  .settings-page .what span.icon { color: @green; }
+  .settings-page .risks span.icon { color: @orangeRed; }
+  .settings-page .actions span.icon { color: @brown; }
+
+  .settings-page span.icon.default {
+    color: @blue;
+    font-size: 12px;
+    line-height: 12px;
+    position: relative;
+    top: -2px;
+  }
+
+  .settings-page div.explanation p span.icon {
+    position: absolute;
+    left: 0;
+  }
+
+  .settings-page div.settings,
+  .settings-page p.settings {
+    display: block;
+    padding: 10px 25px;
+    line-height: 20px;
+    clear: left;
+  }
+
+  .settings-page ul.notes {
+    list-style-type: circle;
+    font-size: 13px;
+  }
+
+  .settings-page .subsection,
+  .settings-page ul.notes {
+    display: block;
+    padding: 0;
+    margin: 0 0 0 2em;
+  }
+
+/* Event Log specifics */
+
+  .settings-page p.event-summary span {margin-right: 1em;}
+  .settings-page p.event-summary .event-source {
+    float: right; font-size: 11px; color: #777;
+  }
+

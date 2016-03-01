@@ -1,0 +1,31 @@
+{%- if config.web.email_html_hint and
+      (message.html_parts|length > 0) and
+      (from.get('html-policy', 'none') == 'none')
+-%}
+    <div class="message-app-note email-html-hint"><p>
+      <span class="icon icon-news"></span>
+      {{_("This message has HTML formatted content.")}}
+      {{_("For security reasons, Mailpile will by default only display plain text.")}}
+      {{_("You can change display modes by clicking the icons to the right of the Subject line.")}}
+    </p><p>
+      <a data-variable="web.email_html_hint" data-remove="email-html-hint"
+         class="ok-got-it">
+        <span class="icon-checkmark"></span> {{_("OK, got it")}}
+      </a>
+    </p></div>
+{%- elif config.web.email_crypto_hint and False %}
+{%- elif config.web.email_tag_hint and False %}
+{%- elif config.web.email_reply_hint %}
+    <div class="message-app-note email-reply-hint"><p>
+      <span class="icon icon-reply"></span>
+      {{_("Usually when you reply to a message, all participants in the conversation will be sent a copy of your reply.")}}
+    </p><p>
+      {{_("If you want to send a private reply, only to the author of this message, mouse over their name and click the reply icon that appears.")}}
+    </p><p>
+      <a data-variable="web.email_reply_hint" data-remove="email-reply-hint"
+         class="ok-got-it">
+        <span class="icon-checkmark"></span> {{_("OK, got it")}}
+      </a>
+    </p></div>
+
+{%- endif %}

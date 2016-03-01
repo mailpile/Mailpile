@@ -1,0 +1,5 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block title %}{{_("Changed Settings")}}{% endblock %}
+{%- block content %}
+{{ mailpile('http/redirect', ui_return) }}
+{%- endblock %}

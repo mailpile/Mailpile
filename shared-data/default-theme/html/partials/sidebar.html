@@ -1,0 +1,37 @@
+<!-- FIXME: make "density" class be pulled from user profile setting -->
+<div id="sidebar" class="{{ config.web.display_density }}"><div id="sidebar-wrapper">
+  <div id="sidebar-scroll-area" class="scroll-viewport">
+    <div id="sidebar-lists">
+      {{ mailpile_render("sidebar.html!minimal", "tags", "mode=tree")[1]|safe }}
+      <nav id='sidebar-user-contacts'></nav>
+    </div>
+  </div>
+  <nav id="sidebar-bottom">
+    <div id="sidebar-untag-dropzone"
+         class="sidebar-untag-dropzone sidebar-tag sidebar-tags-draggable hide"
+         style="color: {{theme_settings().colors['02-gray']}}; text-align: center;">
+      <a class="sidebar-untag" data-tid="">
+        <span class="icon icon-circle-x"></span>
+        <span class="name">{{_("Remove tags")}}</span>
+      </a>
+    </div>
+    <hr class="sidebar-untag-dropzone hide">
+{%- if is_dev_version() %}
+    <a style='float: right' href="{{ U('/contacts/') }}" id="button-sidebar-people" title="{{_("Contacts")}}">
+      <span class="icon icon-groups"></span>
+    </a>
+{%- endif %}
+    <a style='float: left' class="auto-modal auto-modal-reload"
+       data-icon="icon-tag"
+       href="{{ U('/tags/add/') }}" title="{{_("Add Tag")}}">
+      <span class="icon-plus"></span>
+      <span class="text">{{_("Add")}}</span>
+    </a>
+    <a style='float: left' href="#" id="button-sidebar-organize"
+       data-message="{{_("Done")}}" data-state="initial"
+       title="{{_("Edit Sidebar")}}">
+      <span class="icon icon-settings"></span>
+      <span class="text">{{_("Organize")}}</span>
+    </a>
+  </nav>
+</div></div>

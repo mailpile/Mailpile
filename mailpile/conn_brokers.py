@@ -29,10 +29,12 @@
 #    - Implement HTTP/SMTP/IMAP/POP3 TLS upgrade-brokers
 #    - Prevent unbrokered socket.socket connections
 #
+import datetime
 import socket
 import ssl
 import sys
 import threading
+import time
 import traceback
 
 # Import SOCKS proxy support...
@@ -44,11 +46,40 @@ except ImportError:
     except ImportError:
         socks = None
 
+from mailpile.i18n import gettext
+from mailpile.i18n import ngettext as _n
+from mailpile.commands import Command
+from mailpile.util import dict_merge
+
+
+_ = lambda s: s
+
+KNOWN_ONION_MAP = {
+    'www.mailpile.is': 'clgs64523yi2bkhz.onion'
+}
+
 
 org_cconn = socket.create_connection
 org_sslwrap = ssl.wrap_socket
+try:
+    org_context_wrap_socket = ssl.SSLContext.wrap_socket
+    have_ssl_context = True
+except AttributeError:
+    org_context_wrap_socket = None
+    have_ssl_context = False
 
 monkey_lock = threading.RLock()
+
+
+def _explain_encryption(sock):
+    try:
+        algo, proto, bits = sock.cipher()
+        return _('%(tls_version)s (%(bits)s bit %(algorithm)s)') % {
+            'bits': bits,
+            'tls_version': proto,
+            'algorithm': algo}
+    except (ValueError, AttributeError):
+        return _('no encryption')
 
 
 class Capability(object):
@@ -67,6 +98,9 @@ class Capability(object):
     OUTGOING_POP3 = 'o:pop3'    # .. such as enabling STARTTLS or upgrading
     OUTGOING_HTTP = 'o:http'    # .. HTTP to HTTPS.
     OUTGOING_HTTPS = 'o:https'  # ..
+    OUTGOING_SMTPS = 'o:smtps'  # ..
+    OUTGOING_POP3S = 'o:pop3s'  # ..
+    OUTGOING_IMAPS = 'o:imaps'  # ..
 
     INCOMING_RAW = 20
     INCOMING_LOCALNET = 21
@@ -81,10 +115,13 @@ class Capability(object):
     ALL_OUTGOING = set([OUTGOING_RAW, OUTGOING_ENCRYPTED, OUTGOING_CLEARTEXT,
                         OUTGOING_TRACKABLE,
                         OUTGOING_SMTP, OUTGOING_IMAP, OUTGOING_POP3,
+                        OUTGOING_SMTPS, OUTGOING_IMAPS, OUTGOING_POP3S,
                         OUTGOING_HTTP, OUTGOING_HTTPS])
 
     ALL_OUTGOING_ENCRYPTED = set([OUTGOING_RAW, OUTGOING_TRACKABLE,
-                                  OUTGOING_ENCRYPTED, OUTGOING_HTTPS])
+                                  OUTGOING_ENCRYPTED,
+                                  OUTGOING_HTTPS, OUTGOING_SMTPS,
+                                  OUTGOING_POP3S, OUTGOING_IMAPS])
 
     ALL_INCOMING = set([INCOMING_RAW, INCOMING_LOCALNET, INCOMING_INTERNET,
                         INCOMING_DARKNET, INCOMING_SMTP, INCOMING_IMAP,
@@ -135,7 +172,32 @@ class BrokeredContext(object):
         self._monkeys = []
         self._reset()
 
+    def __str__(self):
+        hostport = '%s:%s' % (self.address or ('unknown', 'none'))
+        if self.error:
+            return _('Failed to connect to %s: %s') % (hostport, self.error)
+
+        if self.anonymity:
+            network = self.anonymity
+        elif self.on_darknet:
+            network = self.on_darknet
+        elif self.on_localnet:
+            network = _('the local network')
+        elif self.on_internet:
+            network = _('the Internet')
+        else:
+            return _('Attempting to connect to %(host)s') % {'host': hostport}
+
+        return _('Connected to %(host)s over %(network)s with %(encryption)s.'
+                 ) % {
+            'network': network,
+            'host': hostport,
+            'encryption': self.encryption or _('no encryption')
+        }
+
     def _reset(self):
+        self.error = None
+        self.address = None
         self.encryption = None
         self.anonymity = None
         self.on_internet = False
@@ -269,33 +331,43 @@ class TcpConnectionBroker(BaseConnectionBroker):
         (Capability.ALL_OUTGOING) |
         (Capability.ALL_INCOMING - set([Capability.INCOMING_INTERNET]))
     )
-
+    FIXED_NO_PROXY_LIST = ['localhost', '127.0.0.1', '::1']
     DEBUG_FMT = '%s: Raw TCP conn to: %s'
 
     def configure(self):
         BaseConnectionBroker.configure(self)
         # FIXME: If our config indicates we have a public IP, add the
         #        INCOMING_INTERNET capability.
-        # FIXME: If our coonfig indicates that the user does not care
-        #        about anonymity at all, remove OUTGOING_TRACKABLE.
-        if (self.config().sys.proxy.protocol != 'none' and
-                not self.config().sys.proxy.fallback):
-            self.supports = []
 
     def _describe(self, context, conn):
         context.encryption = None
         context.is_internet = True
         return conn
 
+    def _in_no_proxy_list(self, address):
+        no_proxy = (self.FIXED_NO_PROXY_LIST +
+                    [a.lower().strip()
+                     for a in self.config().sys.proxy.no_proxy.split(',')])
+        return (address[0].lower() in no_proxy)
+
     def _avoid(self, address):
+        if (self.config().sys.proxy.protocol not in  ('none', 'unknown')
+                and not self.config().sys.proxy.fallback
+                and not self._in_no_proxy_list(address)):
+            raise CapabilityFailure('Proxy fallback is disabled')
+
+    def _broker_avoid(self, address):
         if address[0].endswith('.onion'):
             raise CapabilityFailure('Cannot connect to .onion addresses')
 
     def _conn(self, address, *args, **kwargs):
-        return org_cconn(address, *args, **kwargs)
+        clean_kwargs = dict((k, v) for k, v in kwargs.iteritems()
+                            if not k.startswith('_'))
+        return org_cconn(address, *args, **clean_kwargs)
 
     def _create_connection(self, context, address, *args, **kwargs):
         self._avoid(address)
+        self._broker_avoid(address)
         if self._debug is not None:
             self._debug(self.DEBUG_FMT % (self, address))
         return self._conn(address, *args, **kwargs)
@@ -308,8 +380,16 @@ class SocksConnBroker(TcpConnectionBroker):
     """
     SUPPORTS = []
     CONFIGURED = Capability.ALL_OUTGOING
-    DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
     PROXY_TYPES = ('socks5', 'http', 'socks4')
+    DEFAULT_PROTO = 'socks5'
+
+    DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
+    IOERROR_FMT = _('Socks error, %s')
+    IOERROR_MSG = {
+        'timed out': _('timed out'),
+        'Host unreachable': _('host unreachable'),
+        'Connection refused': _('connection refused')
+    }
 
     def __init__(self, *args, **kwargs):
         TcpConnectionBroker.__init__(self, *args, **kwargs)
@@ -325,31 +405,49 @@ class SocksConnBroker(TcpConnectionBroker):
                 'socks5': socks.PROXY_TYPE_SOCKS5,
                 'socks4': socks.PROXY_TYPE_SOCKS4,
                 'http': socks.PROXY_TYPE_HTTP,
-                'tor': socks.PROXY_TYPE_SOCKS5  # For TorConnBrokerk
+                'tor': socks.PROXY_TYPE_SOCKS5,       # For TorConnBroker
+                'tor-risky': socks.PROXY_TYPE_SOCKS5  # For TorConnBroker
             }
         else:
             self.proxy_config = None
             self.supports = []
 
-    def _conn(self, address, timeout=None, source_address=None):
+    def _auth_args(self):
+        return {
+            'username': self.proxy_config.username or None,
+            'password': self.proxy_config.username or None
+        }
+
+    def _avoid(self, address):
+        if self._in_no_proxy_list(address):
+            raise CapabilityFailure('Proxy to %s:%s disabled by policy'
+                                    ) % address
+
+    def _fix_address_tuple(self, address):
+        return (str(address[0]), address[1])
+
+    def _conn(self, address, timeout=None, source_address=None, **kwargs):
         sock = socks.socksocket()
-        sock.setproxy(proxytype=self.typemap[self.proxy_config.protocol],
+        proxytype = self.typemap.get(self.proxy_config.protocol,
+                                     self.typemap[self.DEFAULT_PROTO])
+        sock.setproxy(proxytype=proxytype,
                       addr=self.proxy_config.host,
                       port=self.proxy_config.port,
                       rdns=True,
-                      username=self.proxy_config.username or None,
-                      password=self.proxy_config.password or None)
+                      **self._auth_args())
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
             sock.settimeout(float(timeout))
         if source_address:
-            raise IOError('Cannot bind source address')
+            raise CapabilityFailure('Cannot bind source address')
         try:
-            address = (str(address[0]), address[1])
+            address = self._fix_address_tuple(address)
             sock.connect(address)
-        except socks.ProxyError:
+        except socks.ProxyError as e:
             if self._debug is not None:
                 self._debug(traceback.format_exc())
-            raise IOError('Proxy failed for %s:%s' % address)
+            code, msg = e.message
+            raise IOError(_(self.IOERROR_FMT
+                            ) % (_(self.IOERROR_MSG.get(msg, msg)), ))
         return sock
 
 
@@ -359,33 +457,76 @@ class TorConnBroker(SocksConnBroker):
 
     This removes the "trackable" capability, so requests that reject it can
     find their way here safely...
+
+    This broker only volunteers to carry encrypted traffic, because Tor
+    exit nodes may be hostile.
     """
     SUPPORTS = []
     CONFIGURED = (Capability.ALL_OUTGOING_ENCRYPTED
                   - set([Capability.OUTGOING_TRACKABLE]))
     REJECTS = None
-    DEBUG_FMT = '%s: Raw Tor conn to: %s'
     PROXY_TYPES = ('tor', )
+    DEFAULT_PROTO = 'tor'
 
-    def _avoid(self, address):
+    DEBUG_FMT = '%s: Raw Tor conn to: %s'
+    IOERROR_FMT = _('Tor error, %s')
+    IOERROR_MSG = dict_merge(SocksConnBroker.IOERROR_MSG, {
+        'bad input': _('connection refused')  # FIXME: Is this right?
+    })
+
+    def _describe(self, context, conn):
+        context.is_darknet = 'Tor'
+        context.anonymity = 'Tor'
+        return conn
+
+    def _auth_args(self):
+        # FIXME: Tor uses the auth information as a signal to change
+        #        circuits. We may have use for this at some point.
+        return {}
+
+    def _fix_address_tuple(self, address):
+        host = str(address[0])
+        return (KNOWN_ONION_MAP.get(host.lower(), host), address[1])
+
+    def _broker_avoid(self, address):
+        # Disable the avoiding of .onion addresses added above
         pass
 
 
-class TorOnionBroker(SocksConnBroker):
+class TorRiskyBroker(TorConnBroker):
+    """
+    This differs from the TorConnBroker in that it will allow "cleartext"
+    traffic to anywhere - this is dangerous, because exit nodes could mess
+    with our traffic.
+    """
+    CONFIGURED = (Capability.ALL_OUTGOING
+                  - set([Capability.OUTGOING_TRACKABLE]))
+    DEBUG_FMT = '%s: Risky Tor conn to: %s'
+    PROXY_TYPES = ('tor-risky', )
+    DEFAULT_PROTO = 'tor-risky'
+
+
+class TorOnionBroker(TorConnBroker):
     """
     This broker offers the same services as the TcpConnBroker, but over Tor.
+
     This removes the "trackable" capability, so requests that reject it can
     find their way here safely...
+
+    This differs from the TorConnBroker in that it will allow "cleartext"
+    traffic, since we trust the traffic never leaves the Tor network and
+    we don't have hostile exits to worry about.
     """
     SUPPORTS = []
     CONFIGURED = (Capability.ALL_OUTGOING
                   - set([Capability.OUTGOING_TRACKABLE]))
     REJECTS = None
-    DEBUG_FMT = '%s: Raw Tor conn to: %s'
-    PROXY_TYPES = ('tor', )
+    DEBUG_FMT = '%s: Tor onion conn to: %s'
+    PROXY_TYPES = ('tor', 'tor-risky')
 
-    def _avoid(self, address):
-        if not address[0].endswith('.onion'):
+    def _broker_avoid(self, address):
+        host = KNOWN_ONION_MAP.get(address[0], address[0])
+        if not host.endswith('.onion'):
             raise CapabilityFailure('Can only connect to .onion addresses')
 
 
@@ -408,6 +549,8 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     def _wrap_ssl(self, conn):
         if self._debug is not None:
             self._debug('%s: Wrapping socket with SSL' % (self, ))
+        # FIXME: We're losing the SNI stuff here, which is super lame.
+        #        We should on Python 2.7.9+ try to fix that somehow.
         return org_sslwrap(conn, None, None, ssl_version=self.SSL_VERSION)
 
     def _create_connection(self, context, address, *args, **kwargs):
@@ -422,15 +565,18 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
         return self._proxy(conn)
 
 
-class AutoHttpsConnBroker(BaseConnectionBrokerProxy):
+class AutoTlsConnBroker(BaseConnectionBrokerProxy):
     """
-    This broker tries to auto-upgrade HTTP connections to HTTPS.
+    This broker tries to auto-upgrade connections to use TLS, or at
+    least do the SSL handshake here so we can record info about it.
     """
-    SUPPORTS = [Capability.OUTGOING_HTTP, Capability.OUTGOING_HTTPS]
+    SUPPORTS = [Capability.OUTGOING_HTTP, Capability.OUTGOING_HTTPS,
+                Capability.OUTGOING_IMAPS, Capability.OUTGOING_SMTPS,
+                Capability.OUTGOING_POP3S]
     WANTS = [Capability.OUTGOING_RAW, Capability.OUTGOING_ENCRYPTED]
 
     def _describe(self, context, conn):
-        context.encryption = conn.cipher()
+        context.encryption = _explain_encryption(conn)
         return conn
 
     def _proxy_address(self, address):
@@ -468,6 +614,7 @@ class MasterBroker(BaseConnectionBroker):
     def __init__(self, *args, **kwargs):
         BaseConnectionBroker.__init__(self, *args, **kwargs)
         self.brokers = []
+        self.history = []
         self._debug = self._debugger
         self.debug_callback = None
 
@@ -486,7 +633,7 @@ class MasterBroker(BaseConnectionBroker):
            - 1000-1999: Content-agnostic raw connections
            - 3000-3999: Secure network layers: VPNs, Tor, I2P, ...
            - 5000-5999: Proxies required to reach the wider Internet
-           - 7000-7999: Protocol enhancments (non-securit related)
+           - 7000-7999: Protocol enhancments (non-security related)
            - 9000-9999: Security-related protocol enhancements
 
         """
@@ -494,20 +641,44 @@ class MasterBroker(BaseConnectionBroker):
         self.brokers.sort()
         self.brokers.reverse()
 
+    def get_fd_context(self, fileno):
+        for t, fd, context in reversed(self.history):
+            if fd == fileno:
+                return context
+        return BrokeredContext()
+
     def create_conn_with_caps(self, address, context, need, reject,
                               *args, **kwargs):
+        history_event = kwargs.get('_history_event')
+        if history_event is None:
+            history_event = [int(time.time()), None, context]
+            self.history = self.history[-50:]
+            self.history.append(history_event)
+            kwargs['_history_event'] = history_event
+        else:
+            history_event[-1] = context
+
+        context.address = address
         et = v = t = None
         for prio, cb in self.brokers:
             try:
                 conn = cb.debug(self._debug).create_conn_with_caps(
                     address, context, need, reject, *args, **kwargs)
                 if conn:
+                    history_event[1] = conn.fileno()
                     return conn
-            except (IOError, NotImplementedError) as e:
+            except (CapabilityFailure, NotImplementedError):
+                # These are internal; we assume they're already logged
+                # for debugging but don't bother the user with them.
+                pass
+            except:
                 et, v, t = sys.exc_info()
         if et is not None:
+            context.error = '%s' % v
             raise et, v, t
-        raise CapabilityFailure('No broker found')
+
+        context.error = _('No connection method found')
+        raise CapabilityFailure(context.error)
 
     def get_urls(self, listening_fd, need=None, reject=None):
         urls = []
@@ -529,11 +700,34 @@ def DisableUnbrokeredConnections():
     socket.create_connection = CreateConnWarning
 
 
+class NetworkHistory(Command):
+    """Show recent network history"""
+    SYNOPSIS = (None, 'logs/network', 'logs/network', None)
+    ORDER = ('Internals', 6)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = False
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if self.result:
+                def fmt(result):
+                    dt = datetime.datetime.fromtimestamp(result[0])
+                    return '%2.2d:%2.2d %s' % (dt.hour, dt.minute, result[-1])
+                return '\n'.join(fmt(r) for r in self.result)
+            return _('No network events recorded')
+
+    def command(self):
+        return self._success(_('Listed recent network events'),
+                             result=Master.history)
+
+
+_ = gettext
+
 if __name__ != "__main__":
     Master = MasterBroker()
     register = Master.register_broker
     register(1000, TcpConnectionBroker)
-    register(9500, AutoHttpsConnBroker)
+    register(9500, AutoTlsConnBroker)
     register(9500, AutoSmtpStartTLSConnBroker)
     register(9500, AutoImapStartTLSConnBroker)
     register(9500, AutoPop3StartTLSConnBroker)
@@ -541,6 +735,7 @@ if __name__ != "__main__":
     if socks is not None:
         register(1500, SocksConnBroker)
         register(3500, TorConnBroker)
+        register(3500, TorRiskyBroker)
         register(3500, TorOnionBroker)
 
     def SslWrapOnlyOnce(sock, *args, **kwargs):
@@ -548,12 +743,29 @@ if __name__ != "__main__":
         Since we like to wrap things our own way, this make ssl.wrap_socket
         into a no-op in the cases where we've alredy wrapped a socket.
         """
-        if isinstance(sock, ssl.SSLSocket):
-            return sock
-        return org_sslwrap(sock, *args, **kwargs)
+        if not isinstance(sock, ssl.SSLSocket):
+            sock  = org_sslwrap(sock, *args, **kwargs)
+            Master.get_fd_context(
+                sock.fileno()).encryption = _explain_encryption(sock)
+        return sock
 
     ssl.wrap_socket = SslWrapOnlyOnce
 
+    if have_ssl_context:
+        # Same again with SSLContext, if we have it.
+
+        def SslContextWrapOnlyOnce(self, sock, *args, **kwargs):
+            if not isinstance(sock, ssl.SSLSocket):
+                sock = org_context_wrap_socket(self, sock, *args, **kwargs)
+                Master.get_fd_context(
+                    sock.fileno()).encryption = _explain_encryption(sock)
+            return sock
+
+        ssl.SSLContext.wrap_socket = SslContextWrapOnlyOnce
+
+    from mailpile.plugins import PluginManager
+    _plugins = PluginManager(builtin=__file__)
+    _plugins.register_commands(NetworkHistory)
 else:
     import doctest
     import sys

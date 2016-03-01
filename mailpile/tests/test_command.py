@@ -29,7 +29,7 @@ class TestCommands(MailPileUnittest):
     def test_unset(self):
         self.mp.unset("prefs.num_results")
         results = self.mp.search("twitter")
-        self.assertEqual(results.result['stats']['count'], 3)
+        self.assertEqual(results.result['stats']['count'], 4)
 
     def test_add(self):
         res = self.mp.add("mailpile/tests/data/tests.mbx")
@@ -70,6 +70,15 @@ class TestCommands(MailPileUnittest):
             u'The encryption policy for these recipients is: best-effort')
         self.assertEqual(res.as_dict()["result"]['crypto-policy'],
                          'best-effort')
+
+    def test_reply_no_subject(self):
+        mid = self.mp.search('from:ohcheeou').result['data']['metadata']\
+                                             .values()[0]['mid']
+        # Just checks it does not crash
+        res = self.mp.reply('ephemeral', '=%s' % mid)
+        self.assertEqual(res.status, 'success')
+        self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
+                         'Re:')
 
     def test_reply_subjects_on_first_msg(self):
         # Subject: Verb. Target. Outcome.'

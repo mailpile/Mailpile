@@ -3,7 +3,6 @@ from urlparse import parse_qs, urlparse
 from urllib import quote, urlencode
 
 from mailpile.commands import Command
-from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -150,6 +149,7 @@ class Authenticate(Command):
                             pass
 
                     session.ui.debug('Good passphrase for %s' % session_id)
+                    self.record_user_activity()
                     return self._success(_('Hello world, welcome!'), result={
                         'authenticated': SetLoggedIn(self, redirect=redirect)
                     })
@@ -230,6 +230,7 @@ class SetPassphrase(Command):
     ORDER = ('Config', 9)
     SPLIT_ARG = True
     IS_INTERACTIVE = True
+    IS_USER_ACTIVITY = True
     CONFIG_REQUIRED = True
     HTTP_AUTH_REQUIRED = True
     HTTP_CALLABLE = ('GET', 'POST')
