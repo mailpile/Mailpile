@@ -227,8 +227,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                              charsets=charsets,
                              depth = depth + 1 )
 
-    elif not part.is_multipart() and disposition.startswith('attachment'):
-        
+    elif disposition.startswith('attachment'):
         # The sender can attach signed/encrypted/key files without following
         # rules for naming or mime type.
         # So - sniff to detect parts that need processing and identify protocol.
@@ -238,7 +237,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
             if kind:
                 break
 
-        if 'encrypted' in kind or 'unencrypted' in kind and 'signature' in kind:
+        if 'encrypted' in kind or 'signature' in kind:
             # Messy! The PGP decrypt operation is also needed for files which
             # are encrypted and signed, and files that are signed only.
             payload = part.get_payload( None, True )
