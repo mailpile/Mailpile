@@ -6,8 +6,12 @@ security related decisions made by the app, in order to facilitate
 review and testing.
 
 """
+import copy
+import ssl
 import time
 
+# Note: Do NOT import mailpile.conn_broker, as our monkey patching
+#       of ssl depends on things happening in the right order. :-/
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
@@ -111,7 +115,7 @@ def forbid_config_change(config, config_key):
     return forbid_command(None, cc_list=cc_list, config=config)
 
 
-##[ Securely download content from the web ]##########################
+##[ Securely download content from the web ]#################################
 
 def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
     from mailpile.conn_brokers import Master as ConnBroker
@@ -119,6 +123,9 @@ def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
 
     if session.config.prefs.web_content not in ("on", "anon"):
         raise IOError("Web content is disabled by policy")
+
+    if url[:5].lower() not in ('http:', 'https'):
+        raise IOError('Non-HTTP URLs are forbidden: %s' % url)
 
     if url.startswith('https:'):
         conn_need, conn_reject = [ConnBroker.OUTGOING_HTTPS], []
@@ -129,10 +136,11 @@ def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
         conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
 
     with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
-        return urlopen(url, data=None, timeout=timeout).read()
+        # Flagged #nosec, because the URL scheme is constrained above
+        return urlopen(url, data=None, timeout=timeout).read()  # nosec
 
 
-##[ Common web-server security code ]#################################
+##[ Common web-server security code ]########################################
 
 CSRF_VALIDITY = 48 * 3600  # How long a CSRF token remains valid
 
@@ -169,3 +177,43 @@ def valid_csrf_token(req, session_id, csrf_token):
                 (csrf_token == make_csrf_token(req, session_id, ts=when)))
     except (ValueError, IndexError):
         return False
+
+
+##[ TLS/SSL security code ]##################################################
+#
+# We monkey-patch ssl.wrap_socket and ssl.SSLContext.wrap_socket so we can
+# implement and enforce our own policies here. For now all we're doing is
+# avoiding SSLv3, but more is planned...
+#
+
+def tls_configure(context, args, kwargs):
+    kwargs = copy.copy(kwargs)
+    # FIXME:
+    #  - Ensure the caller (conn_broker) can pass in SNI etc.
+    #  - Verify certificates somehow. TOFU? CAs? Both?
+    #  - Allow self-signed certificates somehow!
+    #
+    if not hasattr(ssl, 'OP_NO_SSLv3'):
+        # This version of Python is insecure!
+        # Force the protocol version to TLSv1.
+        kwargs['ssl_version'] = kwargs.get('ssl_version', ssl.PROTOCOL_TLSv1)
+
+    print '*** Configured SSL: %s/%s' % (args, kwargs)
+    return args, kwargs
+
+
+def tls_context_wrap_socket(org_wrap, context, sock, *args, **kwargs):
+    args, kwargs = tls_configure(context, args, kwargs)
+    return org_wrap(context, sock, *args, **kwargs)
+
+
+def tls_wrap_socket(org_wrap, *args, **kwargs):
+    args, kwargs = tls_configure(None, args, kwargs)
+    return org_wrap(*args, **kwargs)
+
+
+if __name__ != "__main__":
+    ssl.wrap_socket = monkey_patch(ssl.wrap_socket, tls_wrap_socket)
+    if hasattr(ssl, 'SSLContext'):
+        ssl.SSLContext.wrap_socket = monkey_patch(
+            ssl.SSLContext.wrap_socket, tls_context_wrap_socket)

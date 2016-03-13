@@ -978,6 +978,12 @@ class DebugFileWrapper(object):
         return self.fd.close(*args, **kwargs)
 
 
+def monkey_patch(org_func, wrapper):
+    def wrap(*args, **kwargs):
+        return wrapper(org_func, *args, **kwargs)
+    return wrap
+
+
 # If 'python util.py' is executed, start the doctest unittest
 if __name__ == "__main__":
     import doctest
