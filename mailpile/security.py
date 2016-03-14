@@ -197,8 +197,6 @@ def tls_configure(context, args, kwargs):
         # This version of Python is insecure!
         # Force the protocol version to TLSv1.
         kwargs['ssl_version'] = kwargs.get('ssl_version', ssl.PROTOCOL_TLSv1)
-
-    print '*** Configured SSL: %s/%s' % (args, kwargs)
     return args, kwargs
 
 

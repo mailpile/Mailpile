@@ -715,22 +715,18 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     Since we like to wrap things our own way, this make ssl.wrap_socket
     into a no-op in the cases where we've alredy wrapped a socket.
     """
-    print "*** conn_broker: wrap socket: %s ?" % sock
     if not isinstance(sock, ssl.SSLSocket):
         sock = org_sslwrap(sock, *args, **kwargs)
         Master.get_fd_context(
             sock.fileno()).encryption = _explain_encryption(sock)
-        print "*** conn_broker: wrapped socket: %s" % sock
     return sock
 
 
 def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
-    print "*** conn_broker: ctx-wrap socket: %s ?" % sock
     if not isinstance(sock, ssl.SSLSocket):
         sock = org_ctxwrap(self, sock, *args, **kwargs)
         Master.get_fd_context(
             sock.fileno()).encryption = _explain_encryption(sock)
-        print "*** conn_broker: ctx-wrapped socket: %s" % sock
     return sock
 
 
