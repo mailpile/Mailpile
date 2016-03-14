@@ -954,7 +954,6 @@ def ProfileVCard(parent):
                         disco.local_copy = False
                         disco.paths = []
                     disco.guess_tags = True
-                    disco.visible_tags = self._yn(prefix + 'visible-tags')
 
                     # Connection settings
                     for rvar in ('protocol', 'auth_type', 'host', 'port',
@@ -967,6 +966,12 @@ def ProfileVCard(parent):
                     if '@' not in username:
                         username += '@%s' % source.host
                     source.name = username
+
+                    # We need to communicate with the source below,
+                    # so we save config to trigger instanciation.
+                    self._background_save(config=True, wait=True)
+                    src_obj = config.mail_sources[src_id]
+                    src_obj.set_tag_visibility(self._yn(prefix + 'visible-tags'))
 
                 else:
                     raise ValueError(_('Unhandled incoming mail protocol: %s'
