@@ -1112,7 +1112,7 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
             'source-NEW-force-starttls': False,
-            'source-NEW-visible-tags': False,
+            'source-NEW-visible-tags': True,
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
