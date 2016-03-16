@@ -2,11 +2,11 @@
 {% block title %}{{ _("Credits") }}{% endblock %}
 {% block content %}
 <div class="content-normal"
-     style="max-width: 46em; max-height: 450px; overflow-y: scroll;">
+     style="max-width: 46em; max-height: 450px; overflow-y: scroll; text-align: center;">
   <h1>{{ _("Credits") }}</h1>
 
-  <h3>{{ _("Core Team") }}</h2>
-  <ul style="list-style-type: circle; padding-left: 2em;">
+  <h3>{{ _("Core Team") }}</h3>
+  <ul style="list-style-type: none; padding-left: 2em;">
     <li><b>Bjarni Rúnar Einarsson</b> - {{ _("lead developer") }}</li>
     <li><b>Brennan Novak</b> - {{ _("UI and design") }}, 2013-2015</li>
     <li><b>Smári McCarthy</b> - {{ _("security and community") }}, 2013-2015</li>
@@ -16,33 +16,48 @@
     money or volunteered their time to help create a truly free, secure
     e-mail client. You're all awesome!") }}
   </p>
+  <p>&nbsp;</p>
 
-  <h3>{{ _("Financial Backers") }}</h3>
-  <p style="text-align: center">
-    PageKkite, Freedombox, Cloudfleet, Thoughtworks
-    <br><a target="_blank" href="https://www.mailpile.is/thank-you/">
-      {{_("... and many more!")}}
-    </a>
-  </p>
-  
 
-  <h3>{{ _("Code Contributions") }}</h2>
-  <ul style="list-style-type: circle; padding-left: 2em;">
-  {% include "page/release-notes/credits-code.html" %}
-  </ul>
-
-  <h3>{{ _("Graphics, Testing, Moral Support, ...") }}</h2>
-  <ul style="list-style-type: circle; padding-left: 2em;">
+  <h3>{{ _("Community") }}</h3>
+  <ul>
     <li>Ásta Helgadóttir</li>
     <li>Daniel Yeow</li>
+    <li>Gus Andrews</li>
+    <li>Eleanor Saitta</li>
     <li>Emilia Telese</li>
     <li>Karl Pálsson</li>
     <li>Sveinbjörn Pálsson</li>
   </ul>
+  <p>&nbsp;</p>
 
-  <h3>{{ _("Translations") }}</h2>
-  <ul style="list-style-type: circle; padding-left: 2em;">
+
+  <h3>{{ _("Financial Backers") }}</h3>
+  <p>
+    <a target=_blank href="https://duckduckgo.com/"><img src="/static/img/logo-ddg.png" alt="DuckDuckGo"></a>
+    <a target=_blank href="https://pagekite.net/"><img src="/static/img/logo-pagekite.png" alt="PageKite"></a>
+    <a target=_blank href="http://freedomboxfoundation.org/"><img src="/static/img/logo-freedombox.png" alt="Freedombox"></a>
+    <a target=_blank href="http://commonsmachinery.se/"><img src="/static/img/logo-commonsmachinery.png" alt="Commons Machinery"></a>
+    <a target=_blank href="https://cloudfleet.io/"><img src="/static/img/logo-cloudfleet.png" alt="Cloudfleet"></a>
+    <br><a target="_blank" href="https://www.mailpile.is/thank-you/">
+      {{_("... and many more!")}}
+    </a>
+  </p>
+  <p>&nbsp;</p>
+
+
+  <h3>{{ _("Code Contributions") }}</h3>
+  <ul>
+  {% include "page/release-notes/credits-code.html" %}
+    <li>+ <a target=_blank href="https://github.com/mailpile/Mailpile/graphs/contributors">Github</a></li>
+  </ul>
+  <p>&nbsp;</p>
+
+
+  <h3>{{ _("Translations") }}</h3>
+  <ul>
   {% include "page/release-notes/credits-i18n.html" %}
+    <li>+ <a target=_blank href="http://www.localizationlab.org/">Localization Lab</a></li>
   </ul>
 
 </div>

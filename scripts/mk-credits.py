@@ -26,11 +26,11 @@ for line in git_log.stdout:
         author, email = EMAIL_MAPPER.get(email, (author, email))
         if email.endswith('@mailpile.is>'):
             continue
-        info = authors.get(email, [author, 0])
+        info = authors.get(author, [email, 0])
         info[1] += 1
-        authors[email] = info
+        authors[author] = info
 git_log.wait()
-authors = [(c, n, e) for e, (n, c) in authors.iteritems()]
+authors = [(c, n, e) for n, (e, c) in authors.iteritems()]
 
 # Get translators from .po files
 for lang in os.listdir('shared-data/locale'):
@@ -42,7 +42,7 @@ for lang in os.listdir('shared-data/locale'):
                 if not line.strip():
                     break    
                 elif line.startswith('#') and '@' in line:
-                    name = line[2:].strip()
+                    name = line[2:].strip().split(',')[0]
                     if name not in tr[1]:
                         tr[1].append(name)
                 elif line.startswith('"Language-Team: '):
@@ -52,20 +52,33 @@ for lang in os.listdir('shared-data/locale'):
 
 code = 'shared-data/default-theme/html/page/release-notes/credits-code.html'
 i18n = 'shared-data/default-theme/html/page/release-notes/credits-i18n.html'
+
+# Our threshold for inclusion on the coders list is >= 1% of the total
+# commit count.
+threshold = 0.01 * sum(c for c, n, e in authors)
 with open(code, 'w') as fd:
     authors.sort(key=lambda a: a[1])
     fd.write('\n'.join('<li class="commits-%s">%s</li>' % (a[0], a[1])
-                       for a in authors))
+                       for a in authors if a[0] >= threshold))
 
 with open(i18n, 'w') as fd:
     email = re.compile(r'\s+<[^>]+>')
-    for lang in sorted(translators.keys()):
+    first = True
+    langs = translators.keys()
+    langs.sort(key=lambda l: translators[l][0].lower())
+    for lang in langs:
         language, tlist = translators[lang]
+        tlist.sort(key=lambda n: n.lower())
         if language:
-            fd.write('<li class="language">%s</li>\n' % language)
-            fd.write(''.join('<li>%s</li>\n' % re.sub(email, '', n)
-                             for n in sorted(tlist)))
+            if not first:
+                fd.write('</ul>\n')
+            fd.write('<li class="language"><b>%s</b></li><ul>\n' % language)
+            fd.write(''.join('  <li>%s</li>\n' % re.sub(email, '', n)
+                             for n in tlist))
+            first = False
         elif translators[lang][1]:
             print 'wtf: %s' % translators[lang]
+    if not first:
+        fd.write('</ul>\n')
 
 os.system('ls -l %s %s' % (code, i18n))
