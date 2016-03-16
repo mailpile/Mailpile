@@ -32,6 +32,12 @@ Decrypting Index, Messages, and Contacts
   </form>
   {% if status_message == 'error' %}
   <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong passphrase. Try again?")}}</div>
+  {% elif result.login_failures|length %}
+  <div class="logged-out-message animated bounceIn">{{_("Last failed login:")}}
+    {{ result.login_failures[-1]|friendly_time }}
+    {{ result.login_failures[-1]|friendly_datetime }}
+    ({{ result.login_failures|length }})
+  </div>
   {% elif result.login_banner %}
   <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
   {% endif %}
