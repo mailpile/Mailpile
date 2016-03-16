@@ -54,6 +54,7 @@ class MailpileCommand(Extension):
         e.globals['U'] = s._url_path_fix
         e.globals['make_rid'] = randomish_uid
         e.globals['is_dev_version'] = s._is_dev_version
+        e.globals['is_configured'] = s._is_configured
         e.globals['version_identifier'] = s._version_identifier
         e.filters['random'] = s._random
         e.globals['random'] = s._random
@@ -629,6 +630,9 @@ class MailpileCommand(Extension):
     @classmethod
     def _is_dev_version(cls):
         return ('dev' in APPVER or 'github' in APPVER or 'test' in APPVER)
+
+    def _is_configured(self):
+        return (self.env.session.config.prefs.web_content != "unknown")
 
     @classmethod
     def _version_identifier(cls):

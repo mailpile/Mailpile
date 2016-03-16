@@ -16,11 +16,12 @@
       </a>
     </div>
     <hr class="sidebar-untag-dropzone hide">
-{%- if is_dev_version() %}
+{%- if is_configured() %}
+  {%- if is_dev_version() %}
     <a style='float: right' href="{{ U('/contacts/') }}" id="button-sidebar-people" title="{{_("Contacts")}}">
       <span class="icon icon-groups"></span>
     </a>
-{%- endif %}
+  {%- endif %}
     <a style='float: left' class="auto-modal auto-modal-reload"
        data-icon="icon-tag"
        href="{{ U('/tags/add/') }}" title="{{_("Add Tag")}}">
@@ -33,5 +34,6 @@
       <span class="icon icon-settings"></span>
       <span class="text">{{_("Organize")}}</span>
     </a>
+{% endif %}
   </nav>
 </div></div>
