@@ -1780,6 +1780,12 @@ class MailIndex(object):
                 self.TAGS[tag_id] |= eids
             elif eids:
                 self.TAGS[tag_id] = eids
+
+        # Record that these messages were touched in some way
+        GlobalPostingList.Append(session,
+                                 '%x:u' % (time.time() // (24 * 3600)),
+                                 [b36(e) for e in eids])
+
         try:
             self.config.command_cache.mark_dirty(
                 [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
@@ -1834,6 +1840,12 @@ class MailIndex(object):
         with self._lock:
             if tag_id in self.TAGS:
                 self.TAGS[tag_id] -= eids
+
+        # Record that these messages were touched in some way
+        GlobalPostingList.Append(session,
+                                 '%x:u' % (time.time() // (24 * 3600)),
+                                 [b36(e) for e in eids])
+
         try:
             self.config.command_cache.mark_dirty(
                 [u'%s:in' % self.config.tags[tag_id].slug] +
