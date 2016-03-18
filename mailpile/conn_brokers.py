@@ -326,6 +326,7 @@ class TcpConnectionBroker(BaseConnectionBroker):
         (Capability.ALL_OUTGOING) |
         (Capability.ALL_INCOMING - set([Capability.INCOMING_INTERNET]))
     )
+    LOCAL_NETWORKS = ['localhost', '127.0.0.1', '::1']
     FIXED_NO_PROXY_LIST = ['localhost', '127.0.0.1', '::1']
     DEBUG_FMT = '%s: Raw TCP conn to: %s'
 
@@ -335,8 +336,12 @@ class TcpConnectionBroker(BaseConnectionBroker):
         #        INCOMING_INTERNET capability.
 
     def _describe(self, context, conn):
+        (host, port) = conn.getpeername()
+        if host.lower() in self.LOCAL_NETWORKS:
+            context.on_localnet = True
+        else:
+            context.on_internet = True
         context.encryption = None
-        context.is_internet = True
         return conn
 
     def _in_no_proxy_list(self, address):
@@ -470,7 +475,7 @@ class TorConnBroker(SocksConnBroker):
     })
 
     def _describe(self, context, conn):
-        context.is_darknet = 'Tor'
+        context.on_darknet = 'Tor'
         context.anonymity = 'Tor'
         return conn
 
@@ -717,18 +722,17 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     """
     if not isinstance(sock, ssl.SSLSocket):
         sock = org_sslwrap(sock, *args, **kwargs)
-        Master.get_fd_context(
-            sock.fileno()).encryption = _explain_encryption(sock)
+        expl = _explain_encryption(sock)
+        Master.get_fd_context(sock.fileno()).encryption = expl
     return sock
 
 
 def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
     if not isinstance(sock, ssl.SSLSocket):
         sock = org_ctxwrap(self, sock, *args, **kwargs)
-        Master.get_fd_context(
-            sock.fileno()).encryption = _explain_encryption(sock)
+        expl = _explain_encryption(sock)
+        Master.get_fd_context(sock.fileno()).encryption = expl
     return sock
-
 
 
 _ = gettext
