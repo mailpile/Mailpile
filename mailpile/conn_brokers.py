@@ -379,7 +379,7 @@ class SocksConnBroker(TcpConnectionBroker):
     DEFAULT_PROTO = 'socks5'
 
     DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
-    IOERROR_FMT = _('Socks error, %s')
+    IOERROR_FMT = _('SOCKS error, %s')
     IOERROR_MSG = {
         'timed out': _('timed out'),
         'Host unreachable': _('host unreachable'),
