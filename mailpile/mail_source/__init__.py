@@ -313,12 +313,13 @@ class BaseMailSource(threading.Thread):
                 else:
                     event_plan[mbx_cfg._key][1] = _('Unchanged')
 
-            except (NoSuchMailboxError, IOError, OSError):
-                event_plan[mbx_cfg._key][1] = _('Error')
+            except (NoSuchMailboxError, IOError, OSError) as e:
+                event_plan[mbx_cfg._key][1] = '%s: %s' % (_('Error'), e)
                 self._last_rescan_failed = True
                 errors += 1
-            except:
-                event_plan[mbx_cfg._key][1] = _('Internal error')
+            except Exception as e:
+                event_plan[mbx_cfg._key][1] = '%s: %s' % (
+                    _('Internal error'), e)
                 self._last_rescan_failed = True
                 self._log_status(_('Internal error'))
                 raise
