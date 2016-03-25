@@ -25,7 +25,7 @@
     <span class="event-time">{{ event.ts_hhmm or event.ts|friendly_time }}</span>
     <span class="event-source">{{ event_source(event) }}</span>
     <a title="{{ event.source }}" class="event-message"
-       href="?ui_expand={{ event.event_id }}#{{ event.event_id }}">
+       href="{{ U('/logs/events/?ui_expand=', event.event_id, '#', event.event_id) }}">
       {{ event.message }}
     </a>
   </p>

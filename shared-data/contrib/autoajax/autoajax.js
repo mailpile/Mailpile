@@ -16,7 +16,6 @@ var update_using_jhtml;
 var prepare_new_content;
 var refresh_from_cache;
 
-var ajaxable_commands = ['search', 'ls', 'profiles', 'settings', 'page'];
 var refresh_history = {};
 var U = Mailpile.API.U;
 
@@ -26,14 +25,16 @@ var refresh_interval = backup_refresh_interval;
 
 
 ajaxable_url = function(url) {
-    return (url && ((url.indexOf(U("/in/")) == 0) ||
-                    (url.indexOf(U("/browse/")) == 0) ||
-                    (url.indexOf(U("/thread/")) == 0) ||
-                    (url.indexOf(U("/profiles/")) == 0) ||
-                    (url.indexOf(U("/settings/")) == 0) ||
-                    (url.indexOf(U("/logs/")) == 0) ||
-                    (url.indexOf(U("/page/")) == 0) ||
-                    (url.indexOf(U("/search/")) == 0)));
+    return (url &&
+            ((url.indexOf(U("/in/")) == 0) ||
+             (url.indexOf(U("/browse/")) == 0) ||
+             (url.indexOf(U("/thread/")) == 0) ||
+             (url.indexOf(U("/profiles/")) == 0) ||
+             (url.indexOf(U("/settings/")) == 0) ||
+             (url.indexOf(U("/logs/")) == 0) ||
+             (url.indexOf(U("/page/")) == 0) ||
+             (url.indexOf(U("/search/")) == 0)
+             ) && url);
 };
 
 _outerHTML = function(elem) {
