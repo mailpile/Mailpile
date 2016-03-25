@@ -721,18 +721,20 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     into a no-op in the cases where we've alredy wrapped a socket.
     """
     if not isinstance(sock, ssl.SSLSocket):
-        sock = org_sslwrap(sock, *args, **kwargs)
-        expl = _explain_encryption(sock)
-        Master.get_fd_context(sock.fileno()).encryption = expl
+        ctx = Master.get_fd_context(sock.fileno())
+        try:
+            sock = org_sslwrap(sock, *args, **kwargs)
+            ctx.encryption = _explain_encryption(sock)
+        except (socket.error, IOError), e:
+            ctx.error = '%s' % e
+            raise
     return sock
 
 
 def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
-    if not isinstance(sock, ssl.SSLSocket):
-        sock = org_ctxwrap(self, sock, *args, **kwargs)
-        expl = _explain_encryption(sock)
-        Master.get_fd_context(sock.fileno()).encryption = expl
-    return sock
+    return SslWrapOnlyOnce(
+        lambda s, *a, **kwa: org_ctxwrap(self, s, *a, **kwa),
+        sock, *args, **kwargs)
 
 
 _ = gettext
