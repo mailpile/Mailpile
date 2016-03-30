@@ -448,6 +448,28 @@ class BaseMailSource(threading.Thread):
     def _default_policy(self, mbx_cfg):
         return 'inherit'
 
+    def set_tag_visibility(self, visible):
+        config = self.session.config
+        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+
+        with self._lock:
+            old_display = 'tag' if disco_cfg.visible_tags else 'invisible'
+            disco_cfg.visible_tags = visible
+
+            # Look at all currently configured tags; if their visibility
+            # matches the discovery policy, update them to the new value.
+            tags = []
+            if disco_cfg.parent_tag:
+                tags.append(disco_cfg.parent_tag)
+            for mbx_cfg in self.my_config.mailbox.values():
+                if mbx_cfg.primary_tag:
+                    tags.append(mbx_cfg.primary_tag)
+
+            for tid in (t for t in tags if t != '!CREATE'):
+                tag = config.tags.get(tid)
+                if tag and tag.display == old_display:
+                    tag.display = 'tag' if visible else 'invisible'
+
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True,
                           apply_tags=None, visible_tags=None):

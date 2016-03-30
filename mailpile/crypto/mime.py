@@ -12,7 +12,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 
-##[ Common utilities ]######################################################### 
+##[ Common utilities ]#########################################################
 
 def Normalize(payload):
     # http://tools.ietf.org/html/rfc3156 says we must:
@@ -81,15 +81,15 @@ def MimeReplaceFilename(header, filename):
     start = header.find('filename=')
     start = header.find('"', start)
     end = header.find('"', start+1)+1
-    
+
     if start > 0 and end > start:
         headernew = header[:start+1] + filename + header[end-1:]
     else:
         headernew = header[:]
-    
+
     return headernew
-    
-    
+
+
 def MimeTrimFilename(header, extension):
     """
     Accepts a MIME header containing filename="...".
@@ -99,65 +99,63 @@ def MimeTrimFilename(header, extension):
     start = header.find('"', start)
     end = header.find('"', start+1)+1
     start = header.find('.'+extension+'"', start, end)
-    
+
     if start > 0 and end > start:
         headernew = header[:start] + header[end-1:]
     else:
         headernew = header[:]
-    
+
     return headernew
-    
-    
+
+
 def MimeReplacePart(part, newpart):
     """
     Replace a MIME part with new version (decrypted, signature verified, ... )
     retaining headers from the old part that are not in the new part.
     Headers content-type and content-transfer-encoding get special treatment.
-    """ 
+    """
     part.set_payload(newpart.get_payload())
     for h in newpart.keys():
         del part[h]
-        
+
     # The original encoding and type are never appropriate for a processed part.
     if 'content-type' in part:
-        del part['content-type']  
+        del part['content-type']
     if 'content-transfer-encoding' in part:
         del part['content-transfer-encoding']
-        
+
     for h, v in newpart.items():
         part.add_header(h, v)
-        
+
 
 def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, depth = 0):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
-    instead. 
-    """ 
-    
+    instead.
+    """
+
     # Guard against maliciously constructed emails
     if depth > 6:
         return
-        
+
     part.signature_info = SignatureInfo(parent=psi)
     part.encryption_info = EncryptionInfo(parent=pei)
     mimetype = part.get_content_type() or 'text/plain'
     disposition = part['content-disposition'] or ""
     encoding = part['content-transfer-encoding'] or ""
-        
+
     # FIXME: Check the protocol. PGP? Something else?
     # FIXME: This is where we add hooks for other MIME encryption
     #        schemes, so route to callbacks by protocol.
     crypto_cls = protocols['openpgp']
 
     if part.is_multipart():
-
         # Containers are by default not bubbly
         part.signature_info.bubbly = False
         part.encryption_info.bubbly = False
-        
 
-    if ( part.is_multipart() and mimetype == 'multipart/signed' ):
+    if part.is_multipart() and mimetype == 'multipart/signed':
         try:
             boundary = part.get_boundary()
             payload, signature = part.get_payload()
@@ -174,7 +172,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
 
             # Reparent the contents up, removing the signature wrapper
             MimeReplacePart(part, payload)
-            
+
             # Try again, in case we just unwrapped another layer
             # of multipart/something.
             UnwrapMimeCrypto(part,
@@ -189,7 +187,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
             part.signature_info["status"] = "error"
             part.signature_info.bubble_up(psi)
 
-    elif ( part.is_multipart() and mimetype == 'multipart/encrypted' ):
+    elif part.is_multipart() and mimetype == 'multipart/encrypted':
         try:
             preamble, payload = part.get_payload()
 
@@ -201,14 +199,14 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
 
         part.signature_info.bubble_up(psi)
         part.encryption_info.bubble_up(pei)
-        
+
         if part.encryption_info['status'] == 'decrypted':
             newpart = email.parser.Parser().parse(
                 StringIO.StringIO(decrypted))
 
             # Reparent the contents up, removing the encryption wrapper
             MimeReplacePart(part, newpart)
-            
+
             # Try again, in case we just unwrapped another layer
             # of multipart/something.
             UnwrapMimeCrypto(part,
@@ -226,11 +224,10 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                              protocols=protocols,
                              psi=part.signature_info,
                              pei=part.encryption_info,
-                             charsets=charsets, 
+                             charsets=charsets,
                              depth = depth + 1 )
 
-    elif not part.is_multipart() and disposition.startswith('attachment'):
-        
+    elif disposition.startswith('attachment'):
         # The sender can attach signed/encrypted/key files without following
         # rules for naming or mime type.
         # So - sniff to detect parts that need processing and identify protocol.
@@ -240,26 +237,25 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
             if kind:
                 break
 
-        if 'encrypted' in kind or 'unencrypted' in kind and 'signature' in kind:
+        if 'encrypted' in kind or 'signature' in kind:
             # Messy! The PGP decrypt operation is also needed for files which
             # are encrypted and signed, and files that are signed only.
             payload = part.get_payload( None, True )
-            try:               
+            try:
                 (part.signature_info, part.encryption_info, decrypted
                  ) = crypto_cls().decrypt(payload)
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.encryption_info = EncryptionInfo()
                 part.encryption_info["status"] = "error"
-    
+
             part.signature_info.bubble_up(psi)
             part.encryption_info.bubble_up(pei)
-            
-            if (part.encryption_info['status'] == 'decrypted' or 
+
+            if (part.encryption_info['status'] == 'decrypted' or
                     part.signature_info['status'] == 'verified'):
-            
                 newpart = email.parser.Parser().parse(
                     StringIO.StringIO(decrypted))
-                    
+
                 # Use the original file name if available, otherwise
                 # delete .gpg or .asc extension from attachment file name.
                 if part.encryption_info.filename:
@@ -268,11 +264,11 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                 elif 'armored' in kind:
                     disposition = MimeTrimFilename(disposition, 'asc')
                 else:
-                    disposition = MimeTrimFilename(disposition, 'gpg')                    
-                newpart.add_header('content-disposition', disposition) 
-                
-                MimeReplacePart(part, newpart)                    
-                                                       
+                    disposition = MimeTrimFilename(disposition, 'gpg')
+                newpart.add_header('content-disposition', disposition)
+
+                MimeReplacePart(part, newpart)
+
                 # Is there another layer to unwrap?
                 UnwrapMimeCrypto(part,
                                  protocols=protocols,
@@ -282,7 +278,8 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
                                  depth = depth + 1 )
             else:
                 # FIXME: Best action for unsuccessful attachment processing?
-                pass   
+                pass
+
     elif mimetype == 'text/plain':
         return UnwrapPlainTextCrypto(part,
                                      protocols=protocols,

@@ -978,6 +978,20 @@ class DebugFileWrapper(object):
         return self.fd.close(*args, **kwargs)
 
 
+def monkey_patch(org_func, wrapper):
+    """
+    A utility to help with monkey patching, returns a new function where
+    org_func has been wrapped by the given wrapper.
+
+    >>> foo = monkey_patch(lambda a: a + 1, lambda o, a: o(a + 100))
+    >>> foo(1)
+    102
+    """
+    def wrap(*args, **kwargs):
+        return wrapper(org_func, *args, **kwargs)
+    return wrap
+
+
 # If 'python util.py' is executed, start the doctest unittest
 if __name__ == "__main__":
     import doctest

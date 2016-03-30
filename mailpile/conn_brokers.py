@@ -46,10 +46,11 @@ except ImportError:
     except ImportError:
         socks = None
 
+import mailpile.security as security
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
-from mailpile.util import dict_merge
+from mailpile.util import dict_merge, monkey_patch
 
 
 _ = lambda s: s
@@ -60,13 +61,7 @@ KNOWN_ONION_MAP = {
 
 
 org_cconn = socket.create_connection
-org_sslwrap = ssl.wrap_socket
-try:
-    org_context_wrap_socket = ssl.SSLContext.wrap_socket
-    have_ssl_context = True
-except AttributeError:
-    org_context_wrap_socket = None
-    have_ssl_context = False
+
 
 monkey_lock = threading.RLock()
 
@@ -538,7 +533,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     SUPPORTS = []
     WANTS = [Capability.OUTGOING_RAW]
     REJECTS = None
-    SSL_VERSION = ssl.PROTOCOL_TLSv1
+    SSL_VERSION = None
 
     def _proxy_address(self, address):
         return address
@@ -550,8 +545,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
         if self._debug is not None:
             self._debug('%s: Wrapping socket with SSL' % (self, ))
         # FIXME: We're losing the SNI stuff here, which is super lame.
-        #        We should on Python 2.7.9+ try to fix that somehow.
-        return org_sslwrap(conn, None, None, ssl_version=self.SSL_VERSION)
+        return ssl.wrap_socket(conn, None, None, ssl_version=self.SSL_VERSION)
 
     def _create_connection(self, context, address, *args, **kwargs):
         address = self._proxy_address(address)
@@ -587,7 +581,6 @@ class AutoTlsConnBroker(BaseConnectionBrokerProxy):
         return address
 
     def _proxy(self, conn):
-        assert(self.SSL_VERSION == ssl.PROTOCOL_TLSv1)
         return self._wrap_ssl(conn)
 
 
@@ -645,7 +638,7 @@ class MasterBroker(BaseConnectionBroker):
         for t, fd, context in reversed(self.history):
             if fd == fileno:
                 return context
-        return BrokeredContext()
+        return BrokeredContext(self)
 
     def create_conn_with_caps(self, address, context, need, reject,
                               *args, **kwargs):
@@ -692,10 +685,6 @@ def DisableUnbrokeredConnections():
     def CreateConnWarning(*args, **kwargs):
         print '*** socket.create_connection used without a broker ***'
         traceback.print_stack()
-
-        # FIXME: For now we just complain and let it go
-        return org_cconn(*args, **kwargs)
-
         raise IOError('FIXME: Please use within a broker context')
     socket.create_connection = CreateConnWarning
 
@@ -721,6 +710,27 @@ class NetworkHistory(Command):
                              result=Master.history)
 
 
+def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
+    """
+    Since we like to wrap things our own way, this make ssl.wrap_socket
+    into a no-op in the cases where we've alredy wrapped a socket.
+    """
+    if not isinstance(sock, ssl.SSLSocket):
+        sock = org_sslwrap(sock, *args, **kwargs)
+        Master.get_fd_context(
+            sock.fileno()).encryption = _explain_encryption(sock)
+    return sock
+
+
+def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
+    if not isinstance(sock, ssl.SSLSocket):
+        sock = org_ctxwrap(self, sock, *args, **kwargs)
+        Master.get_fd_context(
+            sock.fileno()).encryption = _explain_encryption(sock)
+    return sock
+
+
+
 _ = gettext
 
 if __name__ != "__main__":
@@ -738,34 +748,18 @@ if __name__ != "__main__":
         register(3500, TorRiskyBroker)
         register(3500, TorOnionBroker)
 
-    def SslWrapOnlyOnce(sock, *args, **kwargs):
-        """
-        Since we like to wrap things our own way, this make ssl.wrap_socket
-        into a no-op in the cases where we've alredy wrapped a socket.
-        """
-        if not isinstance(sock, ssl.SSLSocket):
-            sock  = org_sslwrap(sock, *args, **kwargs)
-            Master.get_fd_context(
-                sock.fileno()).encryption = _explain_encryption(sock)
-        return sock
-
-    ssl.wrap_socket = SslWrapOnlyOnce
-
-    if have_ssl_context:
-        # Same again with SSLContext, if we have it.
-
-        def SslContextWrapOnlyOnce(self, sock, *args, **kwargs):
-            if not isinstance(sock, ssl.SSLSocket):
-                sock = org_context_wrap_socket(self, sock, *args, **kwargs)
-                Master.get_fd_context(
-                    sock.fileno()).encryption = _explain_encryption(sock)
-            return sock
-
-        ssl.SSLContext.wrap_socket = SslContextWrapOnlyOnce
+    # Note: At this point we have already imported security, which
+    #       also monkey-patches these same functions. This is a good
+    #       thing and is deliberate. :-)
+    ssl.wrap_socket = monkey_patch(ssl.wrap_socket, SslWrapOnlyOnce)
+    if hasattr(ssl, 'SSLContext'):
+        ssl.SSLContext.wrap_socket = monkey_patch(
+           ssl.SSLContext.wrap_socket, SslContextWrapOnlyOnce)
 
     from mailpile.plugins import PluginManager
     _plugins = PluginManager(builtin=__file__)
     _plugins.register_commands(NetworkHistory)
+
 else:
     import doctest
     import sys

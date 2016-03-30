@@ -70,8 +70,9 @@ IMAP_TOKEN = re.compile('("[^"]*"'
 
 # These are mailbox names we avoid downloading (by default)
 BLACKLISTED_MAILBOXES = (
-    '[Gmail]/Important',
-    '[Gmail]/Starred',
+    'drafts',
+    '[gmail]/important',
+    '[gmail]/starred',
     'openpgp_keys'
 )
 
@@ -833,7 +834,8 @@ class ImapMailSource(BaseMailSource):
         return '', '/'
 
     def _default_policy(self, mbx_cfg):
-        if self._mailbox_path(self._path(mbx_cfg)) in BLACKLISTED_MAILBOXES:
+        if self._mailbox_path(self._path(mbx_cfg)
+                              ).lower() in BLACKLISTED_MAILBOXES:
             return 'ignore'
         else:
             return 'inherit'

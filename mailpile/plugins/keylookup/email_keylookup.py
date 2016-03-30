@@ -55,7 +55,7 @@ def _get_keydata(data):
         else:
             ak = pgpdump.BinaryData(data)
         packets = list(ak.packets())
-    except (TypeError, PgpdumpException):
+    except (TypeError, IndexError, PgpdumpException):
         return []
 
     now = time.time()

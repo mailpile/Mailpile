@@ -9,29 +9,41 @@
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
 
 {%- block contenttools %}
-  {%- set activities = [{
-    'name': 'browser',
-    'icon': 'list',
-    'url': U('/browse/'),
-    'text': _("Browse"),
-    'description': _("Browse files, mailboxes and settings")
-  },{
-    'name': 'addprofile',
-    'icon': 'plus',
-    'aclass': 'auto-modal',
-    'url': U('/profiles/add/'),
-    'text': _("Add Account"),
-    'description': _("Create a new Account")
-  },{
-    'name': 'keys',
-    'icon': 'key',
-    'aclass': 'auto-modal',
-    'url': U('/settings/set/password/'),
-    'text': _("Keys"),
-    'description': _("Manage Your Encryption Keys")
-  }] %}
-  {%- set selection_initial_prompt = _("Configure your accounts, profiles and other settings") %}
-  {%- include("partials/tools_default.html") %}
+  {%- if config.prefs.web_content != "unknown" %}
+    {%- set activities = [{
+      'name': 'browser',
+      'icon': 'list',
+      'url': U('/browse/'),
+      'text': _("Browse"),
+      'description': _("Browse files, mailboxes and settings")
+    },{
+      'name': 'addprofile',
+      'icon': 'plus',
+      'aclass': 'auto-modal',
+      'url': U('/profiles/add/'),
+      'text': _("Add Account"),
+      'description': _("Create a new Account")
+    },{
+      'name': 'keys',
+      'icon': 'key',
+      'aclass': 'auto-modal',
+      'url': U('/settings/set/password/'),
+      'text': _("Keys"),
+      'description': _("Manage Your Encryption Keys")
+    }] %}
+    {%- set selection_initial_prompt = _("Configure your accounts, profiles and other settings") %}
+    {%- include("partials/tools_default.html") %}
+  {% else %}
+    {%- set activities = [{
+      'name': 'settings',
+      'icon': 'settings',
+      'url': U('/settings/privacy.html?ui_from_profiles=True'),
+      'text': _("Privacy & Security"),
+      'description': _("Security and Privacy Settings")
+    }] %}
+    {%- set selection_initial_prompt = _("You can configure accounts and profiles once you have reviewed your privacy settings.") %}
+    {%- include("partials/tools_default.html") %}
+  {% endif %}
 {%- endblock %}
 
 {%- block content %}<div id="page" class="content-normal">
@@ -169,6 +181,7 @@
     </div></td></tr>
     {%- endif %}
     <tr><td></td><td>
+{%- if config.prefs.web_content != "unknown" %}
       </td><td style='text-align: left;'>
         <a href="{{ U('/in/inbox/') }}">
          <span class="icon icon-inbox"></span> {{_("Master Inbox")}}
@@ -192,6 +205,7 @@
         </a>
       </td><td>
       </td>
+{%- endif %}
     </tr>
   </table>
   <p></p>

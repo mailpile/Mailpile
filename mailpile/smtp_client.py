@@ -274,8 +274,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                         fail(_('Invalid username or password'), events,
                              details={'authentication_error': True})
                     except smtplib.SMTPException:
-                        fail(_('Authentication not supported'), events,
-                             details={'authentication_error': True})
+                        # If the server does not support authentication, assume
+                        # it's passwordless and try to carry one anyway.
+                        pass
 
                 smtp_do_or_die(_('Sender rejected by SMTP server'),
                                events, server.mail, frm)

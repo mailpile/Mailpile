@@ -17,7 +17,6 @@ class IMAP4(imaplib.IMAP4, object):
             keyfile,
             certfile,
             ssl_version=ssl.PROTOCOL_TLSv1)
-        self.file.close()
         self.file = self.sock.makefile('rb')
         self.__capability__()
         return typ, data
