@@ -65,7 +65,7 @@ else:
     BRANCHVER = ''
 
 APPVER = '%s%s' % (next(
-    line.strip() for line in open('mailpile/defaults.py', 'r')
+    line.strip() for line in open('mailpile/config/defaults.py', 'r')
     if re.match(r'^APPVER\s*=', line)
 ).split('"')[1], BRANCHVER)
 

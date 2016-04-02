@@ -1,4 +1,3 @@
-import mailpile.config
 import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
@@ -210,16 +209,15 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
     return info
 
 
-# FIXME: Is this bad form or awesome?  This is used in a few places by
-#        commands.py and search.py, but might be a hint that the plugin
-#        architecture needs a little more polishing.
-mailpile.config.ConfigManager.get_tag = GetTag
-mailpile.config.ConfigManager.get_tags = GetTags
-mailpile.config.ConfigManager.get_tag_id = GetTagID
-mailpile.config.ConfigManager.get_tag_info = GetTagInfo
-mailpile.config.ConfigManager.get_filters = GetFilters
-mailpile.config.ConfigManager.filter_move = FilterMove
-mailpile.config.ConfigManager.filter_delete = FilterDelete
+# FIXME: This is dumb.
+import mailpile.config.manager
+mailpile.config.manager.ConfigManager.get_tag = GetTag
+mailpile.config.manager.ConfigManager.get_tags = GetTags
+mailpile.config.manager.ConfigManager.get_tag_id = GetTagID
+mailpile.config.manager.ConfigManager.get_tag_info = GetTagInfo
+mailpile.config.manager.ConfigManager.get_filters = GetFilters
+mailpile.config.manager.ConfigManager.filter_move = FilterMove
+mailpile.config.manager.ConfigManager.filter_delete = FilterDelete
 
 
 ##[ Commands ]################################################################

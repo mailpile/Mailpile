@@ -179,6 +179,73 @@ def valid_csrf_token(req, session_id, csrf_token):
         return False
 
 
+##[ Secure-ish handling of passphrases ]#####################################
+
+class SecurePassphraseStorage(object):
+    # FIXME: Replace this with a memlocked ctype buffer, whenever possible
+
+    def __init__(self, passphrase=None):
+        self.generation = 0
+        self.expiration = -1
+        if passphrase is not None:
+            self.set_passphrase(passphrase)
+        else:
+            self.data = None
+
+    def copy(self, src):
+        self.data = src.data
+        self.generation += 1
+
+    def is_set(self):
+        return (self.data is not None)
+
+    def set_passphrase(self, passphrase):
+        # This stores the passphrase as a list of integers, which is a
+        # primitive in-memory obfuscation relying on how Python represents
+        # small integers as globally shared objects. Better Than Nothing!
+        self.data = string_to_intlist(passphrase)
+        self.generation += 1
+
+    def compare(self, passphrase):
+        if self.expiration > 0 and time.time() < self.expiration:
+            self.data = None
+            return False
+        return (self.data is not None and
+                self.data == string_to_intlist(passphrase))
+
+    def read_byte_at(self, offset):
+        if self.data is None or offset >= len(self.data):
+            return ''
+        return chr(self.data[offset])
+
+    def get_reader(self):
+        class SecurePassphraseReader(object):
+            def __init__(self, sps):
+                self.storage = sps
+                self.offset = 0
+
+            def seek(self, offset, whence=0):
+                assert(whence == 0)
+                self.offset = offset
+
+            def read(self, ignored_bytecount=None):
+                one_byte = self.storage.read_byte_at(self.offset)
+                self.offset += 1
+
+                return one_byte
+
+            def close(self):
+                pass
+
+        if self.expiration > 0 and time.time() < self.expiration:
+            self.data = None
+            return None
+        elif self.data is not None:
+            return SecurePassphraseReader(self)
+        else:
+            return None
+
+
 ##[ TLS/SSL security code ]##################################################
 #
 # We monkey-patch ssl.wrap_socket and ssl.SSLContext.wrap_socket so we can
@@ -197,6 +264,10 @@ def tls_configure(context, args, kwargs):
         # This version of Python is insecure!
         # Force the protocol version to TLSv1.
         kwargs['ssl_version'] = kwargs.get('ssl_version', ssl.PROTOCOL_TLSv1)
+    # FIXME: This would unconditionally break all self-signed certs, which
+    #        makes it a no-go for many hobbiest e-mail servers.
+    #if 'cert_reqs' not in kwargs:
+    #    kwargs['cert_reqs'] = ssl.CERT_REQUIRED
     return args, kwargs
 
 

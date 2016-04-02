@@ -1,7 +1,6 @@
-import mailpile.config
 import mailpile.security as security
 from mailpile.commands import Command
-from mailpile.defaults import APPVER
+from mailpile.config.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_source.local import LocalMailSource

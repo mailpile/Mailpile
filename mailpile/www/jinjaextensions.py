@@ -14,7 +14,7 @@ from jinja2.utils import contextfunction, import_string, escape
 #from markdown import markdown
 
 from mailpile.commands import Action
-from mailpile.defaults import APPVER
+from mailpile.config.defaults import APPVER
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *

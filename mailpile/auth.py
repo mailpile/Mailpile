@@ -6,6 +6,7 @@ from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.security import SecurePassphraseStorage
 from mailpile.util import *
 
 
@@ -35,7 +36,6 @@ class UserSessionCache(dict):
 def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
                                      key=None):
     if passphrase and not sps:
-        from mailpile.config import SecurePassphraseStorage
         sps = SecurePassphraseStorage(passphrase)
         passphrase = 'this probably does not really overwrite :-( '
 
@@ -328,7 +328,6 @@ class SetPassphrase(Command):
             return happy(_('Password stored permanently'))
 
         elif policy == 'cache-only' and password:
-            from mailpile.config import SecurePassphraseStorage
             sps = SecurePassphraseStorage(password)
             sps.expiration = time.time() + float(ttl)
             config.passphrases[fingerprint] = sps

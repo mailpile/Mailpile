@@ -7,7 +7,7 @@ import sys
 import traceback
 
 import mailpile.commands
-import mailpile.defaults
+import mailpile.config.defaults
 import mailpile.vcard
 from mailpile.i18n import i18n_disabled
 from mailpile.i18n import gettext as _
@@ -21,6 +21,7 @@ from mailpile.util import *
 
 # These are the plugins we ship/import by default
 __all__ = [
+    'core',
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
     'setup_magic', 'exporters', 'plugins', 'motd',
@@ -60,6 +61,7 @@ class PluginManager(object):
 
     # These are plugins which we consider required
     REQUIRED = [
+        'core',
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic',
         'plugins', 'keylookup', 'motd'
@@ -480,7 +482,7 @@ class PluginManager(object):
         self._compat_check()
         args = list(args)
         rules = args.pop(-1)
-        dest = mailpile.defaults.CONFIG_RULES
+        dest = mailpile.config.defaults.CONFIG_RULES
         path = '/'.join(args)
         for arg in args:
             dest = dest[arg][-1]
@@ -495,7 +497,7 @@ class PluginManager(object):
         args = list(args)
         rules = args.pop(-1)
         rname = args.pop(-1)
-        dest = mailpile.defaults.CONFIG_RULES
+        dest = mailpile.config.defaults.CONFIG_RULES
         path = '/'.join(args)
         for arg in args:
             dest = dest[arg][-1]

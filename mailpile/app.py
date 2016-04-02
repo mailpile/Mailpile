@@ -5,14 +5,14 @@ import os
 import sys
 
 import mailpile.util
-import mailpile.defaults
+import mailpile.config.defaults
 from mailpile.commands import COMMANDS, Command, Action
-from mailpile.commands import Help, HelpSplash, Load, Rescan, Quit
-from mailpile.config import ConfigManager
+from mailpile.config.manager import ConfigManager
 from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.plugins.core import Help, HelpSplash, Load, Rescan, Quit
 from mailpile.plugins.motd import MessageOfTheDay
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
@@ -23,7 +23,7 @@ _plugins = PluginManager(builtin=__file__)
 from mailpile.mailboxes import *
 
 # This is also a bit silly, should be somewhere else?
-Help.ABOUT = mailpile.defaults.ABOUT
+Help.ABOUT = mailpile.config.defaults.ABOUT
 
 # We may try to load readline later on... maybe?
 readline = None
@@ -176,7 +176,7 @@ def Main(args):
     mailpile.i18n.ActivateTranslation(None, ConfigManager, None)
     try:
         # Create our global config manager and the default (CLI) session
-        config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+        config = ConfigManager(rules=mailpile.config.defaults.CONFIG_RULES)
         session = Session(config)
         cli_ui = session.ui = UserInteraction(config)
         session.main = True

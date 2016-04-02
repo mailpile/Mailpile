@@ -25,8 +25,9 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-from mailpile.mail_source.local import LocalMailSource
+import mailpile.app
 from mailpile import Mailpile
+from mailpile.mail_source.local import LocalMailSource
 
 
 ##[ Black-box test script ]###################################################

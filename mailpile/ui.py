@@ -29,7 +29,6 @@ import mailpile.commands
 import mailpile.util
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.search import MailIndex
 from mailpile.util import *
 
 

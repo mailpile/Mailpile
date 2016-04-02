@@ -80,7 +80,7 @@ class UrlMap:
         Return an instantiated mailpile.command object or raise a UsageError.
 
         >>> urlmap._command('output', args=['html'], method=False)
-        <mailpile.commands.Output...>
+        <mailpile.plugins.core.Output...>
         >>> urlmap._command('bogus')
         Traceback (most recent call last):
             ...
@@ -190,14 +190,14 @@ class UrlMap:
         >>> path_parts = '/a/b/as.json'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output...>)
+        (['', 'a', 'b'], <mailpile.plugins.core.Output...>)
 
         If there is no filename part, the path_parts list is unchanged
         aside from stripping off the trailing empty string if present.
         >>> path_parts = '/a/b/'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output...>)
+        (['', 'a', 'b'], <mailpile.plugins.core.Output...>)
 
         >>> path_parts = '/a/b'.split('/')
         >>> command = urlmap._choose_output(path_parts)
@@ -235,7 +235,7 @@ class UrlMap:
         >>> path = '/in/inbox/@20/as.json'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
         ('as.json',)
         >>> commands[1].args
@@ -272,7 +272,7 @@ class UrlMap:
         >>> path = '/thread/=123/'
         >>> commands = urlmap._map_thread(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.View...>]
         >>> commands[1].args
         ('=123',)
         """
@@ -296,9 +296,9 @@ class UrlMap:
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
-        [<mailpile.commands.Output...>, <...Draft...>]
+        [<mailpile.plugins.core.Output...>, <...Draft...>]
         >>> urlmap._map_api_command('POST', ['message', 'update', ''], {}, {})
-        [<mailpile.commands.Output...>, <...Update...>]
+        [<mailpile.plugins.core.Output...>, <...Update...>]
         >>> urlmap._map_api_command('GET', ['message', 'update', ''], {}, {})
         Traceback (most recent call last):
             ...
@@ -338,7 +338,7 @@ class UrlMap:
         Convert an HTTP request to a list of mailpile.command objects.
 
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.Search...>]
 
         The /api/ URL space is versioned and provides access to all the
         built-in commands. Requesting the wrong version or a bogus command
@@ -354,7 +354,7 @@ class UrlMap:
 
         This is the async version of the API.
         >>> urlmap.map(request, 'GET', '/async/0/search/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.Search...>]
 
         The root currently just redirects to /profiles/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
@@ -363,17 +363,17 @@ class UrlMap:
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.Search...>]
 
         Thread shortcuts are /thread/METADATAID/:
         >>> urlmap.map(request, 'GET', '/thread/123/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.View...>]
 
         Other commands use the command name as the first path component:
         >>> urlmap.map(request, 'GET', '/search/bjarni/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.search.Search...>]
         >>> urlmap.map(request, 'GET', '/message/draft/=123/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.compose.Draft...>]
+        [<mailpile.plugins.core.Output...>, <mailpile.plugins.compose.Draft...>]
         """
 
         if self.session:
@@ -715,16 +715,16 @@ else:
     import doctest
     import sys
     import mailpile.app
-    import mailpile.config
+    import mailpile.config.defaults as defaults
+    import mailpile.config.manager as cfg_manager
     import mailpile.plugins
-    import mailpile.defaults
     import mailpile.ui
 
     # Import all the default plugins
     from mailpile.plugins import *
 
-    rules = mailpile.defaults.CONFIG_RULES
-    config = mailpile.config.ConfigManager(rules=rules)
+    rules = defaults.CONFIG_RULES
+    config = cfg_manager.ConfigManager(rules=rules)
     config.tags.extend([
         {'name': 'New',   'slug': 'New'},
         {'name': 'Inbox', 'slug': 'Inbox'},

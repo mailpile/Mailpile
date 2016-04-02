@@ -5,9 +5,10 @@ from gettext import gettext as _
 from urllib import urlencode, URLopener
 
 import mailpile.auth
-from mailpile.commands import Command, Help
+from mailpile.commands import Command
 from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
 from mailpile.mailutils import *
+from mailpile.plugins.core import Help
 from mailpile.search import *
 from mailpile.util import *
 from mailpile.vcard import *

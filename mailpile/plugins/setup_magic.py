@@ -11,7 +11,7 @@ from lxml import objectify
 import mailpile.auth
 import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import CONFIG_RULES, APPVER
+from mailpile.config.defaults import CONFIG_RULES, APPVER
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -23,7 +23,6 @@ from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
-from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.eventlog import Event

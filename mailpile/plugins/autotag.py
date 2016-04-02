@@ -8,7 +8,6 @@ import math
 import time
 import datetime
 
-import mailpile.config
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -91,8 +90,10 @@ def LoadAutoTagger(config, at_config):
     return config.autotag[aid]
 
 
-mailpile.config.ConfigManager.load_auto_tagger = LoadAutoTagger
-mailpile.config.ConfigManager.save_auto_tagger = SaveAutoTagger
+# FIXME: This is dumb
+import mailpile.config.manager
+mailpile.config.manager.ConfigManager.load_auto_tagger = LoadAutoTagger
+mailpile.config.manager.ConfigManager.save_auto_tagger = SaveAutoTagger
 
 
 ##[ Internal classes ]########################################################
