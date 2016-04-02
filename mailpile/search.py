@@ -1659,6 +1659,34 @@ class MailIndex(object):
         except (IndexError, ValueError):
             return self.BOGUS_METADATA[:]
 
+    def delete_msg_at_idx_pos(self, msg_idx, keep_msgid=False):
+        info = self.get_msg_at_idx_pos(msg_idx)
+
+        # Most of the information just gets nuked.
+        info[self.MSG_PTRS] = ''
+        info[self.MSG_FROM] = ''
+        info[self.MSG_TO] = ''
+        info[self.MSG_CC] = ''
+        info[self.MSG_KB] = 0
+        info[self.MSG_SUBJECT] = ''
+        info[self.MSG_BODY] = self.MSG_BODY_DELETED
+
+        # The timestamp we keep partially intact, to not completely break
+        # ordering within theads. This may not really be necessary.
+        ts = long(info[self.MSG_DATE], 36)
+        info[self.MSG_DATE] = b36(ts - (ts % (3600 * 24)))
+
+        # FIXME: Remove from threads? This may break threading. :(
+        # FIXME: Remove all tags!
+
+        if not keep_msgid:
+            # If we don't keep the msgid, the message may reappear later
+            # if it wasn't deleted from all source mailboxes. The caller
+            # may request this if deletion is known to be incomplete.
+            info[self.MSG_ID] = self.encode_msg_id('%s' % msg_idx)
+
+        self.set_msg_at_idx_pos(msg_idx, info)
+
     def update_msg_sorting(self, msg_idx, msg_info):
         for order, sorter in self.SORT_ORDERS.iteritems():
             self.INDEX_SORT[order][msg_idx] = sorter(self, msg_info)

@@ -334,6 +334,38 @@ class Optimize(Command):
             return self._error(_('Aborted'))
 
 
+class DeleteMessages(Command):
+    """Delete one or more messages."""
+    SYNOPSIS = (None, 'delete', 'message/delete', '<messages>')
+    ORDER = ('Searching', 99)
+
+    def command(self, slowly=False):
+        idx = self._idx()
+        deleted, failed, mailboxes = [], [], []
+        for msg_idx in self._choose_messages(self.args):
+            del_ok, mboxes = Email(idx, msg_idx).delete_message(flush=False)
+            mailboxes.extend(mboxes)
+            if del_ok:
+                deleted.append(msg_idx)
+            else:
+                failed.append(msg_idx)
+
+        # This will actually delete from mboxes, etc.
+        for m in mailboxes:
+            m.flush()
+
+        # FIXME: Trigger a background rescan of affected mailboxes, as
+        #        the flush() above may have broken our pointers.
+
+        result = {'deleted': deleted}
+        if failed:
+            result['failed'] = failed
+            return self._error(_('Could not delete all messages'),
+                               result=result)
+        return self._success(_('Deleted %d messages') % len(deleted),
+                             result=result)
+
+
 class BrowseOrLaunch(Command):
     """Launch browser and exit, if already running"""
     SYNOPSIS = (None, 'browse_or_launch', None, None)
@@ -1726,7 +1758,8 @@ class HelpSplash(Help):
 
 
 _plugins.register_commands(
-    Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
+    Load, Optimize, Rescan, DeleteMessages,
+    BrowseOrLaunch, RunWWW, ProgramStatus,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,

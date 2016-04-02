@@ -222,7 +222,9 @@ class SearchResults(dict):
 
     def _thread(self, thread_mid):
         thr_info = self.idx.get_conversation(msg_idx=int(thread_mid, 36))
-        thr_info.sort(key=lambda i: int(i[self.idx.MSG_DATE], 36))
+        thr_info.sort(key=lambda i: long(i[self.idx.MSG_DATE], 36))
+        if not thr_info:
+            return []
 
         # Map messages to parents
         par_map = {}
