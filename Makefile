@@ -83,6 +83,7 @@ alltests: clean pytests
 	@git checkout mailpile/tests/data/
 
 pytests:
+	@echo -n 'security         ' && python2 mailpile/security.py
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
 	@echo -n 'search           ' && python2 mailpile/search.py
 	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py

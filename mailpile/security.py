@@ -182,6 +182,49 @@ def valid_csrf_token(req, session_id, csrf_token):
 ##[ Secure-ish handling of passphrases ]#####################################
 
 class SecurePassphraseStorage(object):
+    """
+    This is slightly obfuscated in-memory storage of passphrases.
+
+    The data is currently stored as an array of integers, which takes
+    advantage of Python's internal shared storage for small numbers.
+    This is not secure against a determined adversary, but at least the
+    passphrase won't be written in the clear to core dumps or swap.
+
+    >>> sps = SecurePassphraseStorage(passphrase='ABC')
+    >>> sps.data
+    [65, 66, 67]
+
+    To copy a passphrase:
+
+    >>> sps2 = SecurePassphraseStorage().copy(sps)
+    >>> sps2.data
+    [65, 66, 67]
+
+    To check passphrases for validity, use compare():
+
+    >>> sps.compare('CBA')
+    False
+    >>> sps.compare('ABC')
+    True
+
+    To extract the passphrase, use the get_reader() method to get a
+    file-like object that will return the characters of the passphrase
+    one byte at a time.
+
+    >>> rdr = sps.get_reader()
+    >>> rdr.seek(1)
+    >>> [rdr.read(5), rdr.read(), rdr.read(), rdr.read()]
+    ['B', 'C', '', '']
+
+    If an expiration time is set, trying to access the passphrase will
+    make it evaporate.
+
+    >>> sps.expiration = time.time() - 5
+    >>> sps.get_reader() is None
+    True
+    >>> sps.data is None
+    True
+    """
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
     def __init__(self, passphrase=None):
@@ -194,7 +237,9 @@ class SecurePassphraseStorage(object):
 
     def copy(self, src):
         self.data = src.data
+        self.expiration = src.expiration
         self.generation += 1
+        return self
 
     def is_set(self):
         return (self.data is not None)
@@ -207,7 +252,7 @@ class SecurePassphraseStorage(object):
         self.generation += 1
 
     def compare(self, passphrase):
-        if self.expiration > 0 and time.time() < self.expiration:
+        if (self.expiration > 0) and (time.time() > self.expiration):
             self.data = None
             return False
         return (self.data is not None and
@@ -237,7 +282,7 @@ class SecurePassphraseStorage(object):
             def close(self):
                 pass
 
-        if self.expiration > 0 and time.time() < self.expiration:
+        if (self.expiration > 0) and (time.time() > self.expiration):
             self.data = None
             return None
         elif self.data is not None:
@@ -281,8 +326,21 @@ def tls_wrap_socket(org_wrap, *args, **kwargs):
     return org_wrap(*args, **kwargs)
 
 
+##[ Setup ]#################################################################
+
 if __name__ != "__main__":
     ssl.wrap_socket = monkey_patch(ssl.wrap_socket, tls_wrap_socket)
     if hasattr(ssl, 'SSLContext'):
         ssl.SSLContext.wrap_socket = monkey_patch(
             ssl.SSLContext.wrap_socket, tls_context_wrap_socket)
+
+
+##[ Tests ]##################################################################
+
+if __name__ == "__main__":
+    import doctest
+    import sys
+    result = doctest.testmod(optionflags=doctest.ELLIPSIS)
+    print '%s' % (result, )
+    if result.failed:
+        sys.exit(1)
