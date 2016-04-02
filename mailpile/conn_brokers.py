@@ -424,7 +424,7 @@ class SocksConnBroker(TcpConnectionBroker):
                                     ) % address
 
     def _fix_address_tuple(self, address):
-        return (str(address[0]), address[1])
+        return (str(address[0]), int(address[1]))
 
     def _conn(self, address, timeout=None, source_address=None, **kwargs):
         sock = socks.socksocket()
@@ -432,7 +432,7 @@ class SocksConnBroker(TcpConnectionBroker):
                                      self.typemap[self.DEFAULT_PROTO])
         sock.setproxy(proxytype=proxytype,
                       addr=self.proxy_config.host,
-                      port=self.proxy_config.port,
+                      port=int(self.proxy_config.port),
                       rdns=True,
                       **self._auth_args())
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
@@ -486,7 +486,7 @@ class TorConnBroker(SocksConnBroker):
 
     def _fix_address_tuple(self, address):
         host = str(address[0])
-        return (KNOWN_ONION_MAP.get(host.lower(), host), address[1])
+        return (KNOWN_ONION_MAP.get(host.lower(), host), int(address[1]))
 
     def _broker_avoid(self, address):
         # Disable the avoiding of .onion addresses added above
@@ -581,8 +581,9 @@ class AutoTlsConnBroker(BaseConnectionBrokerProxy):
     def _proxy_address(self, address):
         if address[0].endswith('.onion'):
             raise CapabilityFailure('I do not like .onion addresses')
-        if int(address[1]) == 80:
-            return (address[0], 443)
+        if int(address[1]) != 443:
+            # FIXME: Import HTTPS Everywhere database to make this work?
+            raise CapabilityFailure('Not breaking clear-text HTTP yet')
         return address
 
     def _proxy(self, conn):
