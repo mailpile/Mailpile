@@ -17,6 +17,15 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     supported_platform = None
     colon = '!'  # Works on both Windows and Unix
 
+# FIXME: Copies were part of the original WERVD spec, to compensate for
+#        the additional fragility of encrypted data. This hasn't been
+#        implemented however, and while SSDs are expensive it is not
+#        obvious that doubling (or tripling...) the storage requirements
+#        for all e-mail is a cost folks are willing to pay for never
+#        losing a message to the occaisional bitflips. So this is all
+#        commented out at the moment. Revisit?
+#   MAX_COPIES = 5
+
     @classmethod
     def parse_path(cls, config, fn, create=False):
         if (((cls.supported_platform is None) or
@@ -31,12 +40,26 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
 
+# FIXME: Copies
+#   def _copy_paths(self, where, key, copies):
+#       for cpn in range(1, copies):
+#           yield os.path.join(self._path, where, '%s.%s' % (key, cpn))
+
     def remove(self, key):
-        # FIXME: Remove all the copies of this message!
         with self._lock:
             fn = os.path.join(self._path, self._lookup(key))
             del self._toc[key]
         safe_remove(fn)
+
+# FIXME: Copies
+#       # Also remove all the copies of this message!
+#       key = os.path.basename(fn)
+#       for where in ('cur', 'new', 'tmp'):
+#           for copy_fn in self._copy_paths(where, key, self.MAX_COPIES):
+#               if os.path.exists(copy_fn):
+#                   safe_remove(copy_fn)
+#               else:
+#                   break
 
     def _refresh(self):
         with self._lock:
@@ -93,7 +116,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                               os.path.join(self._path, new_fpath))
                     self._toc[toc_id] = new_fpath
 
-    def add(self, message, copies=1):
+    def add(self, message):
         """Add message and return assigned key."""
         key = self._encryption_key_func()
         es = None
@@ -125,10 +148,10 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                 raise mailbox.ExternalClashError(_('Could not find a filename '
                                                    'for the message.'))
 
-            for cpn in range(1, copies):
-                fn = os.path.join(self._path, 'new', '%s.%s' % (key, cpn))
-                with mailbox._create_carefully(fn) as ofd:
-                    es.save_copy(ofd)
+# FIXME: Copies
+#           for fn in self._copy_paths('new', key, copies):
+#               with mailbox._create_carefully(fn) as ofd:
+#                   es.save_copy(ofd)
 
             return key
         finally:
