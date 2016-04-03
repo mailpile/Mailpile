@@ -343,7 +343,8 @@ class DeleteMessages(Command):
         idx = self._idx()
         deleted, failed, mailboxes = [], [], []
         for msg_idx in self._choose_messages(self.args):
-            del_ok, mboxes = Email(idx, msg_idx).delete_message(flush=False)
+            e = Email(idx, msg_idx)
+            del_ok, mboxes = e.delete_message(self.session, flush=False)
             mailboxes.extend(mboxes)
             if del_ok:
                 deleted.append(msg_idx)

@@ -884,7 +884,7 @@ class Email(object):
         self.update_parse_cache(newmsg)
 
         # Remove the old message...
-        mbx.remove(ptr[MBX_ID_LEN:])
+        mbx.remove_by_ptr(ptr)
 
         # FIXME: We should DELETE the old version from the index first.
 
@@ -918,7 +918,7 @@ class Email(object):
         if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
             ClearParseCache(cache_id=self.msg_idx_pos)
 
-    def delete_message(self, flush=True):
+    def delete_message(self, session, flush=True):
         ptrs = self.get_msg_info(self.index.MSG_PTRS).split(',')
         removed, failed, mailboxes = [], [], []
         for msg_ptr in (p.strip() for p in ptrs if p.strip()):
@@ -931,7 +931,7 @@ class Email(object):
                     IndexError, AttributeError) as e:
                 failed.append(msg_ptr)
                 print 'FIXME: Could not delete %s: %s' % (msg_ptr, e)
-        self.index.delete_msg_at_idx_pos(self.msg_idx_pos,
+        self.index.delete_msg_at_idx_pos(session, self.msg_idx_pos,
                                          keep_msgid=(len(failed) > 0))
         if flush:
             for m in mailboxes:

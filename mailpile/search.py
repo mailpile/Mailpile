@@ -1659,7 +1659,7 @@ class MailIndex(object):
         except (IndexError, ValueError):
             return self.BOGUS_METADATA[:]
 
-    def delete_msg_at_idx_pos(self, msg_idx, keep_msgid=False):
+    def delete_msg_at_idx_pos(self, session, msg_idx, keep_msgid=False):
         info = self.get_msg_at_idx_pos(msg_idx)
 
         # Most of the information just gets nuked.
@@ -1677,7 +1677,6 @@ class MailIndex(object):
         info[self.MSG_DATE] = b36(ts - (ts % (3600 * 24)))
 
         # FIXME: Remove from threads? This may break threading. :(
-        # FIXME: Remove all tags!
 
         if not keep_msgid:
             # If we don't keep the msgid, the message may reappear later
@@ -1685,7 +1684,12 @@ class MailIndex(object):
             # may request this if deletion is known to be incomplete.
             info[self.MSG_ID] = self.encode_msg_id('%s' % msg_idx)
 
+        # Save changes...
         self.set_msg_at_idx_pos(msg_idx, info)
+
+        # Remove all tags
+        for tag in self.get_tags(msg_info=info):
+            self.remove_tag(session, tag, msg_idxs=[msg_idx])
 
     def update_msg_sorting(self, msg_idx, msg_info):
         for order, sorter in self.SORT_ORDERS.iteritems():
@@ -1831,17 +1835,19 @@ class MailIndex(object):
             msg_idxs = set(msg_idxs)
         if not msg_idxs:
             return set()
-        CachedSearchResultSet.DropCaches()
+
         session.ui.mark(_n('Untagging conversation (%s)',
                            'Untagging conversations (%s)',
                            len(msg_idxs)
                            ) % (tag_id, ))
+        CachedSearchResultSet.DropCaches()
         for msg_idx in list(msg_idxs):
             if conversation:
                 for reply in self.get_conversation(msg_idx=msg_idx,
                                                    ghosts=True):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
+
         session.ui.mark(_n('Untagging %d message (%s)',
                            'Untagging %d messages (%s)',
                            len(msg_idxs)

@@ -382,3 +382,4 @@ if '-i' in sys.argv:
 ##[ Cleanup ]#################################################################
 config.stop_workers()
 os.system('rm -rf %s' % mailpile_home)
+os.system('git checkout %s' % mailpile_test)
