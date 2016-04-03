@@ -189,6 +189,27 @@ def MakeContentID():
         return '%x' % GLOBAL_CONTENT_ID
 
 
+def MakeBoundary():
+    return '==%s==' % okay_random(30)
+
+
+def MakeMessageID():
+    # We generate a message-ID which is almost entirely random; we
+    # include an element of the local time (give-or-take 36 hours)
+    # to further reduce the odds of any collision.
+    return '<%s%x@mailpile>' % (
+        okay_random(40), time.time() // (3600*48))
+
+
+def MakeMessageDate(ts=None):
+    # Generate valid dates, but add some jitter to the seconds field
+    # so we're not trivially leaking our exact time. We also avoid
+    # leaking the time zone.
+    return email.utils.formatdate(
+        timeval=(ts or time.time()) + (random.randint(0, 60) - 30),
+        localtime=False)
+
+
 GLOBAL_PARSE_CACHE_LOCK = MboxLock()
 GLOBAL_PARSE_CACHE = []
 
@@ -417,7 +438,7 @@ def PrepareMessage(config, msg,
         # Add headers we require
         while 'date' in msg:
             del msg['date']
-        msg['Date'] = email.utils.formatdate(localtime=False)
+        msg['Date'] = MakeMessageDate()
 
         import mailpile.plugins
         plugins = mailpile.plugins.PluginManager()
@@ -524,7 +545,7 @@ class Email(object):
                msg_subject=None, msg_text='', msg_references=None,
                msg_id=None, msg_atts=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
-        msg = MIMEMultipart()
+        msg = MIMEMultipart(boundary=MakeBoundary())
         msg.signature_info = msi = SignatureInfo(bubbly=False)
         msg.encryption_info = mei = EncryptionInfo(bubbly=False)
         msg_ts = int(time.time())
@@ -542,8 +563,8 @@ class Email(object):
             raise NoFromAddressError()
 
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
-        msg['Date'] = email.utils.formatdate(msg_ts, localtime=False)
-        msg['Message-Id'] = msg_id or email.utils.make_msgid('mailpile')
+        msg['Date'] = MakeMessageDate(msg_ts)
+        msg['Message-Id'] = msg_id or MakeMessageID()
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
 
@@ -783,7 +804,7 @@ class Email(object):
 
         else:
             newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
-            outmsg = MIMEMultipart()
+            outmsg = MIMEMultipart(boundary=MakeBoundary())
             outmsg.signature_info = SignatureInfo(bubbly=False)
             outmsg.encryption_info = EncryptionInfo(bubbly=False)
 

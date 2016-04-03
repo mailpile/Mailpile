@@ -17,6 +17,7 @@ from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.mailutils import NotEditableError, AddressHeaderParser
 from mailpile.mailutils import NoFromAddressError, PrepareMessage
+from mailpile.mailutils import MakeMessageID
 from mailpile.search import MailIndex
 from mailpile.smtp_client import SendMail
 from mailpile.urlmap import UrlMap
@@ -165,7 +166,7 @@ class CompositionCommand(AddComposeMethods(Search)):
                       'Attach-PGP-Pubkey')
 
     def _new_msgid(self):
-        msgid = (email.utils.make_msgid('mailpile')
+        msgid = (MakeMessageID()
                  .replace('.', '-')   # Dots may bother JS/CSS
                  .replace('_', '-'))  # We use _ to encode the @ later on
         return msgid
