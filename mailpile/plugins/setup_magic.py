@@ -279,10 +279,10 @@ class SetupMagic(Command):
         vcard_importers = session.config.prefs.vcard.importers
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
-            session.ui.notify(_('Enabling gravatar image importer'))
+            session.ui.notify(_('Enabling Gravatar image importer'))
         if not vcard_importers.libravatar:
             vcard_importers.libravatar.append({'active': True})
-            session.ui.notify(_('Enabling libravatar image importer'))
+            session.ui.notify(_('Enabling Libravatar image importer'))
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
