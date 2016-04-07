@@ -1616,6 +1616,11 @@ class MailIndex(object):
                 keywords |= set(['%s:in' % tag._key for tag in
                                  self.config.get_tags(type='inbox')])
 
+        # Mark as updated (modified/touched) today and on msg_ts
+        keywords.add('%x:u' % (time.time() / (24 * 3600)))
+        if msg_ts:
+            keywords.add('%x:u' % (msg_ts / (24 * 3600)))
+
         for hook in filter_hooks or []:
             keywords = hook(session, msg_mid, msg, keywords,
                             incoming=incoming)

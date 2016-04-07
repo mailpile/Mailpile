@@ -99,6 +99,7 @@ class SetupMagic(Command):
             'name': _('Sent'),
         },
         'Spam': {
+            'slug': 'spam',
             'type': 'spam',
             'flag_hides': True,
             'display': 'priority',
@@ -106,6 +107,9 @@ class SetupMagic(Command):
             'icon': 'icon-spam',
             'label_color': '10-orange',
             'name': _('Spam'),
+            'auto_after': 30,
+            'auto_action': '-spam +trash',
+            'auto_tag': 'fancy'
         },
         'MaybeSpam': {
             'display': 'invisible',
@@ -119,6 +123,7 @@ class SetupMagic(Command):
             'name': _('Ham'),
         },
         'Trash': {
+            'slug': 'trash',
             'type': 'trash',
             'flag_hides': True,
             'display': 'priority',

@@ -3,6 +3,7 @@ from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.plugins.core import DeleteMessages
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
@@ -50,7 +51,12 @@ _plugins.register_config_section('tags', ["Tags", {
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
-    'parent': ['ID of parent tag, if any', 'str', '']
+    'parent': ['ID of parent tag, if any', 'str', ''],
+
+    # Automation settings
+    'auto_after': ['After N days, perform automatic action', 'int', 0],
+    'auto_action': ['Action to perform', 'str', ''],
+    'auto_tag': ['Enable machine-learning for this tag', 'str', '']
 }, {}])
 
 _plugins.register_config_section('filters', ["Filters", {
@@ -391,6 +397,7 @@ class Tag(TagCommand):
                                 **kwargs)
 
 
+# FIXME
 class TagLater(Tag):
     """Schedule a tag operation to happen later."""
     SYNOPSIS = (None, 'tag/later', 'tag/later', '<seconds> <[+|-]tags> <msgs>')
@@ -407,6 +414,7 @@ class TagLater(Tag):
         })
 
 
+# FIXME
 class TagTemporarily(Tag):
     """Temporarily add or remove tags."""
     SYNOPSIS = (None, 'tag/tmp', 'tag/tmp', '<seconds> <[+|-]tags> <msgs>')
@@ -684,6 +692,91 @@ class DeleteTag(TagCommand):
                              {'removed': result})
 
 
+class TagAutomation(Command):
+    """Perform automatically scheduled tasks for one or more tags"""
+    SYNOPSIS = (None, 'tags/auto', 'tags/auto', '[-force|-test] <-all|tags ...>')
+    ORDER = ('Tagging', 9)
+    HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = {}
+
+    def _tags(self, args):
+        tags = self.session.config.tags
+        if '-all' in args:
+            for tag in tags.values():
+                yield tag
+        for tid, tag in tags.iteritems():
+            if tid in args or tag.slug in args:
+                yield tag
+
+    def _perform_auto_action(self, session, tag, dry_run=False):
+        action = tag.auto_action
+        if action == '!delete':
+            if not dry_run:
+                return DeleteMessages(session, arg=['all']).run()
+
+        elif action == '!untag':
+            action = '-%s' % tag._key
+
+        if not dry_run:
+            return Tag(session, arg=action.split() + ['all']).run()
+        else:
+            return {
+                 'tag': tag.slug,
+                 'should': action,
+                 'messages': session.results}
+
+    def command(self):
+        session, config = self.session, self.session.config
+        args = list(self.args)
+
+        force = '-force' in args
+        dry_run = '-test' in args
+
+        today = time.time() // (24 * 3600)
+        results = []
+        for tag in self._tags(args):
+            if tag.auto_after == 0 or not tag.auto_action:
+                continue
+
+            clean_session = mailpile.ui.Session(config)
+            clean_session.ui = session.ui
+            search_terms = ['in:%s' % tag.slug]
+            if not force:
+                if tag.auto_after < 0:
+                    # If auto_after is negative, use a more conservative
+                    # (and error-prone) approach. This will only act on
+                    # messages that exactly match; if the app is off for
+                    # a day, messages will never get processed at all.
+                    search_terms.append('u:%x' % (today + tag.auto_after))
+                else:
+                    search_terms.extend(['-u:%x' % (today - n)
+                                         for n in range(0, tag.auto_after)])
+
+            Search(clean_session, arg=search_terms).run()
+            if clean_session.results or dry_run:
+                results.append(self._perform_auto_action(clean_session, tag,
+                                                         dry_run=dry_run))
+
+        return self._success(
+            _('Performed automation for %d tags') % len(results),
+            {'results': results})
+
+    @classmethod
+    def run_in_background(cls, session):
+        result = cls(session, arg=['-all']).run()
+        return True
+
+
+_plugins.register_config_variables('prefs', {
+    'tag_automation_interval': [
+        _('Periodically perform tag automation (seconds)'), int, 8*60*60]})
+
+_plugins.register_slow_periodic_job(
+     'tag_automation',
+     'prefs.tag_automation_interval',
+     TagAutomation.run_in_background)
+
+
 class FilterCommand(Command):
     def finish(self, save=True):
         self._background_save(config=True, index=True)
@@ -940,7 +1033,7 @@ class MoveFilter(ListFilters):
         return ListFilters.command(self, want_fid=self.args[1])
 
 
-_plugins.register_commands(Tag, TagLater, TagTemporarily,
+_plugins.register_commands(Tag, TagAutomation, # TagLater, TagTemporarily,
                            AddTag, DeleteTag, ListTags,
                            Filter, DeleteFilter,
                            MoveFilter, ListFilters)

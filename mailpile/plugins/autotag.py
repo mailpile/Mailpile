@@ -9,6 +9,7 @@ import time
 import datetime
 
 from mailpile.commands import Command
+from mailpile.config.base import ConfigDict
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email
@@ -24,24 +25,39 @@ _plugins = PluginManager(builtin=__file__)
 TAGGERS = {}
 TRAINERS = {}
 
+AUTO_TAG_CONFIG = {
+    'match_tag': ['Tag we are adding to automatically', str, ''],
+    'unsure_tag': ['If unsure, add to this tag', str, ''],
+    'exclude_tags': ['Tags on messages we should never match (ham)', str, []],
+    'ignore_kws': ['Ignore messages with these keywords', str, []],
+    'corpus_size': ['How many messages do we train on?', int, 1200],
+    'threshold': ['Size of the sure/unsure ranges', float, 0.1],
+    'tagger': ['Internal class name or |shell command', str, ''],
+    'trainer': ['Internal class name or |shell commant', str, '']}
+
 _plugins.register_config_section(
-    'prefs', 'autotag', ["Auto-tagging", {
-        'match_tag': ['Tag we are adding to automatically', str, ''],
-        'unsure_tag': ['If unsure, add to this tag', str, ''],
-        'exclude_tags': ['Tags on messages we should never match (ham)',
-                         str, []],
-        'ignore_kws': ['Ignore messages with these keywords', str, []],
-        'corpus_size': ['How many messages do we train on?', int, 1200],
-        'threshold': ['Size of the sure/unsure ranges', float, 0.1],
-        'tagger': ['Internal class name or |shell command', str, ''],
-        'trainer': ['Internal class name or |shell commant', str, ''],
-    }, []])
+    'prefs', 'autotag', ["Auto-tagging", AUTO_TAG_CONFIG , []])
 
 
 def at_identify(at_config):
     return md5_hex(at_config.match_tag,
                    at_config.tagger,
                    at_config.trainer)[:12]
+
+
+def autotag_configs(config):
+    done = []
+    for at_config in config.prefs.autotag:
+        yield at_config
+        done.append(at_config.match_tag)
+    for tid, tag_info in config.tags.iteritems():
+        auto_tagging = tag_info.auto_tag
+        if (tid not in done and
+                auto_tagging.lower() not in ('', 'off', 'false')):
+            at_config = ConfigDict(_rules=AUTO_TAG_CONFIG)
+            at_config.match_tag = tid
+            at_config.tagger = auto_tagging
+            yield at_config
 
 
 class AutoTagger(object):
@@ -155,7 +171,7 @@ class Retrain(AutoTagCommand):
     def _retrain(self, tags=None):
         "Retrain autotaggers"
         session, config, idx = self.session, self.session.config, self._idx()
-        tags = tags or [asb.match_tag for asb in config.prefs.autotag]
+        tags = tags or [asb.match_tag for asb in autotag_configs(config)]
         tids = [config.get_tag(t)._key for t in tags if t]
 
         session.ui.mark(_('Retraining SpamBayes autotaggers'))
@@ -183,7 +199,7 @@ class Retrain(AutoTagCommand):
 
         retrained, unreadable = [], []
         count_all = 0
-        for at_config in config.prefs.autotag:
+        for at_config in autotag_configs(config):
             at_tag = config.get_tag(at_config.match_tag)
             if at_tag and at_tag._key in tids:
                 session.ui.mark('Retraining: %s' % at_tag.name)
@@ -288,13 +304,14 @@ class Retrain(AutoTagCommand):
 
 
 _plugins.register_config_variables('prefs', {
-    'autotag_retrain_interval': [_('Periodically retrain autotagger (seconds)'),
-                                  int, 24*60*60],
-})
+    'autotag_retrain_interval': [
+        _('Periodically retrain autotagger (seconds)'), int, 24*60*60]})
 
-_plugins.register_slow_periodic_job('retrain_autotag',
-                                    'prefs.autotag_retrain_interval',
-                                    Retrain.interval_retrain)
+_plugins.register_slow_periodic_job(
+    'retrain_autotag',
+    'prefs.autotag_retrain_interval',
+    Retrain.interval_retrain)
+
 
 class Classify(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/classify', None, '<msgs>')
@@ -307,7 +324,7 @@ class Classify(AutoTagCommand):
         for e in emails:
             kws = self._get_keywords(e)
             result = results[e.msg_mid()] = {}
-            for at_config in config.prefs.autotag:
+            for at_config in autotag_configs(config):
                 if not at_config.match_tag:
                     continue
                 at_tag = config.get_tag(at_config.match_tag)
@@ -342,7 +359,7 @@ class AutoTag(Classify):
         scores = self._classify(emails)
         tag = {}
         for mid in scores:
-            for at_config in config.prefs.autotag:
+            for at_config in autotag_configs(config):
                 at_tag = config.get_tag(at_config.match_tag)
                 if not at_tag:
                     continue
@@ -377,7 +394,7 @@ def filter_hook(session, msg_mid, msg, keywords, **kwargs):
         return keywords
 
     config = session.config
-    for at_config in config.prefs.autotag:
+    for at_config in autotag_configs(config):
         try:
             at_tag = config.get_tag(at_config.match_tag)
             atagger = config.load_auto_tagger(at_config)
