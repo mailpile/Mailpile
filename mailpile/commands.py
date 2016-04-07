@@ -686,13 +686,28 @@ def Action(session, opt, arg, data=None):
 
     # Tags are commands
     if config.loaded_config:
+        lopt = opt.lower()
+
+        found = None
         for tag in config.tags.values():
-            if opt.lower() in (tag.name.lower(),
-                               tag.slug.lower(),
-                               _(tag.name).lower()):
-                a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
-                return GetCommand('search')(session, opt,
-                                            arg=a, data=data).run()
+            if lopt == tag.slug.lower():
+                found = tag
+                break
+        if not found:
+            for tag in config.tags.values():
+                if lopt == tag.name.lower():
+                    found = tag
+                    break
+        if not found:
+            for tag in config.tags.values():
+                if lopt == _(tag.name).lower():
+                    found = tag
+                    break
+
+        if found:
+            a = 'in:%s%s%s' % (found.slug, ' ' if arg else '', arg)
+            return GetCommand('search')(session, opt,
+                                        arg=a, data=data).run()
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
