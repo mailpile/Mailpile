@@ -666,7 +666,7 @@ def decrypt_and_parse_lines(fd, parser, config,
     passphrase_reader = (passphrase.get_reader()
                          if (passphrase is not None) else
                          (config.passphrases['DEFAULT'].get_reader()
-                          if config else None))
+                          if (config is not None) else None))
 
     if not newlines:
         if decode:
