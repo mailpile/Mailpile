@@ -1207,7 +1207,7 @@ class ConfigManager(ConfigDict):
                 config.save_worker.add_unique_task(
                     config.background, 'save_search_history',
                     lambda: config.search_history.save(config))
-            config.cron_worker.add_task('save_search_history', 951,
+            config.cron_worker.add_task('save_search_history', 900,
                                         search_history_saver)
 
             def refresh_command_cache():
@@ -1227,7 +1227,7 @@ class ConfigManager(ConfigDict):
                                                        config.index,
                                                        lazy=True,
                                                        ratio=0.25, runtime=15))
-            config.cron_worker.add_task('gpl_optimize', 29, optimizer)
+            config.cron_worker.add_task('gpl_optimize', 30, optimizer)
 
             # Schedule plugin jobs
             from mailpile.plugins import PluginManager

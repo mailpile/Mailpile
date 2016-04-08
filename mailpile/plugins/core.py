@@ -3,6 +3,7 @@
 #
 # FIXME: This should probably be broken into smaller modules
 #
+import datetime
 import json
 import os
 import random
@@ -622,6 +623,58 @@ class ProgramStatus(Command):
 
         return self._success(_("Listed events, threads, and locks"),
                              result=result)
+
+
+class CronStatus(Command):
+    """Manually edit or display the background job schedule"""
+    SYNOPSIS = (None, 'cron', None,
+                "[<job> <--interval <n>|--trigger>]")
+    ORDER = ('Internals', 4)
+    IS_USER_ACTIVITY = False
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            def _t(dt):
+                return '%4.4d-%2.2d-%2.2d %2.2d:%2.2d' % (
+                    dt.year, dt.month, dt.day, dt.hour, dt.minute)
+
+            fmt = '  %-25s  %8s  %-16s  %-16s'
+            lines = [
+                'Background CRON last ran at %s.' % _t(
+                    datetime.datetime.fromtimestamp(self.result['last_run'])),
+                'Current schedule:',
+                '',
+                fmt % ('JOB', 'INTERVAL', 'LAST RUN', 'NEXT RUN')]
+
+            for job_name, interval, func, last in self.result['jobs']:
+                lines.append(fmt % (job_name, interval,
+                    _t(datetime.datetime.fromtimestamp(last)),
+                    _t(datetime.datetime.fromtimestamp(last + interval))))
+
+            return '\n'.join(lines)
+
+    def command(self, args=None):
+        config = self.session.config
+        args = args if (args is not None) else list(self.args)
+        now = int(time.time())
+
+        if args:
+            job = args.pop(0)
+        while args:
+            op = args.pop(0).lower().replace('-', '')
+            if op == 'interval':
+                interval = int(args.pop(0))
+                config.cron_worker.schedule[job][1] = interval
+            elif op == 'trigger':
+                config.cron_worker.schedule[job][-1] = now - interval
+            else:
+                raise NotImplementedError('Unknown op: %s' % op)
+
+        return self._success(
+            _("Displayed CRON schedule"),
+            result={
+                'last_run': config.cron_worker.last_run,
+                'jobs': config.cron_worker.schedule.values()})
 
 
 class GpgCommand(Command):
@@ -1760,7 +1813,7 @@ class HelpSplash(Help):
 
 _plugins.register_commands(
     Load, Optimize, Rescan, DeleteMessages,
-    BrowseOrLaunch, RunWWW, ProgramStatus,
+    BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,

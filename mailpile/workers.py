@@ -1,3 +1,4 @@
+import random
 import threading
 import traceback
 import time
@@ -52,7 +53,8 @@ class Cron(threading.Thread):
         task    -- A task function
         """
         with self.lock:
-            self.schedule[name] = [name, interval, task, time.time()]
+            last = time.time() - random.randint(0, interval)
+            self.schedule[name] = [name, interval, task, last]
             self.sleep = 1
             self.__recalculateSleep()
 
@@ -102,7 +104,7 @@ class Cron(threading.Thread):
             with self.lock:
                 for task_spec in self.schedule.values():
                     name, interval, task, last = task_spec
-                    if last + interval <= now:
+                    if (last + interval) <= now:
                         tasksToBeExecuted.append((name, task))
 
             # Execute the tasks
