@@ -272,7 +272,7 @@ class SetPassphrase(Command):
             policy = self.data['policy'][0]
         if 'ttl' in self.data:
             ttl = self.data['policy'][0]
-
+        ttl = float(ttl)
 
         fingerprint = info = None
         keyid = self.args[0] if self.args else self.data.get('id', [None])[0]
@@ -329,7 +329,8 @@ class SetPassphrase(Command):
 
         elif policy == 'cache-only' and password:
             sps = SecurePassphraseStorage(password)
-            sps.expiration = time.time() + float(ttl)
+            if ttl > 0:
+                sps.expiration = time.time() + ttl
             config.passphrases[fingerprint] = sps
             if fingerprint.lower() in config.secrets:
                 del config.secrets[fingerprint.lower()]
