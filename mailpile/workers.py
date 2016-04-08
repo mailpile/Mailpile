@@ -53,8 +53,14 @@ class Cron(threading.Thread):
         task    -- A task function
         """
         with self.lock:
-            last = time.time() - random.randint(0, interval)
-            self.schedule[name] = [name, interval, task, last]
+            if name in self.schedule:
+                last = self.schedule[name][3]
+                status = self.schedule[name][4]
+            else:
+                last = time.time() - random.randint(0, interval)
+                status = 'new'
+
+            self.schedule[name] = [name, interval, task, last, status]
             self.sleep = 1
             self.__recalculateSleep()
 
@@ -103,22 +109,26 @@ class Cron(threading.Thread):
             # Check if any of the task is (over)due
             with self.lock:
                 for task_spec in self.schedule.values():
-                    name, interval, task, last = task_spec
+                    name, interval, task, last, status = task_spec
                     if (last + interval) <= now:
                         tasksToBeExecuted.append((name, task))
+                        self.schedule[name][4] = 'scheduled'
 
             # Execute the tasks
             for name, task in tasksToBeExecuted:
                 # Set last_executed
                 self.schedule[name][3] = time.time()
+                self.schedule[name][4] = 'running'
                 try:
                     self.last_run = time.time()
                     self.running = name
                     task()
                 except Exception, e:
+                    self.schedule[name][4] = 'FAILED'
                     self.session.ui.error(('%s failed in %s: %s'
                                            ) % (name, self.name, e))
                 finally:
+                    self.schedule[name][4] = 'ok'
                     self.last_run = time.time()
                     self.running = 'Finished %s' % self.running
 

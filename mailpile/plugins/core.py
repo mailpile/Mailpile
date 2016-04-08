@@ -638,18 +638,22 @@ class CronStatus(Command):
                 return '%4.4d-%2.2d-%2.2d %2.2d:%2.2d' % (
                     dt.year, dt.month, dt.day, dt.hour, dt.minute)
 
-            fmt = '  %-25s  %8s  %-16s  %-16s'
+            fmt = ' %-23s %8s %-16s %-16s %s'
             lines = [
                 'Background CRON last ran at %s.' % _t(
                     datetime.datetime.fromtimestamp(self.result['last_run'])),
                 'Current schedule:',
                 '',
-                fmt % ('JOB', 'INTERVAL', 'LAST RUN', 'NEXT RUN')]
+                fmt % ('JOB', 'INTERVAL', 'LAST RUN', 'NEXT RUN', 'STATUS')]
 
-            for job_name, interval, func, last in self.result['jobs']:
-                lines.append(fmt % (job_name, interval,
-                    _t(datetime.datetime.fromtimestamp(last)),
-                    _t(datetime.datetime.fromtimestamp(last + interval))))
+            for job_name, interval, func, last, status in self.result['jobs']:
+                lines.append(fmt % (
+                    job_name,
+                    interval,
+                    (_t(datetime.datetime.fromtimestamp(last))
+                     if (status != 'new') else ''),
+                    _t(datetime.datetime.fromtimestamp(last + interval)),
+                    status))
 
             return '\n'.join(lines)
 
@@ -666,7 +670,8 @@ class CronStatus(Command):
                 interval = int(args.pop(0))
                 config.cron_worker.schedule[job][1] = interval
             elif op == 'trigger':
-                config.cron_worker.schedule[job][-1] = now - interval
+                interval = config.cron_worker.schedule[job][1]
+                config.cron_worker.schedule[job][3] = now - interval
             else:
                 raise NotImplementedError('Unknown op: %s' % op)
 
