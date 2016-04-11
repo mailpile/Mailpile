@@ -336,7 +336,7 @@ class TcpConnectionBroker(BaseConnectionBroker):
         #        INCOMING_INTERNET capability.
 
     def _describe(self, context, conn):
-        (host, port) = conn.getpeername()
+        (host, port) = conn.getpeername()[:2]
         if host.lower() in self.LOCAL_NETWORKS:
             context.on_localnet = True
         else:
