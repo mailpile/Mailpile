@@ -17,6 +17,8 @@ var operations = {
               '{{_("Archived (num) messages")|escapejs}}'],
   'trash':   ['{{_("Moved 1 message to trash")|escapejs}}',
               '{{_("Moved (num)  messages to trash")|escapejs}}'],
+  'unspam':  ['{{_("Moved 1 message out of spam")|escapejs}}',
+              '{{_("Moved (num)  messages out of spam")|escapejs}}'],
   'spam':    ['{{_("Moved 1 message to spam")|escapejs}}',
               '{{_("Moved (num) messages to spam")|escapejs}}']
 };

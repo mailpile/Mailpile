@@ -53,12 +53,22 @@ $(document).on('click', '.bulk-action-trash', function(result) {
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
   var $context = Mailpile.UI.Selection.context(this);
-  Mailpile.UI.Tagging.tag_and_update_ui({
-    del: ['new', 'trash'],
-    add: 'spam',
-    mid: Mailpile.UI.Selection.selected($context),
-    context: $context.find('.search-context').data('context')
-  }, 'spam');
+  var action = $(this).data('action');
+  if (action === 'remove') {
+    Mailpile.UI.Tagging.tag_and_update_ui({
+      del: 'spam',
+      add: 'new',
+      mid: Mailpile.UI.Selection.selected($context),
+      context: $context.find('.search-context').data('context')
+    }, 'unspam');
+  } else {
+    Mailpile.UI.Tagging.tag_and_update_ui({
+      del: ['new', 'trash'],
+      add: 'spam',
+      mid: Mailpile.UI.Selection.selected($context),
+      context: $context.find('.search-context').data('context')
+    }, 'spam');
+  }
 });
 
 
