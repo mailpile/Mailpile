@@ -60,7 +60,7 @@ $(document).on('click', '.bulk-action-spam', function() {
       add: 'new',
       mid: Mailpile.UI.Selection.selected($context),
       context: $context.find('.search-context').data('context')
-    }, 'spam');
+    }, 'unspam');
   } else {
     Mailpile.UI.Tagging.tag_and_update_ui({
       del: ['new', 'trash'],
