@@ -72,89 +72,69 @@
     </li>
 ') -%}
 
-{% if "in:inbox" in result.search_terms %}
-{%- set search_actions_1 = '
+{%- set search_actions = [] -%}
+
+{%- for tid in config.tags -%}
+{%-   set tag = config.tags[tid] -%}
+{%-   if tag.toolbar or tag.type in ('unread', ) -%}
+{%-     if tag.type in ('attribute', 'unread') -%}
+{%-       set msg = _("Toggle %(tag_name)s", tag_name=tag.name) -%}
+{%-       set act = "toggle" -%}
+{%-     else -%}
+{%-       set msg = _("Move to %(tag_name)s", tag_name=tag.name) -%}
+{%-       set act = "move" -%}
+{%-     endif -%}
+{%-     set tag_color = theme_settings().colors[tag.label_color] -%}
+{%-     do search_actions.append('
+  <li class="hide">
+    <a class="bulk-action-tag-op" href="#" title="'+ msg +'"
+       data-op="'+ act +'" data-tag="'+ tid +'" data-tagname="'+ tag.name +'">
+      <span class="icon '+ tag.icon +'" style="color: ' + tag_color +';"></span>
+    </a>
+  </li>') -%}
+{%-   endif -%}
+{%- endfor -%}
+
+{%- do search_actions.append('
   <li class="hide">
     <a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '">
-      <span class="icon icon-tag"></span>
+      <span class="icon icon-tags"></span>
     </a>
-  </li>
+  </li>') -%}
+{%- if "in:spam" not in result.search_terms %}
+{%-   do search_actions.append('
   <li class="hide">
-    <a class="bulk-action-archive" href="#" title="' + _("Archive Selection") + '">
-      <span class="icon icon-archive"></span>
-    </a>
-  </li>' -%}
-{% else %}
-{%- set search_actions_1 = '
-  <li class="hide">
-    <a class="bulk-action-tag" href="#" title="' + _("Assign Tags") + '">
-      <span class="icon icon-tag"></span>
-    </a>
-  </li>
-' -%}
-{% endif %}
-{%- set search_actions_2 = '
-  <li class="hide">
-    <a class="bulk-action-unread" href="#" title="' + _("Unread") + '">
-      <span class="icon icon-notifications"></span>
-    </a>
-  </li>
-  <li class="hide">
-    <a class="bulk-action-read" href="#" title="' + _("Read") + '">
-      <span class="icon icon-checkmark"></span>
-    </a>
-  </li>
-' -%}
-{% if "in:spam" in result.search_terms %}
-{%- set search_actions_3 = '
-  <li class="hide">
-    <a class="bulk-action-spam" data-action="remove" href="#" title="' + _("Move out of Spam") + '">
-      <span class="icon-not-spam"></span>
-    </a>
-  </li>
-' -%}
-{% else %}
-{%- set search_actions_3 = '
-  <li class="hide">
-    <a class="bulk-action-spam" href="#" title="' + _("Move to Spam") + '">
+    <a class="bulk-action-tag-op" href="#" title="' + _("Move to Spam") + '"
+       data-ui="spam" data-op="tag" data-untag="type:unread" data-tag="spam">
       <span class="icon-spam"></span>
     </a>
-  </li>
-' -%}
-{% endif %}
-{%- set search_actions_4 = '
+  </li>') -%}
+{%- endif %}
+{%- if "in:trash" not in result.search_terms %}
+{%-   do search_actions.append('
   <li class="hide">
-    <a class="bulk-action-trash" href="#" title="' + _("Delete Messages") + '">
+    <a class="bulk-action-tag-op" href="#" title="' + _("Move to Trash") + '"
+       data-ui="trash" data-op="tag" data-untag="type:unread" data-tag="trash">
       <span class="icon icon-trash"></span>
     </a>
-  </li>
-' -%}
-{%- set hard_coded_selection_actions = safe(search_actions_1 + search_actions_2 + search_actions_3 + search_actions_4) -%}
-
-{%- set search_terms_in = (result.search_terms or [''])[0][3:] %}
-{%- if 'in:' == (result.search_terms or [''])[0][:3] %}
-{%-   set saveClass = 'hide' %}
-{%-   set editClass = '' %}
-{%- else %}
-{%-   set saveClass = '' %}
-{%-   set editClass = 'hide' %}
+  </li>') -%}
 {%- endif %}
-{%- set activities = [{
-    'name': 'save_search',
-    'icon': 'star',
-    'class': saveClass,
-    'url': '#save_search',
-    'text': _("Save"),
-    'description': _("Save the results of this search to a new tag")
-}, {
-    'name': 'edit_tag',
-    'icon': 'settings',
-    'class': editClass,
-    'aclass': 'auto-modal auto-modal-reload',
-    'url': '/tags/edit.html?only=' + search_terms_in,
-    'text': _("Edit"),
-    'description': _("Edit") + ': '  + search_terms_in
-}] -%}
+{%- do search_actions.append('
+  <li class="hide">
+    <a class="bulk-action-tag-op" href="#" title="' + _("Untag Selection") + '"
+       data-op="untag">
+      <span class="icon icon-circle-x"></span>
+    </a>
+  </li>') -%}
+{%- do search_actions.append('
+  <li class="hide">
+    <a class="bulk-action-tag-op" href="#" data-op="archive"
+       title="' + _("Archive Selection") +': '+ _("untag completely") +'">
+      <span class="icon icon-archive">
+    </a>
+  </li>') -%}
+
+{%- set hard_coded_selection_actions = safe(search_actions|join('')) -%}
 
 {%- set display_refiners = [{
     'name': 'display_all',
@@ -169,7 +149,7 @@
     'url': '/search/',
     'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
     'url_args_add': [['qr', 'is:unread']],
-    'text': _("Unread"),
+    'text': _("New"),
     'description': _("Unread messages")
 },{
     'name': 'has_attachment',
@@ -189,4 +169,29 @@
     'description': _("List view")
 }]
 -%}
-{%- include('partials/tools_default.html') -%}
+
+{%- set search_terms_in = (result.search_terms or [''])[0][3:] %}
+{%- if 'in:' == (result.search_terms or [''])[0][:3] %}
+{%-   set activities = [{
+        'name': 'edit_tag',
+        'icon': 'settings',
+        'aclass': 'auto-modal auto-modal-reload',
+        'url': '/tags/edit.html?only=' + search_terms_in,
+        'text': _("Edit"),
+        'description': _("Edit") + ': '  + search_terms_in}]
+-%}
+{%-   include('partials/tools_default.html') -%}
+{%- elif result.search_terms not in ([], [''], ['all:mail']) %}
+{%-   set activities = [{
+        'name': 'save_search',
+        'icon': 'star',
+        'aclass': '',
+        'url': '#save_search',
+        'text': _("Save"),
+        'description': _("Save the results of this search to a new tag")}]
+-%}
+{%-   include('partials/tools_default.html') -%}
+{%- else %}
+{%-   set activities = [] -%}
+{%-   include('partials/tools_default.html') -%}
+{%- endif %}

@@ -48,6 +48,7 @@ _plugins.register_config_section('tags', ["Tags", {
     'icon': ['URL to default tag icon', 'str', 'icon-tag'],
     'label': ['Display as label in results', 'bool', True],
     'label_color': ['Color to use in label', 'str', '#4D4D4D'],
+    'toolbar': ['Display in selection toolbar', 'bool', False],
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
@@ -307,9 +308,9 @@ class Tag(TagCommand):
         # Allow ops that select tags by attribute instead of slug/id/name
         expanded_ops = []
         for op in ops:
-            if '=' in op:
+            if ':' in op:
                 sign = op[:1]
-                tvar, tval = op[1:].split('=', 1)
+                tvar, tval = op[1:].split(':', 1)
                 expanded_ops.extend('%s%s' % (sign, tag._key)
                     for tag in self.session.config.get_tags(**{tvar: tval}))
             else:
@@ -317,7 +318,8 @@ class Tag(TagCommand):
 
         # Make op list unique and sort so removals happen first
         expanded_ops = list(set(expanded_ops))
-        expanded_ops.sort(key=lambda k: (0 if k[:1] == '-' else 1, k))
+        expanded_ops.sort(key=lambda k:
+            ({'-': 1, '+': 2}.get(k[:1], 8), k))
 
         msg_ids = self._choose_messages(words)
         return expanded_ops, msg_ids, conversations

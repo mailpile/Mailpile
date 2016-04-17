@@ -85,6 +85,8 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     $('#modal-full .modal-basic-settings').show();
     $('#modal-full .modal-choose-tag-icon').hide();
     $('#modal-full .modal-choose-tag-color').hide();
+    $('#modal-full .tag-edit-technical').hide();
+    $('#modal-full .tag-edit-automation').hide();
     $('#modal-full .modal-save-group').show();
   };
   $(document).on('click', '#modal-full .modal-basic-settings-title', show_settings);
@@ -114,5 +116,21 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
     $('#modal-full .modal-open-choose-tag-icon').css('color', hex);
     $('#modal-full .modal-open-choose-tag-color').css('color', hex);
     show_settings();
+  });
+  $(document).on('click', '#modal-full .modal-tag-edit-automation', function() {
+    $('#modal-full .modal-basic-settings').hide();
+    $('#modal-full .modal-choose-tag-icon').hide();
+    $('#modal-full .modal-choose-tag-color').hide();
+    $('#modal-full .tag-edit-technical').hide();
+    $('#modal-full .tag-edit-automation').show();
+    $('#modal-full .modal-save-group').show();
+  });
+  $(document).on('click', '#modal-full .modal-tag-technical', function() {
+    $('#modal-full .modal-basic-settings').hide();
+    $('#modal-full .modal-choose-tag-icon').hide();
+    $('#modal-full .modal-choose-tag-color').hide();
+    $('#modal-full .tag-edit-technical').show();
+    $('#modal-full .tag-edit-automation').hide();
+    $('#modal-full .modal-save-group').show();
   });
 })();

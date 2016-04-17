@@ -26,61 +26,50 @@ $(document).on('click', '.bulk-action-tag', function() {
   Mailpile.render_modal_tags(this);
 });
 
+/* Search - Bulk Action - Toggle attribute (Tag) */
+$(document).on('click', '.bulk-action-tag-op', function() {
+  var $elem = $(this);
+  var tag = (($elem.data('tag') || "") + "").split(/\s+/);
+  var op = $elem.data('op');
+  var desc = $elem.data('ui');
 
-/* Search - Bulk Action - Archive */
-$(document).on('click', '.bulk-action-archive', function() {
-  var $context = Mailpile.UI.Selection.context(this);
-  Mailpile.UI.Tagging.tag_and_update_ui({
-    del: 'inbox',
+  var $context = Mailpile.UI.Selection.context($elem);
+  var args = {
     mid: Mailpile.UI.Selection.selected($context),
     context: $context.find('.search-context').data('context')
-  }, 'archive');
-});
+  };
 
-
-/* Search - Bulk Action - Trash */
-$(document).on('click', '.bulk-action-trash', function(result) {
-  var $context = Mailpile.UI.Selection.context(this);
-  Mailpile.UI.Tagging.tag_and_update_ui({
-    del: ['new', 'spam'],
-    add: 'trash',
-    mid: Mailpile.UI.Selection.selected($context),
-    context: $context.find('.search-context').data('context')
-  }, 'trash');
-});
-
-
-/* Search - Bulk Action - Spam */
-$(document).on('click', '.bulk-action-spam', function() {
-  var $context = Mailpile.UI.Selection.context(this);
-  var action = $(this).data('action');
-  if (action === 'remove') {
-    Mailpile.UI.Tagging.tag_and_update_ui({
-      del: 'spam',
-      add: 'new',
-      mid: Mailpile.UI.Selection.selected($context),
-      context: $context.find('.search-context').data('context')
-    }, 'unspam');
-  } else {
-    Mailpile.UI.Tagging.tag_and_update_ui({
-      del: ['new', 'trash'],
-      add: 'spam',
-      mid: Mailpile.UI.Selection.selected($context),
-      context: $context.find('.search-context').data('context')
-    }, 'spam');
+  console.log('mode=' + $elem.data('mode'));
+  if (op == "toggle") {
+    if ($elem.data('mode') != 'untag') {
+      args.add = tag;
+      desc = desc || 'tag';
+    } else {
+      args.del = tag;
+      desc = desc || 'untag';
+    }
   }
-});
+  else if (op == "move") {
+    args.add = tag;
+    args.del = (($context.find('.pile-results').data("tids") || ""
+                 ) + "").split(/\s+/);
+  }
+  else if (op == "tag") {
+    args.add = tag;
+    if ($elem.data('untag')) args.del = $elem.data('untag').split(/\s+/);
+  }
+  else if (op == "untag") {
+    args.del = (($context.find('.pile-results').data("tids") || ""
+                 ) + "").split(/\s+/);
+    desc = desc || 'untag';
+  }
+  else if (op == "archive") {
+    args.del = ['type:inbox', 'type:tag', 'type:attribute', 'type:sent'];
+    desc = desc || 'archive';
+  }
 
-
-/* Search - Bulk Action - Mark Unread */
-$(document).on('click', '.bulk-action-unread', function() {
-  Mailpile.bulk_action_unread(this);
-});
-
-
-/* Search - Bulk Action - Mark Read */
-$(document).on('click', '.bulk-action-read', function() {
-  Mailpile.bulk_action_read(this);
+  if (!desc) desc = (args.del) ? 'move' : 'tag';
+  Mailpile.UI.Tagging.tag_and_update_ui(args, desc);
 });
 
 
@@ -156,9 +145,3 @@ $(document).on('submit', '#form-tag-picker', function(e) {
     $('#modal-full').modal('hide');
   });
 });
-
-
-$(document).on('click', '.tag-picker-checkbox', function(e) {
-//  Mailpile.tags_cache = _.without(Mailpile.tags_cache, $(this).val());
-});
-
