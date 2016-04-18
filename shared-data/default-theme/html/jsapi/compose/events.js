@@ -257,6 +257,7 @@ $(document).on('click', '.compose-from', function(e) {
   $('#compose-from-selected-' + mid).find('.name').html(name);
   $('#compose-from-selected-' + mid).find('.address').html(address);
   $('#compose-from-' + mid).val(name + ' <' + address + '>');
+  $('#compose-send-' + mid).show();
   Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {});
 });
 

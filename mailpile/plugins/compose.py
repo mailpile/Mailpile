@@ -339,12 +339,14 @@ class Compose(CompositionCommand):
         else:
             local_id, lmbox = -1, None
             ephemeral = ['new-%s-mail' % msgid[1:-1].replace('@', '_')]
+        profiles = session.config.vcards.find_vcards([], kinds=['profile'])
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
                              msg_text=(cid and cls._get_canned(idx, cid)
                                        or ''),
                              msg_id=msgid,
-                             ephemeral_mid=ephemeral and ephemeral[0]),
+                             ephemeral_mid=ephemeral and ephemeral[0],
+                             use_default_from=(len(profiles) == 1)),
                 ephemeral)
 
     def command(self):

@@ -544,7 +544,8 @@ class Email(object):
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
                msg_subject=None, msg_text='', msg_references=None,
                msg_id=None, msg_atts=None,
-               save=True, ephemeral_mid='not-saved', append_sig=True):
+               save=True, ephemeral_mid='not-saved', append_sig=True,
+               use_default_from=True):
         msg = MIMEMultipart(boundary=MakeBoundary())
         msg.signature_info = msi = SignatureInfo(bubbly=False)
         msg.encryption_info = mei = EncryptionInfo(bubbly=False)
@@ -553,16 +554,18 @@ class Email(object):
         if msg_from:
             from_email = AddressHeaderParser(unicode_data=msg_from)[0].address
             from_profile = idx.config.get_profile(email=from_email)
-        else:
+        elif use_default_from:
             from_profile = idx.config.get_profile()
             from_email = from_profile.get('email', None)
             from_name = from_profile.get('name', None)
             if from_email and from_name:
                 msg_from = '%s <%s>' % (from_name, from_email)
-        if not msg_from:
-            raise NoFromAddressError()
+        else:
+            from_email = from_profile = from_name = None
 
-        msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
+        if msg_from:
+            msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
+
         msg['Date'] = MakeMessageDate(msg_ts)
         msg['Message-Id'] = msg_id or MakeMessageID()
         msg_subj = (msg_subject or '')
@@ -581,7 +584,7 @@ class Email(object):
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
 
-        sig = from_profile.get('signature')
+        sig = from_profile and from_profile.get('signature')
         if sig and ('\n-- \n' not in (msg_text or '')):
             msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
 
@@ -610,6 +613,7 @@ class Email(object):
         # Determine if we want to attach a PGP public key due to policy and
         # timing...
         if (idx.config.prefs.gpg_email_key and
+                from_profile and
                 'send_keys' in from_profile.get('crypto_format', 'none')):
             from mailpile.plugins.crypto_policy import CryptoPolicy
             addrs = ExtractEmails(norm(msg_to) + norm(msg_cc) + norm(msg_bcc))

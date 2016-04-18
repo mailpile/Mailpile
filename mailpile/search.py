@@ -1318,7 +1318,10 @@ class MailIndex(object):
                 '',                                  # No replies for now
                 msg_mid                              # Conversation ID
             ]
-            email, fn = ExtractEmailAndName(msg_from)
+            if msg_from:
+                email, fn = ExtractEmailAndName(msg_from)
+            else:
+                email = fn = None
             if email and fn:
                 self.update_email(email, name=fn)
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)

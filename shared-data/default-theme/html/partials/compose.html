@@ -138,21 +138,26 @@
         <div class="dropup">
           <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
             <span id="compose-from-selected-{{mid}}" class="compose-from-selected">
-              {% if from.photo %}
+              {% if from and from.photo %}
               <span class="avatar"><img src="{{from.photo}}"></span>
               {% else %}
               <span class="avatar"><img src="{{ U('/static/img/avatar-default-white.png') }}"></span>
               {% endif %}
+              {% if from %}
               <span class="name">{{from.fn}}</span>
               <span class="address">{{from.address}}</span>
+              {% else %}
+              <span class="name">{{_("Choose Sending Account")}}</span>
+              <span class="address">...</span>
+              {% endif %}
             </span>
             <span class="compose-from-caret">
               <span class="caret"></span>
             </span>
           </div>
           <ul class="dropdown-menu">
-          {% set emails = profiles.emails|sort %}
           {% set found = [] %}
+          {% set emails = profiles.emails|sort %}
           {% if from.address not in emails %}
             {% set emails = [from.address] + emails %}
           {% endif %}
@@ -190,7 +195,10 @@
         <button class="compose-action button-primary" type="submit" name="save" value="save" alt="{{_("Save")}}">
           <span class="icon-compose"></span> {{_("Save")}}
         </button>
-        <button class="compose-action button-secondary" type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}" alt="{{_("Send")}}">
+        <button id="compose-send-{{mid}}"
+                class="compose-action button-secondary{% if not from %} hide{% endif %}"
+                type="submit" name="send" value="{% if command == "view" %}reply{% else %}send{% endif %}"
+                alt="{{_("Send")}}">
           <span class="icon-sent"></span> {{_("Send")}}
         </button>
       </div>
