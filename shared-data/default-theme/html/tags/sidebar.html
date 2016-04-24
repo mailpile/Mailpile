@@ -48,7 +48,7 @@
 
 </li>
 {%  if tag.subtags %}
-{%   for subtag in tag.subtags %}
+{%   for subtag in tag.subtags if subtag.display == 'tag' %}
 <li id="sidebar-tag-{{subtag.tid}}"
     data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
     class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}
