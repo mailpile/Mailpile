@@ -18,6 +18,8 @@ from email.message import Message
 from threading import Thread
 from pyme import core, constants
 
+import pprint
+
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
@@ -816,62 +818,67 @@ class GnuPG:
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
         self.event.running_gpg(_('Importing key to GnuPG key chain'))
-        retvals = self.run(["--import"], gpg_input=key_data)
-        return self._parse_import(retvals[1]["status"])
+        self.is_available()
 
-    def _parse_import(self, output):
+        ctx = core.Context()
+        buf = core.Data(key_data)
+
+        ctx.op_import(buf)
+        res = self._parse_import(ctx.op_import_result())
+
+        pprint.pprint(res)
+
+        return res
+
+    def _parse_import(self, result):
         res = {"imported": [], "updated": [], "failed": []}
-        for x in output:
-            if x[0] == "IMPORTED":
+        for imp in result.imports:
+            if imp.result == 0 and imp.status == constants.IMPORT_NEW:
                 res["imported"].append({
-                    "fingerprint": x[1],
-                    "username": x[2].rstrip()
+                    "fingerprint": imp.fpr
                 })
-            elif x[0] == "IMPORT_OK":
+            elif imp.result == 0 and imp.status != constants.IMPORT_NEW:
                 reasons = {
-                    "0": "unchanged",
-                    "1": "new key",
-                    "2": "new user IDs",
-                    "4": "new signatures",
-                    "8": "new subkeys",
-                    "16": "contains private key",
+                    0: "unchanged",
+                    constants.IMPORT_UID: "new user IDs",
+                    constants.IMPORT_SIG: "new signatures",
+                    constants.IMPORT_SUBKEY: "new subkeys",
+                    constants.IMPORT_SECRET: "contains private key",
                 }
                 res["updated"].append({
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2].rstrip(),
+                    "details": imp.status,
+                    "details_text": reasons[imp.status],
+                    "fingerprint": imp.fpr,
                 })
-            elif x[0] == "IMPORT_PROBLEM":
-                reasons = {
-                    "0": "no reason given",
-                    "1": "invalid certificate",
-                    "2": "issuer certificate missing",
-                    "3": "certificate chain too long",
-                    "4": "error storing certificate",
-                }
+            else:
                 res["failed"].append({
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2].rstrip()
+                    "details": imp.result,
+                    "details_text": core.strerror(imp.result),
+                    "fingerprint": imp.fpr
                 })
-            elif x[0] == "IMPORT_RES":
-                res["results"] = {
-                    "count": int(x[1]),
-                    "no_userids": int(x[2]),
-                    "imported": int(x[3]),
-                    "imported_rsa": int(x[4]),
-                    "unchanged": int(x[5]),
-                    "num_uids": int(x[6]),
-                    "num_subkeys": int(x[7]),
-                    "num_signatures": int(x[8]),
-                    "num_revoked": int(x[9]),
-                    "sec_read": int(x[10]),
-                    "sec_imported": int(x[11]),
-                    "sec_dups": int(x[12]),
-                    "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14].rstrip()),
-                }
+
+        res["results"] = {
+            "count": result.considered,
+            "no_userids": result.no_user_id,
+            "imported": result.imported,
+            "imported_rsa": result.imported_rsa,
+            "unchanged": result.unchanged,
+            "num_uids": result.new_user_ids,
+            "num_subkeys": result.new_sub_keys,
+            "num_signatures": result.new_signatures,
+            "num_revoked": result.new_revocations,
+            "sec_read": result.secret_read,
+            "sec_imported": result.secret_imported,
+            "sec_dups": result.secret_unchanged,
+            "skipped_new_keys": result.considered - len(result.imports),
+            "not_imported": result.not_imported,
+        }
+
         return res
+
+    def _passphrase_callback(hook, hint, info, was_bad, fd):
+        pprint.pprint([hook,info,was_bad,fd])
+        return 0
 
     def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False):
         """
@@ -892,6 +899,16 @@ class GnuPG:
             self.prepare_passphrase(GnuPG.LAST_KEY_USED, decrypting=True)
 
         self.event.running_gpg(_('Decrypting %d bytes of data') % len(data))
+        self.is_available()
+
+        ctx = core.Context()
+        ctx.set_passphrase_cb(self._passphrase_callback)
+        ciphertext = core.Data(data)
+        plaintext = core.Data()
+
+        ctx.op_decrypt(ciphertext,plaintext)
+        return plaintext
+
         for tries in (1, 2):
             retvals = self.run(["--decrypt"], gpg_input=data,
                                               outputfd=outputfd,
@@ -1372,6 +1389,19 @@ class GnuPG:
             else:
                 self.event.update_return_code(-1)
 
+    def generate_key(self):
+        self.is_available()
+        ctx = core.Context()
+        parms = '<GnupgKeyParms format="internal">\nKey-Type: default\nSubkey-Type: default\nName-Real: Joe Tester\nName-Comment: with stupid passphrase\nName-Email: joe@foo.bar\nExpire-Date: 0\nPassphrase: abc\n</GnupgKeyParms>'
+        ctx.op_genkey_start(parms,None,None)
+        while ctx.wait(0) == None:
+            print "iter"
+            time.sleep(0)
+
+        res = ctx.op_genkey_result()
+
+        return res.fpr
+
 
 def GetKeys(gnupg, config, people):
     keys = []
@@ -1481,6 +1511,71 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
         part.signature_info.part_status = 'verified'
         part.encryption_info.part_status = 'decrypted'
 
+
+class GnuPGKeyGenerator(threading.Thread):
+    STARTUP = 'Startup'
+    START_GPG = 'Start GPG'
+    FINISHED = 'Finished'
+    SCRIPT = []
+    VARIABLES = {}
+    DESCRIPTION = 'GnuPG Expect Script'
+    RUNNING_STATES = [STARTUP, START_GPG]
+
+    def __init__(self, sps=None, event=None, variables={}, on_complete=None):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self._lock = threading.RLock()
+        self.before = ''
+        with self._lock:
+            self.state = self.STARTUP
+            self.event = event
+            self.variables = variables or self.VARIABLES
+            self._on_complete = [on_complete] if on_complete else []
+            self.main_script = self.SCRIPT[:]
+            self.sps = sps
+            if sps:
+                self.variables['passphrase'] = '!!<SPS'
+
+    def __str__(self):
+        return '%s: %s' % (threading.Thread.__str__(self), self.state)
+
+    running = property(lambda self: (self.state in self.RUNNING_STATES))
+    failed = property(lambda self: False)
+
+    def in_state(self, state):
+        pass
+
+    def set_state(self, state):
+        self.state = state
+        self.in_state(state)
+
+    def run(self):
+        self.generated_key = None
+        try:
+            self.set_state(self.START_GPG)
+            gpg = GnuPG(None, event=self.event)
+            gpg.event.running_gpg(_(self.DESCRIPTION) % self.variables)
+            self.set_state('Creating key')
+            self.generated_key = gpg.generate_key()
+            self.set_state(self.FINISHED)
+        except:
+            import traceback
+            traceback.print_exc()
+        finally:
+            with self._lock:
+                if self.state != self.FINISHED:
+                    self.state = 'Failed: ' + self.state
+                for name, callback in self._on_complete:
+                    callback()
+                self._on_complete = None
+
+    def on_complete(self, name, callback):
+        with self._lock:
+            if self._on_complete is not None:
+                if name not in [o[0] for o in self._on_complete]:
+                    self._on_complete.append((name, callback))
+            else:
+                callback()
 
 class GnuPGExpectScript(threading.Thread):
     STARTUP = 'Startup'
@@ -1594,7 +1689,7 @@ class GnuPGExpectScript(threading.Thread):
                 callback()
 
 
-class GnuPGKeyGenerator(GnuPGExpectScript):
+class GnuPGKeyGenerator2(GnuPGExpectScript):
     """This is a background thread which generates a new PGP key."""
     KEY_SETUP = 'Key Setup'
     GATHER_ENTROPY = 'Creating key'

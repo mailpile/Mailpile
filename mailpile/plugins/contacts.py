@@ -1023,6 +1023,7 @@ def ProfileVCard(parent):
                           data={'keygen_started': int(time.time()),
                                 'profile_id': random_uid},
                           private_data=key_args)
+            print 1
             self._key_generator = GnuPGKeyGenerator(
                # FIXME: Passphrase handling is a problem here
                event=event,
@@ -1031,8 +1032,11 @@ def ProfileVCard(parent):
                             lambda: self._new_key_created(event, random_uid,
                                                           passphrase))
             )
+            print 2
             self._key_generator.start()
+            print 3
             self.session.config.event_log.log_event(event)
+            print 4
 
         def _configure_security(self, vcard):
             openpgp_key = self.data.get('security-pgp-key', [''])[0]
