@@ -16,6 +16,7 @@ from datetime import datetime
 from email.parser import Parser
 from email.message import Message
 from threading import Thread
+from pyme import core, constants
 
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
@@ -451,7 +452,7 @@ class StreamWriter(Thread):
             fd.close()
 
 
-DEBUG_GNUPG = False
+DEBUG_GNUPG = True
 
 class GnuPG:
     """
@@ -532,17 +533,15 @@ class GnuPG:
 
     def version(self):
         self.event.running_gpg(_('Checking GnuPG version'))
-        retvals = self.run(["--version"])
-        return retvals[1]["stdout"][0].split('\n')[0]
+        info = core.get_engine_info()
+        for i in info:
+            if i.protocol == constants.PROTOCOL_OpenPGP:
+                return i.version
+        return None
 
     def is_available(self):
-        try:
-            self.event.running_gpg(_('Checking GnuPG availability'))
-            retvals = self.run(["--version"])
-            self.available = True
-        except OSError:
-            self.available = False
-
+        self.event.running_gpg(_('Checking GnuPG availability'))
+        self.available = core.check_version(None) and core.engine_check_version(constants.PROTOCOL_OpenPGP)
         return self.available
 
     def run(self,
@@ -680,23 +679,104 @@ class GnuPG:
         rlp = GnuPGRecordParser()
         return rlp.parse(keylist)
 
-    def list_keys(self, selectors=None):
+    def list_keys(self, selectors=None, secret_only=False):
         """
         >>> g = GnuPG(None)
         >>> g.list_keys()[0]
         0
         """
-        list_keys = ["--fingerprint"]
-        for sel in selectors or []:
-            list_keys += ["--list-keys", sel]
-        if not selectors:
-            list_keys += ["--list-keys"]
         self.event.running_gpg(_('Fetching GnuPG public key list (selectors=%s)'
                                  ) % ', '.join(selectors or []))
-        retvals = self.run(list_keys)
-        return self.parse_keylist(retvals[1]["stdout"])
+        if selectors != None:
+            selectors = " ".join(selectors).encode("ascii","ignore")
+
+        self.is_available()
+        ctx = core.Context()
+        ctx.op_keylist_start(selectors, 1 if secret_only else 0)
+        k = ctx.op_keylist_next()
+        ret = {}
+
+        def parse_date(ts):
+            try:
+                unixtime = int(ts)
+                if unixtime > 946684800:  # 2000-01-01
+                    dt = datetime.fromtimestamp(unixtime)
+                    return dt.strftime('%Y-%m-%d')
+                else:
+                    return ""
+            except ValueError:
+                return '1970-01-01'
+
+        def parse_validity(v):
+            if v == constants.VALIDITY_UNKNOWN:
+                return "?"
+            elif v == constants.VALIDITY_UNDEFINED:
+                return "q"
+            elif v == constants.VALIDITY_NEVER:
+                return "n"
+            elif v == constants.VALIDITY_MARGINAL:
+                return "m"
+            elif v == constants.VALIDITY_FULL:
+                return "f"
+            elif v == constants.VALIDITY_ULTIMATE:
+                return "u"
+
+        while k != None:
+            pk = k.subkeys[0]
+            main_uid = k.uids[0]
+
+            attribs = {}
+            attribs["capabilities_map"] = {
+                "authenticate": k.can_authenticate,
+                "certify": k.can_certify,
+                "encrypt": k.can_encrypt,
+                "sign": k.can_sign,
+            };
+            attribs["creation_date"] = parse_date(pk.timestamp)
+            attribs["disabled"] = k.disabled
+            attribs["expiration_date"] = parse_date(pk.expires)
+            attribs["fingerprint"] = pk.fpr
+            attribs["flag"] = ""
+            attribs["keyid"] = pk.keyid
+            attribs["keysize"] = pk.length
+            attribs["keytype"] = pk.pubkey_algo
+            attribs["keytype_name"] = core.pubkey_algo_name(pk.pubkey_algo)
+            attribs["ownertrust"] = k.owner_trust
+            attribs["private_key"] = k.secret
+            attribs["revoked"] = k.revoked
+            attribs["sigclass"] = ""
+            attribs["subkeys"] = []
+            attribs["uid"] = ""
+            attribs["uidhash"] = ""
+            attribs["uids"] = []
+            attribs["validity"] = parse_validity(k.owner_trust)
+
+            for uid in k.uids:
+                uid_attribs = {}
+                uid_attribs["comment"] = uid.comment
+                uid_attribs["email"] = uid.email
+                uid_attribs["name"] = uid.name
+
+                attribs["uids"].append(uid_attribs)
+
+            for sk in k.subkeys[1:]:
+                sk_attribs = {}
+                sk_attribs["creation_date"] = parse_date(sk.timestamp)
+                sk_attribs["id"] = sk.keyid
+                sk_attribs["keysize"] = sk.length
+                sk_attribs["keytype_name"] = core.pubkey_algo_name(sk.pubkey_algo)
+
+                attribs["subkeys"].append(sk_attribs)
+
+            ret[pk.fpr] = attribs
+            k = ctx.op_keylist_next()
+        ctx.op_keylist_end()
+
+        return ret
 
     def list_secret_keys(self, selectors=None):
+        return self.list_keys(selectors,True)
+        print "==================================================================="
         #
         # Note: The "." parameter that is passed is to work around a bug
         #       in GnuPG < 2.1, where --list-secret-keys does not list
@@ -742,6 +822,7 @@ class GnuPG:
                 for k in ("disabled", "revoked"):  # FIXME: Copy more?
                     secret_keys[fprint][k] = info[k]
 
+        print secret_keys
         return secret_keys
 
     def import_keys(self, key_data=None):
