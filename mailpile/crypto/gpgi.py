@@ -700,6 +700,54 @@ class GnuPG:
         elif v == constants.VALIDITY_ULTIMATE:
             return "u"
 
+    def _parse_key(self,key):
+        primary = key.subkeys[0]
+        main_uid = key.uids[0]
+
+        attribs = {}
+        attribs["capabilities_map"] = {
+            "authenticate": key.can_authenticate,
+            "certify": key.can_certify,
+            "encrypt": key.can_encrypt,
+            "sign": key.can_sign,
+        };
+        attribs["creation_date"] = self._parse_date(primary.timestamp)
+        attribs["disabled"] = key.disabled
+        attribs["expiration_date"] = self._parse_date(primary.expires)
+        attribs["fingerprint"] = primary.fpr
+        attribs["flag"] = ""
+        attribs["keyid"] = primary.keyid
+        attribs["keysize"] = primary.length
+        attribs["keytype"] = primary.pubkey_algo
+        attribs["keytype_name"] = core.pubkey_algo_name(primary.pubkey_algo)
+        attribs["ownertrust"] = key.owner_trust
+        attribs["revoked"] = key.revoked
+        attribs["sigclass"] = ""
+        attribs["subkeys"] = []
+        attribs["uid"] = ""
+        attribs["uidhash"] = ""
+        attribs["uids"] = []
+        attribs["validity"] = self._parse_validity(key.owner_trust)
+
+        for uid in key.uids:
+            uid_attribs = {}
+            uid_attribs["comment"] = uid.comment
+            uid_attribs["email"] = uid.email
+            uid_attribs["name"] = uid.name
+
+            attribs["uids"].append(uid_attribs)
+
+        for subkey in key.subkeys[1:]:
+            sk_attribs = {}
+            sk_attribs["creation_date"] = self._parse_date(subkey.timestamp)
+            sk_attribs["id"] = subkey.keyid
+            sk_attribs["keysize"] = subkey.length
+            sk_attribs["keytype_name"] = core.pubkey_algo_name(subkey.pubkey_algo)
+
+            attribs["subkeys"].append(sk_attribs)
+
+        return attribs
+
     def list_keys(self, selectors=None):
         """
         >>> g = GnuPG(None)
@@ -727,52 +775,8 @@ class GnuPG:
         all_keys = {}
 
         while key != None:
-            primary = key.subkeys[0]
-            main_uid = key.uids[0]
-
-            attribs = {}
-            attribs["capabilities_map"] = {
-                "authenticate": key.can_authenticate,
-                "certify": key.can_certify,
-                "encrypt": key.can_encrypt,
-                "sign": key.can_sign,
-            };
-            attribs["creation_date"] = self._parse_date(primary.timestamp)
-            attribs["disabled"] = key.disabled
-            attribs["expiration_date"] = self._parse_date(primary.expires)
-            attribs["fingerprint"] = primary.fpr
-            attribs["flag"] = ""
-            attribs["keyid"] = primary.keyid
-            attribs["keysize"] = primary.length
-            attribs["keytype"] = primary.pubkey_algo
-            attribs["keytype_name"] = core.pubkey_algo_name(primary.pubkey_algo)
-            attribs["ownertrust"] = key.owner_trust
-            attribs["revoked"] = key.revoked
-            attribs["sigclass"] = ""
-            attribs["subkeys"] = []
-            attribs["uid"] = ""
-            attribs["uidhash"] = ""
-            attribs["uids"] = []
-            attribs["validity"] = self._parse_validity(key.owner_trust)
-
-            for uid in key.uids:
-                uid_attribs = {}
-                uid_attribs["comment"] = uid.comment
-                uid_attribs["email"] = uid.email
-                uid_attribs["name"] = uid.name
-
-                attribs["uids"].append(uid_attribs)
-
-            for subkey in key.subkeys[1:]:
-                sk_attribs = {}
-                sk_attribs["creation_date"] = self._parse_date(subkey.timestamp)
-                sk_attribs["id"] = subkey.keyid
-                sk_attribs["keysize"] = subkey.length
-                sk_attribs["keytype_name"] = core.pubkey_algo_name(subkey.pubkey_algo)
-
-                attribs["subkeys"].append(sk_attribs)
-
-            all_keys[primary.fpr] = attribs
+            attribs = self._parse_key(key);
+            all_keys[attribs["fingerprint"]] = attribs
             key = ctx.op_keylist_next()
 
         ctx.op_keylist_end()
