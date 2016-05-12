@@ -24,6 +24,7 @@
            {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
            {%- if message %} full-message has-url{% endif %}
            {%- if metadata.flags.replied %} replied{% endif %}"
+    data-tids="{{ metadata.tag_tids|join(',')  }}"
 {%- if message %}
     data-url="{{ msg_url(this_mid) }}"
 {%- endif %}

@@ -6,6 +6,7 @@ from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.security import SecurePassphraseStorage
 from mailpile.util import *
 
 
@@ -35,7 +36,6 @@ class UserSessionCache(dict):
 def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
                                      key=None):
     if passphrase and not sps:
-        from mailpile.config import SecurePassphraseStorage
         sps = SecurePassphraseStorage(passphrase)
         passphrase = 'this probably does not really overwrite :-( '
 
@@ -74,6 +74,7 @@ def CheckPassword(config, username, password):
 
 
 SESSION_CACHE = UserSessionCache()
+LOGIN_FAILURES = []
 
 
 class Authenticate(Command):
@@ -101,11 +102,15 @@ class Authenticate(Command):
         raise UrlRedirectException(url)
 
     def _result(self, result=None):
+        global LOGIN_FAILURES
         result = result or {}
         result['login_banner'] = self.session.config.sys.login_banner
+        result['login_failures'] = LOGIN_FAILURES
         return result
 
     def _error(self, message, info=None, result=None):
+        global LOGIN_FAILURES
+        LOGIN_FAILURES.append(int(time.time()))
         return Command._error(self, message,
                               info=info, result=self._result(result))
 
@@ -122,6 +127,7 @@ class Authenticate(Command):
             raise UrlRedirectException('%s/' % self.session.config.sys.http_path)
 
     def _do_login(self, user, password, load_index=False, redirect=False):
+        global LOGIN_FAILURES
         session, config = self.session, self.session.config
         session_id = self.session.ui.html_variables.get('http_session')
 
@@ -150,6 +156,7 @@ class Authenticate(Command):
 
                     session.ui.debug('Good passphrase for %s' % session_id)
                     self.record_user_activity()
+                    LOGIN_FAILURES = []
                     return self._success(_('Hello world, welcome!'), result={
                         'authenticated': SetLoggedIn(self, redirect=redirect)
                     })
@@ -265,7 +272,7 @@ class SetPassphrase(Command):
             policy = self.data['policy'][0]
         if 'ttl' in self.data:
             ttl = self.data['policy'][0]
-
+        ttl = float(ttl)
 
         fingerprint = info = None
         keyid = self.args[0] if self.args else self.data.get('id', [None])[0]
@@ -321,9 +328,9 @@ class SetPassphrase(Command):
             return happy(_('Password stored permanently'))
 
         elif policy == 'cache-only' and password:
-            from mailpile.config import SecurePassphraseStorage
             sps = SecurePassphraseStorage(password)
-            sps.expiration = time.time() + float(ttl)
+            if ttl > 0:
+                sps.expiration = time.time() + ttl
             config.passphrases[fingerprint] = sps
             if fingerprint.lower() in config.secrets:
                 del config.secrets[fingerprint.lower()]

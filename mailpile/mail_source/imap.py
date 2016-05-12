@@ -996,12 +996,12 @@ class _Mocks(object):
 if __name__ == "__main__":
     import doctest
     import sys
-    import mailpile.config
-    import mailpile.defaults
+    import mailpile.config.defaults
+    import mailpile.config.manager
     import mailpile.ui
 
-    rules = mailpile.defaults.CONFIG_RULES
-    config = mailpile.config.ConfigManager(rules=rules)
+    rules = mailpile.config.defaults.CONFIG_RULES
+    config = mailpile.config.manager.ConfigManager(rules=rules)
     config.sources.imap = {
         'protocol': 'imap_ssl',
         'host': 'imap.gmail.com',

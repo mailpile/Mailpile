@@ -364,10 +364,9 @@ class MailpileVfsRoot(MailpileVfsBase):
     def _entries(self):
         e = copy.copy(self.entries)
         for msid, msobj in self.config.mail_sources.iteritems():
-            if not msobj.my_config.enabled:
-                continue
-            e['msrc.%s' % msid] = (FilePath('/src:%s' % msid), msobj.name,
-                                   'MailSource')
+            if msobj and msobj.my_config and msobj.my_config.enabled:
+                e['msrc.%s' % msid] = (
+                    FilePath('/src:%s' % msid), msobj.name, 'MailSource')
         return e
 
     def Handles(self, path):

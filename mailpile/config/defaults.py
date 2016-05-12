@@ -13,11 +13,11 @@ import os
 import sys
 import time
 
-from mailpile.config import PathDict
-from mailpile.config import ConfigRule as c
-from mailpile.config import CriticalConfigRule as X
-from mailpile.config import PublicConfigRule as p
-from mailpile.config import KeyConfigRule as k
+from mailpile.config.base import PathDict
+from mailpile.config.base import ConfigRule as c
+from mailpile.config.base import CriticalConfigRule as X
+from mailpile.config.base import PublicConfigRule as p
+from mailpile.config.base import KeyConfigRule as k
 
 _ = lambda string: string
 
@@ -198,10 +198,10 @@ CONFIG_RULES = {
 
 
 if __name__ == "__main__":
-    import mailpile.defaults
-    from mailpile.config import ConfigDict
+    import mailpile.config.defaults
+    from mailpile.config.base import ConfigDict
 
     print '%s' % (ConfigDict(_name='mailpile',
                              _comment='Base configuration',
-                             _rules=mailpile.defaults.CONFIG_RULES
+                             _rules=mailpile.config.defaults.CONFIG_RULES
                              ).as_config_bytes(), )

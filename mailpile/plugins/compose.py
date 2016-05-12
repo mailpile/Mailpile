@@ -17,6 +17,7 @@ from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.mailutils import NotEditableError, AddressHeaderParser
 from mailpile.mailutils import NoFromAddressError, PrepareMessage
+from mailpile.mailutils import MakeMessageID
 from mailpile.search import MailIndex
 from mailpile.smtp_client import SendMail
 from mailpile.urlmap import UrlMap
@@ -165,7 +166,7 @@ class CompositionCommand(AddComposeMethods(Search)):
                       'Attach-PGP-Pubkey')
 
     def _new_msgid(self):
-        msgid = (email.utils.make_msgid('mailpile')
+        msgid = (MakeMessageID()
                  .replace('.', '-')   # Dots may bother JS/CSS
                  .replace('_', '-'))  # We use _ to encode the @ later on
         return msgid
@@ -338,12 +339,14 @@ class Compose(CompositionCommand):
         else:
             local_id, lmbox = -1, None
             ephemeral = ['new-%s-mail' % msgid[1:-1].replace('@', '_')]
+        profiles = session.config.vcards.find_vcards([], kinds=['profile'])
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
                              msg_text=(cid and cls._get_canned(idx, cid)
                                        or ''),
                              msg_id=msgid,
-                             ephemeral_mid=ephemeral and ephemeral[0]),
+                             ephemeral_mid=ephemeral and ephemeral[0],
+                             use_default_from=(len(profiles) == 1)),
                 ephemeral)
 
     def command(self):
@@ -538,8 +541,8 @@ class Reply(RelativeCompose):
         args = list(self.args)
         if not args:
             args = ["=%s" % x for x in self.data.get('mid', [])]
-            ephemeral = bool(self.data.get('ephemeral', False))
-            reply_all = bool(self.data.get('reply_all', False))
+            ephemeral = truthy((self.data.get('ephemeral') or [False])[0])
+            reply_all = truthy((self.data.get('reply_all') or [False])[0])
         else:
             while args:
                 if args[0].lower() == 'all':
@@ -640,8 +643,8 @@ class Forward(RelativeCompose):
         args = list(self.args)
         if not args:
             args = ["=%s" % x for x in self.data.get('mid', [])]
-            ephemeral = bool(self.data.get('ephemeral', False))
-            with_atts = bool(self.data.get('atts', False))
+            ephemeral = truthy((self.data.get('ephemeral') or [False])[0])
+            with_atts = truthy((self.data.get('atts') or [False])[0])
         else:
             while args:
                 if args[0].lower() == 'att':

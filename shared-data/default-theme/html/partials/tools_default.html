@@ -90,6 +90,7 @@
   {%- endif %}
   <div class="bulk-actions-hints" style='display: inline-block;'></div>
   <ul class="horizontal right">
+  {{ hard_coded_selection_actions|safe }}
   {%- for elem in selection_actions %}
     <li class="btn-selection-action-{{elem.name}} hide {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
@@ -102,7 +103,7 @@
       {%- else -%}{{elem.text}}{%- endif -%}
       </a>
     </li>
-  {%- endfor %}{{ hard_coded_selection_actions|safe }}
+  {%- endfor %}
   {%- if (not tools_disable_checkbox) and (selection_actions or hard_coded_selection_actions) %}
     <li><input type="checkbox" id="pile-select-all-action"
                class="bulk-action-select-all" tabindex="-1"

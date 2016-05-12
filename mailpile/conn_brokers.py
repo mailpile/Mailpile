@@ -326,6 +326,7 @@ class TcpConnectionBroker(BaseConnectionBroker):
         (Capability.ALL_OUTGOING) |
         (Capability.ALL_INCOMING - set([Capability.INCOMING_INTERNET]))
     )
+    LOCAL_NETWORKS = ['localhost', '127.0.0.1', '::1']
     FIXED_NO_PROXY_LIST = ['localhost', '127.0.0.1', '::1']
     DEBUG_FMT = '%s: Raw TCP conn to: %s'
 
@@ -335,8 +336,12 @@ class TcpConnectionBroker(BaseConnectionBroker):
         #        INCOMING_INTERNET capability.
 
     def _describe(self, context, conn):
+        (host, port) = conn.getpeername()[:2]
+        if host.lower() in self.LOCAL_NETWORKS:
+            context.on_localnet = True
+        else:
+            context.on_internet = True
         context.encryption = None
-        context.is_internet = True
         return conn
 
     def _in_no_proxy_list(self, address):
@@ -379,7 +384,7 @@ class SocksConnBroker(TcpConnectionBroker):
     DEFAULT_PROTO = 'socks5'
 
     DEBUG_FMT = '%s: Raw SOCKS5 conn to: %s'
-    IOERROR_FMT = _('Socks error, %s')
+    IOERROR_FMT = _('SOCKS error, %s')
     IOERROR_MSG = {
         'timed out': _('timed out'),
         'Host unreachable': _('host unreachable'),
@@ -419,7 +424,7 @@ class SocksConnBroker(TcpConnectionBroker):
                                     ) % address
 
     def _fix_address_tuple(self, address):
-        return (str(address[0]), address[1])
+        return (str(address[0]), int(address[1]))
 
     def _conn(self, address, timeout=None, source_address=None, **kwargs):
         sock = socks.socksocket()
@@ -427,7 +432,7 @@ class SocksConnBroker(TcpConnectionBroker):
                                      self.typemap[self.DEFAULT_PROTO])
         sock.setproxy(proxytype=proxytype,
                       addr=self.proxy_config.host,
-                      port=self.proxy_config.port,
+                      port=int(self.proxy_config.port),
                       rdns=True,
                       **self._auth_args())
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
@@ -470,7 +475,7 @@ class TorConnBroker(SocksConnBroker):
     })
 
     def _describe(self, context, conn):
-        context.is_darknet = 'Tor'
+        context.on_darknet = 'Tor'
         context.anonymity = 'Tor'
         return conn
 
@@ -481,7 +486,7 @@ class TorConnBroker(SocksConnBroker):
 
     def _fix_address_tuple(self, address):
         host = str(address[0])
-        return (KNOWN_ONION_MAP.get(host.lower(), host), address[1])
+        return (KNOWN_ONION_MAP.get(host.lower(), host), int(address[1]))
 
     def _broker_avoid(self, address):
         # Disable the avoiding of .onion addresses added above
@@ -576,8 +581,9 @@ class AutoTlsConnBroker(BaseConnectionBrokerProxy):
     def _proxy_address(self, address):
         if address[0].endswith('.onion'):
             raise CapabilityFailure('I do not like .onion addresses')
-        if int(address[1]) == 80:
-            return (address[0], 443)
+        if int(address[1]) != 443:
+            # FIXME: Import HTTPS Everywhere database to make this work?
+            raise CapabilityFailure('Not breaking clear-text HTTP yet')
         return address
 
     def _proxy(self, conn):
@@ -716,19 +722,20 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     into a no-op in the cases where we've alredy wrapped a socket.
     """
     if not isinstance(sock, ssl.SSLSocket):
-        sock = org_sslwrap(sock, *args, **kwargs)
-        Master.get_fd_context(
-            sock.fileno()).encryption = _explain_encryption(sock)
+        ctx = Master.get_fd_context(sock.fileno())
+        try:
+            sock = org_sslwrap(sock, *args, **kwargs)
+            ctx.encryption = _explain_encryption(sock)
+        except (socket.error, IOError), e:
+            ctx.error = '%s' % e
+            raise
     return sock
 
 
 def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
-    if not isinstance(sock, ssl.SSLSocket):
-        sock = org_ctxwrap(self, sock, *args, **kwargs)
-        Master.get_fd_context(
-            sock.fileno()).encryption = _explain_encryption(sock)
-    return sock
-
+    return SslWrapOnlyOnce(
+        lambda s, *a, **kwa: org_ctxwrap(self, s, *a, **kwa),
+        sock, *args, **kwargs)
 
 
 _ = gettext

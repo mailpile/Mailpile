@@ -4,11 +4,11 @@ import sys
 from datetime import datetime as dtime
 from urllib2 import urlopen
 
-from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import APPVER
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
-from mailpile.config import PublicConfigRule as p
+from mailpile.config.base import PublicConfigRule as p
+from mailpile.config.defaults import APPVER
+from mailpile.conn_brokers import Master as ConnBroker
+from mailpile.plugins import PluginManager
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *

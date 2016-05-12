@@ -11,7 +11,7 @@ from lxml import objectify
 import mailpile.auth
 import mailpile.security as security
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.defaults import CONFIG_RULES, APPVER
+from mailpile.config.defaults import CONFIG_RULES, APPVER
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -23,7 +23,6 @@ from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
-from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.eventlog import Event
@@ -100,6 +99,7 @@ class SetupMagic(Command):
             'name': _('Sent'),
         },
         'Spam': {
+            'slug': 'spam',
             'type': 'spam',
             'flag_hides': True,
             'display': 'priority',
@@ -107,6 +107,9 @@ class SetupMagic(Command):
             'icon': 'icon-spam',
             'label_color': '10-orange',
             'name': _('Spam'),
+            'auto_after': 30,
+            'auto_action': '-spam +trash',
+            'auto_tag': 'fancy'
         },
         'MaybeSpam': {
             'display': 'invisible',
@@ -120,6 +123,7 @@ class SetupMagic(Command):
             'name': _('Ham'),
         },
         'Trash': {
+            'slug': 'trash',
             'type': 'trash',
             'flag_hides': True,
             'display': 'priority',
@@ -275,10 +279,10 @@ class SetupMagic(Command):
         vcard_importers = session.config.prefs.vcard.importers
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
-            session.ui.notify(_('Enabling gravatar image importer'))
+            session.ui.notify(_('Enabling Gravatar image importer'))
         if not vcard_importers.libravatar:
             vcard_importers.libravatar.append({'active': True})
-            session.ui.notify(_('Enabling libravatar image importer'))
+            session.ui.notify(_('Enabling Libravatar image importer'))
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:

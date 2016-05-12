@@ -43,7 +43,7 @@ Mailpile.notification = function(result) {
   if (result.event_id !== undefined) {
     result.event_id = result.event_id.split('.').join('-');
   } else {
-    result['event_id'] = 'fake-id-' + Math.random().toString(24).substring(2);
+    result.event_id = 'fake-id-' + Math.random().toString(24).substring(2);
   }
 
   // Message
@@ -101,8 +101,8 @@ Mailpile.notification = function(result) {
   }
 
   // If user has canceled this notification, don't bug him again.
-  if (Mailpile.local_storage['canceled-' + result['event_id']]) {
-    return result['event_id'];
+  if (Mailpile.local_storage['canceled-' + result.event_id]) {
+    return result.event_id;
   }
 
   // Show Notification
@@ -179,10 +179,13 @@ $(document).on('click', '.notification-close', function() {
 
 /* Notification - Undo */
 $(document).on('click', '.notification-undo', function() {
-  var event_id = $(this).data('event_id').split('-').join('.');
+  var event_id = $(this).data('event_id').split('.').join('-');
   Mailpile.API.logs_events_undo_post({ event_id: event_id }, function(result) {
     if (result.status === 'success') {
       window.location.reload(true);
+    }
+    else {
+      alert("{{ _('Oops. Mailpile failed to complete your task.') }}");
     }
   });
 });

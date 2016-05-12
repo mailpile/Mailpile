@@ -1318,7 +1318,10 @@ class MailIndex(object):
                 '',                                  # No replies for now
                 msg_mid                              # Conversation ID
             ]
-            email, fn = ExtractEmailAndName(msg_from)
+            if msg_from:
+                email, fn = ExtractEmailAndName(msg_from)
+            else:
+                email = fn = None
             if email and fn:
                 self.update_email(email, name=fn)
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
@@ -1616,6 +1619,11 @@ class MailIndex(object):
                 keywords |= set(['%s:in' % tag._key for tag in
                                  self.config.get_tags(type='inbox')])
 
+        # Mark as updated (modified/touched) today and on msg_ts
+        keywords.add('%x:u' % (time.time() / (24 * 3600)))
+        if msg_ts:
+            keywords.add('%x:u' % (msg_ts / (24 * 3600)))
+
         for hook in filter_hooks or []:
             keywords = hook(session, msg_mid, msg, keywords,
                             incoming=incoming)
@@ -1658,6 +1666,38 @@ class MailIndex(object):
             return rv
         except (IndexError, ValueError):
             return self.BOGUS_METADATA[:]
+
+    def delete_msg_at_idx_pos(self, session, msg_idx, keep_msgid=False):
+        info = self.get_msg_at_idx_pos(msg_idx)
+
+        # Most of the information just gets nuked.
+        info[self.MSG_PTRS] = ''
+        info[self.MSG_FROM] = ''
+        info[self.MSG_TO] = ''
+        info[self.MSG_CC] = ''
+        info[self.MSG_KB] = 0
+        info[self.MSG_SUBJECT] = ''
+        info[self.MSG_BODY] = self.MSG_BODY_DELETED
+
+        # The timestamp we keep partially intact, to not completely break
+        # ordering within theads. This may not really be necessary.
+        ts = long(info[self.MSG_DATE], 36)
+        info[self.MSG_DATE] = b36(ts - (ts % (3600 * 24)))
+
+        # FIXME: Remove from threads? This may break threading. :(
+
+        if not keep_msgid:
+            # If we don't keep the msgid, the message may reappear later
+            # if it wasn't deleted from all source mailboxes. The caller
+            # may request this if deletion is known to be incomplete.
+            info[self.MSG_ID] = self.encode_msg_id('%s' % msg_idx)
+
+        # Save changes...
+        self.set_msg_at_idx_pos(msg_idx, info)
+
+        # Remove all tags
+        for tag in self.get_tags(msg_info=info):
+            self.remove_tag(session, tag, msg_idxs=[msg_idx])
 
     def update_msg_sorting(self, msg_idx, msg_info):
         for order, sorter in self.SORT_ORDERS.iteritems():
@@ -1780,6 +1820,12 @@ class MailIndex(object):
                 self.TAGS[tag_id] |= eids
             elif eids:
                 self.TAGS[tag_id] = eids
+
+        # Record that these messages were touched in some way
+        GlobalPostingList.Append(session,
+                                 '%x:u' % (time.time() // (24 * 3600)),
+                                 [b36(e) for e in eids])
+
         try:
             self.config.command_cache.mark_dirty(
                 [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
@@ -1797,17 +1843,19 @@ class MailIndex(object):
             msg_idxs = set(msg_idxs)
         if not msg_idxs:
             return set()
-        CachedSearchResultSet.DropCaches()
+
         session.ui.mark(_n('Untagging conversation (%s)',
                            'Untagging conversations (%s)',
                            len(msg_idxs)
                            ) % (tag_id, ))
+        CachedSearchResultSet.DropCaches()
         for msg_idx in list(msg_idxs):
             if conversation:
                 for reply in self.get_conversation(msg_idx=msg_idx,
                                                    ghosts=True):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
+
         session.ui.mark(_n('Untagging %d message (%s)',
                            'Untagging %d messages (%s)',
                            len(msg_idxs)
@@ -1834,6 +1882,12 @@ class MailIndex(object):
         with self._lock:
             if tag_id in self.TAGS:
                 self.TAGS[tag_id] -= eids
+
+        # Record that these messages were touched in some way
+        GlobalPostingList.Append(session,
+                                 '%x:u' % (time.time() // (24 * 3600)),
+                                 [b36(e) for e in eids])
+
         try:
             self.config.command_cache.mark_dirty(
                 [u'%s:in' % self.config.tags[tag_id].slug] +

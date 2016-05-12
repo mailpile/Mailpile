@@ -163,7 +163,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
-          Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed status")|escapejs}}: ' + response.status });
+          Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed: status")|escapejs}}: ' + response.status });
         }
       },
       Error: function(up, err) {

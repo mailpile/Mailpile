@@ -164,10 +164,14 @@ class MailpileMailbox(mailbox.mbox):
                                b36(msg_size),
                                self.get_msg_cs80b(msg_start, msg_size))
 
-    def get_file_by_ptr(self, msg_ptr):
+    def _parse_ptr(self, msg_ptr):
         parts = msg_ptr[MBX_ID_LEN:].split(':')
         start = int(parts[0], 36)
         length = int(parts[1], 36)
+        return parts, start, length
+
+    def get_file_by_ptr(self, msg_ptr):
+        parts, start, length = self._parse_ptr(msg_ptr)
 
         # Make sure we can actually read the message
         cs80b = self.get_msg_cs80b(start, length)
@@ -181,6 +185,13 @@ class MailpileMailbox(mailbox.mbox):
         # accessing the same mailbox and moving it around, or in case we have
         # multiple PartialFile objects in flight at once.
         return mailbox._PartialFile(self._get_fd(), start, start + length)
+
+    def remove_by_ptr(self, msg_ptr):
+        parts, start, length = self._parse_ptr(msg_ptr)
+        keys = [k for k in self._toc if self._toc[k][0] == start]
+        if keys:
+            return self.remove(keys[0])
+        raise KeyError('Not found: %s' % msg_ptr)
 
     def get_bytes(self, toc_id, *args):
         return self.get_file(toc_id).read(*args)

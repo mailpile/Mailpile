@@ -83,10 +83,13 @@ alltests: clean pytests
 	@git checkout mailpile/tests/data/
 
 pytests:
+	@echo -n 'security         ' && python2 mailpile/security.py
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
 	@echo -n 'search           ' && python2 mailpile/search.py
 	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py
-	@echo -n 'config           ' && python2 mailpile/config.py
+	@echo -n 'config/base      ' && python2 mailpile/config/base.py
+	@echo -n 'config/validators' && python2 mailpile/config/validators.py
+	@echo -n 'config/manager   ' && python2 mailpile/config/manager.py
 	@echo -n 'conn_brokers     ' && python2 mailpile/conn_brokers.py
 	@echo -n 'util             ' && python2 mailpile/util.py
 	@echo -n 'vcard            ' && python2 mailpile/vcard.py

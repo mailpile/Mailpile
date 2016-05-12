@@ -1614,9 +1614,10 @@ class VCardContextProvider(VCardPluginClass):
 
 if __name__ == "__main__":
     import doctest
-    import mailpile.config
-    import mailpile.defaults
-    cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    import mailpile.config.defaults
+    import mailpile.config.manager
+    cfg = mailpile.config.manager.ConfigManager(
+        rules=mailpile.config.defaults.CONFIG_RULES)
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg})
     print '%s' % (results, )

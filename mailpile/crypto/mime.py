@@ -352,12 +352,13 @@ class MimeWrapper:
     def __init__(self, config,
                  event=None, cleaner=None,
                  sender=None, recipients=None):
+        from mailpile.mailutils import MakeBoundary
         self.config = config
         self.event = event
         self.sender = sender
         self.cleaner = cleaner
         self.recipients = recipients or []
-        self.container = c = MIMEMultipart()
+        self.container = c = MIMEMultipart(boundary=MakeBoundary())
         c.set_type(self.CONTAINER_TYPE)
         c.signature_info = SignatureInfo(bubbly=False)
         c.encryption_info = EncryptionInfo(bubbly=False)

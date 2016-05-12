@@ -2,17 +2,17 @@ import os
 import random
 import time
 
-import mailpile.defaults
+import mailpile.config.defaults
 import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPGKeyGenerator
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
-from mailpile.config import SecurePassphraseStorage
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import AddressHeaderParser
+from mailpile.security import SecurePassphraseStorage
 from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo
 from mailpile.util import *
 
@@ -821,7 +821,7 @@ def ProfileVCard(parent):
 
         def _sendmail_command(self):
             # FIXME - figure out where sendmail is for reals
-            return mailpile.defaults.DEFAULT_SENDMAIL
+            return mailpile.config.defaults.DEFAULT_SENDMAIL
 
         def _sanity_check(self, kind, triplets):
             route_id = self.data.get('route_id', [None])[0]

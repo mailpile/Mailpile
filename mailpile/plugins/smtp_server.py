@@ -5,7 +5,6 @@ import smtpd
 import threading
 import traceback
 
-import mailpile.config
 import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _

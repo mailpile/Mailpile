@@ -9,7 +9,7 @@
 {%- block title %}{{_("Welcome Home")}}{% endblock %}
 
 {%- block contenttools %}
-  {%- if config.prefs.web_content != "unknown" %}
+  {%- if is_configured() %}
     {%- set activities = [{
       'name': 'browser',
       'icon': 'list',
@@ -160,7 +160,7 @@
        </td>
     </tr>
     {%- endfor %}
-    {%- elif config.prefs.web_content == "unknown" %}
+    {%- elif not is_configured() %}
     <tr class="message"><td colspan=9><div class='text-center'>
       <br>
       <p><i>{{_("Please review your privacy settings before adding any accounts.")}}</i></p>
@@ -181,7 +181,7 @@
     </div></td></tr>
     {%- endif %}
     <tr><td></td><td>
-{%- if config.prefs.web_content != "unknown" %}
+{%- if is_configured() %}
       </td><td style='text-align: left;'>
         <a href="{{ U('/in/inbox/') }}">
          <span class="icon icon-inbox"></span> {{_("Master Inbox")}}

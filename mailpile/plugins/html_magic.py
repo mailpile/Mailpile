@@ -6,13 +6,13 @@
 #
 from urllib2 import urlopen, HTTPError
 
-import mailpile.config
 import mailpile.security as security
-from mailpile.commands import Command, RenderPage
+from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.plugins.core import RenderPage
 from mailpile.ui import SuppressHtmlOutput
 from mailpile.urlmap import UrlMap
 from mailpile.util import *

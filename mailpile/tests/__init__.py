@@ -10,6 +10,8 @@ from cStringIO import StringIO
 # Mailpile core
 import mailpile
 import mailpile.util
+import mailpile.config.manager
+import mailpile.config.defaults
 from mailpile.plugins.tags import AddTag, Filter
 from mailpile.crypto.gpgi import GNUPG_HOMEDIR
 from mailpile.ui import SilentInteraction
@@ -42,8 +44,9 @@ TAGS = {
 
 
 def _initialize_mailpile_for_testing(workdir, test_data):
-    config = mailpile.app.ConfigManager(workdir=workdir,
-                                        rules=mailpile.defaults.CONFIG_RULES)
+    config = mailpile.config.manager.ConfigManager(
+        workdir=workdir,
+        rules=mailpile.config.defaults.CONFIG_RULES)
     session = mailpile.ui.Session(config)
     session.config.load(session)
     session.main = True

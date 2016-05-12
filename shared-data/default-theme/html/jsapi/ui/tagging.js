@@ -17,6 +17,8 @@ var operations = {
               '{{_("Archived (num) messages")|escapejs}}'],
   'trash':   ['{{_("Moved 1 message to trash")|escapejs}}',
               '{{_("Moved (num)  messages to trash")|escapejs}}'],
+  'unspam':  ['{{_("Moved 1 message out of spam")|escapejs}}',
+              '{{_("Moved (num)  messages out of spam")|escapejs}}'],
   'spam':    ['{{_("Moved 1 message to spam")|escapejs}}',
               '{{_("Moved (num) messages to spam")|escapejs}}']
 };
@@ -98,6 +100,13 @@ function tag_and_update_ui(options, op, callback) {
               // Remove any tag labels
               $elem.removeClass('in_' + tag.slug)
                    .find('.pile-message-tag-' + tag.tid).remove();
+
+              // Remove tag ID from tids list
+              var tids = $elem.data('tids').split(/,/);
+              for (var i = tids.length-1; i >= 0; i--) {
+                if (tids[i] === tag.tid) tids.splice(i, 1);
+              }
+              $elem.data('tids', tids.join(','));
             }
           }
         });
@@ -131,6 +140,10 @@ function tag_and_update_ui(options, op, callback) {
                 if (tag.label) {
                   $elem.find('span.item-tags').append(tag_html);
                 }
+                // Remove tag ID from tids list
+                var tids = $elem.data('tids').split(/,/);
+                tids.push(tag.tid);
+                $elem.data('tids', tids.join(','));
               }
             }
           });

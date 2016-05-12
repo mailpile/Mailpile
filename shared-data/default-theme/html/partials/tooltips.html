@@ -1,7 +1,13 @@
 <script id="tooltip-pile-tag-details" type="text/template">
   <div>
-    <h4 class="text-center" style="color: <%= Mailpile.theme.colors[label_color] %> "><span class=" <%= icon %> "></span> <%= name %></h4>
-    <p><a href="<%= url %>" data-mid="<%= mid %>"><span class="icon-links"></span> {{_("Browse Tag")}}</a></p>
+    <a href="<%= url %>" data-mid="<%= mid %>">
+      <h4 class="text-center" style="color: <%= Mailpile.theme.colors[label_color] %> ">
+        <span class=" <%= icon %> "></span> <%= name %>
+      </h4>
+    </a>
+    <p><a href="{{ U('/tags/edit.html?only=') }}<%= slug %>"
+          title="{{ _('Edit') }}: <%= name %>"
+          data-icon="icon-settings" class="auto-modal auto-modal-reload"><span class="icon-settings"></span> {{_("Edit Tag")}}</a></p>
     <p><a href="#" data-tid="<%= tid %>" data-mid="<%= mid %>" class="pile-tag-delete"><span class="icon-circle-x"></span> {{_("Remove Tag")}}</a></p>
   </div>
 </script>

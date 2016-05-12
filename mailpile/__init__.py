@@ -1,8 +1,3 @@
-import mailpile.app
-import mailpile.commands
-import mailpile.defaults
-import mailpile.ui
-import mailpile.util
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 
@@ -15,12 +10,16 @@ class Mailpile(object):
     """This object provides a simple Python API to Mailpile."""
 
     def __init__(self,
-                 ui=mailpile.ui.UserInteraction,
+                 ui=None,
                  workdir=None,
                  session=None):
+        import mailpile.app
+        import mailpile.config.defaults
+        import mailpile.ui
         if not session:
+            ui = ui or mailpile.ui.UserInteraction
             self._config = mailpile.app.ConfigManager(
-                workdir=workdir, rules=mailpile.defaults.CONFIG_RULES)
+                workdir=workdir, rules=mailpile.config.defaults.CONFIG_RULES)
             self._session = mailpile.ui.Session(self._config)
             self._ui = self._session.ui = ui(self._config)
             self._session.config.load(self._session)
@@ -38,6 +37,7 @@ class Mailpile(object):
                 setattr(self, *self._mk_action(cls, names[1], argspec))
 
     def _mk_action(self, cls, cmd, argspec):
+        import mailpile.commands
         if argspec:
 
             def fnc(*args, **kwargs):
@@ -53,6 +53,7 @@ class Mailpile(object):
         return cmd.replace('/', '_'), fnc
 
     def Interact(self):
+        import mailpile.util
         mailpile.util.QUITTING = False
         self._session.interactive = self._session.ui.interactive = True
         try:
