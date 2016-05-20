@@ -25,6 +25,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
+from mailpile.security import SecurePassphraseStorage
 
 
 _ = lambda s: s
@@ -456,6 +457,21 @@ class StreamWriter(Thread):
 
 DEBUG_GNUPG = True
 
+def _passphrase_callback(hint, info, was_bad):
+    print "enter _passphrase_callback"
+    passphrase = GnuPG.PASSPHRASE
+
+    if not isinstance(passphrase,str):
+        passphrase = ""
+
+        while True:
+            p = GnuPG.PASSPHRASE.read()
+            passphrase += p
+            if p == "":
+                break
+
+    return passphrase
+
 class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
@@ -472,6 +488,7 @@ class GnuPG:
     ARMOR_END_PUB_KEY     = '-----END PGP PUBLIC KEY BLOCK-----'
 
     LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
+    PASSPHRASE = None
 
     def __init__(self, config,
                  session=None, use_agent=None, debug=False, event=None):
@@ -502,7 +519,7 @@ class GnuPG:
     def prepare_passphrase(self, keyid, signing=False, decrypting=False):
         """Query the Mailpile secrets for a usable passphrase."""
         def _use(kid, sps_reader):
-            self.passphrase = sps_reader
+            GnuPG.PASSPHRASE = sps_reader
             GnuPG.LAST_KEY_USED = kid
             return True
 
@@ -688,6 +705,60 @@ class GnuPG:
         except ValueError:
             return '1970-01-01'
 
+    def _fetch_verify_result(self,ctx):
+        sigs = []
+
+        for res in ctx.op_verify_result().signatures:
+            st = res.summary
+            ret = SignatureInfo()
+            ret["protocol"] = "openpgp"
+
+            if st & constants.SIGSUM_VALID != 0:
+                if res.validity == constants.VALIDITY_FULL or \
+                        res.validity == constants.VALIDITY_ULTIMATE:
+                    ret.part_status = "verified"
+                else:
+                    ret.part_status = "unverified"
+            elif st & constants.SIGSUM_SIG_EXPIRED != 0:
+                ret.part_status = "expired"
+            elif st & constants.SIGSUM_KEY_EXPIRED != 0:
+                ret.part_status = "expired"
+            elif st & constants.SIGSUM_KEY_REVOKED != 0:
+                ret.part_status = "revoked"
+            elif st & constants.SIGSUM_KEY_MISSING != 0:
+                ret.part_status = "missingkey"
+                ret["missing_keys"] = [res.fpr]
+            elif st & constants.SIGSUM_SYS_ERROR != 0:
+                ret.part_status = "error"
+            else:
+                ret.part_status = "invalid"
+
+            ret["keyinfo"] = res.fpr
+            ret["timestamp"] = res.timestamp
+
+            key = self.list_keys(res.fpr)
+            if res.fpr in key:
+                uid = key[res.fpr]["uids"][0]
+                ret["name"] = uid["name"]
+                ret["email"] = uid["email"]
+
+            sigs.append(ret)
+
+        if len(sigs) == 0:
+            return [SignatureInfo()]
+        else:
+            return sigs
+
+    def _fetch_decrypt_result(self,ctx):
+        res = ctx.op_decrypt_result()
+        ret = EncryptionInfo()
+        ret["protocol"] = "openpgp"
+        ret.part_status = "decrypted"
+        ret["have_keys"] = map(lambda x: x.keyid,res.recipients)
+        ret.filename = res.file_name
+
+        return ret
+
     def _parse_validity(self,v):
         if v == constants.VALIDITY_UNKNOWN:
             return "?"
@@ -758,30 +829,20 @@ class GnuPG:
         """
         self.event.running_gpg(_('Fetching GnuPG public key list (selectors=%s)'
                                  ) % ', '.join(selectors or []))
-        if selectors != None:
-            selectors = " ".join(selectors).encode("ascii","ignore")
 
         self.is_available()
         ctx = core.Context()
-
-        if selectors == None:
-            ctx.op_keylist_start(None,0)
-        elif isinstance(selectors, basestring):
-            ctx.op_keylist_start(selectors.encode("ascii","ignore"),0)
-        elif isinstance(selectors, list):
-            ctx.op_keylist_start_ext(selectors.map(lambda s: s.encode("ascii","ignore")),0,0)
-        else:
-            raise ValueError
-
-        key = ctx.op_keylist_next()
         all_keys = {}
 
-        while key != None:
-            attribs = self._parse_key(key);
-            all_keys[attribs["fingerprint"]] = attribs
-            key = ctx.op_keylist_next()
-
-        ctx.op_keylist_end()
+        if selectors == None:
+            for k in ctx.op_keylist_all(None,0):
+                attribs = self._parse_key(k);
+                all_keys[attribs["fingerprint"]] = attribs
+        else:
+            for sel in  selectors:
+                for k in ctx.op_keylist_all(sel.encode("utf8","ignore"),0):
+                    attribs = self._parse_key(k);
+                    all_keys[attribs["fingerprint"]] = attribs
 
         return all_keys
 
@@ -876,10 +937,6 @@ class GnuPG:
 
         return res
 
-    def _passphrase_callback(hook, hint, info, was_bad, fd):
-        pprint.pprint([hook,info,was_bad,fd])
-        return 0
-
     def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False):
         """
         Note that this test will fail if you don't replace the recipient with
@@ -902,39 +959,21 @@ class GnuPG:
         self.is_available()
 
         ctx = core.Context()
-        ctx.set_passphrase_cb(self._passphrase_callback)
-        ciphertext = core.Data(data)
+        ctx.set_passphrase_cb(_passphrase_callback)
+        ciphertext = core.Data(data.encode("utf-8"))
         plaintext = core.Data()
 
-        ctx.op_decrypt(ciphertext,plaintext)
-        return plaintext
+        try:
+            ctx.op_decrypt_verify(ciphertext,plaintext)
+            plaintext.seek(0,0)
+        except:
+            pass
 
-        for tries in (1, 2):
-            retvals = self.run(["--decrypt"], gpg_input=data,
-                                              outputfd=outputfd,
-                                              send_passphrase=True)
-            if retvals[0] == 0:
-                break
-            elif tries == 1:
-                # Uh, oh, failed! Probably the wrong passphrase. Parse the
-                # gpg output for the keyid and try again if we have it.
-                keyid = None
-                for msg in retvals[1]['status']:
-                    if msg[0] == 'NEED_PASSPHRASE':
-                        if self.prepare_passphrase(msg[2], decrypting=True):
-                            keyid = msg[2]
-                            break
-                if not keyid:
-                    break
+        res_v = self._fetch_verify_result(ctx)
+        res_d = self._fetch_decrypt_result(ctx)
+        ret = res_v[0],res_d,plaintext.read()
+        return ret
 
-        if as_lines:
-            as_lines = retvals[1]["stdout"]
-            retvals[1]["stdout"] = []
-
-        rp = GnuPGResultParser().parse(retvals)
-        return (rp.signature_info, rp.encryption_info,
-                as_lines or rp.plaintext)
-                
     def base64_segment(self, dec_start, dec_end, skip, line_len, line_end = 2):
         """
         Given the start and end index of a desired segment of decoded data,
@@ -1157,7 +1196,6 @@ class GnuPG:
                 found = set()
         return found
     
-    
     def remove_armor(self, text):
         lines = text.strip().splitlines(True)
         if lines[0].startswith(self.ARMOR_BEGIN_SIGNED):
@@ -1176,6 +1214,7 @@ class GnuPG:
             clearsign=True)[1]
         >>> g.verify(s)
         """
+        print "verify"
         params = ["--verify"]
         if signature:
             sig = tempfile.NamedTemporaryFile()
@@ -1197,34 +1236,46 @@ class GnuPG:
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
-        if tokeys:
-            action = ["--encrypt", "--yes", "--expert",
-                      "--trust-model", "always"]
-            for r in tokeys:
-                action.append("--recipient")
-                action.append(r)
-            action.extend([])
-            self.event.running_gpg(_('Encrypting %d bytes of data to %s'
-                                     ) % (len(data), ', '.join(tokeys)))
-        else:
-            action = ["--symmetric", "--yes", "--expert"]
-            self.event.running_gpg(_('Encrypting %d bytes of data with password'
-                                     ) % len(data))
-
-        if armor:
-            action.append("--armor")
-        if sign:
-            action.append("--sign")
-        if sign and fromkey:
-            action.append("--local-user")
-            action.append(fromkey)
         if fromkey:
             self.prepare_passphrase(fromkey, signing=True)
 
-        retvals = self.run(action, gpg_input=data,
-                           send_passphrase=(sign or not tokeys))
+        self.is_available()
+        ctx = core.Context()
+        ctx.set_passphrase_cb(_passphrase_callback)
+        ctx.set_armor(1 if armor else 0)
 
-        return retvals[0], "".join(retvals[1]["stdout"])
+        plaintext = core.Data(data)
+        ciphertext = core.Data()
+
+        recv = []
+        if tokeys:
+            for r in tokeys:
+                for k in ctx.op_keylist_all(r.encode("utf8"),0):
+                    recv.append(k)
+            self.event.running_gpg(_('Encrypting %d bytes of data to %s'
+                                     ) % (len(data), ', '.join(tokeys)))
+        else:
+            self.event.running_gpg(_('Encrypting %d bytes of data with password'
+                                     ) % len(data))
+
+        if sign and fromkey:
+            for sigkey in ctx.op_keylist_all(fromkey.encode("ascii","ignore"), 1):
+                if sigkey.can_sign:
+                    ctx.signers_add(sigkey)
+
+        try:
+            if sign:
+                ctx.op_encrypt_sign(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+            else:
+                ctx.op_encrypt(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+
+            ciphertext.seek(0,0)
+            ret = 0,ciphertext.read()
+            return ret
+        except:
+            import traceback
+            traceback.print_exc()
+            return 1,None
 
     def sign(self, data,
              fromkey=None, armor=True, detatch=True, clearsign=False,
@@ -1235,28 +1286,39 @@ class GnuPG:
         0
         """
         if passphrase:
-            self.passphrase = passphrase
+            GnuPG.PASSPHRASE = passphrase
         elif fromkey:
             self.prepare_passphrase(fromkey, signing=True)
 
+        self.is_available()
+        ctx = core.Context()
+        plaintext = core.Data(data)
+        signature = core.Data()
+        ctx.set_passphrase_cb(_passphrase_callback)
+
+        sig_mode = constants.SIG_MODE_NORMAL
         if detatch and not clearsign:
-            action = ["--detach-sign"]
+            sig_mode = constants.SIG_MODE_DETACH
         elif clearsign:
-            action = ["--clearsign"]
-        else:
-            action = ["--sign"]
-        if armor:
-            action.append("--armor")
+            sig_mode = constants.SIG_MODE_CLEAR
+
+        ctx.set_armor(1 if armor else 0)
+
         if fromkey:
-            action.append("--local-user")
-            action.append(fromkey)
+            for sigkey in ctx.op_keylist_all(fromkey.encode("ascii","ignore"), 1):
+                if sigkey.can_sign:
+                    ctx.signers_add(sigkey)
 
         self.event.running_gpg(_('Signing %d bytes of data with %s'
                                  ) % (len(data), fromkey or _('default')))
-        retvals = self.run(action, gpg_input=data, send_passphrase=True)
-
-        self.passphrase = None
-        return retvals[0], "".join(retvals[1]["stdout"])
+        try:
+            retvals = ctx.op_sign(plaintext,signature,sig_mode)
+            signature.seek(0,0)
+            return 0,signature.read()
+        except:
+            import traceback
+            traceback.print_exc()
+            return 1,None
 
     def sign_key(self, keyid, signingkey=None):
         action = ["--yes", "--sign-key", keyid]
@@ -1290,12 +1352,20 @@ class GnuPG:
                    keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
         self.event.running_gpg(_('Searching for key for %s in key servers'
                                  ) % (term))
+        #self.is_available()
+        #ctx = core.Context()
+        #keydata = core.Data(term)
+
+        #ctx.op_import(keydata)
+
         for keyserver in keyservers:
             cmd = ['--keyserver', keyserver,
                    '--fingerprint',
                    '--search-key', self._escape_hex_keyid_term(term)]
             for opt in keyserver_options:
                 cmd[2:2] = ['--keyserver-options', opt]
+            print "search_key calling ",
+            pprint.pprint(cmd)
             retvals = self.run(cmd)
             if 'unsupported' not in ''.join(retvals[1]["stdout"]):
                 break
@@ -1325,9 +1395,13 @@ class GnuPG:
                 results[curpub]["uids"].append({"name": name,
                                                 "email": email,
                                                 "comment": comment})
+        print "search_key ",
+        pprint.pprint(results)
         return results
 
     def get_pubkey(self, keyid):
+        print "get_pubkey:",
+        pprint.pprint(keyid)
         self.event.running_gpg(_('Searching for key for %s in key servers'
                                  ) % (keyid))
         retvals = self.run(['--armor',
@@ -1336,6 +1410,8 @@ class GnuPG:
         return "".join(retvals)
 
     def address_to_keys(self, address):
+        print "address_to_keys:",
+        pprint.pprint(address)
         res = {}
         keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
@@ -1389,14 +1465,10 @@ class GnuPG:
             else:
                 self.event.update_return_code(-1)
 
-    def generate_key(self):
+    def generate_key(self,parms):
         self.is_available()
         ctx = core.Context()
-        parms = '<GnupgKeyParms format="internal">\nKey-Type: default\nSubkey-Type: default\nName-Real: Joe Tester\nName-Comment: with stupid passphrase\nName-Email: joe@foo.bar\nExpire-Date: 0\nPassphrase: abc\n</GnupgKeyParms>'
-        ctx.op_genkey_start(parms,None,None)
-        while ctx.wait(0) == None:
-            print "iter"
-            time.sleep(0)
+        ctx.op_genkey(parms,None,None)
 
         res = ctx.op_genkey_result()
 
@@ -1513,13 +1585,22 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
 
 
 class GnuPGKeyGenerator(threading.Thread):
+    """This is a background thread which generates a new PGP key."""
+    # States
     STARTUP = 'Startup'
     START_GPG = 'Start GPG'
     FINISHED = 'Finished'
-    SCRIPT = []
-    VARIABLES = {}
-    DESCRIPTION = 'GnuPG Expect Script'
-    RUNNING_STATES = [STARTUP, START_GPG]
+    GATHER_ENTROPY = 'Creating key'
+    # General
+    RUNNING_STATES = [STARTUP,START_GPG,GATHER_ENTROPY]
+    VARIABLES = {
+        'keytype': '1',
+        'bits': '4096',
+        'name': 'Mailpile Generated Key',
+        'email': '',
+        'passphrase': 'mailpile'
+    }
+    DESCRIPTION = _('Creating a %(bits)s bit GnuPG key')
 
     def __init__(self, sps=None, event=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)
@@ -1531,23 +1612,18 @@ class GnuPGKeyGenerator(threading.Thread):
             self.event = event
             self.variables = variables or self.VARIABLES
             self._on_complete = [on_complete] if on_complete else []
-            self.main_script = self.SCRIPT[:]
             self.sps = sps
             if sps:
-                self.variables['passphrase'] = '!!<SPS'
+                self.variables['passphrase'] = sps.get_reader().read()
 
     def __str__(self):
         return '%s: %s' % (threading.Thread.__str__(self), self.state)
 
     running = property(lambda self: (self.state in self.RUNNING_STATES))
-    failed = property(lambda self: False)
-
-    def in_state(self, state):
-        pass
+    failed = property(lambda self: (not self.running and not self.generated_key))
 
     def set_state(self, state):
         self.state = state
-        self.in_state(state)
 
     def run(self):
         self.generated_key = None
@@ -1555,8 +1631,18 @@ class GnuPGKeyGenerator(threading.Thread):
             self.set_state(self.START_GPG)
             gpg = GnuPG(None, event=self.event)
             gpg.event.running_gpg(_(self.DESCRIPTION) % self.variables)
-            self.set_state('Creating key')
-            self.generated_key = gpg.generate_key()
+            self.set_state(self.GATHER_ENTROPY)
+            l = str('\
+            <GnupgKeyParms format="internal">      \n\
+                Key-Type: default                  \n\
+                Subkey-Type: default               \n\
+                Name-Real: %(name)s                \n\
+                Name-Email: %(email)s              \n\
+                Expire-Date: 0                     \n\
+                Passphrase: %(passphrase)s         \n\
+            </GnupgKeyParms>' % self.variables)
+            print l
+            self.generated_key = gpg.generate_key(l)
             self.set_state(self.FINISHED)
         except:
             import traceback
@@ -1687,52 +1773,6 @@ class GnuPGExpectScript(threading.Thread):
                     self._on_complete.append((name, callback))
             else:
                 callback()
-
-
-class GnuPGKeyGenerator2(GnuPGExpectScript):
-    """This is a background thread which generates a new PGP key."""
-    KEY_SETUP = 'Key Setup'
-    GATHER_ENTROPY = 'Creating key'
-    CREATED_KEY = 'Created key'
-    HAVE_KEY = 'Have Key'
-    SCRIPT = [
-        ('GET_LINE keygen.algo',          '%(keytype)s',   -1, KEY_SETUP),
-        ('GET_LINE keygen.size',             '%(bits)s',   -1, None),
-        ('GET_LINE keygen.valid',                   '0',   -1, None),
-        ('GET_LINE keygen.name',             '%(name)s',   -1, None),
-        ('GET_LINE keygen.email',           '%(email)s',   -1, None),
-        ('GET_LINE keygen.comment',       '%(comment)s',   -1, None),
-        ('GET_HIDDEN passphrase',      '%(passphrase)s',   -1, None),
-        ('GOT_IT',                                 None,   -1, GATHER_ENTROPY),
-        ('KEY_CREATED',                            None, 1800, CREATED_KEY),
-        ('\n',                                     None,   -1, HAVE_KEY)
-    ]
-    VARIABLES = {
-        'keytype': '1',
-        'bits': '4096',
-        'name': 'Mailpile Generated Key',
-        'email': '',
-        'comment': 'www.mailpile.is',
-        'passphrase': 'mailpile'
-    }
-    DESCRIPTION = _('Creating a %(bits)s bit GnuPG key')
-    RUNNING_STATES = (GnuPGExpectScript.RUNNING_STATES +
-                      [KEY_SETUP, GATHER_ENTROPY, HAVE_KEY])
-
-    failed = property(lambda self: (not self.running and
-                                    not self.generated_key))
-
-    def __init__(self, *args, **kwargs):
-        GnuPGExpectScript.__init__(self, *args, **kwargs)
-        self.generated_key = None
-
-    def gpg_args(self):
-        return ['--no-use-agent', '--gen-key']
-
-    def in_state(self, state):
-        if state == self.HAVE_KEY:
-             self.generated_key = self.before.strip().split()[-1]
-
 
 class GnuPGKeyEditor(GnuPGExpectScript):
     """This is a background thread which edits the UIDs on a PGP key."""
