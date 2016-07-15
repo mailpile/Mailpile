@@ -1216,20 +1216,25 @@ class GnuPG:
             clearsign=True)[1]
         >>> g.verify(s)
         """
-        print "verify"
-        params = ["--verify"]
-        if signature:
-            sig = tempfile.NamedTemporaryFile()
-            sig.write(signature)
-            sig.flush()
-            params.append(sig.name)
-            params.append("-")
-
         self.event.running_gpg(_('Checking signature in %d bytes of data'
                                  ) % len(data))
-        ret, retvals = self.run(params, gpg_input=data, partial_read_ok=True)
 
-        return GnuPGResultParser().parse([None, retvals]).signature_info
+        self.is_available()
+        ctx = core.Context()
+        message = core.Data(data.encode("utf-8"))
+        detached_sig = core.Data(signature.encode("utf-8")) if signature else None
+        signed = core.Data()
+
+        try:
+            if signature:
+                ctx.op_verify(detached_sig,message,None)
+            else:
+                ctx.op_verify(message,None,signed)
+        except:
+            pass
+
+        ret = self._fetch_verify_result(ctx)[0]
+        return ret
 
     def encrypt(self, data, tokeys=[], armor=True,
                             sign=False, fromkey=None):
