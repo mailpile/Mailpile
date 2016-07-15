@@ -470,6 +470,8 @@ def _passphrase_callback(hint, info, was_bad):
             if p == "":
                 break
 
+    print "return ",
+    pprint.pprint(passphrase)
     return passphrase
 
 class GnuPG:
@@ -1236,42 +1238,64 @@ class GnuPG:
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
-        if fromkey:
-            self.prepare_passphrase(fromkey, signing=True)
-
-        self.is_available()
-        ctx = core.Context()
-        ctx.set_passphrase_cb(_passphrase_callback)
-        ctx.set_armor(1 if armor else 0)
-
-        plaintext = core.Data(data)
-        ciphertext = core.Data()
-
-        recv = []
-        if tokeys:
-            for r in tokeys:
-                for k in ctx.op_keylist_all(r.encode("utf8"),0):
-                    recv.append(k)
-            self.event.running_gpg(_('Encrypting %d bytes of data to %s'
-                                     ) % (len(data), ', '.join(tokeys)))
-        else:
-            self.event.running_gpg(_('Encrypting %d bytes of data with password'
-                                     ) % len(data))
-
-        if sign and fromkey:
-            for sigkey in ctx.op_keylist_all(fromkey.encode("ascii","ignore"), 1):
-                if sigkey.can_sign:
-                    ctx.signers_add(sigkey)
-
         try:
-            if sign:
-                ctx.op_encrypt_sign(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
-            else:
-                ctx.op_encrypt(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+            if fromkey:
+                self.prepare_passphrase(fromkey, signing=True)
 
-            ciphertext.seek(0,0)
-            ret = 0,ciphertext.read()
-            return ret
+            print 1
+            self.is_available()
+            ctx = core.Context()
+            ctx.set_passphrase_cb(_passphrase_callback)
+            ctx.set_armor(1 if armor else 0)
+            print 2
+
+            plaintext = core.Data(data)
+            print 2.1
+            ciphertext = core.Data()
+            print 2.2
+
+            recv = []
+            if tokeys:
+                print 2.3
+                for r in tokeys:
+                    print 2.4
+                    pprint.pprint(r)
+                    try:
+                        for k in ctx.op_keylist_all(r.encode("utf8"),0):
+                            print 2.5
+                            recv.append(k)
+                    except:
+                        import traceback
+                        traceback.print_exc()
+                print 2.6
+                self.event.running_gpg(_('Encrypting %d bytes of data to %s'
+                                         ) % (len(data), ', '.join(tokeys)))
+            else:
+                self.event.running_gpg(_('Encrypting %d bytes of data with password'
+                                         ) % len(data))
+
+            print 3
+            if sign and fromkey:
+                for sigkey in ctx.op_keylist_all(fromkey.encode("ascii","ignore"), 1):
+                    if sigkey.can_sign:
+                        ctx.signers_add(sigkey)
+
+            print 4
+            try:
+                if sign:
+                    ctx.op_encrypt_sign(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+                else:
+                    ctx.op_encrypt(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+
+                print 5
+                ciphertext.seek(0,0)
+                ret = 0,ciphertext.read()
+                pprint.pprint(ret)
+                return ret
+            except:
+                import traceback
+                traceback.print_exc()
+                return 1,None
         except:
             import traceback
             traceback.print_exc()
