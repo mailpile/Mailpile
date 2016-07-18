@@ -40,6 +40,7 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 
   Mailpile.Composer.Crypto.EncryptionToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Encryption();
+  return false;
 });
 
 
@@ -57,6 +58,7 @@ $(document).on('click', '.compose-crypto-signature', function() {
 
   Mailpile.Composer.Crypto.SignatureToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Signature();
+  return false;
 });
 
 
@@ -269,6 +271,11 @@ $(document).on('click', '.compose-attachment-remove', function(e) {
 
 $(document).on('focus', '.compose-text', function() {
   autosize($(this));
+});
+
+
+$(document).on('click', '.compose-text', function() {
+  return false;
 });
 
 
