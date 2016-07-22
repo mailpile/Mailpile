@@ -458,7 +458,6 @@ class StreamWriter(Thread):
 DEBUG_GNUPG = True
 
 def _passphrase_callback(hint, info, was_bad):
-    print "enter _passphrase_callback"
     passphrase = GnuPG.PASSPHRASE
 
     if not isinstance(passphrase,str):
@@ -470,8 +469,8 @@ def _passphrase_callback(hint, info, was_bad):
             if p == "":
                 break
 
-    print "return ",
-    pprint.pprint(passphrase)
+    #print "return ",
+    #pprint.pprint(passphrase)
     return passphrase
 
 class GnuPG:
@@ -1328,16 +1327,50 @@ class GnuPG:
             return 1,None
 
     def sign_key(self, keyid, signingkey=None):
-        action = ["--yes", "--sign-key", keyid]
+        self.prepare_passphrase(keyid, signing=True)
+
+        self.is_available()
+        ctx = core.Context()
+        ctx.set_passphrase_cb(_passphrase_callback)
+
         if signingkey:
-            action.insert(1, "-u")
-            action.insert(2, signingkey)
+            for sigkey in ctx.op_keylist_all(signingkey.encode("ascii","ignore"), 1):
+                if sigkey.can_sign:
+                    ctx.signers_add(sigkey)
+
+        keys = self.list_keys(keyid)
+        out = core.Data()
 
         self.event.running_gpg(_('Signing key %s with %s'
                                  ) % (keyid, signingkey or _('default')))
-        retvals = self.run(action, send_passphrase=True)
+        try:
+            class Signer:
+                def __init__(self):
+                    self.steps = ["sign", "y", "quit"]
+                    self.step = 0
 
-        return retvals
+                def edit_fnc(self, status, args, out):
+                    out.seek(0,0)
+                    
+                    if args == "keyedit.prompt":
+                        result = self.steps[self.step]
+                        self.step += 1
+                    elif args == "keyedit.save.okay":
+                        result = "Y"
+                    elif args == "keygen.valid":
+                        result = "0"
+                    else:
+                        result = None
+
+                    return result
+
+            for key in ctx.op_keylist_all(keyid.encode("ascii","ignore"), 0):
+                ctx.op_edit(key,Signer().edit_fnc,out,out)
+                return 0
+        except:
+            import traceback
+            traceback.print_exc()
+            return 1
 
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
