@@ -3,7 +3,18 @@ I have hacked around with Mailpile and created a basic qt gui.
 I don't think this would be merged becuase of hacky code.
 So you can check the original project at the links below.
 
+To install this version :
 
+    
+    Use installation instructions of the original project .
+
+    Then execute run.sh
+  
+    You should edit $HOME/.mailpile/data.json file to include your master password for easier login.        
+        
+            
+
+            
 
 # Welcome to Mailpile! #
 
