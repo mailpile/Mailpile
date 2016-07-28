@@ -15,14 +15,7 @@ import traceback
 import threading
 import time
 import webbrowser
-import gtk
-import webkit
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-
-from PyQt4 import QtCore, QtGui
 
 
 import mailpile.util
@@ -395,9 +388,7 @@ class BrowseOrLaunch(Command):
                     ).replace('//0.0.0.0:', '//localhost:')
         try:
             MakePopenUnsafe()
-            from threading import Thread
-            t = Thread(target=qtWebkit.main, args=(http_url,))
-            t.start()
+            
 
             #webbrowser.open(http_url)
             return http_url

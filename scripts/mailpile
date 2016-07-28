@@ -10,5 +10,5 @@ mailpile_root = os.path.dirname(     # Mailpile root
 
 sys.path.append(mailpile_root)
 
-from mailpile.app import Main
-Main(sys.argv[1:])
+import qtWebkit
+qtWebkit.main("http://localhost:33411/")
