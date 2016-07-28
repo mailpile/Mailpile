@@ -7,10 +7,15 @@ To install this version :
 
     
     Use installation instructions of the original project .
+    
+    You should create $HOME/.mailpile/data.json file to include installation folder as path and your master password for easier login.
+        
+        {"path": "/home/user/Mailpile", "unread": 40, "pass": "123password"}
 
-    Then execute run.sh
+
+    Then execute qtWebkit.py
   
-    You should edit $HOME/.mailpile/data.json file to include your master password for easier login.        
+          
         
             
 
