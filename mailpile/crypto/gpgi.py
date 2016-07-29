@@ -1335,8 +1335,9 @@ class GnuPG:
 
         if signingkey:
             for sigkey in ctx.op_keylist_all(signingkey.encode("ascii","ignore"), 1):
-                if sigkey.can_sign:
+                if sigkey.can_sign and not sigkey.disabled and not sigkey.invalid and not sigkey.expired and not sigkey.revoked:
                     ctx.signers_add(sigkey)
+                    break
 
         keys = self.list_keys(keyid)
         out = core.Data()
@@ -1355,6 +1356,8 @@ class GnuPG:
                     if args == "keyedit.prompt":
                         result = self.steps[self.step]
                         self.step += 1
+                    elif args == "sign_uid.okay":
+                        result = "Y"
                     elif args == "keyedit.save.okay":
                         result = "Y"
                     elif args == "keygen.valid":
@@ -1367,6 +1370,7 @@ class GnuPG:
             for key in ctx.op_keylist_all(keyid.encode("ascii","ignore"), 0):
                 ctx.op_edit(key,Signer().edit_fnc,out,out)
                 return 0
+            return 1
         except:
             import traceback
             traceback.print_exc()
