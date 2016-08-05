@@ -16,7 +16,7 @@ from datetime import datetime
 from email.parser import Parser
 from email.message import Message
 from threading import Thread
-from pyme import core, constants
+from pyme import core, constants, pygpgme
 
 import pprint
 
@@ -1352,7 +1352,7 @@ class GnuPG:
 
                 def edit_fnc(self, status, args, out):
                     out.seek(0,0)
-                    
+
                     if args == "keyedit.prompt":
                         result = self.steps[self.step]
                         self.step += 1
@@ -1376,86 +1376,48 @@ class GnuPG:
             traceback.print_exc()
             return 1
 
-    def recv_key(self, keyid,
-                 keyservers=DEFAULT_KEYSERVERS,
-                 keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+    def recv_key(self, keyid):
         self.event.running_gpg(_('Downloading key %s from key servers'
                                  ) % (keyid))
-        for keyserver in keyservers:
-            cmd = ['--keyserver', keyserver,
-                   '--recv-key', self._escape_hex_keyid_term(keyid)]
-            for opt in keyserver_options:
-                cmd[2:2] = ['--keyserver-options', opt]
-            retvals = self.run(cmd)
-            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
-                break
-        return self._parse_import(retvals[1]["status"])
+        self.is_available()
+        ctx = core.Context()
+        ctx.set_keylist_mode(constants.KEYLIST_MODE_EXTERN)
 
-    def search_key(self, term,
-                   keyservers=DEFAULT_KEYSERVERS,
-                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        keys = list(ctx.op_keylist_all(keyid.encode("utf8","ignore"),0))
+        ctx.op_import_keys(keys)
+        res = ctx.op_import_result()
+        ctx.set_keylist_mode(constants.KEYLIST_MODE_LOCAL)
+        return self._parse_import(res)
+
+    def search_key(self, term):
         self.event.running_gpg(_('Searching for key for %s in key servers'
                                  ) % (term))
-        #self.is_available()
-        #ctx = core.Context()
-        #keydata = core.Data(term)
+        self.is_available()
+        ctx = core.Context()
+        ctx.set_keylist_mode(constants.KEYLIST_MODE_EXTERN)
+        all_keys = {}
 
-        #ctx.op_import(keydata)
+        for k in ctx.op_keylist_all(term.encode("utf8","ignore"),0):
+            attribs = self._parse_key(k);
+            all_keys[attribs["fingerprint"]] = attribs
 
-        for keyserver in keyservers:
-            cmd = ['--keyserver', keyserver,
-                   '--fingerprint',
-                   '--search-key', self._escape_hex_keyid_term(term)]
-            for opt in keyserver_options:
-                cmd[2:2] = ['--keyserver-options', opt]
-            print "search_key calling ",
-            pprint.pprint(cmd)
-            retvals = self.run(cmd)
-            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
-                break
-        results = {}
-        lines = [x.strip().split(":") for x in retvals[1]["stdout"]]
-        curpub = None
-        for line in lines:
-            if line[0] == "info":
-                pass
-            elif line[0] == "pub":
-                curpub = line[1]
-                validity = line[6]
-                if line[5]:
-                    if int(line[5]) < time.time():
-                        validity += 'e'
-                results[curpub] = {
-                    "created": datetime.fromtimestamp(int(line[4])),
-                    "keytype_name": _(openpgp_algorithms.get(int(line[2]),
-                                                             'Unknown')),
-                    "keysize": line[3],
-                    "validity": validity,
-                    "uids": [],
-                    "fingerprint": curpub
-                }
-            elif line[0] == "uid":
-                email, name, comment = parse_uid(line[1])
-                results[curpub]["uids"].append({"name": name,
-                                                "email": email,
-                                                "comment": comment})
-        print "search_key ",
-        pprint.pprint(results)
-        return results
+        ctx.set_keylist_mode(constants.KEYLIST_MODE_LOCAL)
+        return all_keys
 
     def get_pubkey(self, keyid):
-        print "get_pubkey:",
-        pprint.pprint(keyid)
-        self.event.running_gpg(_('Searching for key for %s in key servers'
+        self.event.running_gpg(_('Export key %s from key chain'
                                  ) % (keyid))
-        retvals = self.run(['--armor',
-                            '--export', keyid]
-                            )[1]["stdout"]
-        return "".join(retvals)
+        self.is_available()
+        ctx = core.Context()
+        ctx.set_armor(1)
+        data = core.Data()
+
+        ctx.op_export(keyid.encode("utf8","ignore"),0,data)
+
+        data.seek(0,0)
+        return data.read()
 
     def address_to_keys(self, address):
-        print "address_to_keys:",
-        pprint.pprint(address)
         res = {}
         keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
