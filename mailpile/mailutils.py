@@ -718,7 +718,7 @@ class Email(object):
                     outmsg.attach(att)
                     del att['MIME-Version']
                 except:
-                    pass  # FIXME: Warn user that failed...
+                    print "Failed to add attatchment"
 
         # Save result back to mailbox
         if final:
