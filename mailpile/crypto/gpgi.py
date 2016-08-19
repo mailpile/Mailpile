@@ -67,12 +67,6 @@ class GnuPGEventUpdater:
     def update_args(self, args):
         self._log_public(' '.join(args))
 
-    def _parse_gpg_line(self, line):
-        if line.startswith('[GNUPG:] '):
-            pass  # FIXME: Parse for machine-readable data
-        elif line.startswith('gpg: '):
-            self._log_private(line[5:].strip())
-
     def update_return_code(self, code):
         self._log_public(_('GnuPG returned %s') % code)
 
@@ -106,20 +100,6 @@ def parse_uid(uidstr):
 
 
 DEBUG_GNUPG = True
-
-def _passphrase_callback(hint, info, was_bad):
-    passphrase = GnuPG.PASSPHRASE
-
-    if not isinstance(passphrase,str):
-        passphrase = ""
-
-        while True:
-            p = GnuPG.PASSPHRASE.read()
-            passphrase += p
-            if p == "":
-                break
-
-    return passphrase
 
 class GnuPG:
     """
@@ -195,6 +175,19 @@ class GnuPG:
     def _debug_none(self, msg):
         pass
 
+    def _passphrase_callback(self, hint, desc, prev_bad, hook=None):
+        passphrase = GnuPG.PASSPHRASE
+
+        if not isinstance(passphrase,str):
+            passphrase = ""
+            while True:
+                p = GnuPG.PASSPHRASE.read()
+                passphrase += p
+                if p == "":
+                    break
+
+        return passphrase
+
     def set_home(self, path):
         self.homedir = path
 
@@ -212,17 +205,8 @@ class GnuPG:
 
         if self.available:
             core.set_engine_info(constants.PROTOCOL_OpenPGP,
-                                 self.gpgbinary.encode("utf8""replace"),
-                                 self.homedir.encode("utf8","replace"))
+                                 None,self.homedir)
         return self.available
-
-    def _reap_threads(self):
-        for tries in (1, 2, 3):
-            for name, thr in self.threads.iteritems():
-                if thr.isAlive():
-                    thr.join(timeout=15)
-                    if thr.isAlive() and tries > 1:
-                        print 'WARNING: Failed to reap thread %s' % thr
 
     def _parse_date(self,ts):
         try:
@@ -379,13 +363,6 @@ class GnuPG:
     def list_secret_keys(self, selectors=None):
         all_keys = self.list_keys(selectors)
 
-        #
-        # Note: The loop is to work around a bug in GnuPG < 2.1, where
-        #       GPGME does not list details about key capabilities or
-        #       expiry if only secret keys are requested.
-        #       We check for each fingerprint if an secret key exisits.
-        #
-
         self.event.running_gpg(_('Fetching GnuPG secret key list (selectors=%s)'
                                  ) % ', '.join(selectors or []))
         self.is_available()
@@ -487,7 +464,7 @@ class GnuPG:
         self.is_available()
 
         ctx = core.Context()
-        ctx.set_passphrase_cb(_passphrase_callback)
+        ctx.set_passphrase_cb(self._passphrase_callback)
         ciphertext = core.Data(data.encode("utf-8","replace"))
         plaintext = core.Data()
 
@@ -774,7 +751,7 @@ class GnuPG:
 
         self.is_available()
         ctx = core.Context()
-        ctx.set_passphrase_cb(_passphrase_callback)
+        ctx.set_passphrase_cb(self._passphrase_callback)
         ctx.set_armor(1 if armor else 0)
 
         plaintext = core.Data(data)
@@ -823,11 +800,12 @@ class GnuPG:
         elif fromkey:
             self.prepare_passphrase(fromkey, signing=True)
 
+
         self.is_available()
         ctx = core.Context()
         plaintext = core.Data(data)
         signature = core.Data()
-        ctx.set_passphrase_cb(_passphrase_callback)
+        ctx.set_passphrase_cb(self._passphrase_callback)
 
         sig_mode = constants.SIG_MODE_NORMAL
         if detatch and not clearsign:
@@ -858,7 +836,7 @@ class GnuPG:
 
         self.is_available()
         ctx = core.Context()
-        ctx.set_passphrase_cb(_passphrase_callback)
+        ctx.set_passphrase_cb(self._passphrase_callback)
 
         if signingkey:
             for sigkey in ctx.op_keylist_all(signingkey.encode("utf8","replace"), 1):
