@@ -30,6 +30,9 @@ _ = lambda s: s
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
+GPG_BINARY = 'gpg'
+if sys.platform.startswith('win'):
+    GPG_BINARY = 'GnuPG\\gpg.exe'
 
 # For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
@@ -140,7 +143,6 @@ class GnuPG:
                  session=None, use_agent=None, debug=False, event=None):
         global DEBUG_GNUPG
         self.available = None
-        self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
         self.event = GnuPGEventUpdater(event)
         self.session = session
@@ -207,6 +209,11 @@ class GnuPG:
     def is_available(self):
         self.event.running_gpg(_('Checking GnuPG availability'))
         self.available = core.check_version(None) and core.engine_check_version(constants.PROTOCOL_OpenPGP)
+
+        if self.available:
+            core.set_engine_info(constants.PROTOCOL_OpenPGP,
+                                 self.gpgbinary.encode("utf8""replace"),
+                                 self.homedir.encode("utf8","replace"))
         return self.available
 
     def _reap_threads(self):
@@ -249,7 +256,7 @@ class GnuPG:
             elif st & constants.SIGSUM_KEY_REVOKED != 0:
                 ret.part_status = "revoked"
             elif st & constants.SIGSUM_KEY_MISSING != 0:
-                ret.part_status = "missingkey"
+                ret.part_status = "error"
                 ret["missing_keys"] = [res.fpr]
             elif st & constants.SIGSUM_SYS_ERROR != 0:
                 ret.part_status = "error"
