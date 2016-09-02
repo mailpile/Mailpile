@@ -175,18 +175,25 @@ class GnuPG:
     def _debug_none(self, msg):
         pass
 
-    def _passphrase_callback(self, hint, desc, prev_bad, hook=None):
-        passphrase = GnuPG.PASSPHRASE
+    def get_passphrase_callback(self,passphrase=None):
+        if passphrase == None:
+            passphrase = self.passphrase
 
-        if not isinstance(passphrase,str):
-            passphrase = ""
-            while True:
-                p = GnuPG.PASSPHRASE.read()
-                passphrase += p
-                if p == "":
-                    break
-
-        return passphrase
+        if isinstance(passphrase,str):
+            return lambda hint, desc, prev_bad, hook=None: passphrase
+        elif isinstance(passphrase,unicode):
+            return lambda hint, desc, prev_bad, hook=None: passphrase.encode("utf-8","replace")
+        else:
+            if not passphrase:
+                return lambda hint, desc, prev_bad, hook=None: ""
+            else:
+                pw = ""
+                while True:
+                    p = passphrase.read()
+                    pw += p
+                    if p == "":
+                        break
+                return lambda hint, desc, prev_bad, hook=None: pw
 
     def set_home(self, path):
         self.homedir = path
@@ -389,7 +396,7 @@ class GnuPG:
         self.is_available()
 
         ctx = core.Context()
-        buf = core.Data(key_data)
+        buf = core.Data(key_data.encode("utf8","replace"))
 
         ctx.op_import(buf)
         res = self._parse_import(ctx.op_import_result())
@@ -451,9 +458,7 @@ class GnuPG:
         >>> g.decrypt(ct)["text"]
         'Hello, World'
         """
-        if passphrase:
-            self.passphrase = passphrase
-        elif GnuPG.LAST_KEY_USED:
+        if not passphrase and GnuPG.LAST_KEY_USED:
             # This is an opportunistic approach to passphrase usage... we
             # just hope the passphrase we used last time will work again.
             # If we are right, we are done. If we are wrong, the output
@@ -461,10 +466,10 @@ class GnuPG:
             self.prepare_passphrase(GnuPG.LAST_KEY_USED, decrypting=True)
 
         self.event.running_gpg(_('Decrypting %d bytes of data') % len(data))
-        self.is_available()
 
+        self.is_available()
         ctx = core.Context()
-        ctx.set_passphrase_cb(self._passphrase_callback)
+        ctx.set_passphrase_cb(self.get_passphrase_callback(passphrase=passphrase))
         ciphertext = core.Data(data.encode("utf-8","replace"))
         plaintext = core.Data()
 
@@ -472,7 +477,8 @@ class GnuPG:
             ctx.op_decrypt_verify(ciphertext,plaintext)
             plaintext.seek(0,0)
         except:
-            pass
+            import traceback
+            traceback.print_exc()
 
         res_v = self._fetch_verify_result(ctx)
         res_d = self._fetch_decrypt_result(ctx)
@@ -747,14 +753,14 @@ class GnuPG:
         0
         """
         if fromkey:
-            self.prepare_passphrase(fromkey, signing=True)
+            self.prepare_passphrase(fromkey, signing=sign)
 
         self.is_available()
         ctx = core.Context()
-        ctx.set_passphrase_cb(self._passphrase_callback)
+        ctx.set_passphrase_cb(self.get_passphrase_callback())
         ctx.set_armor(1 if armor else 0)
 
-        plaintext = core.Data(data)
+        plaintext = core.Data(data.encode("utf8","replace"))
         ciphertext = core.Data()
 
         recv = []
@@ -777,7 +783,10 @@ class GnuPG:
             if sign:
                 ctx.op_encrypt_sign(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
             else:
-                ctx.op_encrypt(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+                if len(recv) > 0:
+                    ctx.op_encrypt(recv,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
+                else:
+                    ctx.op_encrypt(None,constants.ENCRYPT_ALWAYS_TRUST,plaintext,ciphertext)
 
             ciphertext.seek(0,0)
             ret = 0,ciphertext.read()
@@ -795,17 +804,14 @@ class GnuPG:
         >>> g.sign("Hello, World", fromkey="smari@mailpile.is")[0]
         0
         """
-        if passphrase:
-            GnuPG.PASSPHRASE = passphrase
-        elif fromkey:
+        if not passphrase and fromkey:
             self.prepare_passphrase(fromkey, signing=True)
-
 
         self.is_available()
         ctx = core.Context()
-        plaintext = core.Data(data)
+        plaintext = core.Data(data.encode("utf8","replace"))
         signature = core.Data()
-        ctx.set_passphrase_cb(self._passphrase_callback)
+        ctx.set_passphrase_cb(self.get_passphrase_callback(passphrase))
 
         sig_mode = constants.SIG_MODE_NORMAL
         if detatch and not clearsign:
@@ -836,7 +842,7 @@ class GnuPG:
 
         self.is_available()
         ctx = core.Context()
-        ctx.set_passphrase_cb(self._passphrase_callback)
+        ctx.set_passphrase_cb(self.get_passphrase_callback())
 
         if signingkey:
             for sigkey in ctx.op_keylist_all(signingkey.encode("utf8","replace"), 1):
@@ -1136,7 +1142,6 @@ class GnuPGKeyGenerator(threading.Thread):
                 Expire-Date: 0                     \n\
                 Passphrase: %(passphrase)s         \n\
             </GnupgKeyParms>' % self.variables)
-            print l
             self.generated_key = gpg.generate_key(l)
             self.set_state(self.FINISHED)
         except:
