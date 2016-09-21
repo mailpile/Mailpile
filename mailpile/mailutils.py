@@ -963,7 +963,8 @@ class Email(object):
                 return mbox, msg_ptr, FixupForWith(fd)
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
-                print 'WARNING: %s not found' % msg_ptr
+                if 'sources' in self.config.sys.debug:
+                    print 'WARNING: %s not found' % msg_ptr
         return None, None, None
 
     def get_file(self):

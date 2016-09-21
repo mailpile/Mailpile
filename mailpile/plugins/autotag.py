@@ -268,7 +268,7 @@ class Retrain(AutoTagCommand):
                                           which)
                         except (IndexError, TypeError, ValueError,
                                 OSError, IOError):
-                            if session.config.sys.debug:
+                            if 'autotag' in session.config.sys.debug:
                                 import traceback
                                 traceback.print_exc()
                             unreadable.append(msg_idx)
