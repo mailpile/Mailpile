@@ -251,7 +251,7 @@ class Retrain(AutoTagCommand):
                 atagger.reset(at_config)
                 for tset, mset, srch, which in yn:
                     count = 0
-                    # We go through the liste of message in order, to avoid
+                    # We go through the list of message in order, to avoid
                     # thrashing caches too badly.
                     for msg_idx in sorted(list(tset)):
                         try:
@@ -266,6 +266,7 @@ class Retrain(AutoTagCommand):
                                           e.get_msg(),
                                           self._get_keywords(e),
                                           which)
+                            play_nice_with_threads()
                         except (IndexError, TypeError, ValueError,
                                 OSError, IOError):
                             if 'autotag' in session.config.sys.debug:
