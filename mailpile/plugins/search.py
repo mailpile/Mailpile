@@ -749,7 +749,9 @@ class Search(Command):
     def _do_search(self, search=None, process_args=False):
         session, idx = self.session, self._idx()
 
-        if self.context is None or search or session.searched != self._search_args:
+        if (self.context is None
+                or search
+                or session.searched != self._search_args):
             session.searched = search or []
             if search is None or process_args:
                 prefix = ''
@@ -773,6 +775,14 @@ class Search(Command):
             context = session.results if self.context else None
             session.results = list(idx.search(session, session.searched,
                                               context=context).as_set())
+
+            # Make sure the requested messages are included in the
+            # results, whether they match the search or not.
+            for pmid, emid in list(self._email_view_pairs.iteritems()):
+                pmid_idx = int(pmid, 36)
+                if pmid_idx not in session.results:
+                    session.results.append(pmid_idx)
+
             if session.order:
                 idx.sort_results(session, session.results, session.order)
 
