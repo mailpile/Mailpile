@@ -5,14 +5,14 @@
 {% macro render_sidebar_tag(tag) -%}
 {#  Show proper classes #}
 {%  if tag.type in ("drafts", "sent") %}
-<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+<li id="sidebar-tag-{{tag.tid}}" data-slug="{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
     class="sidebar-tag sidebar-tags-default">
 {%  elif tag.type == "outbox" %}
-<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+<li id="sidebar-tag-{{tag.tid}}" data-slug="{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
     class="sidebar-tag sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
 {%  else %}
-<li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
-    class="sidebar-tag sidebar-tags-draggable">
+<li id="sidebar-tag-{{tag.tid}}" data-slug="{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
+    class="sidebar-tag sidebar-tags-draggable{% if tag.display == "archive" %} hide should-hide{% endif %}">
 {%  endif %}
 
 {%- if tag.slug == "outbox" or tag.slug == "drafts" %}
@@ -48,11 +48,11 @@
 
 </li>
 {%  if tag.subtags %}
-{%   for subtag in tag.subtags if subtag.display == 'tag' %}
+{%   for subtag in tag.subtags if subtag.display in ('tag', 'archive') %}
 <li id="sidebar-tag-{{subtag.tid}}"
     data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
     class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}
-           {%- if subtags_collapsed %} hide{% endif %}">
+           {%- if subtags_collapsed or 'archive' in (subtag.display, tag.display) %} hide should-hide{% endif %}">
   <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
     <span class="icon {{subtag.icon}}" style="color: {{theme_settings().colors[subtag.label_color]}};"></span>
     <span class="name">{{subtag.name}}</span>
@@ -76,7 +76,7 @@
   <hr>
   <ul id="sidebar-tag" class="sidebar-sortable">
     {%- for tag in result.tags -%}
-      {%- if tag.display == 'tag' -%}
+      {%- if tag.display in ('tag', 'archive') -%}
         {{ render_sidebar_tag(tag) }}
       {%- endif -%}
     {%- endfor -%}
