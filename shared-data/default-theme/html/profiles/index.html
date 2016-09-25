@@ -105,17 +105,17 @@
                    <span class="icon icon-user" style="color: #070;"></span>
          </a>
        </td><td style='text-align: left;'>
-         <a href="{{ U('/in/inbox/?q=in:', p['x-mailpile-profile-tag']) }}">
+         <a href="{{ U('/in/inbox/?q=in:', config.tags[p['x-mailpile-profile-tag']].slug) }}">
            {{ p.fn }}
          </a>
        </td><td style='text-align: left;'>{% for e in p.email %}
          {{ e.email }}{% if not loop.last %}<br>{% endif %}
        {%- endfor %}
-       </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
-       </td><td><a href="{{ U('/in/', p['x-mailpile-profile-tag'], '/') }}">{{ t.stats.all }}</a>
+       </td><td><a href="{{ U('/in/', config.tags[p['x-mailpile-profile-tag']].slug, '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
+       </td><td><a href="{{ U('/in/', config.tags[p['x-mailpile-profile-tag']].slug, '/') }}">{{ t.stats.all }}</a>
        </td><td>
 {%- if is_dev_version() %}
-          <a href="{{ U('/in/outbox/?q=in:', p['x-mailpile-profile-tag']) }}">?</a>
+          <a href="{{ U('/in/outbox/?q=in:', config.tags[p['x-mailpile-profile-tag']].slug) }}">?</a>
 {%- endif %}
        </td><td>
          {%- if not (p['x-mailpile-profile-source'] or []) %}

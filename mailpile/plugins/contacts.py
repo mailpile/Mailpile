@@ -1161,7 +1161,9 @@ class AddProfile(ProfileVCard(AddVCard)):
                     'label': False,
                     'display': 'invisible'
                 })
-                tags[vcard.tag].slug = 'account-%d' % len(tags)
+                from mailpile.plugins.tags import Slugify
+                tags[vcard.tag].slug = Slugify(
+                    'account-%s' % vcard.email, tags=self.session.config.tags)
 
         route_id = state.get('route_id')
         if route_id:

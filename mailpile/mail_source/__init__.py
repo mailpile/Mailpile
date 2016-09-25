@@ -555,11 +555,13 @@ class BaseMailSource(threading.Thread):
                 if len(name) < 4:
                     name = _('Mail: %s') % name
                 disco_cfg.parent_tag = name
+            from mailpile.plugins.tags import Slugify
             disco_cfg.parent_tag = self._create_tag(
                 disco_cfg.parent_tag,
                 use_existing=False,
                 label=False,
                 icon='icon-mailsource',
+                slug=Slugify(self.my_config.name, tags=self.session.config.tags),
                 visible=disco_cfg.visible_tags,
                 unique=False)
             if save:
@@ -610,7 +612,6 @@ class BaseMailSource(threading.Thread):
                     visible=(disco_cfg.visible_tags if (visible is None)
                              else visible),
                     label=as_label,
-                    slug='mailbox-%s' % mbx_cfg._key,
                     unique=False,
                     parent=parent)
             except (ValueError, IndexError):
@@ -671,9 +672,9 @@ class BaseMailSource(threading.Thread):
                 from mailpile.plugins.tags import Slugify
                 if self.my_config.name:
                     slug = Slugify('/'.join([self.my_config.name, tag_name]),
-                                   self.session.config.tags)
+                                   tags=self.session.config.tags)
                 else:
-                    slug = Slugify(tag_name, self.session.config.tags)
+                    slug = Slugify(tag_name, tags=self.session.config.tags)
             tag_id = self.session.config.tags.append({
                 'name': tag_name,
                 'slug': slug,
