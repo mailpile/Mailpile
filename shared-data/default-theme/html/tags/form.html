@@ -259,7 +259,7 @@
 {%- else %}
     <button class="button-primary right" type="submit"><span class="icon-checked"></span> {{_("Save")}}</button>
 {%- endif %}
-{%- if state.command_url == "/tags/" and tag.type in ('tag', 'attribute') %}
+{%- if state.command_url == "/tags/" and tag.type in ('tag', 'attribute') and not tag.subtags %}
     <button class="button-warning" type="button" id="button-tag-delete"
             data-slug="{{tag.slug}}" data-dismiss="modal" aria-hidden="true">
       <span class="icon-minus"></span> {{_("Delete Tag")}}
