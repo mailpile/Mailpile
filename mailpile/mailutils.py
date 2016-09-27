@@ -1348,6 +1348,16 @@ class Email(object):
 
                 if mimetype == 'text/html':
                     if want is None or 'html_parts' in want:
+
+                        # Find and delete possibly conflicting xml encoding
+                        # declaration to prevent lxml ValueError.
+                        # e.g. <?xml version="1.0" encoding="ISO-8859-1"?>
+                        payload = re.sub( '(<\?xml version=[^ ?>]*'+
+                                            '((?! +encoding=) [^ ?>]*)*)'+
+                                            '( +encoding=[^ ?>]*)',
+                                            r'\1',
+                                            payload )
+ 
                         tree['html_parts'].append({
                             'charset': charset,
                             'type': 'html',
