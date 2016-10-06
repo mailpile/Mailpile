@@ -1919,6 +1919,8 @@ class MailIndex(object):
             mboxid, mbox = session.config.open_mailbox_path(
                 session, mailbox_path, register=True)
         except (ValueError, IOError, OSError):
+            if session.config.sys.debug:
+                traceback.print_exc()
             return []
 
         # FIXME: Create an event so the UI can report on progress.
