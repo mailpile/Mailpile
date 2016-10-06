@@ -163,6 +163,8 @@ class BaseMailSource(threading.Thread):
             self.session, 'Save config', self.session.config.save)
 
     def _log_status(self, message):
+        # If the user renames our parent_tag, we assume the name change too.
+        self.update_name_to_match_tag()
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
         self.session.ui.mark(message)
@@ -222,6 +224,15 @@ class BaseMailSource(threading.Thread):
         if policy == 'inherit':
             return self.my_config.discovery.policy
         return policy
+
+    def update_name_to_match_tag(self):
+        parent_tag_id = self.my_config.discovery.parent_tag
+        if parent_tag_id and parent_tag_id != '!CREATE':
+            tag = self.session.config.get_tag(parent_tag_id)
+            if tag and self.name != tag.name:
+                self.name = self.my_config.name = tag.name
+                if self.event:
+                    self.event.data['name'] = self.name
 
     def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""

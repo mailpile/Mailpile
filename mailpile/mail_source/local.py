@@ -17,7 +17,7 @@ class LocalMailSource(BaseMailSource):
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
         if not self.my_config.name:
-            self.my_config.name = _('Local mailboxes')
+            self.my_config.name = _('Local mail')
         self.my_config.protocol = 'local'  # We may be upgrading an old
                                            # mbox or maildir source.
         self.watching = -1
