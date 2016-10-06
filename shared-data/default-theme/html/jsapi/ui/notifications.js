@@ -38,6 +38,13 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
   return undefined;
 };
 
+Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
+  var settings = {};
+  settings['sources.' + src_id + '.discovery.max_mailboxes'] = howhigh;
+  Mailpile.API.settings_set_post(settings, function(result) {
+    Mailpile.cancel_notification(not_id);
+  });
+};
 
 Mailpile.notification = function(result) {
   Mailpile.expire_canceled_notifictions();
@@ -96,6 +103,40 @@ Mailpile.notification = function(result) {
   else if (result.command === 'tag') {
     result.undo = true;
     result.icon = 'icon-tag';
+  }
+  else if (result.source && result.source.indexOf('.mail_source.') == 0) {
+    // Mail source specific notification logic
+
+    if ((result.data.discovery_error == "toomany") &&
+        (!result.data.rescan.running) &&
+        (!result.data.copying.running)) {
+      // Mail sources have a limit on how many mailboxes are auto-added
+      // during discovery, to prevent runaway bloat if we're pointed at
+      // an over-large directory or badly behaved IMAP server. This means
+      // users need a UI to raise the limit.
+      //
+      var lim = result.data.discovery_limit;
+
+      var msg = '{{_("Found over (LIMIT) mailboxes")|escapejs}}';
+      var ri = msg.indexOf('(LIMIT)');
+      if (ri >= 0) {
+        msg = msg.substring(0, ri) + lim + msg.substring(ri+7);
+      }
+
+      if (lim < 250) {
+        lim = lim * 2;
+      } else {
+        lim = lim + 250;
+      }
+
+      result.message2 = msg;
+      result.action_text = '{{_("continue adding more")|escapejs}}';
+      result.action_js = (
+          ' href="javascript:Mailpile.raise_mail_source_mailbox_limit('
+          + '\'' + result.event_id + '\', '
+          + '\'' + result.data.id + '\', '
+          + lim + ');" ');
+    }
   }
 
   // If Undo, extend hide

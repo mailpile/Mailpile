@@ -871,18 +871,30 @@ class ImapMailSource(BaseMailSource):
 
     def discover_mailboxes(self, paths=None):
         config = self.session.config
-        paths = (paths or self.my_config.discovery.paths)[:]
-        existing = self._existing_mailboxes()
-        mailboxes = []
-        with self.open() as raw_conn:
-            for p in paths:
-                mailboxes += self._walk_mailbox_path(raw_conn, str(p))
-        discovered = [mbx for mbx in mailboxes if mbx not in existing
-                      ][:self.MAX_MAILBOXES - len(existing)]
-        for path in discovered:
-            idx = config.sys.mailbox.append(path)
-            mbx = self.take_over_mailbox(idx)
-        return len(discovered)
+        ostate = self.on_event_discovery_starting()
+        try:
+            paths = (paths or self.my_config.discovery.paths)[:]
+            max_mailboxes = self.my_config.discovery.max_mailboxes
+            existing = self._existing_mailboxes()
+            mailboxes = []
+
+            with self.open() as raw_conn:
+                for p in paths:
+                    mailboxes += self._walk_mailbox_path(raw_conn, str(p))
+
+            discovered = [mbx for mbx in mailboxes if mbx not in existing]
+            if len(discovered) > max_mailboxes - len(existing):
+                discovered = discovered[:max_mailboxes - len(existing)]
+                self.on_event_discovery_toomany()
+
+            self.set_event_discovery_state('adding')
+            for path in discovered:
+                idx = config.sys.mailbox.append(path)
+                mbx = self.take_over_mailbox(idx)
+
+            return len(discovered)
+        finally:
+            self.on_event_discovery_done(ostate)
 
     def _cache_flags(self, path, flags=None):
         path = self._fmt_path(path)
@@ -897,6 +909,10 @@ class ImapMailSource(BaseMailSource):
         """
         mboxes = []
         subtrees = []
+        # We go over the maximum slightly here, so the calling code can
+        # detect that we want to go over the limits and can ask the user
+        # whether that's OK.
+        max_mailboxes = 5 + self.my_config.discovery.max_mailboxes
         try:
             ok, data = self.timed_imap(conn.list, prefix, '%')
             while ok and len(data) >= 3:
@@ -909,15 +925,15 @@ class ImapMailSource(BaseMailSource):
                     mboxes.append(self._fmt_path(path))
                 if '\\haschildren' in flags:
                     subtrees.append('%s%s' % (path, sep))
-                if len(mboxes) > self.MAX_MAILBOXES:
+                if len(mboxes) > max_mailboxes:
                     break
             for path in subtrees:
-                if len(mboxes) < self.MAX_MAILBOXES:
+                if len(mboxes) < max_mailboxes:
                     mboxes.extend(self._walk_mailbox_path(conn, path))
         except self.CONN_ERRORS:
             pass
         finally:
-            return mboxes[:self.MAX_MAILBOXES]
+            return mboxes
 
     def quit(self, *args, **kwargs):
         if self.conn:
