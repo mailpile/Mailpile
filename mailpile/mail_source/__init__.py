@@ -725,7 +725,7 @@ class BaseMailSource(threading.Thread):
         return key
 
     def _copy_new_messages(self, mbx_key, mbx_cfg, src,
-                           stop_after=-1, scan_args=None):
+                           stop_after=-1, scan_args=None, deadline=None):
         session, config = self.session, self.session.config
         self.event.data['copying'] = progress = {
             'running': True,
@@ -797,7 +797,7 @@ class BaseMailSource(threading.Thread):
                     **scan_args)
 
                 stop_after -= 1
-                if stop_after == 0:
+                if (stop_after == 0) or (deadline and time.time() > deadline):
                     progress['stopped'] = True
                     return count
             progress['complete'] = True
