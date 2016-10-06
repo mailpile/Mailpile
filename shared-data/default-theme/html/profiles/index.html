@@ -240,4 +240,7 @@
   });
 </script>
 {% endif %}
+<script type='text/javascript'>
+  Mailpile.API.logs_events_get({incomplete: true}, EventLog.invoke_callbacks);
+</script>
 {%- endblock %}

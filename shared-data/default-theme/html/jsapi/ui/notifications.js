@@ -1,7 +1,7 @@
 /* Notifications - UI notification at top of window */
 
 Mailpile.expire_canceled_notifictions = function() {
-  var expired = new Date().getTime() - (3600 * 1000);
+  var expired = new Date().getTime() - (3600 * 1000 * 16);
   for (item in Mailpile.local_storage) {
     if (item.indexOf('canceled-') == '0'
         && Mailpile.local_storage[item] < expired) {
@@ -9,8 +9,10 @@ Mailpile.expire_canceled_notifictions = function() {
     }
   }
 };
-Mailpile.expire_canceled_notifictions();
 
+Mailpile.uncancel_notification = function(not_id) {
+  delete Mailpile.local_storage['canceled-' + not_id];
+};
 
 Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
   // Cancel existing notification, if any
@@ -38,6 +40,7 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
 
 
 Mailpile.notification = function(result) {
+  Mailpile.expire_canceled_notifictions();
 
   // Create CSS friend event_id OR fake-id
   if (result.event_id !== undefined) {
@@ -81,7 +84,7 @@ Mailpile.notification = function(result) {
       result.timeout = 8000; // Event complete, timeout quickly
     }
     else {
-      result.timeout = 360000000; // 100 hours - awaite completion
+      result.timeout = 360000000; // 100 hours - await completion
     }
   }
 
@@ -222,10 +225,23 @@ EventLog.subscribe('.*AddProfile', function(ev) {
   }
 });
 EventLog.subscribe('.*mail_source.*', function(ev) {
+  //
+  // Mail source notifications behave differently depending on which
+  // page in the UI you are. On most pages, they behave like normal event
+  // notifications, popping up and then disappearing 20 seconds later, and
+  // can be silenced for a while by clicking the X.
+  //
+  // On the profile page however, these messages are sticky and persistent,
+  // and they can't be silenced. The rationale for this is that the profile
+  // page is the go-to place for account configuration, and the event
+  // provides critical information in that context.
+  //
   var $src = $('.source-' + ev.data.id);
   if ($src.length > 0) {
     var $icon = $src.find('.icon');
-    if (ev.data.connection && ev.data.connection.error[0]) {
+    if (ev.data.connection &&
+        ev.data.connection.error &&
+        ev.data.connection.error[0]) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
@@ -237,10 +253,13 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
       $icon.removeClass('misconfigured').removeClass('unconfigured');
       $icon.addClass('configured');
     }
-
-    ev.icon = 'icon-mailsource';
-    Mailpile.notification(ev);
+    Mailpile.uncancel_notification(ev.event_id);
   }
+  else {
+    ev.timeout = 20000;
+  }
+  ev.icon = 'icon-mailsource';
+  Mailpile.notification(ev);
 });
 EventLog.subscribe('.*compose.Sendit', function(ev) {
   if (ev.data.delivered == ev.data.recipients) {
