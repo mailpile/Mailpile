@@ -1923,6 +1923,22 @@ class MailIndex(object):
                 traceback.print_exc()
             return []
 
+        # FIXME:
+        # OK, this shit doesn't work. The problem is that remote
+        # mail sources work in two stages; copy first and then scan.
+        # Just performing the scan won't accomplish anything new.
+        #
+        # This is and was an ugly hack, we should rip it out.
+        # What we really want is the ability to open a mailbox,
+        # quickly update the metadata index with whatever we can
+        # find and then return, the results, possibly triggering
+        # background copy if the settings suggest so. We also
+        # need to provide feedback, in the event, showing what
+        # exactly is going on.
+        #
+        # If that means pointers to remote content, that should
+        # be somethign we can live/work with and download later?
+
         # FIXME: Create an event so the UI can report on progress.
         self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
                           lambda s, i: mbox,
