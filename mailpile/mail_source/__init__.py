@@ -449,31 +449,9 @@ class BaseMailSource(threading.Thread):
     def _default_policy(self, mbx_cfg):
         return 'inherit'
 
-    def set_tag_visibility(self, visible):
-        config = self.session.config
-        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
-
-        with self._lock:
-            old_display = 'tag' if disco_cfg.visible_tags else 'invisible'
-            disco_cfg.visible_tags = visible
-
-            # Look at all currently configured tags; if their visibility
-            # matches the discovery policy, update them to the new value.
-            tags = []
-            if disco_cfg.parent_tag:
-                tags.append(disco_cfg.parent_tag)
-            for mbx_cfg in self.my_config.mailbox.values():
-                if mbx_cfg.primary_tag:
-                    tags.append(mbx_cfg.primary_tag)
-
-            for tid in (t for t in tags if t != '!CREATE'):
-                tag = config.tags.get(tid)
-                if tag and tag.display == old_display:
-                    tag.display = 'tag' if visible else 'invisible'
-
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True,
-                          apply_tags=None, visible_tags=None):
+                          apply_tags=None):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
@@ -492,7 +470,7 @@ class BaseMailSource(threading.Thread):
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
         if disco_cfg.guess_tags:
             self._guess_tags(mbx_cfg)
-        self._create_primary_tag(mbx_cfg, save=False, visible=visible_tags)
+        self._create_primary_tag(mbx_cfg, save=False)
         self._create_local_mailbox(mbx_cfg, save=False)
         if save:
             self._save_config()
@@ -555,12 +533,12 @@ class BaseMailSource(threading.Thread):
                 if len(name) < 4:
                     name = _('Mail: %s') % name
                 disco_cfg.parent_tag = name
+            from mailpile.plugins.tags import Slugify
             disco_cfg.parent_tag = self._create_tag(
                 disco_cfg.parent_tag,
                 use_existing=False,
-                label=False,
                 icon='icon-mailsource',
-                visible=disco_cfg.visible_tags,
+                slug=Slugify(self.my_config.name, tags=self.session.config.tags),
                 unique=False)
             if save:
                 self._save_config()
@@ -568,7 +546,7 @@ class BaseMailSource(threading.Thread):
         else:
             return None
 
-    def _create_primary_tag(self, mbx_cfg, visible=None, save=True):
+    def _create_primary_tag(self, mbx_cfg, save=True):
         config = self.session.config
         if mbx_cfg.primary_tag and (mbx_cfg.primary_tag in config.tags):
             return
@@ -592,25 +570,10 @@ class BaseMailSource(threading.Thread):
         # proposal before changing the policy from 'unknown'.
         if self._policy(mbx_cfg) != 'unknown':
             try:
-                as_label = True
-                for tid in mbx_cfg.apply_tags:
-                    # Hmm. Is this too clever? Rationale: if we are always
-                    # applying other tags automatically, and they are labels,
-                    # then making the primary tag a label too would just be
-                    # clutter. Yes?
-                    try:
-                        tag = config.tags[tid]
-                        if tag and tag.label:
-                            as_label = False
-                    except (KeyError, ValueError):
-                        pass
                 mbx_cfg.primary_tag = self._create_tag(
                     mbx_cfg.primary_tag,
                     use_existing=False,
-                    visible=(disco_cfg.visible_tags if (visible is None)
-                             else visible),
-                    label=as_label,
-                    slug='mailbox-%s' % mbx_cfg._key,
+                    visible=disco_cfg.visible_tags,
                     unique=False,
                     parent=parent)
             except (ValueError, IndexError):
@@ -650,7 +613,7 @@ class BaseMailSource(threading.Thread):
     def _create_tag(self, tag_name_or_id,
                     use_existing=True,
                     unique=False,
-                    label=True,
+                    label=False,
                     visible=True,
                     slug=None,
                     icon=None,
@@ -671,9 +634,9 @@ class BaseMailSource(threading.Thread):
                 from mailpile.plugins.tags import Slugify
                 if self.my_config.name:
                     slug = Slugify('/'.join([self.my_config.name, tag_name]),
-                                   self.session.config.tags)
+                                   tags=self.session.config.tags)
                 else:
-                    slug = Slugify(tag_name, self.session.config.tags)
+                    slug = Slugify(tag_name, tags=self.session.config.tags)
             tag_id = self.session.config.tags.append({
                 'name': tag_name,
                 'slug': slug,
@@ -681,7 +644,7 @@ class BaseMailSource(threading.Thread):
                 'parent': parent or '',
                 'label': label,
                 'icon': icon or 'icon-tag',
-                'display': 'tag' if visible else 'invisible',
+                'display': 'tag' if visible else 'archive',
             })
             if parent and visible:
                 self.session.config.tags[parent].display = 'tag'

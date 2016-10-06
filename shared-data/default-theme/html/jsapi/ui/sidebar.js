@@ -2,7 +2,8 @@ Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
   // FIXME: This assumes we have a Mailpile.config object that is up to date.
   //        That is not a safe or reasonable assumption...
 
-  if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1) {
+  if ((_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1)
+      && ($('#sidebar-tag-' + tid).not('.should-hide').length > 0)) {
     $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
     if (gradual) {
       $('.subtag-of-' + tid).slideDown('fast');
@@ -11,7 +12,6 @@ Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
       $('.subtag-of-' + tid).show();
     }
   } else {
-    //$('#sidebar-tag-' + tid).removeClass('show-subtags');
     $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
     if (gradual) {
       $('.subtag-of-' + tid).slideUp('fast');
@@ -180,17 +180,27 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
 
     // Disable Drag & Drop
     $('a.sidebar-tag').draggable({ disabled: true });
+
+    // Display tags that are normally hidden
+    $('li.sidebar-tag.hide').addClass('should-hide').slideDown();
+    $('li.sidebar-tag.hide a.sidebar-tag').css({'opacity': 0.5});
     
     // Update Cursor Make Links Not Work
     $('.sidebar-sortable li').addClass('is-editing');
 
     // Hide Notification & Subtags
     $('a.sidebar-tag .notification').hide();
-    $('.sidebar-subtag').hide();
+    $('li.sidebar-tag .sidebar-tag-expand').hide();
+    $('.sidebar-subtag').slideUp();
 
-    // Add Minus Button
-    $.each($('.sidebar-tag'), function(key, value) {
-      $(this).append('<span class="sidebar-tag-archive icon-minus"></span>');
+    // Add Settings Button
+    $.each($('li.sidebar-tag'), function(key, value) {
+      var slug = $(this).data('slug');
+      $(this).append(
+        '<a class="sidebar-tag-settings auto-modal auto-modal-reload"' +
+        ' title="Edit: ' + slug + '"' +
+        ' href="/tags/edit.html?only='+slug+'">' +
+        '<span class="icon-settings"></span></a>');
     });
 
     // Update Edit Button
@@ -207,9 +217,13 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
     // Update Cursor Make Links Work
     $('.sidebar-sortable li').removeClass('is-editing');
 
-    // Show Notification / Hide Minus Button
+    // Show Notification / Remove Settings Button
     $('a.sidebar-tag .notification').show();
-    $('.sidebar-tag-archive').remove();
+    $('li.sidebar-tag .sidebar-tag-expand').show();
+    $('.sidebar-tag-settings').remove();
+
+    // Hide tags that are normally hidden
+    $('li.sidebar-tag.should-hide').slideUp();
 
     // Update Edit Button
     $elem.data('state', 'done');
@@ -218,18 +232,6 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
 
   $elem.data('message', old_message)
   $elem.find('span.text').html(new_message);
-};
-
-
-Mailpile.UI.Sidebar.TagArchive = function() {
-  // FIXME: This should use a modal or styled confirm dialogue and Int. language
-  alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-  var tid = $(this).parent().data('tid');
-  var setting = Mailpile.tag_setting(tid, 'display', 'archive');
-  Mailpile.API.settings_set_post(setting, function(result) { 
-    Mailpile.notification(result);
-    $('#sidebar-tag-' + tid).fadeOut();
-  });
 };
 
 

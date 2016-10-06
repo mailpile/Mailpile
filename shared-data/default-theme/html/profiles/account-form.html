@@ -514,14 +514,6 @@
               </span>
             </span>
 
-            <span class="source-settings-{{ new_rid }} imap imap_ssl">
-              <br>
-              <input type="checkbox" name="source-{{ new_rid }}-visible-tags" value="yes"
-                     {% if result['source-' + rid + '-visible-tags'] %}checked{% endif %}>
-              <span class="checkbox">
-                {{_("Create visible Mailpile tags for all folders")}}
-              </span>
-            </span>
             <div class='edit-provider-settings hide'><br>
               <a target=_blank class='edit-provider-settings button-secondary'>
                 <span class="icon-settings"></span> {{_("Enable IMAP")}}

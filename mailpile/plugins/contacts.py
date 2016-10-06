@@ -971,7 +971,6 @@ def ProfileVCard(parent):
                     # so we save config to trigger instanciation.
                     self._background_save(config=True, wait=True)
                     src_obj = config.mail_sources[src_id]
-                    src_obj.set_tag_visibility(self._yn(prefix + 'visible-tags'))
 
                 else:
                     raise ValueError(_('Unhandled incoming mail protocol: %s'
@@ -1112,7 +1111,6 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
             'source-NEW-force-starttls': False,
-            'source-NEW-visible-tags': True,
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
@@ -1161,7 +1159,9 @@ class AddProfile(ProfileVCard(AddVCard)):
                     'label': False,
                     'display': 'invisible'
                 })
-                tags[vcard.tag].slug = 'account-%d' % len(tags)
+                from mailpile.plugins.tags import Slugify
+                tags[vcard.tag].slug = Slugify(
+                    'account-%s' % vcard.email, tags=self.session.config.tags)
 
         route_id = state.get('route_id')
         if route_id:
@@ -1228,7 +1228,6 @@ class EditProfile(AddProfile):
             info[prefix + 'leave-on-server'] = (dp not in 'move')
             info[prefix + 'index-all-mail'] = (dp in ('move', 'sync', 'read')
                                                and disco.local_copy)
-            info[prefix + 'visible-tags'] = disco.visible_tags
             info[prefix + 'enabled'] = source.enabled
             if source.protocol == 'imap_tls':
                 info[prefix + 'protocol'] = 'imap'

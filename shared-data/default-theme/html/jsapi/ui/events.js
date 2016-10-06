@@ -15,12 +15,6 @@ $(document).on('click', '#button-sidebar-organize', function(e) {
 });
 
 
-$(document).on('click', '.sidebar-tag-archive', function(e) {
-  e.preventDefault();
-  Mailpile.UI.Sidebar.TagArchive();
-});
-
-
 $(document).on('click', '#button-sidebar-add', function(e) {
   e.preventDefault();
   Mailpile.UI.Modals.TagAdd({ location: 'sidebar' });

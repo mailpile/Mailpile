@@ -175,13 +175,13 @@ def GetTagID(cfg, tn):
 
 
 def Slugify(tag_name, tags=None):
-    slug = CleanText(tag_name.lower().replace(' ', '-'),
+    slug = CleanText(tag_name.lower().replace(' ', '-').replace('@', '-'),
                      banned=CleanText.NONDNS.replace('/', '')
                      ).clean.lower()
     n = 1
     while tags and slug in [t.slug for t in tags.values()]:
         n += 1
-        slug = Slugify('%s-%s' % (tag_name, n))
+        slug = Slugify('%s.%s' % (tag_name, n))
     return slug
 
 
