@@ -1911,54 +1911,10 @@ class MailIndex(object):
         results.extend(hits('%s:in' % tag_id))
         return results
 
-    def _vfs_hits(self, session, searchterms):
-        mailbox_path = FilePath(searchterms[0].split(':', 1)[1])
-        session.ui.mark(_('Opening mailbox %s') % mailbox_path)
-        try:
-            # FIXME: This triggers indexing...
-            mboxid, mbox = session.config.open_mailbox_path(
-                session, mailbox_path, register=True)
-        except (ValueError, IOError, OSError):
-            if session.config.sys.debug:
-                traceback.print_exc()
-            return []
-
-        # FIXME:
-        # OK, this shit doesn't work. The problem is that remote
-        # mail sources work in two stages; copy first and then scan.
-        # Just performing the scan won't accomplish anything new.
-        #
-        # This is and was an ugly hack, we should rip it out.
-        # What we really want is the ability to open a mailbox,
-        # quickly update the metadata index with whatever we can
-        # find and then return, the results, possibly triggering
-        # background copy if the settings suggest so. We also
-        # need to provide feedback, in the event, showing what
-        # exactly is going on.
-        #
-        # If that means pointers to remote content, that should
-        # be somethign we can live/work with and download later?
-
-        # FIXME: Create an event so the UI can report on progress.
-        self.scan_mailbox(session, mboxid, mailbox_path.raw_fp,
-                          lambda s, i: mbox,
-                          apply_tags=[], process_new=True,
-                          reverse=True, lazy=True, deadline=10)
-        results = []
-        for tocid in mbox.keys():
-            msg_ptr_idx = self.PTRS.get(mbox.get_msg_ptr(mboxid, tocid))
-            if msg_ptr_idx is not None:
-                results.append(msg_ptr_idx)
-            else:
-                pass  # FIXME: Add minimal place-holder?
-
-        return results
-
     def search(self, session, searchterms,
                keywords=None, order=None, recursion=0, context=None):
         # Stash the raw search terms
         raw_terms = searchterms[:]
-        is_vfs = False
 
         # Choose how we are going to search
         if keywords is not None:
@@ -1970,10 +1926,6 @@ class MailIndex(object):
             def hits(term):
                 if term.endswith(':in'):
                     return self.TAGS.get(term.rsplit(':', 1)[0], [])
-
-                elif term.endswith(':vfs'):
-                    return self._vfs_hits(session, searchterms)
-
                 else:
                     session.ui.mark(_('Searching for %s') % term)
                     return [int(h, 36) for h
@@ -2015,10 +1967,7 @@ class MailIndex(object):
 
             r.append((op, []))
             rt = r[-1][1]
-            if not term.startswith('vfs:'):
-                term = term.lower()
-            else:
-                is_vfs = True
+            term = term.lower()
 
             if ':' in term:
                 if term.startswith('in:'):
@@ -2102,7 +2051,7 @@ class MailIndex(object):
             exclude = self.search(session, exclude_terms).as_set()
 
         # Decide if this is cached or not
-        if keywords is None and not is_vfs:
+        if keywords is None:
             srs = CachedSearchResultSet(self, raw_terms)
             if len(srs) > 0:
                 return srs

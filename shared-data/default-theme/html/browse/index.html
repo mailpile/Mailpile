@@ -53,11 +53,7 @@
 {%- endmacro -%}
 
 {%- macro browse_url(attr, info) -%}
-  {%- if attr == 'flag_mailbox' -%}
-    {{- U('/search/?q=vfs:', info.encoded) -}} 
-  {%- else -%}
-    {{- U('/browse', info.path, '/') -}}
-  {%- endif -%}
+  {{- U('/browse', info.path, '/') -}}
 {%- endmacro -%}
 
 {%- macro box_icon(attr, info, icn) -%}
