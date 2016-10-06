@@ -1232,7 +1232,6 @@ class ConfigureMailboxes(Command):
         'recurse': 'y/n: search subdirectories?',
         'apply_tags': 'Mailbox tags',
         'auto_index': 'Account e-mail or ID',
-        'tag_visible': 'Make new tags visible in sidebar',
         'local_copy': 'Make local copy of mail'
     }
     COMMAND_SECURITY = security.CC_CHANGE_CONFIG
@@ -1264,11 +1263,9 @@ class ConfigureMailboxes(Command):
 
         if self.data.get('_method', 'CLI') == 'POST':
             auto_index = self._truthy('auto_index', default='n')
-            tag_visible = self._truthy('tag_visible', default='n')
             local_copy = self._truthy('local_copy', default='n')
         else:
             auto_index = True
-            tag_visible = False
             local_copy = None
 
         # Recursion or other options requested on CLI?
@@ -1277,8 +1274,6 @@ class ConfigureMailboxes(Command):
                 recurse = paths.pop(paths.index('--recurse'))
             while paths and '--local_copy' in paths:
                 local_copy = paths.pop(paths.index('--local_copy'))
-            while paths and '--tag_visible' in paths:
-                tag_visible = paths.pop(paths.index('--tag_visible'))
             while paths and '--no_auto_index' in paths:
                 auto_index = not paths.pop(paths.index('--no_auto_index'))
 
@@ -1349,7 +1344,6 @@ class ConfigureMailboxes(Command):
                 'profile': account_id,
                 'apply_tags': apply_tags,
                 'auto_index': auto_index,
-                'tag_visible': tag_visible,
                 'local_copy': local_copy,
                 'has_source': has_source,
                 'adding': adding,
@@ -1385,7 +1379,6 @@ class ConfigureMailboxes(Command):
                                              policy=policy,
                                              create_local=local_copy,
                                              apply_tags=apply_tags,
-                                             visible_tags=tag_visible,
                                              save=False)
                 configured[mbox_id] = path
 
