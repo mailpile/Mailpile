@@ -16,6 +16,8 @@ from mailpile.crypto.streamer import EncryptingStreamer
 from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.index.base import BaseIndex
+from mailpile.index.search import SearchResultSet, CachedSearchResultSet
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser, GetTextPayload
@@ -32,96 +34,14 @@ from mailpile.vfs import vfs, FilePath
 _plugins = PluginManager()
 
 
-class SearchResultSet:
-    """
-    Search results!
-    """
-    def __init__(self, idx, terms, results, exclude):
-        self.terms = set(terms)
-        self._index = idx
-        self.set_results(results, exclude)
-
-    def set_results(self, results, exclude):
-        self._results = {
-            'raw': set(results),
-            'excluded': set(exclude) & set(results)
-        }
-        return self
-
-    def __len__(self):
-        return len(self._results.get('raw', []))
-
-    def as_set(self, order='raw'):
-        return self._results[order] - self._results['excluded']
-
-    def excluded(self):
-        return self._results['excluded']
-
-
-SEARCH_RESULT_CACHE = {}
-
-
-class CachedSearchResultSet(SearchResultSet):
-    """
-    Cached search result.
-    """
-    def __init__(self, idx, terms):
-        global SEARCH_RESULT_CACHE
-        self.terms = set(terms)
-        self._index = idx
-        self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
-        self._results['_last_used'] = time.time()
-
-    def _skey(self):
-        return ' '.join(self.terms)
-
-    def set_results(self, *args):
-        global SEARCH_RESULT_CACHE
-        SearchResultSet.set_results(self, *args)
-        SEARCH_RESULT_CACHE[self._skey()] = self._results
-        self._results['_last_used'] = time.time()
-        return self
-
-    @classmethod
-    def DropCaches(cls, msg_idxs=None, tags=None):
-        # FIXME: Make this more granular
-        global SEARCH_RESULT_CACHE
-        SEARCH_RESULT_CACHE = {}
-
-
-class MailIndex(object):
+class MailIndex(BaseIndex):
     """This is a lazily parsing object representing a mailpile index."""
 
-    MSG_MID = 0
-    MSG_PTRS = 1
-    MSG_ID = 2
-    MSG_DATE = 3
-    MSG_FROM = 4
-    MSG_TO = 5
-    MSG_CC = 6
-    MSG_KB = 7
-    MSG_SUBJECT = 8
-    MSG_BODY = 9
-    MSG_TAGS = 10
-    MSG_REPLIES = 11
-    MSG_THREAD_MID = 12
-
-    MSG_FIELDS_V1 = 11
-    MSG_FIELDS_V2 = 13
-
-    MSG_BODY_LAZY = '{L}'
-    MSG_BODY_GHOST = '{G}'
-    MSG_BODY_DELETED = '{D}'
-    MSG_BODY_UNSCANNED = (MSG_BODY_LAZY, MSG_BODY_GHOST)
-    MSG_BODY_MAGIC = (MSG_BODY_LAZY, MSG_BODY_GHOST, MSG_BODY_DELETED)
-
-    BOGUS_METADATA = [None, '', None, '0', '(no sender)', '', '', '0',
-                      '(not in index)', '', '', '', '-1']
-
     MAX_INCREMENTAL_SAVES = 25
+    MAX_CACHE_ENTRIES = 2500
 
     def __init__(self, config):
-        self.config = config
+        BaseIndex.__init__(self, config)
         self.interrupt = None
         self.INDEX = []
         self.INDEX_SORT = {}
@@ -129,9 +49,6 @@ class MailIndex(object):
         self.PTRS = {}
         self.TAGS = {}
         self.MSGIDS = {}
-        self.EMAILS = []
-        self.EMAIL_IDS = {}
-        self.CACHE = {}
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
         self._scanned = {}
@@ -161,50 +78,6 @@ class MailIndex(object):
         # be able to read it back later.
         parts = [unicode(p).translate(self.NORM_TABLE) for p in message]
         return (u'\t'.join(parts)).encode('utf-8')
-
-    @classmethod
-    def get_body(self, msg_info):
-        msg_body = msg_info[self.MSG_BODY]
-        if msg_body.startswith('{'):
-            if msg_body == self.MSG_BODY_LAZY:
-                return {'snippet': _('(unprocessed)'), 'lazy': True}
-            elif msg_body == self.MSG_BODY_GHOST:
-                return {'snippet': _('(ghost)'), 'ghost': True}
-            elif msg_body == self.MSG_BODY_DELETED:
-                return {'snippet': _('(deleted)'), 'deleted': True}
-            try:
-                return json.loads(msg_body)
-            except ValueError:
-                pass
-        return {
-            'snippet': msg_info[self.MSG_BODY]
-        }
-
-    @classmethod
-    def truncate_body_snippet(self, body, max_chars):
-        if 'snippet' in body:
-            delta = len(self.encode_body(body)) - max_chars
-            if delta > 0:
-                body['snippet'] = body['snippet'][:-delta].rsplit(' ', 1)[0]
-
-    @classmethod
-    def encode_body(self, d, **kwargs):
-        for k, v in kwargs:
-            if v is None:
-                if k in d:
-                    del d[k]
-            else:
-                d[k] = v
-        if len(d) == 1 and 'snippet' in d:
-            snippet = d['snippet']
-            if snippet[:3] in self.MSG_BODY_MAGIC or snippet[:1] != '{':
-                return d['snippet']
-        return json.dumps(d)
-
-    @classmethod
-    def set_body(self, msg_info, **kwargs):
-        d = self.get_body(msg_info)
-        msg_info[self.MSG_BODY] = self.encode_body(d, **kwargs)
 
     def load(self, session=None):
         self.INDEX = []
@@ -343,7 +216,6 @@ class MailIndex(object):
                 return es.save(None)
 
         return data
-
 
     def save_changes(self, session=None):
         self._save_lock.acquire()
@@ -1099,42 +971,6 @@ class MailIndex(object):
         msg_info[self.MSG_THREAD_MID] = msg_mid
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
-    def _add_email(self, email, name=None, eid=None):
-        if eid is None:
-            eid = len(self.EMAILS)
-            self.EMAILS.append('')
-        self.EMAILS[eid] = '%s (%s)' % (email, name or email)
-        self.EMAIL_IDS[email.lower()] = eid
-        # FIXME: This needs to get written out...
-        return eid
-
-    def update_email(self, email, name=None, change_name=True):
-        eid = self.EMAIL_IDS.get(email.lower())
-        if (eid is not None) and not change_name:
-            el = self.EMAILS[eid].split(' ')
-            if len(el) == 2:
-                en = el[1][1:-1]
-                if '@' not in en:
-                    name = en
-        return self._add_email(email, name=name, eid=eid)
-
-    def compact_to_list(self, msg_to):
-        eids = []
-        for ai in msg_to:
-            email = ai.address
-            eid = self.EMAIL_IDS.get(email.lower())
-            if eid is None:
-                eid = self._add_email(email, name=ai.fn)
-            elif ai.fn and ai.fn != email:
-                self.update_email(email, name=ai.fn, change_name=False)
-            eids.append(eid)
-        return ','.join([b36(e) for e in set(eids)])
-
-    def expand_to_list(self, msg_info, field=None):
-        eids = msg_info[field if (field is not None) else self.MSG_TO]
-        eids = [e for e in eids.strip().split(',') if e]
-        return [self.EMAILS[int(e, 36)] for e in eids]
-
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
                     msg_to, msg_cc, msg_bytes, msg_subject, msg_body,
                     tags):
@@ -1260,8 +1096,7 @@ class MailIndex(object):
 
             def _loader(p):
                 if payload[0] is None:
-                    payload[0] = self.try_decode(GetTextPayload(p),
-                                                 charset)
+                    payload[0] = try_decode(GetTextPayload(p), charset)
                 return payload[0]
 
             if ctype == 'text/plain':
@@ -1290,7 +1125,7 @@ class MailIndex(object):
 
             att = part.get_filename()
             if att:
-                att = self.try_decode(att, charset)
+                att = try_decode(att, charset)
                 # FIXME: These should be tags!
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
@@ -1485,26 +1320,11 @@ class MailIndex(object):
         self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
         return keywords, snippet
 
-    def get_msg_at_idx_pos(self, msg_idx):
-        try:
-            crv = self.CACHE.get(msg_idx, {})
-            if 'msg_info' in crv:
-                rv = crv['msg_info']
-            else:
-                if len(self.CACHE) > 2500:
-                    try:
-                        for k in random.sample(self.CACHE.keys(), 50):
-                            del self.CACHE[k]
-                    except KeyError:
-                        pass
-                rv = self.l2m(self.INDEX[msg_idx])
-                crv['msg_info'] = rv
-                self.CACHE[msg_idx] = crv
-            if len(rv) != self.MSG_FIELDS_V2:
-                raise ValueError()
-            return rv
-        except (IndexError, ValueError):
-            return self.BOGUS_METADATA[:]
+    def get_msg_at_idx_pos_uncached(self, msg_idx):
+        rv = self.l2m(self.INDEX[msg_idx])
+        if len(rv) != self.MSG_FIELDS_V2:
+            raise ValueError()
+        return rv
 
     def delete_msg_at_idx_pos(self, session, msg_idx, keep_msgid=False):
         info = self.get_msg_at_idx_pos(msg_idx)

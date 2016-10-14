@@ -179,7 +179,7 @@ class SearchResults(dict):
 
         for ai in addresses:
             eid = self.idx.EMAIL_IDS.get(ai.address.lower())
-            cids.add(b36(self.idx._add_email(ai.address, name=ai.fn, eid=eid)))
+            cids.add(b36(self.idx.add_email(ai.address, name=ai.fn, eid=eid)))
 
         if msg_info:
             if not no_to:
@@ -192,7 +192,7 @@ class SearchResults(dict):
                 fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
                 if fe:
                     eid = self.idx.EMAIL_IDS.get(fe.lower())
-                    cids.add(b36(self.idx._add_email(fe, name=fn, eid=eid)))
+                    cids.add(b36(self.idx.add_email(fe, name=fn, eid=eid)))
 
         return sorted(list(cids))
 
@@ -589,6 +589,8 @@ class SearchResults(dict):
         if not count:
             text = ['(No messages found)']
         return '\n'.join(text) + '\n'
+
+
 ##[ Commands ]################################################################
 
 class Search(Command):

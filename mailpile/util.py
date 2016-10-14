@@ -454,6 +454,20 @@ def truthy(txt, default=False, special=None):
         return default
 
 
+def try_decode(text, charset, replace=''):
+    # FIXME: We need better heuristics for choosing charsets, as pretty
+    #        much any 8-bit legacy charset will decode pretty much any
+    #        blob of data. At least utf-8 will raise on some things
+    #        (which is why we make it the 1st guess), but still not all.
+    for cs in (charset, 'utf-8', 'iso-8859-1'):
+        if cs:
+            try:
+                return text.decode(cs)
+            except (UnicodeEncodeError, UnicodeDecodeError, LookupError):
+                pass
+    return "".join((i if (ord(i) < 128) else replace) for i in text)
+
+
 def randomish_uid():
     """
     Generate a weakly random unique ID. Might not actually be unique.
