@@ -450,7 +450,7 @@ class SearchResults(dict):
                     self['data']['tags'][tid] = self._tag(tid,
                                                           {"searched": False})
 
-    def add_email(self, e, idxs):
+    def add_email(self, e, idxs=None):
         if e not in self.emails:
             self.emails.append(e)
         mid = e.msg_mid()
