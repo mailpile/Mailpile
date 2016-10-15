@@ -24,8 +24,8 @@ $(document).on('click', 'a.change-view-size', function(e) {
   var change_size = $(this).data('view_size');
 
   // Update Link Selected
-  $('a.change-view-size').removeClass('view-size-selected');
-  $(this).addClass('view-size-selected');
+  $('a.change-view-size').removeClass('selected');
+  $(this).addClass('selected');
 
   // Update View Sizes
   Mailpile.pile_display(current_size, change_size);
