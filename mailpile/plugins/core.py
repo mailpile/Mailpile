@@ -1246,7 +1246,6 @@ class ConfigureMailboxes(Command):
 
         session, config = self.session, self.session.config
         paths = list(self.args)
-        recurse = False
 
         # Which tags do we want to apply?
         apply_tags = self.data.get('apply_tags', [])
@@ -1341,10 +1340,12 @@ class ConfigureMailboxes(Command):
 
         if self.data.get('_method', 'CLI') == 'GET':
             return self._success(_('Add and configure mailboxes'), result={
+                'paths': opaths,
                 'profile': account_id,
                 'apply_tags': apply_tags,
                 'auto_index': auto_index,
                 'local_copy': local_copy,
+                'recurse': recurse,
                 'has_source': has_source,
                 'adding': adding,
                 'configure': configure
