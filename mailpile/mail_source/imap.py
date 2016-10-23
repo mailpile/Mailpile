@@ -446,6 +446,9 @@ class SharedImapMailbox(Mailbox):
             return ('%s.%s' % (b36(int(validity)), b36(int(k)))
                     for k in sorted(data))
 
+    def keys(self):
+        return list(self.iterkeys())
+
     def update_toc(self):
         pass
 
@@ -470,12 +473,6 @@ class SharedImapMailbox(Mailbox):
            if flag in flags:
                mkws.append('%s:maildir' % char)
         return mkws
-
-    def get_index(self, config, mbx_mid=None):
-        with self._lock:
-            if self._index is not None:
-                self._index = ImapMailboxIndex(config, self, mbx_mid=mbx_mid)
-        return self._index
 
     def __contains__(self, key):
         try:
@@ -504,6 +501,11 @@ class SharedImapMailbox(Mailbox):
     def save(self, *args, **kwargs):
         # SharedImapMailboxes are never pickled to disk.
         pass
+
+    def get_index(self, config, mbx_mid=None):
+        if self._index is None:
+            self._index = ImapMailboxIndex(config, self, mbx_mid=mbx_mid)
+        return self._index
 
 
 def _connect_imap(session, settings, event,

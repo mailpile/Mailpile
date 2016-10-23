@@ -1,5 +1,6 @@
-import json
 import email.parser
+import json
+import traceback
 
 from mailpile.util import *
 from mailpile.i18n import gettext as _
@@ -34,18 +35,23 @@ class MailboxIndex(BaseIndex):
             return BaseIndex.open_mailbox_by_ptr(self, msg_ptr)
 
     def _update_keymap(self):
-        mailbox_ptrs = [self.mailbox.get_msg_ptr(self.mbx_mid, i)
-                        for i in self.mailbox.keys()]
-        for ptr in mailbox_ptrs:
-            if ptr not in self.ptrset:
-                self.idxmap.append(ptr)
-        self.ptrset = set(mailbox_ptrs)
+        try:
+            mailbox_keys = self.mailbox.keys()
+            mailbox_ptrs = [self.mailbox.get_msg_ptr(self.mbx_mid, i)
+                            for i in mailbox_keys]
+            for ptr in mailbox_ptrs:
+                if ptr not in self.ptrset:
+                    self.idxmap.append(ptr)
+            self.ptrset = set(mailbox_ptrs)
+        except:
+            traceback.print_exc()
 
     def search(self, session, terms, context=None):
-        self._update_keymap()
         if not terms or terms == ['all:mail']:
+            self._update_keymap()
             result = [i for i, ptr in enumerate(self.idxmap)
                       if ptr in self.ptrset]
+            result.reverse()
         else:
             print 'FIXME! %s: search %s' % (self, terms)
             result = []

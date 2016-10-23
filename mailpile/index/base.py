@@ -127,7 +127,7 @@ class BaseIndex(MessageInfoConstants):
                 msg_id = new_msg_id
         return b64c(sha1b64(msg_id.strip()))
 
-    def _get_msg_id(self, msg, msg_ptr):
+    def get_msg_id(self, msg, msg_ptr):
         return self._encode_msg_id(safe_get_msg_id(msg) or msg_ptr)
 
     def _message_to_msg_info(self, msg_idx_pos, msg_ptr, msg):
@@ -138,7 +138,7 @@ class BaseIndex(MessageInfoConstants):
         return [
             msg_mid,
             msg_ptr,                          # Message PTR
-            self._get_msg_id(msg, msg_ptr),   # Message ID
+            self.get_msg_id(msg, msg_ptr),    # Message ID
             b36(safe_message_ts(msg)),        # Message timestamp
             safe_decode_hdr(msg, 'from'),     # Message from
             self.compact_to_list(msg_to),     # Compacted to-list

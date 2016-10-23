@@ -585,7 +585,7 @@ class MailIndex(BaseIndex):
             return last_date, added, updated
 
         msg_snippet = msg_info = None
-        msg_id = self._get_msg_id(msg, msg_ptr)
+        msg_id = self.get_msg_id(msg, msg_ptr)
         if msg_id in self.MSGIDS:
             with self._lock:
                 msg_info = self._update_location(session,
