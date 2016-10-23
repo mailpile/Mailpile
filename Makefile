@@ -92,6 +92,10 @@ pytests:
 	@echo -n 'config/validators' && python2 mailpile/config/validators.py
 	@echo -n 'config/manager   ' && python2 mailpile/config/manager.py
 	@echo -n 'conn_brokers     ' && python2 mailpile/conn_brokers.py
+	@echo -n 'index.base       ' && python2 mailpile/index/base.py
+	@echo -n 'index.msginfo    ' && python2 mailpile/index/msginfo.py
+	@echo -n 'index.mailboxes  ' && python2 mailpile/index/mailboxes.py
+	@echo -n 'index.search     ' && python2 mailpile/index/search.py
 	@echo -n 'util             ' && python2 mailpile/util.py
 	@echo -n 'vcard            ' && python2 mailpile/vcard.py
 	@echo -n 'workers          ' && python2 mailpile/workers.py

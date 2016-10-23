@@ -12,6 +12,7 @@ from urllib import quote, unquote
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.index.mailboxes import MailboxIndex
 from mailpile.mailutils import MBX_ID_LEN
 from mailpile.util import MboxRLock
 
@@ -68,6 +69,7 @@ def UnorderedPicklable(parent, editable=False):
             self.source_map = {}
             self.is_local = False
             self._lock = MboxRLock()
+            self._index = None
             self._save_to = None
             self._encryption_key_func = lambda: None
             self._decryption_key_func = lambda: None
@@ -87,6 +89,7 @@ def UnorderedPicklable(parent, editable=False):
             self.__dict__.update(data)
             self._lock = MboxRLock()
             with self._lock:
+                self._index = None
                 self._save_to = None
                 self._encryption_key_func = lambda: None
                 self._decryption_key_func = lambda: None
@@ -100,7 +103,7 @@ def UnorderedPicklable(parent, editable=False):
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            for dk in ['_save_to',
+            for dk in ['_save_to', '_index',
                        '_encryption_key_func', '_decryption_key_func',
                        '_file', '_lock', 'parsed'] + self.UNPICKLABLE:
                 if dk in odict:
@@ -162,6 +165,12 @@ def UnorderedPicklable(parent, editable=False):
 
         def set_metadata_keywords(self, toc_id, kws):
             pass
+
+        def get_index(self, config, mbx_mid=None):
+            with self._lock:
+                if self._index is None:
+                    self._index = MailboxIndex(config, self, mbx_mid=mbx_mid)
+            return self._index
 
         def remove(self, *args, **kwargs):
             with self._lock:

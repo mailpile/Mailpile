@@ -132,17 +132,20 @@ class BaseIndex(MessageInfoConstants):
 
     def _message_to_msg_info(self, msg_idx_pos, msg_ptr, msg):
         msg_mid = b36(msg_idx_pos)
+        msg_to = AddressHeaderParser(msg.get('to'))
+        msg_cc = AddressHeaderParser(msg.get('cc'))
+        msg_cc += AddressHeaderParser(msg.get('bcc'))
         return [
             msg_mid,
             msg_ptr,                          # Message PTR
             self._get_msg_id(msg, msg_ptr),   # Message ID
             b36(safe_message_ts(msg)),        # Message timestamp
             safe_decode_hdr(msg, 'from'),     # Message from
-            '',                               # FIXME: Compacted to-list
-            '',                               # FIXME: Compacted cc-list
+            self.compact_to_list(msg_to),     # Compacted to-list
+            self.compact_to_list(msg_cc),     # Compacted cc/bcc-list
             b36(len(msg) // 1024),            # Message size
             safe_decode_hdr(msg, 'subject'),  # Subject
-            '',                               # FIXME: Body snippet
+            self.MSG_BODY_LAZY,               # Body snippets come later
             '',                               # Tags
             '',                               # Replies
             msg_mid]                          # Thread

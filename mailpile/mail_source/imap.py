@@ -57,11 +57,13 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.index.mailboxes import MailboxIndex
 from mailpile.mail_source import BaseMailSource
 from mailpile.mail_source.imap_starttls import IMAP4
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 from mailpile.vfs import FilePath
+
 
 IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[\\(\\)]'
@@ -125,6 +127,10 @@ def _parse_imap(reply):
             else:
                 break
     return (reply[0].upper() == 'OK'), pdata
+
+
+class ImapMailboxIndex(MailboxIndex):
+    pass
 
 
 class SharedImapConn(threading.Thread):
@@ -323,6 +329,7 @@ class SharedImapMailbox(Mailbox):
         self.editable = False  # FIXME: this is technically not true
         self.path = mailbox_path
         self.conn_cls = conn_cls
+        self._index = None
         self._factory = None  # Unused, for Mailbox compatibility
 
     def open_imap(self):
@@ -463,6 +470,12 @@ class SharedImapMailbox(Mailbox):
            if flag in flags:
                mkws.append('%s:maildir' % char)
         return mkws
+
+    def get_index(self, config, mbx_mid=None):
+        with self._lock:
+            if self._index is not None:
+                self._index = ImapMailboxIndex(config, self, mbx_mid=mbx_mid)
+        return self._index
 
     def __contains__(self, key):
         try:
