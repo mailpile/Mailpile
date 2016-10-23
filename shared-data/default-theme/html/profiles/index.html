@@ -94,7 +94,7 @@
     <tr valign="top" class="message">
        <td width='1%'>
          {%- if route %}
-         <a data-from="{{ p.email.0.email }}" class="button-compose" href="#">
+         <a data-from="{{ p.email.0.email }}" class="button-compose" title="Compose as {{ p.email.0.email }}" href="#">
            <span class="icon icon-compose"></span>
          </a>
          {%- endif %}
