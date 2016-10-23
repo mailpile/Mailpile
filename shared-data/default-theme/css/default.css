@@ -3348,6 +3348,10 @@ input[type="button"].button-small {
   user-select: none;
   transition-duration: 0.2s;
 }
+/* OK, Got it */
+.ok-got-it {
+  cursor: pointer;
+}
 /* Primary */
 button.button-primary,
 input[type="submit"].button-primary,
