@@ -654,6 +654,9 @@ class Search(Command):
         self._email_view_pairs = {}
         self._emails = []
 
+    def _idx(self, **kwargs):
+        return self.session.search_index or Command._idx(self)
+
     def state_as_query_args(self):
         try:
             return self._search_state
@@ -748,23 +751,36 @@ class Search(Command):
                           msg_idxs=[e.msg_idx_pos for e in emails])
         return None
 
+    def switch_indexes(self, path):
+        if path in ('default', 'mailpile'):
+             self.session.search_index = None
+        else:
+             config = self.session.config
+             self.session.search_index = config.get_path_index(
+                 self.session, path)
+
+        # Note: this falls back to default index if we set to None
+        return self._idx()
+
     def _do_search(self, search=None, process_args=False):
-        session, idx = self.session, self._idx()
+        session = self.session
 
         if (self.context is None
                 or search
                 or session.searched != self._search_args):
             session.searched = search or []
+            want_index = 'default'
             if search is None or process_args:
                 prefix = ''
                 for arg in self._search_args:
                     if arg.endswith(':'):
-                        prefix = arg
+                        prefix = arg.lower()
                     elif ':' in arg or (arg and arg[0] in ('-', '+')):
-                        if not arg.startswith('vfs:'):
-                            arg = arg.lower()
-                        prefix = ''
-                        session.searched.append(arg)
+                        if arg.startswith('index:'):
+                            want_index = arg[6:]
+                        else:
+                            prefix = ''
+                            session.searched.append(arg.lower())
                     elif prefix and '@' in arg:
                         session.searched.append(prefix + arg.lower())
                     else:
@@ -774,6 +790,7 @@ class Search(Command):
             if not session.searched:
                 session.searched = ['all:mail']
 
+            idx = self.switch_indexes(want_index)
             context = session.results if self.context else None
             session.results = list(idx.search(session, session.searched,
                                               context=context).as_set())
@@ -787,6 +804,8 @@ class Search(Command):
 
             if session.order:
                 idx.sort_results(session, session.results, session.order)
+        else:
+            idx = self._idx()
 
         self._emails = []
         pivot_pos = any_pos = len(session.results)

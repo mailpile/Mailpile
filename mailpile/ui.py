@@ -734,6 +734,7 @@ class Session(object):
         self.order = None
         self.results = []
         self.searched = []
+        self.search_index = None
         self.last_event_id = None
         self.displayed = None
         self.context = None
@@ -752,13 +753,14 @@ class Session(object):
             self.order = session.order
             self.results = session.results[:]
             self.searched = session.searched[:]
+            self.search_index = session.search_index
             self.displayed = session.displayed
             self.context = session.context
         return self
 
     def get_context(self, update=False):
         if update or not self.context:
-            if self.searched:
+            if self.searched and not self.search_index:
                 sid = self.config.search_history.add(self.searched,
                                                      self.results,
                                                      self.order)
@@ -772,6 +774,7 @@ class Session(object):
             if context.startswith('search:'):
                 s, r, o = self.config.search_history.get(self, context[7:])
                 self.searched, self.results, self.order = s, r, o
+                self.search_index = None
                 self.displayed = None
                 self.context = context
                 return context
