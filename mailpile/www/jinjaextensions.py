@@ -654,7 +654,7 @@ class MailpileCommand(Extension):
     def _urlencode(self, s):
         if type(s) == 'Markup':
             s = s.unescape()
-        return Markup(urllib.quote_plus(s.encode('utf-8')))
+        return Markup(urllib.quote_plus(unicode(s).encode('utf-8')))
 
     def _selectattr(self, seq, attr, value=None):
         if value is None:
