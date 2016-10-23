@@ -1,7 +1,7 @@
 /* Notifications - UI notification at top of window */
 
 Mailpile.expire_canceled_notifictions = function() {
-  var expired = new Date().getTime() - (3600 * 1000);
+  var expired = new Date().getTime() - (3600 * 1000 * 16);
   for (item in Mailpile.local_storage) {
     if (item.indexOf('canceled-') == '0'
         && Mailpile.local_storage[item] < expired) {
@@ -9,8 +9,10 @@ Mailpile.expire_canceled_notifictions = function() {
     }
   }
 };
-Mailpile.expire_canceled_notifictions();
 
+Mailpile.uncancel_notification = function(not_id) {
+  delete Mailpile.local_storage['canceled-' + not_id];
+};
 
 Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
   // Cancel existing notification, if any
@@ -36,8 +38,16 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
   return undefined;
 };
 
+Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
+  var settings = {};
+  settings['sources.' + src_id + '.discovery.max_mailboxes'] = howhigh;
+  Mailpile.API.settings_set_post(settings, function(result) {
+    Mailpile.cancel_notification(not_id);
+  });
+};
 
 Mailpile.notification = function(result) {
+  Mailpile.expire_canceled_notifictions();
 
   // Create CSS friend event_id OR fake-id
   if (result.event_id !== undefined) {
@@ -81,7 +91,7 @@ Mailpile.notification = function(result) {
       result.timeout = 8000; // Event complete, timeout quickly
     }
     else {
-      result.timeout = 360000000; // 100 hours - awaite completion
+      result.timeout = 360000000; // 100 hours - await completion
     }
   }
 
@@ -93,6 +103,40 @@ Mailpile.notification = function(result) {
   else if (result.command === 'tag') {
     result.undo = true;
     result.icon = 'icon-tag';
+  }
+  else if (result.source && result.source.indexOf('.mail_source.') == 0) {
+    // Mail source specific notification logic
+
+    if ((result.data.discovery_error == "toomany") &&
+        (!result.data.rescan.running) &&
+        (!result.data.copying.running)) {
+      // Mail sources have a limit on how many mailboxes are auto-added
+      // during discovery, to prevent runaway bloat if we're pointed at
+      // an over-large directory or badly behaved IMAP server. This means
+      // users need a UI to raise the limit.
+      //
+      var lim = result.data.discovery_limit;
+
+      var msg = '{{_("Found over (LIMIT) mailboxes")|escapejs}}';
+      var ri = msg.indexOf('(LIMIT)');
+      if (ri >= 0) {
+        msg = msg.substring(0, ri) + lim + msg.substring(ri+7);
+      }
+
+      if (lim < 250) {
+        lim = lim * 2;
+      } else {
+        lim = lim + 250;
+      }
+
+      result.message2 = msg;
+      result.action_text = '{{_("continue adding more")|escapejs}}';
+      result.action_js = (
+          ' href="javascript:Mailpile.raise_mail_source_mailbox_limit('
+          + '\'' + result.event_id + '\', '
+          + '\'' + result.data.id + '\', '
+          + lim + ');" ');
+    }
   }
 
   // If Undo, extend hide
@@ -222,10 +266,23 @@ EventLog.subscribe('.*AddProfile', function(ev) {
   }
 });
 EventLog.subscribe('.*mail_source.*', function(ev) {
+  //
+  // Mail source notifications behave differently depending on which
+  // page in the UI you are. On most pages, they behave like normal event
+  // notifications, popping up and then disappearing 20 seconds later, and
+  // can be silenced for a while by clicking the X.
+  //
+  // On the profile page however, these messages are sticky and persistent,
+  // and they can't be silenced. The rationale for this is that the profile
+  // page is the go-to place for account configuration, and the event
+  // provides critical information in that context.
+  //
   var $src = $('.source-' + ev.data.id);
   if ($src.length > 0) {
     var $icon = $src.find('.icon');
-    if (ev.data.connection && ev.data.connection.error[0]) {
+    if (ev.data.connection &&
+        ev.data.connection.error &&
+        ev.data.connection.error[0]) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
@@ -237,10 +294,13 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
       $icon.removeClass('misconfigured').removeClass('unconfigured');
       $icon.addClass('configured');
     }
-
-    ev.icon = 'icon-mailsource';
-    Mailpile.notification(ev);
+    Mailpile.uncancel_notification(ev.event_id);
   }
+  else {
+    ev.timeout = 20000;
+  }
+  ev.icon = 'icon-mailsource';
+  Mailpile.notification(ev);
 });
 EventLog.subscribe('.*compose.Sendit', function(ev) {
   if (ev.data.delivered == ev.data.recipients) {

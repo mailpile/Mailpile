@@ -175,7 +175,7 @@
       <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
       <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
             title="{{_("Create a new Account")}}"
-            href="{{ U('/profiles/add/') }}"><button type=button class="button-secondary">
+            href="{{ U('/profiles/add/') }}"><button type=button class="button-primary">
         <span class="icon icon-plus"></span> {{_("Add Account")}}
       </button></a></p>
     </div></td></tr>
@@ -240,4 +240,7 @@
   });
 </script>
 {% endif %}
+<script type='text/javascript'>
+  Mailpile.API.logs_events_get({incomplete: true}, EventLog.invoke_callbacks);
+</script>
 {%- endblock %}

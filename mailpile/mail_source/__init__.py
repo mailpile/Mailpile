@@ -31,8 +31,7 @@ class BaseMailSource(threading.Thread):
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
     RESCAN_BATCH_SIZE = 200     # Index at most this many new e-mails at once
-    MAX_MAILBOXES = 100         # Max number of mailboxes we add
-    MAX_PATHS = 5000            # Abort if asked to scan too many directories
+    MAX_PATHS = 2000            # Limit how many directories we scan at once
 
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.BaseMailSource'
@@ -163,6 +162,8 @@ class BaseMailSource(threading.Thread):
             self.session, 'Save config', self.session.config.save)
 
     def _log_status(self, message):
+        # If the user renames our parent_tag, we assume the name change too.
+        self.update_name_to_match_tag()
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
         self.session.ui.mark(message)
@@ -222,6 +223,15 @@ class BaseMailSource(threading.Thread):
         if policy == 'inherit':
             return self.my_config.discovery.policy
         return policy
+
+    def update_name_to_match_tag(self):
+        parent_tag_id = self.my_config.discovery.parent_tag
+        if parent_tag_id and parent_tag_id != '!CREATE':
+            tag = self.session.config.get_tag(parent_tag_id)
+            if tag and self.name != tag.name:
+                self.name = self.my_config.name = tag.name
+                if self.event:
+                    self.event.data['name'] = self.name
 
     def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
@@ -325,11 +335,12 @@ class BaseMailSource(threading.Thread):
                 raise
 
         self._last_rescan_completed = all_completed
-        self._state = 'Waiting... (disco)'
         discovered = 0
         if not self._check_interrupt():
+            self._state = 'Waiting... (disco)'
             discovered = self.discover_mailboxes()
 
+        self._state = 'Done'
         status = []
         if discovered > 0:
             status.append(_('Discovered %d mailboxes') % discovered)
@@ -377,16 +388,49 @@ class BaseMailSource(threading.Thread):
         self.event.data['counters']['unknown_policies'] = have_unknown
         self.event.data['have_unknown'] = (have_unknown > 0)
 
+    def reset_event_discovery_state(self):
+        for k in ('discovery_error', 'discovery_limit', 'discovery_state'):
+            if k in self.event.data:
+                del self.event.data[k]
+
+    def set_event_discovery_state(self, state=None, error=None, status=None):
+        self.event.data['discovery_limit'] = (
+            self.my_config.discovery.max_mailboxes)
+        if state is not None:
+            self.event.data['discovery_state'] = state
+        if error is not None:
+            self.event.data['discovery_error'] = error
+        if status is not None:
+            self._log_status(status)
+
+    def on_event_discovery_starting(self):
+        ostate, self._state = self._state, 'Discovery'
+        self.reset_event_discovery_state()
+        self.set_event_discovery_state(
+            'scanning', status=_('Checking for new mailboxes'))
+        return ostate
+
+    def on_event_discovery_toomany(self):
+        self.set_event_discovery_state(
+            error='toomany',
+            status=_('Too many mailboxes found! Raise limits to continue.'))
+        self._sleep(15)
+
+    def on_event_discovery_done(self, ostate):
+        self.set_event_discovery_state('done')
+        self._state = ostate
+
     def discover_mailboxes(self, paths=None):
         config = self.session.config
-        self._log_status(_('Checking for new mailboxes'))
-        ostate, self._state = self._state, 'Discovery'
+        ostate = self.on_event_discovery_starting()
         try:
             existing = self._existing_mailboxes()
-            max_mailboxes = self.MAX_MAILBOXES - len(existing)
+            max_mailboxes = self.my_config.discovery.max_mailboxes
+            max_mailboxes -= len(existing)
             adding = []
             paths = [(p.encode('utf-8') if isinstance(p, unicode) else p)
                      for p in (paths or self.my_config.discovery.paths)]
+            paths.sort()
             while paths:
                 raw_fn = paths.pop(0)
                 if 'sources' in config.sys.debug:
@@ -410,8 +454,18 @@ class BaseMailSource(threading.Thread):
 
                 if os.path.isdir(fn):
                     try:
-                        for f in [f for f in os.listdir(fn)
-                                  if f not in ('.', '..')]:
+                        max_paths = self.MAX_PATHS - len(paths)
+                        subdirs = [f for f in os.listdir(fn)
+                                   if f not in ('.', '..')]
+
+                        if len(subdirs) > (max_paths/2):
+                            # If we are hitting our limits, randomize.
+                            random.shuffle(subdirs)
+                        else:
+                            # Otherwise, do things in an orderly fashion.
+                            subdirs.sort()
+
+                        for f in subdirs[:max_paths/2]:
                             nfn = os.path.join(fn, f)
                             if is_mailbox and f in ('cur', 'new', 'tmp'):
                                 pass  # Skip Maildir special directories
@@ -430,6 +484,10 @@ class BaseMailSource(threading.Thread):
                 if len(adding) > max_mailboxes:
                     break
 
+            if len(adding) > max_mailboxes:
+                self.on_event_discovery_toomany()
+
+            self.set_event_discovery_state('adding')
             play_nice_with_threads()
             new = {}
             for path in adding:
@@ -444,7 +502,7 @@ class BaseMailSource(threading.Thread):
 
             return len(adding)
         finally:
-            self._state = ostate
+            self.on_event_discovery_done(ostate)
 
     def _default_policy(self, mbx_cfg):
         return 'inherit'

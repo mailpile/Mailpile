@@ -181,6 +181,7 @@ CONFIG_RULES = {
             'visible_tags':(_('Make tags visible by default?'), bool, True),
             'process_new': (_('Is a potential source of new mail'), bool, True),
             'apply_tags':  (_('Tags applied to messages'), str, []),
+            'max_mailboxes':(_('Max mailboxes to add'), int, 100),
         }),
         'mailbox': (_('Mailboxes'), {
             'name':        (_('The name of this mailbox'), str, ''),

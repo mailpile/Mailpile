@@ -128,7 +128,7 @@
   </td>
   <td class="from">
     <a href="{{msg_url(mid)}}" data-noblank=1
-       title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+       title="{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
       {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
       {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
