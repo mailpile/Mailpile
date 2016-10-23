@@ -17,11 +17,12 @@ from mailpile.eventlog import GetThreadEvent
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.mailutils import decode_header
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser, GetTextPayload
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
+from mailpile.mailutils.header import decode_header
+from mailpile.mailutils.safe import *
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
 from mailpile.util import *
@@ -445,89 +446,6 @@ class MailIndex(object):
             else:
                 session.ui.warning(_('Bogus line: %s') % line)
 
-    @classmethod
-    def try_decode(self, text, charset, replace=''):
-        # FIXME: We need better heuristics for choosing charsets, as pretty
-        #        much any 8-bit legacy charset will decode pretty much any
-        #        blob of data. At least utf-8 will raise on some things
-        #        (which is why we make it the 1st guess), but still not all.
-        for cs in (charset, 'utf-8', 'iso-8859-1'):
-            if cs:
-                try:
-                    return text.decode(cs)
-                except (UnicodeEncodeError, UnicodeDecodeError, LookupError):
-                    pass
-        return "".join((i if (ord(i) < 128) else replace) for i in text)
-
-    @classmethod
-    def hdr(self, msg, name, value=None, charset=None):
-        """
-        This method stubbornly tries to decode header data and convert
-        to Pythonic unicode strings. The strings are guaranteed not to
-        contain tab, newline or carriage return characters.
-
-        If used with a message object, the header and the MIME charset
-        will be inferred from the message headers.
-        >>> hdr = MailIndex.hdr
-        >>> msg = email.message.Message()
-        >>> msg['content-type'] = 'text/plain; charset=utf-8'
-        >>> msg['from'] = 'G\\xc3\\xadsli R \\xc3\\x93la <f@b.is>'
-        >>> hdr(msg, 'from')
-        u'G\\xedsli R \\xd3la <f@b.is>'
-
-        The =?...?= MIME header encoding is also recognized and processed.
-
-        >>> hdr(None, None, '=?iso-8859-1?Q?G=EDsli_R_=D3la?=\\r\\n<f@b.is>')
-        u'G\\xedsli R \\xd3la <f@b.is>'
-
-        >>> hdr(None, None, '"=?utf-8?Q?G=EDsli_R?= =?iso-8859-1?Q?=D3la?="')
-        u'G\\xedsli R \\xd3la'
-
-        And finally, guesses are made with raw binary data. This process
-        could be improved, it currently only attempts utf-8 and iso-8859-1.
-
-        >>> hdr(None, None, '"G\\xedsli R \\xd3la"\\r\\t<f@b.is>')
-        u'"G\\xedsli R \\xd3la"  <f@b.is>'
-
-        >>> hdr(None, None, '"G\\xc3\\xadsli R \\xc3\\x93la"\\n <f@b.is>')
-        u'"G\\xedsli R \\xd3la"  <f@b.is>'
-
-        # See https://bugs.python.org/issue1079
-
-        # encoded word enclosed in parenthesis (comment syntax)
-        >>> hdr(None, None, 'rene@example.com (=?utf-8?Q?Ren=C3=A9?=)')
-        u'rene@example.com ( Ren\\xe9 )'
-
-        # no space after encoded word
-        >>> hdr(None, None, '=?UTF-8?Q?Direction?=<dir@example.com>')
-        u'Direction <dir@example.com>'
-        """
-        if value is None:
-            value = msg and msg[name] or ''
-            charset = charset or msg.get_content_charset() or 'utf-8'
-        else:
-            charset = charset or 'utf-8'
-
-        if not isinstance(value, unicode):
-            # Already a str! Oh shit, might be nasty binary data.
-            value = self.try_decode(value, charset, replace='?')
-
-        # At this point we know we have a unicode string. Next we try
-        # to very stubbornly decode and discover character sets.
-        if '=?' in value and '?=' in value:
-            try:
-                # decode_header wants an unquoted str (not unicode)
-                value = value.encode('utf-8').replace('"', '')
-                # Decode!
-                pairs = decode_header(value)
-                value = ' '.join([self.try_decode(t, cs or charset)
-                                  for t, cs in pairs])
-            except email.errors.HeaderParseError:
-                pass
-
-        # Finally, return the unicode data, with white-space normalized
-        return value.replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-
     def _remove_location(self, session, msg_ptr):
         msg_idx_pos = self.PTRS[msg_ptr]
         del self.PTRS[msg_ptr]
@@ -561,94 +479,14 @@ class MailIndex(object):
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_info
 
-    def _parse_date(self, date_hdr):
-        """Parse a Date: or Received: header into a unix timestamp."""
-        try:
-            if ';' in date_hdr:
-                date_hdr = date_hdr.split(';')[-1].strip()
-            msg_ts = long(rfc822.mktime_tz(rfc822.parsedate_tz(date_hdr)))
-            if (msg_ts > (time.time() + 24 * 3600)) or (msg_ts < 1):
-                return None
-            else:
-                return msg_ts
-        except (ValueError, TypeError, OverflowError):
-            return None
-
     def _extract_date_ts(self, session, msg_mid, msg_id, msg, default):
         """Extract a date, sanity checking against the Received: headers."""
-        hdrs = [self.hdr(msg, 'date')] + (msg.get_all('received') or [])
-        dates = [self._parse_date(date_hdr) for date_hdr in hdrs]
-        msg_ts = dates[0]
-        nz_dates = sorted([d for d in dates if d])
-
-        if nz_dates:
-            a_week = 7 * 24 * 3600
-
-            # Ideally, we compare with the date on the 2nd SMTP relay, as
-            # the first will often be the same host as composed the mail
-            # itself. If we don't have enough hops, just use the last one.
-            #
-            # We don't want to use a median or average, because if the
-            # message bounces around lots of relays or gets resent, we
-            # want to ignore the latter additions.
-            #
-            rcv_ts = nz_dates[min(len(nz_dates)-1, 2)]
-
-            # Now, if everything is normal, the msg_ts will be at nz_dates[0]
-            # and it won't be too far away from our reference date.
-            if (msg_ts == nz_dates[0]) and (abs(msg_ts - rcv_ts) < a_week):
-                # Note: Trivially true for len(nz_dates) in (1, 2)
-                return msg_ts
-
-            # Damn, dates are screwy!
-            #
-            # Maybe one of the SMTP servers has a wrong clock?  If the Date:
-            # header falls within the range of all detected dates (plus a
-            # week towards the past), still trust it.
-            elif ((msg_ts >= (nz_dates[0]-a_week))
-                    and (msg_ts <= nz_dates[-1])):
-                return msg_ts
-
-            # OK, Date: is insane, use one of the early Received: lines
-            # instead.  We picked the 2nd one above, that should do.
-            else:
-                session.ui.warning(_('=%s/%s using Received: instead of Date:'
-                                     ) % (msg_mid, msg_id))
-                return rcv_ts
-        else:
-            # If the above fails, we assume the messages in the mailbox are in
-            # chronological order and just add 1 second to the date of the last
-            # message if date parsing fails for some reason.
-            session.ui.warning(_('=%s/%s has a bogus date'
-                                 ) % (msg_mid, msg_id))
-            return (default or int(time.time()-1))
-
-    def encode_msg_id(self, msg_id):
-        # Discard any data seen outside the first angle-brackets
-        if '<' in msg_id:
-            new_msg_id = '<%s>' % msg_id.split('<')[1].split('>')[0]
-            if len(new_msg_id) > 2:
-                msg_id = new_msg_id
-        return b64c(sha1b64(msg_id.strip()))
-
-    def get_msg_id(self, msg, msg_ptr):
-        raw_msg_id = self.hdr(msg, 'message-id')
-        if not raw_msg_id:
-            # Create a very long pseudo-msgid for messages without a
-            # Message-ID. This was a very badly behaved mailer, so if
-            # we create duplicates this way, we are probably only
-            # losing spam. Even then the Received line should save us.
-            raw_msg_id = ('\t'.join([self.hdr(msg, 'date'),
-                                     self.hdr(msg, 'subject'),
-                                     self.hdr(msg, 'received'),
-                                     self.hdr(msg, 'from'),
-                                     self.hdr(msg, 'to')])
-                          # This is to avoid truncation in encode_msg_id:
-                          ).replace('<', '').strip()
-        # Fall back to the msg_ptr if all else fails.
-        if not raw_msg_id:
-            print _('WARNING: No proper Message-ID for %s') % msg_ptr
-        return self.encode_msg_id(raw_msg_id or msg_ptr)
+        return (safe_message_ts(
+            msg,
+            default=default,
+            msg_mid=msg_mid,
+            msg_id=msg_id,
+            session=session) or int(time.time()-1))
 
     def _get_scan_progress(self, mailbox_idx, event=None, reset=False):
         if event:
@@ -875,7 +713,7 @@ class MailIndex(object):
             return last_date, added, updated
 
         msg_snippet = msg_info = None
-        msg_id = self.get_msg_id(msg, msg_ptr)
+        msg_id = self._get_msg_id(msg, msg_ptr)
         if msg_id in self.MSGIDS:
             with self._lock:
                 msg_info = self._update_location(session,
@@ -906,7 +744,7 @@ class MailIndex(object):
         if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id is not None:
-            msg_info[self.MSG_ID] = self.encode_msg_id(raw_msg_id)
+            msg_info[self.MSG_ID] = self._encode_msg_id(raw_msg_id)
         if msg_id is not None:
             msg_info[self.MSG_ID] = msg_id
         if msg_ts is not None:
@@ -932,7 +770,7 @@ class MailIndex(object):
         msg_to = AddressHeaderParser(msg.get('to', ''))
         msg_cc = AddressHeaderParser(msg.get('cc', ''))
         msg_cc += AddressHeaderParser(msg.get('bcc', ''))  # Usually a noop
-        msg_subj = self.hdr(msg, 'subject')
+        msg_subj = safe_decode_hdr(msg, 'subject')
         return msg_to, msg_cc, msg_subj
 
     # FIXME: Finish merging this function with the one below it...
@@ -975,8 +813,8 @@ class MailIndex(object):
             msg_to, msg_cc, msg_subj = self._extract_header_info(msg)
             msg_idx_pos, msg_info = self.add_new_msg(
                 msg_ptr, msg_id, msg_ts,
-                self.hdr(msg, 'from'), msg_to, msg_cc, msg_size, msg_subj,
-                lazy_body, [])
+                safe_decode_hdr(msg, 'from'), msg_to, msg_cc, msg_size,
+                msg_subj, lazy_body, [])
 
         else:
             # If necessary, add the message to the index so we can index
@@ -1003,7 +841,7 @@ class MailIndex(object):
 
             # Finally, update the metadata index with whatever we learned
             self.edit_msg_info(msg_info,
-                               msg_from=self.hdr(msg, 'from'),
+                               msg_from=safe_decode_hdr(msg, 'from'),
                                msg_ts=msg_ts,
                                msg_to=msg_to,
                                msg_cc=msg_cc,
@@ -1036,7 +874,7 @@ class MailIndex(object):
                                           incoming=False)
         self.edit_msg_info(msg_info,
                            msg_ts=msg_ts,
-                           msg_from=self.hdr(msg, 'from'),
+                           msg_from=safe_decode_hdr(msg, 'from'),
                            msg_to=msg_to,
                            msg_cc=msg_cc,
                            msg_subject=msg_subj,
@@ -1097,8 +935,9 @@ class MailIndex(object):
         msg_thr_mid = None
 
         # These are the headers we're examining
-        in_reply_to = self.hdr(msg, 'in-reply-to')
-        refs = self.hdr(msg, 'references').replace(',', ' ').strip().split()
+        in_reply_to = safe_decode_hdr(msg, 'in-reply-to')
+        refs = safe_decode_hdr(msg, 'references'
+                               ).replace(',', ' ').strip().split()
 
         # Part 1: Figure out parent stuff.
         if in_reply_to:
@@ -1111,12 +950,12 @@ class MailIndex(object):
         # should be our immediate parent. We have made sure In-Reply-To has
         # precedence if it exists...
         if refs:
-            parent_idx_pos = self.MSGIDS.get(self.encode_msg_id(refs[-1]))
+            parent_idx_pos = self.MSGIDS.get(self._encode_msg_id(refs[-1]))
             if parent_idx_pos is not None:
                 parent_mid = b36(parent_idx_pos)
 
         # Part 2: Add a ghost for at most 1 missing ancestor
-        enc_refs = [self.encode_msg_id(r) for r in refs]
+        enc_refs = [self._encode_msg_id(r) for r in refs]
         ref_idxs = [self.MSGIDS.get(er) for er in enc_refs]
         last_missing = None
         for i, r in enumerate(ref_idxs):
@@ -1513,9 +1352,9 @@ class MailIndex(object):
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,
-                                   self.hdr(msg, 'subject').lower()))
+                                   safe_decode_hdr(msg, 'subject').lower()))
         keywords.extend(re.findall(WORD_REGEXP,
-                                   self.hdr(msg, 'from').lower()))
+                                   safe_decode_hdr(msg, 'from').lower()))
         if mailbox:
             keywords.append('%s:mailbox' % FormatMbxId(mailbox).lower())
 
@@ -1528,7 +1367,7 @@ class MailIndex(object):
             if key_lower.startswith('list-'):
                 is_list = True
             if key_lower not in BORING_HEADERS and key_lower[:2] != 'x-':
-                val_lower = self.hdr(msg, key).lower()
+                val_lower = safe_decode_hdr(msg, key).lower()
                 if key_lower[:5] == 'list-':
                     words = self._list_header_keywords(key_lower, val_lower,
                                                        body_info)
@@ -1690,7 +1529,7 @@ class MailIndex(object):
             # If we don't keep the msgid, the message may reappear later
             # if it wasn't deleted from all source mailboxes. The caller
             # may request this if deletion is known to be incomplete.
-            info[self.MSG_ID] = self.encode_msg_id('%s' % msg_idx)
+            info[self.MSG_ID] = self._encode_msg_id('%s' % msg_idx)
 
         # Save changes...
         self.set_msg_at_idx_pos(msg_idx, info)

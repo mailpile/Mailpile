@@ -2,7 +2,7 @@ import unittest
 
 import mailpile
 from mailpile.tests import MailPileUnittest
-from mailpile.mailutils import decode_header
+from mailpile.mailutils.header import decode_header
 
 
 class TestCommands(MailPileUnittest):

@@ -78,15 +78,16 @@ web: less js
 
 alltests: clean pytests
 	@chmod go-rwx mailpile/tests/data/gpg-keyring
-	@DISPLAY= python2 scripts/mailpile-test.py || true
 	@DISPLAY= nosetests
+	@DISPLAY= python2 scripts/mailpile-test.py || true
 	@git checkout mailpile/tests/data/
 
 pytests:
 	@echo -n 'security         ' && python2 mailpile/security.py
 	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
 	@echo -n 'search           ' && python2 mailpile/search.py
-	@echo -n 'mailutils        ' && python2 mailpile/mailutils.py
+	@echo -n 'mailutils        ' && python2 mailpile/mailutils/__init__.py
+	@echo -n 'mailutils.safe   ' && python2 mailpile/mailutils/safe.py
 	@echo -n 'config/base      ' && python2 mailpile/config/base.py
 	@echo -n 'config/validators' && python2 mailpile/config/validators.py
 	@echo -n 'config/manager   ' && python2 mailpile/config/manager.py
