@@ -65,17 +65,22 @@ $(document).on('click', 'a.show-hide, a.do-show', function(e) {
 
 // FIXME: this is in the wrong place
 Mailpile.auto_modal = function(params) {
+  $('#modal-full').modal('hide');
+  Mailpile.UI.show_modal(
+      Mailpile.safe_template($('#template-modal-loading').html())
+  );
+
   var jhtml_url = Mailpile.API.jhtml_url(params.url);
   if (params.flags) {
     jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') +
                   'ui_flags=' + params.flags.replace(' ', '+');
   }
-  $('#modal-full').modal('hide');
   return Mailpile.API.with_template('modal-auto', function(modal) {
     $.ajax({
       url: jhtml_url,
       type: params.method,
       success: function(data) {
+        $('#modal-full').modal('hide');
         var mf = Mailpile.UI.show_modal(modal({
           data: data,
           icon: params.icon,
