@@ -3348,10 +3348,6 @@ input[type="button"].button-small {
   user-select: none;
   transition-duration: 0.2s;
 }
-/* OK, Got it */
-.ok-got-it {
-  cursor: pointer;
-}
 /* Primary */
 button.button-primary,
 input[type="submit"].button-primary,
@@ -9067,6 +9063,9 @@ iframe.message-part-html {
 .message-app-note ul li a {
   white-space: normal !important;
   vertical-align: text-top;
+}
+.message-app-note a {
+  cursor: pointer;
 }
 #pile-results .display-modes a img,
 #pile-results .alternate-views a img {
