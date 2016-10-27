@@ -207,15 +207,17 @@ class BaseMailSource(threading.Thread):
         else:
             return False
 
+    def _mailbox_sort_key(self, m):
+        return md5_hex(str(self._loop_count), m.name)
+
     def _sorted_mailboxes(self):
         mailboxes = self.my_config.mailbox.values()
-        mailboxes.sort(key=lambda m: ('inbox' in m.name.lower() and 1 or 2,
-                                      'sent' in m.name.lower() and 1 or 2,
-                                      # We need this for training filters!
-                                      'spam' in m.name.lower() and 1 or 2,
-                                      # This goes last...
-                                      '[Gmail]' in m.name and 2 or 1,
-                                      md5_hex(str(self._loop_count), m.name)))
+        mailboxes.sort(key=lambda m: (
+            'inbox' in m.name.lower() and 1 or 2,
+            'sent' in m.name.lower() and 1 or 2,
+            'spam' in m.name.lower() and 1 or 2,  # For training filters!
+            '[Gmail]' in m.name and 2 or 1,       # This goes last...
+            self._mailbox_sort_key(m)))
         return mailboxes
 
     def _policy(self, mbx_cfg):
