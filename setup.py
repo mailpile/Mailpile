@@ -98,4 +98,5 @@ setup(
     version=APPVER,
     pbr=True,
     cmdclass={'build_py': Builder},
+    scripts=['mp']
 )
