@@ -538,7 +538,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     SUPPORTS = []
     WANTS = [Capability.OUTGOING_RAW]
     REJECTS = None
-    SSL_VERSION = None
+    SSL_VERSION = ssl.PROTOCOL_SSLv23
 
     def _proxy_address(self, address):
         return address
