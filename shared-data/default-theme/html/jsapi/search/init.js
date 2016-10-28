@@ -19,7 +19,7 @@ Mailpile.Search.init = function() {
   // Display Select
   $.each($('a.change-view-size'), function() {
     if ($(this).data('view_size') == Mailpile.local_storage['view_size']) {
-      $(this).addClass('view-size-selected');
+      $(this).addClass('selected');
     }
   });
 
