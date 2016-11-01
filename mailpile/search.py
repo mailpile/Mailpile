@@ -1812,7 +1812,7 @@ class MailIndex(BaseIndex):
                 # FIXME: This calculation appears very cachable!
                 new_tags = session.config.get_tags(type='unread')
                 for tag in new_tags:
-                    all_new |= self.TAGS[tag._key]
+                    all_new |= self.TAGS.get(tag._key, set([]))
 
             # This filters away all but the first (or oldst unread) result in
             # each conversation.
