@@ -511,7 +511,7 @@ class BaseMailSource(threading.Thread):
 
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True,
-                          apply_tags=None):
+                          guess_tags=None, apply_tags=None):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
@@ -525,10 +525,12 @@ class BaseMailSource(threading.Thread):
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
             if apply_tags:
-                mbx_cfg.apply_tags.extend(apply_tags)
+                mbx_cfg.apply_tags.extend(t for t in apply_tags if t)
         mbx_cfg.policy = policy or self._default_policy(mbx_cfg)
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
-        if disco_cfg.guess_tags:
+        if guess_tags is None:
+            guess_tags = disco_cfg.guess_tags
+        if guess_tags:
             self._guess_tags(mbx_cfg)
         self._create_primary_tag(mbx_cfg, save=False)
         self._create_local_mailbox(mbx_cfg, save=False)
@@ -539,14 +541,9 @@ class BaseMailSource(threading.Thread):
     def _guess_tags(self, mbx_cfg):
         if not mbx_cfg.name:
             return
-        name = mbx_cfg.name.lower()
-        tags = set(mbx_cfg.apply_tags)
-        for tagtype in ('inbox', 'drafts', 'sent', 'spam'):
-            for tag in self.session.config.get_tags(type=tagtype):
-                if (tag.name.lower() in name or
-                        _(tag.name).lower() in name):
-                    tags.add(tag._key)
-        mbx_cfg.apply_tags = sorted(list(tags))
+        mbx_cfg.apply_tags = sorted(list(
+            set(mbx_cfg.apply_tags) |
+            self.session.config.guess_tags(mbx_cfg.name)))
 
     def _strip_file_extension(self, path):
         return path.rsplit('.', 1)[0]

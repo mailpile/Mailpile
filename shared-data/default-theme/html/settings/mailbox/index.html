@@ -39,6 +39,7 @@
 
     <div class="left" style="width: 18em; margin-right: 1em;">
       <label>Mailbox role</label>
+      <input type="hidden" name="guess_tags" value="False">
       <select name='apply_tags' style="width: 100%;">
         <option value='' {% if not result.apply_tags %}selected{% endif %}>{{_("Archives")}}</option>
         {% for tid in config.tags %}
