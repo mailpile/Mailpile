@@ -108,8 +108,8 @@ Mailpile.notification = function(result) {
     // Mail source specific notification logic
 
     if ((result.data.discovery_error == "toomany") &&
-        (!result.data.rescan.running) &&
-        (!result.data.copying.running)) {
+        (!result.data.rescan || !result.data.rescan.running) &&
+        (!result.data.copying || !result.data.copying.running)) {
       // Mail sources have a limit on how many mailboxes are auto-added
       // during discovery, to prevent runaway bloat if we're pointed at
       // an over-large directory or badly behaved IMAP server. This means
