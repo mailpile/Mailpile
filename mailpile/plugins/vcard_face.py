@@ -3,7 +3,6 @@ import time
 from mailpile.i18n import gettext as _
 from mailpile.mailutils import Email
 from mailpile.plugins import PluginManager
-from mailpile.search import MailIndex
 from mailpile.vcard import MailpileVCard, VCardImporter, VCardLine
 
 
@@ -24,8 +23,7 @@ class FaceImporter(VCardImporter):
     VCARD_IMG = ''
 
     def get_vcards(self):
-        mail_index = MailIndex(self.session.config)
-        mail_index.load(self.session)
+        mail_index = self.session.config.get_index(self.session)
         results = []
 
         for vcard in self.session.config.vcards.values():
