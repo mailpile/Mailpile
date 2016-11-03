@@ -277,6 +277,7 @@ class BaseMailSource(threading.Thread):
                     event_plan[mbx_cfg._key][1] = _('Postponed')
 
                 elif (self._has_mailbox_changed(mbx_cfg, state) or
+                        mbx_cfg.local == '!CREATE' or
                         random.randint(0, 25 + len(plan)*5) == 1):
                     event_plan[mbx_cfg._key][1] = _('Working ...')
 
@@ -343,6 +344,7 @@ class BaseMailSource(threading.Thread):
         discovered = 0
         if not self._check_interrupt():
             self._state = 'Waiting... (disco)'
+            self._log_status(_('Checking for new mailboxes'))
             discovered = self.discover_mailboxes()
 
         self._state = 'Done'
@@ -826,10 +828,11 @@ class BaseMailSource(threading.Thread):
                                 if self._policy(m) not in ('ignore',
                                                            'unknown')]))
         try:
-            ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
-                                                                   stop_after)
-
+            ostate = self._state  # Set this in case locking fails
             with self._lock:
+                new_state = 'Rescan(%s, %s)' % (mbx_key, stop_after)
+                ostate, self._state = self._state, new_state
+
                 apply_tags = mbx_cfg.apply_tags[:]
 
                 parent = self._create_parent_tag(save=True)
@@ -865,6 +868,7 @@ class BaseMailSource(threading.Thread):
                 # the rescan may need to catch up.
                 self._create_local_mailbox(mbx_cfg)
                 max_copy = max(min(stop_after, 5), int(0.8 * stop_after))
+                self._state = '%s: %s' % (new_state, _('Copying'))
                 self._log_status(_('Copying up to %d e-mails from %s'
                                    ) % (max_copy, self._mailbox_name(path)))
                 count += self._copy_new_messages(mbx_key, mbx_cfg, mbox,
@@ -876,6 +880,7 @@ class BaseMailSource(threading.Thread):
                     self.event.data['rescan']['running'] = False
                 return count
 
+            self._state = '%s: %s' % (new_state, _('Working'))
             self._log_status(_('Updating search engine for %s'
                                ) % self._mailbox_name(path))
             # Wait for background message scans to complete...

@@ -248,17 +248,23 @@ class SharedImapConn(threading.Thread):
         self._can_idle = False
 
     def _imap_idle(self):
+        if not self._conn:
+            return
+
         self._can_idle = True
         self.select(self._idle_mailbox)
         logger = (self._conn._mesg if (self._conn.debug >= 1)
                   else self._conn._log)
+
         def send_line(data):
             logger('> %s' % data)
             self._conn.send('%s%s' % (data, CRLF))
+
         def get_line():
             data = self._conn._get_line().rstrip()
             logger('< %s' % data)
             return data
+
         try:
             send_line('%s IDLE' % self._conn._new_tag())
             while self._can_idle and not get_line().startswith('+ '):

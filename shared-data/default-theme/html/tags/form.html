@@ -157,7 +157,7 @@
       <ul>
         <li><input type="radio"
                    name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
-                   {% if settings.policy != 'ignore' -%}
+                   {% if settings.policy not in ('ignore', 'inherit') -%}
                    value="{{settings.policy}}" checked
                    {% else %}value="read"{% endif %}>
             <span class="checkbox">{{_("Add messages to search engine")}}</span></li>
@@ -165,6 +165,20 @@
                    name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy"
                    {% if settings.policy == "ignore" %}checked{% endif %}>
             <span class="checkbox">{{_("Stop adding messages to search engine")}}</span></li>
+        {%- if settings.policy == 'inherit' -%}
+        <li><input type="radio" value="inherit" checked
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.policy">
+            <span class="checkbox">{{_("Use default mail source policy")}} ({{ _(source.discovery.policy) }})</span></li>
+        {%- endif %}
+        {% if settings.local == "" %}
+        <li><input type="checkbox" value="!CREATE"  checked
+                   name="sources.{{src_id}}.mailbox.{{mbx_id}}.local">
+            <span class="checkbox">{{_("Copy mail to Mailpile secure storage")}}</span></li>
+{#
+ # FIXME: Make it possible to disable the copying. This will require
+ #        shenanigans at the back-end, so we don't lose the old copies.
+ #}
+        {% endif %}
       </ul>
     </div>
 
