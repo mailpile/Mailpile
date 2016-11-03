@@ -796,10 +796,13 @@ class ConfigManager(ConfigDict):
             if (register or raw_open) and mbx_mid is None:
                 mbox = dict(((i, m) for p, i, m in self._mbox_cache)
                             ).get(path, None)
+
+                if path.raw_fp.startswith('/src:'):
+                    path = FilePath(path.raw_fp[1:])
+
                 if mbox:
                     pass
-                elif path.raw_fp.startswith('/src:'):
-                    path = FilePath(path.raw_fp[1:])
+                elif path.raw_fp.startswith('src:'):
                     msrc_id = path.raw_fp[4:].split('/')[0]
                     msrc = self.mail_sources.get(msrc_id)
                     if msrc:

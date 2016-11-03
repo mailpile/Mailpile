@@ -69,7 +69,10 @@ class BaseMailSource(threading.Thread):
                 return path
             try:
                 mbox_id = self._get_mbox_id(path)
-                return self.config.sys.mailbox[mbox_id]
+                path = self.config.sys.mailbox[mbox_id]
+                if path.startswith('src:'):
+                    return '/%s' % path
+                return path
             except (ValueError, KeyError, IndexError):
                 raise OSError('Not found: %s' % path)
 

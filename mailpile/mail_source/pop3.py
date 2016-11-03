@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailboxes import pop3
@@ -18,12 +19,13 @@ def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
                                     port=port,
                                     user=username,
                                     password=password,
-                                    use_ssl=protocol,
+                                    use_ssl=('ssl' in protocol),
                                     debug=debug)
     except AccessError:
         cev['error'] = ['auth', _('Invalid username or password')]
     except (IOError, OSError):
         cev['error'] = ['network', _('A network error occurred')]
+        event.data['traceback'] = traceback.format_exc()
     return None
 
 
@@ -89,7 +91,7 @@ class Pop3MailSource(BaseMailSource):
 
     def open_mailbox(self, mbx_id, mfn):
         my_cfg = self.my_config
-        if mfn.startswith('src:') and FormatMbxId(mbx_id) in my_cfg.mailbox:
+        if 'src:' in mfn[:5] and FormatMbxId(mbx_id) in my_cfg.mailbox:
             debug = ('pop3' in self.session.config.sys.debug) and 99 or 0
             return _open_pop3_mailbox(self.event,
                                       my_cfg.host, my_cfg.port,
