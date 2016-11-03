@@ -1,4 +1,6 @@
+import sys
 import time
+import warnings
 
 from mailpile.i18n import gettext as _
 from mailpile.mailutils import Email
@@ -27,9 +29,11 @@ class FaceImporter(VCardImporter):
         results = []
 
         for vcard in self.session.config.vcards.values():
+            email = vcard.email
+
             # Get latest message from vcard email address.
             from_messages = list(mail_index.search(
-                self.session, ['from:' + vcard.email]).as_set())
+                self.session, ['from:' + email]).as_set())
             if not from_messages:
                 continue
             mail_index.sort_results(self.session, from_messages, 'date')
@@ -38,7 +42,12 @@ class FaceImporter(VCardImporter):
             # Add face vcard.
             face = mail_index.hdr(latest_message, 'face')
             if face:
-                results.append(self._make_vcard(vcard.email, VCardLine(
+                if sys.getsizeof(face) > 998:
+                    warnings.warn(
+                        email + "'s face header exceeds the maximum size. "
+                        "See the spec: http://quimby.gnus.org/circus/face/")
+                    continue
+                results.append(self._make_vcard(email, VCardLine(
                     name='photo',
                     value='data:image/png;base64,%s' % face,
                     media_type='image/png')))
