@@ -1329,22 +1329,30 @@ class ConfigureMailboxes(Command):
                     if not account:
                         session.ui.warning('Already in the pile: %s'
                                            % fn_display)
-                elif IsMailbox(fn.raw_fp, config):
-                    adding.append(fn)
-                elif recurse and vfs.exists(fn) and vfs.isdir(fn):
-                    session.ui.mark('Scanning %s for mailboxes' % fn_display)
-                    try:
-                        for f in [f for f in vfs.listdir(fn)
-                                  if not f.raw_fp.startswith('.')]:
-                            paths.append(vfs.path_join(fn, f))
-                            if len(paths) > self.MAX_PATHS:
-                                return self._error(_('Too many files'))
-                    except OSError:
-                        if fn in opaths:
-                            return self._error(_('Failed to read: %s'
-                                                 ) % fn_display)
-                elif fn in opaths:
-                    return self._error(_('Not a mailbox: %s') % fn_display)
+                else:
+                    if IsMailbox(fn.raw_fp, config):
+                        adding.append(fn)
+                        added = True
+                        blacklist = ('.', '..', 'new', 'cur', 'tmp')
+                    else:
+                        added = False
+                        blacklist = ('.', '..')
+
+                    if recurse and vfs.exists(fn) and vfs.isdir(fn):
+                        session.ui.mark('Scanning %s for mailboxes' % fn_display)
+                        try:
+                            for f in [f for f in vfs.listdir(fn)
+                                      if not f.raw_fp in blacklist]:
+                                paths.append(vfs.path_join(fn, f))
+                                if len(paths) > self.MAX_PATHS:
+                                    return self._error(_('Too many files'))
+                        except OSError:
+                            if fn in opaths:
+                                return self._error(_('Failed to read: %s'
+                                                     ) % fn_display)
+                    elif fn in opaths and not added:
+                        return self._error(_('Not a mailbox: %s') % fn_display)
+
         except KeyboardInterrupt:
             return self._error(_('User aborted'))
 
