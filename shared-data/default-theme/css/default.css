@@ -7260,6 +7260,10 @@ a.sidebar-tag span.sidebar-tag-archive:hover {
 .attachment:hover span.extension {
   color: #4d4d4d;
 }
+.progressBar{
+  padding-left:10px;
+}
+
 /* Crypto */
 .compose-crypto-signature.none {
   color: #b3b3b3;
