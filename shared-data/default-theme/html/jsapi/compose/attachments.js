@@ -153,6 +153,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
       	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
         var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
         $('.progressBar').html(progressBar);
+        $('#compose-send-'+settings.mid).attr("disabled","disabled");
       },
       FileUploaded: function(up, file, response) {
 
@@ -163,6 +164,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
 
           //console.log(file);
           $('.progressBar').empty();
+          $('#compose-send-'+settings.mid).removeAttr("disabled");
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
