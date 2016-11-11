@@ -57,11 +57,13 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.index.mailboxes import MailboxIndex
 from mailpile.mail_source import BaseMailSource
 from mailpile.mail_source.imap_starttls import IMAP4
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 from mailpile.vfs import FilePath
+
 
 IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[\\(\\)]'
@@ -125,6 +127,10 @@ def _parse_imap(reply):
             else:
                 break
     return (reply[0].upper() == 'OK'), pdata
+
+
+class ImapMailboxIndex(MailboxIndex):
+    pass
 
 
 class SharedImapConn(threading.Thread):
@@ -242,17 +248,23 @@ class SharedImapConn(threading.Thread):
         self._can_idle = False
 
     def _imap_idle(self):
+        if not self._conn:
+            return
+
         self._can_idle = True
         self.select(self._idle_mailbox)
         logger = (self._conn._mesg if (self._conn.debug >= 1)
                   else self._conn._log)
+
         def send_line(data):
             logger('> %s' % data)
             self._conn.send('%s%s' % (data, CRLF))
+
         def get_line():
             data = self._conn._get_line().rstrip()
             logger('< %s' % data)
             return data
+
         try:
             send_line('%s IDLE' % self._conn._new_tag())
             while self._can_idle and not get_line().startswith('+ '):
@@ -323,6 +335,7 @@ class SharedImapMailbox(Mailbox):
         self.editable = False  # FIXME: this is technically not true
         self.path = mailbox_path
         self.conn_cls = conn_cls
+        self._index = None
         self._factory = None  # Unused, for Mailbox compatibility
 
     def open_imap(self):
@@ -439,6 +452,9 @@ class SharedImapMailbox(Mailbox):
             return ('%s.%s' % (b36(int(validity)), b36(int(k)))
                     for k in sorted(data))
 
+    def keys(self):
+        return list(self.iterkeys())
+
     def update_toc(self):
         pass
 
@@ -491,6 +507,11 @@ class SharedImapMailbox(Mailbox):
     def save(self, *args, **kwargs):
         # SharedImapMailboxes are never pickled to disk.
         pass
+
+    def get_index(self, config, mbx_mid=None):
+        if self._index is None:
+            self._index = ImapMailboxIndex(config, self, mbx_mid=mbx_mid)
+        return self._index
 
 
 def _connect_imap(session, settings, event,

@@ -6,8 +6,13 @@ import threading
 import mailpile.mailboxes
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.index.mailboxes import MailboxIndex
 from mailpile.mailboxes import MBX_ID_LEN, NoSuchMailboxError
 from mailpile.util import *
+
+
+class MboxIndex(MailboxIndex):
+    pass
 
 
 class MailpileMailbox(mailbox.mbox):
@@ -30,6 +35,7 @@ class MailpileMailbox(mailbox.mbox):
         self.editable = False
         self.is_local = False
         self._mtime = 0
+        self._index = None
         self._save_to = None
         self._encryption_key_func = lambda: None
         self._decryption_key_func = lambda: None
@@ -69,7 +75,7 @@ class MailpileMailbox(mailbox.mbox):
     def __getstate__(self):
         odict = self.__dict__.copy()
         # Pickle can't handle function objects.
-        for dk in ('_save_to',
+        for dk in ('_save_to', '_index',
                    '_encryption_key_func', '_decryption_key_func',
                    '_file', '_lock', 'parsed'):
             if dk in odict:
@@ -137,6 +143,13 @@ class MailpileMailbox(mailbox.mbox):
 
     def set_metadata_keywords(self, *args, **kwargs):
         pass
+
+
+    def get_index(self, config, mbx_mid=None):
+        with self._lock:
+            if self._index is None:
+                self._index = MboxIndex(config, self, mbx_mid=mbx_mid)
+        return self._index
 
     def get_msg_cs(self, start, cs_size, max_length):
         with self._lock:

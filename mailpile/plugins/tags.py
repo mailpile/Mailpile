@@ -174,6 +174,17 @@ def GetTagID(cfg, tn):
     return tags and (len(tags) == 1) and tags[0]._key or None
 
 
+def GuessTags(cfg, name):
+    tags = set()
+    name = name.lower()
+    for tagtype in ('inbox', 'drafts', 'sent', 'spam'):
+        for tag in cfg.get_tags(type=tagtype):
+            if (name.endswith(tag.name.lower()) or
+                    name.endswith(_(tag.name).lower())):
+                tags.add(tag._key)
+    return tags
+
+
 def Slugify(tag_name, tags=None):
     slug = CleanText(tag_name.lower().replace(' ', '-').replace('@', '-'),
                      banned=CleanText.NONDNS.replace('/', '')
@@ -226,6 +237,7 @@ mailpile.config.manager.ConfigManager.get_tag = GetTag
 mailpile.config.manager.ConfigManager.get_tags = GetTags
 mailpile.config.manager.ConfigManager.get_tag_id = GetTagID
 mailpile.config.manager.ConfigManager.get_tag_info = GetTagInfo
+mailpile.config.manager.ConfigManager.guess_tags = GuessTags
 mailpile.config.manager.ConfigManager.get_filters = GetFilters
 mailpile.config.manager.ConfigManager.filter_move = FilterMove
 mailpile.config.manager.ConfigManager.filter_delete = FilterDelete

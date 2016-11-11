@@ -69,7 +69,10 @@ class BaseMailSource(threading.Thread):
                 return path
             try:
                 mbox_id = self._get_mbox_id(path)
-                return self.config.sys.mailbox[mbox_id]
+                path = self.config.sys.mailbox[mbox_id]
+                if path.startswith('src:'):
+                    return '/%s' % path
+                return path
             except (ValueError, KeyError, IndexError):
                 raise OSError('Not found: %s' % path)
 
@@ -207,15 +210,17 @@ class BaseMailSource(threading.Thread):
         else:
             return False
 
+    def _mailbox_sort_key(self, m):
+        return md5_hex(str(self._loop_count), m.name)
+
     def _sorted_mailboxes(self):
         mailboxes = self.my_config.mailbox.values()
-        mailboxes.sort(key=lambda m: ('inbox' in m.name.lower() and 1 or 2,
-                                      'sent' in m.name.lower() and 1 or 2,
-                                      # We need this for training filters!
-                                      'spam' in m.name.lower() and 1 or 2,
-                                      # This goes last...
-                                      '[Gmail]' in m.name and 2 or 1,
-                                      md5_hex(str(self._loop_count), m.name)))
+        mailboxes.sort(key=lambda m: (
+            'inbox' in m.name.lower() and 1 or 2,
+            'sent' in m.name.lower() and 1 or 2,
+            'spam' in m.name.lower() and 1 or 2,  # For training filters!
+            '[Gmail]' in m.name and 2 or 1,       # This goes last...
+            self._mailbox_sort_key(m)))
         return mailboxes
 
     def _policy(self, mbx_cfg):
@@ -272,6 +277,7 @@ class BaseMailSource(threading.Thread):
                     event_plan[mbx_cfg._key][1] = _('Postponed')
 
                 elif (self._has_mailbox_changed(mbx_cfg, state) or
+                        mbx_cfg.local == '!CREATE' or
                         random.randint(0, 25 + len(plan)*5) == 1):
                     event_plan[mbx_cfg._key][1] = _('Working ...')
 
@@ -338,6 +344,7 @@ class BaseMailSource(threading.Thread):
         discovered = 0
         if not self._check_interrupt():
             self._state = 'Waiting... (disco)'
+            self._log_status(_('Checking for new mailboxes'))
             discovered = self.discover_mailboxes()
 
         self._state = 'Done'
@@ -509,7 +516,7 @@ class BaseMailSource(threading.Thread):
 
     def take_over_mailbox(self, mailbox_idx,
                           policy=None, create_local=None, save=True,
-                          apply_tags=None):
+                          guess_tags=None, apply_tags=None):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         with self._lock:
@@ -523,10 +530,12 @@ class BaseMailSource(threading.Thread):
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
             if apply_tags:
-                mbx_cfg.apply_tags.extend(apply_tags)
+                mbx_cfg.apply_tags.extend(t for t in apply_tags if t)
         mbx_cfg.policy = policy or self._default_policy(mbx_cfg)
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
-        if disco_cfg.guess_tags:
+        if guess_tags is None:
+            guess_tags = disco_cfg.guess_tags
+        if guess_tags:
             self._guess_tags(mbx_cfg)
         self._create_primary_tag(mbx_cfg, save=False)
         self._create_local_mailbox(mbx_cfg, save=False)
@@ -537,14 +546,9 @@ class BaseMailSource(threading.Thread):
     def _guess_tags(self, mbx_cfg):
         if not mbx_cfg.name:
             return
-        name = mbx_cfg.name.lower()
-        tags = set(mbx_cfg.apply_tags)
-        for tagtype in ('inbox', 'drafts', 'sent', 'spam'):
-            for tag in self.session.config.get_tags(type=tagtype):
-                if (tag.name.lower() in name or
-                        _(tag.name).lower() in name):
-                    tags.add(tag._key)
-        mbx_cfg.apply_tags = sorted(list(tags))
+        mbx_cfg.apply_tags = sorted(list(
+            set(mbx_cfg.apply_tags) |
+            self.session.config.guess_tags(mbx_cfg.name)))
 
     def _strip_file_extension(self, path):
         return path.rsplit('.', 1)[0]
@@ -725,7 +729,7 @@ class BaseMailSource(threading.Thread):
         return key
 
     def _copy_new_messages(self, mbx_key, mbx_cfg, src,
-                           stop_after=-1, scan_args=None):
+                           stop_after=-1, scan_args=None, deadline=None):
         session, config = self.session, self.session.config
         self.event.data['copying'] = progress = {
             'running': True,
@@ -797,7 +801,7 @@ class BaseMailSource(threading.Thread):
                     **scan_args)
 
                 stop_after -= 1
-                if stop_after == 0:
+                if (stop_after == 0) or (deadline and time.time() > deadline):
                     progress['stopped'] = True
                     return count
             progress['complete'] = True
@@ -824,10 +828,11 @@ class BaseMailSource(threading.Thread):
                                 if self._policy(m) not in ('ignore',
                                                            'unknown')]))
         try:
-            ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
-                                                                   stop_after)
-
+            ostate = self._state  # Set this in case locking fails
             with self._lock:
+                new_state = 'Rescan(%s, %s)' % (mbx_key, stop_after)
+                ostate, self._state = self._state, new_state
+
                 apply_tags = mbx_cfg.apply_tags[:]
 
                 parent = self._create_parent_tag(save=True)
@@ -863,6 +868,7 @@ class BaseMailSource(threading.Thread):
                 # the rescan may need to catch up.
                 self._create_local_mailbox(mbx_cfg)
                 max_copy = max(min(stop_after, 5), int(0.8 * stop_after))
+                self._state = '%s: %s' % (new_state, _('Copying'))
                 self._log_status(_('Copying up to %d e-mails from %s'
                                    ) % (max_copy, self._mailbox_name(path)))
                 count += self._copy_new_messages(mbx_key, mbx_cfg, mbox,
@@ -874,6 +880,7 @@ class BaseMailSource(threading.Thread):
                     self.event.data['rescan']['running'] = False
                 return count
 
+            self._state = '%s: %s' % (new_state, _('Working'))
             self._log_status(_('Updating search engine for %s'
                                ) % self._mailbox_name(path))
             # Wait for background message scans to complete...

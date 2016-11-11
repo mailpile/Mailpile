@@ -675,46 +675,72 @@ class ConfigManager(ConfigDict):
         return mbx_id, src, FilePath(mfn), pfn
 
     def save_mailbox(self, session, pfn, mbox):
-        mbox.save(session,
-                  to=pfn, pickler=lambda o, f: self.save_pickle(o, f))
+        if pfn is not None:
+            mbox.save(session,
+                      to=pfn, pickler=lambda o, f: self.save_pickle(o, f))
 
-    def uncache_mailbox(self, session, pfn, drop=True, force_save=False):
+    def uncache_mailbox(self, session, entry, drop=True, force_save=False):
+        """
+        Safely remove a mailbox from the cache, saving any state changes to
+        the encrypted pickles.
+
+        If the mailbox is still in use somewhere in the app (as measured by
+        the Python reference counter), we DON'T remove from cache, to ensure
+        each mailbox is represented by exactly one object at a time.
+        """
+        pfn, mbx_id = entry[:2]  # Don't grab mbox, to not add more refs
+        if pfn:
+            def dropit(l):
+                return [c for c in l if (c[0] != pfn)]
+        else:
+            def dropit(l):
+                return [c for c in l if (c[1] != mbx_id)]
+
         with self._lock:
-            mboxes = [c[2] for c in self._mbox_cache if c[0] == pfn]
-            if len(mboxes) > 0:
-                # At this point, if the mailbox is not in use, there should be
-                # exactly 2 references to it: in mboxes and self._mbox_cache.
-                # However, sys.getrefcount always returns one extra for itself.
-                if sys.getrefcount(mboxes[0]) > 3:
-                    if force_save:
-                        self.save_mailbox(session, pfn, mboxes[0])
-                    return
-
-                # This may be slow, but it has to happen inside the lock
-                # otherwise we run the risk of races.
-                self.save_mailbox(session, pfn, mboxes[0])
-            else:
+            mboxes = [c[2] for c in self._mbox_cache
+                      if ((c[0] == pfn) if pfn else (c[1] == mbx_id))]
+            if len(mboxes) < 1:
                 # Not found, nothing to do here
                 return
 
+            # At this point, if the mailbox is not in use, there should be
+            # exactly 2 references to it: in mboxes and self._mbox_cache.
+            # However, sys.getrefcount always returns one extra for itself.
+            if sys.getrefcount(mboxes[0]) > 3:
+                if force_save:
+                    self.save_mailbox(session, pfn, mboxes[0])
+                return
+
+            # This may be slow, but it has to happen inside the lock
+            # otherwise we run the risk of races.
+            self.save_mailbox(session, pfn, mboxes[0])
+
             if drop:
-                self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
+                self._mbox_cache = dropit(self._mbox_cache)
             else:
                 keep2 = self._mbox_cache[-MAX_CACHED_MBOXES:]
-                keep1 = [c for c in self._mbox_cache[:-MAX_CACHED_MBOXES]
-                         if c[0] != pfn]
+                keep1 = dropit(self._mbox_cache[:-MAX_CACHED_MBOXES])
                 self._mbox_cache = keep1 + keep2
 
     def cache_mailbox(self, session, pfn, mbx_id, mbox):
+        """
+        Add a mailbox to the cache, potentially evicting other entries if the
+        cache has grown too large.
+        """
         with self._lock:
-            self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
+            if pfn is not None:
+                self._mbox_cache = [
+                    c for c in self._mbox_cache if c[0] != pfn]
+            elif mbx_id:
+                self._mbox_cache = [
+                    c for c in self._mbox_cache if c[1] != mbx_id]
             self._mbox_cache.append((pfn, mbx_id, mbox))
-            flush = [(p[0], p[1])
-                     for p in self._mbox_cache[:-MAX_CACHED_MBOXES]]
-        for pfn, mbx_id in flush:
+            flush = self._mbox_cache[:-MAX_CACHED_MBOXES]
+        for entry in flush:
+            pfn, mbx_id = entry[:2]
             self.save_worker.add_unique_task(
-                session, 'Save mailbox %s (drop=%s)' % (mbx_id, False),
-                lambda: self.uncache_mailbox(session, pfn, drop=False))
+                session, 'Save mailbox %s/%s (drop=%s)' % (mbx_id, pfn, False),
+                lambda: self.uncache_mailbox(session, entry, drop=False))
 
     def flush_mbox_cache(self, session, clear=True, wait=False):
         if wait:
@@ -722,11 +748,12 @@ class ConfigManager(ConfigDict):
         else:
             saver = self.save_worker.add_task
         with self._lock:
-            flush = [(p[0], p[1]) for p in self._mbox_cache]
-        for pfn, mbx_id in flush:
+            flush = self._mbox_cache[:]
+        for entry in flush:
+            pfn, mbx_id = entry[:2]
             saver(session,
-                  'Save mailbox %s (drop=%s)' % (mbx_id, clear),
-                  lambda: self.uncache_mailbox(session, pfn,
+                  'Save mailbox %s/%s (drop=%s)' % (mbx_id, pfn, clear),
+                  lambda: self.uncache_mailbox(session, entry,
                                                drop=clear, force_save=True),
                   unique=True)
 
@@ -758,7 +785,7 @@ class ConfigManager(ConfigDict):
 
         return dict((p[0], p[1]) for p in abs_paths.values() if p[1:])
 
-    def open_mailbox_path(self, session, path, register=False):
+    def open_mailbox_path(self, session, path, register=False, raw_open=False):
         path = vfs.abspath(path)
         mbox = mbx_mid = mbx_src = None
         with self._lock:
@@ -766,22 +793,42 @@ class ConfigManager(ConfigDict):
             if msmap:
                 mbx_mid, mbx_src = list(msmap.values())[0]
 
-            if register and mbx_mid is None:
+            if (register or raw_open) and mbx_mid is None:
+                mbox = dict(((i, m) for p, i, m in self._mbox_cache)
+                            ).get(path, None)
+
                 if path.raw_fp.startswith('/src:'):
                     path = FilePath(path.raw_fp[1:])
+
+                if mbox:
+                    pass
+                elif path.raw_fp.startswith('src:'):
                     msrc_id = path.raw_fp[4:].split('/')[0]
                     msrc = self.mail_sources.get(msrc_id)
                     if msrc:
                         mbox = msrc.open_mailbox(None, path.raw_fp)
                 else:
                     mbox = OpenMailbox(path.raw_fp, self, create=False)
-                mbx_mid = self.sys.mailbox.append(unicode(path))
+
+                if register:
+                    mbx_mid = self.sys.mailbox.append(unicode(path))
+                    mbox = None  # Force a re-open below
+
+                elif mbox:
+                    # (re)-add to the cache; we need to do this here
+                    # because we did the opening ourselves instead of
+                    # invoking open_mailbox as below.
+                    self.cache_mailbox(session, None, path.raw_fp, mbox)
 
         if mbx_mid is not None:
             mbx_mid = FormatMbxId(mbx_mid)
             if mbox is None:
                 mbox = self.open_mailbox(session, mbx_mid, prefer_local=True)
             return (mbx_mid, mbox)
+
+        elif raw_open and mbox:
+            return (mbx_mid, mbox)
+
         raise ValueError('Not found')
 
     def open_mailbox(self, session, mailbox_id,
@@ -1087,6 +1134,24 @@ class ConfigManager(ConfigDict):
             except:
                 pass
             return idx
+
+    def get_path_index(self, session, path):
+        """
+        Get a search index by path (instead of the default), or None if
+        no matching index is found.
+        """
+        idx = None
+
+        mi, mbox = self.open_mailbox_path(session, path, raw_open=True)
+        if mbox:
+            idx = mbox.get_index(self, mbx_mid=mi)
+
+        # Return a sad, boring, empty index.
+        if idx is None:
+            import mailpile.index.base
+            idx = mailpile.index.base.BaseIndex(self)
+
+        return idx
 
     def get_tor_socket(self):
         if socks:

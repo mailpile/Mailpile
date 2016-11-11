@@ -1,4 +1,7 @@
 # vim: set fileencoding=utf-8 :
+#
+# FIXME: Refactor this monster into mailpile.mailutils.*
+#
 import base64
 import copy
 import email.header
@@ -35,119 +38,10 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 from mailpile.vcard import AddressInfo
+from mailpile.mailutils.safe import safe_decode_hdr
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
-
-
-""" Backport of Python > 3.3 email.header.decode_header()
-
-It includes fixes that have not been ported to py2
-https://bugs.python.org/issue1079
-"""
-
-# Match encoded-word strings in the form =?charset?q?Hello_World?=
-ecre = re.compile(r'''
-  =\?                   # literal =?
-  (?P<charset>[^?]*?)   # non-greedy up to the next ? is the charset
-  \?                    # literal ?
-  (?P<encoding>[qb])    # either a "q" or a "b", case insensitive
-  \?                    # literal ?
-  (?P<encoded>.*?)      # non-greedy up to the next ?= is the encoded string
-  \?=                   # literal ?=
-  ''', re.VERBOSE | re.IGNORECASE | re.MULTILINE)
-
-
-def decode_header(header):
-    """ Decode a message header value without converting charset.
-    Returns a list of (string, charset) pairs containing each of the decoded
-    parts of the header.  Charset is None for non-encoded parts of the header,
-    otherwise a lower-case string containing the name of the character set
-    specified in the encoded string.
-    header may be a string that may or may not contain RFC2047 encoded words,
-    or it may be a Header object.
-    An email.errors.HeaderParseError may be raised when certain decoding error
-    occurs (e.g. a base64 decoding exception).
-    """
-    # If it is a Header object, we can just return the encoded chunks.
-    if hasattr(header, '_chunks'):
-        return [(_charset._encode(string, str(charset)), str(charset))
-                for string, charset in header._chunks]
-    # If no encoding, just return the header with no charset.
-    if not ecre.search(header):
-        return [(header, None)]
-    # First step is to parse all the encoded parts into triplets of the form
-    # (encoded_string, encoding, charset).  For unencoded strings, the last
-    # two parts will be None.
-    words = []
-    for line in header.splitlines():
-        parts = ecre.split(line)
-        first = True
-        while parts:
-            unencoded = parts.pop(0)
-            if first:
-                unencoded = unencoded.lstrip()
-                first = False
-            if unencoded:
-                words.append((unencoded, None, None))
-            if parts:
-                charset = parts.pop(0).lower()
-                encoding = parts.pop(0).lower()
-                encoded = parts.pop(0)
-                words.append((encoded, encoding, charset))
-    # Now loop over words and remove words that consist of whitespace
-    # between two encoded strings.
-    droplist = []
-    for n, w in enumerate(words):
-        if n > 1 and w[1] and words[n-2][1] and words[n-1][0].isspace():
-            droplist.append(n-1)
-    for d in reversed(droplist):
-        del words[d]
-
-    # The next step is to decode each encoded word by applying the reverse
-    # base64 or quopri transformation.  decoded_words is now a list of the
-    # form (decoded_word, charset).
-    decoded_words = []
-    for encoded_string, encoding, charset in words:
-        if encoding is None:
-            # This is an unencoded word.
-            decoded_words.append((encoded_string, charset))
-        elif encoding == 'q':
-            word = email.quoprimime.header_decode(encoded_string)
-            decoded_words.append((word, charset))
-        elif encoding == 'b':
-            # Postel's law: add missing padding
-            paderr = len(encoded_string) % 4
-            if paderr:
-                encoded_string += '==='[:4 - paderr]
-            try:
-                word = email.base64mime.decode(encoded_string)
-            except binascii.Error:
-                raise HeaderParseError('Base64 decoding error')
-            else:
-                decoded_words.append((word, charset))
-        else:
-            raise AssertionError('Unexpected encoding: ' + encoding)
-    # Now convert all words to bytes and collapse consecutive runs of
-    # similarly encoded words.
-    collapsed = []
-    last_word = last_charset = None
-    for word, charset in decoded_words:
-        if isinstance(word, unicode):
-            word = bytes(word, 'raw-unicode-escape')
-        if last_word is None:
-            last_word = word
-            last_charset = charset
-        elif charset != last_charset:
-            collapsed.append((last_word, last_charset))
-            last_word = word
-            last_charset = charset
-        elif last_charset is None:
-            last_word += b' ' + word
-        else:
-            last_word += word
-    collapsed.append((last_word, last_charset))
-    return collapsed
 
 
 def FormatMbxId(n):
@@ -911,26 +805,28 @@ class Email(object):
             self.clear_from_parse_cache()
 
     def update_parse_cache(self, newmsg):
-        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
+        cache_id = self.get_cache_id()
+        if cache_id:
             with GLOBAL_PARSE_CACHE_LOCK:
                 GPC = GLOBAL_PARSE_CACHE
                 for i in range(0, len(GPC)):
-                    if GPC[i][0] == self.msg_idx_pos:
-                        GPC[i] = (self.msg_idx_pos, False, newmsg)
+                    if GPC[i][0] == cache_id:
+                        GPC[i] = (cache_id, False, newmsg)
 
     def clear_from_parse_cache(self):
-        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
-            ClearParseCache(cache_id=self.msg_idx_pos)
+        cache_id = self.get_cache_id()
+        if cache_id:
+            ClearParseCache(cache_id=cache_id)
 
     def delete_message(self, session, flush=True):
-        ptrs = self.get_msg_info(self.index.MSG_PTRS).split(',')
+        mi = self.get_msg_info()
         removed, failed, mailboxes = [], [], []
-        for msg_ptr in (p.strip() for p in ptrs if p.strip()):
+        for msg_ptr, mbox, fd in self.index.enumerate_ptrs_mboxes_fds(mi):
             try:
-                mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
-                mbox.remove_by_ptr(msg_ptr)
-                mailboxes.append(mbox)
-                removed.append(msg_ptr)
+                if mbox:
+                    mbox.remove_by_ptr(msg_ptr)
+                    mailboxes.append(mbox)
+                    removed.append(msg_ptr)
             except (IOError, OSError, KeyError, ValueError,
                     IndexError, AttributeError) as e:
                 failed.append(msg_ptr)
@@ -953,18 +849,11 @@ class Email(object):
             return self.msg_info[field]
 
     def get_mbox_ptr_and_fd(self):
-        for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
-            if msg_ptr == '':
-                continue
-            try:
-                mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
-                fd = mbox.get_file_by_ptr(msg_ptr)
+        mi = self.get_msg_info()
+        for msg_ptr, mbox, fd in self.index.enumerate_ptrs_mboxes_fds(mi):
+            if fd is not None:
                 # FIXME: How do we know we have the right message?
                 return mbox, msg_ptr, FixupForWith(fd)
-            except (IOError, OSError, KeyError, ValueError, IndexError):
-                # FIXME: If this pointer is wrong, should we fix the index?
-                if 'sources' in self.config.sys.debug:
-                    print 'WARNING: %s not found' % msg_ptr
         return None, None, None
 
     def get_file(self):
@@ -980,10 +869,14 @@ class Email(object):
         # FIXME: Track these somehow...
         return []
 
+    def get_cache_id(self):
+        if (self.msg_idx_pos >= 0) and not self.ephemeral_mid:
+            return '%s/%s' % (self.index, self.msg_idx_pos)
+        else:
+            return None
+
     def _get_parsed_msg(self, pgpmime, update_cache=False):
-        cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
-                                        not self.ephemeral_mid) else None
-        return ParseMessage(self.get_file, cache_id=cache_id,
+        return ParseMessage(self.get_file, cache_id=self.get_cache_id(),
                                            update_cache=update_cache,
                                            pgpmime=pgpmime,
                                            config=self.config,
@@ -1064,7 +957,7 @@ class Email(object):
             return self.get_msg_info(self.index.MSG_FROM)
         else:
             raw = ' '.join(self.get_msg().get_all(field, default))
-            return self.index.hdr(0, 0, value=raw) or raw
+            return safe_decode_hdr(hdr=raw) or raw
 
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded
@@ -1091,7 +984,7 @@ class Email(object):
 
             count += 1
             content_id = part.get('content-id', '')
-            pfn = self.index.hdr(0, 0, value=part.get_filename() or '')
+            pfn = safe_decode_hdr(hdr=part.get_filename() or '')
 
             if (('*' == att_id)
                     or ('#%s' % count == att_id)
@@ -1292,17 +1185,17 @@ class Email(object):
         if (want is None or 'headers' in want) and 'headers' not in tree:
             tree['headers'] = {}
             for hdr in msg.keys():
-                tree['headers'][hdr] = self.index.hdr(msg, hdr)
+                tree['headers'][hdr] = safe_decode_hdr(msg, hdr)
 
         if (want is None or 'headers_lc' in want
                 ) and 'headers_lc' not in tree:
             tree['headers_lc'] = {}
             for hdr in msg.keys():
-                tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
+                tree['headers_lc'][hdr.lower()] = safe_decode_hdr(msg, hdr)
 
         if (want is None or 'header_list' in want
                 ) and 'header_list' not in tree:
-            tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
+            tree['header_list'] = [(k, safe_decode_hdr(msg, k, hdr=v))
                                    for k, v in msg.items()]
 
         if (want is None or 'addresses' in want
@@ -1384,8 +1277,7 @@ class Email(object):
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': self.index.hdr(0, 0,
-                                               value=part.get_filename() or ''),
+                    'filename': safe_decode_hdr(hdr=part.get_filename() or ''),
                     'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)

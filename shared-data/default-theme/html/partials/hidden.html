@@ -197,6 +197,16 @@
 </script>
 
 
+<script id="template-modal-loading" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <h1>Working ...</h1>
+      <p>{% include("../img/loading-ellipsis.svg") %}</p>
+    </div>
+  </div>
+</script>
+
+
 <script id="template-modal-private-key-item" type="text/template">
   <li class="grouped">
     <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>

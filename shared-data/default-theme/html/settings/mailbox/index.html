@@ -10,19 +10,36 @@
   </script>
 
   <p class="message paragraph-important modal-basic-settings-title">
-    <span class="icon-settings"></span>
-    {{_("Mailbox Settings")}}:
-    {%- for path in result.adding %}
-      <input type="hidden" name="path" value="{{ path }}"> {{ path }}
-    {%- endfor %}
-    {%- for path, info in result.configure %}
-      <input type="hidden" name="path" value="{{ path }}"> {{ path }}
-    {%- endfor %}
+    {% if result.recurse %}
+      <span class="icon-search"></span>
+      <input type="hidden" name="recurse" value="true">
+      {{_("Search Folder")}}:
+      {%- for path in result.paths %}
+        <input type="hidden" name="path" value="{{ path }}"> {{ path }}
+      {%- endfor %}
+    {% else %}
+      <span class="icon-settings"></span>
+      {{_("Mailbox Settings")}}:
+      {%- for path in result.adding %}
+        <input type="hidden" name="path" value="{{ path }}"> {{ path }}
+      {%- endfor %}
+      {%- for path, info in result.configure %}
+        <input type="hidden" name="path" value="{{ path }}"> {{ path }}
+      {%- endfor %}
+    {% endif %}
   </p>
+  {% if result.recurse %}
+  <p>FIXME: <i>
+    This folder contains {{ result.adding|length }} new mailboxes.
+    This folder contains {{ result.configure|length }} mailboxes already in your pile.
+    Add them to your mailpile using the settings below?
+  </i></p><hr>
+  {% endif %}
   <div class="modal-basic-settings">
 
     <div class="left" style="width: 18em; margin-right: 1em;">
       <label>Mailbox role</label>
+      <input type="hidden" name="guess_tags" value="False">
       <select name='apply_tags' style="width: 100%;">
         <option value='' {% if not result.apply_tags %}selected{% endif %}>{{_("Archives")}}</option>
         {% for tid in config.tags %}
@@ -50,8 +67,6 @@
       <ul>
         <li><input type="checkbox" name="auto_index" value="true" {% if result.auto_index %}checked{% endif %}>
             <span class="checkbox">{{_("Add messages to search engine")}}</span></li>
-        <li><input type="checkbox" name="tag_visible" value="true" {% if result.tag_visible %}checked{% endif %}>
-            <span class="checkbox">{{_("Show mailbox tag in sidebar")}}</span></li>
       </ul>
 
       <label>Mailbox settings</label>
@@ -67,7 +82,12 @@
   <div>
     <hr style="margin-bottom: 10px;">
     <button class="button-primary right" type="submit">
-      <span class="icon-checkmark"></span> {{_("Save")}}
+      <span class="icon-checkmark"></span>
+      {% if result.recurse %}
+        {{_("Configure Mailboxes")}}
+      {% else %}
+        {{_("Save")}}
+      {% endif %}
     </button>
   </div>
 

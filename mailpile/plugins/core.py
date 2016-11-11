@@ -1231,8 +1231,8 @@ class ConfigureMailboxes(Command):
         'profile': 'Profile/account ID or e-mail',
         'recurse': 'y/n: search subdirectories?',
         'apply_tags': 'Mailbox tags',
+        'guess_tags': 'Guess mailbox tags',
         'auto_index': 'Account e-mail or ID',
-        'tag_visible': 'Make new tags visible in sidebar',
         'local_copy': 'Make local copy of mail'
     }
     COMMAND_SECURITY = security.CC_CHANGE_CONFIG
@@ -1247,7 +1247,6 @@ class ConfigureMailboxes(Command):
 
         session, config = self.session, self.session.config
         paths = list(self.args)
-        recurse = False
 
         # Which tags do we want to apply?
         apply_tags = self.data.get('apply_tags', [])
@@ -1264,12 +1263,12 @@ class ConfigureMailboxes(Command):
 
         if self.data.get('_method', 'CLI') == 'POST':
             auto_index = self._truthy('auto_index', default='n')
-            tag_visible = self._truthy('tag_visible', default='n')
             local_copy = self._truthy('local_copy', default='n')
+            guess_tags = self._truthy('guess_tags', default='n')
         else:
             auto_index = True
-            tag_visible = False
             local_copy = None
+            guess_tags = None
 
         # Recursion or other options requested on CLI?
         if self.data.get('_method', 'CLI') == 'CLI':
@@ -1277,8 +1276,10 @@ class ConfigureMailboxes(Command):
                 recurse = paths.pop(paths.index('--recurse'))
             while paths and '--local_copy' in paths:
                 local_copy = paths.pop(paths.index('--local_copy'))
-            while paths and '--tag_visible' in paths:
-                tag_visible = paths.pop(paths.index('--tag_visible'))
+            while paths and '--guess_tags' in paths:
+                guess_tags = paths.pop(paths.index('--guess_tags'))
+            while paths and '--no_guess_tags' in paths:
+                guess_tags = not paths.pop(paths.index('--guess_tags'))
             while paths and '--no_auto_index' in paths:
                 auto_index = not paths.pop(paths.index('--no_auto_index'))
 
@@ -1292,6 +1293,9 @@ class ConfigureMailboxes(Command):
 
         # Turn raw paths into FilePath objects
         paths = [FilePath(p) for p in paths]
+        # Strip leading slashes of src: paths
+        paths = [FilePath(p.raw_fp[1:]) if p.raw_fp.startswith('/src:') else p
+                 for p in paths]
         opaths = paths[:]
 
         # Get a list of existing mailboxes...
@@ -1313,7 +1317,10 @@ class ConfigureMailboxes(Command):
                 fn_display = fn.display()
                 einfo = existing.get(fn.encoded())
                 if fn.raw_fp.startswith("src:"):
-                    configure.append((fn, einfo))
+                    if einfo:
+                        configure.append((fn, einfo))
+                    else:
+                        adding.append(fn)
                     has_source = True
                 elif einfo:
                     if einfo[2]:
@@ -1345,12 +1352,15 @@ class ConfigureMailboxes(Command):
             local_copy = has_source  # No source; probably already local
 
         if self.data.get('_method', 'CLI') == 'GET':
+            if not apply_tags and len(opaths) == 1:
+                apply_tags = list(config.guess_tags(opaths[0].raw_fp))
             return self._success(_('Add and configure mailboxes'), result={
+                'paths': opaths,
                 'profile': account_id,
                 'apply_tags': apply_tags,
                 'auto_index': auto_index,
-                'tag_visible': tag_visible,
                 'local_copy': local_copy,
+                'recurse': recurse,
                 'has_source': has_source,
                 'adding': adding,
                 'configure': configure
@@ -1364,15 +1374,15 @@ class ConfigureMailboxes(Command):
             for arg in adding:
                 mbox_id = config.sys.mailbox.append(arg)
                 added[mbox_id] = arg
-                if account:
-                    configure.append((arg, (FilePath(arg), mbox_id, None)))
+                if account or arg.raw_fp.startswith('src:'):
+                    configure.append((arg, (arg, mbox_id, None)))
 
             def _get_source(path, einfo):
                 if einfo and einfo[2]:
                     return einfo[2]
-                if (path.raw_fp.startswith('src:') or
-                        path.raw_fp.startswith('/src:')):
-                    src_id = path.raw_fp.split(':')[1].split('/')[0]
+                raw_path = path.raw_fp
+                if raw_path.split(':')[0] == 'src':
+                    src_id = raw_path.split(':')[1].split('/')[0]
                     return config.sources[src_id]
                 return account.get_source_by_proto('local', create=True)
 
@@ -1384,8 +1394,8 @@ class ConfigureMailboxes(Command):
                 source_obj.take_over_mailbox(mbox_id,
                                              policy=policy,
                                              create_local=local_copy,
+                                             guess_tags=guess_tags,
                                              apply_tags=apply_tags,
-                                             visible_tags=tag_visible,
                                              save=False)
                 configured[mbox_id] = path
 

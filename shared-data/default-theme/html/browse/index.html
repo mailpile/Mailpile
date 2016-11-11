@@ -53,11 +53,11 @@
 {%- endmacro -%}
 
 {%- macro browse_url(attr, info) -%}
-  {%- if attr == 'flag_mailbox' -%}
-    {{- U('/search/?q=vfs:', info.encoded) -}} 
-  {%- else -%}
+  {% if attr == 'flag_mailbox' %}
+    {{- U('/search/?q=index:', info.encoded) -}}
+  {% else %}
     {{- U('/browse', info.path, '/') -}}
-  {%- endif -%}
+  {% endif %}
 {%- endmacro -%}
 
 {%- macro box_icon(attr, info, icn) -%}
@@ -73,6 +73,7 @@
 {%- endmacro -%}
 
 {%- macro settings(attr, info, icn) -%}
+  {%- set _icon = 'icon-settings' %}
   {%- if info.settings  -%}
     {%- set _url = info.settings -%}
   {%- elif attr == 'flag_mailbox' -%}
@@ -81,6 +82,9 @@
     {%- else %}
       {%- set _url = U('/settings/mailbox/?path=', info.encoded) -%}
     {%- endif %}
+  {%- elif attr == 'flag_directory' -%}
+    {%- set _url = U('/settings/mailbox/?recurse=y&path=', info.encoded) -%}
+    {%- set _icon = 'icon-search' %}
   {%- elif info.flag_mailsource and info.source -%}
     {%- set _url = U('/profiles/edit/?rid=', config.sources[info.source].profile, '&ui_open=sources') -%}
   {%- else %}
@@ -91,7 +95,7 @@
       <a class='browse-item-settings link-detail auto-modal auto-modal-reload right'
          data-icon="icon-settings"
          href="{{ U(_url) }}" title='{{_("Settings")}}: {{info.display_name}}'>
-        <span class='icon-settings'></span>
+        <span class='{{_icon}}'></span>
       </a>
     </div>
   {%- endif -%}
