@@ -842,7 +842,7 @@ class Search(Command):
         return session, idx
 
     def cache_id(self, *args, **kwargs):
-        if self._emails:
+        if self._emails or self.session.search_index:
             return ''
         return Command.cache_id(self, *args, **kwargs)
 

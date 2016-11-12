@@ -538,7 +538,6 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     SUPPORTS = []
     WANTS = [Capability.OUTGOING_RAW]
     REJECTS = None
-    SSL_VERSION = None
 
     def _proxy_address(self, address):
         return address
@@ -550,7 +549,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
         if self._debug is not None:
             self._debug('%s: Wrapping socket with SSL' % (self, ))
         # FIXME: We're losing the SNI stuff here, which is super lame.
-        return ssl.wrap_socket(conn, None, None, ssl_version=self.SSL_VERSION)
+        return ssl.wrap_socket(conn, None, None)
 
     def _create_connection(self, context, address, *args, **kwargs):
         address = self._proxy_address(address)

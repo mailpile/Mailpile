@@ -5,8 +5,10 @@ import rfc822
 import time
 from urllib import quote, unquote
 
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.header import decode_header
+from mailpile.util import *
 
 
 def safe_decode_hdr(msg=None, name=None, hdr=None, charset=None):
