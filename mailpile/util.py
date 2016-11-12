@@ -416,6 +416,20 @@ def b36(number):
     return ''.join(reversed(base36))
 
 
+def string_to_rank(text, maxint=sys.maxint):
+    """
+    Approximate lexographical order with an int. It's accurate near
+    the front of the string, but gets fuzzy towards letter 10.
+    """
+    rs = CleanText(text, banned=CleanText.NONALNUM).clean.lower()
+    rank = 0.0
+    frac = 1.0
+    for pos in range(0, min(15, len(rs))):
+        rank += frac * (int(rs[pos], 36) / (36.0 + 0.09 * pos))
+        frac *= 1.0 / (36-pos)
+    return long(rank * (maxint - 100)) + min(100, len(text))
+
+
 def string_to_intlist(text):
     """Converts a string into an array of integers"""
     try:
@@ -430,6 +444,24 @@ def intlist_to_string(intlist):
         return chars.decode('utf-8')
     except (UnicodeEncodeError, UnicodeDecodeError):
         return chars
+
+
+def intlist_to_bitmask(intlist):
+    if not intlist:
+        return str('\0')
+    bitmask = [0] * (max(intlist) // 8 + 1)
+    for r in intlist:
+        bitmask[r//8] |= 1 << (r % 8)
+    return ''.join(chr(b) for b in bitmask)
+
+
+def bitmask_to_intlist(bitmask):
+    results = []
+    for i in range(0, len(bitmask)):
+        v = ord(bitmask[i])
+        if v:
+            results += [(i * 8 + b) for b in range(0, 8) if v & (1 << b)]
+    return results
 
 
 def truthy(txt, default=False, special=None):
