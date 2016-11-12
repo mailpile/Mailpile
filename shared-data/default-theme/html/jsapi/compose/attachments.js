@@ -51,7 +51,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
 
     if (!$('#compose-attachment-' + mid + '-' + attachment.aid).length) {
 
-      attachment['previewable'] = _.indexOf(['image/bmp', 
+      attachment['previewable'] = _.indexOf(['image/bmp',
                                       'image/gif',
                                       'image/jpg',
                                       'image/jpeg',
@@ -69,7 +69,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
       // More UI friendly values
       var file_parts = attachment.filename.split('.');
       var file_parts_length = file_parts.length
-    
+
       if (file_parts.length > 2 || attachment.filename.length > 20) {
         attachment['name_fixed'] = attachment.filename.substring(0, 16);
       } else {
@@ -134,10 +134,10 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
         uploader.refresh();
       },
       FilesAdded: function(up, files) {
-  
+
         // Loop through added files
       	plupload.each(files, function(file) {
-  
+
           // Show Warning for 50 mb or larger
           if (file.size > 52428800) {
             start_upload = false;
@@ -151,6 +151,9 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
       },
       UploadProgress: function(up, file) {
       	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
+        var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
+        $('.attachment-progress-bar').html(progressBar);
+        $('#compose-send-'+settings.mid).attr("disabled","disabled");
       },
       FileUploaded: function(up, file, response) {
 
@@ -160,6 +163,8 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           var new_mid = response_json.result.message_ids[0];
 
           //console.log(file);
+          $('.attachment-progress-bar').empty();
+          $('#compose-send-'+settings.mid).removeAttr("disabled");
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
