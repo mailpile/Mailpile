@@ -1,5 +1,5 @@
 /* Topbar - Search - Focus */
-$(document).on('click', '#search-query', function() {
+$(document).on('focus', '#search-query', function() {
   $(this).select();
 });
 
