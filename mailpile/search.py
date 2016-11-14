@@ -605,6 +605,9 @@ class MailIndex(BaseIndex):
             last_date = long(msg_info[self.MSG_DATE], 36)
             added += 1
 
+        PluginManager.trigger(
+            PluginManager.INCOMING_EMAIL, session=session, message=msg)
+
         progress['added'] = progress.get('added', 0) + added
         progress['updated'] = progress.get('updated', 0) + updated
         return last_date, added, updated

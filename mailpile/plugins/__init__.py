@@ -754,7 +754,7 @@ class PluginManager(object):
     def register_ui_element(self, ui_type,
                             context=None, name=None,
                             text=None, icon=None, description=None,
-                            url=None, javascript_setup=None, 
+                            url=None, javascript_setup=None,
                             javascript_events=None, **kwargs):
         name = name.replace('/', '_')
         if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
@@ -780,6 +780,15 @@ class PluginManager(object):
         #        The good thing is, it maintains a stable order.
         return [elem for elem in self.UI_ELEMENTS[ui_type]
                 if context in elem['context']]
+
+    ##[ Pluggable Hooks ]####################################################
+
+    INCOMING_EMAIL = {}
+
+    @staticmethod
+    def trigger(hook, **kwargs):
+        for func in hook.values():
+            func(**kwargs)
 
 
 ##[ Backwards compatibility ]################################################
