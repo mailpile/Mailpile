@@ -1497,6 +1497,7 @@ class VCardPluginClass:
 
 
 class VCardImporter(VCardPluginClass):
+    HOOKS = ['VCARD_IMPORTERS']
     MERGE_BY = ['email']
     UPDATE_INDEX = False
 
@@ -1586,6 +1587,7 @@ class VCardImporter(VCardPluginClass):
 
 
 class VCardExporter(VCardPluginClass):
+    HOOKS = ['VCARD_EXPORTERS']
 
     def __init__(self):
         self.exporting = []
@@ -1601,6 +1603,7 @@ class VCardExporter(VCardPluginClass):
 
 
 class VCardContextProvider(VCardPluginClass):
+    HOOKS = ['VCARD_CONTEXT_PROVIDERS']
 
     def __init__(self, contact):
         self.contact = contact

@@ -635,16 +635,13 @@ class PluginManager(object):
     VCARD_EXPORTERS = {}
     VCARD_CONTEXT_PROVIDERS = {}
 
-    def _reg_vcard_plugin(self, what, cfg_sect, plugin_classes, cls, dct):
+    def _reg_vcard_plugin(self, what, cfg_sect, plugin_classes, cls):
         for plugin_class in plugin_classes:
             if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
                 raise PluginError("Please set SHORT_NAME "
                                   "and FORMAT_* attributes!")
             if not issubclass(plugin_class, cls):
                 raise PluginError("%s must be a %s" % (what, cls))
-            if plugin_class.SHORT_NAME in dct:
-                raise PluginError("%s for %s already registered"
-                                  % (what, importer.FORMAT_NAME))
 
             if plugin_class.CONFIG_RULES:
                 rules = {
@@ -656,25 +653,27 @@ class PluginManager(object):
                     'prefs', 'vcard', cfg_sect, plugin_class.SHORT_NAME,
                     [plugin_class.FORMAT_DESCRIPTION, rules, []])
 
-            dct[plugin_class.SHORT_NAME] = plugin_class
+            for hook in plugin_class.HOOKS:
+                dct = getattr(self, hook)
+                if plugin_class.SHORT_NAME in dct:
+                    raise PluginError("%s for %s already registered"
+                                      % (what, plugin_class.FORMAT_NAME))
+                dct[plugin_class.SHORT_NAME] = plugin_class
 
     def register_vcard_importers(self, *importers):
         self._compat_check()
         self._reg_vcard_plugin('Importer', 'importers', importers,
-                               mailpile.vcard.VCardImporter,
-                               self.VCARD_IMPORTERS)
+                               mailpile.vcard.VCardImporter)
 
     def register_contact_exporters(self, *exporters):
         self._compat_check()
         self._reg_vcard_plugin('Exporter', 'exporters', exporters,
-                               mailpile.vcard.VCardExporter,
-                               self.VCARD_EXPORTERS)
+                               mailpile.vcard.VCardExporter)
 
     def register_contact_context_providers(self, *providers):
         self._compat_check()
         self._reg_vcard_plugin('Context provider', 'context', providers,
-                               mailpile.vcard.VCardContextProvider,
-                               self.VCARD_CONTEXT_PROVIDERS)
+                               mailpile.vcard.VCardContextProvider)
 
 
     ##[ Pluggable cron jobs ]#################################################
