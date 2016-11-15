@@ -1527,45 +1527,9 @@ class VCardImporter(VCardPluginClass):
                     session.config.index.update_email(email.value,
                                                       name=vcard.fn)
 
-            # Update existing vcards if possible...
-            existing = []
-            for merge_by in self.MERGE_BY:
-                for vcl in vcard.get_all(merge_by):
-                    existing.extend(
-                        vcard_store.find_vcards_with_line(merge_by, vcl.value))
-            last = ''
-            existing.sort(key=lambda k: (k.email, k.random_uid))
-            for card in existing:
-                if card.random_uid == last:
-                    continue
-                last = card.random_uid
-                try:
-                    counter += 1
-                    vcard_store.deindex_vcard(card)
-                    if card.merge(self.get_guid(vcard), vcard.as_lines()):
-                        updated[card.random_uid] = card
-                    vcard_store.index_vcard(card)
-                except ValueError:
-                    session.ui.error(_('Failed to merge vCard %s into %s'
-                                       ) % (vcard.email, card.random_uid))
-
-            # Otherwise, create new ones.
-            kindhint = vcard.get('x-mailpile-kind-hint', 0)
-            if not existing and (create_profiles or
-                                 kindhint is 0 or
-                                 kindhint.value != 'profile'):
-                try:
-                    new_vcard = MailpileVCard(config=self.config)
-                    new_vcard.merge(self.get_guid(vcard), vcard.as_lines())
-                    if kindhint is not 0:
-                        new_vcard.add(VCardLine(name='kind',
-                                                value=kindhint.value))
-                    vcard_store.add_vcards(new_vcard)
-                    updated[new_vcard.random_uid] = new_vcard
-                    counter += 1
-                except ValueError:
-                    session.ui.error(_('Failed to create new vCard for %s'
-                                       ) % (vcard.email, card.random_uid))
+            updated, count = self.merge_or_create_vcard(
+                session, vcard_store, vcard, create_profiles)
+            counter += count
 
             if counter > 100:
                 if not kwargs.get('fast'):
@@ -1581,6 +1545,58 @@ class VCardImporter(VCardPluginClass):
                     play_nice_with_threads()
 
         return len(updated)
+
+    def import_vcard(self, session, vcard_store, vcard):
+        updated, _ = self.merge_or_create_vcard(session, vcard_store, vcard)
+
+        for vcard in updated.values():
+            vcard.save()
+
+    def merge_or_create_vcard(
+            self, session, vcard_store, vcard, create_profiles=False):
+        updated = {}
+        count = 0
+
+        # Update existing vcards if possible...
+        existing = []
+        for merge_by in self.MERGE_BY:
+            for vcl in vcard.get_all(merge_by):
+                existing.extend(
+                    vcard_store.find_vcards_with_line(merge_by, vcl.value))
+        last = ''
+        existing.sort(key=lambda k: (k.email, k.random_uid))
+        for card in existing:
+            if card.random_uid == last:
+                continue
+            last = card.random_uid
+            try:
+                count += 1
+                vcard_store.deindex_vcard(card)
+                if card.merge(self.get_guid(vcard), vcard.as_lines()):
+                    updated[card.random_uid] = card
+                vcard_store.index_vcard(card)
+            except ValueError:
+                session.ui.error(_('Failed to merge vCard %s into %s'
+                                   ) % (vcard.email, card.random_uid))
+
+        # Otherwise, create new ones.
+        kindhint = vcard.get('x-mailpile-kind-hint', 0)
+        if not existing and (create_profiles or
+                             kindhint is 0 or
+                             kindhint.value != 'profile'):
+            try:
+                new_vcard = MailpileVCard(config=self.config)
+                new_vcard.merge(self.get_guid(vcard), vcard.as_lines())
+                if kindhint is not 0:
+                    new_vcard.add(VCardLine(name='kind', value=kindhint.value))
+                vcard_store.add_vcards(new_vcard)
+                updated[new_vcard.random_uid] = new_vcard
+                count += 1
+            except ValueError:
+                session.ui.error(_('Failed to create new vCard for %s'
+                                   ) % (vcard.email, card.random_uid))
+
+        return updated, count
 
     def get_vcards(self):
         raise Exception('Please override this function')
