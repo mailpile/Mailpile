@@ -213,6 +213,7 @@ class MailIndex(BaseIndex):
             with EncryptingStreamer(self.config.master_key,
                                     delimited=True) as es:
                 es.write(data)
+                es.finish()
                 return es.save(None)
 
         return data

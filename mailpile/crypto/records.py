@@ -97,9 +97,6 @@ import threading
 
 from aes_utils import getrandbits, aes_cbc_encrypt, aes_cbc_decrypt
 
-#aes_cbc_encrypt = lambda k, i, v: v
-#aes_cbc_decrypt = lambda k, i, v: v
-
 
 class _SimpleList(object):
     """Some syntactic sugar for listalikes"""

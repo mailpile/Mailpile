@@ -133,12 +133,13 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             self._dump_message(message, es)
             es.finish()
 
-            # We are using the MD5 to detect file system corruption, not in a
+            # We are using the MAC to detect file system corruption, not in a
             # security context - so using as little as 40 bits should be fine.
             saved = False
             key = None
-            for l in range(10, len(es.outer_md5sum)):
-                key = es.outer_md5sum[:l]
+            outer_mac = es.outer_mac_sha256()
+            for l in range(10, len(outer_mac)):
+                key = outer_mac[:l]
                 fn = os.path.join(self._path, 'new', key)
                 if not os.path.exists(fn):
                     es.save(fn)
