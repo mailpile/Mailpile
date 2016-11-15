@@ -2,6 +2,8 @@ import random
 import threading
 import time
 
+from markupsafe import escape
+
 import mailpile.util
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -1163,7 +1165,7 @@ class AddressInfo(dict):
 
         photos = vcard.get_all('photo')
         if photos:
-            self['photo'] = photos[0].value
+            self['photo'] = escape(photos[0].value)
 
         crypto_policy = vcard.crypto_policy
         if crypto_policy:
