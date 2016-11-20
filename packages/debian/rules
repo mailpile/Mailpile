@@ -70,7 +70,7 @@ override_dh_auto_build:
 	ln -s /usr/share/javascript/animate.css/animate.css bower_components/animate.css/animate.css
 
 	mkdir -p bower_components/less-elements
-	ln -s /usr/share/javascript/less-elements/elements.less bower_components/less-elements/elements.less
+	ln -s /usr/share/javascript/less-elements/elements.less bower_components/less-elements-old/elements.less
 
 	mkdir -p bower_components/rebar
 	ln -s /usr/share/javascript/rebar/less bower_components/rebar/less
