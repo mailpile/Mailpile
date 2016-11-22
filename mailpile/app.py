@@ -197,31 +197,40 @@ def Main(args):
 
     try:
         try:
-            shorta, longa = '', []
-            for cls in COMMANDS:
-                shortn, longn, urlpath, arglist = cls.SYNOPSIS[:4]
-                if arglist:
-                    if shortn:
-                        shortn += ':'
-                    if longn:
-                        longn += '='
-                if shortn:
-                    shorta += shortn
-                if longn:
-                    longa.append(longn.replace(' ', '_'))
+            if '--login' in args:
+                a1 = args[:args.index('--login') + 1]
+                a2 = args[len(a1):]
+            else:
+                a1, a2 = args, []
 
-            opts, args = getopt.getopt(args, shorta, longa)
-            for opt, arg in opts:
-                session.ui.display_result(Action(
-                    session, opt.replace('-', ''), arg.decode('utf-8')))
-            if args:
-                session.ui.display_result(Action(
-                    session, args[0], ' '.join(args[1:]).decode('utf-8')))
+            allopts = []
+            for argset in (a1, a2):
+                shorta, longa = '', []
+                for cls in COMMANDS:
+                    shortn, longn, urlpath, arglist = cls.SYNOPSIS[:4]
+                    if arglist:
+                        if shortn:
+                            shortn += ':'
+                        if longn:
+                            longn += '='
+                    if shortn:
+                        shorta += shortn
+                    if longn:
+                        longa.append(longn.replace(' ', '_'))
+
+                opts, args = getopt.getopt(argset, shorta, longa)
+                allopts.extend(opts)
+                for opt, arg in opts:
+                    session.ui.display_result(Action(
+                        session, opt.replace('-', ''), arg.decode('utf-8')))
+                if args:
+                    session.ui.display_result(Action(
+                        session, args[0], ' '.join(args[1:]).decode('utf-8')))
 
         except (getopt.GetoptError, UsageError), e:
             session.error(unicode(e))
 
-        if not opts and not args:
+        if (not allopts) and (not a1) and (not a2):
             InteractCommand(session).run()
 
     except KeyboardInterrupt:

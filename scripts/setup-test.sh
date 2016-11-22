@@ -36,8 +36,9 @@ if [ "$1" = "--cleanup" ]; then
     CLEANUP=1
 fi
 
+[ "$1" = "" ] && IA="--interact" || IA=""
 $PYTHON ./mp --set 'sys.debug = log http' \
              --www 'localhost:33433' \
-             "$@" --interact
+             "$@" $IA
 
 [ "xCLEANUP" = "1" ] && rm -rf "$MAILPILE_HOME"
