@@ -17,6 +17,15 @@ class BaseIndex(MessageInfoConstants):
 
     MAX_CACHE_ENTRIES = 250
 
+    CAN_SEARCH = 'can_search'  # Can search message contents
+    CAN_SORT = 'can_sort'      # Can sort search results
+    HAS_UNREAD = 'has_unread'  # Can filter messages by read/unread
+    HAS_ATTS = 'has_atts'      # Can filter messages by attachments or no
+    HAS_TAGS = 'has_tags'      # Can filter messages by tags and/or apply tags
+
+    # What is this Index capable of?  A list or set of the above.
+    CAPABILITIES = []
+
     def __init__(self, config):
         self.config = config
         self.CACHE = {}

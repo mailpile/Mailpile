@@ -40,6 +40,12 @@ class MailIndex(BaseIndex):
 
     MAX_INCREMENTAL_SAVES = 25
     MAX_CACHE_ENTRIES = 2500
+    CAPABILITIES = set([
+        BaseIndex.CAN_SEARCH,
+        BaseIndex.CAN_SORT,
+        BaseIndex.HAS_UNREAD,
+        BaseIndex.HAS_ATTS,
+        BaseIndex.HAS_TAGS])
 
     def __init__(self, config):
         BaseIndex.__init__(self, config)

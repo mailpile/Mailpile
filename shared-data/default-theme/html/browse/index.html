@@ -54,7 +54,8 @@
 
 {%- macro browse_url(attr, info) -%}
   {% if attr == 'flag_mailbox' %}
-    {{- U('/search/?q=index:', info.encoded) -}}
+    {{- U('/search/?q=index:', info.encoded,
+          '&parent=', U('/browse', result.path, '/')) -}}
   {% else %}
     {{- U('/browse', info.path, '/') -}}
   {% endif %}
