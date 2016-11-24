@@ -1,8 +1,8 @@
+cryptography
 lxml>=2.3.2
 Jinja2
 spambayes>=1.1b1
 markupsafe
-pycrypto
 pyDNS
 pgpdump
 pillow
