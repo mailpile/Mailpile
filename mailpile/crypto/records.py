@@ -1,3 +1,8 @@
+#
+# FIXME:  We've switched from AES-CBC to AES-CTR. We should review the
+#         IV logic and make sure it is still sane given the different
+#         properties of the underlying algorithms.
+#
 """
 Record-based AES encrypted data storage
 
@@ -95,7 +100,7 @@ import struct
 import time
 import threading
 
-from aes_utils import getrandbits, aes_cbc_encrypt, aes_cbc_decrypt
+from aes_utils import getrandbits, aes_ctr_encrypt, aes_ctr_decrypt
 
 
 class _SimpleList(object):
@@ -135,7 +140,7 @@ class EncryptedRecordStore(_SimpleList):
     _HEADER = ('X-Mailpile-Encrypted-Records: v1\r\n'
                'From: Mailpile <encrypted@mailpile.is>\r\n'
                'Subject: %(filename)s\r\n'
-               'cipher: aes-256-cbc\r\n'
+               'cipher: aes-128-ctr\r\n'
                'record-size: %(record_size)d\r\n'
                'iv-seed: %(ivs)s\r\n'
                '\r\n')
@@ -264,7 +269,7 @@ class EncryptedRecordStore(_SimpleList):
         # assertion above to have room for at least 6 nybbles of the MD5.
         record = (data + ':' + cks + self._ZERO_RECORD
                   )[:self._RECORD_SIZE - len(iv)]
-        encrypted = (iv + aes_cbc_encrypt(self._aes_key, iv, record)
+        encrypted = (iv + aes_ctr_encrypt(self._aes_key, iv, record)
                      ).encode('base64').replace('\n', '')
 
         if len(encrypted) != self._RECORD_LINES * self._RECORD_LINE_BYTES:
@@ -311,7 +316,7 @@ class EncryptedRecordStore(_SimpleList):
         if iv == ('\x00' * 16) and self._default_value is not None:
             return self._default_value
 
-        plaintext, checksum = aes_cbc_decrypt(self._aes_key, iv, encrypted
+        plaintext, checksum = aes_ctr_decrypt(self._aes_key, iv, encrypted
                                               ).rsplit(':', 1)
 
         checksum = bytes(checksum.replace('\0', ''))
