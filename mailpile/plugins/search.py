@@ -214,8 +214,8 @@ class SearchResults(dict):
 
     _BAR = u'\u2502'
     _FORK = u'\u251c'
-    _FIRST = u'\u256d'
-    _LAST = u'\u2570'
+    _FIRST = u'\u250c'
+    _LAST = u'\u2514'
     _BLANK = u' '
     _DASH = u'\u2500'
     _TEE = u'\u252c'
