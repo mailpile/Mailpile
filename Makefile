@@ -102,6 +102,7 @@ pytests:
 	@echo -n 'packing          ' && python2 mailpile/packing.py
 	@echo -n 'mailboxes/pop3   ' && python2 mailpile/mailboxes/pop3.py
 	@echo -n 'mail_source/imap ' && python2 mailpile/mail_source/imap.py
+	@echo -n 'crypto/aes_utils ' && python2 mailpile/crypto/aes_utils.py
 	@echo 'crypto/streamer...'   && python2 mailpile/crypto/streamer.py
 	@echo
 
