@@ -7,15 +7,15 @@
 ================================================== */
 /* @license
  * Mailpile font designed for Mailpile
- * 
+ *
  * You may obtain a copy of the license at the URLs below.
- * 
+ *
  * Webfont: Mailpile by Brennan Novak
  * URL: http://github.com/mailpile/fonts
- * 
+ *
  * Mailpile font is licensed under the SIL Open Font License (OFL)
  * http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
- * 
+ *
  * © 2013 Mailpile
 */
 @font-face {
@@ -8340,7 +8340,7 @@ tr.modal-tag-picker-item td.checkbox {
   border: 0;
   position: relative;
   top: 4px;
-  font-size: 34px;
+  font-size: 40px;
   font-family: monospace;
   line-height: 34px;
   color: #b3b3b3;
