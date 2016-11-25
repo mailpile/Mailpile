@@ -416,7 +416,8 @@ class TestableWebbable(SetupMagic):
 
 class SetupGetEmailSettings(TestableWebbable):
     """Lookup, guess, test server details for an e-mail address"""
-    SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers', None)
+    SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers',
+                "<email> <password>")
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
         'email': 'E-mail address',
@@ -916,13 +917,18 @@ class SetupGetEmailSettings(TestableWebbable):
 
     def setup_command(self, session):
         results = {}
-        self.deadline = time.time() + float(self.data.get('timeout', [10])[0])
+        args = list(self.args)
+        self.deadline = time.time() + float(self.data.get('timeout', [60])[0])
         self.tracking_id = self.data.get('track-id', [None])[0]
         self.password = self.data.get('password', [None])[0]
-        emails = list(self.args) + self.data.get('email', [])
+        if not self.password and len(args) > 1:
+            self.password = args.pop(-1)
+
+        emails = args + self.data.get('email', [])
         if self.password and len(emails) != 1:
             return self._error(_('Can only test settings for one account '
                                  'at a time'))
+
         for email in emails:
             settings = self._testing_data(self._get_email_settings,
                                           self.TEST_DATA, email)
