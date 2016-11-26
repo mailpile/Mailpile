@@ -471,18 +471,25 @@ class AddTag(TagCommand):
         'slug': 'tag slug',
         # Optional initial attributes of tags
         'icon': 'icon-tag',
+        'type': 'Internal tag type',
         'label': 'display as label in search results, or not',
         'label_color': 'the color of the label',
         'display': 'tag display type',
+        'toolbar': 'display in toolbar?',
         'template': 'tag template type',
         'search_terms': 'default search associated with this tag',
         'magic_terms': 'magic search terms associated with this tag',
         'parent': 'parent tag ID',
+        'auto_tag': 'enable or disable auto-tagging',
+        'auto_after': 'perform auto-action after this time',
+        'auto_action': 'auto-action to perform',
     }
     COMMAND_SECURITY = security.CC_CHANGE_TAGS
 
-    OPTIONAL_VARS = ['icon', 'label', 'label_color', 'display', 'template',
-                     'search_terms', 'parent']
+    OPTIONAL_VARS = ['icon', 'type', 'parent',
+                     'display', 'toolbar', 'label', 'label_color',
+                     'template', 'search_terms', 'magic_terms',
+                     'auto_tag', 'auto_after', 'auto_action']
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
