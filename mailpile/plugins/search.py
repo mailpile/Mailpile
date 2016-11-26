@@ -741,7 +741,7 @@ class Search(Command):
     def _email_view_side_effects(self, emails):
         session, config, idx = self.session, self.session.config, self._idx()
         msg_idxs = [e.msg_idx_pos for e in emails]
-        if 'tags' in config:
+        if 'tags' in config and config.prefs.auto_mark_as_read:
             for tag in config.get_tags(type='unread'):
                 idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
             for tag in config.get_tags(type='read'):
