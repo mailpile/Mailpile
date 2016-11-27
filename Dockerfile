@@ -1,8 +1,8 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.10
 
 # Install dependencies
 RUN apt-get update -y && \
-    apt-get install -y openssl python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump spambayes
+    apt-get install -y openssl python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump spambayes tor
 
 # Add code
 WORKDIR /Mailpile
