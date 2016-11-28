@@ -88,7 +88,7 @@ class MessageOfTheDay(Command):
                 return ''
 
             date = dtime.fromtimestamp(self.result.get('timestamp', 0))
-            return '%s, %4.4d-%2.2d-%2.2d:\n\n    %s\n\n*** %s ***\n' % (
+            return '\n%s, %4.4d-%2.2d-%2.2d:\n\n    %s\n\n*** %s ***\n' % (
                 _('Message Of The Day'),
                 date.year, date.month, date.day,
                 motd.replace('\n', '\n    '),

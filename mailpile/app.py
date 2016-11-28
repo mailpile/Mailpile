@@ -147,7 +147,6 @@ class InteractCommand(Command):
         splash = HelpSplash(session, 'help', []).run()
         motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
         session.ui.display_result(splash)
-        print  # FIXME: This is a hack!
         session.ui.display_result(motd)
 
         Interact(session)
