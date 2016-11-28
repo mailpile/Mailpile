@@ -202,18 +202,25 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
   var $iframe = $(
     '<iframe id="message-iframe-' + part_id + '" seamless' +
     // IMPORTANT: Do not allow-scripts!
-    ' sandbox="allow-same-origin' +    // Let us manipulate iframe contents
-    '          allow-top-navigation' + // Allow clickable links
-    '          allow-popups"' +        // Allow links to target=_blank
+    ' sandbox="allow-same-origin' +            // Let us manipulate contents
+    '          allow-top-navigation' +          // For mailto:
+    '          allow-popups' +                   // Allow target=_blank links
+    '          allow-popups-to-escape-sandbox"' + // Back to the normal web
     ' class="message-part-html" target="_blank" srcdoc=""></iframe>');
 
   $iframe.load(function() {
     var $contents = $iframe.contents();
 
     // Make clicked links open in new window
-    $contents.find('a').attr('target', '_blank');
-    // FIXME: What to do about mailto: links? Convert them into links to
-    //        mailpile itself? That sounds about right.
+    $contents.find('a').each(function(i, elem) {
+        if (elem.href.indexOf("mailto:") == 0) {
+            elem.href = Mailpile.API.U('/message/compose/?to=' +
+                                       elem.href.substring(7));
+        }
+        else {
+            $(elem).attr('target', '_blank');
+        }
+    });
 
     // Copy some defaults from our CSS...
     $contents.find('body').css('color', $part.css('color'))

@@ -776,25 +776,32 @@ class Email(object):
         if not self.is_editable():
             raise NotEditableError(_('Message or mailbox is read-only.'))
 
-        mbx, ptr, fd = self.get_mbox_ptr_and_fd()
-        fd.close()  # Windows needs this
+        if self.ephemeral_mid:
+            self.reset_caches(clear_parse_cache=False,
+                              msg_parsed=newmsg,
+                              msg_parsed_pgpmime=newmsg,
+                              msg_info=self.msg_info)
 
-        # OK, adding to the mailbox worked
-        newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
-        self.update_parse_cache(newmsg)
+        else:
+            mbx, ptr, fd = self.get_mbox_ptr_and_fd()
+            fd.close()  # Windows needs this
 
-        # Remove the old message...
-        mbx.remove_by_ptr(ptr)
+            # OK, adding to the mailbox worked
+            newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
+            self.update_parse_cache(newmsg)
 
-        # FIXME: We should DELETE the old version from the index first.
+            # Remove the old message...
+            mbx.remove_by_ptr(ptr)
 
-        # Update the in-memory-index
-        mi = self.get_msg_info()
-        mi[self.index.MSG_PTRS] = newptr
-        self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
-        self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+            # FIXME: We should DELETE the old version from the index first.
 
-        self.reset_caches(clear_parse_cache=False)
+            # Update the in-memory-index
+            mi = self.get_msg_info()
+            mi[self.index.MSG_PTRS] = newptr
+            self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
+            self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+            self.reset_caches(clear_parse_cache=False)
+
         return self
 
     def reset_caches(self,

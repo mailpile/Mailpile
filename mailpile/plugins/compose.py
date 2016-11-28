@@ -117,7 +117,7 @@ def AddComposeMethods(cls):
             msgid = '<%s>' % msgid.replace('_', '@')
             etype = etype.lower()
 
-            enc_msgid = idx.encode_msg_id(msgid)
+            enc_msgid = idx._encode_msg_id(msgid)
             msg_idx = idx.MSGIDS.get(enc_msgid)
             if msg_idx is not None:
                 # Already actualized, just return a normal Email
@@ -318,8 +318,8 @@ class Compose(CompositionCommand):
     """Create a new blank e-mail for editing"""
     SYNOPSIS = ('C', 'compose', 'message/compose', "[ephemeral]")
     ORDER = ('Composing', 0)
-    HTTP_CALLABLE = ('POST', )
-    HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA, {
+    HTTP_CALLABLE = ('POST', 'GET')
+    HTTP_QUERY_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA, {
         'cid': 'canned response metadata-ID',
     })
 
@@ -338,7 +338,7 @@ class Compose(CompositionCommand):
             local_id, lmbox = session.config.open_local_mailbox(session)
         else:
             local_id, lmbox = -1, None
-            ephemeral = ['new-%s-mail' % msgid[1:-1].replace('@', '_')]
+            ephemeral = ['new-E-%s-mail' % msgid[1:-1].replace('@', '_')]
         profiles = session.config.vcards.find_vcards([], kinds=['profile'])
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
@@ -354,8 +354,11 @@ class Compose(CompositionCommand):
             return self._error(_('Please use update for editing messages'))
 
         session, idx = self.session, self._idx()
-        ephemeral = (self.args and "ephemeral" in self.args)
         cid = self.data.get('cid', [None])[0]
+
+        ephemeral = (self.args and "ephemeral" in self.args)
+        if self.data.get('_method', None) != 'POST':
+            ephemeral = True
 
         email, ephemeral = self.CreateMessage(idx, session, self._new_msgid(),
                                               cid=cid,
@@ -552,6 +555,10 @@ class Reply(RelativeCompose):
                 else:
                     break
 
+        # Make sure GET does not change backend state
+        if self.data.get('_method', None) != 'POST':
+            ephemeral = True
+
         refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
             try:
@@ -653,6 +660,10 @@ class Forward(RelativeCompose):
                     ephemeral = args.pop(0) or True
                 else:
                     break
+
+        # Make sure GET does not change backend state
+        if self.data.get('_method', None) != 'POST':
+            ephemeral = True
 
         if ephemeral and with_atts:
             raise UsageError(_('Sorry, ephemeral messages cannot have '
