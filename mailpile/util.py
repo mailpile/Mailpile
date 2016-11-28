@@ -3,16 +3,18 @@
 # Misc. utility functions for Mailpile.
 #
 import cgi
+import ctypes
 import datetime
 import hashlib
 import inspect
 import locale
+import os
+import platform
 import random
 import re
-import subprocess
-import os
-import sys
 import string
+import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -740,6 +742,19 @@ def backup_file(filename, backups=5, min_age_delta=0):
                     os.remove(nbf)
                 os.rename(bf, nbf)
         os.rename(filename, '%s.1' % filename)
+
+
+# Thanks to:
+# https://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python
+def get_free_disk_bytes(dirname):
+    """Return folder/drive free space in bytes"""
+    if platform.system().lower().startswith('win'):
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(dirname), None, None, ctypes.pointer(free_bytes))
+        return free_bytes.value
+    else:
+        st = os.statvfs(dirname)
+        return st.f_bavail * st.f_frsize
 
 
 def json_helper(obj):
