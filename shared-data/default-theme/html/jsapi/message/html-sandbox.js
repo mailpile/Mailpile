@@ -197,16 +197,24 @@ Mailpile.Message.SetHTMLPolicy = function(mid, old_policy, new_policy) {
 
 
 Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
-  var $wrapper = $('<div/>');
-  var $iframe = $(
-    '<iframe id="message-iframe-' + part_id + '" seamless' +
-    // IMPORTANT: Do not allow-scripts!
-    ' sandbox="allow-same-origin' +            // Let us manipulate contents
-    '          allow-top-navigation' +          // For mailto:
-    '          allow-popups' +                   // Allow target=_blank links
-    '          allow-popups-to-escape-sandbox"' + // Back to the normal web
+
+  var $iframe_html = (
+    '<iframe id="message-iframe-' + part_id + '" seamless');
+{% if config.prefs.html5_sandbox %}
+  // This is the sandbox. It has issues, the browsers are still developing
+  // this feature at their end!  We could disable it and rely on DOMPurify
+  // entirely...
+  $iframe_html += (                        // IMPORTANT: Do not allow-scripts!
+    ' sandbox="allow-same-origin' +        // Let us manipulate contents
+    '          allow-top-navigation' +     // For mailto:
+    '          allow-popups' +             // Allow target=_blank links
+    '          allow-popups-to-escape-sandbox"'); // Back to the normal web
+{% endif %}
+  $iframe_html += (
     ' class="message-part-html" target="_blank" srcdoc=""></iframe>');
 
+  var $wrapper = $('<div/>');
+  var $iframe = $($iframe_html);
   $iframe.load(function() {
     var $contents = $iframe.contents();
 
