@@ -4,10 +4,9 @@
 Mailpile.Message.ShowHTMLLegacy = function(mid, $old_message_body, html_data) {
   // Inject iframe
   $old_message_body.append(
-    '<iframe id="message-iframe-' + mid +
-    '" class="message-part-html" sandbox="allow-same-origin ' +
-    'allow-popups allow-top-navigation" ' +
-    'seamless target="_blank" srcdoc=""></iframe>');
+    '<iframe id="message-iframe-' + mid + '" class="message-part-html"' +
+    ' sandbox="allow-top-navigation allow-popups allow-popups-to-escape-sandbox"' +
+    ' seamless target="_blank" srcdoc=""></iframe>');
 
   // Add html parts
   var html_parts = '';

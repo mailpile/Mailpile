@@ -11,7 +11,7 @@
       {% for part in message.html_parts %}
       {% if part.data %}
       Yay, I am some part.data: {{part.data}}
-      <iframe class="message-part-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data}}"></iframe>
+      <iframe class="message-part-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-popups allow-popups-to-escape-sandbox allow-top-navigation" seamless target="_blank" srcdoc="{{part.data}}"></iframe>
       {% else %}
       <div class="message-part-text"><em>{{_("Message content is empty")}}</em></div>
       {% endif %}
