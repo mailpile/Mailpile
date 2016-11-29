@@ -91,13 +91,11 @@
     {%- set _url = '' %}
   {%- endif -%}
   {%- if _url -%}
-    <div class="right">
-      <a class='browse-item-settings link-detail auto-modal auto-modal-reload right'
+    <a class='browse-item-settings link-detail auto-modal auto-modal-reload'
          data-icon="icon-settings"
          href="{{ U(_url) }}" title='{{_("Settings")}}: {{info.display_name}}'>
         <span class='{{_icon}}'></span>
-      </a>
-    </div>
+    </a>
   {%- endif -%}
 {%- endmacro -%}
 
@@ -132,33 +130,35 @@
     {%- for info in result.entries|selectattr(attr) %}
       {%- if loop.first %}
         {%- do loops.append(info.display_name) %}
-        <div class='{{ attr }} container rectangles-container center'>
+        <div class='{{ attr }} container center'>
           <div style="display: inline-block">
             <h2><span class='icon-{{ icn }}'></span> {{ titl }}</h2>
           </div>
           <div style="display: inline-block; margin: 25px;">{{ help(attr) }}</div>
           <div class="clearfix"></div>
+          <table width='100%'>
       {%- endif %}
-          <div class="rectangles-outer">
-            <div class="rectangles-inner">
+            <tr>
               {%- set _url = browse_url(attr, info) %}
-              <a class="browse-item-icon left" {%- if link %} href="{{ _url }}"{% endif %}>
-                {{ box_icon(attr, info, icn) }} &nbsp;
-              </a>
+              <td>
+                <a class="browse-item-icon" {%- if link %} href="{{ _url }}"{% endif %}>
+                  {{ box_icon(attr, info, icn) }}
+                </a>
   {#          <input type="checkbox" class="browse-item-checkbox right"> #}
-              {{ settings(attr, info) }}
-              <div style='display: absolute; overflow: hidden; margin: 0; padding: 0;'>
+                {{ settings(attr, info) }}
+              </td>
+              <td>
                 <a class="browse-item-name" title='{{ info.display_path }}'
                    {%- if link %} href="{{ _url }}"{% endif %}>
                   {{ info.display_name }}
                 </a>
-                <br><span style='position: absolute'>
-                  {{ details(attr, info) }}
-                </span>
-              </div>
-            </div>
-          </div>
+              </td>
+              <td>
+                {{ details(attr, info) }}
+              </td>
+            </tr>
       {%- if loop.last %}
+          </table>
         </div>
       {%- endif %}
     {%- endfor %}
