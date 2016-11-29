@@ -1,4 +1,4 @@
-FROM ubuntu:16.10
+FROM ubuntu:14.04
 
 # Install dependencies
 RUN apt-get update -y && \
