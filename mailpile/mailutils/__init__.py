@@ -499,8 +499,9 @@ class Email(object):
                 att = copy.deepcopy(att)
                 att.signature_info = SignatureInfo(parent=msi)
                 att.encryption_info = EncryptionInfo(parent=mei)
-                if att.get('content-id') is None:
-                    att.add_header('Content-Id', MakeContentID())
+# Disabled for now.
+#               if att.get('content-id') is None:
+#                   att.add_header('Content-Id', MakeContentID())
                 msg.attach(att)
                 del att['MIME-Version']
 
@@ -677,7 +678,8 @@ class Email(object):
             att = MIMEBase(maintype, subtype)
             att.set_payload(data)
             encoders.encode_base64(att)
-        att.add_header('Content-Id', MakeContentID())
+# Disabled for now.
+#       att.add_header('Content-Id', MakeContentID())
 
         # FS paths are strings of bytes, should be represented as utf-8 for
         # correct header encoding.
