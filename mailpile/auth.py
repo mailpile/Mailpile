@@ -119,6 +119,13 @@ class Authenticate(Command):
 
     def _do_redirect(self):
         path = self.data.get('_path', [None])[0]
+
+        # These are here to prevent people from abusing this to redirect to
+        # arbitrary URLs on the Internet.
+        assert('://' not in path)          # https://, http://, ftp://, ...
+        assert(path[:2] != '//')           # //www.example.com/
+        assert('/' in path.split(':')[0])  # mailto:user@example.com
+
         if (path and
                not path[1:].startswith(DeAuthenticate.SYNOPSIS[2] or '!') and
                not path[1:].startswith(self.SYNOPSIS[2] or '!')):

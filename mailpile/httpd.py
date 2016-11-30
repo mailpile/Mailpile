@@ -79,6 +79,18 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     ])
 
     _ERROR_CONTEXT = {'lastq': '', 'csrf': '', 'path': ''},
+    _NEWLINE_RE = re.compile('[\r\n]+')
+    _HTML_RE = re.compile('[<>\'\"]+')
+
+    def assert_no_newline(self, data):
+        assert(re.search(self._NEWLINE_RE, data) is None)
+
+    def assert_no_html(self, data):
+        assert(re.search(self._HTML_RE, data) is None)
+
+    def send_header(self, hdr, value):
+        self.assert_no_newline(value)
+        return SimpleXMLRPCRequestHandler.send_header(self, hdr, value)
 
     def http_host(self):
         """Return the current server host, e.g. 'localhost'"""
@@ -104,6 +116,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         session_id = self._load_cookies().get(self.server.session_cookie)
         if session_id:
             session_id = session_id.value
+            self.assert_no_newline(session_id)
         else:
             session_id = self.server.make_session_id(self)
         return session_id
@@ -120,9 +133,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def send_http_response(self, code, msg):
         """Send the HTTP response header"""
-        self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+        msg = '%s %s' % (code, msg)
+        self.assert_no_newline(msg)
+        self.wfile.write('HTTP/1.1 %s\r\n' % msg)
 
     def send_http_redirect(self, destination):
+        # We don't re-encode things here, we expect our input to already
+        # be well formed. However, this is the last chance to block any
+        # exploits, so we do check to make sure.
+        self.assert_no_newline(destination)
+        self.assert_no_html(destination)
         self.send_http_response(302, 'Found')
         self.wfile.write(('Location: %s\r\n\r\n'
                           '<h1><a href="%s">Please look here!</a></h1>\n'
