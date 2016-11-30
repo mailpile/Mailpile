@@ -778,15 +778,6 @@ class PluginManager(object):
         return [elem for elem in self.UI_ELEMENTS[ui_type]
                 if context in elem['context']]
 
-    ##[ Pluggable Hooks ]####################################################
-
-    INCOMING_EMAIL = {}
-
-    @staticmethod
-    def trigger(hook, **kwargs):
-        for func in hook.values():
-            func(**kwargs)
-
 
 ##[ Backwards compatibility ]################################################
 

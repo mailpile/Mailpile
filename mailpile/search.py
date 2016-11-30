@@ -605,9 +605,6 @@ class MailIndex(BaseIndex):
             last_date = long(msg_info[self.MSG_DATE], 36)
             added += 1
 
-        PluginManager.trigger(
-            PluginManager.INCOMING_EMAIL, session=session, message=msg)
-
         progress['added'] = progress.get('added', 0) + added
         progress['updated'] = progress.get('updated', 0) + updated
         return last_date, added, updated
@@ -1244,7 +1241,7 @@ class MailIndex(BaseIndex):
 
         for extract in _plugins.get_meta_kw_extractors():
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
-                                    body_info=body_info))
+                                    body_info=body_info, session=session))
 
         if snippet_text.strip() != '':
             body_info['snippet'] = self.clean_snippet(snippet_text[:1024])

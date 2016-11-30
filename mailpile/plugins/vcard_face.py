@@ -14,7 +14,7 @@ class FaceImporter(VCardImporter):
     """
     Get avatar from Face header.
     """
-    HOOKS = ['INCOMING_EMAIL']
+    HOOKS = ['META_KW_EXTRACTORS']
     FORMAT_NAME = 'Face'
     FORMAT_DESCRIPTION = _('Get avatar from Face header.')
     SHORT_NAME = 'face'
@@ -27,9 +27,9 @@ class FaceImporter(VCardImporter):
     def __init__(self):
         pass
 
-    def __call__(self, **kwargs):
-        session = kwargs['session']
-        message = kwargs['message']
+    def __call__(
+            self, mail_idx, msg_mid, message, msg_size, msg_ts,
+            session=None, **kwargs):
         email = safe_decode_hdr(msg=message, name='from')
         configs = session.config.prefs.vcard.importers[self.SHORT_NAME]
 
@@ -40,7 +40,7 @@ class FaceImporter(VCardImporter):
                 warnings.warn(
                     email + "'s face header exceeds the maximum size. "
                     "See the spec: http://quimby.gnus.org/circus/face/")
-                return
+                return []
 
             vcard = MailpileVCard(
                 VCardLine(name=self.VCARD_TS, value=int(time.time())),
@@ -54,6 +54,9 @@ class FaceImporter(VCardImporter):
                 if config:
                     self.config = config
                     self.merge_or_create_vcard(session, session.config.vcards, vcard)
+
+        # Return no keywords.
+        return []
 
 
 _plugins.register_vcard_importers(FaceImporter())
