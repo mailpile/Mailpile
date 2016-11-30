@@ -1,4 +1,24 @@
 #
+# NOTE: THIS CODE IS NOT BEING USED - YET.
+#       IT IS HERE TO FACILITATE REVIEW, COMMENTS AND EXPERIMENTS.
+#
+# FIXME:  Respond to following comment from Kai Michaelis
+#
+#    The dictionaries in records.py completely lack any message
+#    authentication and thus are vulnerable. The cryptographic checksums
+#    of the plaintext do not prevent this. The comments mention that this
+#    is intentional to limit destruction in case of bit flips. This is
+#    misguided in two ways. First, it's the responsibility of the file
+#    system and transport protocol to prevent these and second,
+#    cryptographic checksums are not designed for error detecting or
+#    correction.
+#    ...
+#    To derive keys for multiple shards in a EncryptedDictionary use a
+#    proper KDF like HKDF [2] or a CPRNG like those defined in NIST
+#    SP800-90a rev1 [3] (except Dual_EC DRBG :wink:).
+#
+#    Full discussion here: https://github.com/mailpile/Mailpile/pull/1684
+#
 # FIXME:  We've switched from AES-CBC to AES-CTR. We should review the
 #         IV logic and make sure it is still sane given the different
 #         properties of the underlying algorithms.
