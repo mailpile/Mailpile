@@ -478,11 +478,6 @@ class MimeSigningWrapper(MimeWrapper):
                                              clearsign=True,
                                              armor=True)
             if status == 0:
-                if self.use_html_wrapper is True:
-                    sig = self._wrap_sig_in_html(sig)
-                elif self.use_html_wrapper:
-                    sig = self.use_html_wrapper(sig)
-
                 _update_text_payload(prefer_inline, sig)
                 self._update_crypto_status(prefer_inline)
                 return msg
