@@ -34,27 +34,44 @@ def _lockdown(config):
     return 1
 
 
+def in_disk_lockdown(config):
+    # If we've dropped below 50% of our target free space, we stop
+    # almost all operations and go into lockdown. This makes the
+    # Mailpile effectively read-only, which should be safe without
+    # being totally useless.
+    if config.need_more_disk_space(ratio=0.5):
+        return _('Insufficient free disk space')
+    return False
+
+
 def _lockdown_minimal(config):
     if _lockdown(config) != 0:
         return _('In lockdown, doing nothing.')
     return False
 
 
-def _lockdown_basic(config):
+def _lockdown_config(config):
+    # This is just like lockdown_basic, except we allow the user to
+    # change the config so they can adjust the minimum free disk space
+    # requirement if it was accidentally made too strict.
     if _lockdown(config) > 0:
         return _('In lockdown, doing nothing.')
     return False
 
 
+def _lockdown_basic(config):
+    return _lockdown_config(config) or in_disk_lockdown(config)
+
+
 def _lockdown_strict(config):
     if _lockdown(config) > 1:
         return _('In lockdown, doing nothing.')
-    return False
+    return in_disk_lockdown(config)
 
 
 CC_ACCESS_FILESYSTEM  = [_lockdown_minimal]
 CC_BROWSE_FILESYSTEM  = [_lockdown_basic]
-CC_CHANGE_CONFIG      = [_lockdown_basic]
+CC_CHANGE_CONFIG      = [_lockdown_config]
 CC_CHANGE_CONTACTS    = [_lockdown_basic]
 CC_CHANGE_GNUPG       = [_lockdown_basic]
 CC_CHANGE_FILTERS     = [_lockdown_strict]

@@ -198,6 +198,11 @@ class BaseMailSource(threading.Thread):
             return mbx.path
 
     def _check_interrupt(self, log=True, clear=True):
+        if not self._interrupt:
+            full_path = self.session.config.need_more_disk_space()
+            if full_path is not None:
+                self._interrupt = _('Insufficient free space in %s'
+                                    ) % full_path
         if (mailpile.util.QUITTING or
                 self._interrupt or
                 not self.my_config.enabled):

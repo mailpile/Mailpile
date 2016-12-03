@@ -312,3 +312,13 @@ EventLog.subscribe('.*compose.Sendit', function(ev) {
   }
   Mailpile.notification(ev);
 });
+EventLog.subscribe('.*HealthCheck', function(ev) {
+  if (ev.data.healthy) {
+    ev.icon = 'icon-checkmark';
+  }
+  else {
+    ev.icon = 'icon-signature-unknown';
+    ev.timeout = 120000;
+  }
+  Mailpile.notification(ev);
+});

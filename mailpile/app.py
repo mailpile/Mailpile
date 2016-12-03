@@ -12,7 +12,8 @@ from mailpile.conn_brokers import DisableUnbrokeredConnections
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.plugins.core import Help, HelpSplash, Load, Rescan, Quit
+from mailpile.plugins.core import Help, HelpSplash, HealthCheck
+from mailpile.plugins.core import Load, Rescan, Quit
 from mailpile.plugins.motd import MessageOfTheDay
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
@@ -188,6 +189,7 @@ def Main(args):
             if config.sys.debug:
                 session.ui.error(_('Failed to decrypt configuration, '
                                    'please log in!'))
+        HealthCheck(session, None, []).run()
         config.prepare_workers(session)
     except AccessError, e:
         session.ui.error('Access denied: %s\n' % e)

@@ -1109,6 +1109,15 @@ class ConfigManager(ConfigDict):
             os.mkdir(d)
         return d
 
+    def need_more_disk_space(self, required=0, nodefault=False, ratio=1.0):
+        """Returns a path where we need more disk space, None if all is ok."""
+        if not (nodefault and required):
+            required = ratio * max(required, self.sys.minfree_mb * 1024 * 1024)
+        for path in (self.workdir, ):
+           if get_free_disk_bytes(path) < required:
+               return path
+        return None
+
     def interruptable_wait_for_lock(self):
         # This construct allows the user to CTRL-C out of things.
         delay = 0.01
@@ -1285,13 +1294,16 @@ class ConfigManager(ConfigDict):
                                         refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
+            from mailpile.plugins.core import HealthCheck
             def optimizer():
-                config.scan_worker.add_unique_task(
-                    config.background, 'gpl_optimize',
-                    lambda: GlobalPostingList.Optimize(config.background,
-                                                       config.index,
-                                                       lazy=True,
-                                                       ratio=0.25, runtime=15))
+                if HealthCheck.check(config.background, config):
+                    config.scan_worker.add_unique_task(
+                        config.background, 'gpl_optimize',
+                        lambda: GlobalPostingList.Optimize(config.background,
+                                                           config.index,
+                                                           lazy=True,
+                                                           ratio=0.25,
+                                                           runtime=15))
             config.cron_worker.add_task('gpl_optimize', 30, optimizer)
 
             # Schedule plugin jobs

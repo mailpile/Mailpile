@@ -31,6 +31,7 @@ CONFIG_RULES = {
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
         'fd_cache_size': p(_('Max files kept open at once'), int,         500),
+        'minfree_mb':    p(_('Required free disk space (MB)'), int,      1024),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_host':     p(_('Listening host for web UI'),
                            'hostname', 'localhost'),
