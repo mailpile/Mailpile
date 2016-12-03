@@ -122,8 +122,9 @@ class Authenticate(Command):
 
         # These are here to prevent people from abusing this to redirect to
         # arbitrary URLs on the Internet.
-        url = urlparse(path)
-        assert(not url.scheme and not url.netloc)
+        if path:
+            url = urlparse(path)
+            assert(not url.scheme and not url.netloc)
 
         if (path and
                not path[1:].startswith(DeAuthenticate.SYNOPSIS[2] or '!') and
