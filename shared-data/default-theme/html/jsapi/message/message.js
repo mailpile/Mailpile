@@ -188,15 +188,6 @@ $(document).on('click', '.message-action-find-keys', function(e) {
 });
 
 
-/* Message - Import key from a message */
-$(document).on('click', '.message-action-import-key', function() {
-  // FIXME: This is old/unreliable modal code
-  $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
-  $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
-  $('#modal-full').modal(Mailpile.UI.modal_options);
-});
-
-
 /* Message - Crypto Feedback Actions */
 $(document).on('click', '.message-crypto-action', function() {
   Mailpile.API.crypto_gpg_keylist_secret_get({}, function(result) {

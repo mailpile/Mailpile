@@ -111,10 +111,6 @@
         <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
           <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/part:', att.count, '/') }}');"></div>
         </a>
-        {% elif type == "keys" %}
-          {%- do special_text_parts.append("pgp-key") %}
-          {#- FIXME: We should allow users to download keys, without cluttering the
-                     UI. Here we're just suppressing content which is bad. #}
         {% else %}
         <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
           <div class="preview">
@@ -154,9 +150,6 @@
       {% endif %}
       {% if not from.flags.contact and not from.flags.profile %}
       <li class="action"><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
-      {% endif %}
-      {% if metadata.body.pgp_key or "pgp-key" in special_text_parts %}
-      <li class="action"><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
       {% endif %}
     </ul>
     <ul class="message-actions horizontal right">

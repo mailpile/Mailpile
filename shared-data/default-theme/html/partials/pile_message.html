@@ -134,10 +134,11 @@
         <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment-image" title="{{filename}}" data-size="{{att.length|friendly_bytes}}" type="{{att.mimetype}}">
           <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/part:', att.count, '/') }}');"></div>
         </a>
-      {%- elif type == "keys" %}
-        {%- do special_text_parts.append("pgp-key") %}
-        {#- FIXME: We should allow users to download keys, without cluttering the
-                   UI. Here we're just suppressing content which is bad. #}
+      {#- elif type == "keys" #}
+        {#- do special_text_parts.append("pgp-key") #}
+        {#- FIXME: We should omit these (and other boring attachments), but
+                   instead add a mode that lets users easily download any part
+                   they like. Like mutt! #}
       {%- else %}
         <a href="{{ U('/message/download/=', mid, '/part:', att.count, '/') }}" class="attachment" title="{{filename}}" data-size="{{att.length|friendly_bytes}}">
           <div class="preview">
@@ -186,9 +187,6 @@
   <ul class="message-actions horizontal bottom left">
     <li class="action"><a class="message-action-reply-all" href="#"><span class="icon-reply-all"></span> {{_("Reply")}}</a></li>
     <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
-    {%- if metadata.body.pgp_key or "pgp-key" in special_text_parts %}
-    <li class="action"><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
-    {%- endif %}
   </ul>
 </div>
 <script>
