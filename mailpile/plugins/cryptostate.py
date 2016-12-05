@@ -24,9 +24,16 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
         if part.encryption_info.get('status') != 'none':
             enc.add('mp_%s-%s' % ('enc', part.encryption_info['status']))
             kw.add('crypto:has')
+            kw.add('encryption:has')
+
         if part.signature_info.get('status') != 'none':
             sig.add('mp_%s-%s' % ('sig', part.signature_info['status']))
             kw.add('crypto:has')
+            kw.add('signature:has')
+            keyinfo = part.signature_info.get('keyinfo')
+            if keyinfo:
+                kw.add('%s:sig' % keyinfo[-16:].lower())
+
         if 'cryptostate' in index.config.sys.debug:
             print 'part status(=%s): enc=%s sig=%s' % (msg_mid,
                 part.encryption_info.get('status'),
