@@ -31,7 +31,8 @@
             title="{{ encryption.text }}"
             data-crypto_color="{{ encryption.color }}"
             data-crypto_icon="{{ encryption.icon }}"
-            data-crypto_message="{{ encryption.message }}">
+            data-crypto_message="{{ encryption.message }}"
+            data-crypto_keyinfo="{{ part_encryption.keyinfo }}">
         <span class="icon {{ encryption.color }} {{ encryption.icon }}"></span>
         <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
       </span>
@@ -45,7 +46,8 @@
             title="{{ signature.text }}"
             data-crypto_color="{{ signature.color }}"
             data-crypto_icon="{{ signature.icon }}"
-            data-crypto_message="{{ signature.message }}">
+            data-crypto_message="{{ signature.message }}"
+            data-crypto_keyinfo="{{ part_signature.keyinfo }}">
         <span class="icon {{ signature.color + ' ' + signature.icon }}"></span>
         <span class="text {{ signature.color }}">{{ signature.text }}</span>
       </span>

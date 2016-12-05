@@ -5,12 +5,18 @@ Mailpile.Message.Tooltips.Crypto = function($content) {
     content: {
       title: false,
       text: function(event, api) {
-        var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">\
-            <span class="' + $(this).data('crypto_icon') + '"></span>' + $(this).attr('title') + '\
-          </h4>\
-          <p>' + $(this).data('crypto_message') + '</p>\
-          </div>';
+        var keyinfo = $(this).data('crypto_keyinfo');
+        var html = ('<div>' +
+          '<h4 class="' + $(this).data('crypto_color') + '">' +
+          '  <span class="' + $(this).data('crypto_icon') + '"></span>' +
+             $(this).attr('title') +
+          '</h4>');
+        html += '<p>' + $(this).data('crypto_message') + '</p>';
+        if (keyinfo) {
+          keyinfo = keyinfo.substring(keyinfo.length - 16);
+          html += '<p><a href="javascript:Mailpile.UI.Modals.CryptoFindKeys({query: \'' + keyinfo + '\'})"><small>KEY ID: ' + keyinfo + '</small></a></p>';
+        }
+        html += '</div>';
         return html;
       }
     },
