@@ -692,11 +692,11 @@ class RawHttpResponder:
         filename = attributes.get('filename', 'attachment.dat'
                                   ).replace('"', '')
         disposition = attributes.get('disposition', 'attachment')
-        length = attributes['length']
+        length = attributes.get('length')
         request.send_http_response(200, 'OK')
-        headers = [
-            ('Content-Length', length),
-        ]
+        headers = []
+        if length is not None:
+            headers.append(('Content-Length', '%s' % length))
         if disposition and filename:
             encfilename = urllib.quote(filename.encode("utf-8"))
             headers.append(('Content-Disposition',

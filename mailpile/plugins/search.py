@@ -12,6 +12,7 @@ from mailpile.mailutils import Email, FormatMbxId, AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
+from mailpile.security import evaluate_signature_key_trust
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
@@ -313,6 +314,7 @@ class SearchResults(dict):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
         email.evaluate_pgp(tree, decrypt=True)
+        evaluate_signature_key_trust(self.session.config, email, tree)
 
         editing_strings = tree.get('editing_strings')
         if editing_strings:

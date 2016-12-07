@@ -961,6 +961,9 @@ class Email(object):
             raw = ' '.join(self.get_msg().get_all(field, default))
             return safe_decode_hdr(hdr=raw) or raw
 
+    def get_sender(self):
+        return AddressHeaderParser(unicode_data=self.get('from'))[0].address
+
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded
         msg_mid = self.get_msg_info(self.index.MSG_MID)
@@ -1464,8 +1467,7 @@ class Email(object):
     }
 
     def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
-                                 crypto_state_feedback=True,
-                                 event=None):
+                                 crypto_state_feedback=True, event=None):
         if 'text_parts' not in tree:
             return tree
 

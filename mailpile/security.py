@@ -343,6 +343,95 @@ def tls_wrap_socket(org_wrap, *args, **kwargs):
     return org_wrap(*args, **kwargs)
 
 
+##[ Key Trust ]#############################################################
+
+def evaluate_signature_key_trust(config, email, tree):
+    """
+    This uses historic data from the search engine to refine and expand
+    upon the states we get back from GnuPG.
+
+    The new potential signature states are:
+
+      unsigned  We expected a signature from this sender but found none
+      changed   The signature was made with a key we've rarely seen before
+      signed    The signature was made with a key we've often seen before
+
+    The first state depends on the user's ratio of signed to unsigned
+    messages, the second two depend on how frequently we've seen a given
+    key used for signatures vs. the total number of signatures.
+
+    These states will supercede the states we get from GnuPG like so:
+
+      * `none` becomes `unsigned`
+      * `unknown` or `unverified` may become `changed`
+      * `unverified` may become `signed`
+
+    The constants used in this algorithm can be found and tweaked in the
+    `prefs.key_trust` section of the configuration file.
+    """
+    days = config.prefs.key_trust.window_days
+    msgts = long(email.get_msg_info(config.index.MSG_DATE), 36)
+    scope = ['dates:%d..%d' % (msgts - (days * 24 * 3600), msgts),
+             'from:%s' % email.get_sender()]
+
+    messages_per_key = {}
+    def count(name, terms):
+        if name not in messages_per_key:
+            msgs = config.index.search(config.background, scope + terms)
+            messages_per_key[name] = len(msgs)
+        return messages_per_key[name]
+
+    signed = lambda: count('signed', ['has:signature'])
+    if signed() < config.prefs.key_trust.threshold:
+        return
+
+    total = lambda: count('total', [])
+    swr = config.prefs.key_trust.sig_warn_pct / 100.0
+    ktr = config.prefs.key_trust.key_trust_pct / 100.0
+    knr = config.prefs.key_trust.key_new_pct / 100.0
+
+    def update_siginfo(si):
+        stat = si["status"]
+        keyid = si.get('keyinfo', '')[-16:].lower()
+
+        # Unsigned message: if the ratio of total signed messages is
+        # above config.prefs.sig_warn_pct percent, we EXPECT signatures
+        # and warn the user if they're not present.
+        if (stat == 'none') and (signed() > swr * total()):
+            si["status"] = 'unsigned'
+
+        # Signed by unverified key: Signal that we trust this key if
+        # this is the key we've seen most of the time for this user.
+        # This is TOFU-ish.
+        elif (keyid and
+                ('unverified' in stat) and
+                (count(keyid, ['sig:%s' % keyid]) > ktr * signed())):
+            si["status"] = stat.replace('unverified', 'signed')
+
+        # Signed by a key we have seen very rarely for this user. Gently
+        # warn the user that something unsual is going on.
+        elif (keyid and
+                ('unverified' in stat or 'unknown' in stat) and
+                (count(keyid, ['sig:%s' % keyid]) < knr * signed())):
+            changed = "mixed-changed" if ("mixed" in stat) else "changed"
+            si["status"] = changed
+
+        # FIXME: Compare email timestamp with the signature timestamp.
+        #        If they differ by a great deal, treat the signature as
+        # invalid? This would make it much harder to copy old signed
+        # content (undetected) into new messages.
+
+    if 'crypto' in tree:
+        update_siginfo(tree['crypto']['signature'])
+
+    for skey in ('text_parts', 'html_parts', 'attachments'):
+        for i, part in enumerate(tree[skey]):
+            if 'crypto' in part:
+                update_siginfo(part['crypto']['signature'])
+
+    return tree
+
+
 ##[ Setup ]#################################################################
 
 if __name__ != "__main__":

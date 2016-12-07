@@ -293,18 +293,32 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-signature-none",
             _("Not Signed"),
-            _("This data has no digital signature, which means it could "
-              "have come from anyone, not necessarily the real sender")],
+            _("This data has no digital signature, which means it could have"
+              " come from anyone, not necessarily the apparent sender")],
         "error": [
             "crypto-color-red",
-            "icon-signature-error",
+            "icon-signature-invalid",
             _("Error"),
             _("There was a weird error with this digital signature")],
         "mixed-error": [
             "crypto-color-red",
-            "icon-signature-error",
+            "icon-signature-invalid",
             _("Mixed Error"),
             _("Parts of this message have a signature with a weird error")],
+        "unsigned": [
+            "crypto-color-red",
+            "icon-signature-unknown",
+            _("Unsigned"),
+            _("This data has no digital signature, which means it could "
+              "easily have been forged. This sender usually signs their "
+              "messages, so be careful!")],
+        "mixed-unsigned": [
+            "crypto-color-red",
+            "icon-signature-unknown",
+            _("Mixed Unsigned"),
+            _("This message has no digital signature, which means it could "
+              "easily have been forged. This sender usually signs their "
+              "messages, so be careful!")],
         "invalid": [
             "crypto-color-red",
             "icon-signature-invalid",
@@ -320,14 +334,14 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-revoked",
             _("Revoked"),
-            _("Watch out, the digital signature was made with a key that has been "
-              "revoked - this is not a good thing")],
+            _("Watch out, the digital signature was made with a key that has"
+              " been revoked - this is not a good thing")],
         "mixed-revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Mixed Revoked"),
-            _("Watch out, parts of this message were digitally signed with a key "
-              "that has been revoked")],
+            _("Watch out, parts of this message were digitally signed with a"
+              " key that has been revoked")],
         "expired": [
             "crypto-color-orange",
             "icon-signature-expired",
@@ -343,25 +357,49 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-signature-unknown",
             _("Unknown"),
-            _("The digital signature was made with an unknown key, so we can not "
-              "verify it")],
+            _("The digital signature was made with an unknown key, so we can"
+              " not verify it")],
         "mixed-unknown": [
             "crypto-color-gray",
             "icon-signature-unknown",
             _("Mixed Unknown"),
-            _("Parts of this message have a signature made with an unknown "
-              "key which we can not verify")],
+            _("Parts of this message have a signature made with an unknown"
+              " key which we can not verify")],
+        "changed": [
+            "crypto-color-orange",
+            "icon-signature-unknown",
+            _("Changed"),
+            _("The digital signature was made with an unexpected key."
+              " Be careful!")],
+        "mixed-changed": [
+            "crypto-color-orange",
+            "icon-signature-unknown",
+            _("Mixed Changed"),
+            _("Parts of this message have a digital signature that was made"
+              " with an unexpected key. Be careful!")],
         "unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Unverified"),
-            _("The signature was good but it came from a key that is not "
-              "verified yet")],
+            _("The signature was good but it came from a key that is not"
+              " verified yet")],
         "mixed-unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Mixed Unverified"),
             _("Parts of this message have an unverified signature")],
+        "signed": [
+            "crypto-color-green",
+            "icon-signature-verified",
+            _("Signed"),
+            _("The digital signature is valid and was made with a key we have"
+              " seen before. Looks good!")],
+        "mixed-signed": [
+            "crypto-color-blue",
+            "icon-signature-verified",
+            _("Mixed Signed"),
+            _("Parts of the message have a good digital signature, made with"
+              " a key we have seen before.")],
         "verified": [
             "crypto-color-green",
             "icon-signature-verified",
