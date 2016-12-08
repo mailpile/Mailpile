@@ -284,14 +284,26 @@ class ConfigManager(ConfigDict):
         keydata = []
 
         if passphrase.is_set():
+            with open(self.conf_key, 'rb') as fd:
+                hdrs = dict(l.split(': ', 1) for l in fd if ': ' in l)
+                salt = hdrs.get('Salt', '').strip()
+                kdfp = hdrs.get('KDF', '').strip() or None
+
+            if kdfp:
+                kdf, params = kdfp.split(' ', 1)
+                kdfp = {}
+                kdfp[kdf] = json.loads(params)
+
             parser = lambda d: keydata.extend(d)
-            try:
-                with open(self.conf_key, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, parser, self,
-                                            newlines=True,
-                                            passphrase=passphrase)
-            except IOError:
-                keydata = []
+            for (method, sps) in passphrase.stretches(salt, params=kdfp):
+                try:
+                    with open(self.conf_key, 'rb') as fd:
+                        decrypt_and_parse_lines(fd, parser, self,
+                                                newlines=True,
+                                                passphrase=sps)
+                    break
+                except IOError:
+                    keydata = []
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
@@ -471,10 +483,20 @@ class ConfigManager(ConfigDict):
             # Without recipients or a passphrase, we cannot save!
             return False
 
+        if not tokeys:
+            salt = b64w(os.urandom(32).encode('base64'))
+        else:
+            salt = ''
+
         # FIXME: Create event and capture GnuPG state?
-        status, encrypted_key = GnuPG(self).encrypt(self.master_key,
-                                                    tokeys=tokeys)
+        mps = master_passphrase.stretched(salt)
+        gpg = GnuPG(self, passphrase=mps)
+        status, encrypted_key = gpg.encrypt(self.master_key, tokeys=tokeys)
         if status == 0:
+            if salt:
+                h, b = encrypted_key.replace('\r', '').split('\n\n', 1)
+                encrypted_key = ('%s\nSalt: %s\nKDF: %s\n\n%s'
+                    % (h, salt, mps.is_stretched or 'None', b))
             try:
                 with open(keyfile + '.new', 'wb') as fd:
                     fd.write(encrypted_key)

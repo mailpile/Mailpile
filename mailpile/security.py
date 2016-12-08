@@ -7,6 +7,7 @@ review and testing.
 
 """
 import copy
+import json
 import ssl
 import time
 
@@ -198,6 +199,54 @@ def valid_csrf_token(req, session_id, csrf_token):
 
 ##[ Secure-ish handling of passphrases ]#####################################
 
+Scrypt = PBKDF2HMAC = None
+try:
+    # Depending on whether Cryptography is installed (and which version),
+    # this may all fail, all succeed or succeed in part.
+    import cryptography.hazmat.backends
+    import cryptography.hazmat.primitives.hashes
+    from cryptography.exceptions import UnsupportedAlgorithm
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+except ImportError:
+    pass
+
+
+def stretch_with_pbkdf2(password, salt, params):
+    return b64w(PBKDF2HMAC(
+        backend=cryptography.hazmat.backends.default_backend(),
+        algorithm=cryptography.hazmat.primitives.hashes.SHA256(),
+        salt=salt,
+        iterations=int(params['iterations']),
+        length=32).derive(password).encode('base64'))
+
+
+def stretch_with_scrypt(password, salt, params):
+    return b64w(Scrypt(
+        backend=cryptography.hazmat.backends.default_backend(),
+        salt=salt,
+        n=int(params['n']),
+        r=int(params['r']),
+        p=int(params['p']),
+        length=32).derive(password).encode('base64'))
+
+
+# These are our defaults, based on recommendations found on The Internet.
+# The parameters actually used should be stored along with the output so
+# we can change them later if they're found to be too weak or flawed in
+# some other way.
+KDF_PARAMS = {
+    'pbkdf2': {
+        'iterations': 400000
+    },
+    'scrypt': {
+        'n': 2**17,
+        'r': 8,
+        'p': 1
+    }
+}
+
+
 class SecurePassphraseStorage(object):
     """
     This is slightly obfuscated in-memory storage of passphrases.
@@ -244,9 +293,11 @@ class SecurePassphraseStorage(object):
     """
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
-    def __init__(self, passphrase=None):
+    def __init__(self, passphrase=None, stretched=False):
         self.generation = 0
         self.expiration = -1
+        self.is_stretched = stretched
+        self.stretch_cache = {}
         if passphrase is not None:
             self.set_passphrase(passphrase)
         else:
@@ -260,6 +311,36 @@ class SecurePassphraseStorage(object):
 
     def is_set(self):
         return (self.data is not None)
+
+    def stretches(self, salt, params=None):
+        if self.is_stretched:
+            yield (self.is_stretched, self)
+            return
+
+        if params is None:
+            params = KDF_PARAMS
+
+        for which, name, stretch in (
+                (Scrypt, 'scrypt', stretch_with_scrypt),
+                (PBKDF2HMAC, 'pbkdf2', stretch_with_pbkdf2), ):
+            if which:
+                try:
+                    how = params[name]
+                    name += ' ' + json.dumps(how, sort_keys=True)
+                    sc_key = '%s/%s' % (name, salt)
+                    if sc_key not in self.stretch_cache:
+                        pf = intlist_to_string(self.data).encode('utf-8')
+                        self.stretch_cache[sc_key] = SecurePassphraseStorage(
+                            stretch(pf, salt, how), stretched=name)
+                    yield (name, self.stretch_cache[sc_key])
+                except (KeyError, UnsupportedAlgorithm):
+                    pass
+
+        yield ('clear', self)
+
+    def stretched(self, salt, params=None):
+        for name, stretch in self.stretches(salt, params=params):
+            return stretch
 
     def set_passphrase(self, passphrase):
         # This stores the passphrase as a list of integers, which is a

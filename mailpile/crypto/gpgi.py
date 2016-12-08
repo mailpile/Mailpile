@@ -471,7 +471,8 @@ class GnuPG:
     LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
 
     def __init__(self, config,
-                 session=None, use_agent=None, debug=False, event=None):
+                 session=None, use_agent=None, debug=False,
+                 event=None, passphrase=None):
         global DEBUG_GNUPG
         self.available = None
         self.outputfds = ["stdout", "stderr", "status"]
@@ -484,14 +485,15 @@ class GnuPG:
             self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
             self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY
             self.passphrases = self.config.passphrases
-            self.passphrase = self.passphrases['DEFAULT'].get_reader()
+            self.passphrase = (passphrase if (passphrase is not None) else
+                               self.passphrases['DEFAULT']).get_reader()
             self.use_agent = (use_agent if (use_agent is not None)
                               else self.config.prefs.gpg_use_agent)
         else:
             self.homedir = GNUPG_HOMEDIR
             self.gpgbinary = GPG_BINARY
             self.passphrases = None
-            self.passphrase = None
+            self.passphrase = passphrase
             self.use_agent = use_agent
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
