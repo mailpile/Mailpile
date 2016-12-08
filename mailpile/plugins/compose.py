@@ -351,7 +351,7 @@ class Compose(CompositionCommand):
 
     def command(self):
         if 'mid' in self.data:
-            return self._error(_('Please use update for editing messages'))
+            return self._error('Please use update for editing messages')
 
         session, idx = self.session, self._idx()
         ephemeral = (self.args and "ephemeral" in self.args)
