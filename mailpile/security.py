@@ -369,10 +369,14 @@ def evaluate_signature_key_trust(config, email, tree):
     The constants used in this algorithm can be found and tweaked in the
     `prefs.key_trust` section of the configuration file.
     """
+    sender = email.get_sender()
+    if not sender:
+        return
+
     days = config.prefs.key_trust.window_days
     msgts = long(email.get_msg_info(config.index.MSG_DATE), 36)
     scope = ['dates:%d..%d' % (msgts - (days * 24 * 3600), msgts),
-             'from:%s' % email.get_sender()]
+             'from:%s' % sender]
 
     messages_per_key = {}
     def count(name, terms):

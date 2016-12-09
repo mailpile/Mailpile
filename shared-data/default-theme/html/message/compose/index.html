@@ -1,3 +1,8 @@
+{% set redirected = [] %}
 {% for m in result.messages %}
     {{ mailpile('http/redirect/url_edit', m.mid) }}
+    {% do redirected.append(m.mid) %}
 {% endfor %}
+{% if not redirected %}
+    {% include("message/draft/index.html") %}
+{% endif %}
