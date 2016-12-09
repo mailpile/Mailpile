@@ -111,13 +111,14 @@ clean:
 	        ChangeLog AUTHORS \
 	        .appver MANIFEST .SELF .*deps \
 	        scripts/less-compiler.mk ghostdriver.log
-	@rm -rf *.egg-info build/ mp-virtualenv/ \
+	@rm -rf *.egg-info build/ \
                mailpile/tests/data/tmp/ testing/tmp/
 	@rm -f shared-data/multipile/www/admin.cgi
 
 mrproper: clean
 	@rm -rf shared-data/locale/?? shared-data/locale/??[_@]*
 	@rm -rf dist/ bower_components/ shared-data/locale/mailpile.pot
+	@rm -rf mp-virtualenv/
 	git reset --hard && git clean -dfx
 
 sdist: clean
@@ -130,9 +131,18 @@ bdist-prep: compilemessages
 bdist:
 	@python setup.py bdist_wheel
 
-virtualenv:
+virtualenv: mp-virtualenv/bin/activate
+
+mp-virtualenv/bin/activate:
 	virtualenv -p python2 mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
+
+virtualenv-dev: virtualenv
+	rm -rf mp-virtualenv/lib/python2.7/site-packages/mailpile
+	cd mp-virtualenv/lib/python2.7/site-packages/ && ln -s ../../../../mailpile
+	rm -rf mp-virtualenv/share/mailpile
+	cd mp-virtualenv/share/ && ln -s ../../shared-data mailpile
+
 
 bower_components:
 	@bower install
