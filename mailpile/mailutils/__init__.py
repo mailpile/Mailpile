@@ -969,7 +969,11 @@ class Email(object):
             return safe_decode_hdr(hdr=raw) or raw
 
     def get_sender(self):
-        return AddressHeaderParser(unicode_data=self.get('from'))[0].address
+        try:
+            ahp = AddressHeaderParser(unicode_data=self.get('from'))
+            return ahp[0].address
+        except IndexError:
+            return None
 
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded
