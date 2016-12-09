@@ -357,7 +357,7 @@ class Compose(CompositionCommand):
         cid = self.data.get('cid', [None])[0]
 
         ephemeral = (self.args and "ephemeral" in self.args)
-        if self.data.get('_method', None) != 'POST':
+        if self.data.get('_method', 'POST') != 'POST':
             ephemeral = True
 
         email, ephemeral = self.CreateMessage(idx, session, self._new_msgid(),
@@ -555,8 +555,8 @@ class Reply(RelativeCompose):
                 else:
                     break
 
-        # Make sure GET does not change backend state
-        if self.data.get('_method', None) != 'POST':
+        # Make sure GET does not change backend state, allow on CLI.
+        if self.data.get('_method', 'POST') != 'POST':
             ephemeral = True
 
         refs = [Email(idx, i) for i in self._choose_messages(args)]
@@ -662,7 +662,7 @@ class Forward(RelativeCompose):
                     break
 
         # Make sure GET does not change backend state
-        if self.data.get('_method', None) != 'POST':
+        if self.data.get('_method', 'POST') != 'POST':
             ephemeral = True
 
         if ephemeral and with_atts:
