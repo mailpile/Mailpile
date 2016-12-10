@@ -30,6 +30,7 @@
           id="form-setup-passphrase" class="standard text-center half-top">
 
     {% if result.need_password %}
+      {{ csrf_field|safe }}
       <h3 class="text-center">{{_("Change your password")}}</h3>
       <span id="validation-passphrase">
         <label class="validation-message">{{_("Authenticate")}}</label>

@@ -443,12 +443,28 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
+    def _delete_old_master_keys(self, keyfile):
+        """
+        We keep old master key files around for up to 5 days, so users can
+        revert if they make some sort of horrible mistake. After that we
+        delete the backups because they're technically a security risk.
+        """
+        maxage = time.time() - (5 * 24 * 3600)
+        prefix = os.path.basename(keyfile) + '.'
+        dirname = os.path.dirname(keyfile)
+        for f in os.listdir(dirname):
+            fn = os.path.join(dirname, f)
+            if f.startswith(prefix) and (os.stat(fn).st_mtime < maxage):
+                safe_remove(fn)
+
     def _save_master_key(self, keyfile):
         if not self.master_key:
             return False
 
-        # We keep the master key in a file of its own and never delete
-        # or overwrite master keys.
+        # Delete any old key backups we have laying around
+        self._delete_old_master_keys(keyfile)
+
+        # We keep the master key in a file of its own...
         want_renamed_keyfile = None
         master_passphrase = self.passphrases['DEFAULT']
         if (self._master_key_passgen != master_passphrase.generation
