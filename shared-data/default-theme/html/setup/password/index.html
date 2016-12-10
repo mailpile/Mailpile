@@ -33,41 +33,127 @@
       {{ csrf_field|safe }}
       <h3 class="text-center">{{_("Change your password")}}</h3>
       <span id="validation-passphrase">
-        <label class="validation-message">{{_("Authenticate")}}</label>
+        <label class="validation-message" {% if result.incorrect %}style="color: #f00;"{% endif %}>{{_("Authenticate")}}</label>
         <span class="validation-message"></span>
-        <input id="input-setup-passphrase" class="medium center"
-               type="password" name="existing"
+        <input id="input-setup-validate-passphrase" class="medium center"
                autofocus autocorrect="off" autocapitalize="off" class="center"
-               placeholder="{{_("your current password")}}">
+      {% if result.incorrect %}
+               placeholder="{{_("Password incorrect! Try again...")}}"
+      {% else %}
+               placeholder="{{_("your current password")}}"
+      {% endif %}
+               type="password" name="existing">
       </span>
-      <label class="validation-message">{{_("Choose a password")}}</label>
+      <a id="generate" title="{{ _("Click to generate new secure password") }}">
+        <label class="validation-message">
+          {{_("Choose a new password")}}
+          &nbsp;&nbsp; <span class="icon icon-robot"></span>
+        </label>
+      </a>
     {% else %}
-      <h3 class="text-center">{{_("Choose a password")}}</h3>
-      <p class="text-center">
+      <h3 class="text-center">
+        {{_("Choose a password")}}
+      </h3>
+      <p class="text-center about">
         {{_("Your password should be something really hard to guess but memorable.")}}<br>
         {{_("This password will be used to unlock your Mailpile.")}}
       </p>
     {% endif %}
 
+      <p class="hide blank"><i>
+        {{_("We have made a secure recommendation, but you still need to type it yourself!")}}
+      </i></p>
+      <p class="hide mismatch"><i>
+        {{_("The passphrases don't match!")}}
+      </i></p>
+      <p class="hide short"><i>
+        {{_("That passphrase is too short. This is important!")}}
+      </i></p>
+      <p class="hide shortish"><i>
+        {{_("That password is a bit short!")}}<br>
+        {{_("We recommend using a phrase of at least four memorable words.")}}
+      </i></p>
+
+      {% set suggestion = mailpile('setup/mkpass').result.passphrase %}
       <span id="validation-passphrase">
         <span class="validation-message"></span>
         <input id="input-setup-passphrase" class="medium center"
                type="password" name="password1"
                autofocus autocorrect="off" autocapitalize="off" class="center"
-               placeholder="{{_("very important secret password")}}">
+               placeholder="{{ suggestion }}">
       </span>
       <span id="validation-passphrase_confirm">
         <label class="validation-message">{{_("Confirm your password")}}</label>
         <input id="input-setup-passphrase_confirm" class="medium center"
                type="password" name="password2"
                autocorrect="off" autocapitalize="off" class="center"
-               placeholder="{{_("very important secret password")}}">
+               placeholder="{{ suggestion }}">
       </span>
 
       <button id="btn-setup-passphrase" class="button-primary"
               type="submit">{{_("Set Password")}}</button>
+
+    {% if result.need_password %}
+      <a style="position: absolute; opacity: 0.6; margin-top: 5px" href="/">
+        &nbsp; &nbsp; &nbsp;
+        <span class="icon icon-home"></span> {{_("Cancel")}}
+      </a>
+    {% else %}
+      <a id="generate"
+         style="position: absolute; opacity: 0.6; margin-top: 5px"
+         title="{{ _("Click to generate new secure password") }}">
+        &nbsp; &nbsp; &nbsp;
+        <span class="icon icon-robot"></span> {{_("Suggest")}}
+      </a>
+    {% endif %}
+
     </form>
   </div>
-
 </div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('a#generate').click(function() {
+      Mailpile.API.setup_mkpass_post({}, function(response){
+        $('input#input-setup-passphrase, input#input-setup-passphrase_confirm'
+          ).attr('placeholder', response.result.passphrase);
+      });
+    });
+
+    var $pw1 = $('input#input-setup-passphrase');
+    var $pw2 = $('input#input-setup-passphrase_confirm');
+
+    $pw2.focus(function(ev) {
+      if ($pw1.val().length <= 16) {
+        $('.about, .blank, .mismatch, .short').slideUp();
+        $('.shortish').slideDown();
+      }
+      else {
+        $('.shortish, .blank, .mismatch, .short').slideUp();
+        $('.about').slideDown();
+      }
+    });
+
+    $('form').submit(function(ev) {
+      if (!$pw1.val())
+      {
+        $('.about, .mismatch, .short').slideUp();
+        $('.blank').slideDown();
+        ev.preventDefault();
+      }
+      else if ($pw1.val() != $pw2.val())
+      {
+        $('.about, .blank, .short').slideUp();
+        $('.mismatch').slideDown();
+        ev.preventDefault();
+      }
+      else if ($pw1.val().length <= 6)
+      {
+        $('.about, .blank, .mismatch').slideUp();
+        $('.short').slideDown();
+        ev.preventDefault();
+      }
+    });
+  });
+</script>
 {% endblock %}

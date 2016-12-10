@@ -264,6 +264,11 @@ class ConfigManager(ConfigDict):
     def load(self, session, *args, **kwargs):
         from mailpile.plugins.core import Rescan
 
+        # This should happen somewhere, may as well happen here. We don't
+        # rely on Python's random for anything important, but it's still
+        # nice to seed it well.
+        random.seed(os.urandom(8))
+
         keep_lockdown = self.sys.lockdown
         with self._lock:
             rv = self._unlocked_load(session, *args, **kwargs)

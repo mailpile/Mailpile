@@ -311,9 +311,6 @@ class SetupMagic(Command):
         session.config.slow_worker.add_unique_task(
             session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))
 
-    def setup_command(self, session):
-        pass  # Overridden by children
-
     def make_master_key(self):
         session = self.session
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
@@ -352,6 +349,9 @@ class SetupMagic(Command):
             return True
         else:
             return False
+
+    def setup_command(self, session):
+        pass  # Overridden by children
 
     def command(self, *args, **kwargs):
         return self.setup_command(self.session, *args, **kwargs)
@@ -1002,6 +1002,66 @@ class SetupWelcome(TestableWebbable):
         return self._success(_('Welcome to Mailpile!'), results)
 
 
+class CreatePassword(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/mkpass', None)
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
+        'dict': 'Word list to use'
+    })
+    PATHS = ['/etc/dictionaries-common', '/usr/dict', '/usr/share/dict']
+
+    def find_dictionaries(self):
+        dictionaries = set([])
+        for path in (p for p in self.PATHS if os.path.exists(p)):
+            for fn in (os.path.join(path, f) for f in os.listdir(path)):
+                fpath = os.path.realpath(fn)
+                if not os.path.isdir(fpath):
+                    stat = os.stat(fpath)
+                    if stat.st_size > 100000:
+                        dictionaries.add((stat.st_size, fpath))
+        return sorted(list(dictionaries))
+
+    def load_dictionary(self, dpath, maxlen=6):
+        return list(w for w in open(dpath, 'rb')
+                    if "'" not in w and ' ' not in w and len(w) <= (maxlen+1))
+
+    def setup_command(self, session):
+        from mailpile.crypto.aes_utils import getrandbits
+        from math import log
+
+        dictionaries = self.find_dictionaries()
+        dictionary = dictionaries[-1][1]
+        words = self.load_dictionary(dictionary, maxlen=6)
+        wanted_bits = 64
+        passphrase = []
+        results = {
+            'dictionaries': dictionaries,
+            'dictionary': dictionary
+        }
+
+        # This is our random word generation; first we shuffle the
+        # dictionary (poorly), because we're going to only use the first
+        # power of 2 words.
+        random.shuffle(words)
+
+        # Figure out how many bits index neatly into the file
+        filebits = int(log(len(words), 2))
+        filemask = (2 ** filebits) - 1
+
+        # Encode strongly random bits using the shuffled dictionary
+        while wanted_bits > 0:
+            wanted_bits -= filebits
+            word = words[getrandbits(filebits) & filemask].strip().lower()
+            passphrase.append(word.decode('utf-8'))
+
+        results.update({
+            'dictionary_bits': filebits,
+            'passphrase': ' '.join(passphrase),
+            'bits': filebits * len(passphrase)
+        })
+        return self._success(_('Welcome to Mailpile!'), results)
+
+
 class SetupPassword(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/password', None)
     HTTP_CALLABLE = ('GET', 'POST')
@@ -1011,33 +1071,37 @@ class SetupPassword(TestableWebbable):
         'password2': 'Confirmation password'
     })
 
+    PASSWORD_LOCK = CryptoLock()
+
     def setup_command(self, session):
         config = session.config
         current_passphrase = config.passphrases['DEFAULT']
         need_password = current_passphrase.is_set()
-        mismatch = done = False
+        incorrect = mismatch = done = False
         if self.data.get('_method') == 'POST' or self._testing():
+            with SetupPassword.PASSWORD_LOCK:
+                if need_password:
+                    ex = self.data.get('existing', [''])[0]
+                    if not current_passphrase.compare(ex):
+                        incorrect = True
+                        time.sleep(1)
 
-            if need_password:
-                ex = self.data.get('existing', [''])[0]
-                if not current_passphrase.compare(ex):
+                if not incorrect:
+                    p1 = self.data.get('password1', [''])[0]
+                    p2 = self.data.get('password2', [''])[0]
+                    if p1 and p2 and p1 == p2:
+                        config.passphrases['DEFAULT'].set_passphrase(p1)
+                        config.prefs.gpg_recipient = '!PASSWORD'
+                        self.make_master_key()
+                        self._background_save(config=True)
+                        done = True
+                else:
                     mismatch = True
-
-            if not mismatch:
-                p1 = self.data.get('password1', [''])[0]
-                p2 = self.data.get('password2', [''])[0]
-                if p1 and p2 and p1 == p2:
-                    config.passphrases['DEFAULT'].set_passphrase(p1)
-                    config.prefs.gpg_recipient = '!PASSWORD'
-                    self.make_master_key()
-                    self._background_save(config=True)
-                    done = True
-            else:
-                mismatch = True
 
         results = {
             'need_password': need_password,
             'configured': done,
+            'incorrect': incorrect,
             'mismatch': mismatch
         }
         return self._success(_('Welcome to Mailpile!'), results)
@@ -1263,6 +1327,7 @@ _ = gettext
 _plugins.register_commands(SetupMagic,
                            SetupGetEmailSettings,
                            SetupWelcome,
+                           CreatePassword,
                            SetupPassword,
                            SetupTestRoute,
                            SetupTor,
