@@ -174,7 +174,7 @@ class Authenticate(Command):
 
             except (AssertionError, IOError):
                 session.ui.debug('Bad passphrase for %s' % session_id)
-                return self._error(_('Invalid passphrase, please try again'))
+                return self._error(_('Invalid password, please try again'))
 
         if user in config.logins or user == 'DEFAULT':
             # FIXME: Salt and hash the password, check if it matches
