@@ -77,6 +77,11 @@ SESSION_CACHE = UserSessionCache()
 LOGIN_FAILURES = []
 
 
+def LogoutAll():
+    for k in list(SESSION_CACHE.keys()):
+        del SESSION_CACHE[k]
+
+
 class Authenticate(Command):
     """Authenticate a user (log in)"""
     SYNOPSIS = (None, 'login', 'auth/login', None)

@@ -1094,6 +1094,7 @@ class SetupPassword(TestableWebbable):
                         config.prefs.gpg_recipient = '!PASSWORD'
                         self.make_master_key()
                         self._background_save(config=True)
+                        mailpile.auth.LogoutAll()
                         done = True
                 else:
                     mismatch = True
