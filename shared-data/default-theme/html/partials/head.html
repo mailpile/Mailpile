@@ -17,12 +17,6 @@
   <link rel="shortcut icon" id="basic-favicon" href="{{ U('/static/img/favicon.png') }}" />
   <link rel="icon" id="basic-favicon" type="image/png" href="{{ U('/static/img/favicon.png') }}" />
 
-  <!-- FIXME: Style experiments, move to less! -->
-  <style type="text/css">
-    #modal-full .content-normal {padding: 0; margin: 0}
-    #modal-full h1 {display: none;}
-  </style>
-
   {%- if is_dev_version() %}{# Uglify dev versions ... #}
   <style type="text/css">
     .topbar { filter: blur(1px); -webkit-filter: blur(1px); }
