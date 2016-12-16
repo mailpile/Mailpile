@@ -478,7 +478,7 @@ class GPGCheckKeys(Search):
         return [
             _('Revoke bad keys:') + ('  ' + comment if comment else ''),
             _('Run: %s') % ('`gpg --gen-revoke %s`' % fprint),
-            _('Say yes to the first question, follow the instructions'),
+            _('Say yes to the first question, then follow the instructions'),
             _('A revocation certificate will be shown on screen'),
             _('Copy & paste that, save, and send to people who have the old key'),
             _('You can search for %s to find such people'
