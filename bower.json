@@ -28,7 +28,6 @@
     "jquery-slugify": "~1.0.3",
     "jquery-timer": "*",
     "jquery.ui": "~1.10.4",
-    "less-elements": "master",
     "listjs": "~1.1.0",
     "mousetrap": "~1.4.6",
     "moxie": "~1.3.4",
