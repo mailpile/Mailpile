@@ -40,9 +40,9 @@ BLOCKSIZE = 65536
 openpgp_algorithms = {1: _("RSA"),
                       2: _("RSA (encrypt only)"),
                       3: _("RSA (sign only)"),
-                      16: _("Elgamal (encrypt only)"),
+                      16: _("ElGamal (encrypt only)"),
                       17: _("DSA"),
-                      20: _("Elgamal (encrypt/sign) [COMPROMISED]"),
+                      20: _("ElGamal (encrypt/sign) [COMPROMISED]"),
                       22: _("EdDSA"),
                       999: _("Unknown")}
 # For details on type 20 compromisation, see

@@ -534,12 +534,12 @@ class MailpileCommand(Extension):
     _DEFAULT_CRYPTO_POLICY = [
         _("Automatic"),
         _("Mailpile will intelligently try to guess and suggest the best "
-          "security with this given contact")]
+          "security with the given contact")]
     _CRYPTO_POLICY = {
         "default": [
             _("Automatic"),
             _("Mailpile will intelligently try to guess and suggest the best "
-              "security with this given contact")],
+              "security with the given contact")],
         "none": [
             _("Don't Sign or Encrypt"),
             _("Messages will not be encrypted nor signed by your encryption key")],
