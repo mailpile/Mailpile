@@ -7,6 +7,7 @@ from urllib import urlencode, URLopener
 import mailpile.auth
 from mailpile.commands import Command
 from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
+from mailpile.mailutils.headerprint import *
 from mailpile.mailutils import *
 from mailpile.plugins.core import Help
 from mailpile.search import *
@@ -162,9 +163,15 @@ class ViewHeaderPrint(Hacks):
 
     def _explain(self, i):
         msg = Email(self._idx(), i).get_msg()
+        mta = HeaderPrintMTADetails(msg)
+        mua = HeaderPrintMUADetails(msg, mta=mta)
         return {
-            'headers': HeaderPrintHeaders(msg),
-            'headerprint': HeaderPrint(msg)
+            'headerprints': HeaderPrints(msg),
+            'details': {
+                'header': HeaderPrintGenericDetails(msg),
+                'mua': mua,
+                'mta': mta
+            }
         }
 
     def command(self):

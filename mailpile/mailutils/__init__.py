@@ -39,6 +39,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 from mailpile.vcard import AddressInfo
 from mailpile.mailutils.safe import safe_decode_hdr
+from mailpile.mailutils.headerprint import HeaderPrints
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
@@ -358,34 +359,6 @@ def PrepareMessage(config, msg,
     return (sender, rcpts, msg, events)
 
 
-MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject',
-               'message-id', 'reply-to', 'references', 'return-path',
-               'mime-version', 'content-disposition', 'content-type',
-               'content-language', 'content-description',
-               'user-agent', 'x-mailer',
-               'list-id', 'list-subscribe', 'list-unsubscribe', 'precedence',
-               'x-ms-tnef-correlator', 'x-ms-has-attach',
-               'x-mimeole', 'x-msmail-priority', 'x-priority',
-               'x-originating-ip', 'x-message-info',
-               'openpgp', 'x-openpgp')
-MUA_ID_HEADERS = ('x-mailer', 'user-agent', 'x-mimeole')
-DULL_HEADERS = ('in-reply-to', 'references', 'received')
-
-
-def HeaderPrintHeaders(message):
-    """Extract message headers which identify the MUA."""
-    headers = [k for k, v in message.items() if k.lower() in MUA_HEADERS]
-    for header in MUA_ID_HEADERS:
-        if message[header]:
-            headers.extend([header, message[header]])
-    return headers
-
-
-def HeaderPrint(message):
-    """Generate a fingerprint from message headers which identifies the MUA."""
-    return md5_hex('\n'.join(HeaderPrintHeaders(message)))
-
-
 class Email(object):
     """This is a lazy-loading object representing a single email."""
 
@@ -464,6 +437,14 @@ class Email(object):
         msg['Message-Id'] = msg_id or MakeMessageID()
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
+
+        # Privacy trade-off: we want to help recipients do profiling and
+        # discard poorly forged messages that are not from from Mailpile.
+        # However, we don't want to leak too many details for privacy and
+        # security reasons. So no: version or platform info, just the word
+        # Mailpile. This will probably be obvious to a truly hostile
+        # adversary anyway from other details.
+        msg['User-Agent'] = 'Mailpile'
 
         ahp = AddressHeaderParser()
         norm = lambda a: ', '.join(sorted(list(set(ahp.normalized_addresses(
@@ -950,9 +931,6 @@ class Email(object):
             raise IndexError(_('Message not found?'))
         return result
 
-    def get_headerprint(self):
-        return HeaderPrint(self.get_msg())
-
     def is_thread(self):
         return ((self.get_msg_info(self.index.MSG_THREAD_MID)) or
                 (0 < len(self.get_msg_info(self.index.MSG_REPLIES))))
@@ -974,6 +952,9 @@ class Email(object):
             return ahp[0].address
         except IndexError:
             return None
+
+    def get_headerprints(self):
+        return HeaderPrints(self.get_msg())
 
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded

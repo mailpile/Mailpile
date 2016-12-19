@@ -22,8 +22,9 @@ from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser, GetTextPayload
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import Email, ParseMessage, HeaderPrint
+from mailpile.mailutils import Email, ParseMessage
 from mailpile.mailutils.header import decode_header
+from mailpile.mailutils.headerprint import HeaderPrints
 from mailpile.mailutils.safe import *
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
@@ -1193,8 +1194,15 @@ class MailIndex(BaseIndex):
         if mailbox:
             keywords.append('%s:mailbox' % FormatMbxId(mailbox).lower())
 
+        headerprints = HeaderPrints(msg)
         # This is a signal for the bayesian filters to discriminate by MUA.
-        keywords.append('%s:hp' % HeaderPrint(msg))
+        keywords.append('%s:hpt' % headerprints['tools'])
+        # This is used to detect forgeries and phishing, it includes info
+        # about how the message was delivered (DKIM, Received, ...)
+        keywords.append('%s:hps' % headerprints['sender'])
+        # If we think we know what MUA that was, make it searchable
+        if headerprints.get('mua'):
+            keywords.append('%s:mua' % headerprints['mua'].split()[0].lower())
 
         is_list = False
         for key in msg.keys():
