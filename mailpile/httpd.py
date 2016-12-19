@@ -83,7 +83,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     _HTML_RE = re.compile('[<>\'\"]+')
 
     def assert_no_newline(self, data):
-        assert(re.search(self._NEWLINE_RE, data or '') is None)
+        assert(re.search(self._NEWLINE_RE, str(data) or '') is None)
 
     def assert_no_html(self, data):
         assert(re.search(self._HTML_RE, data or '') is None)
