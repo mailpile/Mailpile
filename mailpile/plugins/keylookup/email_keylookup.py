@@ -161,9 +161,9 @@ def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader,
             body_info['pgp_key'] = filename
             kws += ['pgpkey:has']
 
-    # FIXME: If this part is a signature, record which signatures we've
-    #        seen from which keys, for historic profiling purposes. Keys
-    #        used more often are less likely to be forgeries.
+    # FIXME: If this is a PGP key, make all the key IDs searchable so
+    #        we can find this file again later! Searching by e-mail is lame.
+    #        This is issue #655 ?
 
     return kws
 
