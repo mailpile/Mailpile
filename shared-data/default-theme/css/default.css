@@ -7844,6 +7844,13 @@ label.compose-attach-key span.icon-key {
 .modal-body-light-gray {
   background: #f6f6f6;
 }
+#modal-full .content-normal {
+  padding: 0;
+  margin: 0;
+}
+#modal-full h1 {
+  display: none;
+}
 /* Modal - Tag picker */
 table.modal-tag-picker-items {
   width: 100%;
