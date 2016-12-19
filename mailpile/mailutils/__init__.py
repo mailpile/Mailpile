@@ -559,7 +559,7 @@ class Email(object):
                                                   CleanText.FS)).clean):
                 aid = cid
             else:
-                aid = 'part:%s' % att['count']
+                aid = 'part-%s' % att['count']
         return aid
 
     def get_editing_strings(self, tree=None, build_tree=True):
@@ -985,7 +985,7 @@ class Email(object):
 
             if (('*' == att_id)
                     or ('#%s' % count == att_id)
-                    or ('part:%s' % count == att_id)
+                    or ('part-%s' % count == att_id)
                     or (content_id == att_id)
                     or (mimetype == att_id)
                     or (pfn.lower().endswith('.%s' % att_id))

@@ -1075,7 +1075,7 @@ class Extract(Command):
             name_fmt = args.pop(-1)[1:]
 
         if (args[0].startswith('#') or
-                args[0].startswith('part:') or
+                args[0].startswith('part-') or
                 args[0].startswith('ext:')):
             cid = args.pop(0)
         else:
