@@ -281,21 +281,19 @@ class ConfigManager(ConfigDict):
         return rv
 
     def load_master_key(self, passphrase, _raise=None):
-        keydata = []
+        keydata = None
 
         if passphrase.is_set():
-            parser = lambda d: keydata.extend(d)
             try:
                 with open(self.conf_key, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, parser, self,
-                                            newlines=True,
-                                            passphrase=passphrase)
+                    gpg = GnuPG(None)
+                    keydata = gpg.decrypt(fd.read(),passphrase=passphrase.get_reader())[2]
             except IOError:
-                keydata = []
+                pass
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
-            self.master_key = ''.join(keydata)
+            self.master_key = keydata
             self._master_key_ondisk = self.master_key
             self._master_key_passgen = self.passphrases['DEFAULT'].generation
             return True
