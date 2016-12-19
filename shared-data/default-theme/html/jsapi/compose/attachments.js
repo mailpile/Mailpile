@@ -138,14 +138,16 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
         // Loop through added files
       	plupload.each(files, function(file) {
 
-          // Show Warning for 50 mb or larger
-          if (file.size > 52428800) {
-            start_upload = false;
-            alert(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '. {{_("Some people cannot receive attachments larger than 50 Megabytes.")|escapejs}}');
-          } else {
-
-            // Start
+          // Show warning for ~20MB or larger
+          if ((file.size < 200000000) ||
+              confirm(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '.\n' +
+                      '\n' +
+                      '{{_("Some people cannot receive such large e-mails.")|escapejs}}\n' +
+                      '{{_("Send it anyway?")}}'))
+          {
             uploader.start();
+          } else {
+            start_upload = false;
           }
       	});
       },
