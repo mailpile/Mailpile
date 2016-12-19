@@ -193,9 +193,9 @@
 $(document).ready(function() {
   Mailpile.Message.AnalyzeMessageInline('{{mid}}');
   $('#message-{{mid}}').data('html', {{ message.html_parts|json|safe }});
-{%- if message.html_parts|length > 0 and
-       from.get('html-policy', 'none') != 'none' %}
-  Mailpile.Message.ShowHTML('{{mid}}', '{{from["html-policy"]}}');
- {%- endif %}
+  {%- if message.html_parts|length > 0 and
+         from.get('html-policy', 'none') != 'none' %}
+    Mailpile.Message.ShowHTML('{{mid}}', '{{from["html-policy"]}}');
+  {%- endif %}
 });
 </script>

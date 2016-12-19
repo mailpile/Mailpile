@@ -151,7 +151,7 @@ CONFIG_RULES = {
     'secrets': [_('Secrets the user wants saved'), {
         'password':        (_('A secret'), str, ''),
         'policy':          (_('Security policy'),
-                            ["store", "cache-only", "fail"],
+                            ["store", "cache-only", "fail", "protect"],
                             'store')
     }, {}],
     'routes': [_('Outgoing message routes'), {

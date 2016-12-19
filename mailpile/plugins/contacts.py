@@ -990,7 +990,9 @@ def ProfileVCard(parent):
                     event.message = _('PGP key generation is complete')
 
                 # Record the passphrase!
-                config.secrets[fingerprint] = {'password': passphrase}
+                config.secrets[fingerprint] = {
+                    'password': passphrase,
+                    'policy': 'protect'}
 
                 # FIXME: Toggle something that indicates we need a backup ASAP.
                 self._background_save(config=True)

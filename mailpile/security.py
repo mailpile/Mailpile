@@ -266,6 +266,7 @@ class SecurePassphraseStorage(object):
         # primitive in-memory obfuscation relying on how Python represents
         # small integers as globally shared objects. Better Than Nothing!
         self.data = string_to_intlist(passphrase)
+        self.stretch_cache = {}
         self.generation += 1
 
     def compare(self, passphrase):

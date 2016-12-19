@@ -77,6 +77,11 @@ SESSION_CACHE = UserSessionCache()
 LOGIN_FAILURES = []
 
 
+def LogoutAll():
+    for k in list(SESSION_CACHE.keys()):
+        del SESSION_CACHE[k]
+
+
 class Authenticate(Command):
     """Authenticate a user (log in)"""
     SYNOPSIS = (None, 'login', 'auth/login', None)
@@ -174,7 +179,7 @@ class Authenticate(Command):
 
             except (AssertionError, IOError):
                 session.ui.debug('Bad passphrase for %s' % session_id)
-                return self._error(_('Invalid passphrase, please try again'))
+                return self._error(_('Invalid password, please try again'))
 
         if user in config.logins or user == 'DEFAULT':
             # FIXME: Salt and hash the password, check if it matches
@@ -294,8 +299,13 @@ class SetPassphrase(Command):
             return self._success(_('Enter your password'), result)
 
         assert(keyid is not None and fingerprint is not None)
+        if fingerprint in config.secrets:
+            if config.secrets[fingerprint].policy == 'protect':
+                return self._error(_('Protected password'), result)
+
         def happy(msg):
-            # Fun side effect: changing the passphrase invalidates the message cache
+            # Fun side effect: changing the passphrase invalidates the
+            # message cache
             import mailpile.mailutils
             mailpile.mailutils.ClearParseCache(full=True)
 
