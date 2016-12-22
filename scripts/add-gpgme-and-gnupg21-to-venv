@@ -1,0 +1,66 @@
+#!/bin/bash
+
+GNUPG_DEPS="\
+    https://gnupg.org/ftp/gcrypt/npth/npth-1.3.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.25.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/libassuan/libassuan-2.4.3.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.5.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2 \
+    https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.8.0.tar.bz2"
+
+[ "$VIRTUAL_ENV" == "" ] && {
+    echo "Please activate your virtualenv first!"
+    exit 1
+}
+echo
+echo "About to download, build and install GPGME 1.8.0 and GnuPG 2.1.17"
+echo "into: $VIRTUAL_ENV"
+echo
+echo "Press ENTER to continue."""
+read
+
+set -x
+set -e
+
+mkdir -p "$VIRTUAL_ENV/gnupg-build"
+cd "$VIRTUAL_ENV/gnupg-build"
+
+for package in $GNUPG_DEPS; do
+    tarball=$(basename $package)
+    srcdir=$(basename $package |sed -e s/.tar.bz2//)
+
+    if [ ! -e "$tarball" ]; then
+        rm -f dl.tmp
+        wget "$package" -O dl.tmp
+        mv -f dl.tmp "$tarball"
+    fi
+
+    [ -e "$srcdir" ] || tar xfj "$tarball"
+    pushd "$srcdir"
+    ./configure --prefix="$VIRTUAL_ENV"
+    make
+    make install
+    popd
+done
+
+set +e
+set +x
+
+echo
+echo "Whew! If you would like to clean up, run this:"
+echo
+echo "  rm -rf '$VIRTUAL_ENV/gnupg-build'"
+echo
+echo "You will also need to set the following environment variable:"
+echo
+echo "  export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib"
+echo
+echo "If you would like this added to the activate script, press ENTER."
+echo "Note that will BREAK the deactivate function because this script is"
+echo "a lame hack. Press CTRL-C to skip this..."
+read
+echo "export LD_LIBRARY_PATH=\$VIRTUAL_ENV/lib" >>"$VIRTUAL_ENV/bin/activate"
+echo
+echo "Great. All done! Now rerun activate and have fun."
+
