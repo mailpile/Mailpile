@@ -51,8 +51,9 @@ fedora-dev:
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     ruby-dev yui-compressor python-nose spambayes \
-	                     python-pip python-mock python-selenium npm \
+	                     python-pip python-mock python-selenium \
 						 rubygems-integration
+	dpkg -l|grep -qP ' nodejs .*nodesource' || sudo apt install npm
 	sudo apt-get install python-pgpdump || pip install pgpdump
 	which phantomjs >/dev/null || sudo apt-get install phantomjs || sudo npm install -g phantomjs
 	which lessc >/dev/null || sudo gem install therubyracer less
