@@ -333,7 +333,7 @@ class SecurePassphraseStorage(object):
                         self.stretch_cache[sc_key] = SecurePassphraseStorage(
                             stretch(pf, salt, how), stretched=name)
                     yield (name, self.stretch_cache[sc_key])
-                except (KeyError, UnsupportedAlgorithm):
+                except (KeyError, AttributeError, UnsupportedAlgorithm):
                     pass
 
         yield ('clear', self)
