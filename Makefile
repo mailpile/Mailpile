@@ -51,13 +51,11 @@ fedora-dev:
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     ruby-dev yui-compressor python-nose spambayes \
-	                     phantomjs python-pip python-mock python-selenium npm
-	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
-		sudo apt-get install rubygems-integration;\
-	else \
-		sudo apt-get install rubygems; \
-	fi
+	                     python-pip python-mock python-selenium \
+						 rubygems-integration
+	dpkg -l|grep -qP ' nodejs .*nodesource' || sudo apt install npm
 	sudo apt-get install python-pgpdump || pip install pgpdump
+	which phantomjs >/dev/null || sudo apt-get install phantomjs || sudo npm install -g phantomjs
 	which lessc >/dev/null || sudo gem install therubyracer less
 	which bower >/dev/null || sudo npm install -g bower
 	which uglify >/dev/null || sudo npm install -g uglify
