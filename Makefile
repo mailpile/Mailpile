@@ -134,7 +134,7 @@ bdist:
 virtualenv: mp-virtualenv/bin/activate
 
 mp-virtualenv/bin/activate:
-	virtualenv -p python2 mp-virtualenv
+	virtualenv -p python2 --system-site-packages mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
 virtualenv-dev: virtualenv
