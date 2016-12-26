@@ -295,9 +295,12 @@ class ConfigManager(ConfigDict):
                 kdfp = hdrs.get('KDF', '').strip() or None
 
             if kdfp:
-                kdf, params = kdfp.split(' ', 1)
-                kdfp = {}
-                kdfp[kdf] = json.loads(params)
+                try:
+                    kdf, params = kdfp.split(' ', 1)
+                    kdfp = {}
+                    kdfp[kdf] = json.loads(params)
+                except ValueError:
+                    kdfp = {}
 
             parser = lambda d: keydata.extend(d)
             for (method, sps) in passphrase.stretches(salt, params=kdfp):
@@ -478,9 +481,6 @@ class ConfigManager(ConfigDict):
         if not self.master_key:
             return False
 
-        # Delete any old key backups we have laying around
-        self._delete_old_master_keys(keyfile)
-
         # We keep the master key in a file of its own...
         want_renamed_keyfile = None
         master_passphrase = self.passphrases['DEFAULT']
@@ -491,6 +491,8 @@ class ConfigManager(ConfigDict):
 
         if not want_renamed_keyfile and os.path.exists(keyfile):
             # Key file exists, nothing needs to be changed. Happy!
+            # Delete any old key backups we have laying around
+            self._delete_old_master_keys(keyfile)
             return True
 
         # Figure out whether we are encrypting to a GPG key, or using
@@ -526,6 +528,10 @@ class ConfigManager(ConfigDict):
                 os.rename(keyfile + '.new', keyfile)
                 self._master_key_ondisk = self.master_key
                 self._master_key_passgen = master_passphrase.generation
+
+                # Delete any old key backups we have laying around
+                self._delete_old_master_keys(keyfile)
+
                 return True
             except:
                 if (want_renamed_keyfile and
