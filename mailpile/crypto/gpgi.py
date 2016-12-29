@@ -592,10 +592,14 @@ class GnuPG:
         args.insert(1, "--verbose")
         args.insert(1, "--enable-progress-filter")
 
-        # FIXME: We will need stronger stuff if this is to work with GnuGP
-        #        2.0 or above! Basically a custom config file via --options.
-        if not self.use_agent:
-            args.insert(1, "--no-use-agent")
+        if (not self.use_agent) or (self.passphrase and send_passphrase):
+            if version < (2, 1):
+                # Note: This will silently fail on GnuPG 2.0, which means
+                #       the agent will still interfere. The app may still
+                #       work in some such cases, so...
+                args.insert(1, "--no-use-agent")
+            else:
+                args.insert(1, "--pinentry-mode=loopback")
 
         if self.homedir:
             args.insert(1, "--homedir=%s" % self.homedir)
@@ -606,9 +610,6 @@ class GnuPG:
             args.insert(1, "--status-fd=2")
 
             if self.passphrase and send_passphrase:
-                if self.use_agent:
-                    # We have a passphrase, override this setting!
-                    args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=0")
 
             if not self.passphrase and send_passphrase:
@@ -741,23 +742,20 @@ class GnuPG:
         #
         #       The downside of this workaround is that keys with no e-mail
         #       address or an address like alice@localhost won't be found.
-        #       Therefore, this paramter should be removed when GnuPG >= 2.1
-        #       becomes commonplace.
+        #       So we disable this hack on GnuPG >= 2.1.
         #
-        #       (This is a better workaround than doing an additional
-        #       --list-keys and trying to aggregate it though...)
-        #
-        #       BRE: Put --fingerprint at the front and added selectors
-        #            for the worlds MOST POPULAR LETTERS!  Yaaay!
-        #
-        if not selectors:
+        if not selectors and self.version_tuple() < (2, 1):
             selectors = [".", "a", "e", "i", "p", "t", "k"]
+
         list_keys = ["--fingerprint"]
-        for sel in selectors:
-            list_keys += ["--list-secret-keys", sel]
+        if selectors:
+            for sel in selectors:
+                list_keys += ["--list-secret-keys", sel]
+        else:
+            list_keys += ["--list-secret-keys"]
 
         self.event.running_gpg(_('Fetching GnuPG secret key list (selectors=%s)'
-                                 ) % ', '.join(selectors or []))
+                                 ) % ', '.join(selectors or ['None']))
         retvals = self.run(list_keys)
         secret_keys = self.parse_keylist(retvals[1]["stdout"])
 
@@ -1317,12 +1315,16 @@ class GnuPG:
         """This lets a callback have a chat with the GPG process..."""
         gpg_args = [self.gpgbinary,
                     "--utf8-strings",
-                    "--no-use-agent",
                     "--no-tty",
                     "--command-fd=0",
                     "--status-fd=1"] + (gpg_args or [])
         if self.homedir:
             gpg_args.insert(1, "--homedir=%s" % self.homedir)
+
+        if self.version_tuple() > (2, 1):
+            gpg_args.insert(2, "--pinentry-mode=loopback")
+        else:
+            gpg_args.insert(2, "--no-use-agent")
 
         proc = None
         try:
@@ -1623,6 +1625,20 @@ class GnuPG14KeyGenerator(GnuPGBaseKeyGenerator):
         return ['--no-use-agent', '--gen-key']
 
 
+class GnuPG21KeyGenerator(GnuPG14KeyGenerator):
+    """This is the GnuPG 2.1.x specific PGP key generation script."""
+
+    # Note: We don't use the nice --quick-generate-key function, because
+    #       it won't let us generate a usable key with custom parameters in
+    #       a single pass. So using the existing expect logic turns out to
+    #       be less work in practice. Oh well.
+
+    def gpg_args(self):
+        # --yes should keep GnuPG from complaining if there already exists
+        #       a key with this UID.
+        return ['--yes', '--full-generate-key']
+
+
 class GnuPGDummyKeyGenerator(GnuPGBaseKeyGenerator):
     """A dummy key generator class, for incompatible versions of GnuPG."""
 
@@ -1646,8 +1662,8 @@ def GnuPGKeyGenerator(gnupg, **kwargs):
     version = gnupg.version_tuple()
     if version < (1, 5):
         return GnuPG14KeyGenerator(gnupg, **kwargs)
-#   elif version >= (2, 1):
-#       return GnuPG21KeyGenerator(gnupg, **kwargs)
+    elif version >= (2, 1):
+        return GnuPG21KeyGenerator(gnupg, **kwargs)
     else:
         return GnuPGDummyKeyGenerator(gnupg, **kwargs)
 
