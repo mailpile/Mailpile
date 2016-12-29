@@ -23,8 +23,7 @@ from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
-from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
-from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
+from mailpile.crypto.gpgi import SignatureInfo, EncryptionInfo
 from mailpile.eventlog import Event
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError

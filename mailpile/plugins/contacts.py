@@ -4,7 +4,8 @@ import time
 
 import mailpile.config.defaults
 import mailpile.security as security
-from mailpile.crypto.gpgi import GnuPGKeyGenerator
+from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.gpgi import GnuPGBaseKeyGenerator, GnuPGKeyGenerator
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
 from mailpile.eventlog import Event
@@ -1026,8 +1027,9 @@ def ProfileVCard(parent):
                           private_data=key_args)
             self._key_generator = GnuPGKeyGenerator(
                # FIXME: Passphrase handling is a problem here
+               GnuPG(self.session.config, event=event),
                event=event,
-               variables=dict_merge(GnuPGKeyGenerator.VARIABLES, key_args),
+               variables=dict_merge(GnuPGBaseKeyGenerator.VARIABLES, key_args),
                on_complete=(random_uid,
                             lambda: self._new_key_created(event, random_uid,
                                                           passphrase))
