@@ -122,7 +122,7 @@ Mailpile.Message.AddDOMPurifyHooks = function(with_image_proxy,
     if (/^data:image\//.test(url)) {
       return url;
     } else {
-      return proxy() + escape(url)
+      return proxy() + encodeURIComponent(url)
     }
   }
 
@@ -167,7 +167,7 @@ Mailpile.Message.AddDOMPurifyHooks = function(with_image_proxy,
         // we re-write each property-value pair to remove invalid CSS
         if (node.style[styles[prop]] && url_regex.test(node.style[styles[prop]])) {
           var url = node.style[styles[prop]].replace(url_regex, '$1' + proxy())
-          node.style[styles[prop]] = url; 
+          node.style[styles[prop]] = url;
         }
         output.push(styles[prop] + ':' + node.style[styles[prop]] + ';');
       }
@@ -268,7 +268,7 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
   Mailpile.Message.AddDOMPurifyHooks(policy == 'images',
                                      function() { changes += 1 });
   $iframe.attr('srcdoc', DOMPurify.sanitize(html_data, {
-    WHOLE_DOCUMENT: true, 
+    WHOLE_DOCUMENT: true,
   }));
 
   if (changes > 0 && policy != 'images') {
