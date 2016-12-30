@@ -68,7 +68,10 @@ class DNSPKALookupHandler(LookupHandler):
         if pkaver != "pka1":
             raise ValueError("We only know how to deal with pka version 1")
 
-        return {fingerprint: {"fingerprint": fingerprint, "url": url, "pkaver": pkaver}}
+        return {fingerprint: {
+            "fingerprint": fingerprint,
+            "url": url,
+            "pkaver": pkaver}}
 
     def _getkey(self, key):
         if key["fingerprint"] and not key["url"]:

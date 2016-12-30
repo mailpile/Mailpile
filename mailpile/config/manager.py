@@ -264,6 +264,11 @@ class ConfigManager(ConfigDict):
     def load(self, session, *args, **kwargs):
         from mailpile.plugins.core import Rescan
 
+        # This should happen somewhere, may as well happen here. We don't
+        # rely on Python's random for anything important, but it's still
+        # nice to seed it well.
+        random.seed(os.urandom(8))
+
         keep_lockdown = self.sys.lockdown
         with self._lock:
             rv = self._unlocked_load(session, *args, **kwargs)
@@ -284,14 +289,29 @@ class ConfigManager(ConfigDict):
         keydata = []
 
         if passphrase.is_set():
+            with open(self.conf_key, 'rb') as fd:
+                hdrs = dict(l.split(': ', 1) for l in fd if ': ' in l)
+                salt = hdrs.get('Salt', '').strip()
+                kdfp = hdrs.get('KDF', '').strip() or None
+
+            if kdfp:
+                try:
+                    kdf, params = kdfp.split(' ', 1)
+                    kdfp = {}
+                    kdfp[kdf] = json.loads(params)
+                except ValueError:
+                    kdfp = {}
+
             parser = lambda d: keydata.extend(d)
-            try:
-                with open(self.conf_key, 'rb') as fd:
-                    decrypt_and_parse_lines(fd, parser, self,
-                                            newlines=True,
-                                            passphrase=passphrase)
-            except IOError:
-                keydata = []
+            for (method, sps) in passphrase.stretches(salt, params=kdfp):
+                try:
+                    with open(self.conf_key, 'rb') as fd:
+                        decrypt_and_parse_lines(fd, parser, self,
+                                                newlines=True,
+                                                passphrase=sps)
+                    break
+                except IOError:
+                    keydata = []
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
@@ -443,12 +463,25 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
+    def _delete_old_master_keys(self, keyfile):
+        """
+        We keep old master key files around for up to 5 days, so users can
+        revert if they make some sort of horrible mistake. After that we
+        delete the backups because they're technically a security risk.
+        """
+        maxage = time.time() - (5 * 24 * 3600)
+        prefix = os.path.basename(keyfile) + '.'
+        dirname = os.path.dirname(keyfile)
+        for f in os.listdir(dirname):
+            fn = os.path.join(dirname, f)
+            if f.startswith(prefix) and (os.stat(fn).st_mtime < maxage):
+                safe_remove(fn)
+
     def _save_master_key(self, keyfile):
         if not self.master_key:
             return False
 
-        # We keep the master key in a file of its own and never delete
-        # or overwrite master keys.
+        # We keep the master key in a file of its own...
         want_renamed_keyfile = None
         master_passphrase = self.passphrases['DEFAULT']
         if (self._master_key_passgen != master_passphrase.generation
@@ -458,6 +491,8 @@ class ConfigManager(ConfigDict):
 
         if not want_renamed_keyfile and os.path.exists(keyfile):
             # Key file exists, nothing needs to be changed. Happy!
+            # Delete any old key backups we have laying around
+            self._delete_old_master_keys(keyfile)
             return True
 
         # Figure out whether we are encrypting to a GPG key, or using
@@ -471,10 +506,20 @@ class ConfigManager(ConfigDict):
             # Without recipients or a passphrase, we cannot save!
             return False
 
+        if not tokeys:
+            salt = b64w(os.urandom(32).encode('base64'))
+        else:
+            salt = ''
+
         # FIXME: Create event and capture GnuPG state?
-        status, encrypted_key = GnuPG(self).encrypt(self.master_key,
-                                                    tokeys=tokeys)
+        mps = master_passphrase.stretched(salt)
+        gpg = GnuPG(self, passphrase=mps)
+        status, encrypted_key = gpg.encrypt(self.master_key, tokeys=tokeys)
         if status == 0:
+            if salt:
+                h, b = encrypted_key.replace('\r', '').split('\n\n', 1)
+                encrypted_key = ('%s\nSalt: %s\nKDF: %s\n\n%s'
+                    % (h, salt, mps.is_stretched or 'None', b))
             try:
                 with open(keyfile + '.new', 'wb') as fd:
                     fd.write(encrypted_key)
@@ -483,6 +528,10 @@ class ConfigManager(ConfigDict):
                 os.rename(keyfile + '.new', keyfile)
                 self._master_key_ondisk = self.master_key
                 self._master_key_passgen = master_passphrase.generation
+
+                # Delete any old key backups we have laying around
+                self._delete_old_master_keys(keyfile)
+
                 return True
             except:
                 if (want_renamed_keyfile and
@@ -1109,6 +1158,15 @@ class ConfigManager(ConfigDict):
             os.mkdir(d)
         return d
 
+    def need_more_disk_space(self, required=0, nodefault=False, ratio=1.0):
+        """Returns a path where we need more disk space, None if all is ok."""
+        if not (nodefault and required):
+            required = ratio * max(required, self.sys.minfree_mb * 1024 * 1024)
+        for path in (self.workdir, ):
+           if get_free_disk_bytes(path) < required:
+               return path
+        return None
+
     def interruptable_wait_for_lock(self):
         # This construct allows the user to CTRL-C out of things.
         delay = 0.01
@@ -1285,13 +1343,16 @@ class ConfigManager(ConfigDict):
                                         refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
+            from mailpile.plugins.core import HealthCheck
             def optimizer():
-                config.scan_worker.add_unique_task(
-                    config.background, 'gpl_optimize',
-                    lambda: GlobalPostingList.Optimize(config.background,
-                                                       config.index,
-                                                       lazy=True,
-                                                       ratio=0.25, runtime=15))
+                if HealthCheck.check(config.background, config):
+                    config.scan_worker.add_unique_task(
+                        config.background, 'gpl_optimize',
+                        lambda: GlobalPostingList.Optimize(config.background,
+                                                           config.index,
+                                                           lazy=True,
+                                                           ratio=0.25,
+                                                           runtime=15))
             config.cron_worker.add_task('gpl_optimize', 30, optimizer)
 
             # Schedule plugin jobs

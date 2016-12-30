@@ -118,8 +118,8 @@ def TestPop3Settings(session, settings, event):
                               int(settings['port']),
                               settings['username'],
                               settings['password'],
-                              'ssl' in settings['protocol'],
-                              False)
+                              settings['protocol'],
+                              True)
     if conn:
         conn.close()
         return True

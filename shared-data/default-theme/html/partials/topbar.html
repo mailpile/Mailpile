@@ -1,6 +1,6 @@
 <div id="header" class="topbar">
   <div class="topbar-logo">
-  {% set status = _("%(name)s's mailpile is version %(version)s with %(size)s messages", name=(name or _("Somebody")), size=mailpile_size, version=config.version) %}
+  {% set status = _("%(name)s's Mailpile is version %(version)s with %(size)s messages", name=(name or _("Somebody")), size=mailpile_size, version=config.version) %}
   <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
     {% include("../img/logo-color.svg") %}
   </a>
@@ -33,7 +33,7 @@
         </li>
   {%- endif %}
         <li class="{% if command == "edit" %} navigation-on{% endif %}">
-          <a href="#" class="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
+          <a href="{{ U('/message/compose/') }}" class="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
         </li>
 <!--
         <li class="{% if command == "contacts" %} navigation-on{% endif %}">

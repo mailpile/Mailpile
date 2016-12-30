@@ -31,6 +31,7 @@ CONFIG_RULES = {
     'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
         'fd_cache_size': p(_('Max files kept open at once'), int,         500),
+        'minfree_mb':    p(_('Required free disk space (MB)'), int,      1024),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_host':     p(_('Listening host for web UI'),
                            'hostname', 'localhost'),
@@ -78,14 +79,30 @@ CONFIG_RULES = {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('Misc. data refresh frequency'), int,       900),
         'open_in_browser':p(_('Open in browser on startup'), bool,       True),
+        'auto_mark_as_read': p(_('Automatically mark as read'), bool, True),
         'web_content':     (_('Download content from the web'),
                             ["off", "anon", "on"],                  "unknown"),
+        'html5_sandbox':   (_('Use HTML5 sandboxes'), bool,              True),
         'gpg_use_agent':   (_('Use the local GnuPG agent'), bool,       False),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
         'gpg_recipient':   (_('Encrypt local data to ...'), 'gpgkeyid',    ''),
         'gpg_email_key':   (_('Enable e-mail based public key distribution'),
                             bool, True),
+        'gpg_html_wrap':   (_('Wrap keys and signatures in helpful HTML'),
+                            bool, True),
+        'key_trust':       (_("Key Trust Model"), False, {
+            'threshold':    (_('Minimum number of signatures required'),
+                             int, 5),
+            'window_days':  (_('Window of time (days) to evaluate trust'),
+                             int, 90),
+            'sig_warn_pct': (_('Signed ratio (%) above which we expect sigs'),
+                             int, 80),
+            'key_trust_pct':(_('Ratio of key use (%) above which we trust key'),
+                             int, 90),
+            'key_new_pct':  (_('Consider key new below this ratio (%) of sigs'),
+                             int, 10)
+        }),
         'openpgp_header': X(_('Advertise PGP preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
@@ -134,7 +151,7 @@ CONFIG_RULES = {
     'secrets': [_('Secrets the user wants saved'), {
         'password':        (_('A secret'), str, ''),
         'policy':          (_('Security policy'),
-                            ["store", "cache-only", "fail"],
+                            ["store", "cache-only", "fail", "protect"],
                             'store')
     }, {}],
     'routes': [_('Outgoing message routes'), {

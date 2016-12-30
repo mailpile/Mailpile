@@ -67,7 +67,7 @@ Mailpile.silly_strings = {
     '{{_("All of your config settings & passwords are encrypted with AES-256")|escapejs}}',
     '{{_("Encrypting e-mails means your communication actually stays private")|escapejs}}',
     '{{_("The more encrypted e-mail you send, the better!")|escapejs}}',
-    '{{_("Make sure you print or save your keys & passphrase somewhere secure")|escapejs}}',
+    '{{_("Make sure you print or save your keys & passwords somewhere secure")|escapejs}}',
     '{{_("Mailpile by default encrypts your search index!")|escapejs}}',
     '{{_("The most common e-mail password is 123456, hopefully yours is different")|escapejs}}'
   ],

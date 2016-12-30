@@ -6,7 +6,6 @@ all: shared-data/default-theme/css/default.css \
 
 shared-data/default-theme/css/default.css: .less-deps
 	@(cd shared-data/default-theme/less && \
-            #lessc --02 -x default.less \
             lessc default.less \
               |perl -npe 's,(libraries|app)/,,g' \
               |perl -npe 's,/shared-data/,../,g' \

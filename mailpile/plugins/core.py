@@ -77,6 +77,12 @@ class Rescan(Command):
         if 'which' in self.data:
             args.extend(self.data['which'])
 
+        # Abort if we are out of disk space
+        full_path = config.need_more_disk_space()
+        if full_path:
+            return self._error(_('Insufficient free space in %s'
+                                 ) % full_path)
+
         # Pretend we're idle, to make rescan go fast fast.
         if not slowly:
             mailpile.util.LAST_USER_ACTIVITY = 0
@@ -680,6 +686,84 @@ class CronStatus(Command):
             result={
                 'last_run': config.cron_worker.last_run,
                 'jobs': config.cron_worker.schedule.values()})
+
+
+class HealthCheck(Command):
+    """Check and report app health"""
+    SYNOPSIS = (None, 'health', None, "")
+    ORDER = ('Internals', 4)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = False
+
+    # We cache our health event, so it can be updated by the class methods.
+    health_event = None
+
+    def _create_event(self):
+        if HealthCheck.health_event is not None:
+            self.event = HealthCheck.health_event
+        else:
+            Command._create_event(self)
+            self.event.data['starttime'] = int(time.time())
+            self.event.data['problems'] = {}
+            self.event.data['healthy'] = True
+            HealthCheck.health_event = self.event
+
+    @classmethod
+    def _disk_check(cls, session, config):
+        if config.need_more_disk_space():
+            return _('Insufficient free disk space') + '.'
+        return False
+ 
+    @classmethod
+    def _readonly_check(cls, session, config):
+        from mailpile.security import _lockdown_basic
+        if _lockdown_basic(config):
+            return _('Your Mailpile is read-only!')
+        return False
+
+    @classmethod
+    def check(cls, session, config):
+        # Check all the things! The order here matters, more critical things
+        # should be reported last as they will determine the final message.
+        if not cls.health_event:
+            return False
+
+        messages = []
+        problems = cls.health_event.data['problems']
+
+        was_healthy = cls.health_event.data['healthy']
+        old_problems = ' '.join(sorted(problems.keys()))
+
+        now_healthy = True
+        for crit, name, check in ((True, 'disk', cls._disk_check),
+                                  (True, 'readonly', cls._readonly_check)):
+             message = check(session, config)
+             if message:
+                 problems[name] = message
+                 messages.append(message)
+                 if crit:
+                     now_healthy = False
+             elif name in problems:
+                 del problems[name]
+
+        cls.health_event.data['healthy'] = now_healthy
+        if messages:
+            cls.health_event.message = ' '.join(messages[-2:])
+            cls.health_event.flags = cls.health_event.RUNNING
+        else:
+            cls.health_event.message = _('We are healthy!')
+            cls.health_event.flags = cls.health_event.COMPLETE
+
+        # Only record changes to the event log
+        new_problems = ' '.join(sorted(problems.keys()))
+        if old_problems != new_problems and config.event_log:
+            config.event_log.log_event(cls.health_event)
+
+        return True
+
+    def command(self, args=None):
+        self.check(self.session, self.session.config)
+        return self._success(self.event.message, result=self.event)
 
 
 class GpgCommand(Command):
@@ -1836,7 +1920,7 @@ class HelpSplash(Help):
 
 _plugins.register_commands(
     Load, Optimize, Rescan, DeleteMessages,
-    BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus,
+    BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus, HealthCheck,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,

@@ -12,6 +12,7 @@ from mailpile.mailutils import Email, FormatMbxId, AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
+from mailpile.security import evaluate_signature_key_trust
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
@@ -214,8 +215,8 @@ class SearchResults(dict):
 
     _BAR = u'\u2502'
     _FORK = u'\u251c'
-    _FIRST = u'\u256d'
-    _LAST = u'\u2570'
+    _FIRST = u'\u250c'
+    _LAST = u'\u2514'
     _BLANK = u' '
     _DASH = u'\u2500'
     _TEE = u'\u252c'
@@ -313,6 +314,7 @@ class SearchResults(dict):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
         email.evaluate_pgp(tree, decrypt=True)
+        evaluate_signature_key_trust(self.session.config, email, tree)
 
         editing_strings = tree.get('editing_strings')
         if editing_strings:
@@ -741,7 +743,7 @@ class Search(Command):
     def _email_view_side_effects(self, emails):
         session, config, idx = self.session, self.session.config, self._idx()
         msg_idxs = [e.msg_idx_pos for e in emails]
-        if 'tags' in config:
+        if 'tags' in config and config.prefs.auto_mark_as_read:
             for tag in config.get_tags(type='unread'):
                 idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
             for tag in config.get_tags(type='read'):

@@ -94,7 +94,7 @@ class CryptoInfo(dict):
     def _mix_in(self, ci):
         """
         This generates a mixed state for the message. The most exciting state
-        is returned/explained, the status prfixed with "mixed-". How exciting
+        is returned/explained, the status prefixed with "mixed-". How exciting
         states are, is determined by the order of the STATUSES attribute.
 
         This is lossy, but hopefully in a useful and non-harmful way.
@@ -129,8 +129,11 @@ class SignatureInfo(CryptoInfo):
     KEYS = (CryptoInfo.KEYS + ["name", "email", "keyinfo", "timestamp"])
     STATUSES = (CryptoInfo.STATUSES +
                 ["mixed-unknown", "unknown",
+                 "mixed-changed", "changed",  # TOFU; not the key we expected!
+                 "mixed-unsigned", "unsigned",  # TOFU; should be signed!
                  "mixed-expired", "expired",
                  "mixed-revoked", "revoked",
                  "mixed-unverified", "unverified",
+                 "mixed-signed", "signed",  # TOFU; signature matches history
                  "mixed-verified", "verified",
                  "mixed-invalid", "invalid"])

@@ -43,7 +43,11 @@ def _mk_date(ts):
 
 _date_offsets = {
     'today': 0,
-    'yesterday': 1
+    'yesterday': 1,
+    'd': 1,
+    'w': 7,
+    'm': 31,
+    'q': 91
 }
 
 
@@ -55,10 +59,21 @@ def search(config, idx, term, hits):
         else:
             start = end = word
 
-        if start in _date_offsets:
-            start = _mk_date(time.time() - _date_offsets[start]*24*3600)
         if end in _date_offsets:
             end = _mk_date(time.time() - _date_offsets[end]*24*3600)
+        elif end[-1:] in _date_offsets:
+            do = _date_offsets[end[-1:]]
+            end = _mk_date(time.time() - int(end[:-1])*do*24*3600)
+        elif len(end) >= 9 and '-' not in end:
+            end = _mk_date(long(end))
+
+        if start in _date_offsets:
+            start = _mk_date(time.time() - _date_offsets[start]*24*3600)
+        elif start[-1:] in _date_offsets:
+            do = _date_offsets[start[-1:]]
+            start = _mk_date(time.time() - int(start[:-1])*do*24*3600)
+        elif len(start) >= 9 and '-' not in start:
+            start = _mk_date(long(start))
 
         start = [int(p) for p in start.split('-')][:3]
         end = [int(p) for p in end.split('-')[:3]]

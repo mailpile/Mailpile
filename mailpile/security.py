@@ -7,6 +7,7 @@ review and testing.
 
 """
 import copy
+import json
 import ssl
 import time
 
@@ -34,27 +35,44 @@ def _lockdown(config):
     return 1
 
 
+def in_disk_lockdown(config):
+    # If we've dropped below 50% of our target free space, we stop
+    # almost all operations and go into lockdown. This makes the
+    # Mailpile effectively read-only, which should be safe without
+    # being totally useless.
+    if config.need_more_disk_space(ratio=0.5):
+        return _('Insufficient free disk space')
+    return False
+
+
 def _lockdown_minimal(config):
     if _lockdown(config) != 0:
         return _('In lockdown, doing nothing.')
     return False
 
 
-def _lockdown_basic(config):
+def _lockdown_config(config):
+    # This is just like lockdown_basic, except we allow the user to
+    # change the config so they can adjust the minimum free disk space
+    # requirement if it was accidentally made too strict.
     if _lockdown(config) > 0:
         return _('In lockdown, doing nothing.')
     return False
 
 
+def _lockdown_basic(config):
+    return _lockdown_config(config) or in_disk_lockdown(config)
+
+
 def _lockdown_strict(config):
     if _lockdown(config) > 1:
         return _('In lockdown, doing nothing.')
-    return False
+    return in_disk_lockdown(config)
 
 
 CC_ACCESS_FILESYSTEM  = [_lockdown_minimal]
 CC_BROWSE_FILESYSTEM  = [_lockdown_basic]
-CC_CHANGE_CONFIG      = [_lockdown_basic]
+CC_CHANGE_CONFIG      = [_lockdown_config]
 CC_CHANGE_CONTACTS    = [_lockdown_basic]
 CC_CHANGE_GNUPG       = [_lockdown_basic]
 CC_CHANGE_FILTERS     = [_lockdown_strict]
@@ -181,6 +199,54 @@ def valid_csrf_token(req, session_id, csrf_token):
 
 ##[ Secure-ish handling of passphrases ]#####################################
 
+Scrypt = PBKDF2HMAC = None
+try:
+    # Depending on whether Cryptography is installed (and which version),
+    # this may all fail, all succeed or succeed in part.
+    import cryptography.hazmat.backends
+    import cryptography.hazmat.primitives.hashes
+    from cryptography.exceptions import UnsupportedAlgorithm
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+except ImportError:
+    pass
+
+
+def stretch_with_pbkdf2(password, salt, params):
+    return b64w(PBKDF2HMAC(
+        backend=cryptography.hazmat.backends.default_backend(),
+        algorithm=cryptography.hazmat.primitives.hashes.SHA256(),
+        salt=salt,
+        iterations=int(params['iterations']),
+        length=32).derive(password).encode('base64'))
+
+
+def stretch_with_scrypt(password, salt, params):
+    return b64w(Scrypt(
+        backend=cryptography.hazmat.backends.default_backend(),
+        salt=salt,
+        n=int(params['n']),
+        r=int(params['r']),
+        p=int(params['p']),
+        length=32).derive(password).encode('base64'))
+
+
+# These are our defaults, based on recommendations found on The Internet.
+# The parameters actually used should be stored along with the output so
+# we can change them later if they're found to be too weak or flawed in
+# some other way.
+KDF_PARAMS = {
+    'pbkdf2': {
+        'iterations': 400000
+    },
+    'scrypt': {
+        'n': 2**17,
+        'r': 8,
+        'p': 1
+    }
+}
+
+
 class SecurePassphraseStorage(object):
     """
     This is slightly obfuscated in-memory storage of passphrases.
@@ -227,9 +293,11 @@ class SecurePassphraseStorage(object):
     """
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
-    def __init__(self, passphrase=None):
+    def __init__(self, passphrase=None, stretched=False):
         self.generation = 0
         self.expiration = -1
+        self.is_stretched = stretched
+        self.stretch_cache = {}
         if passphrase is not None:
             self.set_passphrase(passphrase)
         else:
@@ -244,11 +312,42 @@ class SecurePassphraseStorage(object):
     def is_set(self):
         return (self.data is not None)
 
+    def stretches(self, salt, params=None):
+        if self.is_stretched:
+            yield (self.is_stretched, self)
+            return
+
+        if params is None:
+            params = KDF_PARAMS
+
+        for which, name, stretch in (
+                (Scrypt, 'scrypt', stretch_with_scrypt),
+                (PBKDF2HMAC, 'pbkdf2', stretch_with_pbkdf2), ):
+            if which:
+                try:
+                    how = params[name]
+                    name += ' ' + json.dumps(how, sort_keys=True)
+                    sc_key = '%s/%s' % (name, salt)
+                    if sc_key not in self.stretch_cache:
+                        pf = intlist_to_string(self.data).encode('utf-8')
+                        self.stretch_cache[sc_key] = SecurePassphraseStorage(
+                            stretch(pf, salt, how), stretched=name)
+                    yield (name, self.stretch_cache[sc_key])
+                except (KeyError, AttributeError, UnsupportedAlgorithm):
+                    pass
+
+        yield ('clear', self)
+
+    def stretched(self, salt, params=None):
+        for name, stretch in self.stretches(salt, params=params):
+            return stretch
+
     def set_passphrase(self, passphrase):
         # This stores the passphrase as a list of integers, which is a
         # primitive in-memory obfuscation relying on how Python represents
         # small integers as globally shared objects. Better Than Nothing!
         self.data = string_to_intlist(passphrase)
+        self.stretch_cache = {}
         self.generation += 1
 
     def compare(self, passphrase):
@@ -324,6 +423,99 @@ def tls_context_wrap_socket(org_wrap, context, sock, *args, **kwargs):
 def tls_wrap_socket(org_wrap, *args, **kwargs):
     args, kwargs = tls_configure(None, args, kwargs)
     return org_wrap(*args, **kwargs)
+
+
+##[ Key Trust ]#############################################################
+
+def evaluate_signature_key_trust(config, email, tree):
+    """
+    This uses historic data from the search engine to refine and expand
+    upon the states we get back from GnuPG.
+
+    The new potential signature states are:
+
+      unsigned  We expected a signature from this sender but found none
+      changed   The signature was made with a key we've rarely seen before
+      signed    The signature was made with a key we've often seen before
+
+    The first state depends on the user's ratio of signed to unsigned
+    messages, the second two depend on how frequently we've seen a given
+    key used for signatures vs. the total number of signatures.
+
+    These states will supercede the states we get from GnuPG like so:
+
+      * `none` becomes `unsigned`
+      * `unknown` or `unverified` may become `changed`
+      * `unverified` may become `signed`
+
+    The constants used in this algorithm can be found and tweaked in the
+    `prefs.key_trust` section of the configuration file.
+    """
+    sender = email.get_sender()
+    if not sender:
+        return
+
+    days = config.prefs.key_trust.window_days
+    msgts = long(email.get_msg_info(config.index.MSG_DATE), 36)
+    scope = ['dates:%d..%d' % (msgts - (days * 24 * 3600), msgts),
+             'from:%s' % sender]
+
+    messages_per_key = {}
+    def count(name, terms):
+        if name not in messages_per_key:
+            msgs = config.index.search(config.background, scope + terms)
+            messages_per_key[name] = len(msgs)
+        return messages_per_key[name]
+
+    signed = lambda: count('signed', ['has:signature'])
+    if signed() < config.prefs.key_trust.threshold:
+        return
+
+    total = lambda: count('total', [])
+    swr = config.prefs.key_trust.sig_warn_pct / 100.0
+    ktr = config.prefs.key_trust.key_trust_pct / 100.0
+    knr = config.prefs.key_trust.key_new_pct / 100.0
+
+    def update_siginfo(si):
+        stat = si["status"]
+        keyid = si.get('keyinfo', '')[-16:].lower()
+
+        # Unsigned message: if the ratio of total signed messages is
+        # above config.prefs.sig_warn_pct percent, we EXPECT signatures
+        # and warn the user if they're not present.
+        if (stat == 'none') and (signed() > swr * total()):
+            si["status"] = 'unsigned'
+
+        # Signed by unverified key: Signal that we trust this key if
+        # this is the key we've seen most of the time for this user.
+        # This is TOFU-ish.
+        elif (keyid and
+                ('unverified' in stat) and
+                (count(keyid, ['sig:%s' % keyid]) > ktr * signed())):
+            si["status"] = stat.replace('unverified', 'signed')
+
+        # Signed by a key we have seen very rarely for this user. Gently
+        # warn the user that something unsual is going on.
+        elif (keyid and
+                ('unverified' in stat or 'unknown' in stat) and
+                (count(keyid, ['sig:%s' % keyid]) < knr * signed())):
+            changed = "mixed-changed" if ("mixed" in stat) else "changed"
+            si["status"] = changed
+
+        # FIXME: Compare email timestamp with the signature timestamp.
+        #        If they differ by a great deal, treat the signature as
+        # invalid? This would make it much harder to copy old signed
+        # content (undetected) into new messages.
+
+    if 'crypto' in tree:
+        update_siginfo(tree['crypto']['signature'])
+
+    for skey in ('text_parts', 'html_parts', 'attachments'):
+        for i, part in enumerate(tree[skey]):
+            if 'crypto' in part:
+                update_siginfo(part['crypto']['signature'])
+
+    return tree
 
 
 ##[ Setup ]#################################################################

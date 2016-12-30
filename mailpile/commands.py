@@ -475,7 +475,9 @@ class Command(object):
                           'message': self.message or ''}
 
     def _sloppy_copy(self, data, name=None):
-        if name and 'pass' == name[:4]:
+        if name and (name[:4] in ('pass', 'csrf') or
+                     'password' in name or
+                     'passphrase' in name):
             data = '(SUPPRESSED)'
         def copy_value(v):
             try:

@@ -31,7 +31,7 @@ Decrypting Index, Messages, and Contacts
     <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
   {% if status_message == 'error' %}
-  <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong passphrase. Try again?")}}</div>
+  <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong password. Try again?")}}</div>
   {% elif result.login_failures|length %}
   <div class="logged-out-message animated bounceIn">{{_("Last failed login:")}}
     {{ result.login_failures[-1]|friendly_time }}

@@ -499,8 +499,9 @@ class Email(object):
                 att = copy.deepcopy(att)
                 att.signature_info = SignatureInfo(parent=msi)
                 att.encryption_info = EncryptionInfo(parent=mei)
-                if att.get('content-id') is None:
-                    att.add_header('Content-Id', MakeContentID())
+# Disabled for now.
+#               if att.get('content-id') is None:
+#                   att.add_header('Content-Id', MakeContentID())
                 msg.attach(att)
                 del att['MIME-Version']
 
@@ -677,7 +678,8 @@ class Email(object):
             att = MIMEBase(maintype, subtype)
             att.set_payload(data)
             encoders.encode_base64(att)
-        att.add_header('Content-Id', MakeContentID())
+# Disabled for now.
+#       att.add_header('Content-Id', MakeContentID())
 
         # FS paths are strings of bytes, should be represented as utf-8 for
         # correct header encoding.
@@ -774,25 +776,32 @@ class Email(object):
         if not self.is_editable():
             raise NotEditableError(_('Message or mailbox is read-only.'))
 
-        mbx, ptr, fd = self.get_mbox_ptr_and_fd()
-        fd.close()  # Windows needs this
+        if self.ephemeral_mid:
+            self.reset_caches(clear_parse_cache=False,
+                              msg_parsed=newmsg,
+                              msg_parsed_pgpmime=newmsg,
+                              msg_info=self.msg_info)
 
-        # OK, adding to the mailbox worked
-        newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
-        self.update_parse_cache(newmsg)
+        else:
+            mbx, ptr, fd = self.get_mbox_ptr_and_fd()
+            fd.close()  # Windows needs this
 
-        # Remove the old message...
-        mbx.remove_by_ptr(ptr)
+            # OK, adding to the mailbox worked
+            newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
+            self.update_parse_cache(newmsg)
 
-        # FIXME: We should DELETE the old version from the index first.
+            # Remove the old message...
+            mbx.remove_by_ptr(ptr)
 
-        # Update the in-memory-index
-        mi = self.get_msg_info()
-        mi[self.index.MSG_PTRS] = newptr
-        self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
-        self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+            # FIXME: We should DELETE the old version from the index first.
 
-        self.reset_caches(clear_parse_cache=False)
+            # Update the in-memory-index
+            mi = self.get_msg_info()
+            mi[self.index.MSG_PTRS] = newptr
+            self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
+            self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+            self.reset_caches(clear_parse_cache=False)
+
         return self
 
     def reset_caches(self,
@@ -958,6 +967,13 @@ class Email(object):
         else:
             raw = ' '.join(self.get_msg().get_all(field, default))
             return safe_decode_hdr(hdr=raw) or raw
+
+    def get_sender(self):
+        try:
+            ahp = AddressHeaderParser(unicode_data=self.get('from'))
+            return ahp[0].address
+        except IndexError:
+            return None
 
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded
@@ -1462,8 +1478,7 @@ class Email(object):
     }
 
     def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
-                                 crypto_state_feedback=True,
-                                 event=None):
+                                 crypto_state_feedback=True, event=None):
         if 'text_parts' not in tree:
             return tree
 

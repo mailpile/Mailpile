@@ -73,29 +73,48 @@ class CryptoPolicy(CryptoPolicyBaseAction):
 
     @classmethod
     def ShouldAttachKey(cls, config, vcards=None, emails=None, ttl=90):
+        now = datetime.now()
         offset = timedelta(days=ttl)  # FIXME: Magic number!
         never = datetime.fromtimestamp(0)
         dates = []
 
-        if not vcards:
-            vcards = []
-        for vc in (config.vcards.get(e) for e in (emails or [])):
-            vcards.append(vc)  # Note: May append None, that's OK
-        for vc in (v for v in vcards):
-            # A VCard with no last shared date or an invalid shared date,
-            # is considered to never have received a key.
-            try:
-                if vc.kind != 'profile':
+        # who = dict of email -> vcard
+        who = dict((vc.email, vc) for vc in (vcards or []) if vc)
+        for e in emails or []:
+            if e not in who:
+                who[e] = config.vcards.get(e)
+
+        # Examine each one. The policy is to only attach a key if everyone
+        # can use keys AND someone needs a key.
+        needs_key = 0
+        for email, vc in who.iteritems():
+
+            if vc and vc.kind == 'profile':
+                continue  # Ignore self
+
+            ts = None
+            if vc:
+                try:
                     # FIXME: This doesn't check *which* key we sent! This
                     #        needs to be made smarter for key rollover and
                     #        mutliple-key scenarios.
-                    lastdate = vc.pgp_key_shared
-                    dates.append(datetime.fromtimestamp(float(lastdate)))
-            except (ValueError, TypeError, AttributeError):
-                dates.append(never)
+                    ts = datetime.fromtimestamp(float(vc.pgp_key_shared))
+                except (ValueError, TypeError, AttributeError):
+                    pass
 
-        # If anyone needs a key, attach a key...
-        return 0 < len([d for d in dates if d+offset < datetime.now()])
+            if (ts or never) + offset < now:
+                # This user hasn't been sent a key recently.
+                needs_key += 1
+
+                # Can they do crypto?
+                ratio = cls._encryption_ratio(
+                    config.background, config.index, email, minimum=1)
+                if ratio <= 0:
+                    # Nope, let's not spam them with keys
+                    return False
+
+        # Someone needs a key update, attach.
+        return (needs_key > 0)
 
     @classmethod
     def _vcard_policy(self, config, email):
@@ -107,11 +126,11 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         return (None, None, email, 'default', 'default')
 
     @classmethod
-    def _encryption_ratio(self, session, idx, email):
+    def _encryption_ratio(self, session, idx, email, minimum=5):
         # This method needs to return quickly, so we perform the more
         # restrictive search first before calculating a proper ratio.
         crypto = idx.search(session, ['from:' + email, 'has:crypto'])
-        if len(crypto) < 5:
+        if len(crypto) < minimum:
             return 0.0
 
         # We also assume index order is roughly date order, which will
@@ -210,15 +229,21 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                     reason = _('Signing, but cannot encrypt because we '
                                'do not have keys for all recipients.')
 
-        vcards = [p[0] for p in policies]
+        if 'send_keys' in cformat:
+            send_keys = cls.ShouldAttachKey(
+                config,
+                vcards=[p[0] for p in policies],
+                emails=[p[2] for p in policies if not p[0]])
+        else:
+            send_keys = False
+
         return {
           'reason': reason,
           'can-sign': can_sign,
           'can-encrypt': can_encrypt,
           'crypto-policy': policy,
           'crypto-format': cformat,
-          'send-keys': ('send_keys' in cformat and
-                        cls.ShouldAttachKey(config, vcards=vcards)),
+          'send-keys': send_keys,
           'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
                              for vc, k, e, p, f in policies if vc])
         }
