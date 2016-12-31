@@ -8227,7 +8227,6 @@ tr.modal-tag-picker-item td.checkbox {
   overflow: hidden;
   word-wrap: normal;
   word-break: normal;
-  white-space: nowrap;
 }
 #pile-results td.subject a.item-subject {
   width: 370px;
