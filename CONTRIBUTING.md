@@ -2,26 +2,22 @@
 
 First of all: Thank you! :heart:
 
-#### Code of Conduct
+
+#### Further Reading
 
 Second of all, please adhere to our Code of Conduct when you participate
-in our community. Be kind, be respectful.
+in our community. Be kind, be respectful. [The full Code of Conduct can
+be found here](CODE_OF_CONDUCT.md).
 
-[The full Code of Conduct can be found here](CODE_OF_CONDUCT.md).
-
-
-#### License
-
-Thirdly, please be sure you are comfortable with [our license](COPYING.md)
+Please also be sure you are comfortable with [our license](COPYING.md)
 before contributing any code to Mailpile.
 
-
-#### Developer FAQ
-
-Does Mailpile seem a bit strange? Are you unsure of whether something is a
-bug or a feature? [Our developer FAQ might have answers](DEV_FAQ.md).
-
-Please read it before filing issues or starting major development work.
+Note that Mailpile is a slightly unsual app; the design is both political
+and opinionated. If you are confused or unsure whether something is a bug or a
+feature, [our developer FAQ might have answers](DEV_FAQ.md)! Please read it
+before filing issues about design choices or attempting to reorganize the code
+in any major way. The FAQ also contains a quick introduction Mailpile internals
+and debugging techniques.
 
 
 #### Did you find a bug?
@@ -48,6 +44,8 @@ Please read it before filing issues or starting major development work.
   be useful to file a report in case others are having the same issue, but
   bugs that can be reproduced will in general get fixed much faster!
 
+* The [Developer FAQ](DEV_FAQ.md) has a section on debugging techniques.
+
 
 #### **Did you write a patch that fixes a bug?**
 
@@ -63,7 +61,7 @@ Please read it before filing issues or starting major development work.
   your feature is compatible with our high-level goals and design decisions.
 
 * If you are unsure or would like some guidance, join the #mailpile
-  channel on IRC and discuss your plans there.
+  channel on IRC (Freenode) and discuss your plans there.
 
 * Open a new GitHub pull request with the patch.
 
@@ -94,8 +92,8 @@ Please feel free to join our translation community
 * Please feel free to contribute documentation to
   [our wiki](https://github.com/mailpile/Mailpile/wiki).
 
-* If you would like some guidance, join the #mailpile channel on IRC or
-  file an issue with your questions.
+* If you would like some guidance, join the #mailpile channel on IRC
+  (Freenode) or file an issue with your questions.
 
 * If you added a new page or made major major changes to an existing page,
   please file [a new issue requesting a review](https://github.com/mailpile/Mailpile/issues/new)
