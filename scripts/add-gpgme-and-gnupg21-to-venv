@@ -1,13 +1,13 @@
 #!/bin/bash
 
 GNUPG_DEPS="\
-    https://gnupg.org/ftp/gcrypt/npth/npth-1.3.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.25.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/libassuan/libassuan-2.4.3.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.5.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2 \
-    https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.8.0.tar.bz2"
+    https://gnupg.org/ftp/gcrypt/npth/npth-1.3.tar.bz2=1b21507cfa3f58bdd19ef2f6800ab4cb67729972 \
+    https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.25.tar.bz2=8ab7494e40f80f4138edc9516981bf4afe7d9dbf \
+    https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2=a98385734a0c3f5b713198e8d6e6e4aeb0b76fde \
+    https://gnupg.org/ftp/gcrypt/libassuan/libassuan-2.4.3.tar.bz2=27391cf4a820b5350ea789c30661830c9a271518 \
+    https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.5.tar.bz2=fa485d854748fc06ea041b3057b2de2f12fbc17f \
+    https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2=d83ab893faab35f37ace772ca29b939e6a5aa6a7 \
+    https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.8.0.tar.bz2=efa043064dbf675fd713228c6fcfcc4116feb221"
 
 [ "$VIRTUAL_ENV" == "" ] && {
     echo "Please activate your virtualenv first!"
@@ -26,14 +26,24 @@ set -e
 mkdir -p "$VIRTUAL_ENV/gnupg-build"
 cd "$VIRTUAL_ENV/gnupg-build"
 
-for package in $GNUPG_DEPS; do
-    tarball=$(basename $package)
-    srcdir=$(basename $package |sed -e s/.tar.bz2//)
+for packageandsum in $GNUPG_DEPS; do
+    package=$(echo "$packageandsum" |cut -f1 -d=)
+    shasum=$(echo $packageandsum |cut -f2 -d=)
+    tarball=$(basename "$package")
+    srcdir=$(echo "$tarball" |sed -e s/.tar.bz2//)
 
     if [ ! -e "$tarball" ]; then
         rm -f dl.tmp
         wget "$package" -O dl.tmp
         mv -f dl.tmp "$tarball"
+    fi
+    if [ "$(sha1sum "$tarball" |cut -f1 -d\ )" != "$shasum" ]; then
+        set +x
+        echo
+        echo "SHA1 checksum incorrect for $tarball"
+        echo "Nuke the virtualenv from orbit and try again?"
+        echo
+        exit 99
     fi
 
     [ -e "$srcdir" ] || tar xfj "$tarball"
@@ -51,6 +61,15 @@ echo
 echo "Whew! If you would like to clean up, run this:"
 echo
 echo "  rm -rf '$VIRTUAL_ENV/gnupg-build'"
+echo
+echo ====================================================================
+echo "WARNING!    *** TAKE CARE OF YOUR MAIN KEYCHAIN! ***"
+echo
+echo "  GnuPG version 2.1 likes to upgrade the keychain storage format"
+echo "  to something GnuPG 2.0 and 1.4 cannot read. So take care to set"
+echo "  GNUPGHOME or backup your keychain! The scripts/setup-test.sh is"
+echo "  good for self-contained disposable development test runs."
+echo ====================================================================
 echo
 echo "You will also need to set the following environment variable:"
 echo
