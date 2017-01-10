@@ -8229,7 +8229,7 @@ tr.modal-tag-picker-item td.checkbox {
   word-break: normal;
 }
 #pile-results td.subject a.item-subject {
-  width: 370px;
+  width: 700px;
   display: block;
   white-space: nowrap;
   overflow: hidden;
