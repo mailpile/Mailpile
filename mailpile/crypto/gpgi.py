@@ -590,6 +590,7 @@ class GnuPG:
         args.insert(1, "--utf8-strings")
         args.insert(1, "--with-colons")
         args.insert(1, "--verbose")
+        args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
 
         if (not self.use_agent) or (self.passphrase and send_passphrase):
