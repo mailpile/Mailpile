@@ -194,7 +194,7 @@ Mailpile.notify_working = function(message, timeout) {
     events[0] = setTimeout(notify, 5000);
   };
   events[0] = setTimeout(notify, timeout);
-  return function() {
+  cancel = function(delay) {
     // This cancels the event. To avoid weird flickering, if the notification
     // has already been displayed, we leave it up for a little longer.
     if (events[0]) clearTimeout(events[0]);
@@ -202,6 +202,8 @@ Mailpile.notify_working = function(message, timeout) {
       if (events[1]) Mailpile.cancel_notification(events[1]);
     }, 1250);
   }
+  setTimeout(cancel, 120000); // After two minutes just give up...
+  return cancel;
 };
 
 /* Notification - Close all */

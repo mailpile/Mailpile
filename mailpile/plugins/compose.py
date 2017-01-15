@@ -751,12 +751,13 @@ class Attach(CompositionCommand):
                 err(_('Error attaching to %s') % subject)
                 self._ignore_exception()
 
+        file_list = ', '.join(f.decode('utf-8') for f in files)
         if errors:
             self.message = _('Attached %s to %d messages, failed %d'
-                             ) % (', '.join(files), len(updated), len(errors))
+                             ) % (file_list, len(updated), len(errors))
         else:
             self.message = _('Attached %s to %d messages'
-                             ) % (', '.join(files), len(updated))
+                             ) % (file_list, len(updated))
 
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
