@@ -44,32 +44,17 @@ class SearchHistory(object):
                 self.changed = False
                 config.save_pickle(self, self.PICKLE_NAME)
 
-    def _to_bitmask(self, results):
-        if not results:
-            return str('\0')
-        bitmask = [0] * (max(results) // 8 + 1)
-        for r in results:
-            bitmask[r//8] |= 1 << (r % 8)
-        return ''.join(chr(b) for b in bitmask)
-
-    def _from_bitmask(self, bitmask):
-        results = []
-        for i in range(0, len(bitmask)):
-            v = ord(bitmask[i])
-            if v:
-                results += [(i * 8 + b) for b in range(0, 8) if v & (1 << b)]
-        return results
-
     def _compress(self, results, order):
         # This generates a compact but complete representation of the search,
         # compact enough that we COULD embed in API responses if we wanted to
         # do away with the server-side persistence.
         # TODO: Explore if this is a better format for posting lists!
-        return zlib.compress(':'.join([self._to_bitmask(results), str(order)]))
+        return zlib.compress(':'.join([intlist_to_bitmask(results),
+                                       str(order)]))
 
     def _decompress(self, compressed_bitmask):
         bitmask, order = zlib.decompress(compressed_bitmask).rsplit(':', 1)
-        return self._from_bitmask(bitmask), order
+        return bitmask_to_intlist(bitmask), order
 
     def add(self, terms, results, order):
         now = int(time.time())

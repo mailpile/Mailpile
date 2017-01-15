@@ -7,6 +7,7 @@ selenium>=2.40.0
 markupsafe
 nose
 mock>=1.0.1
+pycrypto
 pyDNS
 pgpdump
 pillow
