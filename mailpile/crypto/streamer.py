@@ -454,6 +454,10 @@ class ChecksummingStreamer(OutputCoprocess):
             data = self.tempfile.read(4096)
         self.outer_sha256 = outer_sha.hexdigest()
 
+    def outer_mac_sha256(self):
+        # Hm, we have no key, so this is a bit pointless
+        return mac_sha256('', self.outer_sha.digest())
+
     def save_copy(self, ofd):
         self.tempfile.seek(0, 0)
         data = self.tempfile.read(4096)
@@ -561,7 +565,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
         return ChecksummingStreamer._sha256_callback(self, data)
 
     def outer_mac_sha256(self):
-        return mac_sha256(self.key, self.outer_sha.digest())
+        return mac_sha256(self.key or '', self.outer_sha.digest())
 
     def finish(self, *args, **kwargs):
         if not self.finished:
