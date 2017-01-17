@@ -2,6 +2,10 @@
 #
 # See also: https://www.gnupg.org/download/integrity_check.html
 #
+[ "$VIRTUAL_ENV" == "" ] && {
+    echo "Please activate your virtualenv first!"
+    exit 1
+}
 
 GNUPG_DEPS="\
     https://gnupg.org/ftp/gcrypt/npth/npth-1.3.tar.bz2=1b21507cfa3f58bdd19ef2f6800ab4cb67729972 \
@@ -9,15 +13,29 @@ GNUPG_DEPS="\
     https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2=a98385734a0c3f5b713198e8d6e6e4aeb0b76fde \
     https://gnupg.org/ftp/gcrypt/libassuan/libassuan-2.4.3.tar.bz2=27391cf4a820b5350ea789c30661830c9a271518 \
     https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.5.tar.bz2=fa485d854748fc06ea041b3057b2de2f12fbc17f \
-    https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2=d83ab893faab35f37ace772ca29b939e6a5aa6a7 \
     https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.8.0.tar.bz2=efa043064dbf675fd713228c6fcfcc4116feb221"
+INSTALLING="GPGME 1.8.0"
 
-[ "$VIRTUAL_ENV" == "" ] && {
-    echo "Please activate your virtualenv first!"
-    exit 1
-}
+if [ "$1" = "2.1" -o "$1" = "" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/pinentry/pinentry-1.0.0.tar.bz2=85d9ac81ebad3fb082514c505c90c39a0456f1f6 \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2=d83ab893faab35f37ace772ca29b939e6a5aa6a7"
+    INSTALLING="$INSTALLING and GnuPG 2.1.17"
+fi
+if [ "$1" = "2.0" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/pinentry/pinentry-1.0.0.tar.bz2=85d9ac81ebad3fb082514c505c90c39a0456f1f6 \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.0.30.tar.bz2=a9f024588c356a55e2fd413574bfb55b2e18794a"
+    INSTALLING="$INSTALLING and GnuPG 2.0.30"
+fi
+if [ "$1" = "1.4" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-1.4.21.tar.bz2=e3bdb585026f752ae91360f45c28e76e4a15d338"
+    INSTALLING="$INSTALLING and GnuPG 1.4.21"
+fi
+
 echo
-echo "About to download, build and install GPGME 1.8.0 and GnuPG 2.1.17"
+echo "About to download, build and install $INSTALLING"
 echo "into: $VIRTUAL_ENV"
 echo
 echo "Press ENTER to continue."""

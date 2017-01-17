@@ -141,7 +141,7 @@ mp-virtualenv/bin/activate:
 	@echo
 	@echo NOTE: If you want to test/develop with GnuPG 2.1, you might
 	@echo       want to activate the virtualenv and then run this script
-	@echo to build GnuPG 2.1: ./scripts/add-gpgme-and-gnupg21-to-venv
+	@echo to build GnuPG 2.1: ./scripts/add-gpgme-and-gnupg-to-venv
 	@echo
 
 mp-virtualenv/bin/.dev: virtualenv
