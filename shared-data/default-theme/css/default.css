@@ -8229,7 +8229,7 @@ tr.modal-tag-picker-item td.checkbox {
   word-break: normal;
 }
 #pile-results td.subject a.item-subject {
-  width: 370px;
+  width: 700px;
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -9423,6 +9423,10 @@ a.modal-tag-color-option:hover {
   #pile-results td.avatar {
     padding-left: 4px;
   }
+  #pile-results td.subject a.item-subject {
+    width: 485px;
+  }
+
   xtable,
   xtbody {
     display: block;
@@ -9542,6 +9546,10 @@ a.modal-tag-color-option:hover {
   #pile-results td.date {
     padding-right: 3px;
   }
+  #pile-results td.subject a-item-subject {
+    width: 370px;
+  }
+
   #content-tools nav li {
     padding: 2px;
     margin: 0;
