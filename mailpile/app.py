@@ -3,6 +3,16 @@ import gettext
 import locale
 import os
 import sys
+import sys, os
+
+# Make imports work without PYTHONPATH
+mailpile_root = os.path.dirname(     # Mailpile root
+    os.path.dirname(                 # scripts/
+        os.path.realpath(__file__)   # this script
+    )
+)
+
+sys.path.append(mailpile_root)
 
 import mailpile.util
 import mailpile.config.defaults
@@ -18,6 +28,9 @@ from mailpile.plugins.motd import MessageOfTheDay
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
+
+
+quitServer = False
 _plugins = PluginManager(builtin=__file__)
 
 # This makes sure mailbox "plugins" get loaded... has to go somewhere?
@@ -55,6 +68,7 @@ def CatchUnixSignals(session):
 def Interact(session):
     global readline
     try:
+        
         import readline as rl  # Unix-only
         readline = rl
     except ImportError:
@@ -170,7 +184,7 @@ class WaitCommand(Command):
         return self._success(_('Did nothing much for a while'))
 
 
-def Main(args):
+def Main(args=""):
     DisableUnbrokeredConnections()
 
     # Bootstrap translations until we've loaded everything else
@@ -197,6 +211,8 @@ def Main(args):
 
     try:
         try:
+            if(quitServer):
+                raise KeyboardInterrupt
             shorta, longa = '', []
             for cls in COMMANDS:
                 shortn, longn, urlpath, arglist = cls.SYNOPSIS[:4]
@@ -228,6 +244,7 @@ def Main(args):
         pass
 
     finally:
+
         if readline:
             readline.write_history_file(session.config.history_file())
 
@@ -254,4 +271,15 @@ def Main(args):
 _plugins.register_commands(InteractCommand, WaitCommand)
 
 if __name__ == "__main__":
+    #!/usr/bin/env python2
+    import sys, os
+
+    # Make imports work without PYTHONPATH
+    mailpile_root = os.path.dirname(     # Mailpile root
+        os.path.dirname(                 # scripts/
+            os.path.realpath(__file__)   # this script
+        )
+    )
+
+    sys.path.append(mailpile_root)
     Main(sys.argv[1:])

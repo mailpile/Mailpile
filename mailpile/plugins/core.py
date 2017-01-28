@@ -15,6 +15,8 @@ import traceback
 import threading
 import time
 import webbrowser
+import sys
+
 
 import mailpile.util
 import mailpile.postinglist
@@ -34,6 +36,7 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 from mailpile.vfs import vfs, FilePath
+from mailpile.plugins.gui import qtWebkit
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -374,6 +377,8 @@ class DeleteMessages(Command):
                              result=result)
 
 
+
+
 class BrowseOrLaunch(Command):
     """Launch browser and exit, if already running"""
     SYNOPSIS = (None, 'browse_or_launch', None, None)
@@ -381,16 +386,20 @@ class BrowseOrLaunch(Command):
     CONFIG_REQUIRED = False
     RAISES = (KeyboardInterrupt,)
 
+
+
     @classmethod
     def Browse(cls, sspec):
         http_url = ('http://%s:%s%s/' % sspec
                     ).replace('//0.0.0.0:', '//localhost:')
         try:
             MakePopenUnsafe()
-            webbrowser.open(http_url)
+            
+
+            #webbrowser.open(http_url)
             return http_url
-        except:
-            pass
+        except TypeError,e:
+            print(e)
         finally:
             MakePopenSafe()
         return False

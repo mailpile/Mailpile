@@ -1,3 +1,26 @@
+Hello eveyone !
+I have hacked around with Mailpile and created a basic qt gui.
+I don't think this would be merged becuase of hacky code.
+So you can check the original project at the links below.
+
+To install this version :
+
+    
+    Use installation instructions of the original project .
+    
+    You should create $HOME/.mailpile/data.json file to include installation folder as path and your master password for easier login.
+        
+        {"path": "/home/user/Mailpile", "unread": 40, "pass": "123password"}
+
+
+    Then execute qtWebkit.py
+  
+          
+        
+            
+
+            
+
 # Welcome to Mailpile! #
 
 [![Build Status](https://img.shields.io/travis/mailpile/Mailpile/master.svg)](https://travis-ci.org/mailpile/Mailpile)
