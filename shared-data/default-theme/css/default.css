@@ -6288,6 +6288,10 @@ div.motd a.motd-signed {
   line-height: 14px;
   color: #ffffff;
 }
+/* Body */
+body {
+  overflow:hidden;
+}
 /* Content */
 #content {
   position: fixed;
