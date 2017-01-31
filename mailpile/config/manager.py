@@ -685,7 +685,7 @@ class ConfigManager(ConfigDict):
                 from mailpile.crypto.streamer import DecryptingStreamer
                 with DecryptingStreamer(fd,
                                         mep_key=self.master_key,
-                                        name='load_pickle'
+                                        name='load_pickle(%s)' % pfn
                                         ) as streamer:
                     rv = cPickle.loads(streamer.read())
                     streamer.verify(_raise=IOError)

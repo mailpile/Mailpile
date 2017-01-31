@@ -71,10 +71,12 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
     def _get_fd(self, key):
         with self._lock:
-            fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
+            fn = os.path.join(self._path, self._lookup(key))
             mep_key = self._decryption_key_func()
+        fd = open(fn, 'rb')
         if mep_key:
-            fd = DecryptingStreamer(fd, mep_key=mep_key, name='WERVD')
+            fd = DecryptingStreamer(fd, mep_key=mep_key,
+                                    name='WERVD(%s)' % fn)
         return fd
 
     def get_message(self, key):
