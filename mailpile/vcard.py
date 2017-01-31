@@ -872,7 +872,8 @@ class MailpileVCard(SimpleVCard):
             with open(self.filename, 'rb') as fd:
                 with DecryptingStreamer(fd,
                                         mep_key=self.decryption_key_func(),
-                                        name='VCard/load') as streamer:
+                                        name='VCard/load(%s)' % self.filename
+                                        ) as streamer:
                     data = streamer.read().decode('utf-8')
                     streamer.verify(_raise=IOError)
         else:

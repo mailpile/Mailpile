@@ -802,8 +802,12 @@ class DecryptingStreamer(InputCoprocess):
                             self.buffered = b
                         else:
                             d, self.buffered = self.buffered, ''
-                        data += self.decryptor(self.decoder(d))
-                        eof = False
+                        try:
+                            data += self.decryptor(self.decoder(d))
+                            eof = False
+                        except TypeError:
+                            raise IOError('%s: Bad data, failed to decode'
+                                          % self.name)
             return (data or '')
 
         if data is None:

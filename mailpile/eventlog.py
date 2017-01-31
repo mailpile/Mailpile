@@ -274,7 +274,8 @@ class EventLog(object):
         with open(os.path.join(self.logdir, lfn)) as fd:
             if enc_key:
                 with DecryptingStreamer(fd, mep_key=enc_key,
-                                        name='EventLog/DS') as streamer:
+                                        name='EventLog/DS(%s)' % lfn
+                                        ) as streamer:
                     lines = streamer.read()
                     streamer.verify(_raise=IOError)
             else:
