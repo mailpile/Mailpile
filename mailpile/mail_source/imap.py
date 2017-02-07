@@ -39,6 +39,7 @@
 #
 #
 #
+import imaplib
 import os
 import re
 import socket
@@ -63,6 +64,12 @@ from mailpile.mail_source.imap_starttls import IMAP4
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.util import *
 from mailpile.vfs import FilePath
+
+
+# Raise imaplib's default maximum line length to something long and
+# silly. Some versions of Python ship with this set too low for the
+# Real World (no matter what the RFCs say).
+imaplib._MAXLINE = 10 * 1024 * 1024
 
 
 IMAP_TOKEN = re.compile('("[^"]*"'
@@ -179,17 +186,40 @@ class SharedImapConn(threading.Thread):
                 if 'imap' in self.session.config.sys.debug:
                     self.session.ui.debug((' => %s' % (rv,))[:240])
                 return rv
-            except IMAP4.error:
-                # We convert IMAP4.error to a subclass of IOError, so
-                # things get caught by the already existing error handling
-                # code in Mailpile.  We do not catch the assertions, as
-                # those are logic errors that should not be suppressed.
-                raise IMAP_IOError('Failed %s(%s %s)' % (method, args, kwargs))
-            except:
+
+            # This is annoyingly repetetive because the imaplib error classes
+            # are subclassed in a strange way.
+            #
+            # In short, we convert imaplib's error, abort and readonly into
+            # a subclass of IOError, so Mailplie's common logic can handle
+            # things gracefully. In the case of abort, we also kill the
+            # connection because it's probably in an unworkable state.
+            #
+            except IMAP4.readonly:
                 if 'imap' in self.session.config.sys.debug:
                     self.session.ui.debug(traceback.format_exc())
+                raise IMAP_IOError('Readonly: %s(%s %s)' % (method, args, kwargs))
+            except IMAP4.abort:
+                if 'imap' in self.session.config.sys.debug:
+                    self.session.ui.debug(traceback.format_exc())
+                self._shutdown()
+                raise IMAP_IOError('Abort: %s(%s %s)' % (method, args, kwargs))
+            except IMAP4.error:
+                if 'imap' in self.session.config.sys.debug:
+                    self.session.ui.debug(traceback.format_exc())
+                raise IMAP_IOError('Error: %s(%s %s)' % (method, args, kwargs))
+            except:
+                # Default is no-op, just re-raise the exception. This includes
+                # the assertions above; they're logic errors we don't want to
+                # suppress.
                 raise
         return proxy_method
+
+    def _shutdown(self):
+        if self._conn:
+            self._conn.shutdown()
+            self._conn = None
+            self._update_name()
 
     def close(self):
         assert(self._lock.locked())
@@ -284,7 +314,7 @@ class SharedImapConn(threading.Thread):
             try:
                 if self._conn:
                     self.logout()
-            except IOError:
+            except (IOError, IMAP4.error):
                 pass
             self._conn = None
             self._update_name()
