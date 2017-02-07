@@ -323,7 +323,7 @@ class BaseMailSource(threading.Thread):
                             event_plan[mbx_cfg._key][1] = _('Indexed %d'
                                                             ) % count
                             all_completed = False
-                            if count == 0:
+                            if count == 0 and ('sources' in config.sys.debug):
                                 time.sleep(60)
                     else:
                         event_plan[mbx_cfg._key][1] = _('Failed')
@@ -813,11 +813,11 @@ class BaseMailSource(threading.Thread):
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
-            if 'sources' in self.session.config.sys.debug:
+            if 'sources' in config.sys.debug:
                 session.ui.debug(traceback.format_exc())
             progress['ioerror'] = True
         except:
-            if 'sources' in self.session.config.sys.debug:
+            if 'sources' in config.sys.debug:
                 session.ui.debug(traceback.format_exc())
             progress['raised'] = True
             raise
@@ -869,7 +869,7 @@ class BaseMailSource(threading.Thread):
                 'stop_after': stop_after,
                 'event': self.event
             }
-            count = 0
+            copied = count = 0
 
             if mbx_cfg.local or self.my_config.discovery.local_copy:
                 # Note: We copy fewer messages than the batch allows for,
@@ -880,9 +880,10 @@ class BaseMailSource(threading.Thread):
                 self._state = '%s: %s' % (new_state, _('Copying'))
                 self._log_status(_('Copying up to %d e-mails from %s'
                                    ) % (max_copy, self._mailbox_name(path)))
-                count += self._copy_new_messages(mbx_key, mbx_cfg, mbox,
+                copied = self._copy_new_messages(mbx_key, mbx_cfg, mbox,
                                                  stop_after=max_copy,
                                                  scan_args=scan_mailbox_args)
+                count += copied
 
             if self._check_interrupt(clear=False):
                 if 'rescan' in self.event.data:
