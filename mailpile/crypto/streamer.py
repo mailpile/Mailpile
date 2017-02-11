@@ -47,12 +47,10 @@ from mailpile.safe_popen import Popen, PIPE
 from mailpile.util import CryptoLock, safe_remove
 from mailpile.util import sha512b64 as genkey
 
-try:
-    from mailpile.crypto.aes_utils import getrandbits
-    from mailpile.crypto.aes_utils import aes_ctr_encryptor, aes_ctr_decryptor
-    PREFERRED_CIPHER = 'aes-128-ctr'
-except ImportError:
-    PREFERRED_CIPHER = 'aes-256-cbc'
+from mailpile.crypto.aes_utils import getrandbits
+from mailpile.crypto.aes_utils import aes_ctr_encryptor, aes_ctr_decryptor
+
+PREFERRED_CIPHER = 'aes-128-ctr'
 
 
 # This is for backwards compatibility with v1 of our storage format; we have

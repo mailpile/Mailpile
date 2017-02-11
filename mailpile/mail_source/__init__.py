@@ -813,8 +813,12 @@ class BaseMailSource(threading.Thread):
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
+            if 'sources' in self.session.config.sys.debug:
+                session.ui.debug(traceback.format_exc())
             progress['ioerror'] = True
         except:
+            if 'sources' in self.session.config.sys.debug:
+                session.ui.debug(traceback.format_exc())
             progress['raised'] = True
             raise
         finally:

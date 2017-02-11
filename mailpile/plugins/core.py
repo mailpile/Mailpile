@@ -634,7 +634,7 @@ class ProgramStatus(Command):
 class CronStatus(Command):
     """Manually edit or display the background job schedule"""
     SYNOPSIS = (None, 'cron', None,
-                "[<job> <--interval <n>|--trigger>]")
+                "[<job> <--trigger|--interval <n>|--postpone <hours>>]")
     ORDER = ('Internals', 4)
     IS_USER_ACTIVITY = False
 
@@ -678,6 +678,9 @@ class CronStatus(Command):
             elif op == 'trigger':
                 interval = config.cron_worker.schedule[job][1]
                 config.cron_worker.schedule[job][3] = now - interval
+            elif op == 'postpone':
+                hours = float(args.pop(0))
+                config.cron_worker.schedule[job][3] += int(hours * 3600)
             else:
                 raise NotImplementedError('Unknown op: %s' % op)
 

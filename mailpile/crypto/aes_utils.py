@@ -99,7 +99,10 @@ def make_dummy_utils():
 try:
     aes_ctr_encryptor, aes_ctr_decryptor = make_cryptography_utils()
 except ImportError:
-    aes_ctr_encryptor, aes_ctr_decryptor = make_pycrypto_utils()
+    try:
+        aes_ctr_encryptor, aes_ctr_decryptor = make_pycrypto_utils()
+    except ImportError:
+        raise ImportError("Please pip install cryptography (or pycrypto)")
 
 
 def getrandbits(count):

@@ -1,3 +1,4 @@
+import datetime
 import random
 import threading
 import traceback
@@ -56,6 +57,12 @@ class Cron(threading.Thread):
             if name in self.schedule:
                 last = self.schedule[name][3]
                 status = self.schedule[name][4]
+            elif interval == (24*3600):
+                # Special case for exactly once-a-day jobs: schedule
+                # them to run at night by default.
+                hr = (3600 * datetime.datetime.now().hour)
+                last = time.time() - hr + random.randint(3600, 7 * 3600)
+                status = 'new'
             else:
                 last = time.time() - random.randint(0, interval)
                 status = 'new'

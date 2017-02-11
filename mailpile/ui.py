@@ -575,7 +575,7 @@ class UserInteraction:
         return True
 
     def get_password(self, prompt):
-        if not self.interactive:
+        if not (self.interactive or sys.stdout.isatty()):
             return ''
         with self.term:
             try:

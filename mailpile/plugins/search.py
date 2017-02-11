@@ -372,6 +372,7 @@ class SearchResults(dict):
                 'total': len(results),
             },
             'search_terms': session.searched,
+            'index_capabilities': dict((c, True) for c in idx.CAPABILITIES),
             'address_ids': [],
             'message_ids': [],
             'view_pairs': view_pairs,
@@ -608,6 +609,7 @@ class Search(Command):
         'end': 'end position',
         'full': 'return all metadata',
         'view': 'MID/MID pairs to expand in place',
+        'parent': 'Parent folder, in browse mode',
         'context': 'refine or redisplay an older search'
     }
     IS_USER_ACTIVITY = True
@@ -735,7 +737,8 @@ class Search(Command):
             'order': [session.order],
             'start': [str(start + 1)] if start else [],
             'view': self._email_views,
-            'end': [str(start + num)] if (num != def_num) else []
+            'end': [str(start + num)] if (num != def_num) else [],
+            'parent': self.data.get('parent', '')
         }
         if self.context:
             self._search_state['context'] = [self.context]
