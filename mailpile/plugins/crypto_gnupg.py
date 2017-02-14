@@ -158,8 +158,10 @@ class CryptoTxf(EmailTransform):
                 obscured = OBSCURE_HEADERS_EXTREME
             elif 'obscure_meta' in crypto_format:
                 obscured = OBSCURE_HEADERS_MILD
-            else:
+            elif self.config.prefs.encrypt_subject:
                 obscured = {'subject': ObscureSubject}
+            else:
+                obscured = {}
 
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper
