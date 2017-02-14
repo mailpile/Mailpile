@@ -159,9 +159,7 @@ class CryptoTxf(EmailTransform):
             elif 'obscure_meta' in crypto_format:
                 obscured = OBSCURE_HEADERS_MILD
             else:
-                # FIXME: Enable this once force-display is working
-                #obscured = {'subject': ObscureSubject}
-                obscured = {}
+                obscured = {'subject': ObscureSubject}
 
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper

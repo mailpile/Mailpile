@@ -144,7 +144,8 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
     copied = set([])
     for h, v in newpart.items():
         part.add_header(h, v)
-        copied.add(h)
+        if not h.lower().startswith('content-'):
+            copied.add(h)
 
     return copied
 
@@ -229,15 +230,30 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
         part.encryption_info.bubble_up(pei)
 
         if part.encryption_info['status'] == 'decrypted':
-            newpart = email.parser.Parser().parse(
-                StringIO.StringIO(decrypted))
+            newpart = email.parser.Parser().parsestr(decrypted)
 
             # Reparent the contents up, removing the encryption wrapper
             hdrs = MimeReplacePart(part, newpart,
                                    keep_old_headers='MH-Renamed')
 
-            # FIXME: If there is a Memory-Hole force-display part, we
-            #        should suppress it since we handle MH natively.
+            # Is there a Memory-Hole force-display part?
+            pl = part.get_payload()
+            if hdrs and isinstance(pl, (list, )):
+                if (pl[0]['content-type'].startswith('text/rfc822-headers;')
+                        and 'protected-headers' in pl[0]['content-type']):
+                    # Parse these headers as well and override the top level,
+                    # again. This is to be sure we see the same thing as
+                    # everyone else (same algo as enigmail).
+                    data = email.parser.Parser().parsestr(
+                        pl[0].get_payload(), headersonly=True)
+                    for h in data.keys():
+                        if h in part:
+                            del part[h]
+                        part[h] = data[h]
+                        hdrs.add(h)
+
+                    # Finally just delete the part, we're done with it!
+                    del pl[0]
 
             part.encrypted_headers = hdrs
             if part.signature_info["status"] != 'none':
@@ -289,8 +305,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             if (part.encryption_info['status'] == 'decrypted' or
                     part.signature_info['status'] == 'verified'):
-                newpart = email.parser.Parser().parse(
-                    StringIO.StringIO(decrypted))
+                newpart = email.parser.Parser().parsestr(decrypted)
 
                 # Use the original file name if available, otherwise
                 # delete .gpg or .asc extension from attachment file name.
@@ -539,19 +554,25 @@ class MimeWrapper:
                 only_text_part = part
         return only_text_part
 
-    def wrap(self, msg):
+    def wrap(self, msg, **kwargs):
+        # Subclasses override
+        return msg
+
+    def prepare_wrap(self, msg):
         obscured = self.obscured_headers
         wrapped = self.wrapped_headers
+        oo = {}
+
+        # FIXME: Pretty sure this doesn't do the right thing if there
+        #        are multiple headers with the same name.
 
         for h in msg.keys():
             hl = h.lower()
 
-            # FIXME: Pretty sure this doesn't do the right thing if there
-            #        are multiple headers with the same name.
-
             if not hl.startswith('content-') and not hl.startswith('mime-'):
                 if hl in obscured:
                     oh = obscured[hl](msg[h])
+                    oo[h] = msg[h]
                     if oh:
                         self.container[h] = oh
                 else:
@@ -565,11 +586,47 @@ class MimeWrapper:
             self.container.signature_info = msg.signature_info
             self.container.encryption_info = msg.encryption_info
 
-        # FIXME: If any headers from the FORCE_DISPLAY_HEADERS list got
-        #        obscured, we should convert to multipart/mixed and add
-        #        a force-display part to show them to legacy users.
+        return self.force_display_headers(msg, oo)
 
-        return self.container
+    def force_display_headers(self, msg, headers):
+        if not [k for k in headers.keys()
+                if k.lower() in self.FORCE_DISPLAY_HEADERS]:
+            return msg
+
+        header_display = MIMEBase('text', 'rfc822-headers',
+                                  protected_headers="v1")
+        header_display['Content-Disposition'] = 'inline'
+
+        container = MIMEBase('multipart', 'mixed')
+        container.attach(header_display)
+        container.attach(msg)
+
+        # Cleanup...
+        for p in (msg, header_display, container):
+            if 'MIME-Version' in p:
+                del p['MIME-Version']
+        if self.cleaner:
+            self.cleaner(header_display)
+            self.cleaner(msg)
+
+        # FIXME: Pretty sure this doesn't do the right thing if there
+        #        are multiple headers with the same name.
+        #
+        # NOTE: The copying happens at the end here, because we need the
+        #       cleaner (on msg) to have run first.
+        #
+        display_headers = []
+        for h in msg.keys():
+            hl = h.lower()
+            if not hl.startswith('content-') and not hl.startswith('mime-'):
+                container[h] = msg[h]
+                if hl in self.FORCE_DISPLAY_HEADERS and h in headers:
+                    display_headers.append('%s: %s' % (h, msg[h]))
+                del msg[h]
+
+        header_display.set_payload('\r\n'.join(reversed(display_headers)))
+
+        return container
 
 
 class MimeSigningWrapper(MimeWrapper):
@@ -632,7 +689,7 @@ class MimeSigningWrapper(MimeWrapper):
                 return msg
 
         else:
-            MimeWrapper.wrap(self, msg)
+            msg = self.prepare_wrap(msg)
             self.attach(msg)
             self.attach(self.sigblock)
             message_text = self.flatten(msg)
@@ -696,10 +753,10 @@ class MimeEncryptingWrapper(MimeWrapper):
                 return msg
 
         else:
-            MimeWrapper.wrap(self, msg)
-            del msg['MIME-Version']
+            msg = self.prepare_wrap(msg)
             if self.cleaner:
                 self.cleaner(msg)
+
             message_text = self.flatten(msg)
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
