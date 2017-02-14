@@ -16,17 +16,12 @@
     "config": {
         "variables": {
             "prefs": {
-                "experiment_dkg_hdrs": ["DKG-style encrypted headers (mime|attach|OFF)",
+                "experiment_dkg_hdrs": ["This experiment is obsolete",
                                         "str", ""],
                 "experiment_para_kws": ["Make paragraphs searchable by hash",
                                         "bool", "False"]
             }
         }
-    },
-
-    "email_transforms": {
-        "outgoing_crypto": [{"priority": 10, "class": "EmailCryptoTxf"}],
-        "incoming_crypto": [{"priority": 990, "class": "EmailCryptoTxf"}]
     },
 
     "keyword_extractors": {
