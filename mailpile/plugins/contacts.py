@@ -1128,10 +1128,14 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
+            'security-use-autocrypt': False,
             'security-always-sign': False,
             'security-always-encrypt': False,
-            'security-attach-keys': True,
-            'security-prefer-inline': True,
+            'security-always-encrypt': False,
+            'security-attach-keys': True,  # FIXME: Autocrypt changes this
+            'security-prefer-inline': False,
+            'security-prefer-pgpmime': False,
+            'security-obscure-metadata': False,
             'security-openpgp-header-encrypt': False,
             'security-openpgp-header-sign': True,
             'security-openpgp-header-none': False,
@@ -1207,16 +1211,19 @@ class EditProfile(AddProfile):
             'source-NEW-protocol': 'none',
             'security-pgp-key': vcard.pgp_key or '',
             'security-best-effort-crypto': ('best-effort' in cp),
+            'security-use-autocrypt': ('autocrypt' in cf),
             'security-always-sign': ('sign' in cp),
             'security-always-encrypt': ('encrypt' in cp),
             'security-attach-keys': ('send_keys' in cf),
             'security-prefer-inline': ('prefer_inline' in cf),
+            'security-prefer-pgpgmime': ('pgpmime' in cf),
+            'security-obscure-metadata': ('obscure_meta' in cf),
             'security-openpgp-header-encrypt': ('openpgp_header:E' in cf or
                                                 'openpgp_header:SE' in cf),
             'security-openpgp-header-sign': ('openpgp_header:S' in cf or
                                              'openpgp_header:ES' in cf),
             'security-openpgp-header-none': ('openpgp_header:N' in cf),
-            'security-publish-to-keyserver': False
+            'security-publish-to-keyserver': ('publish' in cf)
         }
         route = self.session.config.routes.get(vcard.route or 'ha ha ha')
         if route:
