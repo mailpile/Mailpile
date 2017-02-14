@@ -314,8 +314,7 @@ def PrepareMessage(config, msg,
     if profile:
         crypto_format = (profile.crypto_format or crypto_format).lower()
     if crypto_format == 'default':
-        crypto_format = ('prefer_inline' if config.prefs.inline_pgp else
-                         'pgpmime')
+        crypto_format = 'prefer_inline' if config.prefs.inline_pgp else ''
 
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
@@ -346,7 +345,7 @@ def PrepareMessage(config, msg,
         sender, rcpts, msg, matched = plugins.outgoing_email_crypto_transform(
             config, sender, rcpts, msg,
             crypto_policy=crypto_policy,
-            prefer_inline='prefer_inline' in crypto_format,
+            crypto_format=crypto_format,
             cleaner=lambda m: CleanMessage(config, m))
 
         if crypto_policy and (crypto_policy != 'none') and not matched:
