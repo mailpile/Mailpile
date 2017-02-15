@@ -136,6 +136,9 @@ class InteractCommand(Command):
         if sys.stdout.isatty() and sys.platform[:3] != "win":
             session.ui.term = ANSIColors()
 
+        # Ensure we have a working GnuPG
+        self._gnupg().common_args(will_send_passphrase=True)
+
         # Create and start the rest of the threads, load the index.
         if config.loaded_config:
             Load(session, '').run(quiet=True)
