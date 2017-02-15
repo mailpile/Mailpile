@@ -308,6 +308,7 @@ class ConfigManager(ConfigDict):
                     with open(self.conf_key, 'rb') as fd:
                         decrypt_and_parse_lines(fd, parser, self,
                                                 newlines=True,
+                                                gpgi=GnuPG(self),
                                                 passphrase=sps)
                     break
                 except IOError:

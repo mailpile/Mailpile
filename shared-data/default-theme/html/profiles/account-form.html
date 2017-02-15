@@ -659,7 +659,8 @@
           <option value="{{fingerprint}}" data-uids="{% for uid in key.uids %}{{ uid.email}} {% endfor %}"
                   {%- if fingerprint == result['security-pgp-key'] %} selected{% endif %}>
             {{key.creation_date}}/{{key.keytype_name}}{{key.keysize}}:
-            {{key.uid}}
+            {{key.uids[0].name}} &lt;{{key.uids[0].email}}&gt;
+            {% if key.uids[0].comment %}(key.uids[0].comment){% endif %}
           </option>{% endfor %}
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
 {%- if is_dev_version() %}

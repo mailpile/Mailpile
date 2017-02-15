@@ -132,17 +132,24 @@ bdist:
 	@python setup.py bdist_wheel
 
 virtualenv: mp-virtualenv/bin/activate
+virtualenv-dev: mp-virtualenv/bin/.dev
 
 mp-virtualenv/bin/activate:
 	virtualenv -p python2 --system-site-packages mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
+	@rm -rf mp-virtualenv/bin/.dev
+	@echo
+	@echo NOTE: If you want to test/develop with GnuPG 2.1, you might
+	@echo       want to activate the virtualenv and then run this script
+	@echo to build GnuPG 2.1: ./scripts/add-gpgme-and-gnupg-to-venv
+	@echo
 
-virtualenv-dev: virtualenv
+mp-virtualenv/bin/.dev: virtualenv
 	rm -rf mp-virtualenv/lib/python2.7/site-packages/mailpile
 	cd mp-virtualenv/lib/python2.7/site-packages/ && ln -s ../../../../mailpile
 	rm -rf mp-virtualenv/share/mailpile
 	cd mp-virtualenv/share/ && ln -s ../../shared-data mailpile
-
+	@touch mp-virtualenv/bin/.dev
 
 bower_components:
 	@bower install

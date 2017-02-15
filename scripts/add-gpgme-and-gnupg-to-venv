@@ -1,0 +1,106 @@
+#!/bin/bash
+#
+# See also: https://www.gnupg.org/download/integrity_check.html
+#
+[ "$VIRTUAL_ENV" == "" ] && {
+    echo "Please activate your virtualenv first!"
+    exit 1
+}
+
+GNUPG_DEPS="\
+    https://gnupg.org/ftp/gcrypt/npth/npth-1.3.tar.bz2=1b21507cfa3f58bdd19ef2f6800ab4cb67729972 \
+    https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2=9a926e7ee6309e539313443555535d49a2a5c9f1 \
+    https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2=a98385734a0c3f5b713198e8d6e6e4aeb0b76fde \
+    https://gnupg.org/ftp/gcrypt/libassuan/libassuan-2.4.3.tar.bz2=27391cf4a820b5350ea789c30661830c9a271518 \
+    https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.7.5.tar.bz2=fa485d854748fc06ea041b3057b2de2f12fbc17f \
+    https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.8.0.tar.bz2=efa043064dbf675fd713228c6fcfcc4116feb221"
+INSTALLING="GPGME 1.8.0"
+
+if [ "$1" = "2.1" -o "$1" = "" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/pinentry/pinentry-1.0.0.tar.bz2=85d9ac81ebad3fb082514c505c90c39a0456f1f6 \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.17.tar.bz2=d83ab893faab35f37ace772ca29b939e6a5aa6a7"
+    INSTALLING="$INSTALLING and GnuPG 2.1.17"
+fi
+if [ "$1" = "2.0" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/pinentry/pinentry-1.0.0.tar.bz2=85d9ac81ebad3fb082514c505c90c39a0456f1f6 \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.0.30.tar.bz2=a9f024588c356a55e2fd413574bfb55b2e18794a"
+    INSTALLING="$INSTALLING and GnuPG 2.0.30"
+fi
+if [ "$1" = "1.4" ]; then
+    GNUPG_DEPS="$GNUPG_DEPS \
+        https://gnupg.org/ftp/gcrypt/gnupg/gnupg-1.4.21.tar.bz2=e3bdb585026f752ae91360f45c28e76e4a15d338"
+    INSTALLING="$INSTALLING and GnuPG 1.4.21"
+fi
+
+echo
+echo "About to download, build and install $INSTALLING"
+echo "into: $VIRTUAL_ENV"
+echo
+echo "Press ENTER to continue."""
+read
+
+set -x
+set -e
+
+mkdir -p "$VIRTUAL_ENV/gnupg-build"
+cd "$VIRTUAL_ENV/gnupg-build"
+
+for packageandsum in $GNUPG_DEPS; do
+    package=$(echo "$packageandsum" |cut -f1 -d=)
+    shasum=$(echo $packageandsum |cut -f2 -d=)
+    tarball=$(basename "$package")
+    srcdir=$(echo "$tarball" |sed -e s/.tar.bz2//)
+
+    if [ ! -e "$tarball" ]; then
+        rm -f dl.tmp
+        wget "$package" -O dl.tmp
+        mv -f dl.tmp "$tarball"
+    fi
+    if [ "$(sha1sum "$tarball" |cut -f1 -d\ )" != "$shasum" ]; then
+        set +x
+        echo
+        echo "SHA1 checksum incorrect for $tarball"
+        echo "Nuke the virtualenv from orbit and try again?"
+        echo
+        exit 99
+    fi
+
+    [ -e "$srcdir" ] || tar xfj "$tarball"
+    pushd "$srcdir"
+    ./configure --prefix="$VIRTUAL_ENV"
+    make
+    make install
+    popd
+done
+
+set +e
+set +x
+
+echo
+echo "Whew! If you would like to clean up, run this:"
+echo
+echo "  rm -rf '$VIRTUAL_ENV/gnupg-build'"
+echo
+echo ====================================================================
+echo "WARNING!    *** TAKE CARE OF YOUR MAIN KEYCHAIN! ***"
+echo
+echo "  GnuPG version 2.1 likes to upgrade the keychain storage format"
+echo "  to something GnuPG 2.0 and 1.4 cannot read. So take care to set"
+echo "  GNUPGHOME or backup your keychain! The scripts/setup-test.sh is"
+echo "  good for self-contained disposable development test runs."
+echo ====================================================================
+echo
+echo "You will also need to set the following environment variable:"
+echo
+echo "  export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib"
+echo
+echo "If you would like this added to the activate script, press ENTER."
+echo "Note that will BREAK the deactivate function because this script is"
+echo "a lame hack. Press CTRL-C to skip this..."
+read
+echo "export LD_LIBRARY_PATH=\$VIRTUAL_ENV/lib" >>"$VIRTUAL_ENV/bin/activate"
+echo
+echo "Great. All done! Now rerun activate and have fun."
+

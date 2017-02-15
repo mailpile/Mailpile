@@ -7,13 +7,18 @@ else
     export GNUPGHOME="$MAILPILE_HOME"
 fi
 
-if [ -d '/usr/local/Cellar/gnupg/1.4.16/bin' ]; then
-    export PATH=/usr/local/Cellar/gnupg/1.4.16/bin:$PATH
+if [ "$VIRTUAL_ENV" -a -e "$VIRTUAL_ENV/bin/gpg2" ]; then
+    GPG_BINARY="$VIRTUAL_ENV/bin/gpg2"
+else
+    if [ -d '/usr/local/Cellar/gnupg/1.4.16/bin' ]; then
+        export PATH=/usr/local/Cellar/gnupg/1.4.16/bin:$PATH
+    fi
+    GPG_BINARY=$(which gpg)
 fi
 
 if [ "$1" = "--gpg" ]; then
     shift
-    exec gpg "$@"
+    exec $GPG_BINARY "$@"
 fi
 if [ "$1" = "--dbg" ]; then
     shift
@@ -38,6 +43,7 @@ fi
 
 [ "$1" = "" ] && IA="--interact" || IA=""
 $PYTHON ./mp --set 'sys.debug = log http' \
+             --set "sys.gpg_binary = $GPG_BINARY" \
              --www 'localhost:33433' \
              "$@" $IA
 
