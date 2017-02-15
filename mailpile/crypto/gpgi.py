@@ -574,6 +574,36 @@ class GnuPG:
 
         return self.available
 
+    def common_args(self, args=None, version=None, will_send_passphrase=False):
+        if args is None:
+            args = []
+        if version is None:
+            version = self.version_tuple()
+
+        args.insert(0, self.gpgbinary)
+        args.insert(1, "--utf8-strings")
+        args.insert(1, "--with-colons")
+        args.insert(1, "--verbose")
+        args.insert(1, "--batch")
+        args.insert(1, "--enable-progress-filter")
+
+        if (not self.use_agent) or will_send_passphrase:
+            if version < (1, 5):
+                args.insert(1, "--no-use-agent")
+            elif version > (2, 1, 11):
+                args.insert(1, "--pinentry-mode=loopback")
+            else:
+                raise ImportError('Mailpile requires GnuPG 1.4.x or 2.1.12+ !')
+
+        if self.homedir:
+            args.insert(1, "--homedir=%s" % self.homedir)
+
+        args.insert(1, "--status-fd=2")
+        if will_send_passphrase:
+            args.insert(2, "--passphrase-fd=0")
+
+        return args
+
     def run(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
             send_passphrase=False, _raise=None, novercheck=False):
@@ -582,37 +612,16 @@ class GnuPG:
         else:
             version = self.version_tuple()
 
+        args = self.common_args(
+            args=list(args if args else []),
+            version=version,
+            will_send_passphrase=(self.passphrase and send_passphrase))
+
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.threads = {}
-
-        args = list(args if args else [])
-        args.insert(0, self.gpgbinary)
-        args.insert(1, "--utf8-strings")
-        args.insert(1, "--with-colons")
-        args.insert(1, "--verbose")
-        args.insert(1, "--batch")
-        args.insert(1, "--enable-progress-filter")
-
-        if (not self.use_agent) or (self.passphrase and send_passphrase):
-            if version < (2, 1):
-                # Note: This will silently fail on GnuPG 2.0, which means
-                #       the agent will still interfere. The app may still
-                #       work in some such cases, so...
-                args.insert(1, "--no-use-agent")
-            else:
-                args.insert(1, "--pinentry-mode=loopback")
-
-        if self.homedir:
-            args.insert(1, "--homedir=%s" % self.homedir)
-
         gpg_retcode = -1
         proc = None
         try:
-            args.insert(1, "--status-fd=2")
-
-            if self.passphrase and send_passphrase:
-                args.insert(2, "--passphrase-fd=0")
-
             if not self.passphrase and send_passphrase:
                 self.debug('Running WITHOUT PASSPHRASE %s' % ' '.join(args))
                 self.debug(traceback.format_stack())

@@ -687,7 +687,7 @@ class DecryptingStreamer(InputCoprocess):
 
     def __init__(self, fd,
                  mep_key=None, gpg_pass=None, sha256=None, cipher=None,
-                 name=None, long_running=False):
+                 name=None, long_running=False, gpgi=None):
         self.expected_outer_sha256 = sha256
         self.expected_inner_sha256 = None
         self.expected_inner_md5sum = None
@@ -702,6 +702,7 @@ class DecryptingStreamer(InputCoprocess):
         self.mep_mutated = None
         self.mep_key = mep_key
         self.gpg_pass = gpg_pass
+        self.gpgi = gpgi
         self.decryptor = None
         self.decoder = None
         self.decoder_data_bytes = 0  # Not counting white-space
@@ -949,10 +950,11 @@ class DecryptingStreamer(InputCoprocess):
         elif self.decryptor is not None:
             return None
         elif self.state == self.STATE_PGP_DATA:
-            gpg = [GPG_BINARY, "--batch"]
+            assert(self.gpgi is not None)
             if self.gpg_pass:
-                gpg.extend(["--no-use-agent", "--passphrase-fd=0"])
-            return gpg
+                return self.gpgi.common_args(will_send_passphrase=True)
+            else:
+                return self.gpgi.common_args()
         return [OPENSSL_COMMAND, "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
 

@@ -957,6 +957,7 @@ class CatFile(Command):
                     self.session.ui.error('Decrypt failed at %d' % where)
                 decrypt_and_parse_lines(fd, cb, self.session.config,
                                         newlines=True, decode=None,
+                                        gpgi=self._gnupg(),
                                         _raise=False, error_cb=errors)
 
         if tfd:
