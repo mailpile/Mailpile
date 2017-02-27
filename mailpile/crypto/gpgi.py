@@ -587,6 +587,11 @@ class GnuPG:
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
 
+        # Disable SHA1 in all things GnuPG
+        args[1:1] = ["--personal-digest-preferences=SHA512",
+                     "--digest-algo=SHA512",
+                     "--cert-digest-algo=SHA512"]
+
         if (not self.use_agent) or will_send_passphrase:
             if version < (1, 5):
                 args.insert(1, "--no-use-agent")
@@ -1327,6 +1332,11 @@ class GnuPG:
         """This lets a callback have a chat with the GPG process..."""
         gpg_args = [self.gpgbinary,
                     "--utf8-strings",
+                    # Disable SHA1 in all things GnuPG
+                    "--personal-digest-preferences=SHA512",
+                    "--digest-algo=SHA512",
+                    "--cert-digest-algo=SHA512",
+                    # We're not a human!
                     "--no-tty",
                     "--command-fd=0",
                     "--status-fd=1"] + (gpg_args or [])
@@ -1424,7 +1434,7 @@ def GetKeys(gnupg, config, people):
 
 
 class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
-    CONTAINER_PARAMS = (('micalg', 'pgp-sha1'),
+    CONTAINER_PARAMS = (('micalg', 'pgp-sha512'),
                         ('protocol', 'application/pgp-signature'))
     SIGNATURE_TYPE = 'application/pgp-signature'
     SIGNATURE_DESC = 'OpenPGP Digital Signature'
