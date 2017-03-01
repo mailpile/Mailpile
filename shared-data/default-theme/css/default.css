@@ -5832,15 +5832,6 @@ a.setup-check-connection:hover {
   display: inline-block;
   width: 320px;
 }
-#setup-passphrase-chooser #generate {
-  cursor: pointer;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
 label.radio-list-item div.radio {
   width: 30px;
 }
@@ -6672,6 +6663,20 @@ ul.items li.grouped h5 {
   position: relative;
   top: 42px;
   left: 47px;
+}
+/* Some general helper classes */
+/*
+  Sets cursor to pointer on a tags
+  functioning as buttons
+ */
+a.clickable {
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 /* Notification Bubbles */
 #notifications {
