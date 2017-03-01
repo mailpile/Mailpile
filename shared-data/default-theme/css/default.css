@@ -7,15 +7,15 @@
 ================================================== */
 /* @license
  * Mailpile font designed for Mailpile
- *
+ * 
  * You may obtain a copy of the license at the URLs below.
- *
+ * 
  * Webfont: Mailpile by Brennan Novak
  * URL: http://github.com/mailpile/fonts
- *
+ * 
  * Mailpile font is licensed under the SIL Open Font License (OFL)
  * http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
- *
+ * 
  * © 2013 Mailpile
 */
 @font-face {
@@ -5832,6 +5832,15 @@ a.setup-check-connection:hover {
   display: inline-block;
   width: 320px;
 }
+#setup-passphrase-chooser #generate {
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 label.radio-list-item div.radio {
   width: 30px;
 }
@@ -9426,7 +9435,6 @@ a.modal-tag-color-option:hover {
   #pile-results td.subject a.item-subject {
     width: 485px;
   }
-
   xtable,
   xtbody {
     display: block;
@@ -9546,10 +9554,9 @@ a.modal-tag-color-option:hover {
   #pile-results td.date {
     padding-right: 3px;
   }
-  #pile-results td.subject a-item-subject {
+  #pile-results td.subject a.item-subject {
     width: 370px;
   }
-
   #content-tools nav li {
     padding: 2px;
     margin: 0;
