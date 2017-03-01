@@ -9,12 +9,23 @@ from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
 
+# We use this to enable "recent mode" on GMail accounts by default.
+GMAIL_TLDS = ('gmail.com', 'googlemail.com')
+
+
 def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
     cev = event.data['connection'] = {
         'live': False,
         'error': [False, _('Nothing is wrong')]
     }
     try:
+        # FIXME: Nothing actually adds gmail or gmail-full to the protocol
+        #        yet, so we're stuck in recent mode only for now.
+        if (username.lower().split('@')[-1] in GMAIL_TLDS
+                or 'gmail' in protocol):
+            if 'gmail-full' not in protocol:
+                username = 'recent:%s' % username
+
         return pop3.MailpileMailbox(host,
                                     port=port,
                                     user=username,
@@ -110,6 +121,18 @@ class Pop3MailSource(BaseMailSource):
 
     def is_mailbox(self, fn):
         return False
+
+    def _mailbox_name(self, path):
+        return _("Inbox")
+
+    def _create_tag(self, *args, **kwargs):
+        ptag = kwargs.get('parent')
+        try:
+            if ptag:
+                return self.session.config.get_tags(ptag)[0]._key
+        except (IndexError, KeyError):
+            pass
+        return BaseMailSource._create_tag(self, *args, **kwargs)
 
 
 def TestPop3Settings(session, settings, event):
