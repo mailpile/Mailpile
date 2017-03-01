@@ -1071,21 +1071,31 @@ def ProfileVCard(parent):
                 vcard.crypto_policy = 'none'
 
             # Crypto formatting rules
-            pgp_keys     = self._yn('security-attach-keys')
-            pgp_inline   = self._yn('security-prefer-inline')
-            pgp_hdr_enc  = self._yn('security-openpgp-header-encrypt')
-            pgp_hdr_sig  = self._yn('security-openpgp-header-sign')
-            pgp_hdr_none = self._yn('security-openpgp-header-none')
-            pgp_hdr_both = pgp_hdr_enc and pgp_hdr_sig
+            pgp_autocrypt    = self._yn('security-use-autocrypt')
+            pgp_publish      = self._yn('security-publish-to-keyserver')
+            pgp_keys         = self._yn('security-attach-keys')
+            pgp_inline       = self._yn('security-prefer-inline')
+            pgp_pgpmime      = self._yn('security-prefer-pgpmime')
+            pgp_obscure_meta = self._yn('security-obscure-metadata')
+            pgp_hdr_enc      = self._yn('security-openpgp-header-encrypt')
+            pgp_hdr_sig      = self._yn('security-openpgp-header-sign')
+            pgp_hdr_none     = self._yn('security-openpgp-header-none')
+            pgp_hdr_both     = pgp_hdr_enc and pgp_hdr_sig
             if pgp_hdr_both:
                 pgp_hdr_enc = pgp_hdr_sig = False
+            if pgp_pgpmime and pgp_inline:
+                pgp_pgpmime = pgp_inline = False
             vcard.crypto_format = ''.join([
-                'openpgp_header:SE+' if (pgp_hdr_both) else '',
-                'openpgp_header:S+'  if (pgp_hdr_sig)  else '',
-                'openpgp_header:E+'  if (pgp_hdr_enc)  else '',
-                'openpgp_header:N+'  if (pgp_hdr_none) else '',
-                'send_keys+'         if (pgp_keys)     else '',
-                'prefer_inline'      if (pgp_inline)   else 'pgpmime'
+                'openpgp_header:SE' if (pgp_hdr_both)     else '',
+                'openpgp_header:S'  if (pgp_hdr_sig)      else '',
+                'openpgp_header:E'  if (pgp_hdr_enc)      else '',
+                'openpgp_header:N'  if (pgp_hdr_none)     else '',
+                '+autocrypt'        if (pgp_autocrypt)    else '',
+                '+send_keys'        if (pgp_keys)         else '',
+                '+prefer_inline'    if (pgp_inline)       else '',
+                '+pgpmime'          if (pgp_pgpmime)      else '',
+                '+obscure_meta'     if (pgp_obscure_meta) else '',
+                '+publish'          if (pgp_publish)      else ''
             ])
 
     return ProfileVCardCommand
@@ -1118,10 +1128,14 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
+            'security-use-autocrypt': False,
             'security-always-sign': False,
             'security-always-encrypt': False,
-            'security-attach-keys': True,
-            'security-prefer-inline': True,
+            'security-always-encrypt': False,
+            'security-attach-keys': True,  # FIXME: Autocrypt changes this
+            'security-prefer-inline': False,
+            'security-prefer-pgpmime': False,
+            'security-obscure-metadata': False,
             'security-openpgp-header-encrypt': False,
             'security-openpgp-header-sign': True,
             'security-openpgp-header-none': False,
@@ -1197,16 +1211,19 @@ class EditProfile(AddProfile):
             'source-NEW-protocol': 'none',
             'security-pgp-key': vcard.pgp_key or '',
             'security-best-effort-crypto': ('best-effort' in cp),
+            'security-use-autocrypt': ('autocrypt' in cf),
             'security-always-sign': ('sign' in cp),
             'security-always-encrypt': ('encrypt' in cp),
             'security-attach-keys': ('send_keys' in cf),
             'security-prefer-inline': ('prefer_inline' in cf),
+            'security-prefer-pgpgmime': ('pgpmime' in cf),
+            'security-obscure-metadata': ('obscure_meta' in cf),
             'security-openpgp-header-encrypt': ('openpgp_header:E' in cf or
                                                 'openpgp_header:SE' in cf),
             'security-openpgp-header-sign': ('openpgp_header:S' in cf or
                                              'openpgp_header:ES' in cf),
             'security-openpgp-header-none': ('openpgp_header:N' in cf),
-            'security-publish-to-keyserver': False
+            'security-publish-to-keyserver': ('publish' in cf)
         }
         route = self.session.config.routes.get(vcard.route or 'ha ha ha')
         if route:

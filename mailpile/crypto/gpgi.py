@@ -1152,7 +1152,7 @@ class GnuPG:
         return GnuPGResultParser().parse([None, retvals]).signature_info
 
     def encrypt(self, data, tokeys=[], armor=True,
-                            sign=False, fromkey=None):
+                            sign=False, fromkey=None, throw_keyids=False):
         """
         >>> g = GnuPG(None)
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
@@ -1179,6 +1179,8 @@ class GnuPG:
         if sign and fromkey:
             action.append("--local-user")
             action.append(fromkey)
+        if throw_keyids:
+            action.append("--throw-keyids")
         if fromkey:
             self.prepare_passphrase(fromkey, signing=True)
 
@@ -1439,6 +1441,8 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
     ENCRYPTION_TYPE = 'application/pgp-encrypted'
     ENCRYPTION_VERSION = 1
 
+    # FIXME: Define _encrypt, allow throw_keyids
+
     def crypto(self):
         return GnuPG(self.config, event=self.event)
 
@@ -1456,6 +1460,7 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
 
     def _encrypt(self, message_text, tokeys=None, armor=False):
         from_key = self.get_keys([self.sender])[0]
+        # FIXME: Allow throw_keyids here.
         return self.crypto().encrypt(message_text,
                                      tokeys=tokeys, armor=True,
                                      sign=True, fromkey=from_key)

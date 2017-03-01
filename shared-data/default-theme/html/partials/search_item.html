@@ -67,6 +67,11 @@
       <div class="header-cooked header-from">
         <h3 class="header-name {{ unsigned.color }}">
           {{_("From")}}:
+{#
+ #  FIXME: We are using the From data given to us in the metadata section,
+ #         which may differ from the message contents, especially in a
+ #         memory-hole substitution world. This needs reworking.
+ #}
           <span class="icon message-metadata-crypto-info {{ unsigned.icon }}"
                 title="{{ unsigned.text }}"
                 data-crypto_icon="{{ unsigned.icon }}"
@@ -87,9 +92,9 @@
           <span class="address-email"><span class="punct">&lt;</span>{{metadata.from.address}}<span class="punct">&gt;</span></span>
         </span>
       </div>
-    {%- for txt, which, rcpts in (('To', 'to', metadata.to_aids),
-                                  ('CC', 'cc', metadata.cc_aids),
-                                  ('BCC', 'bcc', [])) %}{# FIXME #}
+    {%- for txt, which, rcpts in (('To', 'to', get_addresses(message.header_list, "to")),
+                                  ('CC', 'cc', get_addresses(message.header_list, "cc")),
+                                  ('BCC', 'bcc', get_addresses(message.header_list, "bcc"))) %}
       {%- if rcpts %}
       <div class="header-cooked header-{{which}}">
         <h3 class="header-name {{ unsigned.color }}">
@@ -100,15 +105,12 @@
                 data-crypto_color="{{ unsigned.color }}"
                 data-crypto_message="{{ unsigned.message }}"></span>
         </h3>
-        {%- for aid in rcpts %}
-          {%- set ai = result.data.addresses[aid] %}
-          {%- if ai %}
+        {%- for ai in rcpts %}
         <span class="header-value" title='{{ai.fn}} &lt;{{ai.address}}&gt;'>
           <span class="address-avatar"><img src="{{ show_avatar(ai) }}"></span>
-          <span class="address-name"><span class="punct">"</span>{{ai.fn}}<span class="punct">"</span></span>
+          <span class="address-name"><span class="punct">"</span>{{ai.fn or ai.address}}<span class="punct">"</span></span>
           <span class="address-email"><span class="punct">&lt;</span>{{ai.address}}<span class="punct">&gt;</span></span><span class="punct">,</span>
         </span>
-          {%- endif %}
         {%- endfor %}
       </div>
       {%- endif %}
@@ -162,7 +164,7 @@
   <td class="subject">
 {%- if not message %}
     <a class="item-subject" title="{{metadata.body.snippet}}" data-noblank=1
-       href="{{msg_url(mid)}}">{{ nice_subject(metadata) }}</a>
+       href="{{msg_url(mid)}}">{{ nice_subject(metadata.subject) }}</a>
 {%- else %}
     <div class="message-container">
     {%- if message.editing_strings %}
@@ -219,7 +221,14 @@
             <span class="icon icon-code"></span></a></li>
         </ul>
         <div class="message-subject">
-          {{ nice_subject(metadata) }}
+          {%- set subjects = get_all(message.header_list, "subject") %}
+          {%- if subjects %}
+            {%- for value in subjects %}
+              {{ nice_subject(value) }}
+            {%- endfor %}
+          {%- else %}
+            {{ nice_subject(None) }}
+          {%- endif %}
         </div>
       </div>
 {%- include('partials/pile_message.html') -%}

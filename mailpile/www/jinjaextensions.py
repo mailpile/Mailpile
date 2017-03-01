@@ -137,6 +137,12 @@ class MailpileCommand(Extension):
         e.globals['bare_subject'] = s._bare_subject
         e.filters['bare_subject'] = s._bare_subject
 
+        # Filter the raw header list
+        e.globals['get_all'] = s._get_all
+        e.filters['get_all'] = s._get_all
+        e.globals['get_addresses'] = s._get_addresses
+        e.filters['get_addresses'] = s._get_addresses
+
         # Make unruly names a lil bit nicer
         e.globals['nice_name'] = s._nice_name
         e.filters['nice_name'] = s._nice_name
@@ -760,20 +766,39 @@ class MailpileCommand(Extension):
         return Markup(result)
 
     @classmethod
-    def _nice_subject(self, metadata):
-        if metadata['subject']:
-            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
+    def _nice_subject(self, subject):
+        if subject:
+            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', subject)
         else:
             output = '(' + _("No Subject") + ')'
         return output
 
     @classmethod
-    def _bare_subject(self, metadata):
-        if metadata['subject']:
-            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+|\[\S+\]\s+)+', '', metadata['subject'])
+    def _bare_subject(self, subject):
+        if subject:
+            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+|\[\S+\]\s+)+', '', subject)
         else:
             output = '(' + _("No Subject") + ')'
         return output
+
+    @classmethod
+    def _get_all(self, pairs, name):
+        return [v for n, v in pairs if n.lower() == name.lower()]
+
+    def _get_addresses(self, pairs, name):
+        from mailpile.mailutils import AddressHeaderParser
+        config = self.env.session.config
+
+        addresses = []
+        for hdr in self._get_all(pairs, name):
+            addresses.extend(AddressHeaderParser(unicode_data=hdr))
+
+        for ai in addresses:
+            vcard = config.vcards.get_vcard(ai.address)
+            if vcard:
+                ai.merge_vcard(vcard)
+
+        return addresses
 
     @classmethod
     def _nice_name(self, name, truncate=100):

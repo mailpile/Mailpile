@@ -564,7 +564,7 @@ class SearchResults(dict):
                     from_info = '%s>%s' % (from_info[:20], gg(len(thread)-pos))
 
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
-                             JE._nice_subject(m))
+                             JE._nice_subject(m.get('subject')))
             subject_width = max(1, s_width - (clen + len(msg_meta)))
             subject = self._fix_width(subject, subject_width)
             from_info = self._fix_width(from_info, f_width)

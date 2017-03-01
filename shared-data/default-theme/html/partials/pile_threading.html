@@ -13,14 +13,14 @@
         {%- set tmid = tinfo[0] %}
         {%- set ascii = tinfo[1] %}
         {%- set tmeta = result.data.metadata[tmid] %}
-        {%- set tsubject = bare_subject(tmeta) %}
+        {%- set tsubject = bare_subject(tmeta.subject) %}
         {%- set tfrom = result.data.addresses[tmeta.from.aid] %}
         {%- set nearby = (mid in (p2_ti[0], p1_ti[0], tmid, n1_ti[0], n2_ti[0])) %}
         {%- if not nearby %}{% do hidden.append(tmid) %}{% endif %}
         {%- set new_subject = ((p1_ti and (tsubject !=
-                                bare_subject(result.data.metadata[p1_ti[0]]))) or
+                                bare_subject(result.data.metadata[p1_ti[0]].subject))) or
                                (n1_ti and (tsubject !=
-                                bare_subject(result.data.metadata[n1_ti[0]])))) %}
+                                bare_subject(result.data.metadata[n1_ti[0]].subject)))) %}
         <a class="thread-message
                   {%- if tmid == mid %} thread-selected{% endif %}
                   {%- if tmeta.flags.unread %} thread-unread{% endif %}

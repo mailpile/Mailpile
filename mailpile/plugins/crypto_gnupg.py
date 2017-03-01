@@ -15,6 +15,8 @@ from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
+from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
+from mailpile.crypto.mime import ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils import Email, ExtractEmails, ClearParseCache
@@ -143,24 +145,45 @@ class ContentTxf(EmailTransform):
 class CryptoTxf(EmailTransform):
     def TransformOutgoing(self, sender, rcpts, msg,
                           crypto_policy='none',
-                          prefer_inline=False,
+                          crypto_format='default',
                           cleaner=lambda m: m,
                           **kwargs):
         matched = False
         if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
             wrapper = None
+
+            # Set defaults
+            prefer_inline = kwargs.get('prefer_inline', False)
+            if 'obscure_all_meta' in crypto_format:
+                obscured = OBSCURE_HEADERS_EXTREME
+            elif 'obscure_meta' in crypto_format:
+                obscured = OBSCURE_HEADERS_MILD
+            elif self.config.prefs.encrypt_subject:
+                obscured = {'subject': ObscureSubject}
+            else:
+                obscured = {}
+
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper
-            elif 'sign' in crypto_policy:
-                wrapper = OpenPGPMimeSigningWrapper
+                prefer_inline = 'prefer_inline' in crypto_format
             elif 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeEncryptingWrapper
+                prefer_inline = 'prefer_inline' in crypto_format
+            elif 'sign' in crypto_policy:
+                # When signing only, we 1) prefer inline by default, based
+                # on this: https://github.com/mailpile/Mailpile/issues/1693
+                # and 2) don't obscure any headers as that's pointless.
+                wrapper = OpenPGPMimeSigningWrapper
+                prefer_inline = 'pgpmime' not in crypto_format
+                obscured = {}
+
             if wrapper:
                 msg = wrapper(self.config,
                               sender=sender,
                               cleaner=cleaner,
                               recipients=rcpts,
                               use_html_wrapper=self.config.prefs.gpg_html_wrap,
+                              obscured_headers=obscured
                               ).wrap(msg, prefer_inline=prefer_inline)
                 matched = True
 

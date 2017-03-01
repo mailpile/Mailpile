@@ -1,5 +1,5 @@
 {% extends "layouts/" + render_mode + ".html" %}
-{% block title %}{{ nice_subject(result.data.metadata[result.thread_ids[-1]]) }}{% endblock %}
+{% block title %}{{ nice_subject(result.data.metadata[result.thread_ids[-1]].subject) }}{% endblock %}
 {% block content %}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
