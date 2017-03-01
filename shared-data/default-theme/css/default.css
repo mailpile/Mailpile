@@ -6678,6 +6678,18 @@ a.clickable {
   -ms-user-select: none;
   user-select: none;
 }
+/*
+  As they were HTML5 labels
+ */
+span.checkbox {
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 /* Notification Bubbles */
 #notifications {
   position: fixed;
@@ -6850,6 +6862,7 @@ div.notification-bubble span.action {
   margin-left: 15px;
   border-radius: 5px;
   border: 1px solid #b3b3b3;
+  position: relative;
 }
 .form-search input {
   width: 282px;
@@ -6874,6 +6887,16 @@ div.notification-bubble span.action {
   color: #999;
   font-weight: normal;
   font-style: italic;
+}
+.form-search .clear-search {
+  position: absolute;
+  right: 50px;
+  top: 11px;
+  cursor: pointer;
+  color: #cccccc;
+}
+.form-search .clear-search:hover {
+  color: #b3b3b3;
 }
 .form-search button {
   overflow: visible;

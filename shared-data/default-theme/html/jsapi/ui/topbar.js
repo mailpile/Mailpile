@@ -3,6 +3,37 @@ $(document).on('focus', '#search-query', function() {
   $(this).select();
 });
 
+/* Clear button */
+
+Mailpile.UI.set_clear_state = setClarState = function(queryBox){
+  var $clearButton = $(queryBox).next('.clear-search');
+  if(queryBox.value.length > 0) {
+    $clearButton.show();
+  }else{
+    $clearButton.hide();
+  }
+};
+
+
+$(function(){
+  var queryBox = $('#search-query');
+  if(queryBox.length){
+    Mailpile.UI.set_clear_state(queryBox[0]);
+  }
+});
+
+$(document).on('input change', '#search-query', function(e) {
+  Mailpile.UI.set_clear_state(e.target);
+});
+
+$(document).on('click', '#form-search .clear-search', function(e) {
+  $('#search-query').val('').focus();
+  $(e.target).hide();
+});
+
+
+
+
 
 // {# FIXME: Disabled by Bjarni, this doesn't really work reliably
 //  #
@@ -62,4 +93,5 @@ Mailpile.UI.content_setup.push(function($content) {
          .data('context', $st.data('context'));
     }
   }
+  Mailpile.UI.set_clear_state($sq[0]);
 });
