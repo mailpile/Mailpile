@@ -1651,7 +1651,7 @@ class GnuPG21KeyGenerator(GnuPG14KeyGenerator):
     def gpg_args(self):
         # --yes should keep GnuPG from complaining if there already exists
         #       a key with this UID.
-        return ['--yes', '--full-generate-key']
+        return ['--yes', '--full-gen-key']
 
 
 class GnuPGDummyKeyGenerator(GnuPGBaseKeyGenerator):
