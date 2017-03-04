@@ -55,6 +55,7 @@
     margin-left: 15px;
     border-radius: 5px;
     border: 1px solid @gray;
+    position: relative;
   }
 
   .form-search input {
@@ -82,6 +83,19 @@
     color: #999;
     font-weight: normal;
     font-style: italic;
+  }
+
+  .form-search .clear-search {
+    position: absolute;
+    right: 50px;
+    top: 11px;
+    cursor: pointer;
+
+    color: @grayMid;
+
+    &:hover {
+      color: @gray;
+    }
   }
 
   .form-search button {

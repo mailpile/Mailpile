@@ -44,7 +44,7 @@
       {% endif %}
                type="password" name="existing">
       </span>
-      <a id="generate" title="{{ _("Click to generate new secure password") }}">
+      <a id="generate" class="clickable" title="{{ _("Click to generate new secure password") }}">
         <label class="validation-message">
           {{_("Choose a new password")}}
           &nbsp;&nbsp; <span class="icon icon-robot"></span>
@@ -100,6 +100,7 @@
       </a>
     {% else %}
       <a id="generate"
+         class="clickable"
          style="position: absolute; opacity: 0.6; margin-top: 5px"
          title="{{ _("Click to generate new secure password") }}">
         &nbsp; &nbsp; &nbsp;

@@ -1,0 +1,29 @@
+/* Some general helper classes */
+
+.noselect(){
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/*
+  Sets cursor to pointer on a tags
+  functioning as buttons
+ */
+
+a.clickable {
+  cursor: pointer;
+  .noselect;
+}
+
+/*
+  As they were HTML5 labels
+ */
+
+span.checkbox {
+  cursor: default;
+  .noselect;
+}

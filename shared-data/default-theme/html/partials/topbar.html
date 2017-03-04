@@ -13,11 +13,12 @@
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix" action="{{ U('/search/') }}">
       <input id="search-query" class="typeahead" type="text"
-             name="q" placeholder="search" autocomplete="off"
+             name="q" placeholder="{{_("Search")}}" autocomplete="off"
              tabindex=1 alt="{{_("Search")}}"
              data-context="{{state.context}}"
              data-q="{% for t in result.search_terms %}{{ t }} {% endfor %}"
              value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
+      <span class="clear-search icon-circle-x"></span>
       <button type="submit" class="submit"><span class="icon-search"></span></button>
     </form>
     <nav class="topbar-nav">

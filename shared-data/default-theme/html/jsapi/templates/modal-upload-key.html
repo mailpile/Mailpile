@@ -12,7 +12,7 @@
       <form id="form-upload-key" class="standard add-bottom">{{ csrf_field|safe }}
         <fieldset>
           <label>{{_("Select or Drag Encryption Key")}} <span class="icon-signature-unverified" title="{{_("A file located on your computer usually ending in: .asc .key .pub")}}"></span></label>
-          <a id="upload-key-pick" class="hide half-top button-primary" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+          <a id="upload-key-pick" class="hide half-top button-primary clickable" title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
             <span class="icon-upload"></span> {{_("Select Encryption Key")}}
           </a>
           <span id="upload-key-browswer-unsupported">{{_("Unable to create uploader")}}, <a href="">{{_("update your browser")}}</a></span>

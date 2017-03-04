@@ -7,15 +7,15 @@
 ================================================== */
 /* @license
  * Mailpile font designed for Mailpile
- *
+ * 
  * You may obtain a copy of the license at the URLs below.
- *
+ * 
  * Webfont: Mailpile by Brennan Novak
  * URL: http://github.com/mailpile/fonts
- *
+ * 
  * Mailpile font is licensed under the SIL Open Font License (OFL)
  * http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
- *
+ * 
  * © 2013 Mailpile
 */
 @font-face {
@@ -6668,6 +6668,32 @@ ul.items li.grouped h5 {
   top: 42px;
   left: 47px;
 }
+/* Some general helper classes */
+/*
+  Sets cursor to pointer on a tags
+  functioning as buttons
+ */
+a.clickable {
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/*
+  As they were HTML5 labels
+ */
+span.checkbox {
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 /* Notification Bubbles */
 #notifications {
   position: fixed;
@@ -6840,6 +6866,7 @@ div.notification-bubble span.action {
   margin-left: 15px;
   border-radius: 5px;
   border: 1px solid #b3b3b3;
+  position: relative;
 }
 .form-search input {
   width: 282px;
@@ -6864,6 +6891,16 @@ div.notification-bubble span.action {
   color: #999;
   font-weight: normal;
   font-style: italic;
+}
+.form-search .clear-search {
+  position: absolute;
+  right: 50px;
+  top: 11px;
+  cursor: pointer;
+  color: #cccccc;
+}
+.form-search .clear-search:hover {
+  color: #b3b3b3;
 }
 .form-search button {
   overflow: visible;
@@ -9430,7 +9467,6 @@ a.modal-tag-color-option:hover {
   #pile-results td.subject a.item-subject {
     width: 485px;
   }
-
   xtable,
   xtbody {
     display: block;
@@ -9550,10 +9586,9 @@ a.modal-tag-color-option:hover {
   #pile-results td.date {
     padding-right: 3px;
   }
-  #pile-results td.subject a-item-subject {
+  #pile-results td.subject a.item-subject {
     width: 370px;
   }
-
   #content-tools nav li {
     padding: 2px;
     margin: 0;
