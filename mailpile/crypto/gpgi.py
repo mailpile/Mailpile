@@ -1647,7 +1647,7 @@ class GnuPG14KeyGenerator(GnuPGBaseKeyGenerator):
         ('\n',                                   None,   -1, B.HAVE_KEY)]
 
     def gpg_args(self):
-        return ['--no-use-agent', '--gen-key']
+        return ['--no-use-agent', '--allow-freeform-uid', '--gen-key']
 
 
 class GnuPG21KeyGenerator(GnuPG14KeyGenerator):
@@ -1661,7 +1661,7 @@ class GnuPG21KeyGenerator(GnuPG14KeyGenerator):
     def gpg_args(self):
         # --yes should keep GnuPG from complaining if there already exists
         #       a key with this UID.
-        return ['--yes', '--full-gen-key']
+        return ['--yes', '--allow-freeform-uid', '--full-gen-key']
 
 
 class GnuPGDummyKeyGenerator(GnuPGBaseKeyGenerator):
