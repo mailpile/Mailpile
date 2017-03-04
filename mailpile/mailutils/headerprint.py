@@ -26,8 +26,7 @@ HP_MUA_ID_IGNORE = re.compile(r'(\[[a-fA-F0-9%:]+\]|<\S+@\S+>'
 HP_MUA_ID_SPLIT = re.compile(r'[\s,/;=()]+')
 HP_RECVD_PARSE = re.compile(r'(by\s+)'
                              '[a-z0-9_\.-]*?([a-z0-9_-]*?\.?[a-z0-9_-]+\s+.*'
-                             'with\s+.*)\s+id\s+.*'
-                             ';.*([\+\-]\d\d\d\d|[A-Z][A-Z][A-Z])(\s+.*)?$',
+                             'with\s+.*)\s+id\s+.*$',
                             flags=(re.MULTILINE + re.DOTALL))
 
 
@@ -46,8 +45,7 @@ def HeaderPrintMTADetails(message):
             if parsed:
                 by = parsed.group(1) + parsed.group(2)
                 by = HP_MUA_ID_SPACE.sub(' ', HP_MUA_ID_IGNORE.sub('x', by))
-                tz = parsed.group(3)
-                details = ['Received %s tz=%s' % (by, tz)]
+                details = ['Received ' + by]
                 break
     for h in ('DKIM-Signature', 'X-Google-DKIM-Signature'):
         for dkim in (message.get_all(h) or []):
