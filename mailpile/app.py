@@ -256,6 +256,8 @@ def Main(args):
         if config.event_log:
             config.event_log.close()
 
+        session.ui.display_result(Action(session, 'cleanup', ''))
+
         if session.interactive and config.sys.debug:
             session.ui.display_result(Action(session, 'ps', ''))
 

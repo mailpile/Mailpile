@@ -456,6 +456,36 @@ class RunWWW(Command):
             return self._error(_('Failed to start the web server'))
 
 
+class Cleanup(Command):
+    """Perform cleanup actions (runs before shutdown)"""
+    SYNOPSIS = (None, 'cleanup', None, "")
+    ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
+    SPLIT_ARG = False
+    TASKS = []
+
+    @classmethod
+    def AddTask(cls, task, last=False, first=False):
+        assert(not (first and last))
+        if (first or last) and not cls.TASKS:
+            cls.TASKS = [lambda: True]
+        if first:
+            cls.TASKS.insert(0, task)
+        elif last:
+            cls.TASKS.append(task)
+        else:
+            cls.TASKS.insert(len(cls.TASKS) - 1, task)
+
+    def command(self):
+        while self.TASKS:
+            try:
+                self.TASKS.pop(0)()
+            except:
+                traceback.print_exc()
+                pass
+        return self._success(_('Performed shutdown tasks'))
+
+
 class WritePID(Command):
     """Write the PID to a file"""
     SYNOPSIS = (None, 'pidfile', None, "</path/to/pidfile>")
@@ -464,8 +494,10 @@ class WritePID(Command):
     SPLIT_ARG = False
 
     def command(self):
-        with vfs.open(self.args[0], 'w') as fd:
+        filename = self.args[0]
+        with vfs.open(filename, 'w') as fd:
             fd.write('%d' % os.getpid())
+            Cleanup.AddTask(lambda: os.unlink(filename), last=True)
         return self._success(_('Wrote PID to %s') % self.args)
 
 
@@ -1925,7 +1957,7 @@ class HelpSplash(Help):
 _plugins.register_commands(
     Load, Optimize, Rescan, DeleteMessages,
     BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus, HealthCheck,
-    GpgCommand, ListDir, ChangeDir, CatFile, WritePID,
+    GpgCommand, ListDir, ChangeDir, CatFile, WritePID, Cleanup,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     RenderPage, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, IdleQuit, TrustingQQQ, Abort
