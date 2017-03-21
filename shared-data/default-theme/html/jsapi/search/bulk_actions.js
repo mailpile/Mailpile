@@ -3,7 +3,7 @@ Mailpile.bulk_actions_update_ui = function() {
     var $context = $(context);
     var selected = Mailpile.UI.Selection.selected($context);
     var checkboxes = $context.find('.pile-results input[type=checkbox]');
-    
+
     // This is a hack to make sure the length check below fails
     if (checkboxes.length == 0) checkboxes = ['fake', 'fake'];
 
@@ -140,20 +140,6 @@ Mailpile.bulk_action_deselect_target = function() {
   return true;
 };
 
-
-Mailpile.bulk_action_toggle_target = function() {
-  var target = this.search_target;
-  var $tr = $('.pile-message').eq((target === 'none') ? 0 : target);
-  if ($tr.find('input[type=checkbox]').is(':checked')) {
-    Mailpile.pile_action_unselect($tr);
-  }
-  else {
-    Mailpile.pile_action_select($tr);
-  }
-  return true;
-};
-
-
 Mailpile.bulk_action_select_all = function() {
   var checkboxes = $('.pile-results input[type=checkbox]');
   $.each(checkboxes, function() {
@@ -184,11 +170,6 @@ Mailpile.bulk_action_select_invert = function() {
     }
   });
   Mailpile.bulk_actions_update_ui();
-};
-
-
-Mailpile.bulk_action_select_between = function() {
-  alert('FIXME: Will select messages between two points');
 };
 
 
