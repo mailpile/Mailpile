@@ -19,4 +19,4 @@ RUN pip install -r requirements-dev.txt
 
 RUN chmod +x /entrypoint.sh
 
-CMD ["./mp", "--www=0.0.0.0:33411", "--wait"]
+CMD ["./mp"]

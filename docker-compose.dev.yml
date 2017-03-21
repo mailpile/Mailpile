@@ -1,6 +1,8 @@
 version: '3.0'
 services:
   mailpile_dev:
+    tty: true
+    stdin_open: true
     container_name: mailpile_dev
     build:
       context: .

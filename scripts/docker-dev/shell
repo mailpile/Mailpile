@@ -1,0 +1,9 @@
+#!/bin/bash
+CONTAINER_NAME=mailpile_dev
+CONTAINER_ID=$(docker ps --filter "name=${CONTAINER_NAME}" --quiet)
+if [[ ! -z  $CONTAINER_ID ]]; then
+  echo "Connecting to docker container ${CONTAINER_NAME}:${CONTAINER_ID}"
+  docker attach $CONTAINER_NAME
+else
+  echo "Docker container ${CONTAINER_NAME} does not seem to be running. Start it with './scripts/docker-dev/up'"
+fi
