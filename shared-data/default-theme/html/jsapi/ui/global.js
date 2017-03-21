@@ -41,11 +41,11 @@ Mailpile.render = function() {
   }
 
   // Mousetrap Keybindings
-  Mousetrap.bind('shift', function() { 
+  Mousetrap.bind('shift', function() {
     Mailpile.select_between = true;
   }, 'keydown');
 
-  Mousetrap.bind('shift', function() { 
+  Mousetrap.bind('shift', function() {
     Mailpile.select_between = false;
   }, 'keyup');
 
