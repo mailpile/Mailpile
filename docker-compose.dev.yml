@@ -12,5 +12,5 @@ services:
       - .:/Mailpile
       - .dev-mailpile-data:/mailpile-data:rw
     ports:
-      - 33411:33411
+      - 33412:33411
 
