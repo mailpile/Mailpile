@@ -1,5 +1,5 @@
 /* This is the shared selection code (checkboxes etc).
-** 
+**
 ** Instead of a global object tracking which objects are selected, selection
 ** counts are calculated on-the-fly by evaluating the DOM.
 **

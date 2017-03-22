@@ -6,13 +6,12 @@
       <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
     </div>
     <div class="modal-body modal-body-light-gray">
-      <table class="modal-tag-picker-items">
+      <table class="default-table">
       <%= priority %>
-      <!--
       <tr class="modal-tag-picker-header" data-display="tag">
         <td colspan="2">{{_("Tags")}}</td>
         <td class="text-center"><a class="modal-tag-picker-expand">&middot;&middot;&middot;&middot;</a></td>
-      </tr> -->
+      </tr>
       <%= tags %>
       <%= archive %>
       </table>
