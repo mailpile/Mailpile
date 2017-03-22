@@ -1,7 +1,7 @@
 /* Helpers */
 
 Mailpile.Helpers = [{
-    slug: 'what-is-encryption-key', 
+    slug: 'what-is-encryption-key',
     title: '{{_("What is an Encryption Key")|escapejs}}',
     actions: false
 },{
@@ -33,10 +33,9 @@ $(document).on('click', '.btn-helper-action', function(e) {
 
   console.log(action);
 
-  // 
-  $('#modal-full').modal('hide');
+  Mailpile.UI.hide_modal();
 
-  // Show New  
+  // Show New
   setTimeout(function() {
     Mailpile.UI.Modals[action]();
   }, 500);

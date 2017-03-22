@@ -65,7 +65,7 @@ $(document).on('click', 'a.show-hide, a.do-show', function(e) {
 
 // FIXME: this is in the wrong place
 Mailpile.auto_modal = function(params) {
-  $('#modal-full').modal('hide');
+  Mailpile.UI.hide_modal();
   Mailpile.UI.show_modal(
       Mailpile.safe_template($('#template-modal-loading').html())
   );
@@ -80,7 +80,7 @@ Mailpile.auto_modal = function(params) {
       url: jhtml_url,
       type: params.method,
       success: function(data) {
-        $('#modal-full').modal('hide');
+        Mailpile.UI.hide_modal();
         var mf = Mailpile.UI.show_modal(modal({
           data: data,
           icon: params.icon,
@@ -140,7 +140,7 @@ $(document).on('click', 'a.ok-got-it', function(e) {
   var dom_remove = $elem.data('remove');
   var cleanup = function() {
     if (dom_remove) $('.' + dom_remove).remove();
-    $elem.closest('#modal-full').modal('hide');
+    Mailpile.UI.hide_modal();
   };
   if (cfg_variable) {
     var args = {};

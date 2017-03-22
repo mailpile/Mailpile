@@ -32,14 +32,23 @@ Mailpile.UI.prepare_new_content = function(content) {
   }
 };
 
-
 Mailpile.UI.show_modal = function(html) {
-  if (html) $('#modal-full').html(html);
-  $('#modal-full').modal(Mailpile.UI.modal_options);
-  Mailpile.UI.prepare_new_content($('#modal-full'));
-  return $('#modal-full');
+  var modal = Mailpile.UI.getModal();
+  if (html) {
+    modal.html(html);
+  }
+  modal.modal(Mailpile.UI.modal_options);
+  Mailpile.UI.prepare_new_content(modal);
+  return modal;
 };
 
+Mailpile.UI.hide_modal = function(html) {
+  return Mailpile.UI.getModal().hide();
+};
+
+Mailpile.UI.getModal = function() {
+  return $("#modal-full");
+};
 
 Mailpile.UI.init = function() {
   // BRE: disabled for now, it doesn't really work
