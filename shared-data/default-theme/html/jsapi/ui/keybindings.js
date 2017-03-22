@@ -7,10 +7,10 @@ Mailpile.initialize_keybindings = function() {
   });
 
   // Map user/system configured bindings
-	for (item in Mailpile.keybindings) {
-	  var keybinding = Mailpile.keybindings[item];
+  for (item in Mailpile.keybindings) {
+    var keybinding = Mailpile.keybindings[item];
     Mousetrap.bind(keybinding.keys, keybinding.callback);
-	}
+  }
 };
 
 Mailpile.keybinding_move_message = function(add_tag) {
