@@ -13,7 +13,6 @@ Mailpile = {
   csrf_token:         "{{ csrf_token }}",
   ui_in_action:       0,
   instance:           {},
-  select_between:     false,
   search_target:      'none',
   search_cache:       [],
   messages_cache:     [],

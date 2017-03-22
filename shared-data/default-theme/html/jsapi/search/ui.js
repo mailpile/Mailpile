@@ -5,10 +5,6 @@ Mailpile.focus_search = function() {
 
 /* Search - Action Select */
 Mailpile.pile_action_select = function($item, partial) {
-    if (Mailpile.select_between) {
-      console.log('FIXME: should do a shift select of multiple items');
-    }
-
     // Add Tags
     var metadata = _.findWhere(Mailpile.instance.metadata, { mid: $item.attr('data-mid') });
     if (metadata && metadata.tag_tids) {
@@ -68,7 +64,7 @@ Mailpile.results_list = function() {
     // Navigation
     $('#btn-display-list').addClass('navigation-on');
     $('#btn-display-graph').removeClass('navigation-on');
-    
+
     // Show & Hide View
     $('#pile-graph').hide('fast', function() {
         $('#form-pile-results').show('normal');
@@ -134,7 +130,7 @@ Mailpile.render_modal_tags = function(elem) {
         });
       });
     });
- 
+
   } else {
     Mailpile.notification({ status: 'info', message: '{{_("No Messages Selected")|escapejs}}' });
   }
