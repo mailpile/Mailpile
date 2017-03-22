@@ -40,14 +40,8 @@ Mailpile.render = function() {
     $('#sidebar-tag-outbox').show();
   }
 
-	for (item in Mailpile.keybindings) {
-	  var keybinding = Mailpile.keybindings[item];
-		if (keybinding[0] == "global") {
-			Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
-		} else {
-      Mousetrap.bind(keybinding[1], keybinding[2]);
-		}
-	}
+  // Initialize/Configure Keybindings
+  Mailpile.initialize_keybindings();
 
   // This fixes some of the drag-drop misbehaviours; first we disable the
   // native HTML5 drag-drop of <a> elements...

@@ -75,6 +75,14 @@ Mailpile.results_list = function() {
 };
 
 
+Mailpile.display_keybindings = function(elem) {
+  Mailpile.API.with_template("modal-display-keybindings", function(modal) {
+    Mailpile.UI.show_modal(modal({
+      keybindings: Mailpile.keybindings
+    }));
+  });
+};
+
 Mailpile.render_modal_tags = function(elem) {
   var selected = Mailpile.UI.Selection.selected(elem || '.pile-results');
   if (selected.length) {
