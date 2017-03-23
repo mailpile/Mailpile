@@ -211,18 +211,19 @@ class MailIndex(BaseIndex):
         tokeys = ([gpgr]
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
-        if tokeys:
-            stat, edata = GnuPG(self.config, event=GetThreadEvent()
-                                ).encrypt(data, tokeys=tokeys)
-            if stat == 0:
-                return edata
 
-        elif self.config.master_key:
+        if self.config.master_key:
             with EncryptingStreamer(self.config.master_key,
                                     delimited=True) as es:
                 es.write(data)
                 es.finish()
                 return es.save(None)
+
+        elif tokeys:
+            stat, edata = GnuPG(self.config, event=GetThreadEvent()
+                                ).encrypt(data, tokeys=tokeys)
+            if stat == 0:
+                return edata
 
         return data
 
