@@ -37,7 +37,7 @@ Mailpile.UI.show_modal = function(html) {
     return false;
   }
 
-  var modal = Mailpile.UI.getModal();
+  var modal = Mailpile.UI.get_modal();
   if (html) {
     modal.html(html);
   }
@@ -47,7 +47,7 @@ Mailpile.UI.show_modal = function(html) {
 };
 
 Mailpile.UI.is_modal_active = function() {
-  var modal = Mailpile.UI.getModal();
+  var modal = Mailpile.UI.get_modal();
   var modalData = modal.data("bs.modal");
   if(modalData === undefined) {
     // The modal has not yet been initialized.
@@ -58,10 +58,10 @@ Mailpile.UI.is_modal_active = function() {
 };
 
 Mailpile.UI.hide_modal = function() {
-  return Mailpile.UI.getModal().modal('hide');
+  return Mailpile.UI.get_modal().modal('hide');
 };
 
-Mailpile.UI.getModal = function() {
+Mailpile.UI.get_modal = function() {
   return $("#modal-full");
 };
 
