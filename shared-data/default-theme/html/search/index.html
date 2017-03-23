@@ -17,6 +17,12 @@
                       {{ config.tags[tid].name }}
                       {%- if not loop.last %}, {% endif %}
                     {%- endfor %}"
+         data-index-capabilities="{% for c in result.index_capabilities %}
+                                    {%- if result.index_capabilities[c] %}{{ c }} {% endif -%}
+                                  {%- endfor %}"
+         data-tag-capabilities="{% for c in result.tag_capabilities %}
+                                  {%- if result.tag_capabilities[c] %}{{ c }} {% endif -%}
+                                {%- endfor %}"
          class="pile-results {{ config.web.display_density }}">
   <tbody>
  {% if not result.data or not result.data.messages %}
