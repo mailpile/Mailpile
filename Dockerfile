@@ -1,35 +1,33 @@
-FROM ubuntu:16.10
+FROM alpine:3.5
 
-# Install dependencies
-RUN apt-get update -y && \
-    apt-get install -y openssl python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev python-pgpdump python-cryptography spambayes tor
-
-# Add code
 WORKDIR /Mailpile
-ADD . /Mailpile
 
 # Create users and groups
-RUN groupadd -r mailpile \
-    && mkdir -p /mailpile-data/.gnupg \
-    && useradd -r -d /mailpile-data -g mailpile mailpile
+RUN addgroup -S mailpile && adduser -S -h /mailpile-data -G mailpile mailpile
 
-# Add GnuPG placeholder file
-RUN touch /mailpile-data/.gnupg/docker_placeholder
+# Install dependencies
+RUN apk --no-cache add \
+  ca-certificates \
+  openssl \
+  gnupg1 \
+  py-pip \
+  py-imaging \
+  py-jinja2 \
+  py-lxml \
+  py-lockfile \
+  py-pillow \
+  py-pbr \
+  py-cryptography \
+  su-exec
 
-# Fix permissions
-RUN chown -R mailpile:mailpile /Mailpile
-RUN chown -R mailpile:mailpile /mailpile-data
-
-# Run as non-privileged user
-USER mailpile
-
-# Initialize mailpile
-RUN ./mp setup
+ADD requirements.txt /Mailpile/requirements.txt
+RUN pip install -r requirements.txt
 
 # Entrypoint
+ADD packages/docker/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ./mp --www=0.0.0.0:33411 --wait
 EXPOSE 33411
 
-# Volumes
-VOLUME /mailpile-data/.local/share/Mailpile
-VOLUME /mailpile-data/.gnupg
+# Add code
+ADD . /Mailpile

@@ -1,4 +1,12 @@
-mailpile:
-  build: .
-  ports:
-    - 33411:33411
+version: '3.0'
+services:
+  mailpile:
+    container_name: mailpile
+    build: .
+    image: mailpile
+    volumes:
+      - .:/Mailpile
+      - .dev-mailpile-data:/mailpile-data
+    ports:
+      - 33411:33411
+

@@ -1,0 +1,16 @@
+version: '3.0'
+services:
+  mailpile_dev:
+    tty: true
+    stdin_open: true
+    container_name: mailpile_dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: mailpile_dev
+    volumes:
+      - .:/Mailpile
+      - .dev-mailpile-data:/mailpile-data:rw
+    ports:
+      - 33412:33411
+
