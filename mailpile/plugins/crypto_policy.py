@@ -217,16 +217,15 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                         break
                 if should_encrypt:
                     policy = 'sign-encrypt'
-                    reason = _('Signing and encrypting because we have '
-                               'keys for everyone!')
+                    reason = _('We have keys for everyone!')
             if can_sign and not should_encrypt:
                 # FIXME: Should we check if anyone is using a lame MUA?
                 policy = 'sign'
                 if can_encrypt:
-                    reason = _('Signing, but will not encrypt because '
+                    reason = _('Will not encrypt because '
                                'historic data is insufficient.')
                 else:
-                    reason = _('Signing, but cannot encrypt because we '
+                    reason = _('Cannot encrypt because we '
                                'do not have keys for all recipients.')
 
         if 'send_keys' in cformat:

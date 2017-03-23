@@ -25,10 +25,14 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
     // Record our capabilities: can we encrypt? Sign?
     $('#compose-crypto-encryption-' + mid).data('can', r['can-encrypt']);
     $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);
+
+    // Record reason for current policy (I could not find a better place
+    // than the send button) but there sure is :)
+    Mailpile.Composer.Crypto.SendButton().data('policy-reason', r['reason']);
+
     if (emails.length > 1) {
       // Update encrypt/sign icons
-      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy'],
-                                               r['reason']);
+      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy']);
 
       // Embellish our recipients with data from the backend; in particular
       // this adds the keys and avatars to things manually typed.
@@ -48,7 +52,7 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
       });
     }
     else {
-      Mailpile.Composer.Crypto.LoadStates(mid, 'none', '');
+      Mailpile.Composer.Crypto.LoadStates(mid, 'none');
     }
     if (chain) chain(mid);
   });
@@ -64,7 +68,7 @@ Mailpile.Composer.Crypto.Unencryptables = function(mid) {
 };
 
 
-Mailpile.Composer.Crypto.LoadStates = function(mid, state, reason) {
+Mailpile.Composer.Crypto.LoadStates = function(mid, state) {
   state = state || $('#compose-crypto-' + mid).val();
 
   var signature = 'none';
@@ -79,27 +83,60 @@ Mailpile.Composer.Crypto.LoadStates = function(mid, state, reason) {
   }
   Mailpile.Composer.Crypto.EncryptionToggle(encryption, mid);
 
+  Mailpile.Composer.Crypto.UpdateSendButton(mid, state);
+};
+
+/* Compose - Retrieve a jQuery instance of the Send button */
+Mailpile.Composer.Crypto.SendButton = function(mid) {
+  return $('#form-compose-' + mid + ' button[name=send]');
+};
+
+/* Compose - Update the display properties for the send button */
+Mailpile.Composer.Crypto.UpdateSendButton = function(mid, state) {
   // FIXME: We need to know if encryption or signing is REQUIRED, and
   // disable or enable the send button based on that. The conflict state
   // doesn't cover for when the user does illegal things manually.
-  $('#form-compose-' + mid + ' button[name=send]')
-    .data('crypto-state', state || '')
-    .data('crypto-reason', reason || '')
-    .attr('title', reason || '')
+  var cryptoStateMessage = Mailpile.Composer.Crypto.GetCryptoStateMessage(mid);
+
+  Mailpile.Composer.Crypto.SendButton(mid)
+    .data('crypto-state', state)
+    .data('crypto-reason', cryptoStateMessage)
+    .attr('title', cryptoStateMessage)
     .css({ 'opacity': (state.match(/conflict/)) ? 0.25 : 1.0 });
+};
+
+
+/* Compose - Build crypto state message depending on current crypto selection */
+Mailpile.Composer.Crypto.GetCryptoStateMessage = function(mid) {
+  var currentState = Mailpile.Composer.Crypto.GetState(mid);
+  var policyReason = Mailpile.Composer.Crypto.SendButton(mid).data('policy-reason') || '';
+  var message = {
+    "none":                 "Neither signing nor encrypting.",
+    "openpgp-sign":         "Signing but not encrypting.",
+    "openpgp-encrypt":      "Encrypting but not signing..",
+    "openpgp-sign-encrypt": "Signing and encrypting.",
+  }[currentState] || ("Undefined state: " + currentState);
+  return [message, policyReason].join(" ").trim();
 };
 
 
 /* Compose - Set crypto state of message */
 Mailpile.Composer.Crypto.SetState = function(mid) {
-  
+  var newState = Mailpile.Composer.Crypto.GetState(mid);
+  $('#compose-crypto-' + mid).val(newState);
+  return newState;
+};
+
+
+/* Compose - Determine and return current crypto state of message */
+Mailpile.Composer.Crypto.GetState = function(mid) {
   // Returns: none, openpgp-sign, openpgp-encrypt and openpgp-sign-encrypt
   var state = 'none';
   var signature = $('#compose-signature-' + mid).val();
   var encryption = $('#compose-encryption-' + mid).val();
 
   if (signature == 'sign' && encryption == 'encrypt') {
-    state = 'openpgp-sign-encrypt'; 
+    state = 'openpgp-sign-encrypt';
   }
   else if (signature == 'sign') {
     state = 'openpgp-sign';
@@ -110,49 +147,69 @@ Mailpile.Composer.Crypto.SetState = function(mid) {
   else {
     state = 'none';
   }
-
-  $('#compose-crypto-' + mid).val(state);
   return state;
 };
 
 
 /* Compose - Render crypto "signature" of a message */
 Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
-  if ($('#compose-crypto-signature-' + mid).data('can') === false) {
-    status = (status == 'cannot') ? status : 'none';
-  }
-  if (status === 'sign') {
-    $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-green');
-    $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will be verifiable to recipients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Signed")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).removeClass('none').addClass('signed bounce');
+  $elem = $('#compose-crypto-signature-' + mid);
 
-  } else if (status === 'none') {
-    $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-gray');
-    $('#compose-crypto-signature-' + mid).attr('title', '{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Unsigned")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).removeClass('signed').addClass('none bounce');
+  // If manually set, store new preference for signing.
+  if (manual === 'manual') {
+    $elem.data('should', (status === 'sign'));
+  }
+
+  // If no preference for signing is stored, enable it.
+  var shouldSign = $elem.data('should');
+  shouldSign = (undefined === shouldSign) ? true : shouldSign;
+
+  // If signin capibilities can not be detected, default to false.
+  var canSign = $elem.data('can');
+  canSign = (undefined === canSign) ? false : canSign;
+
+  // FIXME: Could/Should we store that on the element instead of passing it
+  // via `status` object.
+  if (status == 'cannot') {
+    canSign = false;
+  }
+
+  var willSign = canSign && shouldSign;
+  var newState = willSign ? 'sign' : status;
+
+  if (status === 'cannot') {
+    $elem.data('crypto_color', 'crypto-color-red');
+    $elem.attr('title', '{{_("Verification Error")|escapejs}}');
+    $elem.find('span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
+    $elem.find('span.text').html('{{_("Error accessing your encryption key")|escapejs}}');
+    $elem.removeClass('none').addClass('error bounce');
+  }
+  else if (willSign) {
+    $elem.data('crypto_color', 'crypto-color-green');
+    $elem.attr('title', '{{_("This message will be verifiable to recipients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
+    $elem.find('span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
+    $elem.find('span.text').html('{{_("Signed")|escapejs}}');
+    $elem.removeClass('none').addClass('signed bounce');
 
   } else {
-    $('#compose-crypto-signature-' + mid).data('crypto_color', 'crypto-color-red');
-    $('#compose-crypto-signature-' + mid).attr('title', '{{_("Verification Error")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).find('span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
-    $('#compose-crypto-signature-' + mid).find('span.text').html('{{_("Error accessing your encryption key")|escapejs}}');
-    $('#compose-crypto-signature-' + mid).removeClass('none').addClass('error bounce');
+    $elem.data('crypto_color', 'crypto-color-gray');
+    $elem.attr('title', '{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")|escapejs}}');
+    $elem.find('span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
+    $elem.find('span.text').html('{{_("Unsigned")|escapejs}}');
+    $elem.removeClass('signed').addClass('none bounce');
   }
 
-    // Set Form Value
-  if ($('#compose-signature-' + mid).val() !== status) {
-    $('#compose-crypto-signature-' + mid).addClass('bounce');
-    $('#compose-signature-' + mid).val(status);
+  // Set Form Value
+  if ($('#compose-signature-' + mid).val() !== newState) {
+    $elem.addClass('bounce');
+    $('#compose-signature-' + mid).val(newState);
 
     // Remove Animation
     setTimeout(function() {
-      $('#compose-crypto-signature-' + mid).removeClass('bounce');
+      $elem.removeClass('bounce');
     }, 1000);
 
+    Mailpile.Composer.Crypto.UpdateSendButton(mid, newState);
     Mailpile.Composer.Crypto.SetState(mid);
   }
 };
@@ -209,7 +266,7 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
     setTimeout(function() {
       $('#compose-crypto-encryption-' + mid).removeClass('bounce');
     }, 1000);
-    
+
     Mailpile.Composer.Crypto.SetState(mid);
   }
 };
