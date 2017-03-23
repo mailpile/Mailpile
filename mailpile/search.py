@@ -168,9 +168,10 @@ class MailIndex(BaseIndex):
                                              'block of index ending at %d'
                                              % offset)
                     # FIXME: Differentiate between partial index and no index?
+                    gpgi = GnuPG(self.config, event=GetThreadEvent())
                     decrypt_and_parse_lines(fd, process_lines, self.config,
-                                            newlines=True, decode=False,
-                                            _raise=False, error_cb=warn)
+                        newlines=True, decode=False, gpgi=gpgi,
+                        _raise=False, error_cb=warn)
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
