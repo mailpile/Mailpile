@@ -39,6 +39,6 @@
     "select2": "3.4.7",
     "typeahead.js": "~0.10.5",
     "jqueryui-touch-punch": "*",
-    "dompurify": "~0.7.2"
+    "dompurify": "~0.8.5"
   }
 }
