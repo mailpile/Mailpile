@@ -66,6 +66,7 @@ class SetupMagic(Command):
             'type': 'blank',
             'flag_editable': True,
             'flag_msg_only': True,
+            'flag_allow_add': False,
             'display': 'invisible',
             'name': _('Blank'),
         },
@@ -73,6 +74,7 @@ class SetupMagic(Command):
             'type': 'drafts',
             'flag_editable': True,
             'flag_msg_only': True,
+            'flag_allow_add': False,
             'display': 'priority',
             'display_order': 1,
             'icon': 'icon-compose',
@@ -82,6 +84,7 @@ class SetupMagic(Command):
         'Outbox': {
             'type': 'outbox',
             'flag_msg_only': True,
+            'flag_allow_add': False,
             'display': 'priority',
             'display_order': 3,
             'icon': 'icon-outbox',
