@@ -111,11 +111,11 @@ Mailpile.Composer.Crypto.GetCryptoStateMessage = function(mid) {
   var currentState = Mailpile.Composer.Crypto.GetState(mid);
   var policyReason = Mailpile.Composer.Crypto.SendButton(mid).data('policy-reason') || '';
   var message = {
-    "none":                 "Neither signing nor encrypting.",
-    "openpgp-sign":         "Signing but not encrypting.",
-    "openpgp-encrypt":      "Encrypting but not signing..",
-    "openpgp-sign-encrypt": "Signing and encrypting.",
-  }[currentState] || ("Undefined state: " + currentState);
+    "none":                 '{{_("Neither signing nor encrypting.")|escapejs}}',
+    "openpgp-sign":         '{{_("Signing but not encrypting.")|escapejs}}',
+    "openpgp-encrypt":      '{{_("Encrypting but not signing.")|escapejs}}',
+    "openpgp-sign-encrypt": '{{_("Signing and encrypting.")|escapejs}}',
+  }[currentState] || ('{{_("Undefined state: ")|escapejs}}' + currentState);
   return [message, policyReason].join(" ").trim();
 };
 
