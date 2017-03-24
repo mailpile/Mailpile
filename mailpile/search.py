@@ -1585,7 +1585,7 @@ class MailIndex(BaseIndex):
                 results.extend(self.search(session, [tag.magic_terms],
                                            recursion=recursion+1).as_set())
         results.extend(hits('%s:in' % tag_id))
-        return results
+        return results, tag
 
     def search(self, session, searchterms,
                keywords=None, order=None, recursion=0, context=None):
@@ -1629,6 +1629,9 @@ class MailIndex(BaseIndex):
         else:
             r = []
 
+        searched_invisible = False
+        searched_mailbox = False
+
         for term in searchterms:
             if term in STOPLIST:
                 if session:
@@ -1647,8 +1650,15 @@ class MailIndex(BaseIndex):
 
             if ':' in term:
                 if term.startswith('in:'):
-                    rt.extend(self.search_tag(session, term, hits,
-                                              recursion=recursion))
+                    results, tag = self.search_tag(session, term, hits,
+                                                   recursion=recursion)
+                    rt.extend(results)
+                    if tag:
+                        if tag.flag_hides:
+                            searched_invisible = True
+                        if tag.type == 'mailbox':
+                            searched_mailbox = True
+
                 elif term.startswith('mid:'):
                     rt.extend([int(t, 36) for t in
                                term[4:].replace('=', '').split(',')])
@@ -1669,16 +1679,16 @@ class MailIndex(BaseIndex):
                     for status in EncryptionInfo.STATUSES:
                         if status in CryptoInfo.STATUSES:
                             continue
-                        rt.extend(self.search_tag(session,
-                                                  'in:mp_enc-%s' % status,
-                                                  hits, recursion=recursion))
+                        rt.extend(self.search_tag(
+                            session, 'in:mp_enc-%s' % status, hits,
+                            recursion=recursion)[0])
                 elif term == 'is:signed':
                     for status in SignatureInfo.STATUSES:
                         if status in CryptoInfo.STATUSES:
                             continue
-                        rt.extend(self.search_tag(session,
-                                                  'in:mp_sig-%s' % status,
-                                                  hits, recursion=recursion))
+                        rt.extend(self.search_tag(
+                            session, 'in:mp_sig-%s' % status, hits,
+                            recursion=recursion)[0])
                 else:
                     t = term.split(':', 1)
                     fnc = _plugins.get_search_term(t[0])
@@ -1709,17 +1719,12 @@ class MailIndex(BaseIndex):
         exclude = []
         order = order or (session and session.order) or 'flat-index'
         if (results and (keywords is None) and
+                (not searched_invisible) and
+                (not searched_mailbox) and
                 ('tags' in self.config) and
                 (not session or 'all' not in order)):
             invisible = self.config.get_tags(flag_hides=True)
             exclude_terms = ['in:%s' % i._key for i in invisible]
-            for tag in invisible:
-                tid = tag._key
-                for p in ('in:%s', '+in:%s', '-in:%s'):
-                    if ((p % tid) in searchterms or
-                            (p % tag.name) in searchterms or
-                            (p % tag.slug) in searchterms):
-                        exclude_terms = []
             if len(exclude_terms) > 1:
                 exclude_terms = ([exclude_terms[0]] +
                                  ['+%s' % e for e in exclude_terms[1:]])
