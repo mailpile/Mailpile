@@ -597,6 +597,9 @@ def _connect_imap(session, settings, event,
                     # Fetch capabilities again after STARTTLS
                     ok, data = timed_imap(conn.capability)
                     capabilities = set(' '.join(data).upper().split())
+                    # Update the protocol to avoid getting downgraded later
+                    if settings.get('protocol', '') != 'imap_ssl':
+                        settings['protocol'] = 'imap_tls'
             except (IMAP4.error, IOError, socket.error):
                 ok = False
             if not ok:
