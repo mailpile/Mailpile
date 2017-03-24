@@ -168,9 +168,10 @@ class MailIndex(BaseIndex):
                                              'block of index ending at %d'
                                              % offset)
                     # FIXME: Differentiate between partial index and no index?
+                    gpgi = GnuPG(self.config, event=GetThreadEvent())
                     decrypt_and_parse_lines(fd, process_lines, self.config,
-                                            newlines=True, decode=False,
-                                            _raise=False, error_cb=warn)
+                        newlines=True, decode=False, gpgi=gpgi,
+                        _raise=False, error_cb=warn)
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
@@ -210,18 +211,19 @@ class MailIndex(BaseIndex):
         tokeys = ([gpgr]
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
-        if tokeys:
-            stat, edata = GnuPG(self.config, event=GetThreadEvent()
-                                ).encrypt(data, tokeys=tokeys)
-            if stat == 0:
-                return edata
 
-        elif self.config.master_key:
+        if self.config.master_key:
             with EncryptingStreamer(self.config.master_key,
                                     delimited=True) as es:
                 es.write(data)
                 es.finish()
                 return es.save(None)
+
+        elif tokeys:
+            stat, edata = GnuPG(self.config, event=GetThreadEvent()
+                                ).encrypt(data, tokeys=tokeys)
+            if stat == 0:
+                return edata
 
         return data
 
