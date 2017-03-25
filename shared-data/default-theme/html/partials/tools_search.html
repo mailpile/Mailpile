@@ -90,7 +90,7 @@
 {%-         set msg = _("Move to %(tag_name)s", tag_name=tag.name) -%}
 {%-         set act = "move" -%}
 {%-       endif -%}
-{%-       set tag_color = theme_settings().colors[tag.label_color] -%}
+{%-       set tag_color = theme_settings().colors.get(tag.label_color, tag.label_color) -%}
 {%-       do search_actions.append('
   <li class="hide">
     <a class="bulk-action-tag-op" href="#" title="'+ msg +'"

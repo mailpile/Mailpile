@@ -9,7 +9,7 @@
       {% else %}
       {% set total_count = tag.stats.all %}
       {% endif %}
-    <a class="tag-card-name left" href="{{ config.sys.http_path }}/in/{{tag.slug}}/" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+    <a class="tag-card-name left" href="{{ config.sys.http_path }}/in/{{tag.slug}}/" title="{{tag.name}}" style="color: {{theme_settings().colors.get(tag.label_color, tag.label_color)}};">
       <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
       {% if tag.name|length > 15 %}
       {{tag.name[:12]}}...

@@ -1,4 +1,5 @@
 <div id="tags-settings" class="content-normal" style="position: relative; max-width: 42em;">
+{% set theme_colors = theme_settings().colors %}
 <form class="standard" method="POST"
 {%- if state.command_url == "/tags/add/" %}
       action="{{ U('/tags/add/') }}"
@@ -10,7 +11,7 @@
   <div class="clearfix half-bottom">
     <h1 class="contact-name half-bottom">
       <span id="tag-editor-icon" class="{{tag.icon}}"
-            style="color: {{ theme_settings().colors[tag.label_color] }}"></span>
+            style="color: {{ theme_colors.get(tag.label_color, tag.label_color) }}"></span>
       {{form_title}}
     </h1>
   </div>
@@ -30,11 +31,11 @@
       <div class="right">
         <a class="{{ tag.icon }} modal-open-choose-tag-icon"
            title='{{_("Change Icon")}}'
-           style="color: {{ theme_settings().colors[tag.label_color] }}"></a>
+           style="color: {{ theme_colors.get(tag.label_color, tag.label_color) }}"></a>
         <input type="hidden" class='choose-tag-icon'
                name="{{prefix}}icon" value="{{ tag.icon }}">
         <a class="modal-open-choose-tag-color"
-           style="color: {{ theme_settings().colors[tag.label_color] }}"
+           style="color: {{ theme_colors.get(tag.label_color, tag.label_color) }}"
            title='{{_("Change Color")}}'>{{_("Color")}}</a>
         <input type="hidden" class='choose-tag-color'
                name="{{prefix}}label_color" value="{{tag.label_color}}">
@@ -98,7 +99,7 @@
 {%-   for sub in tag.subtags %}
         <li class="grouped">
           <a href="{{ sub.url }}">
-            <span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span>
+            <span class="{{sub.icon}}" style="color: {{ theme_colors.get(sub.label_color, sub.label_color) }}"></span>
           {{sub.name}}
           </a>
           <a href="{{ U('/tags/edit.html?only=', sub.slug) }}"
