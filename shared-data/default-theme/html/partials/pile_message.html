@@ -3,7 +3,7 @@
   {%- set encryption_status = [] %}
   {%- set signature_status = [] %}
   {%- set special_text_parts = [] %}
-  {%- macro msg_crypto(part) %}
+  {%- macro msg_crypto(part, forcedisplay) %}
     {#-
      # Parts that do not have own crypto attribute inherit from message itself
      # Watch for changes to the "status" which is present in each encryption and
@@ -15,7 +15,7 @@
     {%- set encryption = show_text_part_encryption(part_encryption and part_encryption.status) %}
     {%- set signature = show_text_part_signature(part_signature and part_signature.status) %}
 
-    {%- if encryption_status and part_encryption.status != encryption_status[-1] %}
+    {%- if encryption_status and (forcedisplay or part_encryption.status != encryption_status[-1]) %}
     <div class="part-crypto-status clearfix crypto-changed border-{{ encryption.color }}">
       <span class="message-inline-crypto-info {{encryption.color}}">&#x2198;</span>
     {%- elif signature_status and part_signature.status != signature_status[-1] %}
@@ -26,7 +26,7 @@
     {%- endif %}
 
     {%- if part_encryption %}
-      {%- if not encryption_status or part_encryption.status != encryption_status[-1] %}
+      {%- if not encryption_status or forcedisplay or part_encryption.status != encryption_status[-1] %}
       <span class="message-inline-crypto-info inline-encryption-info"
             title="{{ encryption.text }}"
             data-crypto_color="{{ encryption.color }}"
@@ -62,7 +62,7 @@
     {%- for part in message.text_parts %}
     <div class="pile-message-text-part">
       {%- if part.data|trim %}
-        {{- msg_crypto(part) }}
+        {{- msg_crypto(part, False) }}
         {%- autoescape false %}
         {%- set part_text = part.data|nice_text|e|urlize|fix_urls(40, metadata.flags.spam) %}
         {%- if part.type in ("text", "pgpsignedtext") %}
@@ -100,12 +100,10 @@
       {%- endif %}
     </div>
     {%- endfor %}
-    {%- set encryption_status = [] %}
-    {%- set signature_status = [] %}
     {%- for part in message.html_parts %}
     <div id="html-part-{{ mid }}-{{ loop.index }}"
          class="pile-message-html-part hide">
-      {{ msg_crypto(part) }}
+      {{ msg_crypto(part, loop.first) }}
       <div class="message-part-html">
         <i class="noframe">{{ _("HTML rendering requires Javascript, sorry!") }}</i>
       </div>
@@ -124,6 +122,7 @@
       <ul class="pile-message-attachments horizontal clearfix">
     {%- for att in message.attachments %}
         <li class="left">
+      {# FIXME: Too ugly, for now. { msg_crypto(att, False) } #}
       {%- set type = attachment_type(att.mimetype) %}
       {%- if (att.filename) %}
         {%- set filename = att.filename %}
@@ -153,9 +152,9 @@
           </div>
           <div class="filename">
         {%- if att.crypto.encryption.status == "decrypted" %}
-            <span class="icon-lock-closed crypto-encrypted"></span>
+            <span class="icon-lock-closed crypto-encrypted"></span>&nbsp;
         {%- elif att.crypto.encryption.status == "encrypted" %}
-            <span class="icon-lock-closed crypto-error"></span>
+            <span class="icon-lock-closed crypto-error"></span>&nbsp;
         {%- endif %}
         {%- if file_parts_length > 2 or filename|length > 20 %}
               {{- att.filename[0:15] -}}...
