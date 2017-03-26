@@ -11,12 +11,12 @@
           <th>Binding</th>
         </thead>
         <tbody>
-          <% _.each(keybindings, function(binding) { %>
+          <% _.each(keybindings, function(binding) { if (binding.title) { %>
             <tr>
               <td><%= binding.title %></td>
               <td><%= binding.keys %></td>
             </tr>
-          <% }); %>
+          <% } }); %>
         </tbody>
       </table>
     </div>
