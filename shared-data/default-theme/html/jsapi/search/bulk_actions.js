@@ -210,12 +210,19 @@ Mailpile.bulk_action_selection_down = function() {
 
 Mailpile.open_selected_thread = function() {
   var selected = Mailpile.UI.Selection.selected('.pile-results');
-  if (Mailpile.search_target !== 'none') {
-    var target = this['search_target'];
-    $('.pile-results tr').eq(target).find('.subject a').eq(0).trigger('click');
+  if (selected.length === 1 && selected[0] == '!all') {
+    console.log('FIXME: should open first message');
   }
-  else if (selected.length === 1 && selected[0] != '!all') {
-    $(".pile-results .pile-message-" + selected[0]).eq(0)
-      .find('.subject a').eq(0).trigger('click');
+  else {
+    if (selected.length < 1) {
+      var checkboxes = $('.pile-results input[type=checkbox]');
+      Mailpile.pile_action_select($(checkboxes[0]).parent().parent());
+      selected = Mailpile.UI.Selection.selected('.pile-results');
+    }
+    if (selected.length > 0) {
+      console.log('Open: ' + selected[0]);
+      $(".pile-results .pile-message-" + selected[0]).eq(0)
+        .find('.subject a').eq(0).trigger('click');
+    }
   }
 };

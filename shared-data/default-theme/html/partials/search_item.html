@@ -48,15 +48,15 @@
   <td class="message-nav">
   {%- if previous_mid %}
     <a href="{{msg_url(previous_mid)}}" title="{{_('Previous Conversation')}}"
-       data-noblank=1 class="icon">&#x25B2;</a><br>
+       id="previous-message" data-noblank=1 class="icon">&#x25B2;</a><br>
   {%- endif %}
     <a href="{{ U(add_state_query_string(state.command_url, state, {
                     'url_args_remove': [['view','']]}))}}"
-       title="{{_('Close')}}"
+       id="close-message" title="{{_('Close')}}"
        data-noblank=1><span class='icon icon-circle-x'></span></a><br>
   {%- if next_mid %}
     <a href="{{msg_url(next_mid)}}" title="{{_('Next Conversation')}}"
-       data-noblank=1 class="icon">&#x25BC;</a><br>
+       id="next-message" data-noblank=1 class="icon">&#x25BC;</a><br>
   {%- endif %}
   </td>
   <td class="from" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">

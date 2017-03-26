@@ -33,3 +33,39 @@ Mailpile.keybinding_move_message = function(add_tag) {
     console.log('FIXME: Provide helpful / unobstrusive UI feedback that tells a user they hit a keybinding, then fades away');
   }
 };
+
+Mailpile.keybinding_view_message = function() {
+  var $elem = $('#close-message');
+  if ($elem.length > 0) {
+    $elem.eq(0).trigger('click');
+  }
+  else {
+    Mailpile.open_selected_thread();
+  }
+};
+
+Mailpile.keybinding_selection_up = function() {
+  var $elem = $('#previous-message');
+  if ($elem.length > 0) {
+    $elem.eq(0).trigger('click');
+  }
+  else if ($('#close-message').length > 0) {
+    $('#close-message').eq(0).trigger('click');
+  }
+  else {
+    Mailpile.bulk_action_selection_up();
+  }
+};
+
+Mailpile.keybinding_selection_down = function() {
+  var $elem = $('#next-message');
+  if ($elem.length > 0) {
+    $elem.eq(0).trigger('click');
+  }
+  else if ($('#close-message').length > 0) {
+    $('#close-message').eq(0).trigger('click');
+  }
+  else {
+    Mailpile.bulk_action_selection_down();
+  }
+};
