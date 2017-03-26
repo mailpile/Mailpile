@@ -17,9 +17,9 @@ Mailpile.UI.Modals.TagAddProcess = function(location) {
 
       // FIXME: these drag & drops probably break on non search views
 
-      $('#modal-full').modal('hide');
+      Mailpile.UI.hide_modal();
     } else {
       Mailpile.notification(result);
     }
-  });  
+  });
 };

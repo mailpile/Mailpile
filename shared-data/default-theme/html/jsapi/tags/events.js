@@ -54,7 +54,7 @@ $(document).on('click', '#tag-edit-icon-picker .modal-tag-icon-option', function
     // Update Tag Editor
     $('#data-tag-icon').val(icon);
     $('#tag-editor-icon').removeClass().addClass(icon);
-    $('#modal-full').modal('hide');
+    Mailpile.UI.hide_modal();
   });
 });
 
@@ -86,7 +86,7 @@ $(document).on('click', '#tag-edit-color-picker .modal-tag-color-option', functi
     // Update Tag Editor
     $('#data-tag-label-color').val(name);
     $('#tag-editor-icon').css('color', hex);
-    $('#modal-full').modal('hide');
+    Mailpile.UI.hide_modal();
   });
 });
 

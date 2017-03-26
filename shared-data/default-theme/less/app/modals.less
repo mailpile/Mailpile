@@ -18,9 +18,9 @@
   }
 
 
-/* Modal - Tag picker */
+/* Modal - Table default style */
 
-  table.modal-tag-picker-items {
+  table.default-table {
     width: 100%;
     background: @white;
     border-top: 1px solid @grayMid;
@@ -30,17 +30,16 @@
     border-radius: @base-border-radius;
   }
 
-  tr.modal-tag-picker-header,
-  tr.modal-tag-picker-item {
+  table.default-table tr {
     width: 100%;
   }
 
-  tr.modal-tag-picker-header:hover {
+  table.default-table tr:hover {
     cursor: pointer;
     background: @colorExpand;
   }
 
-  tr.modal-tag-picker-header td {
+  table.default-table td {
     border-top: 0px;
     border-bottom: 1px solid @grayMid;
     padding: (@base-padding / 2);
@@ -48,10 +47,6 @@
     color: @grayDark;
     padding-left: 10px;
   }
-
-  tr.modal-tag-picker-item.priority,
-  tr.modal-tag-picker-item.tag,
-  tr.modal-tag-picker-item.archive {}
 
   tr.modal-tag-picker-item td {
     border-top: 0px;
@@ -72,7 +67,6 @@
   tr.modal-tag-picker-item td.checkbox {
     width: 30px;
   }
-
 
 /* Modal - Results from crypto searchkey command */
 
@@ -133,7 +127,7 @@
   .searchkey-result-details table {
     width: 100%;
     border: 0px;
-    background: transparent; 
+    background: transparent;
   }
 
   .searchkey-result-details table tr:hover {

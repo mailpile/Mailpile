@@ -1,0 +1,24 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">Keybindings</h4>
+    </div>
+    <div class="modal-body modal-body-light-gray">
+      <table class="default-table">
+        <thead>
+          <th>Title</th>
+          <th>Binding</th>
+        </thead>
+        <tbody>
+          <% _.each(keybindings, function(binding) { %>
+            <tr>
+              <td><%= binding.title %></td>
+              <td><%= binding.keys %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

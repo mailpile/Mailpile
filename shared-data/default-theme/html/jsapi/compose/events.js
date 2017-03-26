@@ -301,7 +301,7 @@ $(document).on('submit', '#form-compose-quoted-reply', function(e) {
   }
   Mailpile.API.settings_set_post({ 'web.quoted_reply': quoted_reply }, function(result) {
     Mailpile.notification(result);
-    $('#modal-full').modal('hide');
+    Mailpile.UI.hide_modal();
   });
 });
 

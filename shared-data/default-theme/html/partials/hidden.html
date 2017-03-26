@@ -299,7 +299,7 @@
 <script id="template-encryption-helper-complete-message" type="text/template">
   <div class="text-center">
     <p>Great job. You have successfully found encryption keys for all the contacts you are trying to send an encrypted email to. Way to be more secure ;)</p>
-    <button class="button-secondary" onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('encrypt', mid);">Back To Message</button>
+    <button class="button-secondary" onclick="javascript:Mailpile.UI.hide_modal();Mailpile.Composer.Crypto.EncryptionToggle('encrypt', mid);">Back To Message</button>
   </div>
 </script>
 

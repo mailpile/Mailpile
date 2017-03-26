@@ -14,7 +14,7 @@ Mailpile.UI.Modals.ContactAdd = function() {
 Mailpile.UI.Modals.ContactAddProcess = function() {
   Mailpile.API.contacts_add_post($('#form-contact-add').serialize(), function(result) {
     if (result.status == 'success') {
-      $('#modal-full').modal('hide');
+      Mailpile.UI.hide_modal();
 
       // If Contacts List
       var $clist = $('#contacts-list');

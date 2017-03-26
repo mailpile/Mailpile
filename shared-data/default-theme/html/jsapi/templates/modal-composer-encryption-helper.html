@@ -81,11 +81,11 @@
 
     </div>
     <div class="modal-footer">
-      <button onclick="javascript:$('#modal-full').modal('hide');Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"
+      <button onclick="javascript:Mailpile.UI.hide_modal();Mailpile.Composer.Crypto.EncryptionToggle('none', '<%= mid %>');"
               class="modal-send-unencrypted button-info left">
         <span class="icon-lock-open"></span> {{_("Send Unencrypted")}}
       </button>
-      <button onclick="javascript:$('#modal-full').modal('hide');"
+      <button onclick="javascript:Mailpile.UI.hide_modal();"
               class="modal-retry-encryption button-primary right"
               data-mid="<%= mid %>">
         {{_("Try Again")}}

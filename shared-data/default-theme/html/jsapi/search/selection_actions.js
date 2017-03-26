@@ -141,7 +141,6 @@ $(document).on('submit', '#form-tag-picker', function(e) {
       });
     }
 
-    // Hide Modal
-    $('#modal-full').modal('hide');
+    Mailpile.UI.hide_modal();
   });
 });

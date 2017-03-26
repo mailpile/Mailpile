@@ -32,14 +32,38 @@ Mailpile.UI.prepare_new_content = function(content) {
   }
 };
 
-
 Mailpile.UI.show_modal = function(html) {
-  if (html) $('#modal-full').html(html);
-  $('#modal-full').modal(Mailpile.UI.modal_options);
-  Mailpile.UI.prepare_new_content($('#modal-full'));
-  return $('#modal-full');
+  if (Mailpile.UI.is_modal_active()) {
+    return false;
+  }
+
+  var modal = Mailpile.UI.get_modal();
+  if (html) {
+    modal.html(html);
+  }
+  modal.modal(Mailpile.UI.modal_options);
+  Mailpile.UI.prepare_new_content(modal);
+  return modal;
 };
 
+Mailpile.UI.is_modal_active = function() {
+  var modal = Mailpile.UI.get_modal();
+  var modalData = modal.data("bs.modal");
+  if(modalData === undefined) {
+    // The modal has not yet been initialized.
+    return false;
+  } else {
+    return modalData.isShown;
+  }
+};
+
+Mailpile.UI.hide_modal = function() {
+  return Mailpile.UI.get_modal().modal('hide');
+};
+
+Mailpile.UI.get_modal = function() {
+  return $("#modal-full");
+};
 
 Mailpile.UI.init = function() {
   // BRE: disabled for now, it doesn't really work
