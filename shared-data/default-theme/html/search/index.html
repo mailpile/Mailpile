@@ -58,7 +58,8 @@
                        ['end', result.stats.start+(2*result.stats.count)-1]]
     } %}
     <a href="{{moar.url|add_state_query_string(state, moar)|url_path_fix}}"
-       class="button-primary left" id="pile-more">{{_("More")}}</a>
+       class="button-primary left" id="pile-more"
+       data-noblank=1 data-noscroll=1>{{_("More")}}</a>
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
     {% set nxt = {

@@ -48,8 +48,11 @@ _update_title = function(message) {
     document.title = message + suffix;
 };
 
-_scroll_up = function(elem) {
-    setTimeout(function() { $(elem).scrollTop(0); }, 10);
+_scroll_up = function(elem, scrollto) {
+    setTimeout(function() {
+      $(elem).find('div, table, tbody, p').scrollTop(0);
+      $('#content-view, #content-tall-view').eq(0).scrollTop(scrollto || 0);
+    }, 10);
 };
 
 get_now = function() {
@@ -73,16 +76,35 @@ can_refresh = function(cid) {
             ($('.pile-results input[type=checkbox]:checked').length < 1));
 };
 
-autoajax_go = function(url, message, jhtml, noblank) {
+autoajax_go = function(url, message, jhtml, noblank, noscroll) {
     url = Mailpile.fix_url(url);
     if (jhtml === undefined) jhtml = ajaxable_url(url);
-    // If we have any composers on the page, save contents
-    // before continuing - whether we're JHTMLing or not!
+
+    // Provide UI feedback if this takes time
     var done = Mailpile.notify_working(message, (noblank) ? 250 : 1500);
+
+    // Attempt to preserve selections cross-refresh. This will only work if
+    // the selected elements are still present on the new page.
+    var selected = Mailpile.UI.Selection.selected('.pile-results');
+
+    // If noscroll is requested, try to preserve scroll position.
+    if (noscroll) {
+      scrollto = $('#content-view, #content-tall-view').eq(0).scrollTop();
+    }
+    else scrollto = 0;
+
+    // Called after the page is updated
     var scroll_and_done = function(stuff) {
       done();
-      return _scroll_up(stuff);
+      $.each(selected, function() {
+        Mailpile.pile_action_select($('.pile-results .pile-message-' + this), 'partial');
+      });
+      if (selected.length) Mailpile.bulk_actions_update_ui();
+      return _scroll_up(stuff, scrollto);
     }
+
+    // If we have any composers on the page, save contents
+    // before continuing - whether we're JHTMLing or not!
     Mailpile.Composer.AutosaveAll(0, function() {
         if (!(jhtml && update_using_jhtml(url, scroll_and_done, done, noblank))) {
             document.location.href = url;
@@ -105,7 +127,8 @@ prepare_new_content = function(selector) {
                 if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
                     ev.preventDefault();
                     autoajax_go(url, undefined, jhtml,
-                                $(elem).data('noblank') ? true : false);
+                                $(elem).data('noblank') ? true : false,
+                                $(elem).data('noscroll') ? true : false);
                 }
             });
         }
@@ -134,6 +157,8 @@ render_result = function(data, cv, html) {
     Mailpile.render();
     // Work around bugs in drag/drop lib, nuke artefacts
     $('div.ui-draggable-dragging').remove();
+
+    return cv;
 };
 
 restore_state = function(ev) {
@@ -162,8 +187,8 @@ update_using_jhtml = function(original_url, callback, error_callback,
                 if (!nohistory)
                     history.pushState({autoajax: true, url: original_url},
                                       data['message'], original_url);
-                render_result(data, cv)
-                if (callback) { callback(cv) };
+                shown = render_result(data, cv)
+                if (callback) { callback(shown) };
             },
             error: function() {
                 if (error_callback) error_callback(cv);

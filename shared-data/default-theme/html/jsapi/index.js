@@ -20,29 +20,35 @@ Mailpile = {
   crypto_keylookup:   [],
   tags_cache:         [],
   contacts_cache:     [],
-  keybindings:        [
-    { title: '{{_("Search mail")|escapejs}}',         keys: "/",       callback: function() { $("#search-query").focus(); return false; } },
-    { title: '{{_("Create Tag")|escapejs}}',          keys: "a t",     callback: function() { Mailpile.UI.Modals.TagAdd(); }},
-    { title: '{{_("Compose email")|escapejs}}',       keys: "c",       callback: function() { Mailpile.activities.compose(); }},
-    { title: '{{_("Go to Inbox")|escapejs}}',         keys: "g i",     callback: function() { Mailpile.go("/in/inbox/"); }},
-    { title: '{{_("Go to Drafts")|escapejs}}',        keys: "g d",     callback: function() { Mailpile.go("/in/drafts/"); }},
+  keybindings:        [ {#
+    // Note to hackers:
+    //
+    // We avoid binding TAB, ENTER, UP, DOWN and SPACE because those all have
+    // meaning in common browser defaults. We aim to play nice with browser
+    // defaults, not end up in a preventDefault war.
+    //
+    // See also: https://github.com/mailpile/Mailpile/issues/1814
+    //
+    // #}
+    { title: '{{_("Search mail")|escapejs}}',         keys: "/",       callback: function(e) { $("#search-query").focus(); return false; } },
+    { title: '{{_("Create Tag")|escapejs}}',          keys: "a t",     callback: function(e) { Mailpile.go("/tag/add/"); }},//Mailpile.UI.Modals.TagAdd(); }},
+    { title: '{{_("Compose email")|escapejs}}',       keys: "c",       callback: function(e) { Mailpile.activities.compose(); }},
+    { title: '{{_("Go to Inbox")|escapejs}}',         keys: "g i",     callback: function(e) { Mailpile.go("/in/inbox/"); }},
+    { title: '{{_("Go to Drafts")|escapejs}}',        keys: "g d",     callback: function(e) { Mailpile.go("/in/drafts/"); }},
+    { title: '{{_("Go to Spam")|escapejs}}',          keys: "g s",     callback: function(e) { Mailpile.go("/in/spam/"); }},
     { title: '{{_("Security and Privacy Settings")|escapejs}}',
-                                                      keys: "g s",     callback: function() { Mailpile.go("/settings/privacy.html"); }},
-    { title: '{{_("Open thread")|escapejs}}',         keys: "enter",   callback: function() { Mailpile.keybinding_view_message(); }},
-    {                                                 keys: "o",       callback: function() { Mailpile.keybinding_view_message(); }},
-    { title: '{{_("Archive mails")|escapejs}}',       keys: "e",       callback: function() { Mailpile.keybinding_move_message(''); }},
-    { title: '{{_("Delete mails")|escapejs}}',        keys: "#",       callback: function() { Mailpile.keybinding_move_message('trash'); }},
-    { title: '{{_("Move to spam")|escapejs}}',        keys: "!",       callback: function() { Mailpile.keybinding_move_message('spam'); }},
-    { title: '{{_("Move selection down")|escapejs}}', keys: "j",       callback: function() { Mailpile.keybinding_selection_down(); }},
-    {                                                 keys: "down",    callback: function() { Mailpile.keybinding_selection_down(); }},
-    { title: '{{_("Move selection up")|escapejs}}',   keys: "k",       callback: function() { Mailpile.keybinding_selection_up(); }},
-    {                                                 keys: "up",      callback: function() { Mailpile.keybinding_selection_up(); }},
-    { title: '{{_("Mark as read")|escapejs}}',        keys: "shift+i", callback: function() { Mailpile.bulk_action_read(); }},
-    { title: '{{_("Mark as unread")|escapejs}}',      keys: "shift+u", callback: function() { Mailpile.bulk_action_unread(); }},
-    { title: '{{_("Previous page of results")|escapejs}}',
-                                                      keys: "left",    callback: function() { if ($('#pile-previous').length) { Mailpile.go($('#pile-previous').attr('href')); }}},
-    { title: '{{_("Next page of results")|escapejs}}',
-                                                      keys: "right",   callback: function() { if ($('#pile-next').length) { Mailpile.go($('#pile-next').attr('href')); }}},
+                                                      keys: "g p",     callback: function(e) { Mailpile.go("/settings/privacy.html"); }},
+    { title: '{{_("Open thread")|escapejs}}',         keys: "o",       callback: function(e) { Mailpile.keybinding_view_message(); }},
+    { title: '{{_("Archive mails")|escapejs}}',       keys: "e",       callback: function(e) { Mailpile.keybinding_move_message(''); }},
+    { title: '{{_("Delete mails")|escapejs}}',        keys: "#",       callback: function(e) { Mailpile.keybinding_move_message('trash'); }},
+    { title: '{{_("Move to spam")|escapejs}}',        keys: "!",       callback: function(e) { Mailpile.keybinding_move_message('spam'); }},
+    { title: '{{_("Move selection down")|escapejs}}', keys: "j",       callback: function(e) { Mailpile.keybinding_selection_down(); }},
+    { title: '{{_("Extend selection down")|escapejs}}', keys: "x",     callback: function(e) { Mailpile.keybinding_selection_extend(); }},
+    { title: '{{_("Move selection up")|escapejs}}',   keys: "k",       callback: function(e) { Mailpile.keybinding_selection_up(); }},
+    { title: '{{_("Mark as read")|escapejs}}',        keys: "shift+i", callback: function(e) { Mailpile.bulk_action_read(); }},
+    { title: '{{_("Mark as unread")|escapejs}}',      keys: "shift+u", callback: function(e) { Mailpile.bulk_action_unread(); }},
+    { title: '{{_("Previous page of results")|escapejs}}', keys: "h",  callback: function(e) { if ($('#pile-previous').length) { Mailpile.go($('#pile-previous').attr('href')); }}},
+    { title: '{{_("Next page of results")|escapejs}}', keys: "l",      callback: function(e) { if ($('#pile-next').length) { Mailpile.go($('#pile-next').attr('href')); }}},
   {% if is_dev_version() %}
     // TODO: Those bindings may not work or link to pages that are WIP
     { title: '{{_("Create Contact")|escapejs}}',   keys: "a c",   callback: function() { Mailpile.UI.Modals.ContactAdd(); }},

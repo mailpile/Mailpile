@@ -172,57 +172,56 @@ Mailpile.bulk_action_select_invert = function() {
   Mailpile.bulk_actions_update_ui();
 };
 
-
-Mailpile.bulk_action_selection_up = function() {
+Mailpile.bulk_action_move_selection = function(keep, mover) {
   var checkboxes = $('.pile-results input[type=checkbox]');
   var selected = Mailpile.UI.Selection.selected(checkboxes.eq(0));
   if (selected.length == 0) {
-    Mailpile.pile_action_select($(checkboxes[checkboxes.length-1]).parent().parent());
-    return;
+    var $elem = $(checkboxes[0]).parent().parent();
+    Mailpile.pile_action_select($elem);
+    return $elem;
   }
+
+  var $last = [];
   $.each(checkboxes, function() {
-    if ($(this).parent().parent().next().children().children("input").is(":checked")) {
-      Mailpile.pile_action_select($(this).parent().parent(), 'partial');
-    } else {
-      Mailpile.pile_action_unselect($(this).parent().parent(), 'partial');
-    }
+    var $e = $(this);
+    if ($e.is(":checked")) $last = $e.parent().parent();
   });
-  Mailpile.bulk_actions_update_ui();
-};
-
-
-Mailpile.bulk_action_selection_down = function() {
-  var checkboxes = $('.pile-results input[type=checkbox]');
-  var selected = Mailpile.UI.Selection.selected(checkboxes.eq(0));
-  if (selected.length == 0) {
-    Mailpile.pile_action_select($(checkboxes[0]).parent().parent());
-    return;
+  if ($last.length > 0) {
+    var $next = $(mover($last));
+    if (keep !== 'keep') Mailpile.pile_action_unselect($last);
+    if ($next) Mailpile.pile_action_select($next);
+    Mailpile.bulk_actions_update_ui();
+    return $next;
   }
-  $(checkboxes.get().reverse()).each(function() {
-    if ($(this).parent().parent().prev().children().children("input").is(":checked")) {
-      Mailpile.pile_action_select($(this).parent().parent());
-    } else {
-      Mailpile.pile_action_unselect($(this).parent().parent());
-    }
+  return $last;
+};
+
+Mailpile.bulk_action_selection_up = function(keep) {
+  return Mailpile.bulk_action_move_selection(keep, function($elem) {
+    return $elem.prev();
   });
 };
 
+Mailpile.bulk_action_selection_down = function(keep) {
+  return Mailpile.bulk_action_move_selection(keep, function($elem) {
+    return $elem.next();
+  });
+};
 
 Mailpile.open_selected_thread = function() {
   var selected = Mailpile.UI.Selection.selected('.pile-results');
   if (selected.length === 1 && selected[0] == '!all') {
-    console.log('FIXME: should open first message');
+    $(".pile-results .pile-message .subject a'").eq(0).trigger('click');
   }
   else {
     if (selected.length < 1) {
-      var checkboxes = $('.pile-results input[type=checkbox]');
-      Mailpile.pile_action_select($(checkboxes[0]).parent().parent());
+      Mailpile.pile_action_select($('.pile-results .pile-message').eq(0));
       selected = Mailpile.UI.Selection.selected('.pile-results');
     }
     if (selected.length > 0) {
-      console.log('Open: ' + selected[0]);
-      $(".pile-results .pile-message-" + selected[0]).eq(0)
-        .find('.subject a').eq(0).trigger('click');
+      var $e = $(".pile-results .pile-message-" + selected[0] + " .subject a");
+      Mailpile.UI.Selection.select_none('.pile-results');
+      $e.eq(0).trigger('click');
     }
   }
 };
