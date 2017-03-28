@@ -38,7 +38,7 @@ Mailpile = {
     { title: '{{_("Go to Spam")|escapejs}}',          keys: "g s",     callback: function(e) { Mailpile.go("/in/spam/"); }},
     { title: '{{_("Security and Privacy Settings")|escapejs}}',
                                                       keys: "g p",     callback: function(e) { Mailpile.go("/settings/privacy.html"); }},
-    { title: '{{_("Open thread")|escapejs}}',         keys: "o",       callback: function(e) { Mailpile.keybinding_view_message(); }},
+    { title: '{{_("Open thread")|escapejs}}',         keys: "o",       callback: function(e) { Mailpile.open_or_close_selected_thread(); }},
     { title: '{{_("Archive mails")|escapejs}}',       keys: "e",       callback: function(e) { Mailpile.keybinding_move_message(''); }},
     { title: '{{_("Delete mails")|escapejs}}',        keys: "#",       callback: function(e) { Mailpile.keybinding_move_message('trash'); }},
     { title: '{{_("Move to spam")|escapejs}}',        keys: "!",       callback: function(e) { Mailpile.keybinding_move_message('spam'); }},

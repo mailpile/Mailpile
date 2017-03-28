@@ -34,78 +34,30 @@ Mailpile.keybinding_move_message = function(add_tag) {
   }
 };
 
-Mailpile.keybinding_view_message = function() {
-  var $elem = $('#close-message');
-  if ($elem.length > 0) {
-    $elem.eq(0).trigger('click');
-  }
-  else {
-    Mailpile.open_selected_thread();
-  }
-};
-
 Mailpile.keybinding_adjust_viewport = function($last) {
-  if ($last.length && !$last.next().next().next().length) {
-    $('#pile-more').trigger('click');
-  }
-
   var $container = $('#content-view, #content-tall-view').eq(0);
   var scroll_top = $container.scrollTop();
   var last_top = $last.position().top - 100;
   $container.animate({ scrollTop: scroll_top + last_top }, 150);
+
+  // Ensure that browser hotkeys focus on the right message too
+  $last.find(".subject a").focus();
+
+  // Moving around closes viewed messages
+  $('#close-message').trigger('click');
 };
 
 Mailpile.keybinding_selection_up = function() {
-  var selected = Mailpile.UI.Selection.selected('.pile-results');
-  var $close = $('#close-message');
-  if (($close.length > 0) && (selected.length < 1)) {
-    var $target = $('#previous-message');
-    if ($target.length > 0) {
-      $target.eq(0).trigger('click');
-    }
-    else $close.trigger('click');
-  }
-  else {
-    var $last = Mailpile.bulk_action_selection_up();
-    Mailpile.keybinding_adjust_viewport($last);
-  }
+  var $last = Mailpile.bulk_action_selection_up();
+  Mailpile.keybinding_adjust_viewport($last);
 };
 
 Mailpile.keybinding_selection_extend = function() {
-  var sel = Mailpile.UI.Selection.selected('.pile-results');
-  var $msg = $($('#close-message').closest('.pile-message'));
-
-  if (($msg.length > 0) &&
-      ((sel.length < 1) || ((sel.length == 1) && (sel[0] == $msg.data('mid')))))
-  {
-    // If a message is being viewed, we don't actually extend the selection,
-    // we just toggle it on/off. This is inconsistent, but less confusing
-    // than other options.
-    if ($msg.find('input').is(':checked')) {
-      Mailpile.pile_action_unselect($msg);
-    }
-    else {
-      Mailpile.pile_action_select($msg);
-    }
-  }
-  else {
-    var $last = Mailpile.bulk_action_selection_down('keep');
-    Mailpile.keybinding_adjust_viewport($last);
-  }
+  var $last = Mailpile.bulk_action_selection_down('keep');
+  Mailpile.keybinding_adjust_viewport($last);
 };
 
 Mailpile.keybinding_selection_down = function() {
-  var selected = Mailpile.UI.Selection.selected('.pile-results');
-  var $close = $('#close-message');
-  if (($close.length > 0) && (selected.length < 1)) {
-    var $target = $('#next-message');
-    if ($target.length > 0) {
-      $target.eq(0).trigger('click');
-    }
-    else $close.eq(0).trigger('click');
-  }
-  else {
-    var $last = Mailpile.bulk_action_selection_down();
-    Mailpile.keybinding_adjust_viewport($last);
-  }
+  var $last = Mailpile.bulk_action_selection_down();
+  Mailpile.keybinding_adjust_viewport($last);
 };

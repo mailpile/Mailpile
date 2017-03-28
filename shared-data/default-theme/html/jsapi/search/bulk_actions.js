@@ -208,10 +208,11 @@ Mailpile.bulk_action_selection_down = function(keep) {
   });
 };
 
-Mailpile.open_selected_thread = function() {
+Mailpile.open_or_close_selected_thread = function() {
   var selected = Mailpile.UI.Selection.selected('.pile-results');
+  var msg = [];
   if (selected.length === 1 && selected[0] == '!all') {
-    $(".pile-results .pile-message .subject a'").eq(0).trigger('click');
+    msg = $(".pile-results .pile-message");
   }
   else {
     if (selected.length < 1) {
@@ -219,9 +220,16 @@ Mailpile.open_selected_thread = function() {
       selected = Mailpile.UI.Selection.selected('.pile-results');
     }
     if (selected.length > 0) {
-      var $e = $(".pile-results .pile-message-" + selected[0] + " .subject a");
-      Mailpile.UI.Selection.select_none('.pile-results');
-      $e.eq(0).trigger('click');
+      msg = $(".pile-results .pile-message-" + selected[selected.length - 1]);
+    }
+  }
+  if (msg.length) {
+    var $close = msg.eq(0).find('#close-message');
+    if ($close.length == 0) {
+      msg.eq(0).find(".subject a").trigger('click');
+    }
+    else {
+      $('#close-message').trigger('click');
     }
   }
 };
