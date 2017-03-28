@@ -10,8 +10,7 @@ Mailpile.UI.set_clear_state = setClarState = function(queryBox){
   var $clearButton = $(queryBox).next('.clear-search');
   if (queryBox.value.length > 0) {
     $clearButton.show();
-  }
-  else {
+  } else{
     $clearButton.hide();
   }
 };
@@ -38,42 +37,60 @@ $(document).on('click', '#form-search .clear-search', function(e) {
   }
 });
 
+/* Search - Special handling of certain queries */
+$(document).on('submit', '#form-search', function(event) {
+  var commands = {
+    in: function(cmdArgs) {
+      // TODO: Check against whitelist of available inboxes?
+      var inbox = cmdArgs[0];
+      Mailpile.go("/in/" + inbox + "/");
+    },
+    // TODO: The tags endpoint does not seem to work?
+    // tags: function(cmdArgs) {
+    //   // TODO: Check against whitelist of available tags?
+    //   var tag = cmdArgs[0];
+    //   // TODO: Use a specific method instead?
+    //   $.getJSON("{{ config.sys.http_path }}/tags/" + tag + "/as.jhtml", function(data) {
+    //     $("#content-wide").html(data.result);
+    //   });
+    // },
+    // TODO: I could not get this endpoint to match/find any keys
+    keys: function(cmdArgs) {
+      var keyQuery = cmdArgs.join(" ");
+      Mailpile.UI.Modals.CryptoFindKeys({
+        query: keyQuery
+      });
+    },
+  };
+
+  var searchQuery = $("#search-query").val().trim();
+  var isQueryCliCommand = searchQuery.startsWith("/");
+
+  var queryParts = searchQuery.split(":");
+  var queryCommand = queryParts[0];
+  var queryOptArgs = queryParts[1] || "";
+  var cmdArgs = queryOptArgs.trim().split(" ");
+  var isQueryIncludingValidCommand = (typeof commands[queryCommand] === "function");
+
+  if (isQueryCliCommand === true) {
+    // TODO: Implement cli command handling here
+    // event.preventDefault();
+  } else if (isQueryIncludingValidCommand === true) {
+    event.preventDefault();
+    // event.stopPropagation();
+    var command = commands[queryCommand];
+    command.call(this, cmdArgs);
+  } else {
+    event.preventDefault();
+    // event.stopPropagation();
+    var autoajaxSearchQuery = "";
+    autoajax_go("/search/?q=" + searchQuery);
+  }
+});
 
 
 // {# FIXME: Disabled by Bjarni, this doesn't really work reliably
 //  #
-/* Search - Special handling of certain queries */
-$(document).on('submit', '#form-search', function(e) {
-  var search_query = $('#search-query').val();
-  if (search_query.substring(0, 3) === 'in:') {
-    var more_check = search_query.substring(3, 999).split(' ');
-    if (!more_check[1]) {
-      e.preventDefault();
-      Mailpile.go('/in/' + $.trim(search_query.substring(3, 999)) + '/');
-    }
-  }
-  else if (search_query.substring(0, 9) === 'contacts:') {
-    e.preventDefault();
-    $.getJSON("/contacts/" + $.trim(search_query.substring(9, 999)) + "/as.jhtml", function(data) {
-  	  $("#content-wide").html(data.result);
-    });
-  }
-  else if (search_query.substring(0, 5) === 'tags:') {
-    e.preventDefault();
-    $.getJSON("{{ config.sys.http_path }}/tags/" + $.trim(search_query.substring(5, 999)) + "/as.jhtml", function(data) {
-  	  $("#content-wide").html(data.result);
-    });
-  }
-  else if (search_query.substring(0, 5) === 'keys:') {
-    e.preventDefault();
-    Mailpile.UI.Modals.CryptoFindKeys({
-      query: $.trim(search_query.substring(5, 999))
-    });
-  }
-  else {
-    console.log('inside of else, just a normal query');
-  }
-});
 /* Activities - */
 $(document).on('click', '#button-search-options', function(key) {
 	$('#search-params').slideDown('fast');
