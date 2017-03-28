@@ -32,11 +32,12 @@ _plugins = PluginManager(builtin=__file__)
 
 class ContentTxf(EmailTransform):
     def _wrap_key_in_html(self, title, keydata):
-        return (
-            "<html><body><h1>%(title)s</h1><p>\n\n%(description)s\n\n</p>"
+        return ((
+            "<html><head><meta charset='utf-8'></head><body>\n"
+            "<h1>%(title)s</h1><p>\n\n%(description)s\n\n</p>"
             "<pre>\n%(key)s\n</pre><hr>"
             "<i><a href='%(ad_url)s'>%(ad)s</a>.</i></body></html>"
-            ) % self._wrap_key_in_html_vars(title, keydata)
+            ) % self._wrap_key_in_html_vars(title, keydata)).encode('utf-8')
 
     def _wrap_key_in_html_vars(self, title, keydata):
         return {
