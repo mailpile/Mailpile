@@ -77,12 +77,10 @@ $(document).on('submit', '#form-search', function(event) {
     // event.preventDefault();
   } else if (isQueryIncludingValidCommand === true) {
     event.preventDefault();
-    // event.stopPropagation();
     var command = commands[queryCommand];
     command.call(this, cmdArgs);
   } else {
     event.preventDefault();
-    // event.stopPropagation();
     var autoajaxSearchQuery = "";
     autoajax_go("/search/?q=" + searchQuery);
   }
