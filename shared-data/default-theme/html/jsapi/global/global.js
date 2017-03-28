@@ -5,7 +5,6 @@ Mailpile.fix_url = function(url) {
   return url;
 }
 
-
 /* Compose - Create a new email to an address */
 $(document).on('click', 'a', function(e) {
   if ($(this).attr('href') && ($(this).attr('href').indexOf('mailto:') == 0)) {
