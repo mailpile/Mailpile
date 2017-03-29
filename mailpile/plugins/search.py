@@ -677,9 +677,11 @@ class Search(Command):
         session, idx = self.session, self._idx()
         self._search_args = args = []
 
+        def _viewpair(m):
+            return tuple((m.split('/') + ['*'])[:2])
+
         self._email_views = self.data.get('view', [])
-        self._email_view_pairs = dict((m.split('/')[0], m.split('/')[-1])
-                                      for m in self._email_views)
+        self._email_view_pairs = dict(_viewpair(m) for m in self._email_views)
         self._emails = []
 
         self.context = self.data.get('context', [None])[0]
@@ -805,12 +807,25 @@ class Search(Command):
             session.results = list(idx.search(session, session.searched,
                                               context=context).as_set())
 
-            # Make sure the requested messages are included in the
-            # results, whether they match the search or not.
+            if '*' in self._email_view_pairs.values():
+                # If we are auto-choosing which message from a thread to
+                # display, then we want the raw results so we can only
+                # choose from messages that matched our search. We have to
+                # save this, since the sort below may collapse the results.
+                raw_results = list(session.results)
+
             for pmid, emid in list(self._email_view_pairs.iteritems()):
+                # Make sure all our requested messages are amongst results
                 pmid_idx = int(pmid, 36)
                 if pmid_idx not in session.results:
                     session.results.append(pmid_idx)
+
+                if ('flat' in session.order) and emid != '*':
+                    # Flat mode doesn't really use view pairs, so also make
+                    # sure our actual view target is among results.
+                    emid_idx = int(emid, 36)
+                    if emid_idx not in session.results:
+                        session.results.append(emid_idx)
 
             if session.order:
                 idx.sort_results(session, session.results, session.order)
@@ -819,13 +834,41 @@ class Search(Command):
 
         self._emails = []
         pivot_pos = any_pos = len(session.results)
+        if self._email_view_pairs:
+            new_tids = set(
+                [t._key for t in session.config.get_tags(type='unread')])
         for pmid, emid in list(self._email_view_pairs.iteritems()):
             try:
-                emid_idx = int(emid, 36)
-                for info in idx.get_conversation(msg_idx=emid_idx):
-                    cmid = info[idx.MSG_MID]
-                    self._email_view_pairs[cmid] = emid
-                    # Calculate visibility...
+                if emid == '*':
+                    pmid_idx = int(pmid, 36)
+                    conversation = idx.get_conversation(msg_idx=pmid_idx)
+                    # Find oldest message in conversation that is unread
+                    # and matches our search criteria...
+                    matches = []
+                    for info in conversation:
+                        if new_tids & set(info[idx.MSG_TAGS].split(',')):
+                            imid_idx = int(info[idx.MSG_MID], 36)
+                            if imid_idx in raw_results:
+                                matches.append((int(info[idx.MSG_DATE], 36),
+                                                imid_idx))
+                    if matches:
+                        emid_idx = min(matches)[1]
+                        emid = b36(emid_idx)
+                    else:
+                        emid = pmid
+                        emid_idx = pmid_idx
+                    self._email_view_pairs[pmid] = emid
+                else:
+                    emid_idx = int(emid, 36)
+                    conversation = idx.get_conversation(msg_idx=emid_idx)
+
+                if 'flat' not in session.order:
+                    for info in conversation:
+                        cmid = info[idx.MSG_MID]
+                        self._email_view_pairs[cmid] = emid
+
+                # Calculate visibility...
+                for cmid in self._email_view_pairs:
                     try:
                         cpos = session.results.index(int(cmid, 36))
                     except ValueError:
@@ -838,6 +881,12 @@ class Search(Command):
                 self._emails.append(Email(idx, emid_idx))
             except ValueError:
                 self._email_view_pairs = {}
+
+        if 'flat' in session.order:
+            # Above we have guaranteed that the target message is in the
+            # result set; unset this dictionary to force a flat display
+            # of the chosen message.
+            self._email_view_pairs = {}
 
         # Adjust the visible window of results if we are expanding an
         # individual message, to guarantee visibility.

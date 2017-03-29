@@ -56,6 +56,10 @@ class MailpileCommand(Extension):
         e.globals['is_dev_version'] = s._is_dev_version
         e.globals['is_configured'] = s._is_configured
         e.globals['version_identifier'] = s._version_identifier
+        e.filters['min'] = s._min
+        e.globals['min'] = s._min
+        e.filters['max'] = s._max
+        e.globals['max'] = s._max
         e.filters['random'] = s._random
         e.globals['random'] = s._random
         e.filters['truthy'] = s._truthy
@@ -664,6 +668,15 @@ class MailpileCommand(Extension):
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
 
+    @classmethod
+    def _min(self, sequence):
+        return min(sequence)
+
+    @classmethod
+    def _max(self, sequence):
+        return max(sequence)
+
+    @classmethod
     def _random(self, sequence):
         return sequence[random.randint(0, len(sequence)-1)]
 
