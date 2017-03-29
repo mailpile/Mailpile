@@ -710,6 +710,8 @@ class BaseMailSource(threading.Thread):
                 'type': 'mailbox',
                 'parent': parent or '',
                 'label': label,
+                'flag_allow_add': False,
+                'flag_allow_del': False,
                 'icon': icon or 'icon-tag',
                 'display': 'tag' if visible else 'archive',
             })

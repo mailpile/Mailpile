@@ -6,8 +6,11 @@ Mailpile.Search.Tooltips = {};
 Mailpile.Search.init = function() {
 
   // Drag Items
-  Mailpile.UI.Search.Draggable('td.draggable');
-  Mailpile.UI.Search.Dropable('.pile-results tr', 'a.sidebar-tag');
+  var index_capabilities = $('.pile-results').data('index-capabilities');
+  if (index_capabilities.indexOf('has_tags') >= 0) {
+    Mailpile.UI.Search.Draggable('td.draggable');
+    Mailpile.UI.Search.Dropable('.pile-results tr', 'a.sidebar-tag');
+  };
 
   // Render Display Size
   if (!Mailpile.local_storage['view_size']) {

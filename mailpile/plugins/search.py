@@ -373,6 +373,7 @@ class SearchResults(dict):
             },
             'search_terms': session.searched,
             'index_capabilities': dict((c, True) for c in idx.CAPABILITIES),
+            'tag_capabilities': {},
             'address_ids': [],
             'message_ids': [],
             'view_pairs': view_pairs,
@@ -389,6 +390,10 @@ class SearchResults(dict):
             if search_tag_ids:
                 self['summary'] = ' & '.join([t.name for t
                                               in search_tags if t])
+            for attr in ('hides', 'editable', 'msg_only',
+                         'allow_add', 'allow_del'):
+                tags = [t for t in search_tags if t.get('flag_' + attr)]
+                self['tag_capabilities'][attr] = (len(tags) > 0)
         else:
             search_tag_ids = []
 

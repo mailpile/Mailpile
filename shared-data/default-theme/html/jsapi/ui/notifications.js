@@ -101,7 +101,7 @@ Mailpile.notification = function(result) {
     result.icon = 'icon-signature-unknown';
   }
   else if (result.command === 'tag') {
-    result.undo = true;
+    result.undo = (result.status == "success");
     result.icon = 'icon-tag';
   }
   else if (result.source && result.source.indexOf('.mail_source.') == 0) {

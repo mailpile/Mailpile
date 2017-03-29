@@ -13,7 +13,7 @@
     class="sidebar-tag sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %}">
 {%  else %}
 <li id="sidebar-tag-{{tag.tid}}" data-slug="{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}"
-    class="sidebar-tag sidebar-tags-draggable{% if tag.display == "archive" %} hide should-hide{% endif %}">
+    class="sidebar-tag sidebar-tags-{% if tag.flag_allow_add %}draggable{% else %}default{% endif %}{% if tag.display == "archive" %} hide should-hide{% endif %}">
 {%  endif %}
 
 {%- if tag.slug == "outbox" or tag.slug == "drafts" %}
@@ -50,7 +50,7 @@
 {%   for subtag in tag.subtags if subtag.display in ('tag', 'archive') %}
 <li id="sidebar-tag-{{subtag.tid}}"
     data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
-    class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}}
+    class="sidebar-subtag sidebar-tags-{% if subtag.flag_allow_add %}draggable{% else %}default{% endif %} subtag-of-{{tag.tid}}
            {%- if subtags_collapsed or 'archive' in (subtag.display, tag.display) %} hide should-hide{% endif %}">
   <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
     <span class="icon {{subtag.icon}}" style="color: {{theme_colors.get(subtag.label_color, subtag.label_color)}};"></span>
