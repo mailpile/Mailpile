@@ -19,7 +19,9 @@
   {{ hard_coded_activities|safe }}{% for elem in activities %}
     <li class="btn-activity-{{elem.name}} {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a class="bulk-action-{{elem.name}} {{elem.aclass}}" href="{{ U(elem.url) }}" title="{{elem.description}}">
+      <a class="bulk-action-{{elem.name}} {{elem.aclass}}"
+         data-keep-selection=1
+         href="{{ U(elem.url) }}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
       {%- elif elem.icon -%}
@@ -38,6 +40,7 @@
     <li class="display-refiner btn-display-refiner-{{elem.name}} {{elem.class}}
         {%- if state.command_url|add_state_query_string(state) == url %} navigation-on{% endif %}">
       <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
+         data-keep-selection=1
          class="{{elem.aclass}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
@@ -59,6 +62,7 @@
     <li class="btn-display-mode-{{elem.name}} {{elem.class}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
       <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
+         data-keep-selection=1
          title="{{elem.description}}" class="{{elem.aclass}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{ U(elem.icon) }}">

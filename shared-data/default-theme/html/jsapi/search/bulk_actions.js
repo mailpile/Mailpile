@@ -104,23 +104,23 @@ Mailpile.unselect_all_matches = function(elem) {
 };
 
 
-Mailpile.bulk_action_read = function(elem) {
+Mailpile.bulk_action_read = function(elem, callback) {
   var $context = Mailpile.UI.Selection.context(elem || '.pile-results');
   Mailpile.UI.Tagging.tag_and_update_ui({
     del: 'new',
     mid: Mailpile.UI.Selection.selected($context),
     context: $context.find('.search-context').data('context')
-  }, 'read');
+  }, 'read', callback);
 };
 
 
-Mailpile.bulk_action_unread = function(elem) {
+Mailpile.bulk_action_unread = function(elem, callback) {
   var $context = Mailpile.UI.Selection.context(elem || '.pile-results');
   Mailpile.UI.Tagging.tag_and_update_ui({
     add: 'new',
     mid: Mailpile.UI.Selection.selected($context),
     context: $context.find('.search-context').data('context')
-  }, 'unread');
+  }, 'unread', callback);
 };
 
 

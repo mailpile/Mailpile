@@ -61,11 +61,40 @@ get_now = function() {
 };
 
 clear_selection_state = function() {
-    // FIXME: Is this sufficient?
-    Mailpile.UI.Selection.select_none();
+  Mailpile.UI.Selection.select_none();
+};
+
+get_selection_state = function() {
+  var selected = Mailpile.UI.Selection.selected('.pile-results');
+  var elements = {};
+  $.each(selected, function() {
+    elements[this] = $('.pile-results .pile-message-' + this).eq(0).clone();
+  });
+  return {
+    selected: selected,
+    elements: elements
+  };
+};
+
+restore_selection_state = function(sstate) {
+  if (sstate.selected.length) {
+    $.each(sstate.selected.reverse(), function() {
+      if ($('.pile-results .pile-message-' + this).length < 1) {
+        var elem = sstate.elements[this];
+        if ($(elem).find('.message-container').length < 1) {
+          $('.pile-results .pile-message').eq(0).parent().prepend(elem);
+        }
+      }
+      Mailpile.pile_action_select($('.pile-results .pile-message-' + this), 'partial');
+    });
+    Mailpile.bulk_actions_update_ui();
+  }
 };
 
 can_refresh = function(cid) {
+    // Disable checks below (experimental)
+    return (Mailpile.ui_in_action < 1);
+
     // By default we disable all refreshes of the UI if the user is busy
     // selecting or rearranging or dragging... .
     // FIXME: Hmm, seems other parts of the app should be able to block
@@ -76,16 +105,15 @@ can_refresh = function(cid) {
             ($('.pile-results input[type=checkbox]:checked').length < 1));
 };
 
-autoajax_go = function(url, message, jhtml, noblank, noscroll) {
+autoajax_go = function(url, message, jhtml, noblank, noscroll, selrestore) {
     url = Mailpile.fix_url(url);
     if (jhtml === undefined) jhtml = ajaxable_url(url);
 
     // Provide UI feedback if this takes time
     var done = Mailpile.notify_working(message, (noblank) ? 250 : 1500);
 
-    // Attempt to preserve selections cross-refresh. This will only work if
-    // the selected elements are still present on the new page.
-    var selected = Mailpile.UI.Selection.selected('.pile-results');
+    // Attempt to preserve selections cross-refresh.
+    var selected = get_selection_state();
 
     // If noscroll is requested, try to preserve scroll position.
     if (noscroll) {
@@ -96,10 +124,12 @@ autoajax_go = function(url, message, jhtml, noblank, noscroll) {
     // Called after the page is updated
     var scroll_and_done = function(stuff) {
       done();
-      $.each(selected, function() {
-        Mailpile.pile_action_select($('.pile-results .pile-message-' + this), 'partial');
-      });
-      if (selected.length) Mailpile.bulk_actions_update_ui();
+      if (selrestore) {
+        restore_selection_state(selected);
+      }
+      else {
+        clear_selection_state(selected);
+      }
       return _scroll_up(stuff, scrollto);
     }
 
@@ -126,9 +156,11 @@ prepare_new_content = function(selector) {
                 // We don't hijack events that spawn new tabs/windows etc.
                 if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
                     ev.preventDefault();
+                    var $elem = $(elem);
                     autoajax_go(url, undefined, jhtml,
-                                $(elem).data('noblank') ? true : false,
-                                $(elem).data('noscroll') ? true : false);
+                                $elem.data('noblank') ? true : false,
+                                $elem.data('noscroll') ? true : false,
+                                $elem.data('keep-selection') ? true : false);
                 }
             });
         }
@@ -137,7 +169,14 @@ prepare_new_content = function(selector) {
     $form.submit(function(ev) {
         // We don't hijack events that spawn new tabs/windows etc.
         if (!(ev.ctrlKey || ev.altKey || ev.shiftKey)) {
-            if (update_using_jhtml(U("/search/?") + $form.serialize(), _scroll_up)) {
+            var selected = get_selection_state();
+            if (update_using_jhtml(U("/search/?") + $form.serialize(),
+                                   function(stuff) {
+                // Always restore selection state on search, as searching
+                // is actually a moderately advanced behaviour.
+                restore_selection_state(selected);
+                return _scroll_up(stuff);
+            })) {
                 ev.preventDefault();
             }
         }
@@ -212,8 +251,10 @@ refresh_from_cache = function(cid) {
              if (json.result) {
                  var cid = json.state.cache_id;
                  if (can_refresh(cid)) {
+                     var selected = get_selection_state();
                      $('.content-'+cid).replaceWith(json.result);
                      Mailpile.UI.prepare_new_content('.content-'+cid);
+                     restore_selection_state(selected);
                      refresh_history[cid] = get_now();
                      // Work around bugs in drag/drop lib, nuke artefacts
                      $('div.ui-draggable-dragging').remove();

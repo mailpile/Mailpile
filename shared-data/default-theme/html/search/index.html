@@ -54,7 +54,8 @@
       'url_args_add': [['start', newstart], ['end', newend]]
     } %}
     <a href="{{prv.url|add_state_query_string(state, prv)|url_path_fix}}"
-       class="button-primary left" id="pile-previous">{{_("Previous")}}</a>
+       class="button-primary left" id="pile-previous"
+       data-keep-selection=1>{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set moar = {
@@ -65,7 +66,7 @@
     } %}
     <a href="{{moar.url|add_state_query_string(state, moar)|url_path_fix}}"
        class="button-primary left" id="pile-more"
-       data-noblank=1 data-noscroll=1>{{_("More")}}</a>
+       data-noblank=1 data-noscroll=1 data-keep-selection=1>{{_("More")}}</a>
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
     {% set nxt = {
@@ -74,7 +75,8 @@
       'url_args_add': [['start', newstart], ['end', newend]]
     } %}
     <a href="{{nxt.url|add_state_query_string(state, nxt)|url_path_fix}}"
-       class="button-primary left" id="pile-next">{{_("Next")}}</a>
+       class="button-primary left" id="pile-next"
+       data-keep-selection=1>{{_("Next")}}</a>
     {% endif %}
     <h5 class="text-right">
     {% if result.stats.total > 1 %}

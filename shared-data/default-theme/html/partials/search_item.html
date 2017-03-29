@@ -20,7 +20,7 @@
 %}{{      m_metadata.urls.thread
 }}{%    endif
 %}{%  endmacro %}
-<tr class="pile-message pile-message-{{mid}} result has-mid
+<tr class="pile-message pile-message-{{mid}}{% if mid != this_mid %} pile-message-{{this_mid}}{% endif %} result has-mid
            {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
            {%- if message %} full-message has-url{% endif %}
            {%- if metadata.flags.replied %} replied{% endif %}"
@@ -48,15 +48,17 @@
   <td class="message-nav">
   {%- if previous_mid %}
     <a href="{{msg_url(previous_mid)}}" title="{{_('Previous Conversation')}}"
-       id="previous-message" data-noblank=1 class="icon">&#x25B2;</a><br>
+       id="previous-message" data-noblank=1 data-keep-selection=1
+       class="icon">&#x25B2;</a><br>
   {%- endif %}
     <a href="{{ U(add_state_query_string(state.command_url, state, {
                     'url_args_remove': [['view','']]}))}}"
-       id="close-message" title="{{_('Close')}}"
-       data-noblank=1><span class='icon icon-circle-x'></span></a><br>
+       data-noblank=1 data-keep-selection=1 title="{{_('Close')}}"
+       id="close-message"><span class='icon icon-circle-x'></span></a><br>
   {%- if next_mid %}
     <a href="{{msg_url(next_mid)}}" title="{{_('Next Conversation')}}"
-       id="next-message" data-noblank=1 class="icon">&#x25BC;</a><br>
+       id="next-message" data-noblank=1 data-keep-selection=1
+       class="icon">&#x25BC;</a><br>
   {%- endif %}
   </td>
   <td class="from" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
@@ -129,7 +131,7 @@
     <a><img src="{{ show_avatar(from) }}"></a>
   </td>
   <td class="from">
-    <a href="{{msg_url(mid)}}" data-noblank=1
+    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
        title="{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
       {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
@@ -163,7 +165,8 @@
   </td>
   <td class="subject">
 {%- if not message %}
-    <a class="item-subject" title="{{metadata.body.snippet}}" data-noblank=1
+    <a class="item-subject" title="{{metadata.body.snippet}}"
+       data-noblank=1 data-keep-selection=1
        href="{{msg_url(mid)}}">{{ nice_subject(metadata.subject) }}</a>
 {%- else %}
     <div class="message-container">
@@ -201,7 +204,8 @@
         {%- endif %}
         <ul class="alternate-views">
           {%- for elem in get_ui_elements('display_modes', state, context='/message/') %}
-          <li><a title="{{ elem.description }}" data-noblank=1
+          <li><a title="{{ elem.description }}"
+                 data-noblank=1 data-keep-selection=1
                  href="{{ elem.url|add_state_query_string({'query_args': {'mid': [mid]}}, elem)|url_path_fix }}">
             {%- if elem.icon and '.' in elem.icon -%}
             <img class="navigation-icon" src="{{ U(elem.icon) }}">
@@ -211,7 +215,7 @@
           </li>
           {%- endfor %}
           <li><a title="{{ _('Switch to full conversation view') }}"
-                 data-noblank=1 href="{{ U('/thread/=', mid, '/') }}">
+                 data-noblank=1 data-keep-selection=1 href="{{ U('/thread/=', mid, '/') }}">
             <span class="icon icon-forum"></span></a></li>
           <li><a title="{{ _('Display message source code') }}"
                  target=_blank href="{{ U('/message/raw/=', mid, '/as.text') }}">

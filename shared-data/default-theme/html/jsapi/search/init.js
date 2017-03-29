@@ -39,6 +39,9 @@ Mailpile.Search.init = function() {
   // Tooltips
   Mailpile.Search.Tooltips.MessageTags();
 
+  // Focus on the first message
+  $('.pile-results .pile-message .subject a').eq(0).focus();
+
   EventLog.subscribe(".mail_source", function(ev) {
     // bre: re-enabling this just for fun and to test the event subscription
     //      code. This is broken in that it fails for non-English languages.
