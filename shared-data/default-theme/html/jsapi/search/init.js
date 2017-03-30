@@ -26,6 +26,16 @@ Mailpile.Search.init = function() {
     }
   });
 
+  // Navigation highlights
+  $.each($('.display-refiner'), function() {
+    if (document.location.href.endsWith($(this).find('a').attr('href'))) {
+      $(this).addClass('navigation-on');
+    }
+    else {
+      $(this).removeClass('navigation-on');
+    };
+  });
+
   // Tooltips
   Mailpile.Search.Tooltips.MessageTags();
 

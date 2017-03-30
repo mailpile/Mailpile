@@ -35,7 +35,7 @@
     }});
   </script>{% endif %}
   {%- for elem in display_refiners %}
-    <li class="btn-display-refiner-{{elem.name}} {{elem.class}}
+    <li class="display-refiner btn-display-refiner-{{elem.name}} {{elem.class}}
         {%- if state.command_url|add_state_query_string(state) == url %} navigation-on{% endif %}">
       <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
          class="{{elem.aclass}}" title="{{elem.description}}">

@@ -43,7 +43,6 @@
 {% include("jsapi/tags/init.js") %}
 {% include("jsapi/tags/modals.js") %}
 {% include("jsapi/tags/events.js") %}
-{% include("jsapi/tags/tooltips.js") %}
 
 /* JS - Message */
 {% include("jsapi/message/init.js") %}
