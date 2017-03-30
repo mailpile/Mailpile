@@ -2,13 +2,13 @@
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title">Keybindings</h4>
+      <h4 class="modal-title">{{ _("Keyboard Shortcuts") }}</h4>
     </div>
     <div class="modal-body modal-body-light-gray">
       <table class="default-table">
         <thead>
-          <th>Binding</th>
-          <th>Title</th>
+          <th>{{ _("Keys") }}</th>
+          <th>{{ _("Action") }}</th>
         </thead>
         <tbody>
           <% _.each(keybindings, function(binding) { if (binding.title) { %>
