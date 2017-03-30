@@ -3,21 +3,22 @@ $(document).on('focus', '#search-query', function() {
   $(this).select();
 });
 
+
 /* Clear button */
 
 Mailpile.UI.set_clear_state = setClarState = function(queryBox){
   var $clearButton = $(queryBox).next('.clear-search');
-  if(queryBox.value.length > 0) {
+  if (queryBox.value.length > 0) {
     $clearButton.show();
-  }else{
+  }
+  else {
     $clearButton.hide();
   }
 };
 
-
 $(function(){
   var queryBox = $('#search-query');
-  if(queryBox.length){
+  if (queryBox.length) {
     Mailpile.UI.set_clear_state(queryBox[0]);
   }
 });
@@ -27,11 +28,15 @@ $(document).on('input change', '#search-query', function(e) {
 });
 
 $(document).on('click', '#form-search .clear-search', function(e) {
-  $('#search-query').val('').focus();
-  $(e.target).hide();
+  var dflt = $('#search-query').data('q');
+  if ($('#search-query').val() == dflt) {
+    $('#search-query').val('').focus();
+    $(e.target).hide();
+  }
+  else {
+    $('#search-query').val(dflt).focus();
+  }
 });
-
-
 
 
 
@@ -82,16 +87,15 @@ $(document).on('blur', '#button-search-options', function(key) {
 // #
 
 Mailpile.UI.content_setup.push(function($content) {
+  // FIXME: This will do silly things if we have multiple search results
+  //        on a page at a time.
   var $sq = $('#search-query');
+  var $st = $content.find('#search-terms');
+  var search_terms = $st.data('q');
+  if (!search_terms) search_terms = '';
   if (($sq.data('q') == $sq.val()) || ($sq.val() == "")) {
-    // FIXME: This will do silly things if we have multiple search results
-    //        on a page at a time.
-    var $st = $content.find('#search-terms');
-    var search_terms = $st.data('q');
-    if (search_terms !== undefined) {
-      $sq.data('q', search_terms).val(search_terms)
-         .data('context', $st.data('context'));
-    }
+    $sq.val(search_terms);
   }
+  $sq.data('q', search_terms).data('context', $st.data('context'));
   Mailpile.UI.set_clear_state($sq[0]);
 });
