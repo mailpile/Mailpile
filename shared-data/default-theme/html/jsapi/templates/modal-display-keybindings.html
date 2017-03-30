@@ -7,14 +7,22 @@
     <div class="modal-body modal-body-light-gray">
       <table class="default-table">
         <thead>
-          <th>Title</th>
           <th>Binding</th>
+          <th>Title</th>
         </thead>
         <tbody>
           <% _.each(keybindings, function(binding) { if (binding.title) { %>
             <tr>
+              <td>
+                  <% _.each(binding.keys.split(' '), function(keystroke) { %>
+                    <% var keys = keystroke.split('+') %>
+                    <% _.forEach(keys, function(key, idx) { %>
+                      <kbd><%= key %></kbd>
+                      <%= (idx < (keys.length - 1)) ? '+' : '' %>
+                    <% }); %>
+                  <% }); %>
+              </td>
               <td><%= binding.title %></td>
-              <td><%= binding.keys %></td>
             </tr>
           <% } }); %>
         </tbody>

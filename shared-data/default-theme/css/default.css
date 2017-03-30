@@ -6668,6 +6668,23 @@ ul.items li.grouped h5 {
   top: 42px;
   left: 47px;
 }
+/* Keyboard shortcuts */
+kbd {
+  display: inline-block;
+  padding: 5px 8px;
+  margin: 3px;
+  min-width: 10px;
+  border: 1px #b3b3b3 solid;
+  border-bottom: 2px #b3b3b3 solid;
+  border-radius: 3px;
+  background-color: #e9e9e9;
+  font-size: 14px;
+  text-align: center;
+  font-style: normal;
+}
+kbd::first-letter {
+  text-transform: capitalize;
+}
 /* Some general helper classes */
 /*
   Sets cursor to pointer on a tags
