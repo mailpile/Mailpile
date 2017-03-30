@@ -469,3 +469,23 @@
     top: 42px;
     left: 47px;
   }
+
+/* Keyboard shortcuts */
+
+  kbd {
+     display: inline-block;
+     padding: 5px 8px;
+     margin: 3px;
+     min-width: 10px;
+     border: 1px @gray solid;
+     border-bottom: 2px @gray solid;
+     border-radius: @base-border-radius;
+     background-color: @grayLight;
+     font-size: 14px;
+     text-align: center;
+     font-style: normal;
+  }
+
+  kbd::first-letter {
+      text-transform: capitalize;
+  }
