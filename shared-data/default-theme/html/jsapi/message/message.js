@@ -29,63 +29,59 @@ Mailpile.Message.AnalyzeMessageInline = function(mid) {
 
 
 /* Message - Replies  */
-Mailpile.Message.ShowReplyComposer = function(mid, response) {
-  var $msg = $('#message-' + mid);
-  if ($msg.hasClass('pile-message')) {
-    $msg.closest('td').html(response.result);
-  }
-  else {
-    $msg.append(response.result);
-    var new_mid = $msg.find('.form-compose').data('mid');
-    $('#compose-details-' + new_mid).hide();
-    $('#compose-to-summary-' + new_mid).show();
-    $('#compose-show-details-' + new_mid).show();
-  }
+Mailpile.Message.DoReply = function(mids, reply_all) {
+  var mid = undefined;
+  $.each(mids, function() {
+    if ($('.pile-message-' + this + ' .message-container').length) mid = this;
+  });
+
+  var args = {
+    mid: mids,
+    reply_all: (reply_all == 'all') ? 'True' : 'False',
+  };
+  if (mid) args['_output'] = 'composer.jhtml!minimal'
+
+  Mailpile.API.message_reply_post(args, function(response) {
+    if (mid) {
+      var $msg = $('#message-' + mid);
+      if ($msg.hasClass('pile-message')) {
+        $msg.closest('td').html(response.result);
+      }
+      else {
+        $msg.append(response.result);
+        var new_mid = $msg.find('.form-compose').data('mid');
+        $('#compose-details-' + new_mid).hide();
+        $('#compose-to-summary-' + new_mid).show();
+        $('#compose-show-details-' + new_mid).show();
+      }
+    }
+    else {
+      Mailpile.go(Mailpile.urls.message_draft + response.result.created + '/');
+    }
+  });
 };
 $(document).on('click', '.message-action-reply-all', function(e) {
   e.preventDefault();
-  var mid = $(this).closest('.has-mid').data('mid');
-  Mailpile.API.message_reply_post({
-    mid: mid,
-    reply_all: 'True',
-    _output: 'composer.jhtml!minimal'
-  }, function(response) {
-    return Mailpile.Message.ShowReplyComposer(mid, response);
-  });
+  Mailpile.Message.DoReply([$(this).closest('.has-mid').data('mid')]);
 });
 $(document).on('click', '.message-action-reply', function(e) {
   e.preventDefault();
-  var mid = $(this).closest('.has-mid').data('mid');
-  Mailpile.API.message_reply_post({
-    mid: mid,
-    reply_all: 'False',
-    _output: 'composer.jhtml!minimal'
-  }, function(response) {
-    return Mailpile.Message.ShowReplyComposer(mid, response);
-  });
+  Mailpile.Message.DoReply($(this).closest('.has-mid').data('mid'), 'all');
 });
 
 
 /* Message - Create forward and go to composer */
+Mailpile.Message.DoForward = function(mids) {
+  Mailpile.API.message_forward_post({
+    mid: mids,
+    atts: true
+  }, function(response) {
+    Mailpile.go(Mailpile.urls.message_draft + response.result.created + '/');
+  });
+};
 $(document).on('click', '.message-action-forward', function(e) {
   e.preventDefault();
-  var mid = $(this).closest('.has-mid').data('mid');
-  $.ajax({
-    url      : '{{ config.sys.http_path }}/api/0/message/forward/',
-    type     : 'POST',
-    data     : {
-      csrf: Mailpile.csrf_token,
-      mid: mid,
-      atts: true
-    },
-    success  : function(response) {
-      if (response.status === 'success') {
-        Mailpile.go(Mailpile.urls.message_draft + response.result.created + '/');
-      } else {
-        Mailpile.notification(response);
-      }
-    }
-  });
+  Mailpile.Message.DoForward([$(this).closest('.has-mid').data('mid')]);
 });
 
 
