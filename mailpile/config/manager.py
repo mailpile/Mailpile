@@ -12,6 +12,7 @@ import threading
 import traceback
 import ConfigParser
 
+from appdirs import AppDirs
 from urllib import quote, unquote
 from urlparse import urlparse
 
@@ -61,15 +62,26 @@ class ConfigManager(ConfigDict):
         if workdir:
             return workdir
 
+        # Which profile?
         profile = os.getenv('MAILPILE_PROFILE', 'default')
+
+        # Check if we have a legacy setup we need to preserve
+        workdir = self.LEGACY_DEFAULT_WORKDIR(profile)
+        if os.path.exists(workdir) and os.path.isdir(workdir):
+            return workdir
+
+        # Use platform-specific defaults
+        # via https://github.com/ActiveState/appdirs
+        dirs = AppDirs("Mailpile", "Mailpile ehf")
+        return os.path.join(dirs.user_data_dir, profile)
+
+    @classmethod
+    def LEGACY_DEFAULT_WORKDIR(self, profile):
         if profile == 'default':
             # Backwards compatibility: If the old ~/.mailpile exists, use it.
             workdir = os.path.expanduser('~/.mailpile')
             if os.path.exists(workdir) and os.path.isdir(workdir):
-                return workdir
-
-        # FIXME: the logic below should be rewritten to use the appdirs
-        #        python packages, as per issue #870
+                return workdir, profile
 
         basedir = None
         if sys.platform.startswith('win'):
