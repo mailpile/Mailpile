@@ -12,9 +12,13 @@ import threading
 import traceback
 import ConfigParser
 
-from appdirs import AppDirs
 from urllib import quote, unquote
 from urlparse import urlparse
+
+try:
+    from appdirs import AppDirs
+except ImportError:
+    AppDirs = None
 
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
@@ -67,7 +71,7 @@ class ConfigManager(ConfigDict):
 
         # Check if we have a legacy setup we need to preserve
         workdir = self.LEGACY_DEFAULT_WORKDIR(profile)
-        if os.path.exists(workdir) and os.path.isdir(workdir):
+        if not AppDirs or (os.path.exists(workdir) and os.path.isdir(workdir)):
             return workdir
 
         # Use platform-specific defaults
