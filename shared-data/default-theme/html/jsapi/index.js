@@ -14,12 +14,8 @@ Mailpile = {
   ui_in_action:       0,
   instance:           {},
   search_target:      'none',
-  search_cache:       [],
-  messages_cache:     [],
   messages_composing: {},
   crypto_keylookup:   [],
-  tags_cache:         [],
-  contacts_cache:     [],
   keybindings:        [ {#
     // Note to hackers:
     //

@@ -3,6 +3,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      {# FIXME: messages_cache is GONE, this needs to be done differently #}
       <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag")}} <span class="modal-title-count"><%= Mailpile.messages_cache.length %></span> {{_("Messages")}}</h4>
     </div>
     <div class="modal-body modal-body-light-gray">

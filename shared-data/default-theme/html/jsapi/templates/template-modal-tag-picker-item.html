@@ -9,6 +9,7 @@
     <% if (selected[tid]) { %><%= selected[tid] %> {{_("Messages")}}<% } %>
   </td>
   <td class="checkbox text-center">
+    {# NOTE: Mailpile.tags_cache is GONE, this needs to be done differently! #}
     <input class="tag-picker-checkbox" type="checkbox" name="tid" value="<%= tid %>" <% if (_.indexOf(Mailpile.tags_cache, tid) > -1) { %>checked<% } %>>
   </td>
 </tr>

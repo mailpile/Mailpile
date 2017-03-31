@@ -62,17 +62,6 @@ Mailpile.UI.Message.Draggable = function(element) {
     },
     start: function(event, ui) {
       Mailpile.ui_in_action += 1;
-  
-      // FIXME: This should all come from the DOM; and a checkbox needs to
-      //        live in the DOM as well for the standard drag/drop code to
-      //        work.
-
-      // Add Draggable MID
-      var mid = location.href.split("thread/=")[1].split("/")[0];
-      Mailpile.bulk_cache_add('messages_cache', mid);
-  
-      // Update Bulk UI
-      // Style & Select Checkbox
     },
     stop: function(event, ui) {
       setTimeout(function() { Mailpile.ui_in_action -= 1; }, 250);

@@ -20,6 +20,8 @@ Mailpile.bulk_actions_update_ui = function() {
       $context.find('#pile-select-all-action').prop('checked', false);
     }
 
+    Mailpile.update_selection_classes($context.find('td.checkbox'));
+
     if (selected.length > 0) {
       var message = ('<span id="bulk-actions-selected-count">' +
                        Mailpile.UI.Selection.human_length(selected) +

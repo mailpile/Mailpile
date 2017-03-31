@@ -3,54 +3,45 @@ Mailpile.focus_search = function() {
 };
 
 
+Mailpile.update_selection_classes = function($items) {
+  $.each($items.find('input[type=checkbox]'), function() {
+    var $t = $(this);
+    var $e = $t.closest('.result, .result-on');
+    if ($t.prop('checked')) {
+      $e.removeClass('result').addClass('result-on').data('state', 'selected');
+    }
+    else {
+      $e.removeClass('result-on').addClass('result').data('state', 'normal');
+    }
+  });
+};
+
+
 /* Search - Action Select */
 Mailpile.pile_action_select = function($item, partial) {
-    // Add Tags
-    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: $item.attr('data-mid') });
-    if (metadata && metadata.tag_tids) {
-      _.each(metadata.tag_tids, function(tid, key) {
-        var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
-        if (tag.type === 'tag') {
-          if (_.indexOf(Mailpile.tags_cache, tag.tid) === -1) {
-            Mailpile.tags_cache.push(tag.tid);
-          }
-        }
-      });
-    }
-
     // Style & Select Checkbox
-    $item.removeClass('result').addClass('result-on')
-         .data('state', 'selected')
-         .find('td.checkbox input[type=checkbox]')
-         .prop('checked', true);
+    $item.find('td.checkbox input[type=checkbox]').prop('checked', true);
 
-    // Update Bulk UI
-    if (!partial) Mailpile.bulk_actions_update_ui();
+    // Update UI
+    if (partial) {
+      Mailpile.update_selection_classes($item);
+    }
+    else {
+      Mailpile.bulk_actions_update_ui();
+    }
 };
 
 
 /* Search - Action Unselect */
 Mailpile.pile_action_unselect = function($item, partial) {
-    // Remove Tags
-    var metadata = _.findWhere(Mailpile.instance.metadata, { mid: $item.attr('data-mid') });
-    if (metadata && metadata.tag_tids) {
-      _.each(metadata.tag_tids, function(tid, key) {
-        var tag = _.findWhere(Mailpile.instance.tags, { tid: tid });
-        if (tag.type === 'tag') {
-          if (_.indexOf(Mailpile.tags_cache, tag.tid) > -1) {
-            Mailpile.tags_cache = _.without(Mailpile.tags_cache, tag.tid);
-          }
-        }
-      });
-    }
-
     // Style & Unselect Checkbox
-    $item.removeClass('result-on').addClass('result')
-         .data('state', 'normal')
-         .find('td.checkbox input[type=checkbox]')
-         .prop('checked', false);
+    $item.find('td.checkbox input[type=checkbox]').prop('checked', false);
 
-    if (!partial) {
+    // Update UI
+    if (partial) {
+      Mailpile.update_selection_classes($item);
+    }
+    else {
       // If something has been unselected, then not selecting all anymore!
       $item.closest('.selection-context')
            .find('#pile-select-all-action').val('');
