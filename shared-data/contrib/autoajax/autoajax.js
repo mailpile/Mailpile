@@ -68,7 +68,9 @@ get_selection_state = function() {
   var selected = Mailpile.UI.Selection.selected('.pile-results');
   var elements = {};
   $.each(selected, function() {
-    elements[this] = $('.pile-results .pile-message-' + this).eq(0).clone();
+    if (this != '!all') {
+      elements[this] = $('.pile-results .pile-message-' + this).eq(0).clone();
+    }
   });
   return {
     selected: selected,
@@ -79,10 +81,12 @@ get_selection_state = function() {
 restore_selection_state = function(sstate) {
   if (sstate.selected.length) {
     $.each(sstate.selected.reverse(), function() {
-      if ($('.pile-results .pile-message-' + this).length < 1) {
-        var elem = sstate.elements[this];
-        if ($(elem).find('.message-container').length < 1) {
-          $('.pile-results .pile-message').eq(0).parent().prepend(elem);
+      if (this != '!all') {
+        if ($('.pile-results .pile-message-' + this).length < 1) {
+          var elem = sstate.elements[this];
+          if (elem && $(elem).find('.message-container').length < 1) {
+            $('.pile-results .pile-message').eq(0).parent().prepend(elem);
+          }
         }
       }
       Mailpile.pile_action_select($('.pile-results .pile-message-' + this), 'partial');

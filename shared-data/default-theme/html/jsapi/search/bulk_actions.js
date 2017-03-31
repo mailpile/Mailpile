@@ -45,12 +45,13 @@ Mailpile.bulk_actions_update_ui = function() {
       $context.find('#bulk-actions-message').html(message);
 
       var have_tags = {};
-      for (var i = 0; i < selected.length; i++) {
-        var tids = $context.find('.pile-message-' + selected[i])
-                           .data('tids').split(/,/);
-        for (var j = 0; j < tids.length; j++) have_tags[tids[j]] = true;
+      if (selected.length && selected[0] != "!all") {
+        for (var i = 0; i < selected.length; i++) {
+          var tids = $context.find('.pile-message-' + selected[i])
+                             .data('tids').split(/,/);
+          for (var j = 0; j < tids.length; j++) have_tags[tids[j]] = true;
+        }
       }
-      console.log(JSON.stringify(have_tags));
 
       Mailpile.show_bulk_actions($context.find('.bulk-actions').find('li'),
                                  have_tags);
@@ -221,7 +222,7 @@ Mailpile.open_or_close_selected_thread = function() {
       Mailpile.pile_action_select($('.pile-results .pile-message').eq(0));
       selected = Mailpile.UI.Selection.selected('.pile-results');
     }
-    if (selected.length > 0) {
+    if ((selected.length > 0) && (selected[0] != '!all')) {
       msg = $(".pile-results .pile-message-" + selected[selected.length - 1]);
     }
   }
