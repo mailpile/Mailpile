@@ -57,6 +57,8 @@ Mailpile = {
     { title: '{{_("Select all matching search")|escapejs}}',
                                                       keys: "* s",     callback: function(e) { Mailpile.keybinding_select_all_matches(); }},
     { title: '{{_("Deselect all")|escapejs}}',        keys: "* n",     callback: function(e) { Mailpile.bulk_action_select_none(); }},
+    { title: '{{_("Dismiss all notifications")|escapejs}}',
+                                                      keys: "_",       callback: function(e) { $('a.notifications-close-all').eq(0).trigger('click'); }},
     { title: '{{_("Account List")|escapejs}}',        keys: "g a",     callback: function(e) { Mailpile.go("/profiles/"); }},
     { title: '{{_("Security and Privacy Settings")|escapejs}}',
                                                       keys: "g p",     callback: function(e) { Mailpile.go("/settings/privacy.html"); }},
