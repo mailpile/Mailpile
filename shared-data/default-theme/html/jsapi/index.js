@@ -40,6 +40,7 @@ Mailpile = {
     { title: '{{_("Go to Sent")|escapejs}}',          keys: "g s",     callback: function(e) { Mailpile.go("/in/sent/"); }},
     { title: '{{_("Go to Spam")|escapejs}}',          keys: "g j",     callback: function(e) { Mailpile.go("/in/spam/"); }},
     { title: '{{_("Go to Trash")|escapejs}}',         keys: "g t",     callback: function(e) { Mailpile.go("/in/trash/"); }},
+    { title: '{{_("Follow search hint")|escapejs}}',  keys: "g h",     callback: function(e) { Mailpile.go($('.bulk-actions-hints a').eq(0).attr('href')); }},
     { title: '{{_("Reply to e-mail")|escapejs}}',     keys: "r",       callback: function(e) { Mailpile.keybinding_reply(); }},
     { title: '{{_("Reply to many e-mails at once")|escapejs}}',
                                                       keys: "shift+r", callback: function(e) { Mailpile.keybinding_reply('many'); }},
