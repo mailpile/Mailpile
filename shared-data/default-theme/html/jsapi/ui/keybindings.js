@@ -105,6 +105,11 @@ Mailpile.keybinding_selection_down = function() {
   Mailpile.keybinding_adjust_viewport($last);
 };
 
+Mailpile.keybinding_select_all_matches = function() {
+  Mailpile.bulk_action_select_all();
+  Mailpile.select_all_matches();
+};
+
 Mailpile.keybinding_reply = function(many) {
   var $context = Mailpile.UI.Selection.context(".selection-context");
   if (!many) {

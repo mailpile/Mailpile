@@ -90,6 +90,7 @@ Mailpile.show_message_hints = function($context, selected) {
 
 
 Mailpile.select_all_matches = function(elem) {
+  if (!elem) elem = '.pile-results a';
   $(elem).closest('.selection-context')
          .find('#pile-select-all-action').val('!all');
   Mailpile.bulk_actions_update_ui();
@@ -98,6 +99,7 @@ Mailpile.select_all_matches = function(elem) {
 
 
 Mailpile.unselect_all_matches = function(elem) {
+  if (!elem) elem = '.pile-results a';
   $(elem).closest('.selection-context')
          .find('#pile-select-all-action').val('');
   Mailpile.bulk_actions_update_ui();
