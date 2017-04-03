@@ -29,10 +29,10 @@ allows e-mail to be organized using tags (similar to GMail's labels) and
 the application can be configured to automatically tag incoming mail
 either based on static rules or bayesian classifiers.
 
-**Note:** We are currently "in beta", which means the app's basic
-features are (mostly) in place and packages are available for popular
-operating systems, for people who would like to help test and debug.
-For more details
+**Note:** We are currently working towards a 1.0 release candidate. Until
+it is ready, Mailpile is really only suitable for developers who can help
+us find and fix the last few bugs. Our beta releases are obsolete and
+**should not be used**, in part for security reasons! For more details
 [follow @MailpileTeam on Twitter](https://twitter.com/MailpileTeam)
 or [read our blog](https://www.mailpile.is/blog/).
 
