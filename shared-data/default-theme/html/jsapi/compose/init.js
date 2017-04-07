@@ -45,7 +45,7 @@ Mailpile.Composer.init = function(mid, strings, addresses) {
   // Initialize Attachments; use setTimeout to isolate faults.
   setTimeout(function() {
     // FIXME: needs to be bound to unique ID that can be destroyed
-    Mailpile.Composer.Attachments.Uploader({
+    Mailpile.Composer.Attachments.Uploader.init({
       browse_button: 'compose-attachment-pick-' + mid,
       container: 'compose-attachments-' + mid,
       mid: mid
