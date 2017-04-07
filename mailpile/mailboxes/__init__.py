@@ -17,7 +17,7 @@ from mailpile.mailutils import MBX_ID_LEN
 from mailpile.util import MboxRLock
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'pop3', 'wervd',
+__all__ = ['mbox', 'maildir', 'gmvault', 'macmail', 'pop3', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
