@@ -90,7 +90,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
       else {
         var attachment_template = Mailpile.safe_template($('#template-composer-attachment').html());
         var attachment_html = attachment_template(attachment);
-      	$('#compose-attachments-files-' + mid).append(attachment_html);
+        $('#compose-attachments-files-' + mid).append(attachment_html);
       }
     } else {
       console.log('attachment exists ' + attachment.aid);
@@ -183,7 +183,6 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
 
   return uploader.init();
 };
-
 
 Mailpile.Composer.Attachments.Remove = function(mid, aid) {
   Mailpile.API.message_unattach_post({ mid: mid, att: aid }, function(result) {
