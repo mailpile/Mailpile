@@ -3,7 +3,7 @@
 // Prompts the user if a full-page-refresh happens while uploading attachments.
 window.addEventListener("beforeunload", function (event) {
   if (Mailpile.Composer.Attachments.Uploader.hasPendingUploads()) {
-    var confirmationMessage = "There is still an attachment upload in progress. Are you sure you want to cancel the upload?";
+    var confirmationMessage = '{{_("There is still an attachment upload in progress. Are you sure you want to cancel the upload?")|escapejs}}';
     event.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
     return confirmationMessage;                  // Gecko, WebKit, Chrome <34
   } else {
