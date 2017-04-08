@@ -99,8 +99,11 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
 };
 
 
-Mailpile.Composer.Attachments.Uploader = function(settings) {
+Mailpile.Composer.Attachments.Uploader = {
+  instance: false
+};
 
+Mailpile.Composer.Attachments.Uploader.init = function(settings) {
   var uploader = new plupload.Uploader({
   	runtimes : 'html5',
   	browse_button : settings.browse_button, // you can pass in id...
@@ -181,6 +184,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
     }
   });
 
+  this.instance = uploader;
   return uploader.init();
 };
 
