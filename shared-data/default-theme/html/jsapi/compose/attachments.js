@@ -1,5 +1,16 @@
 /* Compose - Attachments */
 
+// Prompts the user if a full-page-refresh happens while uploading attachments.
+window.addEventListener("beforeunload", function (event) {
+  if (Mailpile.Composer.Attachments.Uploader.hasPendingUploads()) {
+    var confirmationMessage = "There is still an attachment upload in progress. Are you sure you want to cancel the upload?";
+    event.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
+    return confirmationMessage;                  // Gecko, WebKit, Chrome <34
+  } else {
+    return true;
+  }
+});
+
 Mailpile.Composer.Attachments.UploaderImagePreview = function(attachment, file) {
 
   // Create an instance of the mOxie Image object. This
@@ -100,7 +111,14 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
 
 
 Mailpile.Composer.Attachments.Uploader = {
-  instance: false
+  instance: false,
+  hasPendingUploads: function() {
+    if (this.instance !== false) {
+      return this.instance.total.queued > 0;
+    } else {
+      return false;
+    }
+  }
 };
 
 Mailpile.Composer.Attachments.Uploader.init = function(settings) {
