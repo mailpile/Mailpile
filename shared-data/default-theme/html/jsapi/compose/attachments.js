@@ -123,20 +123,20 @@ Mailpile.Composer.Attachments.Uploader = {
 
 Mailpile.Composer.Attachments.Uploader.init = function(settings) {
   var uploader = new plupload.Uploader({
-  	runtimes : 'html5',
-  	browse_button : settings.browse_button, // you can pass in id...
-  	container: settings.container, // ... or DOM Element itself
+    runtimes : 'html5',
+    browse_button : settings.browse_button, // you can pass in id...
+    container: settings.container, // ... or DOM Element itself
     drop_element: settings.container,
-  	url : Mailpile.API.U('/api/0/message/attach/'),
+    url : Mailpile.API.U('/api/0/message/attach/'),
     multipart : true,
     multipart_params : {
       'mid': settings.mid,
       'csrf': Mailpile.csrf_token
     },
     file_data_name : 'file-data',
-  	filters : {
-  		max_file_size : '50mb'
-  	},
+    filters : {
+      max_file_size : '50mb'
+    },
     resize: {
       width: '3600',
       height: '3600',
@@ -148,7 +148,7 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
       thumbs: true,
       active: 'thumbs'
     },
-  	init: {
+    init: {
       PostInit: function() {
         $('#compose-attachments-' + settings.mid).find('.compose-attachment-pick').removeClass('hide');
         $('#compose-attachments-' + settings.mid).find('.attachment-browswer-unsupported').addClass('hide');
@@ -157,7 +157,7 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
       FilesAdded: function(up, files) {
 
         // Loop through added files
-      	plupload.each(files, function(file) {
+        plupload.each(files, function(file) {
 
           // Show warning for ~20MB or larger
           if ((file.size < 200000000) ||
@@ -170,10 +170,10 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
           } else {
             start_upload = false;
           }
-      	});
+        });
       },
       UploadProgress: function(up, file) {
-      	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
+        $('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
         var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
         $('.attachment-progress-bar').html(progressBar);
         $('#compose-send-'+settings.mid).attr("disabled","disabled");
