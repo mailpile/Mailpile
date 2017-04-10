@@ -258,6 +258,9 @@
           <option value="{{ to_inbox }}" {% if tag.auto_action == to_inbox %}selected{% endif %}>{{ _("Move to Inbox") }}</option>
 {%-   endif %}
           <option value="{{ to_trash }}" {% if tag.auto_action == to_trash %}selected{% endif %}>{{ _("Move to Trash") }}</option>
+{%-   if config.prefs.allow_deletion or tag.auto_action == '!delete' %}
+          <option value="!delete" {% if tag.auto_action == "!delete" %}selected{% endif %}>{{ _("Delete e-mails") }}</option>
+{%-   endif %}
 {%-   if tag.auto_action not in ("", "!untag", "!delete", to_after, to_trash) %}
           <option value="{{ tag.auto_action }}" selected>{{ tag.auto_action }}</option>
 {%-   endif %}
