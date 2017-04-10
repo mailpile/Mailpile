@@ -44,6 +44,7 @@ import os
 import re
 import socket
 import traceback
+import time
 from imaplib import IMAP4_SSL, CRLF
 from mailbox import Mailbox, Message
 from urllib import quote, unquote
@@ -365,6 +366,7 @@ class SharedImapMailbox(Mailbox):
         self.editable = False  # FIXME: this is technically not true
         self.path = mailbox_path
         self.conn_cls = conn_cls
+        self._last_updated = None
         self._index = None
         self._factory = None  # Unused, for Mailbox compatibility
 
@@ -373,6 +375,9 @@ class SharedImapMailbox(Mailbox):
 
     def timed_imap(self, *args, **kwargs):
         return self.source.timed_imap(*args, **kwargs)
+
+    def last_updated(self):
+        return self._last_updated
 
     def _assert(self, test, error):
         if not test:
@@ -390,6 +395,7 @@ class SharedImapMailbox(Mailbox):
         raise Exception('FIXME: Need to RETURN AN ID.')
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.append, self.path, message=message)
+            self._last_updated = time.time()
             self._assert(ok, _('Failed to add message'))
 
     def remove(self, key):
@@ -486,7 +492,7 @@ class SharedImapMailbox(Mailbox):
         return list(self.iterkeys())
 
     def update_toc(self):
-        pass
+        self._last_updated = time.time()
 
     def get_msg_ptr(self, mboxid, key):
         return '%s%s' % (mboxid, quote(key))

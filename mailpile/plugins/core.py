@@ -359,8 +359,9 @@ class DeleteMessages(Command):
                 failed.append(msg_idx)
 
         # This will actually delete from mboxes, etc.
-        for m in mailboxes:
-            m.flush()
+        for m in set(mailboxes):
+            with m:
+                m.flush()
 
         # FIXME: Trigger a background rescan of affected mailboxes, as
         #        the flush() above may have broken our pointers.

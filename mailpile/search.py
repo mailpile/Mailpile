@@ -435,6 +435,7 @@ class MailIndex(BaseIndex):
         existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
+        mbox_version = mbox.last_updated()
         if messages_md5 == self._scanned.get(mailbox_idx, ''):
             return finito(0, _('%s: No new mail in: %s'
                                ) % (mailbox_idx, mailbox_fn),
@@ -477,6 +478,9 @@ class MailIndex(BaseIndex):
                 messages_md5 = not_done_yet
                 break
             elif deadline and time.time() > start_time + deadline:
+                messages_md5 = not_done_yet
+                break
+            elif mbox_version != mbox.last_updated():
                 messages_md5 = not_done_yet
                 break
 

@@ -8,6 +8,7 @@
 ## info required to locate this message and this message only within the
 ## larger mailbox.
 
+import time
 from urllib import quote, unquote
 
 from mailpile.i18n import gettext as _
@@ -68,6 +69,7 @@ def UnorderedPicklable(parent, editable=False):
             self.editable = editable
             self.source_map = {}
             self.is_local = False
+            self._last_updated = None
             self._lock = MboxRLock()
             self._index = None
             self._save_to = None
@@ -103,7 +105,7 @@ def UnorderedPicklable(parent, editable=False):
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            for dk in ['_save_to', '_index',
+            for dk in ['_save_to', '_index', '_last_updated',
                        '_encryption_key_func', '_decryption_key_func',
                        '_file', '_lock', 'parsed'] + self.UNPICKLABLE:
                 if dk in odict:
@@ -129,7 +131,12 @@ def UnorderedPicklable(parent, editable=False):
             return key
 
         def update_toc(self):
+            self._last_updated = time.time()
             self._refresh()
+            self._last_updated = time.time()
+
+        def last_updated(self):
+            return self._last_updated
 
         def get_msg_ptr(self, mboxid, toc_id):
             return '%s%s' % (mboxid, quote(toc_id))
@@ -142,6 +149,7 @@ def UnorderedPicklable(parent, editable=False):
             return self.get_file(unquote(msg_ptr[MBX_ID_LEN:]))
 
         def remove_by_ptr(self, msg_ptr):
+            self._last_updated = time.time()
             return self.remove(unquote(msg_ptr[MBX_ID_LEN:]))
 
         def get_msg_size(self, toc_id):
@@ -174,6 +182,7 @@ def UnorderedPicklable(parent, editable=False):
 
         def remove(self, *args, **kwargs):
             with self._lock:
+                self._last_updated = time.time()
                 return parent.remove(self, *args, **kwargs)
 
         def _get_fd(self, *args, **kwargs):
@@ -186,6 +195,7 @@ def UnorderedPicklable(parent, editable=False):
 
         def __setitem__(self, *args, **kwargs):
             with self._lock:
+                self._last_updated = time.time()
                 return parent.__setitem__(self, *args, **kwargs)
 
         def __getitem__(self, *args, **kwargs):

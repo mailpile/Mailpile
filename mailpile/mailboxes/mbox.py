@@ -2,6 +2,7 @@ import errno
 import mailbox
 import os
 import threading
+import time
 
 import mailpile.mailboxes
 from mailpile.i18n import gettext as _
@@ -34,6 +35,7 @@ class MailpileMailbox(mailbox.mbox):
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
         self.is_local = False
+        self._last_updated = 0
         self._mtime = 0
         self._index = None
         self._save_to = None
@@ -43,9 +45,11 @@ class MailpileMailbox(mailbox.mbox):
 
     def __enter__(self, *args, **kwargs):
         self._lock.acquire()
+        self.lock()
         return self
 
     def __exit__(self, *args, **kwargs):
+        self.unlock()
         self._lock.release()
 
     def _get_fd(self):
@@ -75,12 +79,15 @@ class MailpileMailbox(mailbox.mbox):
     def __getstate__(self):
         odict = self.__dict__.copy()
         # Pickle can't handle function objects.
-        for dk in ('_save_to', '_index',
+        for dk in ('_save_to', '_index', '_last_updated',
                    '_encryption_key_func', '_decryption_key_func',
                    '_file', '_lock', 'parsed'):
             if dk in odict:
                 del odict[dk]
         return odict
+
+    def last_updated(self):
+        return self._last_updated
 
     def update_toc(self):
         with self._lock:
@@ -102,6 +109,7 @@ class MailpileMailbox(mailbox.mbox):
             self._toc = {}
             start = None
             while True:
+                self._last_updated = time.time()
                 line_pos = fd.tell()
                 line = fd.readline()
                 if line.startswith('From '):
@@ -143,7 +151,6 @@ class MailpileMailbox(mailbox.mbox):
 
     def set_metadata_keywords(self, *args, **kwargs):
         pass
-
 
     def get_index(self, config, mbx_mid=None):
         with self._lock:
