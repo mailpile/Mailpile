@@ -133,6 +133,7 @@ class ConfigManager(ConfigDict):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
+        self.gnupghome = None
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
 
         self.shareddatadir = os.path.abspath(shareddatadir or
@@ -296,6 +297,9 @@ class ConfigManager(ConfigDict):
 
         # Trigger background-loads of everything
         Rescan(session, 'rescan')._idx(wait=False)
+
+        # Record where our GnuPG keys live
+        self.gnupghome = GnuPG(self).gnupghome()
 
         if keep_lockdown:
             self.sys.lockdown = keep_lockdown

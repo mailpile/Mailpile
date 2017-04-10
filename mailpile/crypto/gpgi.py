@@ -551,18 +551,28 @@ class GnuPG:
         self.homedir = path
 
     def version(self):
-        """Returns a tuple representing the GnuPG version number."""
+        """Returns a string representing the GnuPG version number."""
         self.event.running_gpg(_('Checking GnuPG version'))
         retvals = self.run(["--version"], novercheck=True)
         return retvals[1]["stdout"][0].split('\n')[0]
 
     def version_tuple(self, update=False):
+        """Returns a tuple representing the GnuPG version number."""
         global GPG_VERSIONS
         if update or not GPG_VERSIONS.get(self.gpgbinary):
             vertext = self.version().strip().split()[-1]
             version = tuple(int(v) for v in vertext.split('.'))
             GPG_VERSIONS[self.gpgbinary] = version
         return GPG_VERSIONS[self.gpgbinary]
+
+    def gnupghome(self):
+        """Returns the location of the GnuPG keyring"""
+        self.event.running_gpg(_('Checking GnuPG home directory'))
+        rv = self.run(["--version"], novercheck=True)[1]["stdout"][0]
+        for l in rv.splitlines():
+            if l.startswith('Home: '):
+                return os.path.expanduser(l[6:].strip())
+        return os.path.expanduser(os.getenv('GNUPGHOME', '~/.gnupg'))
 
     def is_available(self):
         try:

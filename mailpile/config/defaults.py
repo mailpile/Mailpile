@@ -119,6 +119,8 @@ CONFIG_RULES = {
         'encrypt_vcards': X(_('Encrypt the contact database'), bool,     True),
         'encrypt_events': X(_('Encrypt the event log'), bool,            True),
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
+        'allow_deletion': X(_('Allow permanent deletion of e-mails'),
+                                                                  bool, False),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),

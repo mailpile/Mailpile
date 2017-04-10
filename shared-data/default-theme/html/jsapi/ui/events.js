@@ -88,6 +88,9 @@ Mailpile.auto_modal = function(params) {
           header: params.header,
           flags: params.flags
         }));
+        if (!params.title) {
+          mf.find('.modal-title').html(mf.find('h1').html());
+        }
         if (params.reload && !params.callback) {
           params.callback = function(data) { location.reload(true); };
         }

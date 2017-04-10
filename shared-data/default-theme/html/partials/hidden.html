@@ -243,15 +243,15 @@
       <% if (message2) { %>
       <span class="action"><%= message2 %>
       <%   if (action_js) { %>
-        - <a <%= action_js %> data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
+        - <a <%= action_js %> data-event_id="<%= event_id %>" class="action <%= action_cls %>"><%= action_text %></a>
       <%   } else if (action_url) { %>
-        - <a href="<%= action_url %>" data-event_id="<%= event_id %>" class="action"><%= action_text %></a>
+        - <a href="<%= action_url %>" data-event_id="<%= event_id %>" class="action <%= action_cls %>"><%= action_text %></a>
       <%   } %>
       </span>
       <% } else if (type === 'nagify') { %>
-      <span class="action">{{"Want to"}} <a href="<%= action %>" data-event_id="<%= event_id %>" class="action notification-nag">{{_("do it now?")}}</a></span>
+      <span class="action">{{"Want to"}} <a href="<%= action %>" data-event_id="<%= event_id %>" class="action notification-nag <%= action_cls %>">{{_("do it now?")}}</a></span>
       <% } else if (undo) { %>
-      <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo">{{_("undo")}}</a></span>
+      <span class="action">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="action notification-undo <%= action_cls %>">{{_("undo")}}</a></span>
       <% } %>
     </span>
     <a href="#" data-type="<%= type %>" class="notification-close"><span class="icon-x"></span></a>

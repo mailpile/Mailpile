@@ -53,7 +53,7 @@ Mailpile.notification = function(result) {
   if (result.event_id !== undefined) {
     result.event_id = result.event_id.split('.').join('-');
   } else {
-    result.event_id = 'fake-id-' + Math.random().toString(24).substring(2);
+    result.event_id = 'fake-id-' + Math.random().toString(24).substring(5);
   }
 
   // Message
@@ -84,6 +84,7 @@ Mailpile.notification = function(result) {
   if (result.action      === undefined) result.action = '';
   if (result.action_js   === undefined) result.action_js = '';
   if (result.action_url  === undefined) result.action_url = '';
+  if (result.action_cls  === undefined) result.action_cls = '';
   if (result.action_text === undefined) result.action_text = '';
   if (result.icon        === undefined) result.icon = 'icon-inbox';
   if (result.timeout     === undefined) {
