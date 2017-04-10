@@ -85,7 +85,7 @@ class ConfigManager(ConfigDict):
             # Backwards compatibility: If the old ~/.mailpile exists, use it.
             workdir = os.path.expanduser('~/.mailpile')
             if os.path.exists(workdir) and os.path.isdir(workdir):
-                return workdir, profile
+                return workdir
 
         basedir = None
         if sys.platform.startswith('win'):
