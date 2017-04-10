@@ -128,6 +128,14 @@ class MailpileMailbox(mailbox.mbox):
             self._mtime = cur_mtime
         self.save(None)
 
+    def __setitem__(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.__setitem__(self, *args, **kwargs)
+
+    def __delitem__(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.__delitem__(self, *args, **kwargs)
+
     def save(self, session=None, to=None, pickler=None):
         if to and pickler:
             self._save_to = (pickler, to)
@@ -137,6 +145,14 @@ class MailpileMailbox(mailbox.mbox):
                 if session:
                     session.ui.mark(_('Saving %s state to %s') % (self, fn))
                 pickler(self, fn)
+
+    def flush(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.flush(self, *args, **kwargs)
+
+    def clear(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.clear(self, *args, **kwargs)
 
     def get_msg_size(self, toc_id):
         try:
@@ -206,11 +222,24 @@ class MailpileMailbox(mailbox.mbox):
         # multiple PartialFile objects in flight at once.
         return mailbox._PartialFile(self._get_fd(), start, start + length)
 
+    def update(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.update(self, *args, **kwargs)
+
+    def discard(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.discard(self, *args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        with self._lock:
+            mailbox.mbox.remove(self, *args, **kwargs)
+
     def remove_by_ptr(self, msg_ptr):
-        parts, start, length = self._parse_ptr(msg_ptr)
-        keys = [k for k in self._toc if self._toc[k][0] == start]
-        if keys:
-            return self.remove(keys[0])
+        with self._lock:
+            parts, start, length = self._parse_ptr(msg_ptr)
+            keys = [k for k in self._toc if self._toc[k][0] == start]
+            if keys:
+                return self.remove(keys[0])
         raise KeyError('Not found: %s' % msg_ptr)
 
     def get_bytes(self, toc_id, *args):
