@@ -1,5 +1,16 @@
 /* Compose - Attachments */
 
+// Prompts the user if a full-page-refresh happens while uploading attachments.
+window.addEventListener("beforeunload", function (event) {
+  if (Mailpile.Composer.Attachments.Uploader.hasPendingUploads()) {
+    var confirmationMessage = '{{_("There is still an attachment upload in progress. Are you sure you want to cancel the upload?")|escapejs}}';
+    event.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
+    return confirmationMessage;                  // Gecko, WebKit, Chrome <34
+  } else {
+    return true;
+  }
+});
+
 Mailpile.Composer.Attachments.UploaderImagePreview = function(attachment, file) {
 
   // Create an instance of the mOxie Image object. This
@@ -90,7 +101,7 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
       else {
         var attachment_template = Mailpile.safe_template($('#template-composer-attachment').html());
         var attachment_html = attachment_template(attachment);
-      	$('#compose-attachments-files-' + mid).append(attachment_html);
+        $('#compose-attachments-files-' + mid).append(attachment_html);
       }
     } else {
       console.log('attachment exists ' + attachment.aid);
@@ -99,23 +110,33 @@ Mailpile.Composer.Attachments.UpdatePreviews = function(attachments, mid, file) 
 };
 
 
-Mailpile.Composer.Attachments.Uploader = function(settings) {
+Mailpile.Composer.Attachments.Uploader = {
+  instance: false,
+  hasPendingUploads: function() {
+    if (this.instance !== false) {
+      return this.instance.total.queued > 0;
+    } else {
+      return false;
+    }
+  }
+};
 
+Mailpile.Composer.Attachments.Uploader.init = function(settings) {
   var uploader = new plupload.Uploader({
-  	runtimes : 'html5',
-  	browse_button : settings.browse_button, // you can pass in id...
-  	container: settings.container, // ... or DOM Element itself
+    runtimes : 'html5',
+    browse_button : settings.browse_button, // you can pass in id...
+    container: settings.container, // ... or DOM Element itself
     drop_element: settings.container,
-  	url : Mailpile.API.U('/api/0/message/attach/'),
+    url : Mailpile.API.U('/api/0/message/attach/'),
     multipart : true,
     multipart_params : {
       'mid': settings.mid,
       'csrf': Mailpile.csrf_token
     },
     file_data_name : 'file-data',
-  	filters : {
-  		max_file_size : '50mb'
-  	},
+    filters : {
+      max_file_size : '50mb'
+    },
     resize: {
       width: '3600',
       height: '3600',
@@ -127,7 +148,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
       thumbs: true,
       active: 'thumbs'
     },
-  	init: {
+    init: {
       PostInit: function() {
         $('#compose-attachments-' + settings.mid).find('.compose-attachment-pick').removeClass('hide');
         $('#compose-attachments-' + settings.mid).find('.attachment-browswer-unsupported').addClass('hide');
@@ -136,7 +157,7 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
       FilesAdded: function(up, files) {
 
         // Loop through added files
-      	plupload.each(files, function(file) {
+        plupload.each(files, function(file) {
 
           // Show warning for ~20MB or larger
           if ((file.size < 200000000) ||
@@ -149,10 +170,10 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
           } else {
             start_upload = false;
           }
-      	});
+        });
       },
       UploadProgress: function(up, file) {
-      	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
+        $('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
         var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
         $('.attachment-progress-bar').html(progressBar);
         $('#compose-send-'+settings.mid).attr("disabled","disabled");
@@ -181,9 +202,9 @@ Mailpile.Composer.Attachments.Uploader = function(settings) {
     }
   });
 
+  this.instance = uploader;
   return uploader.init();
 };
-
 
 Mailpile.Composer.Attachments.Remove = function(mid, aid) {
   Mailpile.API.message_unattach_post({ mid: mid, att: aid }, function(result) {
