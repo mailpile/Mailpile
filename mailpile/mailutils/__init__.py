@@ -807,25 +807,42 @@ class Email(object):
         if cache_id:
             ClearParseCache(cache_id=cache_id)
 
-    def delete_message(self, session, flush=True):
+    def delete_message(self, session, flush=True, keep=0):
         mi = self.get_msg_info()
         removed, failed, mailboxes = [], [], []
+        kept = keep
+        allow_deletion = session.config.prefs.allow_deletion
         for msg_ptr, mbox, fd in self.index.enumerate_ptrs_mboxes_fds(mi):
             try:
                 if mbox:
-                    mbox.remove_by_ptr(msg_ptr)
+                    try:
+                        if keep > 0:
+                            # Note: This will keep messages in the order of
+                            # preference implemented by enumerate_ptrs_...
+                            # FIXME: Allow more nuanced behaviour here.
+                            mbox.get_file_by_ptr(msg_ptr)
+                            keep -= 1
+                        elif allow_deletion:
+                            mbox.remove_by_ptr(msg_ptr)
+                        else:
+                            # FIXME: Allow deletion of local copies ONLY
+                            raise ValueError("Deletion is forbidden")
+                    except (KeyError, IndexError):
+                        # Already gone!
+                        pass
                     mailboxes.append(mbox)
                     removed.append(msg_ptr)
-            except (IOError, OSError, KeyError, ValueError,
-                    IndexError, AttributeError) as e:
+            except (IOError, OSError, ValueError, AttributeError) as e:
                 failed.append(msg_ptr)
                 print 'FIXME: Could not delete %s: %s' % (msg_ptr, e)
-        self.index.delete_msg_at_idx_pos(session, self.msg_idx_pos,
-                                         keep_msgid=(len(failed) > 0))
+
+        if allow_deletion and not failed and not kept:
+            self.index.delete_msg_at_idx_pos(session, self.msg_idx_pos,
+                                             keep_msgid=False)
         if flush:
             for m in mailboxes:
                 m.flush()
-            return (not failed)
+            return (not failed, [])
         else:
             return (not failed, mailboxes)
 

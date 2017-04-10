@@ -343,15 +343,23 @@ class Optimize(Command):
 
 class DeleteMessages(Command):
     """Delete one or more messages."""
-    SYNOPSIS = (None, 'delete', 'message/delete', '<messages>')
+    SYNOPSIS = (None, 'delete', 'message/delete', '[--keep] <messages>')
     ORDER = ('Searching', 99)
 
     def command(self, slowly=False):
         idx = self._idx()
+
+        args = list(self.args)
+        keep = 0
+        while '--keep' in args:
+            args.remove('--keep')
+            keep += 1
+
         deleted, failed, mailboxes = [], [], []
-        for msg_idx in self._choose_messages(self.args):
+        for msg_idx in self._choose_messages(args):
             e = Email(idx, msg_idx)
-            del_ok, mboxes = e.delete_message(self.session, flush=False)
+            del_ok, mboxes = e.delete_message(self.session,
+                                              flush=False, keep=keep)
             mailboxes.extend(mboxes)
             if del_ok:
                 deleted.append(msg_idx)
