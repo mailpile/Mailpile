@@ -164,6 +164,7 @@ class SharedImapConn(threading.Thread):
         self._selected = None
 
         for meth in ('append', 'add', 'capability', 'fetch', 'noop',
+                     'store', 'expunge', 'close',
                      'list', 'login', 'logout', 'namespace', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
@@ -229,13 +230,15 @@ class SharedImapConn(threading.Thread):
             self.name += ' (closed)'
         return self._conn.close()
 
-    def select(self, mailbox='INBOX', readonly=True):
+    def select(self, mailbox='INBOX', readonly=False):
         # This routine caches the SELECT operations, because we will be
         # making lots and lots of superfluous ones "just in case" as part
         # of multiplexing one IMAP connection for multiple mailboxes.
         assert(self._lock.locked())
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
+        elif self._selected:
+            self._conn.close()
         rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
@@ -314,6 +317,8 @@ class SharedImapConn(threading.Thread):
         with self._lock:
             try:
                 if self._conn:
+                    if self._selected:
+                        self._conn.close()
                     self.logout()
             except (IOError, IMAP4.error):
                 pass
@@ -400,8 +405,11 @@ class SharedImapMailbox(Mailbox):
 
     def remove(self, key):
         with self.open_imap() as imap:
-            ok, data = self.timed_imap(imap.store, '+FLAGS', r'\Deleted',
+            uidv, uid = (int(k, 36) for k in key.split('.'))
+            ok, data = self.timed_imap(imap.uid, 'STORE', uid,
+                                       '+FLAGS', '(\Deleted)',
                                        mailbox=self.path)
+            self._last_updated = time.time()
             self._assert(ok, _('Failed to remove message'))
 
     def mailbox_info(self, k, default=None):
