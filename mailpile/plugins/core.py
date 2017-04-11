@@ -345,6 +345,7 @@ class DeleteMessages(Command):
     """Delete one or more messages."""
     SYNOPSIS = (None, 'delete', 'message/delete', '[--keep] <messages>')
     ORDER = ('Searching', 99)
+    IS_USER_ACTIVITY = True
 
     def command(self, slowly=False):
         idx = self._idx()

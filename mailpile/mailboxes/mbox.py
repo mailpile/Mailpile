@@ -90,20 +90,19 @@ class MailpileMailbox(mailbox.mbox):
         return self._last_updated
 
     def update_toc(self):
+        fd = self._get_fd()
+
+        fd.seek(0, 2)
+        cur_length = fd.tell()
+        cur_mtime = os.path.getmtime(self._path)
+        try:
+            if (self._file_length == cur_length and
+                    self._mtime == cur_mtime):
+                return
+        except (NameError, AttributeError):
+            pass
+
         with self._lock:
-            fd = self._file
-
-            # FIXME: Should also check the mtime.
-            fd.seek(0, 2)
-            cur_length = fd.tell()
-            cur_mtime = os.path.getmtime(self._path)
-            try:
-                if (self._file_length == cur_length and
-                        self._mtime == cur_mtime):
-                    return
-            except (NameError, AttributeError):
-                pass
-
             fd.seek(0)
             self._next_key = 0
             self._toc = {}
@@ -128,6 +127,9 @@ class MailpileMailbox(mailbox.mbox):
             self._mtime = cur_mtime
         self.save(None)
 
+    def _generate_toc(self):
+        self.update_toc()
+
     def __setitem__(self, *args, **kwargs):
         with self._lock:
             mailbox.mbox.__setitem__(self, *args, **kwargs)
@@ -148,7 +150,9 @@ class MailpileMailbox(mailbox.mbox):
 
     def flush(self, *args, **kwargs):
         with self._lock:
+            self._last_updated = time.time()
             mailbox.mbox.flush(self, *args, **kwargs)
+            self._last_updated = time.time()
 
     def clear(self, *args, **kwargs):
         with self._lock:
@@ -195,10 +199,10 @@ class MailpileMailbox(mailbox.mbox):
         with self._lock:
             msg_start = self._toc[toc_id][0]
             msg_size = self.get_msg_size(toc_id)
-        return '%s%s:%s:%s' % (mboxid,
-                               b36(msg_start),
-                               b36(msg_size),
-                               self.get_msg_cs80b(msg_start, msg_size))
+            return '%s%s:%s:%s' % (mboxid,
+                                   b36(msg_start),
+                                   b36(msg_size),
+                                   self.get_msg_cs80b(msg_start, msg_size))
 
     def _parse_ptr(self, msg_ptr):
         parts = msg_ptr[MBX_ID_LEN:].split(':')
@@ -209,13 +213,14 @@ class MailpileMailbox(mailbox.mbox):
     def get_file_by_ptr(self, msg_ptr):
         parts, start, length = self._parse_ptr(msg_ptr)
 
-        # Make sure we can actually read the message
-        cs80b = self.get_msg_cs80b(start, length)
-        if len(parts) > 2:
-            cs1k = self.get_msg_cs1k(start, length)
-            cs = parts[2][:4]
-            if (cs1k != cs and cs80b != cs):
-                raise IOError(_('Message not found'))
+        with self._lock:
+            # Make sure we can actually read the message
+            cs80b = self.get_msg_cs80b(start, length)
+            if len(parts) > 2:
+                cs1k = self.get_msg_cs1k(start, length)
+                cs = parts[2][:4]
+                if (cs1k != cs and cs80b != cs):
+                    raise IOError(_('Message not found'))
 
         # We duplicate the file descriptor here, in case other threads are
         # accessing the same mailbox and moving it around, or in case we have
@@ -224,15 +229,15 @@ class MailpileMailbox(mailbox.mbox):
 
     def update(self, *args, **kwargs):
         with self._lock:
-            mailbox.mbox.update(self, *args, **kwargs)
+            return mailbox.mbox.update(self, *args, **kwargs)
 
     def discard(self, *args, **kwargs):
         with self._lock:
-            mailbox.mbox.discard(self, *args, **kwargs)
+            return mailbox.mbox.discard(self, *args, **kwargs)
 
     def remove(self, *args, **kwargs):
         with self._lock:
-            mailbox.mbox.remove(self, *args, **kwargs)
+            return mailbox.mbox.remove(self, *args, **kwargs)
 
     def remove_by_ptr(self, msg_ptr):
         with self._lock:
@@ -243,7 +248,12 @@ class MailpileMailbox(mailbox.mbox):
         raise KeyError('Not found: %s' % msg_ptr)
 
     def get_bytes(self, toc_id, *args):
-        return self.get_file(toc_id).read(*args)
+        with self._lock:
+            return self.get_file(toc_id).read(*args)
+
+    def get_file(self, *args, **kwargs):
+        with self._lock:
+            return mailbox.mbox.get_file(self, *args, **kwargs)
 
 
 mailpile.mailboxes.register(90, MailpileMailbox)
