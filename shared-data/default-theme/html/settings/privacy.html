@@ -285,6 +285,11 @@
     <br clear="both">
   </div>
 
+{% if config.prefs.encrypt_mail or
+      config.prefs.encrypt_vcards or
+      config.prefs.encrypt_events or
+      config.prefs.encrypt_misc or
+      config.prefs.encrypt_index %}
   <div class="setting-group">
     <h3>{{_("Encrypting Your Data")}}</h3>
     <div class="explanation">
@@ -369,6 +374,7 @@
     </div>
     <br clear="both">
   </div>
+{% endif %}
 
   <span style="position: fixed; bottom: 15px; border: 5px solid #eee;">
     <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
