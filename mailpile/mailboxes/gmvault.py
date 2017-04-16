@@ -1,6 +1,7 @@
 import mailbox
 import os
 import gzip
+import mailbox
 import rfc822
 
 import mailpile.mailboxes
