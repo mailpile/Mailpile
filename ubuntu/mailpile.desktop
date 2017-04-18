@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Mailpile
+Comment=An effort to reclaim private communication
+GenericName=E-mail client
+Exec=xdg-open http://127.0.0.1:3341
+Icon=mailpile.png
+Terminal=false
+StartupNotify=false
+Categories=Application;Network;Email;
