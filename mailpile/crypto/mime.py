@@ -74,40 +74,28 @@ def _update_text_payload(part, payload, charsets=None):
 ##[ Methods for unwrapping encrypted parts ]###################################
 
 
-def MimeReplaceFilename(header, filename):
+def MimeAttachmentDisposition(part, kind, newpart):
     """
-    Accepts a MIME header containing filename="...".
-    Replaces it with filename.
+    Create a Content-Disposition header for a processed attachment using the
+    original file name if available from the PGP packet, otherwise try
+    stripping the extension from the unprocessed attachment file name.
     """
-    start = header.find('filename=')
-    start = header.find('"', start)
-    end = header.find('"', start+1)+1
-
-    if start > 0 and end > start:
-        headernew = header[:start+1] + filename + header[end-1:]
+    
+    if part.encryption_info.filename:
+         newfilename = part.encryption_info.filename
     else:
-        headernew = header[:]
-
-    return headernew
-
-
-def MimeTrimFilename(header, extension):
-    """
-    Accepts a MIME header containing filename="...".
-    If the name ends with '.' + extension that ending is trimmed off.
-    """
-    start = header.find('filename=')
-    start = header.find('"', start)
-    end = header.find('"', start+1)+1
-    start = header.find('.'+extension+'"', start, end)
-
-    if start > 0 and end > start:
-        headernew = header[:start] + header[end-1:]
-    else:
-        headernew = header[:]
-
-    return headernew
-
+        # get_filename() can parse quoted, folded and RFC2231 names.
+        # If there's no filename in Content-Disposition it tries Content-Type.
+        # Delete embedded \n and \r (shouldn't get_filename() do this itself??).
+        newfilename = part.get_filename().replace('\n','').replace('\r','')
+        if 'armored' in kind and newfilename.endswith('.asc'):
+            newfilename = newfilename[:len(newfilename)-len('.asc')]
+        elif newfilename.endswith('.gpg'):
+            newfilename = newfilename[:len(newfilename)-len('.gpg')]
+    
+    # add_header() does quoting, folding, maybe someday RFC2231?.
+    newpart.add_header('Content-Disposition',
+                                         'attachment', filename=newfilename )
 
 def MimeReplacePart(part, newpart, keep_old_headers=False):
     """
@@ -305,18 +293,16 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             if (part.encryption_info['status'] == 'decrypted' or
                     part.signature_info['status'] == 'verified'):
-                newpart = email.parser.Parser().parsestr(decrypted)
 
-                # Use the original file name if available, otherwise
-                # delete .gpg or .asc extension from attachment file name.
-                if part.encryption_info.filename:
-                    disposition = MimeReplaceFilename(disposition,
-                                        part.encryption_info.filename)
-                elif 'armored' in kind:
-                    disposition = MimeTrimFilename(disposition, 'asc')
-                else:
-                    disposition = MimeTrimFilename(disposition, 'gpg')
-                newpart.add_header('content-disposition', disposition)
+                # Kludge - force base64 encoding by specifying utf8 charset.
+                # Then replace default Content-Type:text/plain.
+                newpart = email.message.Message()
+                newpart.set_payload(decrypted,'utf8') 
+                newpart.replace_header('Content-Type',
+                                       'application/octet-stream')
+
+                # Add Content-Disposition with appropriate filename.
+                MimeAttachmentDisposition(part, kind, newpart)
 
                 MimeReplacePart(part, newpart)
 
