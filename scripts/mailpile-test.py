@@ -76,6 +76,8 @@ def say(stuff):
 
 
 def do_setup():
+    # Set it first to avoid interactive prompt for a passphrase
+    config.passphrases['DEFAULT'].set_passphrase('mailpile')
     # Set up initial tags and such
     mp.setup()
     mp.profiles_add(MY_FROM, '=', MY_NAME)
