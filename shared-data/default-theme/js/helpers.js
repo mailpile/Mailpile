@@ -2,15 +2,17 @@
    - a collection of random functions and things
 */
 
-String.prototype.startsWith = function(str) {
-  return this.indexOf(str) === 0;
-};
-
 
 String.prototype.contains = function(it) { 
   return this.indexOf(it) !== -1;
 };
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position){
+      position = position || 0;
+      return this.substr(position, searchString.length) === searchString;
+  };
+}
 
 Number.prototype.pad = function(size) {
 	// Unfortunate padding function....
