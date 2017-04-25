@@ -2,11 +2,6 @@
    - a collection of random functions and things
 */
 
-
-String.prototype.contains = function(it) { 
-  return this.indexOf(it) !== -1;
-};
-
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function(searchString, position){
       position = position || 0;
