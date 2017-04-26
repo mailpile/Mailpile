@@ -13,6 +13,12 @@
     'url': U('/logs/network/'),
     'text': _("Network"),
     'description': _("Recent Network Activity")
+  },{
+    'name': 'tls',
+    'icon': 'links',
+    'url': U('/crypto/tls/getcert/'),
+    'text': _("TLS Certs"),
+    'description': _("TLS Certificate Tool")
   }] %}
   {%- set selection_initial_prompt = _("System activity, logs, events, troubleshooting, ...") %}
   {%- include("partials/tools_default.html") %}

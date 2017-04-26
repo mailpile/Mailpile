@@ -37,6 +37,14 @@ import threading
 import time
 import traceback
 
+try:
+    import cryptography
+    import cryptography.x509
+    import cryptography.hazmat.backends
+    import cryptography.hazmat.primitives.hashes
+except ImportError:
+    cryptography = None
+
 # Import SOCKS proxy support...
 try:
     import sockschain as socks
@@ -50,7 +58,8 @@ import mailpile.security as security
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
-from mailpile.util import dict_merge, monkey_patch
+from mailpile.util import md5_hex, dict_merge, monkey_patch
+from mailpile.security import tls_sock_cert_sha256
 
 
 _ = lambda s: s
@@ -69,7 +78,9 @@ monkey_lock = threading.RLock()
 def _explain_encryption(sock):
     try:
         algo, proto, bits = sock.cipher()
-        return _('%(tls_version)s (%(bits)s bit %(algorithm)s)') % {
+        return (
+            _('%(tls_version)s (%(bits)s bit %(algorithm)s)')
+        ) % {
             'bits': bits,
             'tls_version': proto,
             'algorithm': algo}
@@ -718,6 +729,154 @@ class NetworkHistory(Command):
                              result=Master.history)
 
 
+class GetTlsCertificate(Command):
+    """Fetch and parse a server's TLS certificate"""
+    SYNOPSIS = (None, 'crypto/tls/getcert', 'crypto/tls/getcert', '[--tofu-save|--tofu-clear]')
+    ORDER = ('Internals', 6)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = False
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'tofu-clear': 'Remove from TOFU certificate store',
+        'tofu-save': 'Save to our TOFU certificate store',
+        'host': 'Name of remote server'
+    }
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if self.result:
+                def fmt(h, r):
+                    return '%s:\t%s' % (h, r[-1] or r[1])
+                return '\n'.join(fmt(h, r) for h, r in self.result.iteritems())
+            return _('No certificates found')
+
+    def command(self):
+        if self.data.get('_method', 'POST') != 'POST':
+            # Allow HTTP GET as a no-op, so the user can see a friendly form.
+            return self._success(_('Examine TLS certificates'))
+
+        config = self.session.config
+        tofu_save = self.data.get('tofu-save', '--tofu-save' in self.args)
+        tofu_clear = self.data.get('tofu-clear', '--tofu-clear' in self.args)
+        hosts = (list(s for s in self.args if not s.startswith('--')) +
+                 self.data.get('host', []))
+
+        def ts(t):
+            return int(time.mktime(t.timetuple()))
+
+        def oidName(oid):
+            return {
+                '2.5.4.3': 'commonName',
+                '2.5.4.4': 'surname',
+                '2.5.4.5': 'serialNumber',
+                '2.5.4.6': 'countryName',
+                '2.5.4.7': 'localityName',
+                '2.5.4.8': 'stateOrProvinceName',
+                '2.5.4.9': 'streetAddress',
+                '2.5.4.10': 'organizationName',
+                '2.5.4.11': 'organizationalUnitName'
+                }.get(oid.dotted_string,
+                      getattr(oid, '_name', oid.dotted_string))
+
+        def oidmap(entries):
+            return dict((oidName(e.oid), e.value) for e in entries)
+
+        def fingerprint(pcert):
+            sha256 = cryptography.hazmat.primitives.hashes.SHA256()
+            fp = ['%2.2x' % ord(b) for b in pcert.fingerprint(sha256)]
+            fp2 = [fp[i*2] + fp[i*2 + 1] for i in range(0, len(fp)/2)]
+            return fp2
+
+        certs = {}
+        ok = changes = 0
+        for host in hosts:
+            try:
+                addr = host.split(':') + ['443']
+                addr = (addr[0], int(addr[1]))
+
+                try:
+                    with Master.context(need=[Master.OUTGOING_ENCRYPTED,
+                                              Master.OUTGOING_RAW]) as ctx:
+                        sock = socket.create_connection(addr, timeout=30)
+                    ssls = ssl.wrap_socket(sock, use_web_ca=True, tofu=False)
+                    hostname_matches = True
+                    cert_validated = True
+
+                except (ssl.SSLError, ssl.CertificateError) as e:
+                    if isinstance(e, ssl.CertificateError):
+                        cert_validated = True
+                        hostname_matches = False
+                    else:
+                        cert_validated = False
+                        hostname_matches = 'unknown'
+
+                    with Master.context(need=[Master.OUTGOING_ENCRYPTED,
+                                              Master.OUTGOING_RAW]) as ctx:
+                        sock = socket.create_connection(addr, timeout=30)
+                    ssls = ssl.wrap_socket(sock, use_web_ca=False, tofu=False)
+
+                cert = ssls.getpeercert(True)
+                s256 = tls_sock_cert_sha256(cert=cert)
+                ssls.close()
+
+                cfg_key = md5_hex('%s:%d' % addr)
+                if tofu_clear:
+                    if cfg_key in config.tls.keys():
+                        del config.tls[cfg_key]
+                        changes += 1
+                if tofu_save:
+                    if cfg_key not in config.tls.keys():
+                        config.tls[cfg_key] = {'server': '%s:%d' % addr}
+                    cert_tofu = config.tls[cfg_key]
+                    cert_tofu.use_web_ca = False
+                    cert_tofu.accept_certs.append(s256)
+                    changes += 1
+                else:
+                    cert_tofu = config.tls.get(cfg_key, {})
+
+                tofu_seen = s256 in cert_tofu.get('accept_certs', [])
+                using_tofu = not cert_tofu.get('use_web_ca', True)
+                cert = {
+                    'current_time': int(time.time()),
+                    'cert_validated': cert_validated,
+                    'hostname_matches': hostname_matches,
+                    'tofu_seen': tofu_seen,
+                    'using_tofu': using_tofu,
+                    'tofu_invalid': (using_tofu and not tofu_seen),
+                    'pem': ssl.DER_cert_to_PEM_cert(cert)}
+
+                if cryptography is not None:
+                    now = datetime.datetime.today()
+                    parsed = cryptography.x509.load_pem_x509_certificate(
+                        str(cert['pem']),
+                        cryptography.hazmat.backends.default_backend())
+                    cert.update({
+                        'fingerprint': fingerprint(parsed),
+                        'date_matches': ((parsed.not_valid_before < now) and
+                                         (parsed.not_valid_after > now)),
+                        'not_valid_before': ts(parsed.not_valid_before),
+                        'not_valid_after': ts(parsed.not_valid_after),
+                        'subject': oidmap(parsed.subject),
+                        'issuer': oidmap(parsed.issuer)})
+
+                certs[host] = (True, s256, cert, None)
+                ok += 1
+            except Exception as e:
+                certs[host] = (
+                    False, _('Failed to fetch certificate'), unicode(e),
+                    traceback.format_exc())
+
+        if changes:
+            self._background_save(config=True)
+
+        if ok:
+            return self._success(_('Downloaded TLS certificates'),
+                                 result=certs)
+        else:
+            return self._error(_('Failed to download TLS certificates'),
+                               result=certs)
+
+
 def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     """
     Since we like to wrap things our own way, this make ssl.wrap_socket
@@ -769,7 +928,7 @@ if __name__ != "__main__":
 
     from mailpile.plugins import PluginManager
     _plugins = PluginManager(builtin=__file__)
-    _plugins.register_commands(NetworkHistory)
+    _plugins.register_commands(NetworkHistory, GetTlsCertificate)
 
 else:
     import doctest

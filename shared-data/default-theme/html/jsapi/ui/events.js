@@ -75,10 +75,13 @@ Mailpile.auto_modal = function(params) {
     jhtml_url += ((jhtml_url.indexOf('?') != -1) ? '&' : '?') +
                   'ui_flags=' + params.flags.replace(' ', '+');
   }
+  var post_data = params.data || {};
+  if (params.method == "POST") post_data.csrf = Mailpile.csrf_token;
   return Mailpile.API.with_template('modal-auto', function(modal) {
     $.ajax({
       url: jhtml_url,
       type: params.method,
+      data: post_data,
       success: function(data) {
         Mailpile.UI.hide_modal();
         var mf = Mailpile.UI.show_modal(modal({

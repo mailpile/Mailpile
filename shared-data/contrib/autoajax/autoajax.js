@@ -32,6 +32,7 @@ ajaxable_url = function(url) {
              (url.indexOf(U("/profiles/")) == 0) ||
              (url.indexOf(U("/message/compose/")) == 0) ||
              (url.indexOf(U("/settings/")) == 0) ||
+             (url.indexOf(U("/crypto/tls/getcert/")) == 0) ||
              (url.indexOf(U("/logs/")) == 0) ||
              (url.indexOf(U("/page/")) == 0) ||
              (url.indexOf(U("/search/")) == 0)
