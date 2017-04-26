@@ -137,6 +137,16 @@ class POP3Mailbox(Mailbox):
             ok, info, octets = self._pop3.list(self._km[key]).split()
             return int(octets)
 
+    def remove(self, key):
+        # FIXME: This is very inefficient if we are deleting multiple
+        #        messages at once.
+        with self._lock:
+            self._connect()
+            if key not in self.iterkeys():
+                raise KeyError('Invalid key: %s' % key)
+            ok = self._pop3.dele(self._km[key])
+            self._refresh()
+
     def stat(self):
         with self._lock:
             self._connect()

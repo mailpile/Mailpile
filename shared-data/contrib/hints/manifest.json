@@ -1,0 +1,34 @@
+# This is a Mailpile plugin manifest, describing the `hints` plugin.
+#
+{
+    "name": "hints",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": ["hints.py"],
+        "javascript": ["hints.js"]
+    },
+    "routes": {
+        "/logs/hints/": {"file": "hints.html"},
+        "/page/hints/deletion.html": {"file": "hints/deletion.html"},
+        "/page/hints/backups.html": {"file": "hints/backups.html"}
+    },
+    "user_interface": {
+        "activities": [
+            {
+                "context": ["/logs/events/", "/logs/network/", "/logs/hints/"],
+                "name": "hints",
+                "text": "Hints",
+                "icon": "lightbulb",
+                "description": "Tips and tricks",
+                "url": "/logs/hints/"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "class": "hintsCommand",
+            "url": "logs/hints",
+            "name": "hints"
+        }
+    ]
+}

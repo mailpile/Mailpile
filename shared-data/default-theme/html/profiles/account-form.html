@@ -485,16 +485,11 @@
                    placeholder="{{_('sssh!')}}">
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
-{%- if is_dev_version() %}
             <input type="checkbox" name="source-{{ new_rid }}-leave-on-server" value="yes"
                    {% if result['source-' + rid + '-leave-on-server'] %}checked{% endif %}>
             <span class="checkbox">
               {{_("Leave mail on server")}}
             </span><br>
-{%- else %}
-            <input type="hidden" name="source-{{ new_rid }}-leave-on-server"
-                   value="yes">
-{%- endif %}
 
             <input type="checkbox" name="source-{{ new_rid }}-index-all-mail" value="yes"
                    {% if result['source-' + rid + '-index-all-mail'] %}checked{% endif %}>

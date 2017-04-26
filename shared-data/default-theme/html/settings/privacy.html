@@ -40,7 +40,7 @@
     {% endif %}
   </div>
 
-  <div class="setting-group">
+  <a name="network"></a><div class="setting-group">
     <h3>{{_("Networking Privacy")}}</h3>
     <div class="explanation">
       <p class="what">
@@ -171,7 +171,7 @@
     <br clear="both">
   </div>
 
-  <div class="setting-group">
+  <a name="motd"></a><div class="setting-group">
     <h3>{{_("Message Of The Day")}}</h3>
     <div class="explanation">
       <p class="what">
@@ -232,7 +232,7 @@
     <br clear="both">
   </div>
 
-  <div class="setting-group">
+  <a name="third-party-content"></a><div class="setting-group">
     <h3>{{_("Third Party Content")}}</h3>
     <div class="explanation">
       <p class="what">
@@ -285,8 +285,8 @@
     <br clear="both">
   </div>
 
-  <div class="setting-group">
-    <h3>{{_("Encrypting Your Data")}}</h3>
+  <a name="data-security"></a><div class="setting-group">
+    <h3>{{_("Securing Your Data")}}</h3>
     <div class="explanation">
       <p class="what">
         <span class="icon icon-lock-closed"></span>
@@ -306,6 +306,15 @@
       </p>
     </div>
     <div class="settings">
+
+      <input name="prefs.allow_deletion" type="radio" value="true"
+            {%- if config.prefs.allow_deletion %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.allow_deletion" type="radio" value="false"
+             {%- if not config.prefs.allow_deletion %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Allow deletion of e-mail from servers and mailboxes")}}
+      <br>
 
       <input name="prefs.encrypt_mail" type="radio" value="true"
             {%- if config.prefs.encrypt_mail %} checked{% endif %}>
@@ -357,12 +366,13 @@
       <input name="prefs.encrypt_index" type="radio" value="false"
              {%- if not config.prefs.encrypt_index %} checked{% endif %}>
       <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Strongly encrypt the local search index (slow).")}}<br>
+      {{_("Strongly encrypt the local search index (slow).")}}
+      <br>
 
       <br>
       <b>{{_("Notes:")}}</b>
       <ul class="notes">
-        <li>{{_("Changing these settings will only affect data created or edited from now on.")}}</li>
+        <li>{{_("Changing encryption settings will only affect data created or edited from now on.")}}</li>
         <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
         <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
       </ul>

@@ -137,6 +137,8 @@ class SetupMagic(Command):
             'template': 'trash',
             'icon': 'icon-trash',
             'label_color': '13-brown',
+            'auto_after': 91,
+            'auto_action': '!delete',
             'name': _('Trash'),
         },
         # These are magical tags that perform searches and show

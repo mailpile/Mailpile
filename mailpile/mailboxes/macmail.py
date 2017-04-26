@@ -66,9 +66,11 @@ class MacMaildir(mailbox.Mailbox):
 
     def remove(self, key):
         """Remove the message or raise error if nonexistent."""
-        raise NotImplemented("Mailpile is readonly, for now.")
-        # FIXME: Hmm?
-        #safe_remove(os.path.join(self._mailroot, self._lookup(key)))
+        safe_remove(os.path.join(self._mailroot, self._lookup(key)))
+        try:
+            del self._toc[key]
+        except:
+            pass
 
     def discard(self, key):
         """If the message exists, remove it."""

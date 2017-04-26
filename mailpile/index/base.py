@@ -109,7 +109,7 @@ class BaseIndex(MessageInfoConstants):
     ### Loading data: higher level methods #################################
 
     def enumerate_ptrs_mboxes_fds(self, msg_info):
-        for msg_ptr in msg_info[self.MSG_PTRS].split(','):
+        for msg_ptr in self._sorted_msg_ptrs(msg_info):
             msg_ptr = msg_ptr.strip()
             if not msg_ptr:
                 continue
@@ -127,6 +127,13 @@ class BaseIndex(MessageInfoConstants):
 
 
     ### ... ################################################################
+
+    def _sorted_msg_ptrs(self, msg_info):
+        ptrs = [p for p in msg_info[self.MSG_PTRS].split(',') if p]
+        # FIXME: Prefer local data? Prefer some mailbox types? Hmm.
+        #        Doing this well would speed things up and ensure the
+        #        `message/delete --keep` deduplication works nicely.
+        return ptrs
 
     def _encode_msg_id(self, msg_id):
         """Normalize and hash a message ID for the metadata index"""

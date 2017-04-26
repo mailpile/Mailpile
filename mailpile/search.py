@@ -345,19 +345,13 @@ class MailIndex(BaseIndex):
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')
-        self.PTRS[msg_ptr] = msg_idx_pos
 
-        # If message was seen in this mailbox before, update the location
-        for i in range(0, len(msg_ptrs)):
-            if msg_ptrs[i][:MBX_ID_LEN] == msg_ptr[:MBX_ID_LEN]:
-                msg_ptrs[i] = msg_ptr
-                msg_ptr = None
-                break
-        # Otherwise, this is a new mailbox, record this sighting as well!
+        # New location! Some other process will prune obsolete pointers.
         if msg_ptr:
+            self.PTRS[msg_ptr] = msg_idx_pos
             msg_ptrs.append(msg_ptr)
 
-        msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
+        msg_info[self.MSG_PTRS] = ','.join(list(set(msg_ptrs)))
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_info
 
@@ -435,6 +429,7 @@ class MailIndex(BaseIndex):
         existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
+        mbox_version = mbox.last_updated()
         if messages_md5 == self._scanned.get(mailbox_idx, ''):
             return finito(0, _('%s: No new mail in: %s'
                                ) % (mailbox_idx, mailbox_fn),
@@ -477,6 +472,9 @@ class MailIndex(BaseIndex):
                 messages_md5 = not_done_yet
                 break
             elif deadline and time.time() > start_time + deadline:
+                messages_md5 = not_done_yet
+                break
+            elif mbox_version != mbox.last_updated():
                 messages_md5 = not_done_yet
                 break
 
@@ -1375,6 +1373,9 @@ class MailIndex(BaseIndex):
         for tag in self.get_tags(msg_info=info):
             self.remove_tag(session, tag, msg_idxs=[msg_idx])
 
+        # Record that these messages were deleted
+        GlobalPostingList.Append(session, 'deleted:is', [b36(msg_idx)])
+
     def update_msg_sorting(self, msg_idx, msg_info):
         for order, sorter in self.SORT_ORDERS.iteritems():
             self.INDEX_SORT[order][msg_idx] = sorter(self, msg_info)
@@ -1604,8 +1605,14 @@ class MailIndex(BaseIndex):
                     return self.TAGS.get(term.rsplit(':', 1)[0], [])
                 else:
                     session.ui.mark(_('Searching for %s') % term)
-                    return [int(h, 36) for h
-                            in GlobalPostingList(session, term).hits()]
+                    gpl_hits = GlobalPostingList(session, term).hits()
+                    try:
+                        return [int(h, 36) for h in gpl_hits]
+                    except ValueError:
+                        b36re = re.compile('^[a-zA-Z0-9]{1,8}$')
+                        print 'FIXME! BAD HITS: %s => %s' % (term, [
+                            h for h in gpl_hits if not b36re.match(h)])
+                        return [int(h, 36) for h in gpl_hits if b36re.match(h)]
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:
@@ -1631,6 +1638,7 @@ class MailIndex(BaseIndex):
 
         searched_invisible = False
         searched_mailbox = False
+        searched_deleted = False
 
         for term in searchterms:
             if term in STOPLIST:
@@ -1690,6 +1698,8 @@ class MailIndex(BaseIndex):
                             session, 'in:mp_sig-%s' % status, hits,
                             recursion=recursion)[0])
                 else:
+                    if term == 'is:deleted':
+                        searched_deleted = True
                     t = term.split(':', 1)
                     fnc = _plugins.get_search_term(t[0])
                     if fnc:
@@ -1721,10 +1731,12 @@ class MailIndex(BaseIndex):
         if (results and (keywords is None) and
                 (not searched_invisible) and
                 (not searched_mailbox) and
+                (not searched_deleted) and
                 ('tags' in self.config) and
                 (not session or 'all' not in order)):
             invisible = self.config.get_tags(flag_hides=True)
-            exclude_terms = ['in:%s' % i._key for i in invisible]
+            exclude_terms = (['is:deleted'] +
+                             ['in:%s' % i._key for i in invisible])
             if len(exclude_terms) > 1:
                 exclude_terms = ([exclude_terms[0]] +
                                  ['+%s' % e for e in exclude_terms[1:]])

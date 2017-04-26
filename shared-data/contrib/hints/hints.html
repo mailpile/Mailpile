@@ -1,0 +1,51 @@
+{% extends "logs/layout.html" %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-lightbulb"></span> {{message}}</h1>
+  <br>
+
+  <p>
+    {{_("Mailpile will by default give hints now and then to help you get more out of the application.")}}
+    {{_("Here you can see a list of all the hints and when they are scheduled for display.")}}
+    {{_("Clicking on a hint will display more information.")}}
+  </p>
+  <table><tbody>
+    <tr>
+      <th>{{_("Days")}}</th><th>{{_("Hint")}}</th><th></th>
+    </tr>
+  {% for hint in result.hints %}
+    <tr>
+      <td>
+        {%- if hint.in_days < 1 %}
+          due
+        {%- else %}
+          {{- hint.in_days }}
+        {%- endif %}
+      </td>
+      <td><a class="{{ hint.action_cls }}" {% if hint.action_js -%}
+        {{ hint.action_js|safe -}}
+      {% else -%}
+        href="{{ U(hint.action_url) }}"
+      {%- endif %}>
+        {%- if not hint.applies %}<del>{% endif %}
+          {{ hint.message2 }}
+        {%- if not hint.applies %}</del>{% endif %}
+      </td>
+      <td>
+        {%- if not hint.applies %}
+          <span class="icon icon-x color-01-gray-mid"></span>
+        {%- elif hint.displayed %}
+          <span class="icon icon-checkmark color-08-green"></span>
+        {%- endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody></table><br>
+
+  <p>
+    {{_("Note: Some hints are context sensitive and may no longer apply; those hints are still listed, but crossed out.")}}
+  </p>
+
+</div>
+{% endblock %}

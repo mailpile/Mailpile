@@ -154,6 +154,7 @@ prepare_new_content = function(selector) {
         if (url &&
                 (url.indexOf('#') != 0) &&
                 (url.indexOf('mailto:') != 0) &&
+                (url.indexOf('javascript:') != 0) &&
                 (elem.target != '_blank') &&
                 (elem.className.indexOf('auto-modal') == -1)) {
             $(elem).click(function(ev) {

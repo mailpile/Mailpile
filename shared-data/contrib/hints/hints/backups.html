@@ -1,0 +1,37 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Backup Reminder")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-archive"></span>
+    {{_("Backup Reminder")}}
+  </h1>
+  <p>
+    {{_("Your Mailpile now has {t} tags and {e} e-mails.")
+        .format(t=(config.tags|length - 36), e=mailpile_size)}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li>{{_("There is no password reset function.")}}</li>
+    <li>{{_("If your encryption keys are lost, e-mail may become permanently inaccessible.")}}</li>
+{% if config.prefs.allow_deletion %}
+    <li><a class="auto-modal" href="/page/hints/deletion.html">{{_("E-mail deletion is enabled.")}}</a></li>
+{% endif %}
+  </ul>
+
+  <p>
+    {{_("Please make sure you have good backups!")}}
+    <br>
+    {{_("Your Mailpile data is in these locations:")}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li><a href="file://{{ config.workdir }}">{{ config.workdir }}</a>
+{%- if config.gnupghome != config.workdir %} ({{_("Mailpile data")}})</li>
+    <li><a href="file://{{ config.gnupghome }}">{{ config.gnupghome }}</a> ({{_("PGP keys")}})
+{%- endif %}</li>
+  </ul>
+  <p>
+    {{_("It is also a good idea to write down your Mailpile password, if you think there is any chance you might forget it.")}}</li>
+  </p>
+
+</div>
+{% endblock %}

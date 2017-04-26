@@ -743,10 +743,38 @@ class BaseMailSource(threading.Thread):
             'mailbox_id': mbx_key,
             'copied_messages': 0,
             'copied_bytes': 0,
+            'deleting': False,
             'complete': False
         }
         scan_args = scan_args or {}
+        policy = self._policy(mbx_cfg)
         count = 0
+
+        def maybe_delete_from_server(loc, src):
+            # Delete from source, if that's our policy.
+            if policy != 'move':
+                return
+
+            downloaded = list(set(src.keys()) & set(loc.source_map.keys()))
+            downloaded.sort(key=self._msg_key_order)
+
+            should = _('Should delete %d messages') % len(downloaded)
+            if 'sources' in config.sys.debug and downloaded:
+                session.ui.debug(should)
+
+            if config.prefs.allow_deletion:
+                try:
+                    for i, key in enumerate(downloaded):
+                        progress['deleting'] = '%d/%d' % (i, len(downloaded))
+                        src.remove(key)
+                except:
+                    # Just ignore errors for now, we'll try again later.
+                    if 'sources' in config.sys.debug:
+                        session.ui.debug(traceback.format_exc())
+            else:
+                progress['deleting'] = '. '.join([
+                    _('Deletion is disabled'), should])
+
         try:
             with self._lock:
                 loc = config.open_mailbox(session, mbx_key, prefer_local=True)
@@ -809,9 +837,11 @@ class BaseMailSource(threading.Thread):
 
                 stop_after -= 1
                 if (stop_after == 0) or (deadline and time.time() > deadline):
+                    maybe_delete_from_server(loc, src)
                     progress['stopped'] = True
                     return count
             progress['complete'] = True
+
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
@@ -825,6 +855,8 @@ class BaseMailSource(threading.Thread):
             raise
         finally:
             progress['running'] = False
+
+        maybe_delete_from_server(loc, src)
         return count
 
     def rescan_mailbox(self, mbx_key, mbx_cfg, path, stop_after=None):

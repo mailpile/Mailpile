@@ -1,0 +1,37 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("E-mail Deletion")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-trash"></span>
+    {{_("E-Mail Deletion")}}
+  </h1>
+{% if config.prefs.allow_deletion %}
+  <p>
+    {{_("Your Mailpile is configured to allow permanent deletion of e-mail.")}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li>{{_("Depending on your preferences, messages may be permanently deleted from remote IMAP or POP3 servers after they have been downloaded.")}}</li>
+    <li>{{_("When e-mail expires from the Trash (or you empty the trash manually), the messages will be gone forever unless you have kept backups.")}}</li>
+  </ul>
+  <p>
+    {{_("This is good for your privacy and may also conserve some disk space.")}}
+  </p>
+{% else %}
+  <p>
+    {{_("Deletion of e-mail is currently disabled.")}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li>{{_("Original copies of all e-mail will be left intact on any IMAP or POP3 servers.")}}</li>
+    <li>{{_("The Trash cannot be emptied.")}}</li>
+  </ul>
+  <p>
+    {{_("This is fine if you are just testing Mailpile.")}}
+  </p>
+{% endif %}
+  <p><a href="/settings/privacy.html#data-security">
+    {{_("Click here to change your e-mail deletion settings.")}}
+  </a></p>
+
+</div>
+{% endblock %}

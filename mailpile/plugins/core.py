@@ -343,15 +343,24 @@ class Optimize(Command):
 
 class DeleteMessages(Command):
     """Delete one or more messages."""
-    SYNOPSIS = (None, 'delete', 'message/delete', '<messages>')
+    SYNOPSIS = (None, 'delete', 'message/delete', '[--keep] <messages>')
     ORDER = ('Searching', 99)
+    IS_USER_ACTIVITY = True
 
     def command(self, slowly=False):
         idx = self._idx()
+
+        args = list(self.args)
+        keep = 0
+        while '--keep' in args:
+            args.remove('--keep')
+            keep += 1
+
         deleted, failed, mailboxes = [], [], []
-        for msg_idx in self._choose_messages(self.args):
+        for msg_idx in self._choose_messages(args):
             e = Email(idx, msg_idx)
-            del_ok, mboxes = e.delete_message(self.session, flush=False)
+            del_ok, mboxes = e.delete_message(self.session,
+                                              flush=False, keep=keep)
             mailboxes.extend(mboxes)
             if del_ok:
                 deleted.append(msg_idx)
@@ -359,8 +368,9 @@ class DeleteMessages(Command):
                 failed.append(msg_idx)
 
         # This will actually delete from mboxes, etc.
-        for m in mailboxes:
-            m.flush()
+        for m in set(mailboxes):
+            with m:
+                m.flush()
 
         # FIXME: Trigger a background rescan of affected mailboxes, as
         #        the flush() above may have broken our pointers.
