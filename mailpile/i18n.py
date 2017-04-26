@@ -149,6 +149,7 @@ def ListTranslations(config):
         try:
             with open(os.path.join(langdir, 'mailpile.po')) as fd:
                 for line in fd.read(8192).splitlines():
+                    line = line.decode('utf-8')
                     if line[1:].startswith('Language-Team: '):
                         languages[lang] = ' '.join([word for word in
                                                     line[1:-2].split()[1:-1]]

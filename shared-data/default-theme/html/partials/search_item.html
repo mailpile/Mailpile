@@ -4,6 +4,7 @@
 %}{%  set conversation_count = thread|length
 %}{%  set cleartext = show_text_part_encryption('none')
 %}{%  set unsigned = show_text_part_signature('none')
+%}{%  set to_cc = metadata.to_aids + metadata.cc_aids
 %}{%  set from = result.data.addresses[metadata.from.aid]
 %}{%  if not from
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
@@ -132,7 +133,11 @@
   </td>
   <td class="from">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
-       title="{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;">
+       title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
+{{ _("To") }}: {% if to_cc %}
+ {%- set to1 = result.data.addresses[to_cc[0]] %}
+ &lt;{{ to1.address }}&gt;{% if to_cc|length > 1 %} +{{ to_cc|length -1 }}{% endif %}
+{%- else %}({{_("unknown")}}){% endif %}">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
       {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
       {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}

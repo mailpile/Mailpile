@@ -1,0 +1,155 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{% if result %}
+  {%- set profiles = mailpile('profiles').result %}
+  {%- set with_top_composer = [] %}
+  {%- for tid in result.search_tag_ids -%}
+    {% if config.tags[tid].type == 'drafts' %}{% do with_top_composer.append(tid) %}{% endif %}
+  {%- endfor %}
+  {%- for qv in state.query_args.q -%}
+    {% if '@' in qv|list %}{% do with_top_composer.append(tid) %}{% endif %}
+  {%- endfor %}
+  {%- set with_top_composer = (False and profiles.profiles and with_top_composer) %}
+  {# FIXME! ^^ false #}
+  <table id="pile-results"
+         data-tids="{{ result.search_tag_ids|join(' ') }}"
+         data-tags="{% for tid in result.search_tag_ids -%}
+                      {{ config.tags[tid].name }}
+                      {%- if not loop.last %}, {% endif %}
+                    {%- endfor %}"
+         data-index-capabilities="{% for c in result.index_capabilities %}
+                                    {%- if result.index_capabilities[c] %}{{ c }} {% endif -%}
+                                  {%- endfor %}"
+         data-tag-capabilities="{% for c in result.tag_capabilities %}
+                                  {%- if result.tag_capabilities[c] %}{{ c }} {% endif -%}
+                                {%- endfor %}"
+         class="pile-results {{ config.web.display_density }}">
+  <tbody>
+ {% if not result.data or not result.data.messages %}
+   {# This puts a handy composer at the top of some search results #}
+   {%- if with_top_composer %}
+     {%- include("partials/pile_compose.html") %}
+   {%- endif %}
+ {%- endif %}
+ {%- for previous_mid, this_mid, next_mid in result.thread_ids|with_context %}
+   {%- set mid = result.view_pairs.get(this_mid, this_mid) %}
+   {%- if false and mid in result.data.messages and result.data.metadata[mid].urls.editing %}
+     {# FIXME! ^^ false #}
+     {%- include("partials/pile_compose.html") %}
+   {%- else %}
+     {%- include("partials/search_item.html") %}
+   {%- endif %}
+ {%- endfor %}
+  </tbody>
+  </table>
+ {% if result.stats.total > 0 %}
+  <div id="pile-bottom" class="clearfix">
+    {% set searchterms = result.search_terms|join(' ') %}
+    {% if result.stats.start > 1 %}
+    {% set newstart = result.stats.start-result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    {% set prv = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
+      'url_args_add': [['start', newstart], ['end', newend]]
+    } %}
+    <a href="{{prv.url|add_state_query_string(state, prv)|url_path_fix}}"
+       class="button-primary left" id="pile-previous"
+       data-keep-selection=1>{{_("Previous")}}</a>
+    {% endif %}
+    {% if result.stats.start + result.stats.count < result.stats.total %}
+    {% set moar = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', '']],
+      'url_args_add': [['start', result.stats.start],
+                       ['end', result.stats.start+(2*result.stats.count)-1]]
+    } %}
+    <a href="{{moar.url|add_state_query_string(state, moar)|url_path_fix}}"
+       class="button-primary left" id="pile-more"
+       data-noblank=1 data-noscroll=1 data-keep-selection=1>{{_("More")}}</a>
+    {% set newstart = result.stats.start+result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    {% set nxt = {
+      'url': '/search/',
+      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
+      'url_args_add': [['start', newstart], ['end', newend]]
+    } %}
+    <a href="{{nxt.url|add_state_query_string(state, nxt)|url_path_fix}}"
+       class="button-primary left" id="pile-next"
+       data-keep-selection=1>{{_("Next")}}</a>
+    {% endif %}
+    <h5 class="text-right">
+    {% if result.stats.total > 1 %}
+      {{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}}
+    {% elif result.stats.total == 1 %}
+      {{_("1 Conversation")}}
+    {% endif %}
+    </h5>
+  </div>
+  <div id="pile-speed" class="text-center clearfix">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.",
+                                        number=mailpile_size, elapsed=elapsed)}}
+    {% if elapsed < "0.25" %}{{_("Vroom!")}}{% endif %}
+  </div>
+ {% elif not with_top_composer %}
+  <div id="pile-empty" class="clearfix add-bottom text-center">
+  {%- if profiles.profiles|length <= 0 %}
+    <h3 class="add-top">{{_("Nothing Happened.")}}</h3>
+    <p><i>{{_("Usually, matching e-mails would be listed here.")}}</i></p>
+    <br>
+    <p>{{_("You need to create an account and add some mail first!")}}</p>
+    <p class="add-bottom">
+      <a href="{{ U('/profiles/') }}" id="pile-empty-search-terms-help"
+         class="button-secondary">
+         <span class="icon-home"></span>
+         {{_("Manage your Accounts")}}
+      </a>
+    </p>
+  {%- else %}
+
+    {%- if 'in:spam' in result.search_terms %}
+    <h3 class="add-top">{{_("No Spam Found, Hooray!")}}</h3>
+    {%- elif 'in:inbox' in result.search_terms %}
+    <h3 class="add-top">{{_("Inbox zero? Impressive!")}}</h3>
+    {%- else %}
+    <h3 class="add-top">{{_("Nothing Happened.")}}</h3>
+    <p>{{_("It seems your Mailpile does not contain any messages for the search")}}:</p>
+    <p id="pile-empty-search-terms">"{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{% endfor %}"</p>
+    {%- endif %}
+
+    <br>
+    <p>{{_("Here are some other options for you")}}:</p>
+    <p>
+      <a href="{{ U('/browse/') }}" class="button-primary">
+        <span class="icon-list"></span>
+        {{_("Browse for mailboxes")}}
+      </a>
+      &nbsp;
+      <a href="{{ U('/message/compose/') }}" class="button-compose button-primary">
+        <span class="icon-compose"></span>
+        {{_("Compose a message")}}
+      </a>
+    </p>
+    <p class="add-bottom">
+      <a href="{{ U('/help/searching/') }}" id="pile-empty-search-terms-help"
+           class="button-secondary">
+         <span class="icon-help"></span>
+         {{_("Search Tips & Tricks")}}
+      </a>
+    </p>
+
+  {% endif %}
+  </div>
+ {% endif %}
+{% else %}
+  <div class="add-top add-bottom text-center">
+    <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
+  </div>
+{% endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Search.init();
+  Mailpile.Tags.init();
+});
+</script>
+{% endblock %}
