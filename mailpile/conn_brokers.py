@@ -281,6 +281,8 @@ class BaseConnectionBroker(Capability):
 
     def create_conn_with_caps(self, address, context, need, reject,
                               *args, **kwargs):
+        if context.address is None:
+            context.address = address
         conn = self._check(need, reject)._create_connection(context, address,
                                                             *args, **kwargs)
         return self._describe(context, conn)
@@ -548,8 +550,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
     def _wrap_ssl(self, conn):
         if self._debug is not None:
             self._debug('%s: Wrapping socket with SSL' % (self, ))
-        # FIXME: We're losing the SNI stuff here, which is super lame.
-        return ssl.wrap_socket(conn, None, None)
+        return ssl.wrap_socket(conn)
 
     def _create_connection(self, context, address, *args, **kwargs):
         address = self._proxy_address(address)
@@ -656,7 +657,9 @@ class MasterBroker(BaseConnectionBroker):
         else:
             history_event[-1] = context
 
-        context.address = address
+        if context.address is None:
+            context.address = address
+
         et = v = t = None
         for prio, cb in self.brokers:
             try:
@@ -723,9 +726,11 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
     if not isinstance(sock, ssl.SSLSocket):
         ctx = Master.get_fd_context(sock.fileno())
         try:
+            if 'server_hostname' not in kwargs:
+                kwargs['server_hostname'] = ctx.address[0]
             sock = org_sslwrap(sock, *args, **kwargs)
             ctx.encryption = _explain_encryption(sock)
-        except (socket.error, IOError), e:
+        except (socket.error, IOError, ssl.SSLError, ssl.CertificateError), e:
             ctx.error = '%s' % e
             raise
     return sock
