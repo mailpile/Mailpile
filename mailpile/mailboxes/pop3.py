@@ -4,6 +4,8 @@ except ImportError:
     import StringIO
 
 import poplib
+import socket
+import ssl
 import time
 from mailbox import Mailbox, Message
 
@@ -13,6 +15,25 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 from mailpile.util import *
+
+
+class wrappable_POP3_SSL(poplib.POP3_SSL):
+    """
+    Override the default poplib.POP3_SSL init to use socket.create_connection
+    """
+    def __init__(self, host,
+                 port=poplib.POP3_SSL_PORT, keyfile=None, certfile=None,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        self.host = host
+        self.port = port
+        self.keyfile = keyfile
+        self.certfile = certfile
+        self.buffer = ""
+        self.sock = socket.create_connection((host, port), timeout)
+        self.file = self.sock.makefile('rb')
+        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
+        self._debugging = 0
+        self.welcome = self._getresp()
 
 
 class UnsupportedProtocolError(Exception):
@@ -54,7 +75,7 @@ class POP3Mailbox(Mailbox):
                     self._pop3 = self.conn_cls(self.host, self.port or 110)
                     self.secure = self.use_ssl
                 elif self.use_ssl:
-                    self._pop3 = poplib.POP3_SSL(self.host, self.port or 995)
+                    self._pop3 = wrappable_POP3_SSL(self.host, self.port or 995)
                     self.secure = True
                 else:
                     self._pop3 = poplib.POP3(self.host, self.port or 110)
