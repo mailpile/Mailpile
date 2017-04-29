@@ -1,0 +1,37 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Mangae your Spam")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-spam"></span>
+    {{_("Mangae your Spam")}}
+  </h1>
+ 	<p>
+    <a href= "https://www.mailpile.is/faq/#tec-4">Learn about how Mailpile protects you from spam</a>
+  </p>
+	
+	<p>
+		{{_("We didn't catch something?")}}
+		<br>
+		{{_("Move message(s) from your Inbox to Spam:")}}	
+		<ul class="list" style="margin-left: 2em; list-style: disc">
+		  <li>{{_("Click the checkbox for the message in your Inbox that you want to move.")}}</li>
+			<li>{{_("Or click the checkbox and hold \"Ctrl\" to select more than one message.")}}</li>
+		  <li>{{_("Click the Spam icon ")}} <span class="icon-spam"></span></li>
+			<li>{{_("Yay, no more spam!")}}</li>
+		</ul>
+	</p>
+
+	<p>
+		{{_("We marked something as Spam that wasn't?")}}
+		<br>
+		{{_("Move message(s) from Spam to your Inbox:")}}	
+  	<ul class="list" style="margin-left: 2em; list-style: disc">
+    	<li>{{_("Follow the same steps as above, but after you've selected the message(s) you 	want to move, click the Untag Selection icon")}} <span class="icon-circle-x"></span></li>
+			<li>{{_("Sorry about that; our spam filters aren't perfect!")}}</li>
+  </ul>
+  
+  
+
+</div>
+{% endblock %}
