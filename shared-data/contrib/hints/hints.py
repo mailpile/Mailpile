@@ -56,7 +56,8 @@ class hintsCommand(Command):
 
 	# FIXME: Say something about autotagging
 	# Kept pattern of incrementing the minimum age by two days.
-	# Chose interval of 30, because this hint won't affect the security of their email. 		# Becasue it is a usability hint, the interval can be longer.
+	# Chose interval of 30, because this hint won't affect the security of their email. 		
+	# Becasue it is a usability hint, the interval can be longer.
 	('autotagging', 11, 30,
             _('What is autotagging anyway?'),
             '/page/hints/autotagging.html')]
