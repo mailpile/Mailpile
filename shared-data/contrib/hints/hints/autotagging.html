@@ -1,0 +1,25 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Autotagging")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-tag"></span>
+    {{_("Autotagging")}}
+  </h1>
+  <p>
+    {{_("Mailpile automatically assigns your mail to different tags, or categories, like Drafts, Inbox, and Spam.")}}
+  </p>
+	<p>
+		{{_("If you don't like the way we organized some of your mail, you can change it.")}}	
+	</p>
+	<p>
+		{{_("How to change tags:")}}	
+		<ul class="list" style="margin-left: 2em; list-style: disc">
+		  <li>{{_("Click the checkbox for the message that you want to move.")}}</li>
+			<li>{{_("Or click the checkbox and hold \"Ctrl\" to select more than one message.")}}</li>
+		  <li>{{_("Click the Add Tag icon  ")}} <span class="icon-tag"></span>{{_("  or the Remove Tag icon  ")}} <span class="icon-circle-x"></span></li>
+		</ul>
+	</p>
+
+</div>
+{% endblock %}
