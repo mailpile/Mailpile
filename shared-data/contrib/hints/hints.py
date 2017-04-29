@@ -45,9 +45,23 @@ class hintsCommand(Command):
             "javascript:Mailpile.plugins.hints.keybindings();"),
         ('backups', 7, 6,
             _('You really should make backups of your Mailpile'),
-            '/page/hints/backups.html')]
-        # FIXME: Say something about the spam filter
-        # FIXME: Say something about autotagging
+            '/page/hints/backups.html'),
+
+	# FIXME: Say something about the spam filter
+	# Kept pattern of incrementing the minimum age by two days.
+	#Chose interval as 6, because the user should manage their spam on a frequent basis.
+	('spam', 9, 6,
+            _('No one likes Spam!'),
+            '/page/hints/spam.html'),
+
+	# FIXME: Say something about autotagging
+	# Kept pattern of incrementing the minimum age by two days.
+	# Chose interval of 30, because this hint won't affect the security of their email. 		# Becasue it is a usability hint, the interval can be longer.
+	('autotagging', 11, 30,
+            _('What is autotagging anyway?'),
+            '/page/hints/autotagging.html')]
+       
+        
 
     def _today(self):
         return int(time.time() // (24*3600))
