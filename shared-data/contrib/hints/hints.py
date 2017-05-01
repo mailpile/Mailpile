@@ -47,18 +47,18 @@ class hintsCommand(Command):
             _('You really should make backups of your Mailpile'),
             '/page/hints/backups.html'),
 
-				# FIXME: Say something about the spam filter
-				# Kept pattern of incrementing the minimum age by two days.
-				# Chose interval of 6, because the user should manage their spam on a frequent basis.
-				('spam', 9, 6,
+	# FIXME: Say something about the spam filter
+	# Kept pattern of incrementing the minimum age by two days.
+	# Chose interval of 6, because the user should manage their spam on a frequent basis.
+	('spam', 9, 6,
             _('No one likes spam!'),
             '/page/hints/spam.html'),
 
-				# FIXME: Say something about autotagging
-				# Kept pattern of incrementing the minimum age by two days.
-				# Chose a longer interval of 30, because this is a usability hint and this won't		
-				# affect the security of the user's mail. 
-				('autotagging', 11, 30,
+	# FIXME: Say something about autotagging
+	# Kept pattern of incrementing the minimum age by two days.
+	# Chose a longer interval of 30, because this is a usability hint and this won't
+	# affect the security of the user's mail. 
+	('autotagging', 11, 30,
             _('What is autotagging anyway?'),
             '/page/hints/autotagging.html')]
        
