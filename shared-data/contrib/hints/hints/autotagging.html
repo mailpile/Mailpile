@@ -1,3 +1,8 @@
+<!--
+This fle provides the user with a defintion of autotagging, 
+and directions on how to adjust or create an automatted tag.
+-->
+
 {% extends "layouts/" + render_mode + "-tall.html" %}
 {% block title %}{{_("Autotagging")}}{% endblock %}
 {% block content %}
@@ -7,19 +12,40 @@
     {{_("Autotagging")}}
   </h1>
   <p>
-    {{_("Mailpile automatically assigns your mail to different tags, or categories, like Drafts, Inbox, and Spam.")}}
+    {{_("Autotagging is when messages within a tag are moved after a certain period of time.")}}
+    <br><br>
+    
+    {{_("For example, Spam uses autotagging as a default setting.")}}
+    <br>
+    {{_("Messages in Spam are automatically moved to Trash after 1 month.")}}
   </p>
+  <p>
+  	{{_("You can adjust existing tags and new tags to use autotagging to make your Mailpile even better!")}}
+  </p>
+
 	<p>
-		{{_("If you don't like the way we organized some of your mail, you can change it.")}}	
-	</p>
-	<p>
-		{{_("How to change tags:")}}	
+		{{_("How to change an existing tag's automated settings: ")}}
+		<br>
+		{{_("(Note: Some tags do not allow autotagging.)")}}
 		<ul class="list" style="margin-left: 2em; list-style: disc">
-		  <li>{{_("Click the checkbox for the message that you want to move.")}}</li>
-			<li>{{_("Or click the checkbox and hold \"Ctrl\" to select more than one message.")}}</li>
-		  <li>{{_("Click the Add Tag icon  ")}} <span class="icon-tag"></span>{{_("  or the Remove Tag icon  ")}} <span class="icon-circle-x"></span></li>
+		  <li>{{_("Select the tag you want to edit.")}}</li>
+		  <li>{{_("Click \"Edit\".")}}</li>
+		  <li>{{_("Click \"Automation\".")}}</li>
+		  <li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option.")}}</li>
+		  <li>{{_("Under <i>Untagging</i>, select how often and where you want messages to be moved.")}}</li>
 		</ul>
 	</p>
-
+	
+	<p>
+		{{_("How to make a new tag automated:")}}	
+		<ul class="list" style="margin-left: 2em; list-style: disc">
+		  <li>{{_("Click the Add Tag button. (It's in the lower left corner!)")}}</li>
+			<li>{{_("Choose the desired settings for \"Tag Settings\" and \"Technical Settings\".")}}</li>
+		  <li>{{_("Click \"Automation\".")}}</li>
+		  <li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option.")}}</li>
+		  <li>{{_("Under <i>Untagging</i>, select how often and where you want messages to be moved.")}}</li>
+		</ul>
+	</p>
+	
 </div>
 {% endblock %}
