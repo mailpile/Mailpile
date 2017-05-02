@@ -1,6 +1,6 @@
 <!--
-This fle provides the user with a defintion of autotagging, 
-and directions on how to adjust or create an automatted tag.
+This file provides the user with a defintion of autotagging, 
+and directions on how to adjust or create an automated tag.
 -->
 
 {% extends "layouts/" + render_mode + "-tall.html" %}
@@ -12,19 +12,17 @@ and directions on how to adjust or create an automatted tag.
 		{{_("Autotagging")}}
 	</h1>
  	<p>
-		{{_("Autotagging is when messages within a tag are moved after a certain period of time.")}}
+		{{_("Autotagging is when messages with a certain tag are moved after a period of time.")}}
 		<br><br>
-    
-		{{_("For example, Spam uses autotagging as a default setting.")}}
+		{{_("For example, Spam uses autotagging.")}}
 		<br>
 		{{_("Messages in Spam are automatically moved to Trash after 1 month.")}}
 	</p>
 	<p>
-		{{_("You can adjust existing tags and new tags to use autotagging to make your Mailpile even better!")}}
+		{{_("You can adjust existing and new tags to use autotagging to make your Mailpile even better!")}}
 	</p>
-
 	<p>
-		{{_("How to change an existing tag's automated settings: ")}}
+		{{_("How to change an existing tags' automated settings: ")}}
 		<br>
 		{{_("(Note: Some tags do not allow autotagging.)")}}
 		<ul class="list" style="margin-left: 2em; list-style: disc">
@@ -35,11 +33,10 @@ and directions on how to adjust or create an automatted tag.
 			<li>{{_("Under <i>Untagging</i>, select how often and where you want messages to be moved.")}}</li>
 		</ul>
 	</p>
-	
 	<p>
 		{{_("How to make a new tag automated:")}}	
 		<ul class="list" style="margin-left: 2em; list-style: disc">
-			<li>{{_("Click the Add Tag button. (It's in the lower left corner!)")}}</li>
+			<li>{{_("Click the Add button. (It's in the lower left corner!)")}}</li>
 			<li>{{_("Choose the desired settings for \"Tag Settings\" and \"Technical Settings\".")}}</li>
 			<li>{{_("Click \"Automation\".")}}</li>
 			<li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option.")}}</li>
