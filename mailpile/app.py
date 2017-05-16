@@ -81,7 +81,8 @@ def Interact(session):
 
     try:
         prompt = session.ui.term.color('mailpile> ',
-                                       color=session.ui.term.BLACK,
+                                       color=session.ui.term.BLUE,
+                                # blue is better for dark environments
                                        weight=session.ui.term.BOLD,
                                        readline=True)
         while not mailpile.util.QUITTING:
@@ -148,9 +149,13 @@ class InteractCommand(Command):
         # Note: We do *not* update the MOTD on startup, to keep things
         #       fast, and to avoid leaking our IP on setup, before Tor
         #       has been configured.
-        splash = HelpSplash(session, 'help', []).run()
         motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
-        session.ui.display_result(splash)
+        launch_browser = raw_input('Launch browser? [y/n] ').decode('utf-8').strip()
+        if launch_browser == 'y':
+            splash = HelpSplash(session, 'help', []).run()
+            session.ui.display_result(splash)
+        else:
+            splash = HelpSplash(session, 'help', [])
         print  # FIXME: This is a hack!
         session.ui.display_result(motd)
 
