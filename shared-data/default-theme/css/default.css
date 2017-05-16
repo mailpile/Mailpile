@@ -8479,7 +8479,6 @@ tr.modal-tag-picker-item td.checkbox {
 #pile-results .header-value .address-email,
 #pile-results .thread-info .thread-from,
 #pile-results .thread-info .thread-details {
-  position: absolute;
   margin: 0;
   padding: 0;
   border: 0;
@@ -8513,7 +8512,7 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #pile-results .message-details .header-to .header-value,
 #pile-results .message-details .header-from .header-value {
-  height: 35px;
+  height: auto;
 }
 #pile-results .message-details .header-to .address-name,
 #pile-results .message-details .header-from .address-name {
