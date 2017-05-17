@@ -34,6 +34,7 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 from mailpile.vfs import vfs, FilePath
+from mailpile.conn_brokers import Master as ConnBroker
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -409,15 +410,14 @@ class BrowseOrLaunch(Command):
         config = self.session.config
 
         if config.http_worker:
-            sspec = config.http_worker.sspec
+            sspec = config.http_worker.httpd.sspec
         else:
             sspec = (config.sys.http_host, config.sys.http_port,
                      config.sys.http_path or '')
 
         try:
-            socket.create_connection(sspec[:2])
-            self.Browse(sspec)
-            os._exit(1)
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_ENCRYPTED]) as ctx:
+                self.Browse(sspec)
         except IOError:
             pass
 
