@@ -62,11 +62,11 @@ Mailpile.Message.DoReply = function(mids, reply_all) {
 };
 $(document).on('click', '.message-action-reply-all', function(e) {
   e.preventDefault();
-  Mailpile.Message.DoReply([$(this).closest('.has-mid').data('mid')]);
+  Mailpile.Message.DoReply([$(this).closest('.has-mid').data('mid')], 'all');
 });
 $(document).on('click', '.message-action-reply', function(e) {
   e.preventDefault();
-  Mailpile.Message.DoReply($(this).closest('.has-mid').data('mid'), 'all');
+  Mailpile.Message.DoReply([$(this).closest('.has-mid').data('mid')]);
 });
 
 
