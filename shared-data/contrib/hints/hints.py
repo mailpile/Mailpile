@@ -36,32 +36,37 @@ class hintsCommand(Command):
             # Note: The style of quotes matters here, because the JS sucks
             #       a bit. Single quotes only please!
             "javascript:Mailpile.plugins.hints.release_notes();"),
-        ('deletion', 3, 30,
+
+        ('deletion', 3, 90,
             _('Your Mailpile is configured to never delete e-mail'),
             '/page/hints/deletion.html',
             lambda cfg, ctx: not cfg.prefs.allow_deletion),
-        ('keyboard', 5, 30,
+
+        # FIXME: We should track whether the user is actually USING keyboard
+        #        shortcuts, and not bother them if that is the case.
+        ('keyboard', 4, 180,
             _('Mailpile has keyboard short-cuts!'),
             "javascript:Mailpile.plugins.hints.keybindings();"),
-        ('backups', 7, 6,
+
+	# Remind the user to manage their spam every 3 months.
+        # FIXME: Allow user to somehow say "I know, shutup".
+	('spam', 5, 90,
+            _('Learn how to get the most out of Mailpile\'s spam filter'),
+            '/page/hints/spam.html'),
+
+        # Don't bother the user about backups unless they've been using the
+        # app for at least 2 weeks. After that, only bug them every 6 months.
+        # FIXME: Allow user to somehow say "I have backups, shutup".
+        ('backups', 14, 180,
             _('You really should make backups of your Mailpile'),
             '/page/hints/backups.html'),
 
-	# FIXME: Say something about the spam filter
-	# Kept pattern of incrementing the minimum age by two days.
-	# Chose an interval of 6, because the user should frequently manage spam.
-	('spam', 9, 6,
-            _('Even with Mailpile\'s spam filter, you should manage your spam'),
-            '/page/hints/spam.html'),
-
-	# FIXME: Say something about autotagging
-	# Kept pattern of incrementing the minimum age by two days.
-	# Chose an interval of 30, because autotagging can be managaed less frequently. 
-	('autotagging', 11, 30,
-            _('Mailpile has autotagging!'),
+	# Introduce autotagging after 3 weeks, remind the user once per year.
+        # This isn't something that justifies much nagging.
+	('autotagging', 21, 365,
+            _('Mailpile can automatically tag or untag any kind of e-mail!'),
             '/page/hints/autotagging.html')]
-       
-        
+
 
     def _today(self):
         return int(time.time() // (24*3600))
