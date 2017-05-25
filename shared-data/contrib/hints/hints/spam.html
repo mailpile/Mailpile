@@ -1,9 +1,3 @@
-<!--
-This file provides a link to Mailpile's FAQ, specifically to the question that addresses the 
-spam filter.
-Instructions are then given for how to move messages from the Inbox to Spam
-and how to move messages from Spam to the Inbox. 
--->
 {% extends "layouts/" + render_mode + "-tall.html" %}
 {% block title %}{{_("Managing Spam")}}{% endblock %}
 {% block content %}
@@ -13,34 +7,38 @@ and how to move messages from Spam to the Inbox.
 		{{_("Managing Spam")}}
 	</h1>
 	<p>
-		<a href= "https://www.mailpile.is/faq/#tec-4">Click here to learn more about Mailpile's spam filter.</a>
+		{{_("Mailpile uses statistical analysis to recognize spam and keep it out of your Inbox.")}}
 	</p>
 	<p>
-		{{_("If Mailpile didn't catch an e-mail...")}}
+		{{_("Although powerful, the system is not perfect and it does need to some training to keep it working optimally.")}}
+		{{_("If you periodically correct the mistakes made by the spam filter, it will become more accurate.")}}
+	</p>
+	<p>
+		<b>{{_("If Mailpile didn't catch a spam e-mail, move the messages to Spam.")}}</b>
 		<br>
-		{{_("Move message(s) from your Inbox to Spam:")}}	
 		<ul class="list" style="margin-left: 2em; list-style: disc">
 			<li>{{_("Go to your Inbox.")}}</li>
-			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}
-			    {{_("Use \"Ctrl\" to select multiple messages.")}}</li>
+			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
 			<li>{{_("Click the Spam icon ")}} <span class="icon-spam"></span></li>
 			<li>{{_("Yay, no more spam!")}}</li>
 		</ul>
 	</p>
 	<p>
-		{{_("If Mailpile marked an e-mail as Spam, that actually isn't Spam...")}}
+		<b>{{_("If Mailpile marked legitimate e-mail as Spam, remove the Spam tag.")}}</b>
 		<br>
-		{{_("Move message(s) from Spam to your Inbox:")}}
 		<ul class="list" style="margin-left: 2em; list-style: disc">
 			<li>{{_("Go to Spam.")}}</li>
-			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}
-			    {{_("Use \"Ctrl\" to select multiple messages.")}}</li>
-			<li>{{_("Click the Untag Selection icon ")}} <span class="icon-circle-x"></span></li>
+			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
+			<li>{{_("Click the Untag Selection icon")}} <span class="icon-circle-x"></span></li>
 		</ul>
 	</p>
 	<p>
 		{{_("Sorry about that; the spam filter isn't perfect!")}}
 	</p>
+        <p>
+                {{_("Further reading:")}}
+		<a class="auto-modal" href="{{ U("/page/hints/autotagging.html") }}">{{_("Learn more about automatic e-mail classification.")}}</a>
+        </p>
 
 </div>
 {% endblock %}
