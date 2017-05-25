@@ -11,8 +11,8 @@
         "/logs/hints/": {"file": "hints.html"},
         "/page/hints/deletion.html": {"file": "hints/deletion.html"},
         "/page/hints/backups.html": {"file": "hints/backups.html"},
-	"/page/hints/spam.html": {"file": "hints/spam.html"},
-	"/page/hints/autotagging.html": {"file": "hints/autotagging.html"}
+        "/page/hints/spam.html": {"file": "hints/spam.html"},
+        "/page/hints/autotagging.html": {"file": "hints/autotagging.html"}
     },
     "user_interface": {
         "activities": [

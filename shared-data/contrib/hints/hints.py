@@ -48,9 +48,9 @@ class hintsCommand(Command):
             _('Mailpile has keyboard short-cuts!'),
             "javascript:Mailpile.plugins.hints.keybindings();"),
 
-	# Remind the user to manage their spam every 3 months.
+        # Remind the user to manage their spam every 3 months.
         # FIXME: Allow user to somehow say "I know, shutup".
-	('spam', 5, 90,
+        ('spam', 5, 90,
             _('Learn how to get the most out of Mailpile\'s spam filter'),
             '/page/hints/spam.html'),
 
@@ -61,9 +61,9 @@ class hintsCommand(Command):
             _('You really should make backups of your Mailpile'),
             '/page/hints/backups.html'),
 
-	# Introduce autotagging after 3 weeks, remind the user once per year.
+        # Introduce autotagging after 3 weeks, remind the user once per year.
         # This isn't something that justifies much nagging.
-	('autotagging', 21, 365,
+        ('autotagging', 21, 365,
             _('Mailpile can automatically tag or untag any kind of e-mail!'),
             '/page/hints/autotagging.html')]
 

@@ -3,42 +3,42 @@
 {% block content %}
 <div class="content-normal" style="max-width: 46em;">
 
-	<h1><span class="icon-spam"></span>
-		{{_("Managing Spam")}}
-	</h1>
-	<p>
-		{{_("Mailpile uses statistical analysis to recognize spam and keep it out of your Inbox.")}}
-	</p>
-	<p>
-		{{_("Although powerful, the system is not perfect and it does need to some training to keep it working optimally.")}}
-		{{_("If you periodically correct the mistakes made by the spam filter, it will become more accurate.")}}
-	</p>
-	<p>
-		<b>{{_("If Mailpile didn't catch a spam e-mail, move the messages to Spam.")}}</b>
-		<br>
-		<ul class="list" style="margin-left: 2em; list-style: disc">
-			<li>{{_("Go to your Inbox.")}}</li>
-			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
-			<li>{{_("Click the Spam icon ")}} <span class="icon-spam"></span></li>
-			<li>{{_("Yay, no more spam!")}}</li>
-		</ul>
-	</p>
-	<p>
-		<b>{{_("If Mailpile marked legitimate e-mail as Spam, remove the Spam tag.")}}</b>
-		<br>
-		<ul class="list" style="margin-left: 2em; list-style: disc">
-			<li>{{_("Go to Spam.")}}</li>
-			<li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
-			<li>{{_("Click the Untag Selection icon")}} <span class="icon-circle-x"></span></li>
-		</ul>
-	</p>
-	<p>
-		{{_("Sorry about that; the spam filter isn't perfect!")}}
-	</p>
-        <p>
-                {{_("Further reading:")}}
-		<a class="auto-modal" href="{{ U("/page/hints/autotagging.html") }}">{{_("Learn more about automatic e-mail classification.")}}</a>
-        </p>
+  <h1><span class="icon-spam"></span>
+    {{_("Managing Spam")}}
+  </h1>
+  <p>
+    {{_("Mailpile uses statistical analysis to recognize spam and keep it out of your Inbox.")}}
+  </p>
+  <p>
+    {{_("Although powerful, the system is not perfect and it does need to some training to keep it working optimally.")}}
+    {{_("If you periodically correct the mistakes made by the spam filter, it will become more accurate.")}}
+  </p>
+  <p>
+    <b>{{_("If Mailpile didn't catch a spam e-mail, move the messages to Spam.")}}</b>
+    <br>
+    <ul class="list" style="margin-left: 2em; list-style: disc">
+      <li>{{_("Go to your Inbox.")}}</li>
+      <li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
+      <li>{{_("Click the Spam icon ")}} <span class="icon-spam"></span></li>
+      <li>{{_("Yay, no more spam!")}}</li>
+    </ul>
+  </p>
+  <p>
+    <b>{{_("If Mailpile marked legitimate e-mail as Spam, remove the Spam tag.")}}</b>
+    <br>
+    <ul class="list" style="margin-left: 2em; list-style: disc">
+      <li>{{_("Go to Spam.")}}</li>
+      <li>{{_("Click the checkbox to select the message(s) you want to move.")}}</li>
+      <li>{{_("Click the Untag Selection icon")}} <span class="icon-circle-x"></span></li>
+    </ul>
+  </p>
+  <p>
+    {{_("Sorry about that; the spam filter isn't perfect!")}}
+  </p>
+  <p>
+    {{_("Further reading:")}}
+    <a class="auto-modal" href="{{ U("/page/hints/autotagging.html") }}">{{_("Learn more about automatic e-mail classification.")}}</a>
+  </p>
 
 </div>
 {% endblock %}

@@ -8,56 +8,56 @@ and directions on how to adjust or create an automated tag.
 {% block content %}
 <div class="content-normal" style="max-width: 46em;">
 
-	<h1><span class="icon-tag"></span>
-		{{_("Tag Automation")}}
-	</h1>
- 	<p>
-		{{_("Tag automation can be used to tag or untag messages automatically.")}}
-	</p>
-	<p>
-		<b>{{_("How to change an existing tags' automation settings: ")}}</b>
-		<br>
-		<ul class="list" style="margin-left: 2em; list-style: disc">
-			<li>{{_("Select the tag you want to edit.")}}</li>
-			<li>{{_("Click \"Edit\".")}}</li>
-			<li>{{_("Click \"Automation\".")}}</li>
-			<li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option if you want automatic tagging.")}}</li>
-			<li>{{_("Under <i>Untagging</i>, select when and where you want messages to be moved.")}}</li>
-		</ul>
-	</p>
-	<p>
-		<b>{{_("How to make a new tag with automation:")}}</b>
+  <h1><span class="icon-tag"></span>
+    {{_("Tag Automation")}}
+  </h1>
+   <p>
+    {{_("Tag automation can be used to tag or untag messages automatically.")}}
+  </p>
+  <p>
+    <b>{{_("How to change an existing tags' automation settings: ")}}</b>
+    <br>
+    <ul class="list" style="margin-left: 2em; list-style: disc">
+      <li>{{_("Select the tag you want to edit.")}}</li>
+      <li>{{_("Click \"Edit\".")}}</li>
+      <li>{{_("Click \"Automation\".")}}</li>
+      <li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option if you want automatic tagging.")}}</li>
+      <li>{{_("Under <i>Untagging</i>, select when and where you want messages to be moved.")}}</li>
+    </ul>
+  </p>
+  <p>
+    <b>{{_("How to make a new tag with automation:")}}</b>
                 <br>
-		<ul class="list" style="margin-left: 2em; list-style: disc">
-			<li>{{_("Click the Add button. (It's in the lower left corner!)")}}</li>
-			<li>{{_("Choose the desired settings for \"Tag Settings\" and \"Technical Settings\".")}}</li>
-			<li>{{_("Click \"Automation\".")}}</li>
-			<li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option if you want automatic tagging.")}}</li>
-			<li>{{_("Under <i>Untagging</i>, select when and where you want messages to be moved.")}}</li>
-		</ul>
-	</p>
-	<p>
-		{{_("You can adjust most existing and new tags to use automation to make your Mailpile even better!")}}
-		{{_("Tags that do not support automation will not have an \"Automation\" section in their settings.")}}
-	</p>
+    <ul class="list" style="margin-left: 2em; list-style: disc">
+      <li>{{_("Click the Add button. (It's in the lower left corner!)")}}</li>
+      <li>{{_("Choose the desired settings for \"Tag Settings\" and \"Technical Settings\".")}}</li>
+      <li>{{_("Click \"Automation\".")}}</li>
+      <li>{{_("Under <i>Tagging</i>, select the \"Automatic tagging\" option if you want automatic tagging.")}}</li>
+      <li>{{_("Under <i>Untagging</i>, select when and where you want messages to be moved.")}}</li>
+    </ul>
+  </p>
+  <p>
+    {{_("You can adjust most existing and new tags to use automation to make your Mailpile even better!")}}
+    {{_("Tags that do not support automation will not have an \"Automation\" section in their settings.")}}
+  </p>
 
         <h4 style="margin: 2em 0 1em 0;">{{_("How does it work?")}}</h4>
-	<p>
-		<a class="auto-modal" href="{{ U("/page/hints/spam.html") }}">{{_("The default Spam tag is an example of both automated tagging and un-tagging.")}}</a>
-                {{_("Spam automatically tags incoming messages based on statistical analysis of your mail and spam, and then automatically untags the message again (moving them to Trash) after a month has passed.")}}
-                {{_("You can use the same tools to manage other types of e-mail, notifications and promotions are popular choices.")}}
-	</p>
-	<p>
-		{{_("Tag automation can be used to tag messages or untag them. These behaviours can be configured separately or used together.")}}
-	</p>
-	<p>
-		{{_("Automated tagging is based on bayesian analysis; you start by tagging messages by hand and over time Mailpile will learn which messages belong and which don't.")}}
-                {{_("It will then tag incoming mail automatically!")}}
-                {{_("Much like any automated system, the automated tagging may make mistakes. Correcting these mistakes by manually tagging (or untagging) messages will help train the system. Over time it will become more accurate and need less manual intervention.")}}
-	</p>
-	<p>
-                {{_("Automated untagging is based on time and activity.")}}
-                {{_("Once a message has been untouched for a while (you choose the interval), it can be automatically untagged, deleted or moved to another tag.")}}
-	</p>
+  <p>
+    <a class="auto-modal" href="{{ U("/page/hints/spam.html") }}">{{_("The default Spam tag is an example of both automated tagging and un-tagging.")}}</a>
+    {{_("Spam automatically tags incoming messages based on statistical analysis of your mail and spam, and then automatically untags the message again (moving them to Trash) after a month has passed.")}}
+    {{_("You can use the same tools to manage other types of e-mail, notifications and promotions are popular choices.")}}
+  </p>
+  <p>
+    {{_("Tag automation can be used to tag messages or untag them. These behaviours can be configured separately or used together.")}}
+  </p>
+  <p>
+    {{_("Automated tagging is based on bayesian analysis; you start by tagging messages by hand and over time Mailpile will learn which messages belong and which don't.")}}
+    {{_("It will then tag incoming mail automatically!")}}
+    {{_("Much like any automated system, the automated tagging may make mistakes. Correcting these mistakes by manually tagging (or untagging) messages will help train the system. Over time it will become more accurate and need less manual intervention.")}}
+  </p>
+  <p>
+    {{_("Automated untagging is based on time and activity.")}}
+    {{_("Once a message has been untouched for a while (you choose the interval), it can be automatically untagged, deleted or moved to another tag.")}}
+  </p>
 </div>
 {% endblock %}
