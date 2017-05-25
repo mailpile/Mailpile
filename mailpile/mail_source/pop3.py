@@ -30,7 +30,7 @@ def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
                                     port=port,
                                     user=username,
                                     password=password,
-                                    use_ssl=('ssl' in protocol),
+                                    use_ssl=protocole, #('ssl' in protocol),
                                     debug=debug)
     except AccessError:
         cev['error'] = ['auth', _('Invalid username or password')]
