@@ -35,7 +35,7 @@
    {%- set tofu_invalid = r[2].tofu_invalid %}
    {%- set valid = cert_validated and hostname_matches and not tofu_invalid %}
 
- {%- if ui_tls_failed %}
+ {%- if ui_tls_failed and not valid %}
   <p>
     {{ _("The identity of the remote server ({H}) could not be verified.").format(H=host)}}
   </p>
@@ -101,7 +101,12 @@
 
 {% if ui_tls_failed and not valid %}
   <p>
-    ...
+    {{ _("If the certificate cannot be verified, then there is no guarantee you are communicating with the right server.") }}
+    {{ _("Your account details or e-mail may be at risk if you proceed.") }}
+  </p>
+  <p>
+    {{ _("Some servers deliberately use certificates that cannot be verified; in such cases adding a security exception should be safe.") }}
+    {{ _("Ask your e-mail server administrator to be sure).") }}
   </p>
 
 {% else %}
@@ -153,7 +158,11 @@
 
   <p>
    {%- if ui_tls_failed %}
+    {%- if not valid %}
     <button class="button button-secondary" data-dismiss="modal" aria-hidden="true">{{_("Try Again Later")}}</button>
+    {%- else %}
+    <button class="button button-secondary" data-dismiss="modal" aria-hidden="true">{{_("OK")}}</button>
+    {%- endif %}
    {%- else %}
     <input type="submit" class="button button-primary" value="Refresh"> &nbsp;
    {%- endif %}
