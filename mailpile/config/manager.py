@@ -38,8 +38,9 @@ from mailpile.vcard import VCardStore
 from mailpile.vfs import vfs, FilePath, MailpileVfsRoot
 from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 import mailpile.i18n
-import mailpile.vfs
+import mailpile.security
 import mailpile.util
+import mailpile.vfs
 
 from mailpile.config.base import *
 from mailpile.config.defaults import APPVER
@@ -446,6 +447,9 @@ class ConfigManager(ConfigDict):
             self.event_log.ui_watch(session.ui)
         else:
             self.event_log.ui_unwatch(session.ui)
+
+        # Configure security module
+        mailpile.security.KNOWN_TLS_HOSTS = self.tls
 
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',

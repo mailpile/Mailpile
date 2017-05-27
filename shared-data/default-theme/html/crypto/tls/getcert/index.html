@@ -1,0 +1,254 @@
+{% extends "logs/layout.html" %}
+
+{% block title %}
+ {%- if ui_tls_failed %}
+  {{ _("Invalid TLS Certificate")}}
+ {%- else %}
+  {{- _("Examine TLS certificates") }}
+ {%- endif %}
+{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+{%- if ui_tls_failed %}
+ <h1>
+   <span class="icon icon-signature-invalid color-12-red"></span>
+   {{ _("Invalid TLS Certificate")}}
+ </h1>
+{%- else %}
+ <p id="showdbg" style="float: right; opacity: 0.5;">
+   <a href="javascript:$('#debuginfo').show() && $('#showdbg').hide() && False;"
+      title="{{_('Show debug information')}}">{::}</a>
+ </p>
+{%- endif %}
+
+ <form action="{{ U("/crypto/tls/getcert/") }}" method="POST">
+  {{ csrf_field|safe }}
+
+{%- for host in state.query_args.host %}
+ {%- if result and result != True and host in result %}
+  <input type="hidden" name="host" value="{{ host }}">
+  {%- set r = result[host] %}
+  {%- if r[0] %}
+   {%- set cert_validated = r[2].cert_validated %}
+   {%- set hostname_matches = r[2].hostname_matches %}
+   {%- set tofu_invalid = r[2].tofu_invalid %}
+   {%- set valid = cert_validated and hostname_matches and not tofu_invalid %}
+
+ {%- if ui_tls_failed and not valid %}
+  <p>
+    {{ _("The identity of the remote server ({H}) could not be verified.").format(H=host)}}
+  </p>
+  <p>
+  </p>
+ {%- else %}
+  <h1 title="{{host}}">
+    <span class="icon icon-links"></span>
+    {{ host|replace(':443', '')|replace(':', ' : ')|truncate(25) }}
+  </h1>
+  <br>
+ {%- endif %}
+
+  <div style="display: block; float: right; margin: 0 0 1em 1em;">
+    <p style="font-family: monospace; margin-bottom: 0px;">
+      {% for grp in r[2].fingerprint %}
+        <span style="background: #a{{grp[0]}}a{{grp[1:]}}; color: #000000">{{ grp }}</span>
+        {% if not (loop.index % 4) %}<br>{% endif %}
+      {% endfor %}
+    </p>
+    <p style="text-align: center">{{_("SHA-256 Fingerprint")}}</p>
+  </div>
+
+  <h4>{{_("Certificate Vitals")}}:</h4>
+  {% set green = (valid or r[2].using_tofu) and 'color-08-green' or 'color-02-gray' %}
+  <ul class='list' style="margin: 1em 0 1.5em 1em; list-style: none">
+   {% if tofu_invalid %}
+    <li><span class="icon icon-signature-invalid color-12-red"></span> &nbsp;
+        {{_("TOFU failed; certificate hasn't been seen before.")}}
+   {% elif r[2].using_tofu %}
+    <li><span class="icon icon-signature-verified color-06-blue"></span> &nbsp;
+        {{_("TOFU is active; further validation is not required.")}}
+   {% elif r[2].tofu_seen %}
+    <li><span class="icon icon-star {{ green }}"></span> &nbsp;
+        {{_("Has been seen on this server before.")}}
+   {% endif %}
+   {% if not hostname_matches %}
+    <li {% if r[2].using_tofu %}style="opacity: 0.5"{% endif -%}
+        ><span class="icon icon-signature-invalid color-12-red"></span> &nbsp;
+        {{_("Not valid for this server, issued to {S}.")
+            .format(S=r[2].subject.commonName)}}
+   {% elif hostname_matches != 'unknown' %}
+    <li {% if r[2].using_tofu %}style="opacity: 0.5"{% endif -%}
+        ><span class="icon icon-signature-verified {{ green }}"></span> &nbsp;
+        {{_("Is valid for this server.")}}
+   {% endif %}
+   {% if cert_validated %}
+    <li {% if r[2].using_tofu %}style="opacity: 0.5"{% endif -%}
+        ><span class="icon icon-signature-verified {{ green }}"></span> &nbsp;
+        {{_("Issued and signed by {CA}.").format(CA=r[2].issuer.commonName|truncate(38))}}
+   {% else %}
+    <li {% if r[2].using_tofu %}style="opacity: 0.5"{% endif -%}
+        ><span class="icon icon-signature-invalid color-12-red"></span> &nbsp;
+        {{_("Could not be validated against known Certificate Authorities.")}}
+   {% endif %}
+    <li {% if r[2].using_tofu %}style="opacity: 0.5"{% endif -%}
+        ><span class="icon {% if r[2].date_matches %}icon-clock {{ green }}{% else %}icon-signature-invalid color-12-red{% endif %}"></span> &nbsp;
+        {{_("Valid from {DATE1} until {DATE2}.")
+            .format(DATE1=r[2].not_valid_before|friendly_datetime,
+                    DATE2=r[2].not_valid_after|friendly_datetime) }}
+  </ul>
+  <br clear='both'>
+
+{% if ui_tls_failed and not valid %}
+  <p>
+    {{ _("If the certificate cannot be verified, then there is no guarantee you are communicating with the right server.") }}
+    {{ _("Your account details or e-mail may be at risk if you proceed.") }}
+  </p>
+  <p>
+    {{ _("Some servers deliberately use certificates that cannot be verified; in such cases adding a security exception should be safe.") }}
+    {{ _("Ask your e-mail server administrator to be sure).") }}
+  </p>
+
+{% else %}
+  <div {% if not valid %}style="opacity: 0.5;"{% endif %}>
+    {% if not cert_validated %}
+    <p style="text-align: left; margin-left: -10px; padding: 0px 5px; font-size: 0.8em; border-bottom: 1px dashed #777;">
+      <span class="icon icon-signature-unknown"></span>
+      {{_("The information below could not be validated. It may be incorrect or forged.")}}
+    </p>
+    {% endif %}
+
+    <h5>{{_("Issued To")}}: {{ r[2].subject.commonName }}</h5>
+    <p style="margin-left: 1em;">
+      {%- if r[2].subject.organizationalUnitName %}{{ r[2].subject.organizationalUnitName }}<br>{% endif %}
+      {%- if r[2].subject.organizationName %}{{ r[2].subject.organizationName }}<br>{% endif %}
+      {%- if r[2].subject.localityName %}{{ r[2].subject.localityName }}<br>{% endif %}
+      {%- if r[2].subject.stateOrProvinceName %}{{ r[2].subject.stateOrProvinceName }}<br>{% endif %}
+      {%- if r[2].subject.countryName %}{{ r[2].subject.countryName }}<br>{% endif %}
+    </p>
+
+    {% if cert_validated %}
+    <h5>{{_("Issued By")}}: {{ r[2].issuer.commonName or _("unknown") }} </h5>
+    {% else %}
+    <h5>{{_("Apparently Issued By")}}: {{ r[2].issuer.commonName or _("unknown") }}</h5>
+    {% endif %}
+    <p style="margin-left: 1em;">
+      {%- if r[2].issuer.organizationalUnitName %}{{ r[2].issuer.organizationalUnitName }}<br>{% endif %}
+      {%- if r[2].issuer.organizationName %}{{ r[2].issuer.organizationName }}<br>{% endif %}
+      {%- if r[2].issuer.countryName %}{{ r[2].issuer.countryName }}<br>{% endif %}
+    </p>
+  </div>
+
+  <div id="pemdata" class="hide">
+    <h4>{{_("Raw PEM Certificate")}}:</h4>
+    <pre>{{ r[2].pem }}</pre>
+  </div>
+{% endif %}
+
+{% if not valid %}
+  {% if not r[2].date_matches %}<p style='text-align: center'><i>
+    {{_("Current date appears to be {D}. Is the system clock correct?")
+      .format(D=r[2].current_time|friendly_datetime) }}
+  </i></p>{% endif %}
+
+  <p style="text-align: center;"><i>
+    {{_("If this certificate error is unsual, then adding a security exception is not recommended.")}}
+  </i></p>
+{% endif %}
+
+  <p>
+   {%- if ui_tls_failed %}
+    {%- if not valid %}
+    <button class="button button-secondary" data-dismiss="modal" aria-hidden="true">{{_("Try Again Later")}}</button>
+    {%- else %}
+    <button class="button button-secondary" data-dismiss="modal" aria-hidden="true">{{_("OK")}}</button>
+    {%- endif %}
+   {%- else %}
+    <input type="submit" class="button button-primary" value="Refresh"> &nbsp;
+   {%- endif %}
+    <span style="float: right;">
+   {%- if not ui_tls_failed %}
+      <button id="showpem" class="button button-info"
+              onclick="return ($('#pemdata').show() && $('#showpem').hide() && false)"
+              >{{_("Show PEM")}}</button>
+   {%- endif %}
+   {%- if r[2].using_tofu %}
+      <input type="submit" name="tofu-clear" class="button button-info"
+             value="Remove Security Exception">
+   {%- else %}
+      <input type="submit" name="tofu-save" class="button button-info"
+        {%- if valid %} value="Use TOFU for this server"
+        {%- else %} value="Add Security Exception"
+        {%- endif %}>
+   {%- endif %}
+    </span>
+  </p>
+
+  {%- else %}
+  <h1>
+    <span class="icon icon-signature-unknown"></span>
+    {{ host|replace(':443', '')|replace(':', ' : ') }}
+  </h1><br>
+  <h5>{{ r[1] }}</h5>
+  <p style="margin-left: 1em;">{{ r[2] }}</p>
+  <hr>
+  <p>
+    {{_("Server")}}:
+    <input type="text" name="host" value="{{ host }}" placeholder="imap.example.com:993">
+    <input type="submit" class="button button-primary" value="Refresh">
+  </p>
+  {%- endif %}
+ {%- endif %}
+{%- endfor %}
+
+{%- if not state.query_args.host or result == True %}
+  <h1>
+    <span class="icon icon-links"></span>
+    {{_("TLS Certificates")}}
+  </h1><br>
+
+  <p>
+    {{_("You can use this tool to examine the TLS certificates of remote servers.")}}
+  </p>
+  <p>
+    {{_("TLS certificates are a form of digital identification, used to ensure you are communicating with the intended server and not an imposter.")}}
+  </p>
+  <p>
+    {{_("If necessary, you can add security exceptions (TOFU: Trust on First Use) which will allow you to connect to a server even if it does not present a valid certificate.")}}
+    {{_("When TOFU is in use, if the remote certificate ever changes the new one will be rejected until you add another exception.")}}
+  </p>
+
+  <p>
+    {{_("Server")}}:
+    <input id="checkhost" type="text" name="host" value="{{ state.query_args.host and state.query_args.host[0] or '' }}" placeholder="imap.example.com:993">
+    <input id="checkit" type="submit" class="button button-primary" value="Check">
+  </p>
+
+  <script>
+    function examine(host) {
+      $('#checkhost').val(host);
+      $('#checkit').trigger('click');
+    }
+  </script>
+ {% if config.tls|length > 0 %}
+  <h4>{{_("Known Certificates")}}</h4>
+  <ul class='list' style="margin: 0.5em 0 1.5em 2em; list-style: disc">
+  {%- for hkey in config.tls %}
+    {%- set host = config.tls[hkey].server %}
+    <li><a onclick="examine('{{host}}');" href="#">
+          {{- host|replace(':443', '')|replace(':', ' : ') }}</a>
+        <small>{% if not config.tls[hkey].use_web_ca %}(TOFU){% else %}(CA){% endif %}</small>
+  {%- endfor %}
+  </ul>
+ {%- endif %}
+{%- endif %}
+
+  <pre id="debuginfo" class="hide">
+"result": {{ result|json }},
+"state": {{ state|json }}
+  </pre>
+
+ </form>
+
+</div>
+{% endblock %}

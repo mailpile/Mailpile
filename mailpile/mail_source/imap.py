@@ -43,6 +43,7 @@ import imaplib
 import os
 import re
 import socket
+import ssl
 import traceback
 import time
 from imaplib import IMAP4_SSL, CRLF
@@ -643,6 +644,11 @@ def _connect_imap(session, settings, event,
         if 'imap' in session.config.sys.debug:
             session.ui.debug(traceback.format_exc())
         ev['error'] = ['timeout', _('Connection timed out')]
+    except (ssl.CertificateError, ssl.SSLError):
+        if 'imap' in session.config.sys.debug:
+            session.ui.debug(traceback.format_exc())
+        ev['error'] = ['tls', _('Failed to make a secure TLS connection'),
+                       '%s:%s' % (settings.get('host'), settings.get('port'))]
     except (IMAP_IOError, IMAP4.error):
         if 'imap' in session.config.sys.debug:
             session.ui.debug(traceback.format_exc())

@@ -1,6 +1,8 @@
 import os
+import ssl
 import traceback
 
+from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailboxes import pop3
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
@@ -13,7 +15,8 @@ from mailpile.util import *
 GMAIL_TLDS = ('gmail.com', 'googlemail.com')
 
 
-def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
+def _open_pop3_mailbox(event, host, port, username, password, protocol, debug,
+                       throw=False):
     cev = event.data['connection'] = {
         'live': False,
         'error': [False, _('Nothing is wrong')]
@@ -26,18 +29,35 @@ def _open_pop3_mailbox(event, host, port, username, password, protocol, debug):
             if 'gmail-full' not in protocol:
                 username = 'recent:%s' % username
 
-        return pop3.MailpileMailbox(host,
-                                    port=port,
-                                    user=username,
-                                    password=password,
-                                    use_ssl=('ssl' in protocol),
-                                    debug=debug)
+        if 'ssl' in protocol:
+            need = [ConnBroker.OUTGOING_POP3S]
+        else:
+            need = [ConnBroker.OUTGOING_POP3]
+
+        with ConnBroker.context(need=need):
+            return pop3.MailpileMailbox(host,
+                                        port=port,
+                                        user=username,
+                                        password=password,
+                                        use_ssl=('ssl' in protocol),
+                                        debug=debug)
     except AccessError:
         cev['error'] = ['auth', _('Invalid username or password')]
+    except (ssl.CertificateError, ssl.SSLError):
+        cev['error'] = ['tls', _('Failed to make a secure TLS connection'),
+                        '%s:%s' % (host, port)]
     except (IOError, OSError):
         cev['error'] = ['network', _('A network error occurred')]
         event.data['traceback'] = traceback.format_exc()
+
+    if throw:
+        raise throw(cev['error'][1])
+
     return None
+
+
+class POP3_IOError(IOError):
+    pass
 
 
 class Pop3MailSource(BaseMailSource):
@@ -107,7 +127,8 @@ class Pop3MailSource(BaseMailSource):
             return _open_pop3_mailbox(self.event,
                                       my_cfg.host, my_cfg.port,
                                       my_cfg.username, my_cfg.password,
-                                      my_cfg.protocol, debug)
+                                      my_cfg.protocol, debug,
+                                      throw=POP3_IOError)
         return None
 
     def discover_mailboxes(self, paths=None):

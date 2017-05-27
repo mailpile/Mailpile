@@ -157,6 +157,11 @@ CONFIG_RULES = {
                             ["store", "cache-only", "fail", "protect"],
                             'store')
     }, {}],
+    'tls': [_('Settings for TLS certificate validation'), {
+        'server':          (_('Server hostname:port'), str, ''),
+        'accept_certs':    (_('SHA256 of acceptable certs'), str, []),
+        'use_web_ca':      (_('Use web certificate authorities'), bool, True)
+    }, {}],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),
         'protocol':        (_('Messaging protocol'),

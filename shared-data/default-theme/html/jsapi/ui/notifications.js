@@ -46,6 +46,16 @@ Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
   });
 };
 
+Mailpile.certificate_error_details = function(server) {
+  var url = Mailpile.API.U(
+     '/crypto/tls/getcert/?host=' + server +
+     '&ui_tls_failed=True');
+  Mailpile.auto_modal({
+    url: url,
+    method: 'POST'
+  });
+};
+
 Mailpile.notification = function(result) {
   Mailpile.expire_canceled_notifictions();
 
@@ -285,7 +295,8 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
     var $icon = $src.find('.icon');
     if (ev.data.connection &&
         ev.data.connection.error &&
-        ev.data.connection.error[0]) {
+        ev.data.connection.error[0] &&
+        ev.data.connection.error[0] != 'tls') {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
@@ -301,6 +312,13 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
   }
   else {
     ev.timeout = 20000;
+  }
+  if (ev.data.connection &&
+      ev.data.connection.error &&
+      ev.data.connection.error[0] == 'tls') {
+    ev.action_text = '{{_("details")|escapejs}}';
+    ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
+       + ev.data.connection.error[2] + "');\"");
   }
   ev.icon = 'icon-mailsource';
   Mailpile.notification(ev);
