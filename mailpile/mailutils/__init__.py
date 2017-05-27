@@ -1051,8 +1051,7 @@ class Email(object):
         estring = self.get_editing_string(estrings=es)
         return self.update_from_string(session, estring)
 
-    def extract_attachment(self, session, att_id,
-                           name_fmt=None, mode='download'):
+    def extract_attachment(self, session, att_id, name_fmt=None, mode='get'):
         extracted = 0
         filename, attributes = '', {}
         for (count, content_id, pfn, mimetype, part
@@ -1095,6 +1094,10 @@ class Email(object):
                     session.ui.notify(_('Failed to generate thumbnail'))
                     raise UrlRedirectException('/static/img/image-default.png')
             else:
+                if mode.startswith('get'):
+                    # This allows the browser to (optionally) handle the
+                    # content, instead of always forcing a download dialog.
+                    attributes['disposition'] = 'inline'
                 filename, fd = session.ui.open_for_data(
                     name_fmt=name_fmt, attributes=attributes)
                 fd.write(payload)

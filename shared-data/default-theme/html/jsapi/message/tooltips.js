@@ -50,10 +50,12 @@ Mailpile.Message.Tooltips.Attachments = function($content) {
     content: {
       title: false,
       text: function(event, api) {
-        console.log($(this));
+        var $e = $(this);
+        console.log($e);
         var html = '';
-          html += $(this).attr('title')
-          html += '<small>{{_("Download")|escapejs}} ' + $(this).data('size') + '</small>';
+        html += $e.attr('title')
+        if ($e.data('description')) html += '<small>' + $e.data('description') + '</small>';
+        html += '<small>{{_("Download")|escapejs}} ' + $e.data('size') + '</small>';
         return html;
       }
     },

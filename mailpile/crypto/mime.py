@@ -4,6 +4,7 @@ import re
 import StringIO
 import email.parser
 
+from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 
@@ -80,22 +81,27 @@ def MimeAttachmentDisposition(part, kind, newpart):
     original file name if available from the PGP packet, otherwise try
     stripping the extension from the unprocessed attachment file name.
     """
-    
+    # Delete embedded \n and \r (shouldn't get_filename() do this itself??).
+    filename = part.get_filename().replace('\n','').replace('\r','')
+    if filename:
+        filename = filename.decode('utf-8', 'replace')
+        part.encryption_info["description"] = _("Decrypted: %s") % filename
+
     if part.encryption_info.filename:
          newfilename = part.encryption_info.filename
     else:
         # get_filename() can parse quoted, folded and RFC2231 names.
         # If there's no filename in Content-Disposition it tries Content-Type.
-        # Delete embedded \n and \r (shouldn't get_filename() do this itself??).
-        newfilename = part.get_filename().replace('\n','').replace('\r','')
+        newfilename = filename
         if 'armored' in kind and newfilename.endswith('.asc'):
             newfilename = newfilename[:len(newfilename)-len('.asc')]
         elif newfilename.endswith('.gpg'):
             newfilename = newfilename[:len(newfilename)-len('.gpg')]
-    
+
     # add_header() does quoting, folding, maybe someday RFC2231?.
-    newpart.add_header('Content-Disposition',
-                                         'attachment', filename=newfilename )
+    newpart.add_header('Content-Disposition', 'attachment',
+                       filename=newfilename.encode('utf-8'))
+
 
 def MimeReplacePart(part, newpart, keep_old_headers=False):
     """
@@ -298,12 +304,10 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
             if (part.encryption_info['status'] == 'decrypted' or
                     part.signature_info['status'] == 'verified'):
 
-                # Kludge - force base64 encoding by specifying utf8 charset.
-                # Then replace default Content-Type:text/plain.
-                newpart = email.message.Message()
-                newpart.set_payload(decrypted,'utf8') 
-                newpart.replace_header('Content-Type',
-                                       'application/octet-stream')
+                # Force base64 encoding and application/octet-stream type
+                newpart = MIMEBase('application', 'octet-stream')
+                newpart.set_payload(decrypted)
+                encoders.encode_base64(newpart)
 
                 # Add Content-Disposition with appropriate filename.
                 MimeAttachmentDisposition(part, kind, newpart)

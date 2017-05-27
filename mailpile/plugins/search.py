@@ -1132,7 +1132,8 @@ class Extract(Command):
         name_fmt = None
 
         args = list(self.args)
-        if args[0] in ('inline', 'inline-preview', 'preview', 'download'):
+        if args[0] in ('inline', 'inline-preview', 'preview',
+                       'get', 'download'):
             mode = args.pop(0)
 
         if len(args) > 0 and args[-1].startswith('>'):
