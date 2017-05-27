@@ -579,8 +579,8 @@ class MailIndex(BaseIndex):
                 msg_metadata_kws = mbox.get_metadata_keywords(msg_mbox_idx)
 
             msg = ParseMessage(msg_fd,
-                               pgpmime=session.config.prefs.index_encrypted,
-                               config=session.config)
+                pgpmime=(session.config.prefs.index_encrypted and 'all'),
+                config=session.config)
             if not lazy:
                 msg_bytes = msg_fd.tell()
 
@@ -736,8 +736,9 @@ class MailIndex(BaseIndex):
 
     def index_email(self, session, email):
         # Extract info from the email object...
-        msg = email.get_msg(pgpmime=session.config.prefs.index_encrypted,
-                            crypto_state_feedback=False)
+        msg = email.get_msg(
+            pgpmime=(session.config.prefs.index_encrypted and 'all'),
+            crypto_state_feedback=False)
         msg_mid = email.msg_mid()
         msg_info = email.get_msg_info()
         msg_size = email.get_msg_size()

@@ -120,7 +120,7 @@ def ClearParseCache(cache_id=None, pgpmime=False, full=False):
 
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
-                     pgpmime=True, config=None, event=None):
+                     pgpmime='all', config=None, event=None):
     global GLOBAL_PARSE_CACHE
     if not GnuPG:
         pgpmime = False
@@ -132,9 +132,8 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
                     return message
 
     if pgpmime:
-        message = ParseMessage(fd, cache_id=cache_id,
-                               pgpmime=False,
-                               config=config)
+        message = ParseMessage(fd, cache_id=cache_id, pgpmime=False,
+                                   config=config)
         if message is None:
             return None
         if cache_id is not None:
@@ -146,9 +145,12 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             if ev and 'event' not in kwargs:
                 kwargs['event'] = ev
             return GnuPG(config, *args, **kwargs)
+
+        unwrap_attachments = ('all' in pgpmime or 'att' in pgpmime)
         UnwrapMimeCrypto(message, protocols={
             'openpgp': MakeGnuPG
-        })
+        }, unwrap_attachments=unwrap_attachments)
+
     else:
         try:
             if not hasattr(fd, 'read'):  # Not a file, is it a function?
@@ -362,7 +364,7 @@ class Email(object):
     """This is a lazy-loading object representing a single email."""
 
     def __init__(self, idx, msg_idx_pos,
-                 msg_parsed=None, msg_parsed_pgpmime=None,
+                 msg_parsed=None, msg_parsed_pgpmime=(None, None),
                  msg_info=None, ephemeral_mid=None):
         self.index = idx
         self.config = idx.config
@@ -517,7 +519,8 @@ class Email(object):
                                          msg_cc=msg_cc)
             return cls(idx, -1,
                        msg_info=msg_info,
-                       msg_parsed=msg, msg_parsed_pgpmime=msg,
+                       msg_parsed=msg,
+                       msg_parsed_pgpmime=('basic', msg),
                        ephemeral_mid=ephemeral_mid)
 
     def is_editable(self, quick=False):
@@ -527,7 +530,7 @@ class Email(object):
             return False
         if quick:
             return True
-        return ('x-mp-internal-readonly' not in self.get_msg())
+        return ('x-mp-internal-readonly' not in self.get_msg(pgpmime=False))
 
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
@@ -759,7 +762,7 @@ class Email(object):
         if self.ephemeral_mid:
             self.reset_caches(clear_parse_cache=False,
                               msg_parsed=newmsg,
-                              msg_parsed_pgpmime=newmsg,
+                              msg_parsed_pgpmime=('basic', newmsg),
                               msg_info=self.msg_info)
 
         else:
@@ -785,7 +788,8 @@ class Email(object):
         return self
 
     def reset_caches(self,
-                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None,
+                     msg_info=None,
+                     msg_parsed=None, msg_parsed_pgpmime=(None, None),
                      clear_parse_cache=True):
         self.msg_info = msg_info
         self.msg_parsed = msg_parsed
@@ -891,14 +895,14 @@ class Email(object):
     def _update_crypto_state(self):
         if not (self.config.tags and
                 self.msg_idx_pos >= 0 and
-                self.msg_parsed_pgpmime and
+                self.msg_parsed_pgpmime[0] and
                 not self.ephemeral_mid):
             return
 
         import mailpile.plugins.cryptostate as cs
         kw = cs.meta_kw_extractor(self.index,
                                   self.msg_mid(),
-                                  self.msg_parsed_pgpmime,
+                                  self.msg_parsed_pgpmime[1],
                                   0, 0)  # msg_size, msg_ts
 
         # We do NOT want to update tags if we are getting back
@@ -927,13 +931,16 @@ class Email(object):
                 msg_info[self.index.MSG_TAGS] = ','.join(new_tags)
                 self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
 
-    def get_msg(self, pgpmime=True, crypto_state_feedback=True):
+    def get_msg(self, pgpmime='default', crypto_state_feedback=True):
         if pgpmime:
-            if self.msg_parsed_pgpmime:
-                result = self.msg_parsed_pgpmime
+            if pgpmime == 'default':
+                pgpmime = 'basic' if self.is_editable() else 'all'
+
+            if self.msg_parsed_pgpmime[0] == pgpmime:
+                result = self.msg_parsed_pgpmime[1]
             else:
                 result = self._get_parsed_msg(pgpmime)
-                self.msg_parsed_pgpmime = result
+                self.msg_parsed_pgpmime = (pgpmime, result)
 
                 # Post-parse, we want to make sure that the crypto-state
                 # recorded on this message's metadata is up to date.
@@ -959,7 +966,7 @@ class Email(object):
         elif field == 'from':
             return self.get_msg_info(self.index.MSG_FROM)
         else:
-            raw = ' '.join(self.get_msg().get_all(field, default))
+            raw = ' '.join(self.get_msg(pgpmime=False).get_all(field, default))
             return safe_decode_hdr(hdr=raw) or raw
 
     def get_sender(self):
@@ -970,7 +977,7 @@ class Email(object):
             return None
 
     def get_headerprints(self):
-        return HeaderPrints(self.get_msg())
+        return HeaderPrints(self.get_msg(pgpmime='basic'))
 
     def get_msg_summary(self):
         # We do this first to make sure self.msg_info is loaded
@@ -1160,8 +1167,8 @@ class Email(object):
             traceback.print_exc()
             return html
 
-    def get_message_tree(self, want=None, tree=None):
-        msg = self.get_msg()
+    def get_message_tree(self, want=None, tree=None, pgpmime='default'):
+        msg = self.get_msg(pgpmime=pgpmime)
         want = list(want) if (want is not None) else None
         tree = tree or {}
         tree['id'] = self.get_msg_info(self.index.MSG_ID)

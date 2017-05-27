@@ -139,7 +139,7 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
 
 
 def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
-                     depth=0):
+                     unwrap_attachments=True, depth=0):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -197,6 +197,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              psi=part.signature_info,
                              pei=part.encryption_info,
                              charsets=charsets,
+                             unwrap_attachments=unwrap_attachments,
                              depth = depth + 1 )
 
         except (IOError, OSError, ValueError, IndexError, KeyError):
@@ -254,6 +255,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              psi=part.signature_info,
                              pei=part.encryption_info,
                              charsets=charsets,
+                             unwrap_attachments=unwrap_attachments,
                              depth = depth + 1 )
 
     # If we are still multipart after the above shenanigans (perhaps due
@@ -265,19 +267,21 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              psi=part.signature_info,
                              pei=part.encryption_info,
                              charsets=charsets,
+                             unwrap_attachments=unwrap_attachments,
                              depth = depth + 1 )
 
     elif disposition.startswith('attachment'):
         # The sender can attach signed/encrypted/key files without following
         # rules for naming or mime type.
         # So - sniff to detect parts that need processing and identify protocol.
+        kind = ''
         for protocol in protocols:
             crypto_cls = protocols[protocol]
             kind = crypto_cls().sniff(part.get_payload(), encoding)
             if kind:
                 break
 
-        if 'encrypted' in kind or 'signature' in kind:
+        if unwrap_attachments and ('encrypted' in kind or 'signature' in kind):
             # Messy! The PGP decrypt operation is also needed for files which
             # are encrypted and signed, and files that are signed only.
             payload = part.get_payload( None, True )
@@ -312,6 +316,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                                  psi=part.signature_info,
                                  pei=part.encryption_info,
                                  charsets=charsets,
+                                 unwrap_attachments=unwrap_attachments,
                                  depth = depth + 1 )
             else:
                 # FIXME: Best action for unsuccessful attachment processing?
@@ -341,7 +346,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
 
 def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
-                                charsets=None, depth = 0 ):
+                                charsets=None, depth=0):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties

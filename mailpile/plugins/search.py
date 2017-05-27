@@ -334,11 +334,13 @@ class SearchResults(dict):
     def __init__(self, session, idx,
                  results=None, start=0, end=None, num=None,
                  emails=None, view_pairs=None, people=None,
-                 suppress_data=False, full_threads=True):
+                 suppress_data=False, full_threads=True,
+                 unwrap_pgp='all'):
         dict.__init__(self)
         self.session = session
         self.people = people
         self.emails = emails or []
+        self.unwrap_pgp = unwrap_pgp
         self.view_pairs = view_pairs or {}
         self.idx = idx
         self.urlmap = UrlMap(self.session)
@@ -482,12 +484,14 @@ class SearchResults(dict):
     def next_set(self):
         stats = self['stats']
         return SearchResults(self.session, self.idx,
-                             start=stats['start'] - 1 + stats['count'])
+                             start=stats['start'] - 1 + stats['count'],
+                             unwrap_pgp=self.unwrap_pgp)
 
     def previous_set(self):
         stats = self['stats']
         return SearchResults(self.session, self.idx,
-                             end=stats['start'] - 1)
+                             end=stats['start'] - 1,
+                             unwrap_pgp=self.unwrap_pgp)
 
     def _fix_width(self, text, width):
         chars = []
@@ -587,7 +591,7 @@ class SearchResults(dict):
 
             if mid in self['data'].get('messages', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
-                msg_tree = exp_email.get_message_tree()
+                msg_tree = exp_email.get_message_tree(pgpmime=self.unwrap_pgp)
                 text.append('-' * term_width)
                 text.append(exp_email.get_editing_string(msg_tree,
                     attachment_headers=False).strip())
@@ -625,6 +629,7 @@ class Search(Command):
     IS_USER_ACTIVITY = True
     COMMAND_CACHE_TTL = 900
     CHANGES_SESSION_CONTEXT = True
+    UNWRAP_PGP = 'default'
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -938,7 +943,8 @@ class Search(Command):
                                           num=self._num,
                                           emails=self._emails,
                                           view_pairs=self._email_view_pairs,
-                                          full_threads=full_threads)
+                                          full_threads=full_threads,
+                                          unwrap_pgp=self.UNWRAP_PGP)
         session.ui.mark(_('Prepared %d search results (context=%s)'
                           ) % (len(session.results), self.context))
         return self._success(_('Found %d results in %.3fs'

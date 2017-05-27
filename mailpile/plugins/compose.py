@@ -931,8 +931,8 @@ class Sendit(CompositionCommand):
             # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
-                to = email.get_msg().get('x-mp-internal-rcpts',
-                                         '').split(',')[0]
+                to = email.get_msg(pgpmime=False).get('x-mp-internal-rcpts',
+                                                      '').split(',')[0]
                 if to:
                     message = _('Could not send mail to %s') % to
                 else:
