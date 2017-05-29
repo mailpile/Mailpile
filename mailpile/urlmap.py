@@ -402,7 +402,8 @@ class UrlMap:
                                 csrf = ''
                         else:
                             csrf = post_data.get('csrf', [''])[0]
-                        if not security.valid_csrf_token(request, sid, csrf):
+                        if not security.valid_csrf_token(
+                                request.server.secret, sid, csrf):
                             user_session = None
                 if not user_session or not user_session.auth:
                     for c in commands:

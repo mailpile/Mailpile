@@ -127,13 +127,11 @@ class HttpProxyGetRequest(Command):
     }
 
     def command(self):
-        html_variables = self.session.ui.html_variables
-        request = html_variables['http_request']
+        session = self.session
+        html_variables = session.ui.html_variables
 
         if not (html_variables and
-                security.valid_csrf_token(request,
-                                          html_variables['http_session'],
-                                          self.data.get('csrf', [''])[0])):
+                session.ui.valid_csrf_token(self.data.get('csrf', [''])[0])):
             raise AccessError('Invalid CSRF token')
 
         url = self.data['url'][0]
@@ -149,7 +147,7 @@ class HttpProxyGetRequest(Command):
 
         try:
             with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
-                self.session.ui.mark('Getting: %s' % url)
+                session.ui.mark('Getting: %s' % url)
                 response = urlopen(url, data=None, timeout=timeout)
         except HTTPError, e:
             response = e
@@ -157,6 +155,8 @@ class HttpProxyGetRequest(Command):
         data = response.read()
         headers = response.headers
         contenttype = headers.get('content-type', 'application/octet-stream')
+
+        request = html_variables['http_request']
         request.send_http_response(response.code, response.msg)
         request.send_standard_headers(mimetype=contenttype,
                                       header_list=[('Content-Length',

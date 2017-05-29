@@ -200,6 +200,7 @@ class UserInteraction:
             'even_odd': 'odd',
             'mailpile_size': 0
         }
+        self.valid_csrf_token = lambda t: False
 
         # Short-circuit and avoid infinite recursion in parent logging.
         self.log_parent = log_parent

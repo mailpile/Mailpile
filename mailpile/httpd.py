@@ -402,7 +402,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             name = 'Chelsea Manning'
 
         http_session = self.http_session()
-        csrf_token = security.make_csrf_token(self, http_session)
+        csrf_token = security.make_csrf_token(self.server.secret, http_session)
         session.ui.html_variables = {
             'csrf_token': csrf_token,
             'csrf_field': ('<input type="hidden" name="csrf" value="%s">'
@@ -418,6 +418,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             'url_protocol': self.headers.get('x-forwarded-proto', 'http'),
             'mailpile_size': idx and len(idx.INDEX) or 0
         }
+        session.ui.valid_csrf_token = lambda token: security.valid_csrf_token(
+            self.server.secret, http_session, token)
 
         try:
             try:

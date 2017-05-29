@@ -176,24 +176,24 @@ def http_content_security_policy(http_server):
             "img-src 'self' data:")
 
 
-def make_csrf_token(req, session_id, ts=None):
+def make_csrf_token(secret, session_id, ts=None):
     """
     Generate a hashed token from the current timestamp, session ID and
     the server secret, to avoid CSRF attacks.
     """
     ts = '%x' % (ts if (ts is not None) else time.time())
-    payload = [req.server.secret, session_id, ts]
+    payload = [secret, session_id, ts]
     return '%s-%s' % (ts, b64w(sha512b64('-'.join(payload))))
 
 
-def valid_csrf_token(req, session_id, csrf_token):
+def valid_csrf_token(secret, session_id, csrf_token):
     """
     Check the validity of a CSRF token.
     """
     try:
         when = int(csrf_token.split('-')[0], 16)
         return ((when > time.time() - CSRF_VALIDITY) and
-                (csrf_token == make_csrf_token(req, session_id, ts=when)))
+                (csrf_token == make_csrf_token(secret, session_id, ts=when)))
     except (ValueError, IndexError):
         return False
 
