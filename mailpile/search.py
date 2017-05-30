@@ -1175,7 +1175,7 @@ class MailIndex(BaseIndex):
         if 'crypto:has' in keywords:
             e = Email(self, -1,
                       msg_parsed=msg,
-                      msg_parsed_pgpmime=msg,
+                      msg_parsed_pgpmime=('all', msg),
                       msg_info=self.BOGUS_METADATA[:])
             tree = e.get_message_tree(want=(e.WANT_MSG_TREE_PGP +
                                             ('text_parts', )))
