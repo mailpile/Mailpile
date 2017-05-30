@@ -397,7 +397,7 @@ class SearchResults(dict):
                 tags = [t for t in search_tags if t.get('flag_' + attr)]
                 self['tag_capabilities'][attr] = (len(tags) > 0)
 
-            templates = [t.template for t in search_tags]
+            templates = [t.get('template') for t in search_tags]
             if templates and templates[0] not in ('index', '', None):
                 self['tag_capabilities']['template'] = templates[0]
 

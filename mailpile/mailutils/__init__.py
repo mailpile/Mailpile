@@ -896,6 +896,7 @@ class Email(object):
         if not (self.config.tags and
                 self.msg_idx_pos >= 0 and
                 self.msg_parsed_pgpmime[0] and
+                self.msg_parsed_pgpmime[1] and
                 not self.ephemeral_mid):
             return
 
