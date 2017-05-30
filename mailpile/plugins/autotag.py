@@ -188,7 +188,7 @@ class Retrain(AutoTagCommand):
         #
         no_trash = ['-in:%s' % t._key for t in config.get_tags(type='trash')]
         interest = {}
-        for ttype in ('replied', 'fwded', 'read', 'tagged'):
+        for ttype in ('replied', 'read', 'tagged'):
             interest[ttype] = set()
             for tag in config.get_tags(type=ttype):
                 interest[ttype] |= idx.search(session,
@@ -222,8 +222,7 @@ class Retrain(AutoTagCommand):
                         interest[etag._key] = idx.search(session, srch
                                                          ).as_set()
                     interesting.append(etag._key)
-                interesting.extend(['replied', 'fwded', 'read', 'tagged',
-                                    None])
+                interesting.extend(['replied', 'read', 'tagged', None])
 
                 # Go through the interest types in order of preference and
                 # while we still lack training data, add to the training set.
@@ -235,8 +234,12 @@ class Retrain(AutoTagCommand):
                         # budget 33% True, 67% False.
                         full_size = int(at_config.corpus_size *
                                         (0.33 if which else 0.67))
-                        want = min(full_size // 4,
+                        want = min(full_size // len(interesting),
                                    max(0, full_size - len(tset)))
+                        # Make sure we always fully utilize our budget
+                        if full_size > len(tset) and not ttype:
+                            want = full_size - len(tset)
+
                         if want:
                             if ttype:
                                 adding = sorted(list(mset & interest[ttype]))
