@@ -789,17 +789,44 @@ class GetTlsCertificate(Command):
 
         def attempt_starttls(addr, sock):
             # Attempt a minimal SMTP interaction, for STARTTLS support
-            peeking = 0 if addr[1] in (25, 587) else socket.MSG_PEEK
-            if peeking and addr[1] not in (443, 465, 993, 995):
+
+            # We attempt a non-blocking peek unless we're sure this is
+            # a port normally used for clear-text SMTP.
+            peeking = 0 if (int(addr[1]) in (25, 587)) else socket.MSG_PEEK
+
+            # If this isn't a known TLS port, then we sleep a bit to give a
+            # greeting time to arrive.
+            if peeking and int(addr[1]) not in (443, 465, 993, 995):
                 time.sleep(0.4)
-            first = sock.recv(1024, peeking) or ''
-            if ('ESMTP' in first) and (first[:4] == '220 '):
+
+            try:
+                # Look for an SMTP (or IMAP) greeting
                 if peeking:
+                    sock.setblocking(0)
+                first = sock.recv(1024, peeking) or ''
+
+                if first[:4] == '220 ':
+                    # This is an SMTP greeting
+                    if peeking:
+                        sock.setblocking(1)
+                        sock.recv(1024)
+                    sock.sendall('EHLO example.com\r\n')
+                    if (sock.recv(1024) or '')[:1] == '2':
+                        sock.sendall('STARTTLS\r\n')
+                        sock.recv(1024)
+
+                elif first[:4] == '* OK':
+                    # This is an IMAP4 greeting
+                    if peeking:
+                        sock.setblocking(1)
+                        sock.recv(1024)
+                    sock.sendall('* STARTTLS\r\n')
                     sock.recv(1024)
-                sock.sendall('EHLO example.com\r\n')
-                if (sock.recv(1024) or '')[:1] == '2':
-                    sock.sendall('STARTTLS\r\n')
-                    sock.recv(1024)
+
+            except (IOError, OSError):
+                pass
+            finally:
+                sock.setblocking(1)
 
         certs = {}
         ok = changes = 0
