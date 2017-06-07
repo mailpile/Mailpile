@@ -433,6 +433,7 @@ Mailpile.API = {
 
 
 // JS App Files /=============================================================
+{% include("jsapi/global/polyfills.js") %}
 {% include("jsapi/global/eventlog.js") %}
 {% include("jsapi/global/activities.js") %}
 {% include("jsapi/global/global.js") %}
