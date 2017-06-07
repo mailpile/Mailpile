@@ -787,6 +787,20 @@ class GetTlsCertificate(Command):
             fp2 = [fp[i*2] + fp[i*2 + 1] for i in range(0, len(fp)/2)]
             return fp2
 
+        def attempt_starttls(addr, sock):
+            # Attempt a minimal SMTP interaction, for STARTTLS support
+            peeking = 0 if addr[1] in (25, 587) else socket.MSG_PEEK
+            if peeking and addr[1] not in (443, 465, 993, 995):
+                time.sleep(0.4)
+            first = sock.recv(1024, peeking) or ''
+            if ('ESMTP' in first) and (first[:4] == '220 '):
+                if peeking:
+                    sock.recv(1024)
+                sock.sendall('EHLO example.com\r\n')
+                if (sock.recv(1024) or '')[:1] == '2':
+                    sock.sendall('STARTTLS\r\n')
+                    sock.recv(1024)
+
         certs = {}
         ok = changes = 0
         for host in hosts:
@@ -798,6 +812,7 @@ class GetTlsCertificate(Command):
                     with Master.context(need=[Master.OUTGOING_ENCRYPTED,
                                               Master.OUTGOING_RAW]) as ctx:
                         sock = socket.create_connection(addr, timeout=30)
+                    attempt_starttls(addr, sock)
                     ssls = ssl.wrap_socket(sock, use_web_ca=True, tofu=False)
                     hostname_matches = True
                     cert_validated = True
@@ -813,6 +828,7 @@ class GetTlsCertificate(Command):
                     with Master.context(need=[Master.OUTGOING_ENCRYPTED,
                                               Master.OUTGOING_RAW]) as ctx:
                         sock = socket.create_connection(addr, timeout=30)
+                    attempt_starttls(addr, sock)
                     ssls = ssl.wrap_socket(sock, use_web_ca=False, tofu=False)
 
                 cert = ssls.getpeercert(True)
