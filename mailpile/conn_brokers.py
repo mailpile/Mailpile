@@ -832,7 +832,7 @@ class GetTlsCertificate(Command):
         ok = changes = 0
         for host in hosts:
             try:
-                addr = host.split(':') + ['443']
+                addr = host.replace(' ', '').split(':') + ['443']
                 addr = (addr[0], int(addr[1]))
 
                 try:
