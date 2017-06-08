@@ -70,14 +70,6 @@ APPVER = '%s%s' % (next(
 ).split('"')[1], BRANCHVER)
 
 
-## Cleanup ###################################################################
-try:
-    assert(0 == subprocess.call(['make', 'clean'], cwd=here))
-except:
-    print "Faild to run 'make clean'. Bailing out."
-    exit(1)
-
-
 ## Install ###################################################################
 
 class Builder(build_py):
