@@ -64,6 +64,7 @@ from mailpile.index.mailboxes import MailboxIndex
 from mailpile.mail_source import BaseMailSource
 from mailpile.mail_source.imap_starttls import IMAP4
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
+from mailpile.plugins.oauth import OAuth2
 from mailpile.util import *
 from mailpile.vfs import FilePath
 
@@ -164,8 +165,8 @@ class SharedImapConn(threading.Thread):
         self._idling = False
         self._selected = None
 
-        for meth in ('append', 'add', 'capability', 'fetch', 'noop',
-                     'store', 'expunge', 'close',
+        for meth in ('append', 'add', 'authenticate', 'capability', 'fetch',
+                     'noop', 'store', 'expunge', 'close',
                      'list', 'login', 'logout', 'namespace', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
@@ -560,7 +561,8 @@ class SharedImapMailbox(Mailbox):
 
 
 def _connect_imap(session, settings, event,
-                  conn_cls=None, timeout=30, throw=False, logged_in_cb=None):
+                  conn_cls=None, timeout=30, throw=False,
+                  logged_in_cb=None, source=None):
 
     def timed(*args, **kwargs):
         return RunTimed(timeout, *args, **kwargs)
@@ -624,13 +626,35 @@ def _connect_imap(session, settings, event,
                 return WithaBool(False)
 
         try:
+            error_type = 'auth'
+            error_msg = _('Invalid username or password')
             username = settings.get('username', '').encode('utf-8')
             password = settings.get('password', '').encode('utf-8')
-            ok, data = timed_imap(conn.login, username, password)
-        except (IMAP4.error, UnicodeDecodeError):
-            ok = False
+
+            if (settings.get('auth_type', '').lower() == 'oauth2'
+                    and 'AUTH=XOAUTH2' in capabilities):
+                error_type = 'oauth2'
+                error_msg = _('Access denied by mail server')
+                token_info = OAuth2.GetFreshTokenInfo(session, username)
+                if not (username and token_info and token_info.access_token):
+                    raise ValueError("Missing configuration")
+                ok, data = timed_imap(
+                    conn.authenticate, 'XOAUTH2',
+                    lambda challenge: OAuth2.XOAuth2Response(username,
+                                                             token_info))
+                if not ok:
+                    token_info.access_token = ''
+
+            else:
+                ok, data = timed_imap(conn.login, username, password)
+
+        except (IMAP4.error, UnicodeDecodeError, ValueError):
+            ok, data = False, None
         if not ok:
-            ev['error'] = ['auth', _('Invalid username or password')]
+            auth_summary = ''
+            if source is not None:
+                auth_summary = source._summarize_auth()
+            ev['error'] = [error_type, error_msg, username, auth_summary]
             if throw:
                 raise throw(ev['error'][1])
             return WithaBool(False)
@@ -860,7 +884,8 @@ class ImapMailSource(BaseMailSource):
                              conn_cls=conn_cls,
                              timeout=self.timeout,
                              throw=throw,
-                             logged_in_cb=logged_in_cb)
+                             logged_in_cb=logged_in_cb,
+                             source=self)
         if conn:
             return self.conn
         else:

@@ -360,6 +360,19 @@ class SetupMagic(Command):
         else:
             return False
 
+    @classmethod
+    def URLGet(cls, session, url, data=None):
+        if url.lower().startswith('https'):
+            conn_needs = [ConnBroker.OUTGOING_HTTPS]
+        else:
+            conn_needs = [ConnBroker.OUTGOING_HTTP]
+        with ConnBroker.context(need=conn_needs) as context:
+            session.ui.mark('Getting: %s' % url)
+            return urlopen(url, data=data, timeout=10).read()
+
+    def _urlget(self, url, data=None):
+        return self.URLGet(self.session, url, data=data)
+
     def setup_command(self, session):
         pass  # Overridden by children
 
@@ -469,15 +482,6 @@ class SetupGetEmailSettings(TestableWebbable):
         else:
             self.session.ui.mark(message)
 
-    def _urlget(self, url):
-        if url.lower().startswith('https'):
-            conn_needs = [ConnBroker.OUTGOING_HTTPS]
-        else:
-            conn_needs = [ConnBroker.OUTGOING_HTTP]
-        with ConnBroker.context(need=conn_needs) as context:
-            self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url, data=None, timeout=10).read()
-
     def _username(self, val, email):
         lpart = email.split('@')[0]
         return str(val).replace('%EMAILADDRESS%', email
@@ -507,12 +511,15 @@ class SetupGetEmailSettings(TestableWebbable):
 
     def _rank(self, entry):
         rank = 0
-        proto = entry.get('protocol', 'unknown')
+        proto = entry.get('protocol', 'unknown').lower()
+        auth = entry.get('auth_type', 'unknown').lower()
         for srch, score in [('pop3', 1),
                             ('imap', 2),
                             ('ssl', 10),
-                            ('tls', 5)]:
-            if srch in proto:
+                            ('tls', 5),
+                            ('oauth2', 10),
+                            ('password', 0)]:
+            if srch in proto or srch in auth:
                 rank -= score
         return rank
 
@@ -562,28 +569,25 @@ class SetupGetEmailSettings(TestableWebbable):
                 except AttributeError:
                     pass
                 for insrv in data.emailProvider.incomingServer:
-                    result['sources'].append({
-                        'protocol': self._source_proto(insrv),
-                        'username': self._username(insrv.username, email),
-                        'auth_type': str(insrv.authentication),
-                        'host': str(insrv.hostname),
-                        'port': str(insrv.port),
-                    })
+                    for auth in insrv.authentication:
+                        result['sources'].append({
+                            'protocol': self._source_proto(insrv),
+                            'username': self._username(insrv.username, email),
+                            'auth_type': str(auth),
+                            'host': str(insrv.hostname),
+                            'port': str(insrv.port)})
                 for outsrv in data.emailProvider.outgoingServer:
-                    result['routes'].append({
-                        'protocol': self._route_proto(outsrv),
-                        'username': self._username(outsrv.username, email),
-                        'auth_type': str(outsrv.authentication),
-                        'host': str(outsrv.hostname),
-                        'port': str(outsrv.port),
-                    })
+                    for auth in outsrv.authentication:
+                        result['routes'].append({
+                            'protocol': self._route_proto(outsrv),
+                            'username': self._username(outsrv.username, email),
+                            'auth_type': str(auth),
+                            'host': str(outsrv.hostname),
+                            'port': str(outsrv.port)})
                 result['sources'].sort(key=self._rank)
                 result['routes'].sort(key=self._rank)
                 return result
         except (IOError, ValueError, AttributeError):
-            # don't forget to delete this
-            # import traceback
-            # traceback.print_exc()
             return None
 
     def _get_ispdb(self, email, domain):

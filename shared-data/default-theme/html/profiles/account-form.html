@@ -28,8 +28,10 @@
     var _fpa = (function() {
       var pf = '#form-profile-editor ';
       var new_src_id = '{{ new_src_id }}';
-      var old = {password: '', username: ''};
+      var old = {username: ''};
       return {
+        pre_submit: function(elem) {
+        },
         display: function(elem, disp) {
           if (disp) { elem.show() } else { elem.hide() };
         },
@@ -45,12 +47,12 @@
           //_fpa.display($('.fpa-basics-ok'), basic_problems < 1);
           _fpa.display($('.fpa-basics-bad'), basic_problems > 0);
           _fpa.display($('#fpa-submit'),
-                       (basic_problems < 1) && 
+                       (basic_problems < 1) &&
                        (!$(pf + '.fpa-autoconfig').is(':checked')));
         },
         next: function(show) {
           $(pf + 'div.section').slideUp();
-          $(pf + 'div.' + show).slideDown();
+          $(pf + 'div.' + show).slideDown().find(':tabbable').eq(0).focus();
           $(pf + '.fpa-login-failed').hide();
           $(pf + '.fpa-detection-failed').hide();
           // Any navigation disables the auto-detection
@@ -158,7 +160,6 @@
               'track-id': new_src_id,
               '_timeout': 300000, // AJAX timeout
               'timeout': 240000,  // Server-side deadline
-              'password': $(pf + '.fpa-basic-password').val(),
               'email': email,
               '_error_callback': function(response, _status) {
                 console.log("Detection error " + _status);
@@ -198,29 +199,41 @@
         },
         copy_email_settings: function(result) {
           var next = 0;
+          var oauth = 0;
           if (result.routes && result.routes.length > 0) {
             var found = result.routes[0];
+            if (found.auth_type == 'OAuth2') oauth += 1;
             $("input[name='route-host']").val(found.host);
             $("input[name='route-port']").val(found.port);
             $("input[name='route-username']").val(found.username);
             var $s = $("select[name='route-protocol']");
             $s.find('option').prop('selected', false);
             $s.find("option[value='" + found.protocol + "']").prop('selected', true);
+            var $a = $("select[name='route-auth_type']");
+            $a.find('option').prop('selected', false);
+            $a.find("option[value='" + found.auth_type.substring(0, 8) + "']").prop('selected', true);
             _fpa.select($s, 'route-settings');
             next = 'profile-add-source';
           }
           if (result.sources && result.sources.length > 0) {
             var found = result.sources[0];
+            if (found.auth_type == 'OAuth2') oauth += 1;
             $("input[name='source-{{ new_src_id }}-host']").val(found.host);
             $("input[name='source-{{ new_src_id }}-port']").val(found.port);
             $("input[name='source-{{ new_src_id }}-username']").val(found.username);
             var $s = $("select[name='source-{{ new_src_id }}-protocol']");
             $s.find("option").prop('selected', false);
             $s.find("option[value='" + found.protocol + "']").prop('selected', true);
+            var $a = $("select[name='source-{{ new_src_id }}-auth_type']");
+            $a.find('option').prop('selected', false);
+            $a.find("option[value='" + found.auth_type.substring(0, 8) + "']").prop('selected', true);
             _fpa.select($s, 'source-settings-{{ new_src_id }}');
             next = 'profile-add-security';
           }
-          if (result.enable) {
+          if (oauth) {
+            // Do nothing...?
+          }
+          else if (result.enable) {
             $('.edit-provider-settings').attr('href', result.enable[0].url).show();
             $('.fpa-warning .description').html(result.enable[0].description);
             $('.fpa-warning ul.docs').html(' ');
@@ -238,10 +251,29 @@
             next = 'fpa-warning';
           }
           return next;
+        },
+        setup: function() {
+          $('input[name=name]').focus();
+          $('#form-profile-editor').on('keydown', ':tabbable', function(e) {
+            // Make ENTER behave like TAB, to avoid accidental form submission.
+            if (e.which == 13 || e.keyCode == 13) {
+              e.preventDefault();
+              var nxt = $(document.activeElement).data("next");
+              if (nxt) {
+                $(nxt).trigger('click');
+              }
+              else {
+                var $canfocus = $(':tabbable:visible')
+                var index = $canfocus.index(document.activeElement) + 1;
+                if (index >= $canfocus.length) index = 0;
+                $canfocus.eq(index).focus();
+              }
+            }
+          });
         }
       };
     })();
-    setTimeout("$('input[name=name]').focus();", 250);
+    setTimeout("_fpa.setup();", 100);
   </script>
 
   <form id="form-profile-editor" class="standard"
@@ -269,23 +301,18 @@
       </select>
       {% endif %}
 {%- endif %}
-      <div style="padding-right: 0em; width: 22em;">
+      <div style="padding-right: 0em; width: 29em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%"
-               value="{{ result.name }}" placeholder="Chelsea Manning">
+               value="{{ result.name }}" placeholder="Ada Lovelace">
       </div>
       <div class="basics old">
-        <div class="left" style="margin-right: 1em; width: 14em;">
+        <div class="left" style="margin-right: 1em; width: 29em;">
           <label>{{_("E-mail")}}</label>
-          <input type="text" name="email" class='fpa-email fpa-basic-username'
-                 placeholder="chelsea@manning.com" value="{{ result.email }}"
+          <input type="text" name="email" style="width: 100%"
+                 class='fpa-email fpa-basic-username' data-next="#basics-next"
+                 placeholder="ada@example.com" value="{{ result.email }}"
                  onchange="javascript:_fpa.email_changed();">
-        </div>
-        <div class="left" style="margin-right: 0; width: 14em;">
-          <label>{{_("Password")}}</label>
-          <input type="password" class="fpa-basic-password"
-                 value="" placeholder="{{_('sssh!')}}"
-                 onchange="javascript:_fpa.copy_basic('password');">
         </div>
       </div>
       <div class="basics new hide">
@@ -310,7 +337,7 @@
           {{ _("Detect settings") }}
         </span> &nbsp;
         {% endif %}
-        <button onclick='javascript:_fpa.basics_next();'
+        <button id="basics-next" onclick='javascript:_fpa.basics_next();'
                 class="button button-secondary" type="button">{{_("Next")}} ...</button>
       </div>
       <br clear="both">
@@ -355,6 +382,7 @@
       <div class="section profile-add-route {% if ui_open != 'route' %}hide{% endif %}"
            style="position: relative;">
         <select class="right" name="route-protocol" style="width: auto;"
+                data-next="#next-route"
                 onchange="javascript:_fpa.select(this, 'route-settings');">
           {%- set protocol = result['route-protocol'] %}
           {%- for val, txt in (('smtp', 'SMTP'),
@@ -385,13 +413,26 @@
                    value="{{ result['route-username'] }}" placeholder="you123">
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
-            <small class="right fpa-password-copied hide">({{ _("copied") }})</small>
-            <label>{{_("Password")}}</label>
-            <input type="password" name="route-password" class="fpa-password"
-                   onchange="javascript:_fpa.mark_copied(this, 'password');"
-                   value="{{ result['route-password'] }}"
-                   placeholder="{{_('sssh!')}}">
+            {%- set auth_type = result['route-auth_type'][:8] %}
+            <label>{{_("Authentication")}}</label>
+            <select name="route-auth_type" style="width: 14em;">
+              {%- for val, txt in (('password', 'Password'),
+                                   ('OAuth2', 'OAuth2')) %}
+              <option value="{{val}}"{% if val == auth_type %} selected
+                                     {%- endif %}>{{txt}}</option>
+              {%- endfor %}
+            </select>
           </div>
+
+          {%- set password = result['route-password'] %}
+          {%- if password %}
+          <div class="left" style="margin-right: 0; width: 29em;">
+            <input type="checkbox" name="route-password" value="">
+            <span class="checkbox">
+              {{_("Forget password")}}
+            </span><br>
+          </div>
+          {%- endif %}
         </div>
         <div class="route-settings local
                     {%- if protocol != 'local' %} hide{% endif %}">
@@ -477,14 +518,25 @@
                    placeholder="you123">
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
-            <small class="right fpa-password-copied hide">({{ _("copied") }})</small>
-            <label>{{_("Password")}}</label>
-            <input type="password" name="source-{{ new_rid }}-password" class="fpa-password"
-                   onchange="javascript:_fpa.mark_copied(this, 'password');"
-                   value="{{ result['source-' + rid + '-password'] }}"
-                   placeholder="{{_('sssh!')}}">
+            {%- set auth_type = result['source-' + rid + '-auth_type'] %}
+            <label>{{_("Authentication")}}</label>
+            <select name="source-{{ new_rid }}-auth_type" style="width: 14em;">
+              {%- for val, txt in (('password', 'Password'),
+                                   ('OAuth2', 'OAuth2')) %}
+              <option value="{{val}}"{% if val == auth_type %} selected
+                                     {%- endif %}>{{txt}}</option>
+              {%- endfor %}
+            </select>
           </div>
           <div class="left" style="margin-right: 0; width: 29em;">
+          {%- set password = result['source-' + rid + '-password'] %}
+          {%- if password %}
+            <input type="checkbox" name="source-{{ new_rid }}-password" value="">
+            <span class="checkbox">
+              {{_("Forget password")}}
+            </span><br>
+          {%- endif %}
+
             <input type="checkbox" name="source-{{ new_rid }}-leave-on-server" value="yes"
                    {% if result['source-' + rid + '-leave-on-server'] %}checked{% endif %}>
             <span class="checkbox">
@@ -612,13 +664,14 @@
       </div>
     </div>
 
+    {% set enable_imap_pop3_message = _("Mailpile may not be able to access your mail unless you log on to your account and enable IMAP and/or POP3.") %}
     <div class='section fpa-warning hide' style='position: relative'>
       <p class="message paragraph-alert">
         <span class="icon-settings"></span> <b>{{_("Important")}}!</b>
         <span class="description" href=""></span>
       </p>
       <p>
-        {{_("Mailpile may not be able to access your mail unless you log on to your account and enable IMAP and/or POP3.")}}
+        {{ enable_imap_pop3_message }}
         {{_("Without this, some providers will even mistake Mailpile for an intruder!")}}
       </p>
       <ul style="list-style: disc; margin-left: 2em;" class="docs"></ul>

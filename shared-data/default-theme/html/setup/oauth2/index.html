@@ -1,0 +1,68 @@
+{%- extends "layouts/auth.html" %}
+{%- block title %}{{_("Grant Access")}}{% endblock %}
+{%- block content %}
+{%- if result.oauth_url %}
+
+<div class="content-normal settings-page">
+  <h1>
+    <span class="icon icon-checkmark"></span>
+    {{_("Grant Access")}}
+  </h1>
+  <p>
+    {{ _("In order for Mailpile to process your e-mail, you need to grant permission for the application to access your e-mail account.") }}
+  </p>
+  <p>
+    {{ _("The authentication process will take place in a new window (or tab).") }}
+    <br>
+    {{ _("If given a choice, be sure to grant access to:") }}
+    <b>{{ result.username }}</b>
+  </p>
+  <br>
+  <a id="oauth-a-gamo" href="{{ result.oauth_url }}" target=_blank
+     onclick="javascript:Mailpile.popup_oauth2_window(event);">
+    <button class="right button-secondary">
+      {{_("Authenticate")}}
+    </button>
+  </a>
+  <button id="dismiss-gamo" data-dismiss="modal" class="button-info">
+    {{_("Cancel")}}
+  </button>
+  <br clear=both>
+  <script>
+    Mailpile.popup_oauth2_window = function(ev) {
+      ev.preventDefault();
+      $('#dismiss-gamo').click();
+      var win = window.open("", "OAuth2", "width=400,height=550");
+      win.location.href = $('a#oauth-a-gamo').attr('href');
+      return false;
+    };
+  </script>
+</div>
+
+{%- else %}
+
+<div id="setup-welcome" class="text-center add-top">
+  <br style="margin-top: 25%;">
+  <img src="{{ config.sys.http_path }}/static/img/logo-color.svg"
+       class="animated bounceIn welcome-logo">
+  <br><br>
+ {% if result.success %}
+  <h2>{{ _("Success") }}!</h2><br>
+  <p>
+    {{ _("Mailpile should now be able to access your account.") }}
+  </p>
+ {% else %}
+  <h2>{{ _("Failed") }}.</h2><br>
+  <p>
+    {{ _("Oh no, something went wrong.") }}
+    {{ _("Try again later?") }}
+  </p>
+ {% endif %}
+  <br><br>
+  <button id="close-window" onclick="javascript:window.close();">
+    {{ _("Close Window") }}
+  </button>
+</div>
+
+{%- endif %}
+{%- endblock %}

@@ -46,15 +46,32 @@ Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
   });
 };
 
-Mailpile.certificate_error_details = function(server) {
+Mailpile.certificate_error_details = function(server, event_id) {
   var url = Mailpile.API.U(
-     '/crypto/tls/getcert/?host=' + server +
-     '&ui_tls_failed=True');
-  Mailpile.auto_modal({
-    url: url,
-    method: 'POST'
-  });
+     '/crypto/tls/getcert/?host=' + server + '&ui_tls_failed=True');
+  Mailpile.auto_modal({ url: url, method: 'POST' });
+  Mailpile.cancel_notification(event_id);
 };
+
+Mailpile.mailsource_login = function(mailsource_id, event_id) {
+  var url = Mailpile.API.U(
+     '/settings/login.html?ui_mailsource=' + mailsource_id);
+  Mailpile.auto_modal({ url: url, method: 'POST' });
+  Mailpile.cancel_notification(event_id, false, false, true);
+};
+
+Mailpile.mailsource_oauth2 = function(mailsource_id, event_id) {
+  var url = Mailpile.API.U('/setup/oauth2/?mailsource=' + mailsource_id);
+  Mailpile.auto_modal({ url: url, method: 'POST' });
+  Mailpile.cancel_notification(event_id, false, false, true);
+};
+
+Mailpile.user_host_oauth2 = function(username, hostname, event_id) {
+  var url = Mailpile.API.U('/setup/oauth2/?username=' + username + '&hostname=' + hostname);
+  Mailpile.auto_modal({ url: url, method: 'POST' });
+  //Mailpile.cancel_notification(event_id, false, false, true);
+};
+
 
 Mailpile.notification = function(result) {
   Mailpile.expire_canceled_notifictions();
@@ -278,6 +295,17 @@ EventLog.subscribe('.*AddProfile', function(ev) {
       Mailpile.notification(ev);
   }
 });
+EventLog.subscribe('.*compose.Sendit', function(ev) {
+  if (ev.data.last_error_details && ev.data.last_error_details.oauth_error) {
+    ev.action_text = '{{_("grant access")|escapejs}}';
+    ev.action_js = ("onclick=\"Mailpile.user_host_oauth2('"
+       + ev.data.last_error_details.username + "','"
+       + ev.data.host + "','"
+       + ev.event_id + "');\"");
+    Mailpile.uncancel_notification(ev.event_id);
+    ev.timeout = 1200000;
+  }
+});
 EventLog.subscribe('.*mail_source.*', function(ev) {
   //
   // Mail source notifications behave differently depending on which
@@ -313,12 +341,22 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
   else {
     ev.timeout = 20000;
   }
-  if (ev.data.connection &&
-      ev.data.connection.error &&
-      ev.data.connection.error[0] == 'tls') {
-    ev.action_text = '{{_("details")|escapejs}}';
-    ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
-       + ev.data.connection.error[2] + "');\"");
+  if (ev.data.connection && ev.data.connection.error) {
+    if (ev.data.connection.error[0] == 'tls') {
+      ev.action_text = '{{_("details")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
+         + ev.data.connection.error[2] + "','" + ev.event_id + "');\"");
+    }
+    else if (ev.data.connection.error[0] == 'auth') {
+      ev.action_text = '{{_("please log in")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.mailsource_login('"
+         + ev.data.id + "','" + ev.event_id + "');\"");
+    }
+    else if (ev.data.connection.error[0] == 'oauth2') {
+      ev.action_text = '{{_("grant access")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.mailsource_oauth2('"
+         + ev.data.id + "','" + ev.event_id + "');\"");
+    }
   }
   ev.icon = 'icon-mailsource';
   Mailpile.notification(ev);

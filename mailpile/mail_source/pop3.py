@@ -15,8 +15,9 @@ from mailpile.util import *
 GMAIL_TLDS = ('gmail.com', 'googlemail.com')
 
 
-def _open_pop3_mailbox(event, host, port, username, password, protocol, debug,
-                       throw=False):
+def _open_pop3_mailbox(event, host, port,
+                       username, password, auth_type,
+                       protocol, debug, throw=False):
     cev = event.data['connection'] = {
         'live': False,
         'error': [False, _('Nothing is wrong')]
@@ -39,10 +40,12 @@ def _open_pop3_mailbox(event, host, port, username, password, protocol, debug,
                                         port=port,
                                         user=username,
                                         password=password,
+                                        auth_type=auth_type,
                                         use_ssl=('ssl' in protocol),
                                         debug=debug)
     except AccessError:
-        cev['error'] = ['auth', _('Invalid username or password')]
+        cev['error'] = ['auth', _('Invalid username or password'),
+                        username, sha1b64(password)]
     except (ssl.CertificateError, ssl.SSLError):
         cev['error'] = ['tls', _('Failed to make a secure TLS connection'),
                         '%s:%s' % (host, port)]
@@ -127,6 +130,7 @@ class Pop3MailSource(BaseMailSource):
             return _open_pop3_mailbox(self.event,
                                       my_cfg.host, my_cfg.port,
                                       my_cfg.username, my_cfg.password,
+                                      my_cfg.auth_type,
                                       my_cfg.protocol, debug,
                                       throw=POP3_IOError)
         return None
@@ -162,6 +166,7 @@ def TestPop3Settings(session, settings, event):
                               int(settings['port']),
                               settings['username'],
                               settings['password'],
+                              settings.get('auth_type', 'password'),
                               settings['protocol'],
                               True)
     if conn:

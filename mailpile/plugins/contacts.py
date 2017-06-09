@@ -851,10 +851,12 @@ def ProfileVCard(parent):
             elif protocol in ('smtp', 'smtptls', 'smtpssl'):
                 route.command = ''
                 route.name = vcard.email
-                for var in ('route-username', 'route-password',
-                            'route-auth_type', 'route-host', 'route-port'):
-                   rvar = var.split('-', 1)[1]
-                   route[rvar] = self.data.get(var, [''])[0]
+                for var in ('route-username', 'route-auth_type',
+                            'route-host', 'route-port'):
+                    rvar = var.split('-', 1)[1]
+                    route[rvar] = self.data.get(var, [''])[0]
+                if 'route-password' in self.data:
+                    route['password'] = self.data['route-password'][0]
             else:
                 raise ValueError(_('Unhandled outgoing mail protocol: %s'
                                    ) % protocol)
@@ -880,7 +882,6 @@ def ProfileVCard(parent):
                 protocol = self.data.get(prefix + 'protocol', ['none'])[0]
                 def configure_source(source):
                     source.host = ''
-                    source.password = ''
                     source.username = ''
                     source.enabled = self._yn(prefix + 'enabled')
                     source.discovery.create_tag = True
@@ -957,9 +958,11 @@ def ProfileVCard(parent):
                     disco.guess_tags = True
 
                     # Connection settings
-                    for rvar in ('protocol', 'auth_type', 'host', 'port',
-                                 'username', 'password'):
+                    for rvar in ('protocol', 'auth_type', 'username',
+                                 'host', 'port'):
                         source[rvar] = self.data.get(prefix + rvar, [''])[0]
+                    if (prefix + 'password') in self.data:
+                        source['password'] = self.data[prefix + 'password'][0]
                     if (self._yn(prefix + 'force-starttls')
                             and source.protocol == 'imap'):
                         source.protocol = 'imap_tls'
@@ -1121,7 +1124,9 @@ class AddProfile(ProfileVCard(AddVCard)):
         return dict_merge(AddVCard._form_defaults(self), {
             'new_src_id': new_src_id,
             'route-protocol': 'none',
+            'route-auth_type': 'password',
             'source-NEW-protocol': 'none',
+            'source-NEW-auth_type': 'password',
             'source-NEW-leave-on-server': True,
             'source-NEW-index-all-mail': True,
             'source-NEW-force-starttls': False,
@@ -1208,7 +1213,9 @@ class EditProfile(AddProfile):
             'email': vcard.email,
             'password': '',
             'route-protocol': 'none',
+            'route-auth_type': 'password',
             'source-NEW-protocol': 'none',
+            'source-NEW-auth_type': 'password',
             'security-pgp-key': vcard.pgp_key or '',
             'security-best-effort-crypto': ('best-effort' in cp),
             'security-use-autocrypt': ('autocrypt' in cf),
@@ -1233,7 +1240,7 @@ class EditProfile(AddProfile):
                 'route-port': route.port,
                 'route-username': route.username,
                 'route-password': route.password,
-                'route-auth_type': route.auth_type,
+                'route-auth_type': route.auth_type or 'password',
                 'route-command': route.command
             })
         pvars['sources'] = vcard.sources()
@@ -1246,6 +1253,8 @@ class EditProfile(AddProfile):
                          'username', 'password'):
                 info[prefix + rvar] = source[rvar]
             dp = disco.policy
+            if not info[prefix + 'auth_type']:
+                info[prefix + 'auth_type'] = 'password'
             info[prefix + 'leave-on-server'] = (dp not in 'move')
             info[prefix + 'index-all-mail'] = (dp in ('move', 'sync', 'read')
                                                and disco.local_copy)

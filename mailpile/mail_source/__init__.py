@@ -142,6 +142,7 @@ class BaseMailSource(threading.Thread):
                                                       data_id=my_config._key))
             if events:
                 self.event = events[0]
+                self.event.message = _('Starting up')
             else:
                 self.event = config.event_log.log(
                     source=self,
@@ -356,6 +357,7 @@ class BaseMailSource(threading.Thread):
         status = []
         if discovered > 0:
             status.append(_('Discovered %d mailboxes') % discovered)
+            self._last_rescan_completed = False
         if rescanned > 0:
             status.append(_('Processed %d mailboxes') % rescanned)
         if errors:
@@ -953,6 +955,11 @@ class BaseMailSource(threading.Thread):
     def is_mailbox(self, fn):
         return False
 
+    def _summarize_auth(self):
+        return sha1b64(self.my_config.auth_type, '-',
+                       self.my_config.username, '-',
+                       self.my_config.password)
+
     def run(self):
         play_nice(18)  # Reduce priority quite a lot
 
@@ -980,6 +987,13 @@ class BaseMailSource(threading.Thread):
             self._update_unknown_state()
             if not self.session.config.index:
                 continue
+
+            conn_err = self.event.data.get('connection', {}).get('error')
+            if conn_err and conn_err[0] in ('oauth2', 'auth'):
+                if ((self._loop_count % 100 != 0)
+                        and self._summarize_auth() == conn_err[-1]):
+                    self.session.ui.debug('Auth unchanged, doing nothing')
+                    continue
 
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:

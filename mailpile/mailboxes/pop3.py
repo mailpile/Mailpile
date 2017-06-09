@@ -45,17 +45,20 @@ class POP3Mailbox(Mailbox):
     Basic implementation of POP3 Mailbox.
     """
     def __init__(self, host,
-                 user=None, password=None, use_ssl=True, port=None,
-                 debug=False, conn_cls=None):
+                 user=None, password=None, auth_type='password',
+                 use_ssl=True, port=None, debug=False, conn_cls=None,
+                 session=None):
         """Initialize a Mailbox instance."""
         Mailbox.__init__(self, '/')
         self.host = host
         self.user = user
         self.password = password
+        self.auth_type = auth_type
         self.use_ssl = use_ssl
         self.port = port
         self.debug = debug
         self.conn_cls = conn_cls
+        self.session = session
 
         self._lock = MboxRLock()
         self._pop3 = None
@@ -86,8 +89,16 @@ class POP3Mailbox(Mailbox):
 
             self._keys = None
             try:
-                self._pop3.user(self.user)
-                self._pop3.pass_(self.password)
+                if self.auth_type.lower() == 'oauth2':
+                    token_info = OAuth2.GetFreshTokenInfo(self.session,
+                                                          self.user)
+                    if self.user and token_info and token_info.access_token:
+                        raise AccessError("FIXME: Do OAUTH2 Auth!")
+                    else:
+                        raise AccessError()
+                else:
+                    self._pop3.user(self.user)
+                    self._pop3.pass_(self.password)
             except poplib.error_proto:
                 raise AccessError()
 

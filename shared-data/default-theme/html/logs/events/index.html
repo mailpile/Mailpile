@@ -79,6 +79,15 @@
     </div>
   {%- endif %}
   </div>
+  <div class="settings events-i">
+  {%- set displayed = [] %}
+  {%- for event in result.events|reverse %}
+    {%- if 'i' in event.flags %}
+      {{- show_event(event) }}
+      {% do displayed.append(1) %}
+    {% endif %}
+  {%- endfor %}
+  </div>
   <br clear="both">
 </div>
 

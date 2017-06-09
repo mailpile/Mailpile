@@ -109,6 +109,7 @@ def _RouteTuples(session, from_to_msg_ev_tuples, test_route=None):
                 route = {"protocol": "",
                          "username": "",
                          "password": "",
+                         "auth_type": "",
                          "command": "",
                          "host": "",
                          "port": 25}
@@ -215,6 +216,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             proto = route['protocol']
             host, port = route['host'], route['port']
             user, pwd = route['username'], route['password']
+            auth_type = route['auth_type'] or ''
             smtp_ssl = proto in ('smtpssl', )  # FIXME: 'smtorp'
 
             for ev in events:
@@ -239,7 +241,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 try:
                     with ConnBroker.context(need=conn_needs) as ctx:
                         server.connect(host, int(port))
-                        server.ehlo_or_helo_if_needed()
+                    server.ehlo_or_helo_if_needed()
                 except (IOError, OSError, smtplib.SMTPServerDisconnected):
                     fail(_('Failed to connect to %s') % host, events,
                          details={'connection_error': True})
@@ -262,17 +264,31 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                             server = sm_connect_server()
                 serverbox[0] = server
 
-                if user and pwd:
+                if user:
                     try:
-                        server.login(user.encode('utf-8'),
-                                     pwd.encode('utf-8'))
+                        if auth_type.lower() == 'oauth2':
+                            from mailpile.plugins.oauth import OAuth2
+                            tok_info = OAuth2.GetFreshTokenInfo(session, user)
+                            if not (user and tok_info and tok_info.access_token):
+                                fail(_('Access denied by mail server'),
+                                     events,
+                                     details={'oauth_error': True,
+                                              'username': user})
+                            authstr = (OAuth2.XOAuth2Response(user, tok_info)
+                                       ).encode('base64').replace('\n', '')
+                            server.docmd('AUTH', 'XOAUTH2 ' + authstr)
+                        else:
+                            server.login(user.encode('utf-8'),
+                                         (pwd or '').encode('utf-8'))
                     except UnicodeDecodeError:
                         fail(_('Bad character in username or password'),
                              events,
-                             details={'authentication_error': True})
+                             details={'authentication_error': True,
+                                      'username': user})
                     except smtplib.SMTPAuthenticationError:
                         fail(_('Invalid username or password'), events,
-                             details={'authentication_error': True})
+                             details={'authentication_error': True,
+                                      'username': user})
                     except smtplib.SMTPException:
                         # If the server does not support authentication, assume
                         # it's passwordless and try to carry one anyway.

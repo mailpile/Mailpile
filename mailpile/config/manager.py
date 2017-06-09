@@ -1088,6 +1088,7 @@ class ConfigManager(ConfigDict):
                 return {"protocol": "smtorp",
                         "host": rcpts[0].split('@')[-1],
                         "port": 25,
+                        "auth_type": "",
                         "username": "",
                         "password": ""}
         routeid = self.get_profile(frm)['messageroute']
