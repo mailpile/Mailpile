@@ -21,6 +21,7 @@ from mailpile.plugins.contacts import AddProfile, ListProfiles
 from mailpile.plugins.contacts import ListProfiles
 from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
+from mailpile.plugins.setup_magic_ispdb import STATIC_ISPDB
 from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import SignatureInfo, EncryptionInfo
@@ -528,10 +529,14 @@ class SetupGetEmailSettings(TestableWebbable):
 
         return domain
 
-    def _get_xml_autoconfig(self, url, email):
+    def _get_xml_autoconfig(self, url, domain, email):
         try:
             result = {'sources': [], 'routes': []}
-            xml_data = self._urlget(url)
+
+            xml_data = STATIC_ISPDB.get(domain)
+            if not xml_data:
+                xml_data = self._urlget(url)
+
             if xml_data:
                 data = objectify.fromstring(xml_data)
 # FIXME: Massage these so they match the format of the routes and
@@ -589,7 +594,7 @@ class SetupGetEmailSettings(TestableWebbable):
 
         self._progress(_('Checking ISPDB for %s') % domain)
         settings = self._get_xml_autoconfig(
-            self.ISPDB_URL % {'domain': domain}, email)
+            self.ISPDB_URL % {'domain': domain}, domain, email)
         if settings:
             self._log_result(_('Found %s in ISPDB') % domain)
             return settings
@@ -599,7 +604,7 @@ class SetupGetEmailSettings(TestableWebbable):
             # FIXME: Make a longer list of 2nd-level public TLDs to ignore
             if domain not in ('co.uk', 'pagekite.me'):
                 return self._get_xml_autoconfig(
-                    self.ISPDB_URL % {'domain': domain}, email)
+                    self.ISPDB_URL % {'domain': domain}, domain, email)
         return None
 
     def _want_anonymity(self):
@@ -637,7 +642,7 @@ class SetupGetEmailSettings(TestableWebbable):
                     self._progress(_('Checking for autoconfig on %s') % dom)
                     settings = self._get_xml_autoconfig(
                         url % {'protocol': protocol, 'domain': dom, 'email': email},
-                        email)
+                        dom, email)
                     if settings:
                         self._log_result(_('Found autoconfig on %s') % dom)
                         return settings
