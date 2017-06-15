@@ -13,6 +13,7 @@ from mailpile.util import *
 _ = lambda s: s
 _plugins = PluginManager(builtin=__file__)
 
+
 ##[ Configuration ]###########################################################
 
 _plugins.register_config_section(

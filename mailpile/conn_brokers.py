@@ -792,7 +792,7 @@ class GetTlsCertificate(Command):
 
             # We attempt a non-blocking peek unless we're sure this is
             # a port normally used for clear-text SMTP.
-            peeking = 0 if (int(addr[1]) in (25, 587)) else socket.MSG_PEEK
+            peeking = int(addr[1]) not in (25, 587, 143)
 
             # If this isn't a known TLS port, then we sleep a bit to give a
             # greeting time to arrive.
@@ -803,7 +803,12 @@ class GetTlsCertificate(Command):
                 # Look for an SMTP (or IMAP) greeting
                 if peeking:
                     sock.setblocking(0)
-                first = sock.recv(1024, peeking) or ''
+                    # Note: This will throw a TypeError if we are connected
+                    #       over Tor (or other SOCKS).
+                    first = sock.recv(1024, socket.MSG_PEEK) or ''
+                else:
+                    sock.settimeout(10)
+                    first = sock.recv(1024) or ''
 
                 if first[:4] == '220 ':
                     # This is an SMTP greeting
@@ -823,7 +828,7 @@ class GetTlsCertificate(Command):
                     sock.sendall('* STARTTLS\r\n')
                     sock.recv(1024)
 
-            except (IOError, OSError):
+            except (TypeError, IOError, OSError):
                 pass
             finally:
                 sock.setblocking(1)
