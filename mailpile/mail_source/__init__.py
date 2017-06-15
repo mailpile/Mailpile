@@ -142,7 +142,10 @@ class BaseMailSource(threading.Thread):
                                                       data_id=my_config._key))
             if events:
                 self.event = events[0]
-                self.event.message = _('Starting up')
+                if my_config.enabled:
+                    self.event.message = _('Starting up')
+                else:
+                    self.event.message = _('Disabled')
             else:
                 self.event = config.event_log.log(
                     source=self,
@@ -165,9 +168,13 @@ class BaseMailSource(threading.Thread):
         self.session.config.save_worker.add_unique_task(
             self.session, 'Save config', self.session.config.save)
 
-    def _log_status(self, message):
+    def _log_status(self, message, clear_errors=False):
         # If the user renames our parent_tag, we assume the name change too.
         self.update_name_to_match_tag()
+        if clear_errors:
+            err = self.event.data.get('connection', {}).get('error', [False])
+            if err[0]:
+                err[:] = [False, _('Nothing is wrong')]
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
         self.session.ui.mark(message)
@@ -209,7 +216,8 @@ class BaseMailSource(threading.Thread):
                 not self.my_config.enabled):
             if log:
                 self._log_status(_('Interrupted: %s')
-                                 % (self._interrupt or _('Shutting down')))
+                                     % (self._interrupt or _('Shutting down')),
+                                 clear_errors=(not self._interrupt))
             if clear:
                 self._interrupt = None
             return True
@@ -978,9 +986,14 @@ class BaseMailSource(threading.Thread):
 
         self._loop_count = 0
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
-            self._loop_count += 1
-            if not self.my_config.enabled:
+            self.event.data['enabled'] = self.my_config.enabled
+            if self.my_config.enabled:
+                self._loop_count += 1
+            else:
+                if self._loop_count > 1:
+                    self._log_status(_('Disabled'), clear_errors=True)
                 self._loop_count = 1
+                self.close()
                 continue
 
             self.name = self.my_config.name  # In case the config changes
@@ -1033,7 +1046,7 @@ class BaseMailSource(threading.Thread):
                 self.session = _original_session
             self._update_unknown_state()
         self.close()
-        self._log_status(_('Shut down'))
+        self._log_status(_('Shut down'), clear_errors=True)
         self._save_state()
 
     def _log_conn_errors(self):

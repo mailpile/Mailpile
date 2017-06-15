@@ -50,20 +50,28 @@ Mailpile.certificate_error_details = function(server, event_id) {
   var url = Mailpile.API.U(
      '/crypto/tls/getcert/?host=' + server + '&ui_tls_failed=True');
   Mailpile.auto_modal({ url: url, method: 'POST' });
-  Mailpile.cancel_notification(event_id);
+  //Mailpile.cancel_notification(event_id);
+};
+
+Mailpile.profile_edit = function(profile_id, section) {
+  var url = Mailpile.API.U(
+     '/profiles/edit/?rid=' + profile_id +
+     '&ui_open=' + section +
+     '&ui_flags=reload');
+  Mailpile.auto_modal({ url: url, method: 'GET' });
 };
 
 Mailpile.mailsource_login = function(mailsource_id, event_id) {
   var url = Mailpile.API.U(
      '/settings/login.html?ui_mailsource=' + mailsource_id);
   Mailpile.auto_modal({ url: url, method: 'POST' });
-  Mailpile.cancel_notification(event_id, false, false, true);
+  //Mailpile.cancel_notification(event_id, false, false, true);
 };
 
 Mailpile.mailsource_oauth2 = function(mailsource_id, event_id) {
   var url = Mailpile.API.U('/setup/oauth2/?mailsource=' + mailsource_id);
   Mailpile.auto_modal({ url: url, method: 'POST' });
-  Mailpile.cancel_notification(event_id, false, false, true);
+  //Mailpile.cancel_notification(event_id, false, false, true);
 };
 
 Mailpile.user_host_oauth2 = function(username, hostname, event_id) {
@@ -319,44 +327,50 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
   // provides critical information in that context.
   //
   var $src = $('.source-' + ev.data.id);
+  var conn_error = (ev.data.connection &&
+                    ev.data.connection.error &&
+                    ev.data.connection.error[0]);
   if ($src.length > 0) {
     var $icon = $src.find('.icon');
-    if (ev.data.connection &&
-        ev.data.connection.error &&
-        ev.data.connection.error[0] &&
-        ev.data.connection.error[0] != 'tls') {
+    if ((conn_error &&
+         conn_error != 'tls' &&
+         conn_error != 'auth' &&
+         conn_error != 'oauth2') ||
+        (!ev.data.enabled)) {
       $icon.removeClass('configured').removeClass('unconfigured');
       $icon.addClass('misconfigured');
       $src.attr('title', $src.data('title') + '\n\n' +
                          '{{_("Error")|escapejs}}: ' +  ev.message);
-      ev.action_js = "onclick=\"javascript:$('.source-" + ev.data.id + "').click();\"";
-      ev.action_text = '{{_("edit settings")|escapejs}}';
     }
     else {
       $icon.removeClass('misconfigured').removeClass('unconfigured');
       $icon.addClass('configured');
     }
-    Mailpile.uncancel_notification(ev.event_id);
+    if (ev.data.enabled) Mailpile.uncancel_notification(ev.event_id);
   }
   else {
     ev.timeout = 20000;
   }
-  if (ev.data.connection && ev.data.connection.error) {
-    if (ev.data.connection.error[0] == 'tls') {
-      ev.action_text = '{{_("details")|escapejs}}';
-      ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
-         + ev.data.connection.error[2] + "','" + ev.event_id + "');\"");
-    }
-    else if (ev.data.connection.error[0] == 'auth') {
-      ev.action_text = '{{_("please log in")|escapejs}}';
-      ev.action_js = ("onclick=\"Mailpile.mailsource_login('"
-         + ev.data.id + "','" + ev.event_id + "');\"");
-    }
-    else if (ev.data.connection.error[0] == 'oauth2') {
-      ev.action_text = '{{_("grant access")|escapejs}}';
-      ev.action_js = ("onclick=\"Mailpile.mailsource_oauth2('"
-         + ev.data.id + "','" + ev.event_id + "');\"");
-    }
+  if (((conn_error && conn_error != 'tls') || (!ev.data.enabled)) &&
+      (ev.data.profile_id)) {
+    ev.action_js = ("onclick=\"Mailpile.profile_edit('"
+       + ev.data.profile_id + "','sources');\"");
+    ev.action_text = '{{_("edit settings")|escapejs}}';
+  }
+  if (conn_error == 'tls') {
+    ev.action_text = '{{_("details")|escapejs}}';
+    ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
+       + ev.data.connection.error[2] + "','" + ev.event_id + "');\"");
+  }
+  else if (conn_error == 'auth') {
+    ev.action_text = '{{_("please log in")|escapejs}}';
+    ev.action_js = ("onclick=\"Mailpile.mailsource_login('"
+       + ev.data.id + "','" + ev.event_id + "');\"");
+  }
+  else if (conn_error == 'oauth2') {
+    ev.action_text = '{{_("grant access")|escapejs}}';
+    ev.action_js = ("onclick=\"Mailpile.mailsource_oauth2('"
+       + ev.data.id + "','" + ev.event_id + "');\"");
   }
   ev.icon = 'icon-mailsource';
   Mailpile.notification(ev);

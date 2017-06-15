@@ -156,10 +156,15 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             ev.data['delivered'] = len([k for k in ev.private_data
                                         if ev.private_data[k]])
 
-    def mark(msg, events, log=True):
+    def mark(msg, events, log=True, clear_errors=False):
         for ev in events:
             ev.flags = Event.RUNNING
             ev.message = msg
+            if clear_errors:
+                if 'last_error' in ev.data:
+                    del ev.data['last_error']
+                if 'last_error_details' in ev.data:
+                    del ev.data['last_error_details']
             if log:
                 session.config.event_log.log_event(ev)
         session.ui.mark(msg)
@@ -191,7 +196,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                                 to, route_description))
         sm_write = sm_close = lambda: True
 
-        mark(_('Sending via %s') % route_description, events)
+        mark(_('Sending via %s') % route_description, events, clear_errors=True)
 
         if route['command']:
             # Note: The .strip().split() here converts our cmd into a list,

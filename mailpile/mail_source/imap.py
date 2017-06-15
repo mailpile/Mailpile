@@ -625,6 +625,7 @@ def _connect_imap(session, settings, event,
                     raise throw(ev['error'][1])
                 return WithaBool(False)
 
+        username = password = ""
         try:
             error_type = 'auth'
             error_msg = _('Invalid username or password')

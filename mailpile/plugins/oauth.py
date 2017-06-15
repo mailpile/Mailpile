@@ -146,6 +146,7 @@ class OAuth2(TestableWebbable):
 
     @classmethod
     def GetFreshTokenInfo(cls, session, tok_id):
+        oauth2_cfg, post_data = {}, None
         try:
             tok_info = session.config.oauth.tokens[tok_id]
             if (tok_info.expires_at > (time.time() + 300)
@@ -171,7 +172,7 @@ class OAuth2(TestableWebbable):
             if 'oauth' in session.config.sys.debug:
                 session.ui.debug(traceback.format_exc())
                 session.ui.debug('Failed: POST %s, data=%s' % (
-                    oauth2_cfg['token_url'], post_data))
+                    oauth2_cfg.get('token_url'), post_data))
             return False
 
     def setup_command(self, session):

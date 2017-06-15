@@ -1,0 +1,31 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+
+{% block title %}{{_("Mail Source Login")}}{% endblock %}
+
+{% block content %}
+<div class="content-normal settings-page">
+ <form method="POST" action="{{ U("/settings/set/") }}?ui_return={{ U('/profiles/') }}">{{ csrf_field|safe }}
+  {%- set mail_source = config.sources[ui_mailsource] %}
+
+  <h1>
+    <span class="icon icon-settings"></span>
+    {{_("Mail Source Login")}}
+  </h1>
+
+  <p>
+    <label>Username:</label>
+    <b>{{ mail_source.username }}</b><br>
+  </p>
+
+  <p>
+    <label>Password:</label>
+    <input type="password" name="sources.{{ ui_mailsource }}.password"
+           placeholder="{{ _("Your password") }}">
+  </p>
+
+  <p>
+    <button class="button-primary" type="submit">{{_("Log in")}}</button>
+  </p>
+ </form>
+</div>
+{% endblock %}
