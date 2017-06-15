@@ -2,18 +2,20 @@ import random
 import hashlib
 import smtplib
 import socket
+import ssl
 import sys
 import time
 
 import mailpile.util
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.util import *
+from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.config.detect import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
-from mailpile.eventlog import Event
+from mailpile.mailutils import InsecureSmtpError
 from mailpile.safe_popen import Popen, PIPE
+from mailpile.util import *
 from mailpile.vcard import VCardLine
 
 
@@ -162,11 +164,13 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 session.config.event_log.log_event(ev)
         session.ui.mark(msg)
 
-    def fail(msg, events, details=None):
+    def fail(msg, events, details=None, exception=SendMailError):
         mark(msg, events, log=True)
         for ev in events:
             ev.data['last_error'] = msg
-        raise SendMailError(msg, details=details)
+            if details:
+                ev.data['last_error_details'] = details
+        raise exception(msg, details=details)
 
     def smtp_do_or_die(msg, events, method, *args, **kwargs):
         rc, msg = method(*args, **kwargs)
@@ -249,19 +253,28 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 return server
 
             def sm_startup():
-                server = sm_connect_server()
-                if not smtp_ssl:
-                    # We always try to enable TLS, even if the user just
-                    # requested plain-text smtp.  But we only throw errors
-                    # if the user asked for encryption.
-                    try:
-                        server.starttls()
-                        server.ehlo_or_helo_if_needed()
-                    except:
-                        if proto == 'smtptls':
-                            raise InsecureSmtpError()
-                        else:
-                            server = sm_connect_server()
+                try:
+                    server = sm_connect_server()
+                    if not smtp_ssl:
+                        # We always try to enable TLS, even if the user just
+                        # requested plain-text smtp.  But we only throw errors
+                        # if the user asked for encryption.
+                        try:
+                            server.starttls()
+                            server.ehlo_or_helo_if_needed()
+                        except:
+                            if proto == 'smtptls':
+                                raise
+                            else:
+                                server = sm_connect_server()
+                except (ssl.CertificateError, ssl.SSLError):
+                    fail(_('Failed to make a secure TLS connection'),
+                         events,
+                         details={
+                             'tls_error': True,
+                             'server': '%s:%d' % (host, port)},
+                         exception=InsecureSmtpError)
+
                 serverbox[0] = server
 
                 if user:

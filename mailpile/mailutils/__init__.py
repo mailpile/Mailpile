@@ -65,8 +65,10 @@ class NoRecipientError(ValueError):
     pass
 
 
-class InsecureSmtpError(ValueError):
-    pass
+class InsecureSmtpError(IOError):
+    def __init__(self, msg, details=None):
+        IOError.__init__(self, msg)
+        self.error_info = details or {}
 
 
 class NoSuchMailboxError(OSError):
@@ -321,6 +323,7 @@ def PrepareMessage(config, msg,
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
     for r in rr:
+        # FIXME: This is imprecise and WRONG.
         for e in ExtractEmails(r, strip_keys=False):
             if e not in rcpts:
                 rcpts.append(e)
