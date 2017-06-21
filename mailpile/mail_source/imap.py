@@ -317,9 +317,9 @@ class SharedImapConn(threading.Thread):
     def quit(self):
         with self._lock:
             try:
-                if self._conn:
-                    if self._selected:
-                        self._conn.close()
+                if self._conn and self._selected:
+                    self._conn.close()
+                if self._conn and self._conn.file:
                     self.logout()
             except (IOError, IMAP4.error):
                 pass
