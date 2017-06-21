@@ -69,7 +69,8 @@ def SetLoggedIn(cmd, user=None, redirect=False, session_id=None):
 
 def CheckPassword(config, username, password):
     # FIXME: Do something with the username
-    sps = config.passphrases and config.passphrases.get(username or 'DEFAULT')
+    username = username or 'DEFAULT'
+    sps = config.passphrases and config.passphrases.get(username)
     return sps.compare(password) and username
 
 
