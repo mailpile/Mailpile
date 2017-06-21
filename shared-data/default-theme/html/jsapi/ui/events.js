@@ -64,11 +64,82 @@ $(document).on('click', 'a.show-hide, a.do-show', function(e) {
 
 
 // FIXME: this is in the wrong place
+Mailpile.auto_modal_display = function(jhtml_url, params, modal, data) {
+  Mailpile.UI.hide_modal();
+  var mf = Mailpile.UI.show_modal(modal({
+    data: data,
+    icon: params.icon,
+    title: params.title,
+    header: params.header,
+    flags: params.flags
+  }));
+  if (!params.title) {
+    mf.find('.modal-title').html(mf.find('h1').html());
+  }
+  if (params.sticky && !params.callback) {
+    params.callback = function(data) {
+      Mailpile.auto_modal_display(jhtml_url, params, modal, data);
+    }
+  }
+  if (params.reload && !params.callback) {
+    params.callback = function(data) { location.reload(true); };
+  }
+  if (params.callback) {
+    // If there is a callback, we override the form's default behavior
+    // and use AJAX instead so our callback can handle the result.
+    mf.find('input[type=submit]').click(function(ev) {
+      // Set input type to hidden, so serialize picks it up.
+      if ($(this).attr('name')) {
+        $(this).closest('form').append(
+          $('<input>').attr('name', $(this).attr('name'))
+                      .attr('type', 'hidden')
+                      .attr('value', $(this).val()));
+      }
+    });
+    mf.find('form').submit(function(ev) {
+      ev.preventDefault();
+      var url = jhtml_url;
+      if (!params.sticky) {
+        url = mf.find('form').attr('action');
+        if ('{{ config.sys.http_path }}' != '') url = url.substring('{{ config.sys.http_path }}'.length);
+        url = '{{ config.sys.http_path }}/api/0' + url;
+      }
+      var post_data = mf.find('form').serialize();
+
+      loadtimer = setTimeout(function() {
+        Mailpile.UI.hide_modal();
+        Mailpile.UI.show_modal(
+          Mailpile.safe_template($('#template-modal-loading').html())
+        );
+      }, 250);
+
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: post_data,
+        success: function(data) {
+          clearTimeout(loadtimer);
+          Mailpile.UI.hide_modal();
+          return params.callback(data);
+        },
+        error: function(xhr, status, error) {
+          // FIXME: This is a bit lame...
+          clearTimeout(loadtimer);
+          Mailpile.UI.hide_modal();
+        }
+      });
+      return false;
+    });
+  }
+};
+
 Mailpile.auto_modal = function(params) {
   Mailpile.UI.hide_modal();
-  Mailpile.UI.show_modal(
+  loadtimer = setTimeout(function() {
+    Mailpile.UI.show_modal(
       Mailpile.safe_template($('#template-modal-loading').html())
-  );
+    );
+  }, 250);
 
   var jhtml_url = Mailpile.API.jhtml_url(params.url);
   if (params.flags) {
@@ -83,41 +154,13 @@ Mailpile.auto_modal = function(params) {
       type: params.method,
       data: post_data,
       success: function(data) {
+        clearTimeout(loadtimer);
+        Mailpile.auto_modal_display(jhtml_url, params, modal, data);
+      },
+      error: function(xhr, status, error) {
+        // FIXME: This is a bit lame...
+        clearTimeout(loadtimer);
         Mailpile.UI.hide_modal();
-        var mf = Mailpile.UI.show_modal(modal({
-          data: data,
-          icon: params.icon,
-          title: params.title,
-          header: params.header,
-          flags: params.flags
-        }));
-        if (!params.title) {
-          mf.find('.modal-title').html(mf.find('h1').html());
-        }
-        if (params.reload && !params.callback) {
-          params.callback = function(data) { location.reload(true); };
-        }
-        if (params.callback) {
-          // If there is a callback, we override the form's default behavior
-          // and use AJAX instead so our callback can handle the result.
-          mf.find('form').submit(function(ev) {
-            ev.preventDefault();
-            var url = mf.find('form').attr('action');
-            if ('{{ config.sys.http_path }}' != '') url = url.substring('{{ config.sys.http_path }}'.length);
-            url = '{{ config.sys.http_path }}/api/0' + url;
-            $.ajax({
-              type: "POST",
-              url: url,
-              data: mf.find('form').serialize(),
-              // FIXME: Errors are not handled at all here!
-              success: function(data) {
-                mf.modal('hide');
-                return params.callback(data);
-              }
-            });
-            return false;
-          });
-        }
       }
     });
   }, undefined, params.flags, 'Unsafe');
@@ -134,7 +177,8 @@ $(document).on('click', '.auto-modal', function(e) {
     icon: elem.data('icon'),
     flags: elem.data('flags'),
     header: elem.data('header'),
-    reload: elem.data('reload') || elem.hasClass('auto-modal-reload')
+    reload: elem.data('reload') || elem.hasClass('auto-modal-reload'),
+    sticky: elem.data('sticky') || elem.hasClass('auto-modal-sticky')
   });
   return false;
 });

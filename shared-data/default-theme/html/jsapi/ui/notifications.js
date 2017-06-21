@@ -49,7 +49,7 @@ Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
 Mailpile.certificate_error_details = function(server, event_id) {
   var url = Mailpile.API.U(
      '/crypto/tls/getcert/?host=' + server + '&ui_tls_failed=True');
-  Mailpile.auto_modal({ url: url, method: 'POST' });
+  Mailpile.auto_modal({ url: url, method: 'POST', sticky: true });
   //Mailpile.cancel_notification(event_id);
 };
 
