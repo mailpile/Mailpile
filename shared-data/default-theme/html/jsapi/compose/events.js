@@ -145,9 +145,12 @@ Mailpile.Composer.SendMessage = function(send_btn) {
       else if (action === 'reply' && response.status === 'success') {
         Mailpile.Composer.Complete(response.result.thread_ids[0]);
       }
-      else if (response.status === 'error' && response.error.locked_keys) {
+      else if (response.status === 'error' &&
+               response.password_needed &&
+               response.password_needed[0].id) {
         Mailpile.auto_modal({
-          url: '{{ U("/settings/set/password/keys.html?id=") }}' + response.error.locked_keys[0],
+          url: ('{{ U("/settings/set/password/keys.html?is_locked=yes&id=") }}'
+                + response.password_needed[0].id),
           header: 'off',
           callback: function(result) {
             // Let's try that again!

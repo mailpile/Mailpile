@@ -256,6 +256,7 @@ class SetPassphrase(Command):
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
         'id': 'KeyID or account name',
+        'is_locked': 'Assume key is locked'
     }
     HTTP_POST_VARS = {
         'password': 'KeyID or account name',
@@ -269,17 +270,18 @@ class SetPassphrase(Command):
         return self.session.config.vcards.find_vcards([], kinds=['profile'])
 
 
-    def _massage_key_info(self, fingerprint, key_info, profiles=None):
+    def _massage_key_info(self, fingerprint, key_info, profiles=None, is_locked=False):
         config = self.session.config
         fingerprint = fingerprint.lower()
 
         key_info["uids"].sort(
             key=lambda k: (k.get("name"), k.get("email"), k.get("comment")))
 
-        if fingerprint in config.secrets:
-            key_info['policy'] = config.secrets[fingerprint].policy
-        elif fingerprint in config.passphrases:
-            key_info['policy'] = 'cache-only'
+        if not is_locked:
+            if fingerprint in config.secrets:
+                key_info['policy'] = config.secrets[fingerprint].policy
+            elif fingerprint in config.passphrases:
+                key_info['policy'] = 'cache-only'
 
         key_info["accounts"] = []
         if profiles is None:
@@ -294,18 +296,20 @@ class SetPassphrase(Command):
 
         return key_info
 
-    def _lookup_key(self, keyid):
+    def _lookup_key(self, keyid, **kwargs):
         keylist = self._gnupg().list_secret_keys(selectors=[keyid])
         if len(keylist) != 1:
             raise ValueError("Too many or too few keys found!")
         fingerprint, key_info = keylist.keys()[0], keylist.values()[0]
-        return fingerprint, self._massage_key_info(fingerprint, key_info)
+        return fingerprint, self._massage_key_info(
+            fingerprint, key_info, **kwargs)
 
-    def _list_keys(self):
+    def _list_keys(self, **kwargs):
         keylist = self._gnupg().list_secret_keys()
         profiles = self._get_profiles()
         for fingerprint, key_info in keylist.iteritems():
-            self._massage_key_info(fingerprint, key_info, profiles=profiles)
+            self._massage_key_info(fingerprint, key_info,
+                                   profiles=profiles, **kwargs)
         return keylist
 
     def _account_details(self, account):
@@ -320,17 +324,17 @@ class SetPassphrase(Command):
     def _check_password(self, password, account=None, fingerprint=None):
         return True
 
-    def _prepare_result(self, account=None, keyid=None):
+    def _prepare_result(self, account=None, keyid=None, is_locked=False):
         if account:
             fingerprint = account
             result = {'account': self._account_details(account)}
         elif keyid:
-            fingerprint, info = self._lookup_key(keyid)
+            fingerprint, info = self._lookup_key(keyid, is_locked=is_locked)
             result = {'key': info}
         else:
             fingerprint = None
             result = {
-                'keylist': self._list_keys(),
+                'keylist': self._list_keys(is_locked=is_locked),
                 'accounts': self._list_accounts()}
         return fingerprint, result
 
@@ -338,6 +342,7 @@ class SetPassphrase(Command):
         config = self.session.config
 
         policyttl = self.args[1] if (len(self.args) > 1) else 'cache-only:-1'
+        is_locked = self.data.get('is_locked', [0])[0]
         if 'policy-ttl' in self.data:
             policyttl = self.data['policy-ttl'][0]
         if ':' in policyttl:
@@ -357,7 +362,8 @@ class SetPassphrase(Command):
         else:
             keyid = which
 
-        fingerprint, result = self._prepare_result(account=account, keyid=keyid)
+        fingerprint, result = self._prepare_result(
+            account=account, keyid=keyid, is_locked=is_locked)
 
         if policy in ('display', 'unprotect'):
             pass_prompt = _('Enter your Mailpile password')

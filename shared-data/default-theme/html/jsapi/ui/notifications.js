@@ -285,7 +285,7 @@ $(document).on('click', '.notification-nag', function(e) {
 
 
 /* Set up some default notifications by listening to the Event log */
-EventLog.subscribe('.*AddProfile', function(ev) {
+EventLog.subscribe('.*(Add|Edit)Profile', function(ev) {
   console.log('AddProfile event: ' + ev.data.keygen_started);
   if (ev.data.keygen_started > 0) {
       ev.icon = 'icon-lock-closed';
@@ -301,24 +301,6 @@ EventLog.subscribe('.*AddProfile', function(ev) {
           $icon.addClass('unconfigured').addClass('icon-clock');
       }
       Mailpile.notification(ev);
-  }
-});
-EventLog.subscribe('.*compose.Sendit', function(ev) {
-  if (ev.data.last_error_details) {
-    if (ev.data.last_error_details.oauth_error) {
-      ev.action_text = '{{_("grant access")|escapejs}}';
-      ev.action_js = ("onclick=\"Mailpile.user_host_oauth2('"
-         + ev.data.last_error_details.username + "','"
-         + ev.data.host + "','"
-         + ev.event_id + "');\"");
-      Mailpile.uncancel_notification(ev.event_id);
-      ev.timeout = 1200000;
-    }
-    else if (ev.data.last_error_details.tls_error) {
-      ev.action_text = '{{_("details")|escapejs}}';
-      ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
-         + ev.data.last_error_details.server + "','" + ev.event_id + "');\"");
-    }
   }
 });
 EventLog.subscribe('.*mail_source.*', function(ev) {
@@ -390,6 +372,24 @@ EventLog.subscribe('.*compose.Sendit', function(ev) {
     ev.icon = 'icon-signature-unknown';
     ev.message2 = ev.data.last_error
   }
+
+  if (ev.data.last_error_details) {
+    if (ev.data.last_error_details.oauth_error) {
+      ev.action_text = '{{_("grant access")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.user_host_oauth2('"
+         + ev.data.last_error_details.username + "','"
+         + ev.data.host + "','"
+         + ev.event_id + "');\"");
+      Mailpile.uncancel_notification(ev.event_id);
+      ev.timeout = 1200000;
+    }
+    else if (ev.data.last_error_details.tls_error) {
+      ev.action_text = '{{_("details")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
+         + ev.data.last_error_details.server + "','" + ev.event_id + "');\"");
+    }
+  }
+
   Mailpile.notification(ev);
 });
 EventLog.subscribe('.*HealthCheck', function(ev) {
