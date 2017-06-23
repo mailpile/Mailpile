@@ -1,6 +1,6 @@
 /* Composer - Crypto */
 
-Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
+Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
   // Assemble all the recipient addresses, as well as our sending address
   var emails = [$('#compose-from-selected-' + mid).find('.address').html()];
   Mailpile.Composer.Recipients.GetAll(mid, function(rcpt) {
@@ -26,13 +26,16 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
     $('#compose-crypto-encryption-' + mid).data('can', r['can-encrypt']);
     $('#compose-crypto-signature-' + mid).data('can', r['can-sign']);
 
-    // Record reason for current policy (I could not find a better place
-    // than the send button) but there sure is :)
-    Mailpile.Composer.Crypto.SendButton().data('policy-reason', r['reason']);
-
+    var policy = undefined;
+    var changes = 0;
     if (emails.length > 1) {
-      // Update encrypt/sign icons
-      Mailpile.Composer.Crypto.LoadStates(mid, r['crypto-policy']);
+
+      if (!initial) {
+        // Record reason for current policy (I could not find a better place
+        // than the send button) but there sure is :)
+        Mailpile.Composer.Crypto.SendButton().data('policy-reason', r['reason']);
+        policy = r['crypto-policy'];
+      }
 
       // Embellish our recipients with data from the backend; in particular
       // this adds the keys and avatars to things manually typed.
@@ -46,14 +49,17 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain) {
             rcpts[i].flags = updated.flags;
             rcpts[i].photo = updated.photo;
             changed = true;
+            changes += 1;
           }
         };
         if (changed) Mailpile.Composer.Recipients.Update(mid, field, rcpts);
       });
     }
-    else {
-      Mailpile.Composer.Crypto.LoadStates(mid, 'none');
-    }
+
+    // Update encrypt/sign icons
+    Mailpile.Composer.Crypto.LoadStates(mid, policy);
+    if (changes) Mailpile.Composer.Crypto.SetState(mid);
+
     if (chain) chain(mid);
   });
 };
@@ -162,7 +168,7 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
 
   // If no preference for signing is stored, enable it.
   var shouldSign = $elem.data('should');
-  shouldSign = (undefined === shouldSign) ? true : shouldSign;
+  shouldSign = (undefined === shouldSign) ? (status === 'sign') : shouldSign;
 
   // If signin capibilities can not be detected, default to false.
   var canSign = $elem.data('can');
@@ -210,7 +216,7 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
     }, 1000);
 
     Mailpile.Composer.Crypto.UpdateSendButton(mid, newState);
-    Mailpile.Composer.Crypto.SetState(mid);
+    if (manual) Mailpile.Composer.Crypto.SetState(mid);
   }
 };
 
@@ -267,7 +273,7 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
       $('#compose-crypto-encryption-' + mid).removeClass('bounce');
     }, 1000);
 
-    Mailpile.Composer.Crypto.SetState(mid);
+    if (manual) Mailpile.Composer.Crypto.SetState(mid);
   }
 };
 

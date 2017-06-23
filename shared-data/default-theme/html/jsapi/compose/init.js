@@ -40,7 +40,7 @@ Mailpile.Composer.init = function(mid, strings, addresses) {
     Mailpile.Composer.Tooltips.Signature();
     Mailpile.Composer.Tooltips.Encryption();
     Mailpile.Composer.Tooltips.ContactDetails();
-  });
+  }, 'initial');
 
   // Initialize Attachments; use setTimeout to isolate faults.
   setTimeout(function() {
