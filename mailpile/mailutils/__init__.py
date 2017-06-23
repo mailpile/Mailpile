@@ -298,7 +298,7 @@ def PrepareMessage(config, msg,
         elif lhdr == 'encryption':
             crypto_policy = val
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
-            rcpts += ExtractEmails(val, strip_keys=False)
+            rcpts += AddressHeaderParser(val).addresses_list(with_keys=True)
 
     # Are we sane?
     if not sender:
@@ -311,8 +311,7 @@ def PrepareMessage(config, msg,
     if crypto_policy == 'default':
         crypto_policy = config.prefs.crypto_policy.lower()
 
-    # FIXME: This makes mistakes sometimes
-    sender = ExtractEmails(sender, strip_keys=False)[0]
+    sender = AddressHeaderParser(sender)[0].address
 
     profile = config.vcards.get_vcard(sender)
     if profile:
@@ -323,8 +322,7 @@ def PrepareMessage(config, msg,
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
     for r in rr:
-        # FIXME: This is imprecise and WRONG.
-        for e in ExtractEmails(r, strip_keys=False):
+        for e in AddressHeaderParser(r).addresses_list(with_keys=True):
             if e not in rcpts:
                 rcpts.append(e)
 
@@ -1277,7 +1275,7 @@ class Email(object):
                                             '( +encoding=[^ ?>]*)',
                                             r'\1',
                                             payload )
- 
+
                         tree['html_parts'].append({
                             'charset': charset,
                             'type': 'html',
@@ -1891,6 +1889,15 @@ class AddressHeaderParser(list):
             raise ValueError('No email found in %s' % (g,))
         else:
             return None
+
+    def addresses_list(self, with_keys=False):
+        addresses = []
+        for addr in self:
+            m = addr.address
+            if with_keys and addr.keys:
+                m += "#" + addr.keys[0].get('fingerprint')
+            addresses.append(m)
+        return addresses
 
     def normalized_addresses(self,
                              addresses=None, quote=True, with_keys=False,
