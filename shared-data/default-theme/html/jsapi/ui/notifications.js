@@ -304,14 +304,21 @@ EventLog.subscribe('.*AddProfile', function(ev) {
   }
 });
 EventLog.subscribe('.*compose.Sendit', function(ev) {
-  if (ev.data.last_error_details && ev.data.last_error_details.oauth_error) {
-    ev.action_text = '{{_("grant access")|escapejs}}';
-    ev.action_js = ("onclick=\"Mailpile.user_host_oauth2('"
-       + ev.data.last_error_details.username + "','"
-       + ev.data.host + "','"
-       + ev.event_id + "');\"");
-    Mailpile.uncancel_notification(ev.event_id);
-    ev.timeout = 1200000;
+  if (ev.data.last_error_details) {
+    if (ev.data.last_error_details.oauth_error) {
+      ev.action_text = '{{_("grant access")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.user_host_oauth2('"
+         + ev.data.last_error_details.username + "','"
+         + ev.data.host + "','"
+         + ev.event_id + "');\"");
+      Mailpile.uncancel_notification(ev.event_id);
+      ev.timeout = 1200000;
+    }
+    else if (ev.data.last_error_details.tls_error) {
+      ev.action_text = '{{_("details")|escapejs}}';
+      ev.action_js = ("onclick=\"Mailpile.certificate_error_details('"
+         + ev.data.last_error_details.server + "','" + ev.event_id + "');\"");
+    }
   }
 });
 EventLog.subscribe('.*mail_source.*', function(ev) {
