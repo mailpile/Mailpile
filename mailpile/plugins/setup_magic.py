@@ -203,6 +203,8 @@ class SetupMagic(Command):
     def basic_app_config(self, session,
                          save_and_update_workers=True,
                          want_daemons=True):
+        session.ui.notify(_('Disabling lockdown'))
+        security.DISABLE_LOCKDOWN = True
         # Create local mailboxes
         session.config.open_local_mailbox(session)
 
@@ -320,6 +322,9 @@ class SetupMagic(Command):
         # Enable Tor in the background, if we have it...
         session.config.slow_worker.add_unique_task(
             session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))
+
+        session.ui.notify(_('Reenabling lockdown'))
+        security.DISABLE_LOCKDOWN = False
 
     def make_master_key(self):
         session = self.session
