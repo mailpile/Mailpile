@@ -366,8 +366,8 @@ class SetupMagic(Command):
             conn_needs = [ConnBroker.OUTGOING_HTTPS]
         else:
             conn_needs = [ConnBroker.OUTGOING_HTTP]
+        session.ui.mark('Getting: %s' % url)
         with ConnBroker.context(need=conn_needs) as context:
-            session.ui.mark('Getting: %s' % url)
             return urlopen(url, data=data, timeout=10).read()
 
     def _urlget(self, url, data=None):

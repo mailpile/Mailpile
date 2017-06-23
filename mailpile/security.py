@@ -447,8 +447,8 @@ def tls_configure(sock, context, args, kwargs):
             accept_certs = [c for c in tls_settings.accept_certs]
         kwargs['cert_reqs'] = ssl.CERT_NONE
         if context:
-            context.verify_mode = ssl.CERT_NONE
             context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
 
         # Attempt to configure for Certificate Authorities
         use_web_ca = kwargs.get('use_web_ca',
