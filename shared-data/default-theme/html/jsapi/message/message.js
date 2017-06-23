@@ -170,7 +170,7 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 /* Message - Unsubscribe */
 $(document).on('click', '.message-action-unsubscribe', function(e) {
   e.preventDefault();
-  alert('FIXME: this should compose an email to: ' + $(this).data('unsubscribe'));
+  alert('FIXME: this should compose an e-mail to: ' + $(this).data('unsubscribe'));
   //Mailpile.activities.compose($(this).data('unsubscribe'));
 });
 
@@ -232,4 +232,3 @@ $(document).on('click', '.message-crypto-show-inline-key', function() {
   $(this).hide();
   $('#message-crypto-inline-key-' + $(this).data('mid')).fadeIn();
 });
-
