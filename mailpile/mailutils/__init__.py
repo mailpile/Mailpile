@@ -298,7 +298,7 @@ def PrepareMessage(config, msg,
         elif lhdr == 'encryption':
             crypto_policy = val
         elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
-            rcpts += AddressHeaderParser(val).normalized_addresses()
+            rcpts += AddressHeaderParser(val).addresses_list(with_keys=True)
 
     # Are we sane?
     if not sender:
@@ -322,7 +322,7 @@ def PrepareMessage(config, msg,
     # Extract just the e-mail addresses from the RCPT list, make unique
     rcpts, rr = [], rcpts
     for r in rr:
-        for e in AddressHeaderParser(r).normalized_addresses():
+        for e in AddressHeaderParser(r).addresses_list(with_keys=True):
             if e not in rcpts:
                 rcpts.append(e)
 
@@ -1889,6 +1889,15 @@ class AddressHeaderParser(list):
             raise ValueError('No email found in %s' % (g,))
         else:
             return None
+
+    def addresses_list(self, with_keys=False):
+        addresses = []
+        for addr in self:
+            m = addr.address
+            if with_keys and addr.keys:
+                m += "#" + addr.keys[0].get('fingerprint')
+            addresses.append(m)
+        return addresses
 
     def normalized_addresses(self,
                              addresses=None, quote=True, with_keys=False,
