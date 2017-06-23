@@ -162,6 +162,8 @@ class MailpileCommand(Extension):
         # Separates Fingerprint in 4 char groups
         e.globals['nice_fingerprint'] = s._nice_fingerprint
         e.filters['nice_fingerprint'] = s._nice_fingerprint
+        e.globals['group_fingerprint'] = s._group_fingerprint
+        e.filters['group_fingerprint'] = s._group_fingerprint
 
         # Converts Filter +/- tags into arrays
         e.globals['make_filter_groups'] = s._make_filter_groups
@@ -992,6 +994,12 @@ class MailpileCommand(Extension):
             return output
         else:
             return _("No Fingerprint")
+
+    def _group_fingerprint(self, fingerprint, size=4):
+        if fingerprint:
+            return [fingerprint[i:i + size] for i in range(0, len(fingerprint), size)]
+        else:
+            return []
 
     def _make_filter_groups(self, tags):
         split = shlex.split(tags)

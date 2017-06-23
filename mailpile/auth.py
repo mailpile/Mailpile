@@ -265,11 +265,74 @@ class SetPassphrase(Command):
         'redirect': 'URL to redirect to on success'
     }
 
+    def _get_profiles(self):
+        return self.session.config.vcards.find_vcards([], kinds=['profile'])
+
+
+    def _massage_key_info(self, fingerprint, key_info, profiles=None):
+        config = self.session.config
+        fingerprint = fingerprint.lower()
+
+        key_info["uids"].sort(
+            key=lambda k: (k.get("name"), k.get("email"), k.get("comment")))
+
+        if fingerprint in config.secrets:
+            key_info['policy'] = config.secrets[fingerprint].policy
+        elif fingerprint in config.passphrases:
+            key_info['policy'] = 'cache-only'
+
+        key_info["accounts"] = []
+        if profiles is None:
+            profiles = self._get_profiles()
+        for vc in profiles:
+            vc_pgp_key = (vc.pgp_key or '').lower()
+            if vc_pgp_key == fingerprint:
+                key_info["accounts"].append({
+                    'name': vc.fn,
+                    'email': vc.email,
+                    'rid': vc.random_uid})
+
+        return key_info
+
     def _lookup_key(self, keyid):
         keylist = self._gnupg().list_secret_keys(selectors=[keyid])
         if len(keylist) != 1:
             raise ValueError("Too many or too few keys found!")
-        return keylist.keys()[0], keylist.values()[0]
+        fingerprint, key_info = keylist.keys()[0], keylist.values()[0]
+        return fingerprint, self._massage_key_info(fingerprint, key_info)
+
+    def _list_keys(self):
+        keylist = self._gnupg().list_secret_keys()
+        profiles = self._get_profiles()
+        for fingerprint, key_info in keylist.iteritems():
+            self._massage_key_info(fingerprint, key_info, profiles=profiles)
+        return keylist
+
+    def _account_details(self, account):
+        return {}  # FIXME
+
+    def _list_accounts(self):
+        return {}  # FIXME
+
+    def _check_master_password(self, password, account=None, fingerprint=None):
+        return CheckPassword(self.session.config, None, password)
+
+    def _check_password(self, password, account=None, fingerprint=None):
+        return True
+
+    def _prepare_result(self, account=None, keyid=None):
+        if account:
+            fingerprint = account
+            result = {'account': self._account_details(account)}
+        elif keyid:
+            fingerprint, info = self._lookup_key(keyid)
+            result = {'key': info}
+        else:
+            fingerprint = None
+            result = {
+                'keylist': self._list_keys(),
+                'accounts': self._list_accounts()}
+        return fingerprint, result
 
     def command(self):
         config = self.session.config
@@ -287,24 +350,44 @@ class SetPassphrase(Command):
             ttl = self.data['policy'][0]
         ttl = float(ttl)
 
-        fingerprint = info = None
-        keyid = self.args[0] if self.args else self.data.get('id', [None])[0]
-        if keyid:
-            fingerprint, info = self._lookup_key(keyid)
-            result = {'key': info}
+        fingerprint = info = account = None
+        which = self.args[0] if self.args else self.data.get('id', [None])[0]
+        if which and '@' in which:
+            account = which
         else:
-            result = {'keylist': self._gnupg().list_secret_keys()}
+            keyid = which
+
+        fingerprint, result = self._prepare_result(account=account, keyid=keyid)
+
+        if policy in ('display', 'unprotect'):
+            pass_prompt = _('Enter your Mailpile password')
+            pass_check = self._check_master_password
+        else:
+            pass_prompt = _('Enter your password')
+            pass_check = self._check_password
 
         if self.data.get('_method', None) == 'GET':
-            password = False
-            return self._success(_('Enter your password'), result)
+            return self._success(pass_prompt, result)
 
-        assert(keyid is not None and fingerprint is not None)
+        assert(fingerprint is not None)
+        fingerprint = fingerprint.lower()
         if fingerprint in config.secrets:
             if config.secrets[fingerprint].policy == 'protect':
-                return self._error(_('Protected password'), result)
+                if policy not in ('unprotect', 'display'):
+                    result['error'] = _('That key is managed by Mailpile,'
+                                        ' it cannot be changed directly.')
+                    return self._error(_('Protected secret'), result=result)
 
-        def happy(msg):
+        if self.data.get('_method', None) == 'POST':
+            password = self.data.get('password', [None])[0]
+        else:
+            password = self.session.ui.get_password(pass_prompt + ': ')
+
+        if not pass_check(password, account=account, fingerprint=fingerprint):
+            result['error'] = _('Password incorrect! Try again?')
+            return self._error(_('Incorrect password'), result=result)
+
+        def happy(msg, refresh=True):
             # Fun side effect: changing the passphrase invalidates the
             # message cache
             import mailpile.mailutils
@@ -313,49 +396,58 @@ class SetPassphrase(Command):
             redirect = self.data.get('redirect', [None])[0]
             if redirect:
                 raise UrlRedirectException(redirect)
+
+            result['op_completed'] = policy
+            if refresh:
+              fp, r = self._prepare_result(account=account, keyid=keyid)
+              result.update(r)
+
             return self._success(msg, result)
+
+        if policy == 'display':
+            if fingerprint in config.passphrases:
+                pwd = config.passphrases[fingerprint].get_passphrase()
+            elif fingerprint in config.secrets:
+                pwd = config.secrets[fingerprint].password
+            else:
+                return self._error(_('No password found'), result=result)
+            result['stored_password'] = pwd
+            return happy(_('Retrieved stored password'), refresh=False)
 
         if policy == 'forget':
             if fingerprint in config.passphrases:
                 del config.passphrases[fingerprint]
             if fingerprint in config.secrets:
-                config.secrets[fingerprint].password = ''
+                config.secrets[fingerprint] = {'policy': 'fail'}
+                del config.secrets[fingerprint]
             return happy(_('Password forgotten!'))
 
         if policy == 'fail':
             if fingerprint in config.passphrases:
                 del config.passphrases[fingerprint]
-            config.secrets[fingerprint] = {
-                'policy': policy
-            }
+            config.secrets[fingerprint] = {'policy': policy}
             return happy(_('Password will never be stored'))
-
-        if self.data.get('_method', None) == 'POST':
-            password = self.data.get('password', [None])[0]
-        else:
-            password = self.session.ui.get_password(_('Enter your password:')
-                                                    +' ')
 
         if policy == 'store':
             if fingerprint in config.passphrases:
                 del config.passphrases[fingerprint]
             config.secrets[fingerprint] = {
                 'password': password,
-                'policy': policy
-            }
-            return happy(_('Password stored permanently'))
+                'policy': policy}
+            return happy(_('Password remembered!'))
 
         elif policy == 'cache-only' and password:
             sps = SecurePassphraseStorage(password)
             if ttl > 0:
                 sps.expiration = time.time() + ttl
             config.passphrases[fingerprint] = sps
-            if fingerprint.lower() in config.secrets:
-                del config.secrets[fingerprint.lower()]
-            return happy(_('Password stored temporarily'))
+            if fingerprint in config.secrets:
+                config.secrets[fingerprint] = {'policy': 'fail'}
+                del config.secrets[fingerprint]
+            return happy(_('The password has been stored temporarily'))
 
         else:
-            return self._error(_('Invalid password policy!'), result)
+            return self._error(_('Invalid password policy'), result=result)
 
 
 plugin_manager = PluginManager(builtin=True)

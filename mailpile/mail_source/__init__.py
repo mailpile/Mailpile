@@ -987,6 +987,7 @@ class BaseMailSource(threading.Thread):
         self._loop_count = 0
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
             self.event.data['enabled'] = self.my_config.enabled
+            self.event.data['profile_id'] = self.my_config.profile
             if self.my_config.enabled:
                 self._loop_count += 1
             else:

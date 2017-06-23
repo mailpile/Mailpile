@@ -363,6 +363,11 @@ class SecurePassphraseStorage(object):
             return ''
         return chr(self.data[offset])
 
+    def get_passphrase(self):
+        if self.data is None:
+            return ''
+        return intlist_to_string(self.data)
+
     def get_reader(self):
         class SecurePassphraseReader(object):
             def __init__(self, sps):

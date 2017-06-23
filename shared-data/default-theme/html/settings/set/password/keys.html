@@ -1,0 +1,337 @@
+{%- extends "logs/layout.html" %}
+{%- block content %}
+{%- if result.policy %}
+
+{%- else %}
+<div class="content-normal" style="max-width: 50em; position: relative">
+
+  {% if result.key or not (result.keylist or result.accounts) %}
+  <div id="identity-vault-lock" class="vault-lock-outer">
+    <div class="vault-lock-inner">
+    {% if result.key %}
+      <div class="vault-lock icon-lock-closed animated"></div>
+    {% else %}
+      <div class="vault-lock animated"></div>
+    {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <h1>
+    <span class="icon icon-key"></span>
+    {{_("Encryption Key Management")}}
+  </h1>
+  {% endif %}
+
+  {% if result.key or result.keylist or result.accounts %}
+  <form id="form-set-password" class="standard text-center"
+        method="POST" action="{{ U("/settings/set/password/keys.html") }}">
+    {{ csrf_field|safe }}
+
+    {% if not result.key %}
+    <label>{{ _("Keys on Your GnuPG Key-Chain") }}</label>
+    {% endif %}
+    <ul class="radio-list add-bottom">
+      {%- macro render_key(key_info, first) %}
+        {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
+        <li class="key-info text-left" style="overflow: hidden;"
+            onclick="javascript:_ssp.policy_changing();">
+        <label class="radio-list-item">
+          <div class="radio text-right">
+            <input name="id" class='ssp_key_fp' type="radio" tabindex="1"
+                   value="{{ key_info.fingerprint }}"
+                   data-policy="{{ key_info.policy }}"
+                   {%- if result.key %} style="display: none;"{% endif %}
+                   {%- if first %} checked{% endif %}>
+          </div>
+          <div style="min-width: 7em; width: 7em; text-align: center;"
+               title="{{ _("Key Fingerprint") }}">
+            <p style="font-family: monospace; font-style: normal; margin: 0; padding: 0; line-height: 16px">
+              {% for grp in group_fingerprint(key_info.fingerprint) %}
+                <span style="background: #a{{grp[0]}}a{{grp[1:]}}; font-size: 12px; color: #000000">
+                  {{- grp -}}
+                </span>
+              {% endfor %}
+            </p>
+          </div>
+          <div style="white-space: nowrap; font-size: 0.8em;"
+               {%- if not key_info.accounts or key_info.accounts|length < 1 %}
+               title='{{ _("This key may be used to decrypt incoming e-mail.") }}'
+               {%- else %}
+               title='{{ _("This key is used for decrypting and signing e-mail.") }}'
+               {%- endif %}>
+            <span style="font-size: 1.3em;">
+              {{ _("{B} bit {T} key").format(B=key_info.keysize,
+                                             T=key_info.keytype_name) }}
+            </span>
+            ({%- if key_info.policy == 'protect' -%}
+              {{- _("Managed by Mailpile") -}}
+            {%- elif key_info.policy == 'store' -%}
+              {{- _("Unlocked, password remembered") -}}
+            {%- elif key_info.policy == 'cache-only' -%}
+              {{- _("Unlocked") -}}
+            {%- else %}
+              {{- _("Locked") -}}
+            {%- endif %})
+            <br>
+            <br>
+            {%- if key_info.expiration_date %}
+              {{- _("Valid from {D1} to {D2}."
+                    ).format(D1=key_info.creation_date,
+                             D2=key_info.expiration_date) -}}
+            {%- else -%}
+              {{- _("Valid from {D}.").format(D=key_info.creation_date) -}}
+            {%- endif %}
+            <br>
+            {%- set uid_summary = (key_info.uids|length > 1) or (key_info.accounts|length > 0) %}
+            {%- if uid_summary %}
+            <i class="ssp-key-uid-summary">
+               {{- _("Identities on key: {N}"
+                     ).format(N=key_info.uids|length) }}
+               (<a onclick="javascript:_ssp.show_uids(this);" href="#"
+                   style="font-size: 0.9em; font-style: italic;">{{ _("show all") }}</a>)
+            <br></i>
+            {%- endif %}
+            {%- for uid in key_info.uids %}
+            <i class="ssp-key-uids{%- if uid_summary %} hide {% endif %}" style="font-size: 1em;">
+              {{ _("ID on key:") }}
+              {% if uid.name %}{{uid.name}} {% endif%}
+              {%- if uid.email %}&lt;{{uid.email}}&gt;
+              {%- elif uid.comment %}{{uid.comment.decode('utf-8') }}
+              {%- endif %}
+            <br></i>
+            {%- endfor %}
+            {%- if not key_info.accounts or key_info.accounts|length < 1 %}
+            <i>
+              {{ _("Not currently linked with any accounts.") }}
+            <br></i>
+            {%- endif %}
+            {%- for act in key_info.accounts %}
+            <i>
+              {{ _("Account") }}:
+              <a style="font-size: 1em; font-style: italic"
+                 title='{{ _("Edit account security settings") }} ...'
+                 onclick="javascript:Mailpile.profile_edit('{{ act.rid }}', 'security');"
+                 href="#">{{ act.name }} &lt;{{ act.email }}&gt;</a>
+            <br></i>
+            {%- endfor %}
+          </div>
+        </label>
+        </li>
+        {%- endif %}
+      {%- endmacro %}
+      {%- if result.key %}
+        {{ render_key(result.key, 1) }}
+      {%- else %}
+        {%- for key_info in result.keylist.values() %}
+          {{ render_key(key_info, loop.first) }}
+        {%- endfor %}
+      {%- endif %}
+    </ul>
+
+    <div class="results-messages" style="font-size: 1.2em;">
+    {%- if result.error %}
+      <p class="text-center result-title" data-timer=3000><b>{{ result.error }}</b></p>
+    {%- elif result.key and result.op_completed %}
+      {%- if result.stored_password %}
+      <p class="text-center result-title ssp-stored-password" data-timer=10000>
+        {{ _("The password is:") }} <b>{{ result.stored_password }}</b>
+      </p>
+      {%- else %}
+      <p class="text-center result-title" data-timer=3000><b>{{ title }}</b></p>
+      {%- endif %}
+    {%- endif %}
+    </div>
+
+    <div class="ssp-ops">
+
+      <div class="ssp-unlock-key ssp-lock-key">
+        <label>{{_("Key Password")}}</label>
+      </div>
+      <div class="hide ssp-show-passphrase">
+        <label>{{_("Your Mailpile Password")}}</label>
+      </div>
+
+      <div id="setup-passphrase-existing-confirm">
+        <span id="validation-passphrase_confirm">
+          <label class="validation-message"></label>
+          <input id="input-setup-passphrase_confirm"
+                 class="medium center" type="password" name="password"
+                 style="width: 25em; margin-bottom: 0.5em;"
+                 autocorrect="off" autocapitalize="off"
+                 placeholder="top secret super duper password" tabindex="3">
+        </span>
+
+        <select id='policy-ttl' name="policy-ttl" class="text-center"
+                onchange="javascript:_ssp.policy_changed();"
+                style="width: 21.5em; margin: -1px 0.5em 2em 0; display: inline; padding: 7px;"
+                tabindex=4>
+          <option data-p='cache-only' value="cache-only" selected>{{_("Unlock Encryption Key")}}</option>
+          <option data-p='forget' value="forget">{{_("Lock Encryption Key")}}</option>
+          <option data-p='cache-only' value="cache-only"></option>
+          <option data-p='cache-only' value="cache-only:600">{{_("Unlock Encryption Key")}} ({{_("10 minutes")}})</option>
+          <option data-p='cache-only' value="cache-only:3600">{{_("Unlock Encryption Key")}} ({{_("1 hour")}})</option>
+          <option data-p='cache-only' value="cache-only:43200">{{_("Unlock Encryption Key")}} ({{_("12 hours")}})</option>
+          <option data-p='cache-only' value="cache-only:600"></option>
+          <option data-p='store' value="store">{{_("Unlock Key and Remember Password")}}</option>
+          <option data-p='display' value="display">{{_("Display Remembered Key Password")}}</option>
+{#
+ # FIXME: We should offer these options at some point!
+ #
+ #        <option value="export">{{_("Download Raw Key Material (Export)")}}</option>
+ #        <option value="publish">{{_("Publish Key in Public Key Directories)}}</option>
+ #        <option value="revoke">{{_("Revoke and Disable this Key")}}</option>
+ #}
+        </select>
+        <button style="width: 5em;" class="button-primary" type="submit" tabindex=5>
+          <span class="icon icon-key"></span>
+        </button>
+      </div>
+
+      <div class="ssp-hint ssp-unlock-key">
+        <p><i>
+          {{ _("Unlocking a key allows Mailpile to use it for decryption and creating digital signatures.") }}
+          <span class="ssp-hint ssp-cache-only"><br>
+            {{ _("By default, unlocked keys stay accessible until you restart Mailpile.") }}
+          </span>
+          <span class="ssp-hint ssp-store hide"><br>
+            {{ _("If Mailpile remembers the password, you will not have to unlock the key again.") }}
+          </span>
+        </i></p>
+      </div>
+      <div class="ssp-hint ssp-lock-key hide">
+        <p><i>
+          {{ _("Locked keys can not be used for decryption or digital signatures.") }}
+        </i></p>
+      </div>
+      <div class="ssp-hint ssp-show-passphrase hide">
+        <p><i>
+          {{ _("Please authenticate using your Mailpile password.") }}
+        </i></p>
+      </div>
+
+    {% if state.query_args.ui_redirect_back %}
+      <input type="hidden" class="current-url" name="redirect" value="">
+    {% elif False and not result.key %}
+      <input type="hidden" name="redirect"
+             value="{{ U('/settings/set/password/keys.html') }}">
+    {% endif %}
+    </div>
+
+  </form>
+
+  <script>
+    var page_url = document.location.href;
+    var ui_hint = 'ui_key_auth=1';
+    if (page_url.indexOf(ui_hint) != -1) {
+      ui_hint = '';
+    }
+    else {
+      ui_hint = ((page_url.indexOf('?') == -1) ? '?' : '&') + ui_hint;
+    }
+    $('input.current-url').attr('value', page_url + ui_hint);
+
+    var _ssp = {
+      show_uids: function(elem) {
+        var $p = $(elem).closest('li.key-info');
+        $p.find('.ssp-key-uid-summary').hide();
+        $p.find('.ssp-key-uids').show();
+      },
+      policy_changing: function(i) {
+        setTimeout("_ssp.policy_changed();", 50);
+      },
+      policy_changed: function(i) {
+        $('input.ssp_key_fp').closest('li').css({'opacity': 0.6});
+        $('.ssp-cache-only, .ssp-store').hide();
+        $('select#policy-ttl option').show();
+
+        var op = $('select#policy-ttl').val();
+        var key = $('input:checked.ssp_key_fp').eq(0);
+
+        if (key && key.val()) {
+          // FIXME: Adjust which selections are available, report
+          //        whether we've already unlocked this key?
+
+          key.closest('li').css({'opacity': 1.0});
+
+          var policy = key.data('policy');
+          if (policy) $('select#policy-ttl option[data-p='+ policy +']').hide();
+          if (policy == 'protect') {
+            $('select#policy-ttl option').hide();
+            $('select#policy-ttl option[value=display]').show();
+            $('select#policy-ttl option[value=export]').show();
+            $('select#policy-ttl option[value=revoke]').show();
+            if (op != 'display' && op != 'export' && op != 'revoke') {
+              op = 'display';
+            }
+          }
+          else if (policy == 'store') {
+            $('select#policy-ttl option[data-p=cache-only]').hide();
+            if (op == 'cache-only') op = 'forget';
+          }
+          else if (policy == 'cache-only') {
+            $('select#policy-ttl option[data-p=cache-only]').hide();
+            $('select#policy-ttl option[value=store]').hide();
+            $('select#policy-ttl option[value=display]').hide();
+            op = 'forget';
+          }
+          else {
+            $('select#policy-ttl option[value=forget]').hide();
+            $('select#policy-ttl option[value=display]').hide();
+            if (op == 'forget' || op == 'display') op = 'cache-only';
+          }
+        }
+
+        $('select#policy-ttl').val(op);
+        if (op == 'cache-only') { $('.ssp-cache-only').show();}
+        if (op == 'store') { $('.ssp-store').show();}
+        if (op == 'fail' || op == 'forget') {
+          $('.ssp-unlock-key, .ssp-show-passphrase, .ssp-hint').hide();
+          $('.ssp-lock-key').show();
+        }
+        else if (op == 'display') {
+          $('.ssp-lock-key, .ssp-unlock-key, .ssp-hint').hide();
+          $('.ssp-show-passphrase').show();
+        }
+        else if (op == 'revoke' || op == 'export') {
+          $('.ssp-lock-key, .ssp-show-passphrase').hide();
+          $('.ssp-unlock-key').show();
+          $('.ssp-hint').hide();
+          $('.ssp-' + op).show();
+        }
+        else {
+          $('.ssp-lock-key, .ssp-show-passphrase, .ssp-hint').hide();
+          $('.ssp-unlock-key').show();
+        }
+
+        $('input[type=password]').focus();
+      },
+      hide_title: function() {
+        $('.result-title').slideUp();
+        $('.ssp-ops').slideDown();
+        $('input[type=password]').focus();
+      }
+    };
+
+    setTimeout("_ssp.policy_changed();", 50);
+    if ($('.result-title').length > 0) {
+      var hideid = setTimeout("_ssp.hide_title();", $('.result-title').data('timer'));
+      $('form').submit(function(ev) { clearTimeout(hideid); });
+      $('.ssp-ops').hide();
+    }
+  </script>
+  {% else %}
+
+   <div class='text-center'>
+     <h3>{{_("No Keys Here!")}}</h3>
+     <p>
+       {{_("Encryption keys can be created during the account creation process.")}}
+     </p>
+   </div>
+
+   <pre>{{ result|json }}</pre>
+
+  {% endif %}
+
+</div>
+{%- endif %}
+{%- endblock %}

@@ -15,7 +15,7 @@
     {% if state.query_args.ui_key_auth %}
       <p><b><i>{{_("Password incorrect?  Try again!")}}</i></b></p>
     {% endif %}
-    <a href="{{ U('/settings/set/password/?id=', failed_crypto.locked_keys[0], '&ui_redirect_back=1') }}"
+    <a href="{{ U('/settings/set/password/keys.html?id=', failed_crypto.locked_keys[0], '&ui_redirect_back=1') }}"
        class="auto-modal" data-header="off">
       <button class="message-crypto-pinentry" data-mid="{{mid}}">
         <span class="icon-key"></span> {{_("Decrypt Message")}}

@@ -19,6 +19,13 @@
     'url': U('/crypto/tls/getcert/'),
     'text': _("TLS Certs"),
     'description': _("TLS Certificate Tool")
+  },{
+    'name': 'keys',
+    'icon': 'key',
+    'aclass': 'auto-modal auto-modal-sticky',
+    'url': U('/settings/set/password/keys.html'),
+    'text': _("Keys"),
+    'description': _("Encryption Key Management")
   }] %}
   {%- set selection_initial_prompt = _("System activity, logs, events, troubleshooting, ...") %}
   {%- include("partials/tools_default.html") %}
