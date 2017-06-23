@@ -11,11 +11,17 @@
 {%- block contenttools %}
   {%- if is_configured() %}
     {%- set activities = [{
+      'name': 'privacy',
+      'icon': 'settings',
+      'url': U('/settings/privacy.html'),
+      'text': _("Privacy"),
+      'description': _("Security and Privacy Settings")
+    },{
       'name': 'browser',
       'icon': 'list',
       'url': U('/browse/'),
       'text': _("Browse"),
-      'description': _("Browse files, mailboxes and settings")
+      'description': _("Browse Files and Mailboxes")
     },{
       'name': 'addprofile',
       'icon': 'plus',
@@ -31,7 +37,7 @@
       'name': 'settings',
       'icon': 'settings',
       'url': U('/settings/privacy.html?ui_from_profiles=True'),
-      'text': _("Privacy & Security"),
+      'text': _("Privacy"),
       'description': _("Security and Privacy Settings")
     }] %}
     {%- set selection_initial_prompt = _("You can configure accounts and profiles once you have reviewed your privacy settings.") %}

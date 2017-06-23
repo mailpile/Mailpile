@@ -2,6 +2,12 @@
 
 {%- block contenttools %}
   {%- set activities = [{
+    'name': 'privacy',
+    'icon': 'settings',
+    'url': U('/settings/privacy.html'),
+    'text': _("Privacy"),
+    'description': _("Security and Privacy Settings")
+  },{
     'name': 'notifications',
     'icon': 'notifications',
     'url': U('/logs/events/'),
@@ -16,6 +22,7 @@
   },{
     'name': 'tls',
     'icon': 'links',
+    'aclass': 'auto-modal auto-modal-sticky',
     'url': U('/crypto/tls/getcert/'),
     'text': _("TLS Certs"),
     'description': _("TLS Certificate Tool")

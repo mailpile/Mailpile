@@ -1,4 +1,8 @@
+{% if ui_from_profiles %}
 {% extends "layouts/" + render_mode + "-tall.html" %}
+{% else %}
+{% extends "logs/layout.html" %}
+{% endif %}
 
 {% block title %}{{_("Security and Privacy Settings")}}{% endblock %}
 

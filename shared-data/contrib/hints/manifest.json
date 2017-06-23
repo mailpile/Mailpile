@@ -17,7 +17,14 @@
     "user_interface": {
         "activities": [
             {
-                "context": ["/logs/events/", "/logs/network/", "/logs/hints/"],
+                "context": [
+                    "/logs/events/",
+                    "/logs/network/",
+                    "/logs/hints/",
+                    "/settings/",
+                    "/settings/set/password/",
+                    "/crypto/tls/getcert/"
+                ],
                 "name": "hints",
                 "text": "Hints",
                 "icon": "lightbulb",
