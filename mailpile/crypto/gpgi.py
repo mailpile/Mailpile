@@ -511,7 +511,7 @@ class GnuPG:
             self.homedir = GNUPG_HOMEDIR
             self.gpgbinary = GPG_BINARY
             self.passphrases = None
-            self.passphrase = passphrase
+            self.passphrase = passphrase.get_reader()
             self.use_agent = use_agent
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
@@ -637,9 +637,9 @@ class GnuPG:
         gpg_retcode = -1
         proc = None
         try:
-            if not self.passphrase and send_passphrase:
+            if send_passphrase and (self.passphrase is None):
                 self.debug('Running WITHOUT PASSPHRASE %s' % ' '.join(args))
-                self.debug(traceback.format_stack())
+                self.debug(''.join(traceback.format_stack()))
             else:
                 self.debug('Running %s' % ' '.join(args))
 
@@ -650,7 +650,7 @@ class GnuPG:
             # GnuPG is a bit crazy, and requires that the passphrase
             # be sent and the filehandle closed before anything else
             # interesting happens.
-            if self.passphrase and send_passphrase:
+            if send_passphrase and self.passphrase is not None:
                 self.passphrase.seek(0, 0)
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
@@ -875,8 +875,8 @@ class GnuPG:
         >>> g.decrypt(ct)["text"]
         'Hello, World'
         """
-        if passphrase:
-            self.passphrase = passphrase
+        if passphrase is not None:
+            self.passphrase = passphrase.get_reader()
         elif GnuPG.LAST_KEY_USED:
             # This is an opportunistic approach to passphrase usage... we
             # just hope the passphrase we used last time will work again.
@@ -896,7 +896,7 @@ class GnuPG:
                 # gpg output for the keyid and try again if we have it.
                 keyid = None
                 for msg in retvals[1]['status']:
-                    if msg[0] == 'NEED_PASSPHRASE':
+                    if (msg[0] == 'NEED_PASSPHRASE') and (passphrase is None):
                         if self.prepare_passphrase(msg[2], decrypting=True):
                             keyid = msg[2]
                             break
@@ -1212,9 +1212,9 @@ class GnuPG:
         >>> g.sign("Hello, World", fromkey="smari@mailpile.is")[0]
         0
         """
-        if passphrase:
-            self.passphrase = passphrase
-        elif fromkey:
+        if passphrase is not None:
+            self.passphrase = passphrase.get_reader()
+        if fromkey and passphrase is None:
             self.prepare_passphrase(fromkey, signing=True)
 
         if detatch and not clearsign:
