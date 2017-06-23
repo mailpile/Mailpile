@@ -28,7 +28,7 @@ $(document).on('click', '.searchkey-result-score', function(e) {
 
 $(document).on('submit', '#form-search-keyservers', function(e) {
   e.preventDefault();
-  
+
   // Hide Form
   $('#form-search-keyservers').removeClass('fadeIn').addClass('hide');
 
@@ -39,7 +39,7 @@ $(document).on('submit', '#form-search-keyservers', function(e) {
     action: 'hide-modal',
     query: query,
     complete: function() {
-      $('#search-keyservers-again').removeClass('hide').addClass('fadeIn');      
+      $('#search-keyservers-again').removeClass('hide').addClass('fadeIn');
     }
   });
 });
@@ -73,16 +73,15 @@ $(document).on('click', '.crypto-key-import', function(e) {
 
 /* Crypto - key use */
 $(document).on('change', '.crypto-key-policy', function() {
-  
+
   alert('Change Key Policy to: ' + $(this).val() + ' for fingerprint: ' + $(this).data('fingerprint'));
 
 });
 
 
-/* Crypto - looks up keys based on a given email address */
+/* Crypto - looks up keys based on a given e-mail address */
 $(document).on('click', '.crypto-searchkey-address', function(e) {
   e.preventDefault();
   var address = $(this).data('address');
-  var target = $(this).data('target');  
+  var target = $(this).data('target');
 });
-

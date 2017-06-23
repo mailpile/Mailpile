@@ -758,7 +758,7 @@ class HealthCheck(Command):
         if config.need_more_disk_space():
             return _('Insufficient free disk space') + '.'
         return False
- 
+
     @classmethod
     def _readonly_check(cls, session, config):
         from mailpile.security import _lockdown_basic
@@ -1871,7 +1871,7 @@ class Help(Command):
                                                        cls.__doc__,
                                                        count + cls.ORDER[1])
             if config.loaded_config:
-                tags = GetCommand('tags')(self.session).run()
+                tags = GetCommand('tags')(self.session).run(display="priority")
             else:
                 tags = {}
             try:

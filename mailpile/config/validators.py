@@ -299,7 +299,7 @@ def EmailCheck(email):
     'test@test.com'
     """
     if not EMAIL_RE.match(email):
-        raise ValueError(_("Not a valid email: %s") % email)
+        raise ValueError(_("Not a valid e-mail: %s") % email)
     return email
 
 

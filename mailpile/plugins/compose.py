@@ -13,7 +13,7 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
+from mailpile.mailutils import ExtractEmailAndName, Email
 from mailpile.mailutils import NotEditableError, AddressHeaderParser
 from mailpile.mailutils import NoFromAddressError, PrepareMessage
 from mailpile.mailutils import MakeMessageID
@@ -852,7 +852,7 @@ class Sendit(CompositionCommand):
         for rcpt in (self.data.get('to', []) +
                      self.data.get('cc', []) +
                      self.data.get('bcc', [])):
-            bounce_to.extend(ExtractEmails(rcpt))
+            bounce_to.extend(AddressHeaderParser(rcpt).addresses_list())
 
         sender = self.data.get('from', [None])[0]
         if not sender and bounce_to:

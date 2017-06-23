@@ -19,7 +19,7 @@ from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
 from mailpile.crypto.mime import ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
-from mailpile.mailutils import Email, ExtractEmails, ClearParseCache
+from mailpile.mailutils import Email, AddressHeaderParser, ClearParseCache
 from mailpile.mailutils import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
@@ -103,7 +103,7 @@ class ContentTxf(EmailTransform):
             if sender_keyid:
                 keys = gnupg.list_keys(selectors=[sender_keyid])
             else:
-                keys = gnupg.address_to_keys(ExtractEmails(sender)[0])
+                keys = gnupg.address_to_keys(AddressHeaderParser(sender).addresses_list()[0])
 
             key_count = 0
             for fp, key in keys.iteritems():

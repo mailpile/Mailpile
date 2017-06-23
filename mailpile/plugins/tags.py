@@ -614,11 +614,11 @@ class ListTags(TagCommand):
                             + ((i % wrap) == (wrap - 1) and '\n' or ''))
             return ''.join(text) + '\n'
 
-    def command(self):
+    def command(self, **kwargs):
         result, idx = [], self._idx()
 
         args = []
-        search = {}
+        search = kwargs
         for arg in self.args:
             if '=' in arg:
                 kw, val = arg.split('=', 1)

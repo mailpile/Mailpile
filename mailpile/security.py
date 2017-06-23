@@ -18,11 +18,13 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
+DISABLE_LOCKDOWN = False
 
 ##[ These are the sys.lockdown restrictions ]#################################
 
 
 def _lockdown(config):
+    if DISABLE_LOCKDOWN: return False
     lockdown = config.sys.lockdown or 0
     try:
         return int(lockdown)
@@ -37,6 +39,7 @@ def _lockdown(config):
 
 
 def in_disk_lockdown(config):
+    if DISABLE_LOCKDOWN: return False
     # If we've dropped below 50% of our target free space, we stop
     # almost all operations and go into lockdown. This makes the
     # Mailpile effectively read-only, which should be safe without
@@ -47,12 +50,14 @@ def in_disk_lockdown(config):
 
 
 def _lockdown_minimal(config):
+    if DISABLE_LOCKDOWN: return False
     if _lockdown(config) != 0:
         return _('In lockdown, doing nothing.')
     return False
 
 
 def _lockdown_config(config):
+    if DISABLE_LOCKDOWN: return False
     # This is just like lockdown_basic, except we allow the user to
     # change the config so they can adjust the minimum free disk space
     # requirement if it was accidentally made too strict.
@@ -62,10 +67,12 @@ def _lockdown_config(config):
 
 
 def _lockdown_basic(config):
+    if DISABLE_LOCKDOWN: return False
     return _lockdown_config(config) or in_disk_lockdown(config)
 
 
 def _lockdown_strict(config):
+    if DISABLE_LOCKDOWN: return False
     if _lockdown(config) > 1:
         return _('In lockdown, doing nothing.')
     return in_disk_lockdown(config)
