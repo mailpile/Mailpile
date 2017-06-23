@@ -3,6 +3,7 @@ from urlparse import parse_qs, urlparse
 from urllib import quote, urlencode
 
 from mailpile.commands import Command
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -322,7 +323,16 @@ class SetPassphrase(Command):
         return CheckPassword(self.session.config, None, password)
 
     def _check_password(self, password, account=None, fingerprint=None):
-        return True
+        if account:
+            # We're going to keep punting on this for a while...
+            return True
+        elif fingerprint:
+            sps = SecurePassphraseStorage(password)
+            gpg = GnuPG(self.session.config)
+            status, sig = gpg.sign('OK', fromkey=fingerprint, passphrase=sps)
+            return (status == 0)
+        else:
+            return True
 
     def _prepare_result(self, account=None, keyid=None, is_locked=False):
         if account:
