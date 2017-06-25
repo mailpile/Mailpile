@@ -620,7 +620,10 @@ def _connect_imap(session, settings, event,
             except (IMAP4.error, IOError, socket.error):
                 ok = False
             if not ok:
-                ev['error'] = ['protocol', _('Failed to STARTTLS')]
+                ev['error'] = [
+                    'tls',
+                    _('Failed to make a secure TLS connection'),
+                    '%s:%s' % (settings.get('host'), settings.get('port'))]
                 if throw:
                     raise throw(ev['error'][1])
                 return WithaBool(False)
