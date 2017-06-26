@@ -75,6 +75,16 @@ def CheckPassword(config, username, password):
     return sps.compare(password) and username
 
 
+def IndirectPassword(config, pwd):
+    pp = pwd.split(':')
+    if len(pp) > 2 and pp[0] == '_SECRET_':
+        if pp[1] in config.secrets:
+            return config.secrets[pp[1]].password
+        if pp[1] in config.passphrases:
+            return config.passphrases[pp[1]].get_passphrase()
+    return pwd
+
+
 SESSION_CACHE = UserSessionCache()
 LOGIN_FAILURES = []
 
@@ -257,6 +267,8 @@ class SetPassphrase(Command):
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
         'id': 'KeyID or account name',
+        'mailsource': 'Mail source ID',
+        'mailroute': 'Mail route ID',
         'is_locked': 'Assume key is locked'
     }
     HTTP_POST_VARS = {
@@ -264,12 +276,20 @@ class SetPassphrase(Command):
         'policy-ttl': 'Combined policy and TTL',
         'policy': 'store|cache-only|fail|forget',
         'ttl': 'Seconds after which it expires, -1 = never',
+        'update_mailsources': 'If true, update mail source settings',
+        'update_mailroutes': 'If true, update mail route settings',
         'redirect': 'URL to redirect to on success'
     }
 
     def _get_profiles(self):
         return self.session.config.vcards.find_vcards([], kinds=['profile'])
 
+    def _get_policy(self, fingerprint):
+        if fingerprint in self.session.config.secrets:
+            return self.session.config.secrets[fingerprint].policy
+        elif fingerprint in self.session.config.passphrases:
+            return 'cache-only'
+        return None
 
     def _massage_key_info(self, fingerprint, key_info, profiles=None, is_locked=False):
         config = self.session.config
@@ -279,10 +299,9 @@ class SetPassphrase(Command):
             key=lambda k: (k.get("name"), k.get("email"), k.get("comment")))
 
         if not is_locked:
-            if fingerprint in config.secrets:
-                key_info['policy'] = config.secrets[fingerprint].policy
-            elif fingerprint in config.passphrases:
-                key_info['policy'] = 'cache-only'
+            key_info['policy'] = self._get_policy(fingerprint)
+            if key_info['policy'] is None:
+                del key_info['policy']
 
         key_info["accounts"] = []
         if profiles is None:
@@ -313,11 +332,42 @@ class SetPassphrase(Command):
                                    profiles=profiles, **kwargs)
         return keylist
 
-    def _account_details(self, account):
-        return {}  # FIXME
+    def _get_account(self, cfg):
+        username = cfg.username
+        if cfg.username and '@' not in cfg.username:
+            username = '%s@%s' % (username, cfg.host)
+        return username
 
-    def _list_accounts(self):
-        return {}  # FIXME
+    def _user_fingerprint(self, username):
+        return username.replace('@', '_').replace('.', '_').lower()
+
+    def _list_accounts(self, only=None):
+        accounts = {}
+        def _add_account(cfg, which):
+            username = self._get_account(cfg)
+            if (username
+                    and ((username == only) or only is None)
+                    and cfg.auth_type == 'password'):
+                if username in accounts:
+                    accounts[username][which] = cfg.host
+                else:
+                    fingerprint = self._user_fingerprint(username)
+                    accounts[username] = {
+                        which: cfg.host,
+                        'username': username,
+                        'policy': self._get_policy(fingerprint)}
+                    if accounts[username]['policy'] is None:
+                        del accounts[username]['policy']
+
+        for msid, route in self.session.config.routes.iteritems():
+            _add_account(route, 'route')
+        for msid, source in self.session.config.sources.iteritems():
+            _add_account(source, 'source')
+
+        return accounts
+
+    def _account_details(self, account):
+        return self._list_accounts(only=account).get(account)
 
     def _check_master_password(self, password, account=None, fingerprint=None):
         return CheckPassword(self.session.config, None, password)
@@ -336,7 +386,7 @@ class SetPassphrase(Command):
 
     def _prepare_result(self, account=None, keyid=None, is_locked=False):
         if account:
-            fingerprint = account
+            fingerprint = self._user_fingerprint(account)
             result = {'account': self._account_details(account)}
         elif keyid:
             fingerprint, info = self._lookup_key(keyid, is_locked=is_locked)
@@ -365,12 +415,20 @@ class SetPassphrase(Command):
             ttl = self.data['policy'][0]
         ttl = float(ttl)
 
-        fingerprint = info = account = None
+        fingerprint = info = account = keyid = None
         which = self.args[0] if self.args else self.data.get('id', [None])[0]
         if which and '@' in which:
             account = which
         else:
             keyid = which
+
+        if not account and not keyid:
+            msid = self.data.get('mailsource', [None])[0]
+            if msid:
+                account = self._get_account(config.sources[msid])
+            mrid = self.data.get('mailroute', [None])[0]
+            if mrid:
+                account = self._get_account(config.routes[mrid])
 
         fingerprint, result = self._prepare_result(
             account=account, keyid=keyid, is_locked=is_locked)
@@ -396,18 +454,40 @@ class SetPassphrase(Command):
 
         if self.data.get('_method', None) == 'POST':
             password = self.data.get('password', [None])[0]
+            update_ms = self.data.get('update_mailsources', [False])[0]
+            update_mr = self.data.get('update_mailroutes', [False])[0]
         else:
             password = self.session.ui.get_password(pass_prompt + ': ')
+            update_ms = update_mr = (account is not None)
+
+        if update_ms or update_mr:
+            assert(account is not None)
 
         if not pass_check(password, account=account, fingerprint=fingerprint):
             result['error'] = _('Password incorrect! Try again?')
             return self._error(_('Incorrect password'), result=result)
 
-        def happy(msg, refresh=True):
-            # Fun side effect: changing the passphrase invalidates the
-            # message cache
-            import mailpile.mailutils
-            mailpile.mailutils.ClearParseCache(full=True)
+        def _account_matches(cfg):
+            return (account == cfg.username or
+                    account == '%s@%s' % (cfg.username, cfg.host))
+        def happy(msg, refresh=True, changed=True):
+            if changed:
+                # Fun side effect: changing the passphrase invalidates the
+                # message cache
+                import mailpile.mailutils
+                mailpile.mailutils.ClearParseCache(full=True)
+
+                indirect_pwd = '_SECRET_:%s:%s' % (fingerprint, time.time())
+                if update_ms:
+                    for msid, source in config.sources.iteritems():
+                        if _account_matches(source):
+                            source.password = indirect_pwd
+                if update_mr:
+                    for msid, route in config.routes.iteritems():
+                        if _account_matches(route):
+                            route.password = indirect_pwd
+
+                self._background_save(config=True)
 
             redirect = self.data.get('redirect', [None])[0]
             if redirect:
@@ -428,7 +508,8 @@ class SetPassphrase(Command):
             else:
                 return self._error(_('No password found'), result=result)
             result['stored_password'] = pwd
-            return happy(_('Retrieved stored password'), refresh=False)
+            return happy(_('Retrieved stored password'),
+                         refresh=False, changed=False)
 
         if policy == 'forget':
             if fingerprint in config.passphrases:

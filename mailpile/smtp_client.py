@@ -7,6 +7,7 @@ import sys
 import time
 
 import mailpile.util
+from mailpile.auth import IndirectPassword
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
@@ -224,7 +225,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
         elif route['protocol'] in ('smtp', 'smtorp', 'smtpssl', 'smtptls'):
             proto = route['protocol']
             host, port = route['host'], route['port']
-            user, pwd = route['username'], route['password']
+            user = route['username']
+            pwd = IndirectPassword(session.config, route['password'])
             auth_type = route['auth_type'] or ''
             smtp_ssl = proto in ('smtpssl', )  # FIXME: 'smtorp'
 

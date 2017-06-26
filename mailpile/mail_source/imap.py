@@ -56,6 +56,7 @@ except ImportError:
     import StringIO
 
 import mailpile.mail_source.imap_utf7
+from mailpile.auth import IndirectPassword
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
@@ -633,7 +634,10 @@ def _connect_imap(session, settings, event,
             error_type = 'auth'
             error_msg = _('Invalid username or password')
             username = settings.get('username', '').encode('utf-8')
-            password = settings.get('password', '').encode('utf-8')
+            password = IndirectPassword(
+                session.config,
+                settings.get('password', '')
+                ).encode('utf-8')
 
             if (settings.get('auth_type', '').lower() == 'oauth2'
                     and 'AUTH=XOAUTH2' in capabilities):

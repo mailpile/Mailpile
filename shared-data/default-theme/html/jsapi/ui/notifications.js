@@ -48,23 +48,26 @@ Mailpile.raise_mail_source_mailbox_limit = function(not_id, src_id, howhigh) {
 
 Mailpile.certificate_error_details = function(server, event_id) {
   var url = Mailpile.API.U(
-     '/crypto/tls/getcert/?host=' + server + '&ui_tls_failed=True');
+    '/crypto/tls/getcert/?host=' + server + '&ui_tls_failed=True');
   Mailpile.auto_modal({ url: url, method: 'POST', sticky: true });
   //Mailpile.cancel_notification(event_id);
 };
 
 Mailpile.profile_edit = function(profile_id, section) {
   var url = Mailpile.API.U(
-     '/profiles/edit/?rid=' + profile_id +
-     '&ui_open=' + section +
-     '&ui_flags=reload');
+    '/profiles/edit/?rid=' + profile_id +
+    '&ui_open=' + section +
+    '&ui_flags=reload');
   Mailpile.auto_modal({ url: url, method: 'GET' });
 };
 
 Mailpile.mailsource_login = function(mailsource_id, event_id) {
   var url = Mailpile.API.U(
-     '/settings/login.html?ui_mailsource=' + mailsource_id);
-  Mailpile.auto_modal({ url: url, method: 'POST' });
+    '/settings/set/password/?mailsource=' + mailsource_id);
+  Mailpile.auto_modal({
+    url: url,
+    title: '{{ _("Password Required") }}',
+    method: 'POST', sticky: true });
   //Mailpile.cancel_notification(event_id, false, false, true);
 };
 

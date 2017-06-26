@@ -2,6 +2,7 @@ import os
 import ssl
 import traceback
 
+from mailpile.auth import IndirectPassword
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailboxes import pop3
@@ -127,9 +128,10 @@ class Pop3MailSource(BaseMailSource):
         my_cfg = self.my_config
         if 'src:' in mfn[:5] and FormatMbxId(mbx_id) in my_cfg.mailbox:
             debug = ('pop3' in self.session.config.sys.debug) and 99 or 0
+            password = IndirectPassword(self.session.config, my_cfg.password)
             return _open_pop3_mailbox(self.event,
                                       my_cfg.host, my_cfg.port,
-                                      my_cfg.username, my_cfg.password,
+                                      my_cfg.username, password,
                                       my_cfg.auth_type,
                                       my_cfg.protocol, debug,
                                       throw=POP3_IOError)
@@ -161,11 +163,12 @@ class Pop3MailSource(BaseMailSource):
 
 
 def TestPop3Settings(session, settings, event):
+    password = IndirectPassword(session.config, settings['password'])
     conn = _open_pop3_mailbox(event,
                               settings['host'],
                               int(settings['port']),
                               settings['username'],
-                              settings['password'],
+                              password,
                               settings.get('auth_type', 'password'),
                               settings['protocol'],
                               True)

@@ -1,0 +1,280 @@
+{%- extends "logs/layout.html" %}
+{%- block content %}
+<div class="content-normal" style="max-width: 50em; position: relative">
+
+  {% if not result.accounts %}
+  <div id="identity-vault-lock" class="vault-lock-outer">
+    <div class="vault-lock-inner">
+      <div class="vault-lock animated"><span class="icon icon-user"></span></div>
+    </div>
+  </div>
+  {% else %}
+  <h1>
+    <span class="icon icon-user"></span>
+    {{_("Account Password Management")}}
+  </h1>
+  {% endif %}
+
+  {% if result.account or result.accounts %}
+  <form id="form-set-password" class="standard text-center"
+        method="POST" action="{{ U("/settings/set/password/") }}">
+    {{ csrf_field|safe }}
+
+    {# FIXME: Make these user-configurable? #}
+    <input type="hidden" name="update_mailsources" value="Yes">
+    <input type="hidden" name="update_mailroutes" value="Yes">
+
+    {% if not result.account %}
+    <label>{{ _("Remote Accounts Using Passwords") }}</label>
+    {% endif %}
+    <ul class="radio-list add-bottom">
+      {%- macro render_account(acct_info, first) %}
+        <li class="account-info text-left" style="overflow: hidden;"
+            onclick="javascript:_ssp.policy_changing();">
+        <label class="radio-list-item">
+          <div class="radio text-right">
+            <input name="id" class='ssp_account_fp' type="radio" tabindex="1"
+                   value="{{ acct_info.username }}"
+                   data-policy="{{ acct_info.policy }}"
+                   {%- if result.account %} style="display: none;"{% endif %}
+                   {%- if first %} checked{% endif %}>
+          </div>
+          <div>
+            <span class="icon icon-user"></span>
+          </div>
+          <div style="white-space: nowrap; font-size: 0.8em;"
+               {%- if acct_info.source and acct_info.route %}
+               title='{{ _("This account is used for receiving and sending e-mail.") }}'
+               {%- elif acct_info.source %}
+               title='{{ _("This account is used for receiving e-mail.") }}'
+               {%- elif acct_info.route %}
+               title='{{ _("This account is used for sending e-mail.") }}'
+               {%- endif %}>
+            <span style="font-size: 1.3em;">
+              {{ acct_info.username }}
+            </span>
+            ({%- if acct_info.policy == 'protect' -%}
+              {{- _("Managed by Mailpile") -}}
+            {%- elif acct_info.policy == 'store' -%}
+              {{- _("Unlocked, password remembered") -}}
+            {%- elif acct_info.policy == 'cache-only' -%}
+              {{- _("Unlocked") -}}
+            {%- else %}
+              {{- _("Locked") -}}
+            {%- endif %})
+            <br>
+            {%- if acct_info.route %}
+              {{ _("Sends e-mail via. {H}").format(H=acct_info.route) }}<br>
+            {%- endif %}
+            {%- if acct_info.source %}
+              {{ _("Downloads e-mail from {H}").format(H=acct_info.source) }}<br>
+            {%- endif %}
+          </div>
+        </label>
+        </li>
+      {%- endmacro %}
+      {%- if result.account %}
+        {{ render_account(result.account, 1) }}
+      {%- else %}
+        {%- for acct_info in result.accounts.values() %}
+          {{ render_account(acct_info, loop.first) }}
+        {%- endfor %}
+      {%- endif %}
+    </ul>
+
+    <div class="results-messages" style="font-size: 1.2em;">
+    {%- if result.error %}
+      <p class="text-center result-title" data-timer=3000><b>{{ result.error }}</b></p>
+    {%- elif result.account and result.op_completed %}
+      {%- if result.stored_password %}
+      <p class="text-center result-title ssp-stored-password" data-timer=10000>
+        {{ _("The password is:") }} <b>{{ result.stored_password }}</b>
+      </p>
+      {%- else %}
+      <p class="text-center result-title" data-timer=3000><b>{{ title }}</b></p>
+      {%- endif %}
+    {%- endif %}
+    </div>
+
+    <div class="ssp-ops">
+
+      <div class="ssp-unlock ssp-lock">
+        <label>{{_("Account Password")}}</label>
+      </div>
+      <div class="hide ssp-show-passphrase">
+        <label>{{_("Your Mailpile Password")}}</label>
+      </div>
+
+      <div id="setup-passphrase-existing-confirm">
+        <span id="validation-passphrase_confirm" class="ssp-password">
+          <label class="validation-message"></label>
+          <input id="input-setup-passphrase_confirm"
+                 class="medium center" type="password" name="password"
+                 style="width: 25em; margin-bottom: 0.5em;"
+                 autocorrect="off" autocapitalize="off"
+                 placeholder="top secret super duper password" tabindex="3">
+        </span>
+
+        <select id='policy-ttl' name="policy-ttl" class="text-center"
+                onchange="javascript:_ssp.policy_changed();"
+                style="width: 21.5em; margin: -1px 0.5em 2em 0; display: inline; padding: 7px;"
+                tabindex=4>
+          <option data-p='cache-only' value="cache-only" selected>{{_("Unlock Account")}}</option>
+          <option data-p='forget' value="forget">{{_("Lock Account and Forget Password")}}</option>
+          <option data-p='cache-only' value="cache-only"></option>
+          <option data-p='cache-only' value="cache-only:600">{{_("Unlock Account")}} ({{_("10 minutes")}})</option>
+          <option data-p='cache-only' value="cache-only:3600">{{_("Unlock Account")}} ({{_("1 hour")}})</option>
+          <option data-p='cache-only' value="cache-only:43200">{{_("Unlock Account")}} ({{_("12 hours")}})</option>
+          <option data-p='cache-only' value="cache-only:600"></option>
+          <option data-p='store' value="store">{{_("Unlock Account and Remember Password")}}</option>
+          <option data-p='display' value="display">{{_("Display Remembered Account Password")}}</option>
+        </select>
+        <button style="width: 5em;" class="button-primary" type="submit" tabindex=5>
+          <span class="icon icon-user"></span>
+        </button>
+      </div>
+
+      <div class="ssp-hint ssp-unlock">
+        <p><i>
+          {{ _("Unlocking an account allows Mailpile to use it to send and receive e-mail.") }}
+          <span class="ssp-hint ssp-cache-only"><br>
+            {{ _("By default, unlocked accounts stay accessible until you restart Mailpile.") }}
+          </span>
+          <span class="ssp-hint ssp-store hide"><br>
+            {{ _("If Mailpile remembers the password, you will not have to unlock the account again.") }}
+          </span>
+        </i></p>
+      </div>
+      <div class="ssp-hint ssp-lock hide">
+        <p><i>
+          {{ _("Locked accounts can not be used to send or receive e-mail.") }}
+        </i></p>
+      </div>
+      <div class="ssp-hint ssp-show-passphrase hide">
+        <p><i>
+          {{ _("Please authenticate using your Mailpile password.") }}
+        </i></p>
+      </div>
+
+    {% if state.query_args.ui_redirect_back %}
+      <input type="hidden" class="current-url" name="redirect" value="">
+    {% elif False and not result.account %}
+      <input type="hidden" name="redirect"
+             value="{{ U('/settings/set/password/') }}">
+    {% endif %}
+    </div>
+
+  </form>
+
+  <script>
+    var page_url = document.location.href;
+    var ui_hint = 'ui_account_auth=1';
+    if (page_url.indexOf(ui_hint) != -1) {
+      ui_hint = '';
+    }
+    else {
+      ui_hint = ((page_url.indexOf('?') == -1) ? '?' : '&') + ui_hint;
+    }
+    $('input.current-url').attr('value', page_url + ui_hint);
+
+    var _ssp = {
+      policy_changing: function(i) {
+        setTimeout("_ssp.policy_changed();", 50);
+      },
+      policy_changed: function(i) {
+        $('input.ssp_account_fp').closest('li').css({'opacity': 0.6});
+        $('.ssp-cache-only, .ssp-store').hide();
+        $('select#policy-ttl option').show();
+        $('.ssp-password').show();
+
+        var op = $('select#policy-ttl').val();
+        var account = $('input:checked.ssp_account_fp').eq(0);
+
+        if (account && account.val()) {
+          // FIXME: Adjust which selections are available, report
+          //        whether we've already unlocked this account?
+
+          account.closest('li').css({'opacity': 1.0});
+
+          var policy = account.data('policy');
+          if (policy) $('select#policy-ttl option[data-p='+ policy +']').hide();
+          if (policy == 'protect') {
+            $('select#policy-ttl option').hide();
+            $('select#policy-ttl option[value=display]').show();
+            $('select#policy-ttl option[value=export]').show();
+            $('select#policy-ttl option[value=revoke]').show();
+            if (op != 'display' && op != 'export' && op != 'revoke') {
+              op = 'display';
+            }
+          }
+          else if (policy == 'store') {
+            $('select#policy-ttl option[data-p=cache-only]').hide();
+            if (op == 'cache-only') op = 'forget';
+          }
+          else if (policy == 'cache-only') {
+            $('select#policy-ttl option[data-p=cache-only]').hide();
+            $('select#policy-ttl option[value=store]').hide();
+            $('select#policy-ttl option[value=display]').hide();
+            op = 'forget';
+          }
+          else {
+            $('select#policy-ttl option[value=forget]').hide();
+            $('select#policy-ttl option[value=display]').hide();
+            if (op == 'forget' || op == 'display') op = 'cache-only';
+          }
+        }
+
+        $('select#policy-ttl').val(op);
+        if (op == 'cache-only') { $('.ssp-cache-only').show();}
+        if (op == 'store') { $('.ssp-store').show();}
+        if (op == 'fail' || op == 'forget') {
+          $('.ssp-password').hide();
+          $('.ssp-unlock, .ssp-show-passphrase, .ssp-hint').hide();
+          $('.ssp-lock').show();
+        }
+        else if (op == 'display') {
+          $('.ssp-lock, .ssp-unlock, .ssp-hint').hide();
+          $('.ssp-show-passphrase').show();
+        }
+        else if (op == 'revoke' || op == 'export') {
+          $('.ssp-lock, .ssp-show-passphrase').hide();
+          $('.ssp-unlock').show();
+          $('.ssp-hint').hide();
+          $('.ssp-' + op).show();
+        }
+        else {
+          $('.ssp-lock, .ssp-show-passphrase, .ssp-hint').hide();
+          $('.ssp-unlock').show();
+        }
+
+        $('input[type=password]').focus();
+      },
+      hide_title: function() {
+        $('.result-title').slideUp();
+        $('.ssp-ops').slideDown();
+        $('input[type=password]').focus();
+      }
+    };
+
+    setTimeout("_ssp.policy_changed();", 50);
+    if ($('.result-title').length > 0) {
+      var hideid = setTimeout("_ssp.hide_title();", $('.result-title').data('timer'));
+      $('form').submit(function(ev) { clearTimeout(hideid); });
+      $('.ssp-ops').hide();
+    }
+  </script>
+  {% else %}
+
+   <div class='text-center'>
+     <h3>{{_("No Accounts Here!")}}</h3>
+     <p>
+       <a href="{{ U('/') }}">{{_("Accounts can be created on the Home page.")}}</a>
+     </p>
+   </div>
+
+   <pre class="xhide">{{ result|json }}</pre>
+
+  {% endif %}
+
+</div>
+{%- endblock %}

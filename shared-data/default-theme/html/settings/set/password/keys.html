@@ -5,7 +5,7 @@
 {%- else %}
 <div class="content-normal" style="max-width: 50em; position: relative">
 
-  {% if result.key or not (result.keylist or result.accounts) %}
+  {% if result.key or not result.keylist %}
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
     {% if result.key %}
@@ -22,7 +22,7 @@
   </h1>
   {% endif %}
 
-  {% if result.key or result.keylist or result.accounts %}
+  {% if result.key or result.keylist %}
   <form id="form-set-password" class="standard text-center"
         method="POST" action="{{ U("/settings/set/password/keys.html") }}">
     {{ csrf_field|safe }}
@@ -328,7 +328,7 @@
      </p>
    </div>
 
-   <pre>{{ result|json }}</pre>
+   <pre class="hide">{{ result|json }}</pre>
 
   {% endif %}
 
