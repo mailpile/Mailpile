@@ -26,7 +26,9 @@
         <img class="navigation-icon" src="{{ U(elem.icon) }}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
-      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
+      {%- endif %}
+        <span class="navigation-text{% if loop.index >= 5 %} hide{% endif %}"
+         >{{elem.text}}</span>
       </a>
     </li>
     {%- if loop.last %}<li>&nbsp;</li>{% endif %}
