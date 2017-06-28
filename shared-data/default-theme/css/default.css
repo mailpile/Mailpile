@@ -9636,6 +9636,9 @@ a.modal-tag-color-option:hover {
     font-size: 12px;
     margin-top: 0px !important;
   }
+  #pile-empty .button-primary {
+    display: block;
+  }
   #pile-results td.checkbox,
   #pile-results td.crypto-and-tags {
     display: none;
