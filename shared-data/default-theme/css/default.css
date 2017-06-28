@@ -9632,6 +9632,10 @@ a.modal-tag-color-option:hover {
     padding: 4px;
     padding-left: 4px;
   }
+  #pile-bottom h5 {
+    font-size: 12px;
+    margin-top: 0px !important;
+  }
   #pile-results td.checkbox,
   #pile-results td.crypto-and-tags {
     display: none;
@@ -9840,6 +9844,9 @@ a.modal-tag-color-option:hover {
     font-size: 70%;
   }
   #display-density-selector {
+    display: none;
+  }
+  #pile-more {
     display: none;
   }
 }
