@@ -9852,4 +9852,11 @@ a.modal-tag-color-option:hover {
   #pile-more {
     display: none;
   }
+  table.account-list {
+    margin: 0 0 !important;
+    display: block;
+  }
+  div.motd {
+    background: #ffffff;
+  }
 }
