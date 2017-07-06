@@ -45,12 +45,11 @@ Mailpile.bulk_actions_update_ui = function() {
       $context.find('#bulk-actions-message').html(message);
 
       var have_tags = {};
-      if (selected.length && selected[0] != "!all") {
-        for (var i = 0; i < selected.length; i++) {
-          var tids = $context.find('.pile-message-' + selected[i])
-                             .data('tids').split(/,/);
-          for (var j = 0; j < tids.length; j++) have_tags[tids[j]] = true;
-        }
+      for (var i = 0; i < selected.length; i++) {
+        var search = '.pile-message-' + selected[i];
+        if (selected[i] == "!all") search = '.pile-message';
+        var tids = $context.find(search).data('tids').split(/,/);
+        for (var j = 0; j < tids.length; j++) have_tags[tids[j]] = true;
       }
 
       Mailpile.show_bulk_actions($context.find('.bulk-actions').find('li'),
