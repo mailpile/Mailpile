@@ -1213,6 +1213,7 @@ class EditProfile(AddProfile):
             'rid': vcard.random_uid,
             'name': vcard.fn,
             'email': vcard.email,
+            'signature': vcard.signature,
             'password': '',
             'route-protocol': 'none',
             'route-auth_type': 'password',

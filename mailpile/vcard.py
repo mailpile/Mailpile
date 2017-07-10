@@ -56,6 +56,7 @@ class VCardLine(dict):
         ",": "\\,",
         ";": "\\;",
         "\n": "\\n",
+        "\r": "\\r",
     }
     QUOTE_RMAP = dict([(v, k) for k, v in QUOTE_MAP.iteritems()])
 
