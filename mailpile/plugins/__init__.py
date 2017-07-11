@@ -37,6 +37,20 @@ class EmailTransform(object):
     def __init__(self, config):
         self.config = config
 
+    def _get_sender_profile(self, sender, kwargs):
+        profile = kwargs.get('sender_profile')
+        if not profile:
+            profile = self.config.get_profile(sender)
+        return profile
+
+    def _get_first_part(self, msg, mimetype):
+        for part in msg.walk():
+             if not part.is_multipart():
+                 mimetype = (part.get_content_type() or 'text/plain').lower()
+                 if mimetype == 'text/plain':
+                     return part
+        return None
+
     def TransformIncoming(self, *args, **kwargs):
         return list(args[:]) + [False]
 

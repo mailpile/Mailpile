@@ -318,10 +318,12 @@
       <div class="basics new hide">
         <br><i>FIXME ... add signup with partners here!</i><br>
       </div>
-      <div class="more-basics left{%- if not result.rid %} hide{% endif %}" style="width: 29em; padding: 0;">
+      <div class="more-basics left{%- if not result.rid %} hide{% endif %}"
+           style="width: 39em; padding: 0;">
         <label>{{_("Signature")}}</label>
         <textarea placeholder="{{_("Everyone needs a unique, witty signature!")}}"
-                  name="signature" style="width: 100%;">{{ result.signature }}</textarea>
+                  style="width: 100%; font-size: 0.85em;"
+                  name="signature">{{ result.signature }}</textarea>
       </div>
       <br clear="both"><label>&nbsp;</label>
       <div style="position: absolute; text-align: right; right: 0; bottom: 1.5em;">

@@ -58,12 +58,10 @@ class ContentTxf(EmailTransform):
 
         # Prefer to just get everything from the profile VCard, in the
         # common case...
-        profile = self.config.vcards.get_vcard(sender)
-        if profile:
-            sender_keyid = profile.pgp_key
-            crypto_format = profile.crypto_format or 'none'
-        else:
-            crypto_format = 'none'
+        profile = self._get_sender_profile(sender, kwargs)
+        if profile['vcard'] is not None:
+            sender_keyid = profile['vcard'].pgp_key
+        crypto_format = profile.get('crypto_format') or 'none'
 
         # Parse the openpgp_header data from the crypto_format
         openpgp_header = [p.split(':')[-1]

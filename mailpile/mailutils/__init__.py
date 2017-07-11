@@ -313,6 +313,7 @@ def PrepareMessage(config, msg,
 
     sender = AddressHeaderParser(sender)[0].address
 
+    # FIXME: Shouldn't this be using config.get_profile instead?
     profile = config.vcards.get_vcard(sender)
     if profile:
         crypto_format = (profile.crypto_format or crypto_format).lower()
@@ -460,10 +461,6 @@ class Email(object):
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
-
-        sig = from_profile and from_profile.get('signature')
-        if sig and ('\n-- \n' not in (msg_text or '')):
-            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
 
         if msg_text:
             try:

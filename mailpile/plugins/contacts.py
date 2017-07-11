@@ -6,7 +6,7 @@ import mailpile.config.defaults
 import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import GnuPGBaseKeyGenerator, GnuPGKeyGenerator
-from mailpile.plugins import PluginManager
+from mailpile.plugins import EmailTransform, PluginManager
 from mailpile.commands import Command, Action
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
@@ -1121,10 +1121,14 @@ class AddProfile(ProfileVCard(AddVCard)):
         'security-*': 'Security settings'
     })
 
+    def _default_signature(self):
+        return _('Sent using Mailpile, Free Software from www.mailpile.is')
+
     def _form_defaults(self):
         new_src_id = randomish_uid();
         return dict_merge(AddVCard._form_defaults(self), {
             'new_src_id': new_src_id,
+            'signature': self._default_signature(),
             'route-protocol': 'none',
             'route-auth_type': 'password',
             'source-NEW-protocol': 'none',
@@ -1209,11 +1213,13 @@ class EditProfile(AddProfile):
     def _vcard_to_post_vars(self, vcard):
         cp = vcard.crypto_policy or ''
         cf = vcard.crypto_format or ''
+        vc_sig = vcard.signature
+        default_sig = self._default_signature()
         pvars = {
             'rid': vcard.random_uid,
             'name': vcard.fn,
             'email': vcard.email,
-            'signature': vcard.signature,
+            'signature': default_sig if (vc_sig is None) else vc_sig,
             'password': '',
             'route-protocol': 'none',
             'route-auth_type': 'password',
@@ -1249,7 +1255,7 @@ class EditProfile(AddProfile):
         pvars['sources'] = vcard.sources()
         for sid in pvars['sources']:
             prefix = 'source-%s-' % sid
-            source = self.session.config.sources.get(sid)   
+            source = self.session.config.sources.get(sid)
             disco = source.discovery
             info = {}
             for rvar in ('protocol', 'auth_type', 'host', 'port',
@@ -1274,7 +1280,7 @@ class EditProfile(AddProfile):
     def command(self):
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
-      
+
         # OK, fetch the VCard.
         assert('rid' in self.data and len(self.data['rid']) == 1)
         vcard = config.vcards.get_vcard(self.data['rid'][0])
@@ -1345,6 +1351,22 @@ class ChooseFromAddress(Command):
         })
 
 
+class ContentTxf(EmailTransform):
+    def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
+        txf_matched, txf_continue = False, True
+
+        profile = self._get_sender_profile(sender, kwargs)
+        signature = profile.get('signature')
+        if signature:
+            part = self._get_first_part(msg, 'text/plain')
+            if part is not None:
+                msg_text = (part.get_payload() or '\n\n').replace('\r', '')
+                if '\n-- \n' not in msg_text:
+                    part.set_payload(msg_text.strip() + '\n\n-- \n' + signature)
+                    txf_matched = True
+
+        return sender, rcpts, msg, txf_matched, txf_continue
+
 
 _plugins.register_commands(VCard, AddVCard, RemoveVCard, ListVCards,
                            VCardAddLines, VCardSet, VCardRemoveLines)
@@ -1354,3 +1376,5 @@ _plugins.register_commands(Profile, AddProfile, EditProfile,
                            RemoveProfile, ListProfiles, ProfileSet,
                            ChooseFromAddress)
 _plugins.register_commands(ContactImport, ContactImporters)
+
+_plugins.register_outgoing_email_content_transform('100_sender_vc', ContentTxf)
