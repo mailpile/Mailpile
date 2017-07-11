@@ -50,13 +50,21 @@ def autotag_configs(config):
     for at_config in config.prefs.autotag:
         yield at_config
         done.append(at_config.match_tag)
+
+    taggers = [k for k in TAGGERS.keys() if k != '_default']
+    if not taggers:
+        return
+
     for tid, tag_info in config.tags.iteritems():
         auto_tagging = tag_info.auto_tag
         if (tid not in done and
                 auto_tagging.lower() not in ('', 'off', 'false')):
             at_config = ConfigDict(_rules=AUTO_TAG_CONFIG)
             at_config.match_tag = tid
+            if auto_tagging not in taggers:
+                auto_tagging = taggers[0]
             at_config.tagger = auto_tagging
+            at_config.trainer = auto_tagging
             yield at_config
 
 
@@ -100,8 +108,7 @@ def LoadAutoTagger(config, at_config):
             trainer = at_config.trainer
             config.autotag[aid] = AutoTagger(
                 TAGGERS.get(tagger, TAGGERS['_default'])(tagger),
-                TRAINERS.get(trainer, TRAINERS['_default'])(trainer),
-            )
+                TRAINERS.get(trainer, TRAINERS['_default'])(trainer))
             SaveAutoTagger(config, at_config)
     return config.autotag[aid]
 
@@ -367,7 +374,9 @@ class AutoTag(Classify):
                 at_tag = config.get_tag(at_config.match_tag)
                 if not at_tag:
                     continue
-                want = scores[mid].get(at_tag._key, (False, ))[0]
+
+                wants = scores[mid].get(at_tag._key, [(False, )])
+                want = bool([True for w in wants if w[0]])
 
                 if want is True:
                     if at_config.match_tag not in tag:
