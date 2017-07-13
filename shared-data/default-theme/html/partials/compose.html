@@ -31,31 +31,6 @@
         <input id="compose-subject" name="subject" tabindex="4" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
       </div>
     </div>
-    <div class="compose-options clearfix" data-mid="{{mid}}">
-      <div class="compose-options-crypto">
-        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none" data-mid="{{mid}}">
-            <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
-        </div>
-        <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none" data-mid="{{mid}}">
-            <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
-        </div>
-      </div>
-      <ul class="horizontal" data-mid="{{mid}}">
-        <li id="compose-to-summary-{{mid}}" class="compose-to-summary" data-mid="{{mid}}"></li>
-        <li>
-          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if command != "view" %}hide{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
-        </li>
-        <li>
-          <label id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
-        </li>
-      </ul>
-      <a class="compose-message-trash right" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
-      {% if command == "view" %}
-      <label class="compose-apply-quote right" data-mid="{{mid}}" data-quoted_reply="{{config.web.quoted_reply}}">
-        <input id="compose-quoted-reply-{{mid}}" type="checkbox" {% if config.web.quoted_reply in ['enabled', 'unset'] %}checked{% endif %}> {{_("Quote")}}
-      </label>
-      {% endif %}
-    </div>
     <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
       <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="5" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
       <div id="compose-attachments-{{mid}}" class="compose-attachments" data-mid="{{mid}}">
@@ -116,6 +91,30 @@
         </ul>
       </div>
     </div>
+    <div class="compose-options" data-mid="{{mid}}">
+      <div class="compose-options-crypto">
+        <div id="compose-crypto-encryption-{{mid}}" class="compose-crypto-encryption none" data-mid="{{mid}}">
+            <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
+        </div>
+        <div id="compose-crypto-signature-{{mid}}" class="compose-crypto-signature none" data-mid="{{mid}}">
+            <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
+        </div>
+      </div>
+      <ul class="horizontal" data-mid="{{mid}}">
+        <li id="compose-to-summary-{{mid}}" class="compose-to-summary" data-mid="{{mid}}"></li>
+        <li>
+          <a id="compose-show-details-{{mid}}" class="compose-show-details {% if command != "view" %}hide{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
+        </li>
+        <li>
+          <label id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
+        </li>
+      </ul>
+      {% if command == "view" %}
+      <label class="compose-apply-quote right" data-mid="{{mid}}" data-quoted_reply="{{config.web.quoted_reply}}">
+        <input id="compose-quoted-reply-{{mid}}" type="checkbox" {% if config.web.quoted_reply in ['enabled', 'unset'] %}checked{% endif %}> {{_("Quote")}}
+      </label>
+      {% endif %}
+    </div>
     <div class="compose-actions clearfix">
       <div class="dropdown left">
         <!--
@@ -139,17 +138,19 @@
           <div class="compose-from-select dropdown-toggle" data-toggle="dropdown">
             <span id="compose-from-selected-{{mid}}" class="compose-from-selected">
               {% if from and from.photo %}
-              <span class="avatar"><img src="{{from.photo}}"></span>
+              <div class="avatar"><img src="{{from.photo}}"></div>
               {% else %}
-              <span class="avatar"><img src="{{ U('/static/img/avatar-default-white.png') }}"></span>
+              <div class="avatar"><img src="{{ U('/static/img/avatar-default-white.png') }}"></div>
               {% endif %}
+              <div class="name-and-address">
               {% if from %}
-              <span class="name">{{from.fn}}</span>
-              <span class="address">{{from.address}}</span>
+                <div class="name">{{from.fn}}</div>
+                <div class="address">{{from.address}}</div>
               {% else %}
-              <span class="name">{{_("Choose Sending Account")}}</span>
-              <span class="address">...</span>
+                <div class="name">{{_("Choose Sending Account")}}</div>
+                <div class="address">...</div>
               {% endif %}
+              </div>
             </span>
             <span class="compose-from-caret">
               <span class="caret"></span>
@@ -170,15 +171,18 @@
               <a href="#" class="compose-from"
                  data-mid="{{mid}}" data-email="{{ profile_email }}"
                  data-sig="{{ profiles.default_sig if ('x-mailpile-profile-signature' not in profile) else profile['x-mailpile-profile-signature'] }}">
-                <span class="avatar">
+                <div class="avatar">
+              <a href="#" class="compose-from" data-mid="{{mid}}">
                 {% if profile.photo %}
                 <img src="{{profile.photo[0].photo}}">
                 {% else %}
                 <img src="{{ U('/static/img/avatar-default-white.png') }}">
                 {% endif %}
-                </span>
-                <span class="name">{{profile.fn}}</span>
-                <span class="address">{{ profile_email }}</span>
+                </div>
+                <div class="name-and-address">
+                    <div class="name">{{profile.fn}}</div>
+                    <div class="address">{{ profile_email }}</div>
+                </div>
               </a>
             </li>
             {%- do found.append(profile) -%}{%- endif %}
@@ -194,6 +198,7 @@
         </div>
       </div>
       <div class="compose-buttons right" data-mid="{{mid}}">
+        <a class="compose-message-trash" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
         <button class="compose-action button-primary" type="submit" name="save" value="save" alt="{{_("Save")}}">
           <span class="icon-compose"></span> {{_("Save")}}
         </button>

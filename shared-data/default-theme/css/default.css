@@ -7454,7 +7454,7 @@ a.compose-show-field {
 }
 /* Compose - Options */
 .compose-options {
-  margin-top: 3px;
+  margin-top: -3px;
   margin-bottom: 0px;
   padding: 0 0 0px 0;
 }
@@ -7467,15 +7467,17 @@ a.compose-show-field {
 .compose-options-crypto {
   width: 74px;
   position: relative;
-  bottom: -1px;
+  top: 2px;
   display: inline-block;
   text-align: center;
   background: #ffffff;
   border-left: 1px solid #cccccc;
-  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
   border-right: 1px solid #cccccc;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  float: right;
+  padding-top: 5px;
   font-size: 14px;
   font-weight: normal;
   line-height: 14px;
@@ -7617,11 +7619,12 @@ label.compose-attach-key span.icon-key {
 }
 /* Compose - From Menu */
 .compose-from-select {
-  display: table;
+  display: block;
+  width: 18em;
   background: #ffffff;
   border: 1px solid #cccccc;
   border-radius: 3px;
-  padding: 8px 10px;
+  padding: 4px 6px;
   line-height: 14px;
 }
 .compose-from-select:hover {
@@ -7633,21 +7636,28 @@ label.compose-attach-key span.icon-key {
   color: #ffffff;
 }
 .compose-from-selected {
-  display: table-cell;
+  display: inline-block;
   vertical-align: middle;
 }
 .compose-from-caret {
-  display: table-cell;
+  display: inline-block;
   padding-left: 5px;
+  float: right;
 }
-.compose-from-selected .avatar {
+.compose-from-selected .avatar,
+.compose-from .avatar {
   width: 24px;
   display: inline-block;
   margin-right: 5px;
+  float: left;
 }
 .compose-from-selected .avatar img {
   width: 24px;
   border-radius: 3px;
+}
+.compose-from-selected .name-and-address,
+.compose-from .name-and-address {
+  float: left;
 }
 .compose-from-selected .name {
   display: inline-block;
@@ -7668,11 +7678,17 @@ label.compose-attach-key span.icon-key {
   height: 32px;
   font-size: 14px;
   font-weight: bold;
+  margin: 0px;
+  display: block;
+  width: 18em;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  padding: 0px;
   line-height: 14px;
 }
 .compose-from .avatar {
   width: 32px;
-  margin: 5px 8px 5px 0px;
 }
 .compose-from .avatar img {
   width: 32px;
@@ -7694,8 +7710,8 @@ label.compose-attach-key span.icon-key {
 /* Compose - Actions */
 .compose-actions {
   width: 100%;
-  max-width: 50em;
-  margin-top: 10px;
+  max-width: 41em;
+  margin-top: -5px;
   padding-bottom: 15px;
 }
 .compose-buttons {
@@ -7703,6 +7719,17 @@ label.compose-attach-key span.icon-key {
 }
 .compose-buttons button {
   margin-left: 10px;
+}
+.compose-actions ul.dropdown-menu {
+  padding: 0;
+}
+.compose-actions ul.dropdown-menu li {
+  margin-bottom: 0px;
+}
+.compose-actions ul.dropdown-menu li a {
+  border-radius: 0px;
+  border: 0px;
+  border-bottom: 1px solid #b3b3b3;
 }
 /* Composer - Changes for in-pile composer */
 .form-compose .pile-message .subject {
@@ -9503,11 +9530,16 @@ a.modal-tag-color-option:hover {
   .topbar-logo-name {
     display: none;
   }
+  .topbar-actions {
+    max-width: 250px;
+  }
   .form-search {
     width: auto;
+    margin-left: 0px;
   }
   .form-search input {
-    width: 50%;
+    width: auto;
+    max-width: 190px;
   }
   .topbar-nav .nav-search {
     display: list-item;
@@ -9591,8 +9623,48 @@ a.modal-tag-color-option:hover {
     top: 25%;
     left: 0;
   }
+  #page {
+    margin: 0px !important;
+  }
   #content {
     left: 72px;
+  }
+  .content-normal h1,
+  .pile-bottom h1 {
+    font-size: 24px;
+    padding: 4px;
+    padding-left: 10px;
+  }
+  .content-normal h2,
+  .pile-bottom h2 {
+    font-size: 21px;
+    padding: 4px;
+    padding-left: 10px;
+  }
+  .content-normal h3,
+  .pile-bottom h3 {
+    font-size: 16px;
+    padding: 4px;
+    padding-left: 10px;
+  }
+  .content-normal h4,
+  .pile-bottom h4 {
+    font-size: 14px;
+    padding: 4px;
+    padding-left: 10px;
+  }
+  .content-normal h5,
+  .pile-bottom h5 {
+    font-size: 10px;
+    padding: 4px;
+    padding-left: 4px;
+  }
+  #pile-bottom h5 {
+    font-size: 12px;
+    margin-top: 0px !important;
+  }
+  #pile-empty .button-primary {
+    display: block;
   }
   #pile-results td.checkbox,
   #pile-results td.crypto-and-tags {
@@ -9669,10 +9741,170 @@ a.modal-tag-color-option:hover {
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
   }
+  .compose-from-select {
+    position: relative;
+    width: 15em;
+    max-width: 15em;
+    margin-bottom: 0.5em;
+    border-top: 1px solid #cccccc;
+    padding-top: 4px;
+    margin-top: 0px;
+    margin-left: 0px;
+  }
   /* Stuff we just hide... */
   #sidebar hr,
-  #notifications-header,
-  #pile-results td.from {
+  #notifications-header {
     display: none;
+  }
+  #pile-results,
+  #pile-results.comfy {
+    display: block;
+  }
+  #pile-results tbody,
+  #pile-results.comfy tbody {
+    display: block;
+  }
+  #pile-results tbody tr.pile-message,
+  #pile-results.comfy tbody tr.pile-message {
+    display: block;
+    position: relative;
+    border-bottom: 1px solid #cccccc;
+    overflow-x: hidden;
+  }
+  #pile-results td,
+  #pile-results.comfy td {
+    display: block;
+    border: none;
+  }
+  #pile-results td.avatar,
+  #pile-results.comfy td.avatar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding-right: 5px;
+    width: 40px;
+    height: 40px;
+  }
+  #pile-results td.avatar a img,
+  #pile-results.comfy td.avatar a img {
+    width: 40px;
+    height: 40px;
+  }
+  #pile-results td.crypto-and-tags,
+  #pile-results.comfy td.crypto-and-tags {
+    display: none;
+  }
+  #pile-results td.checkbox,
+  #pile-results.comfy td.checkbox {
+    display: none;
+  }
+  #pile-results td.date,
+  #pile-results.comfy td.date {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    pull: right;
+  }
+  #pile-results td.from,
+  #pile-results.comfy td.from {
+    position: absolute;
+    top: 0px;
+    left: 50px;
+    display: inline-block;
+  }
+  #pile-results td.subject,
+  #pile-results.comfy td.subject {
+    left: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #pile-results td.draggable,
+  #pile-results.comfy td.draggable {
+    display: block;
+    visibility: hidden;
+  }
+  #pile-results td.message-nav,
+  #pile-results.comfy td.message-nav {
+    position: absolute;
+    display: block;
+    width: 15px;
+    top: 0px;
+    left: 1px;
+  }
+  #pile-results tr.full-message,
+  #pile-results.comfy tr.full-message {
+    /* When a full message is expanded in the results */
+    background-color: inherit;
+  }
+  #pile-results tr.full-message .thread-container,
+  #pile-results.comfy tr.full-message .thread-container,
+  #pile-results tr.full-message .thread-message,
+  #pile-results.comfy tr.full-message .thread-message {
+    width: auto;
+  }
+  #pile-results tr.full-message .form-compose,
+  #pile-results.comfy tr.full-message .form-compose {
+    padding: none;
+    padding-left: 20px;
+  }
+  #pile-results tr.full-message h3,
+  #pile-results.comfy tr.full-message h3 {
+    font-size: 13px;
+  }
+  #pile-results tr.full-message .message-subject,
+  #pile-results.comfy tr.full-message .message-subject {
+    font-size: 20px;
+    margin: 5px;
+    margin-left: 20px;
+    width: auto;
+    text-overflow: ellipsis;
+  }
+  #pile-results tr.full-message td.from,
+  #pile-results.comfy tr.full-message td.from {
+    left: 25px;
+    display: block;
+    position: relative;
+    padding: 0px;
+    top: -20px;
+    width: 100%;
+  }
+  #pile-results tr.full-message td.subject,
+  #pile-results.comfy tr.full-message td.subject {
+    left: 0px;
+    display: block;
+    position: relative;
+    padding: 0px;
+    top: -20px;
+  }
+  div.footer-nav {
+    display: none;
+  }
+  #pile-speed {
+    margin-bottom: 0px;
+    font-size: 70%;
+  }
+  #display-density-selector {
+    display: none;
+  }
+  #pile-more {
+    display: none;
+  }
+  table.account-list {
+    margin: 0 0 !important;
+    display: block;
+  }
+  div.motd {
+    background: #ffffff;
+  }
+  .account-list {
+    display: block;
+  }
+  .account-list tr,
+  .account-list td,
+  .account-list th,
+  .account-list tbody,
+  .account-list thead {
+    display: block;
+    border: none;
   }
 }
