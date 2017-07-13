@@ -7646,6 +7646,7 @@ label.compose-attach-key span.icon-key {
   width: 24px;
   display: inline-block;
   margin-right: 5px;
+  float: left;
 }
 .compose-from-selected .avatar img {
   width: 24px;
@@ -9715,6 +9716,11 @@ a.modal-tag-color-option:hover {
     bottom: auto;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+  }
+  .compose-from-select {
+    position: relative;
+    max-width: 16em;
+    margin-bottom: 0.5em;
   }
   /* Stuff we just hide... */
   #sidebar hr,
