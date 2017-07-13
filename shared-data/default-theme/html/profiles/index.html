@@ -50,30 +50,30 @@
     <span class="icon icon-home"></span> {{_("Welcome Home")}}
   </h1>
 
-  <table width='100%' class="account-list">
+  <table width="100%" class="account-list">
     <tr>
-      <th colspan=4>
+      <th colspan="4">
         <h3>{{_("E-mail Accounts")}}</h3>
 {%- if result.profiles|length > 0 %}
-      </th><td width='1%'><span class="icon icon-new"></span>
-      </td><td width='1%'><span class="icon icon-logo"></span>
-      </td><td width='1%'>
+      </th><td width="1%"><span class="icon icon-new"></span>
+      </td><td width="1%"><span class="icon icon-logo"></span>
+      </td><td width="1%">
 {%- if is_dev_version() %}
         <span class="icon icon-outbox"></span>
 {%- endif %}
       </td><td><i>{{_("settings")}}</i>
 {%- else %}
-      </td><td colspan=3 style='border: 0;'>
+      </td><td colspan="3" style="border: 0;">
 {%- endif %}
-      </td><td width='1%' style='border: 0;'>
+      </td><td width="1%" style="border: 0;">
       </td>
     </tr>
     {%- if result.loading or not result.loaded %}
-    <tr class="message"><td colspan=9><div class='text-center'>
-      <p style='margin: 1em; padding: 0;'>
+    <tr class="message"><td colspan="9"><div class="text-center">
+      <p style="margin: 1em; padding: 0;">
         <i>{{_("Still loading profiles and contacts, please wait...")}}</i>
       </p>
-      <script type='text/javascript'>
+      <script type="text/javascript">
         setTimeout('window.location.href=window.location.href', 5000);
       </script>
     </div></td></tr>
@@ -104,11 +104,11 @@
                     href="{{ U('/profiles/edit/?rid=', profile_rid) }}">
                    <span class="icon icon-user" style="color: #070;"></span>
          </a>
-       </td><td style='text-align: left;'>
+       </td><td style="text-align: left;">
          <a href="{{ U('/in/inbox/?q=in:', t.slug) }}">
            {{ p.fn }}
          </a>
-       </td><td style='text-align: left;'>{% for e in p.email %}
+       </td><td style="text-align: left;">{% for e in p.email %}
          {{ e.email }}{% if not loop.last %}<br>{% endif %}
        {%- endfor %}
        </td><td><a href="{{ U('/in/', t.slug, '/?q=is:unread') }}"><b>{{ t.stats.new }}</b></a>
