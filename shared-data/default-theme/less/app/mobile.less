@@ -127,8 +127,13 @@
 
   .compose-from-select {
       position: relative;
-      max-width: 16em;
+      width: 15em;
+      max-width: 15em;
       margin-bottom: 0.5em;
+      border-top: 1px solid @grayMid;;
+      padding-top: 4px;
+      margin-top: 0px;
+      margin-left: 0px;
   }
 
   /* Stuff we just hide... */
@@ -235,6 +240,14 @@
 
   div.motd {
       background: @white;
+  }
+
+  .account-list {
+      display: block;
+      tr, td, th, tbody, thead {
+          display: block;
+          border: none;
+      }
   }
 
 }
