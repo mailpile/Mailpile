@@ -172,16 +172,15 @@
                  data-mid="{{mid}}" data-email="{{ profile_email }}"
                  data-sig="{{ profiles.default_sig if ('x-mailpile-profile-signature' not in profile) else profile['x-mailpile-profile-signature'] }}">
                 <div class="avatar">
-              <a href="#" class="compose-from" data-mid="{{mid}}">
-                {% if profile.photo %}
-                <img src="{{profile.photo[0].photo}}">
-                {% else %}
-                <img src="{{ U('/static/img/avatar-default-white.png') }}">
-                {% endif %}
+                  {%- if profile.photo %}
+                  <img src="{{profile.photo[0].photo}}">
+                  {%- else %}
+                  <img src="{{ U('/static/img/avatar-default-white.png') }}">
+                  {%- endif %}
                 </div>
                 <div class="name-and-address">
-                    <div class="name">{{profile.fn}}</div>
-                    <div class="address">{{ profile_email }}</div>
+                  <div class="name">{{profile.fn}}</div>
+                  <div class="address">{{ profile_email }}</div>
                 </div>
               </a>
             </li>
