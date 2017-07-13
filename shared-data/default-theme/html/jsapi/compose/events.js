@@ -255,6 +255,7 @@ $(document).on('click', '.compose-message-trash', function() {
 $(document).on('click', '.compose-from', function(e) {
   e.preventDefault();
   var mid = $(this).data('mid');
+  var sig = $(this).data('sig');
   var avatar = $(this).find('.avatar img').attr('src');
   var name = $(this).find('.name').html();
   var address = $(this).find('.address').html();
@@ -263,6 +264,13 @@ $(document).on('click', '.compose-from', function(e) {
   $('#compose-from-selected-' + mid).find('.address').html(address);
   $('#compose-from-' + mid).val(name + ' <' + address + '>');
   $('#compose-send-' + mid).show();
+  if (sig) {
+    $('#compose-signature-' + mid).html(
+      '-- <br>' + sig.replace(/\n/g, '<br>') + '<br><br>');
+  }
+  else {
+    $('#compose-signature-' + mid).html('');
+  }
   Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {});
 });
 

@@ -470,6 +470,9 @@ class ListVCards(VCardCommand):
     }
     HTTP_CALLABLE = ('GET')
 
+    def _augment_info(self, info):
+        return info
+
     def command(self):
         session, config = self.session, self.session.config
         kinds = self.KIND and [self.KIND] or None
@@ -507,9 +510,7 @@ class ListVCards(VCardCommand):
         vcards = config.vcards.find_vcards(terms, kinds=kinds)
         total = len(vcards)
         vcards = vcards[offset:offset + count]
-        return self._success(_("Listed %d/%d results") % (min(total, count),
-                                                          total),
-                             result=self._vcard_list(vcards, mode=fmt, info={
+        info = self._augment_list_info({
                    'terms': args,
                    'offset': offset,
                    'count': min(count, total),
@@ -517,8 +518,10 @@ class ListVCards(VCardCommand):
                    'start': offset,
                    'end': offset + min(count, total - offset),
                    'loading': loading,
-                   'loaded': loaded
-               }))
+                   'loaded': loaded})
+        return self._success(
+            _("Listed %d/%d results") % (min(total, count), total),
+            result=self._vcard_list(vcards, mode=fmt, info=info))
 
 
 def ContactVCard(parent):
@@ -816,6 +819,13 @@ def ProfileVCard(parent):
         VCARD = "profile"
 
         DEFAULT_KEYTYPE = 'RSA2048'
+
+        def _default_signature(self):
+            return _('Sent using Mailpile, Free Software from www.mailpile.is')
+
+        def _augment_list_info(self, info):
+            info['default_sig'] = self._default_signature()
+            return info
 
         def _yn(self, val, default='no'):
             return truthy(self.data.get(val, [default])[0])
@@ -1120,9 +1130,6 @@ class AddProfile(ProfileVCard(AddVCard)):
         'source-*': 'Source settings',
         'security-*': 'Security settings'
     })
-
-    def _default_signature(self):
-        return _('Sent using Mailpile, Free Software from www.mailpile.is')
 
     def _form_defaults(self):
         new_src_id = randomish_uid();

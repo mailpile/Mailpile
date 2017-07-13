@@ -95,7 +95,7 @@
           {% endfor %}
           {% endif %}
         </ul>
-        <div class="clearfix"></div>
+        <div class="clearfix" id="compose-signature-{{mid}}"></div>
         <ul class="horizontal">
           <li>
             <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a><span class="attachment-progress-bar"></span>
@@ -167,7 +167,9 @@
                              or {'fn': from.fn} -%}
             {%- if profile['x-mailpile-profile-route'] -%}
             <li role="presentation">
-              <a href="#" class="compose-from" data-mid="{{mid}}">
+              <a href="#" class="compose-from"
+                 data-mid="{{mid}}" data-email="{{ profile_email }}"
+                 data-sig="{{ profiles.default_sig if ('x-mailpile-profile-signature' not in profile) else profile['x-mailpile-profile-signature'] }}">
                 <span class="avatar">
                 {% if profile.photo %}
                 <img src="{{profile.photo[0].photo}}">

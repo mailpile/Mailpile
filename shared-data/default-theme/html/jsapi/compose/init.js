@@ -42,6 +42,14 @@ Mailpile.Composer.init = function(mid, strings, addresses) {
     Mailpile.Composer.Tooltips.ContactDetails();
   }, 'initial');
 
+  // Initialize signature; use setTimeout to isolate faults.
+  setTimeout(function() {
+    var email = $('#compose-from-selected-' + mid + ' .address').html();
+    $('a.compose-from').each(function(i, elem) {
+      if ($(elem).data('email') == email) $(elem).trigger('click');
+    });
+  }, 50);
+
   // Initialize Attachments; use setTimeout to isolate faults.
   setTimeout(function() {
     // FIXME: needs to be bound to unique ID that can be destroyed
