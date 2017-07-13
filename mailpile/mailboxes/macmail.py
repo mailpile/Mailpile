@@ -152,5 +152,11 @@ class MailpileMailbox(UnorderedPicklable(MacMaildir)):
             return (fn, )
         raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
 
+    def __unicode__(self):
+        return _("Mac Maildir %s") % self._mailroot
+
+    def _describe_msg_by_ptr(self, msg_ptr):
+        return _("e-mail in file %s") % self._lookup(msg_ptr[MBX_ID_LEN:])
+
 
 mailpile.mailboxes.register(50, MailpileMailbox)

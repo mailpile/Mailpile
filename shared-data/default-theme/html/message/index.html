@@ -1,7 +1,7 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block title %}{{ nice_subject(result.data.metadata[result.thread_ids[-1]].subject) }}{% endblock %}
 {% block content %}
-{% if result %}
+{% if result and not result.errors %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set last_mid      = result.thread_ids.0 %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
@@ -101,8 +101,8 @@ $(document).ready(function() {
   Mailpile.Message.init();
 });
 </script>
-  {% else %}{# No Result, Show Error #}
-  {% set error_title = "message_missing" %}
-  {% include("partials/errors_content.html") %}
+
+{% else %}{# No Result, Show Error #}
+  {% include("partials/error_message_missing.html") %}
 {% endif  %}{# if result #}
 {% endblock %}

@@ -7,7 +7,7 @@ import sys
 import mailpile.mailboxes
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mailboxes import UnorderedPicklable
+from mailpile.mailboxes import UnorderedPicklable, MBX_ID_LEN
 from mailpile.crypto.streamer import *
 from mailpile.util import safe_remove
 
@@ -39,6 +39,12 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
+
+    def __unicode__(self):
+        return _("Mailpile mailbox at %s") % self._path
+
+    def _describe_msg_by_ptr(self, msg_ptr):
+        return _("e-mail in file %s") % self._lookup(msg_ptr[MBX_ID_LEN:])
 
 # FIXME: Copies
 #   def _copy_paths(self, where, key, copies):

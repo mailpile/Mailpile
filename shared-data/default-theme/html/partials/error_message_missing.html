@@ -1,0 +1,55 @@
+<div id="error" class="content-normal">
+  {%- if not result.errors %}
+    {%- do result.__setitem__('errors', {'*': {'error': _("Message Not Found")}}) %}
+  {%- endif %}
+
+  <h2><span class="icon-inbox"></span> {{result.errors[result.errors.keys()[0]].error}}</h2>
+  {%- if result.errors|length > 1 %}
+    <p><b>Other errors:</b>
+    {%- for e in result.errors %}
+      {{- e.error }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}</p>
+  {%- endif %}
+  <br>
+
+  {%- set details = [] %}
+  {%- for k in result.errors %}
+  <p>
+    {%- set e = result.errors[k] %}
+    {% if e.details %}{% do details.append(e.details) %}{{e.details}}<br>{% endif %}
+    <a id="show-techstuff-{{loop.index}}" href="javascript:_errmsg_display_techstuff({{loop.index}});">{{_("Display technical details.")}}</a>
+    <div id="techstuff-{{loop.index}}" class="hide">
+      <pre>{{e.traceback}}
+Message MID = {{ k }}
+Error = {{ e.error }}
+Details = {{ e.details }}
+Data = {{ e.locations|json }}</pre>
+    </div>
+  </p>
+  {%- endfor %}
+  {%- if not details %}
+  <p>
+    {{_("We were unable to find the message you requested, perhaps it was deleted?")}}
+  </p>
+  {%- endif %}
+
+  <p class='bugreport'>
+    {{_("If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank\">file a report</a> including the technical details above.",
+        url="https://github.com/mailpile/Mailpile/issues/new?title=Message%20not%20loading")}}
+  </p>
+
+  <script>
+    function _errmsg_display_techstuff(tbno) {
+      $('#show-techstuff-' + tbno).hide();
+      $('#techstuff-' + tbno).slideDown();
+      var $br = $('.bugreport a');
+      var details = encodeURIComponent(
+        '({{_("DESCRIBE YOUR PROBLEM HERE")}})\n```\n'
+        + $('#techstuff-' + tbno + ' pre').html()
+            .replace(/^/gm, '    ')
+            .replace(/\/\S+\/mailpile\//ig, '.../')  // PRIVACY IS GOOD!
+        + '\n```');
+      $br.attr('href', $br.attr('href') + '&body=' + details);
+    }
+  </script>
+</div>

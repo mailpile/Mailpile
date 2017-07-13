@@ -77,6 +77,7 @@ def UnorderedPicklable(parent, editable=False):
             self._decryption_key_func = lambda: None
             self.__init2__(*args, **kwargs)
 
+
         def __init2__(self, *args, **kwargs):
             pass
 
@@ -86,6 +87,18 @@ def UnorderedPicklable(parent, editable=False):
 
         def __exit__(self, *args, **kwargs):
             self._lock.release()
+
+        def __unicode__(self):
+            return unicode(str(self))
+
+        def describe_msg_by_ptr(self, msg_ptr):
+            try:
+                return self._describe_msg_by_ptr(msg_ptr)
+            except KeyError:
+                return _("message not found in mailbox")
+
+        def _describe_msg_by_ptr(self, msg_ptr):
+            return unicode(msg_ptr)
 
         def __setstate__(self, data):
             self.__dict__.update(data)
