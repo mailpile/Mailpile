@@ -2,9 +2,10 @@
 @media only screen and (max-width: 767px), (orientation: portrait) {
 
   .topbar-logo-name { display: none; }
+  .topbar-actions { max-width: 250px;  }
 
-  .form-search { width: auto; }
-  .form-search input { width: 50%; }
+  .form-search { width: auto; margin-left: 0px; }
+  .form-search input { width: auto; max-width: 190px; }
 
   .topbar-nav .nav-search { display: list-item; }
   .topbar-nav { display: none; }
@@ -59,7 +60,26 @@
   }
   #sidebar a.sidebar-tag-expand { top: 25%; left: 0; }
 
+  #page {
+    margin: 0px !important;
+  }
+
   #content { left: 72px; }
+
+  .content-normal, .pile-bottom {
+    h1 { font-size: 24px; padding: 4px; padding-left: 10px; }
+    h2 { font-size: 21px; padding: 4px; padding-left: 10px; }
+    h3 { font-size: 16px; padding: 4px; padding-left: 10px; }
+    h4 { font-size: 14px; padding: 4px; padding-left: 10px; }
+    h5 { font-size: 10px; padding: 4px; padding-left: 4px; }
+  }
+  #pile-bottom {
+    h5 { font-size: 12px; margin-top: 0px !important; }
+  }
+
+  #pile-empty {
+    .button-primary { display: block; }
+  }
 
   #pile-results td.checkbox,
   #pile-results td.crypto-and-tags { display: none; }
@@ -72,6 +92,7 @@
   #content-tools nav .navigation-text { display: none; }
 
   #bulk-actions-message { position: absolute; }
+
 }
 
 /* This is too small for the tabular result list, switch to card-style */
@@ -104,9 +125,129 @@
     border-bottom-right-radius: (@base-border-radius);
   }
 
+  .compose-from-select {
+      position: relative;
+      width: 15em;
+      max-width: 15em;
+      margin-bottom: 0.5em;
+      border-top: 1px solid @grayMid;;
+      padding-top: 4px;
+      margin-top: 0px;
+      margin-left: 0px;
+  }
+
   /* Stuff we just hide... */
   #sidebar hr,
-  #notifications-header,
-  #pile-results td.from { display: none; }
+  #notifications-header {
+    display: none;
+  }
+
+  #pile-results, #pile-results.comfy {
+    display: block;
+    tbody { display: block; }
+    tbody tr.pile-message {
+      display: block;
+      position: relative;
+      border-bottom: 1px solid @grayMid;
+      overflow-x: hidden;
+    }
+    td { display: block; border: none; }
+    td.avatar {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      padding-right: 5px;
+      width: 40px;
+      height: 40px;
+      a img { width: 40px; height: 40px; }
+    }
+    td.crypto-and-tags { display: none; }
+    td.checkbox { display: none; }
+    td.date { position: absolute; top: 0px; right: 5px; pull: right; }
+    td.from {
+        position: absolute;
+        top: 0px;
+        left: 50px;
+        display: inline-block;
+    }
+    td.subject { left: 50px; overflow: hidden; text-overflow: ellipsis; }
+    td.draggable { display: block; visibility: hidden;}
+    td.message-nav { position: absolute; display: block; width: 15px; top: 0px; left: 1px; }
+
+    tr.full-message {
+        /* When a full message is expanded in the results */
+        background-color: inherit;
+
+        .thread-container, .thread-message {
+            width: auto;
+        }
+
+        .form-compose {
+            padding: none;
+            padding-left: 20px;
+        }
+
+        h3 {
+            font-size: 13px;
+        }
+        .message-subject {
+            font-size: 20px;
+            margin: 5px;
+            margin-left: 20px;
+            width: auto;
+            text-overflow: ellipsis;
+        }
+
+        td.from {
+            left: 25px;
+            display: block;
+            position: relative;
+            padding: 0px;
+            top: -20px;
+            width: 100%;
+        }
+        td.subject {
+            left: 0px;
+            display: block;
+            position: relative;
+            padding: 0px;
+            top: -20px;
+        }
+    }
+  }
+
+  div.footer-nav {
+    display: none;
+  }
+
+  #pile-speed {
+    margin-bottom: 0px;
+    font-size: 70%;
+  }
+
+  #display-density-selector {
+    display: none;
+  }
+
+  #pile-more {
+      display: none;
+  }
+
+  table.account-list {
+      margin: 0 0 !important;
+      display: block;
+  }
+
+  div.motd {
+      background: @white;
+  }
+
+  .account-list {
+      display: block;
+      tr, td, th, tbody, thead {
+          display: block;
+          border: none;
+      }
+  }
 
 }
