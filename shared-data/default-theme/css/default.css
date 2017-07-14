@@ -9550,6 +9550,32 @@ a.modal-tag-color-option:hover {
   .mobile-inline {
     display: inline-block;
   }
+  /* Start by making comfy/cozy/snug be identical: */
+  #pile-results.comfy td,
+  #pile-results.cozy td,
+  #pile-results.snug td {
+    padding-top: 13px;
+    padding-bottom: 11px;
+  }
+  #pile-results.comfy td.avatar,
+  #pile-results.cozy td.avatar,
+  #pile-results.snug td.avatar {
+    padding-top: 6px;
+    padding-bottom: 5px;
+  }
+  #pile-results.comfy td.avatar a img,
+  #pile-results.cozy td.avatar a img,
+  #pile-results.snug td.avatar a img {
+    width: 24px;
+    height: 24px;
+  }
+  #pile-results.comfy td.from span.conversation-count,
+  #pile-results.cozy td.from span.conversation-count,
+  #pile-results.snug td.from span.conversation-count {
+    top: 1px;
+    padding: 4px 8px;
+  }
+  /* Now for serious business: */
   .topbar-logo-name {
     display: none;
   }

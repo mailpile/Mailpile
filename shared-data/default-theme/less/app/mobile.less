@@ -7,6 +7,19 @@
   .mobile-block { display: block; }
   .mobile-inline { display: inline-block; }
 
+  /* Start by making comfy/cozy/snug be identical: */
+  #pile-results.comfy, #pile-results.cozy, #pile-results.snug {
+      td { padding-top: 13px; padding-bottom: 11px; }
+      td.avatar { padding-top: 6px; padding-bottom: 5px; }
+      td.avatar a img { width: 24px; height: 24px; }
+      td.from span.conversation-count {
+          top: 1px;
+          padding: 4px 8px;
+      }
+  }
+
+  /* Now for serious business: */
+
   .topbar-logo-name { display: none; }
   .topbar-actions { max-width: 250px;  }
 
