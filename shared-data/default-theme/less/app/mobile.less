@@ -1,5 +1,93 @@
+/* Mobile only components to hide under normal circumstances */
+.mobile-block { display: none; }
+.mobile-inline { display: none; }
+
 /* Mobile - All Sizes (devices and browser) */
 @media only screen and (max-width: 767px), (orientation: portrait) {
+  .mobile-block { display: block; }
+  .mobile-inline { display: inline-block; }
+
+  /* Start by making comfy/cozy/snug be identical: */
+  #pile-results.comfy, #pile-results.cozy, #pile-results.snug {
+      td { padding-top: 13px; padding-bottom: 11px; }
+      td.avatar { padding-top: 6px; padding-bottom: 5px; }
+      td.avatar a img { width: 24px; height: 24px; }
+      td.from span.conversation-count {
+          top: 1px;
+          padding: 4px 8px;
+      }
+  }
+
+  /* Make setup and login look less horrible */
+  div.setup-box-medium {
+      width: 100%;
+  }
+
+  div.setup-box {
+      border: 0px;
+      border-radius: 0px;
+      height: 100%;
+      width: 100%;
+      padding: 0px;
+      padding-top: 20px;
+      padding-bottom: 30px;
+  }
+
+  div.add-top {
+      margin-top: 0px !important;
+  }
+
+  div#identity-vault-lock {
+      display: block;
+      left: 0px;
+      margin-left:
+      auto;
+      margin-right: auto;
+  }
+
+  body {
+      background: @grayLight;
+  }
+
+  #login {
+      display: none;
+      #login-right, #login-left { display: none; }
+  }
+
+  #login-logo {
+      zoom: 0.8;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      display: block;
+      svg {
+          margin: auto;
+      }
+  }
+
+  #login-details {
+      left: 0px;
+      width: 100%;
+
+      .form-text {
+          display: block;
+          top: 0px;
+          left: 0px;
+          text-align: center;
+      }
+
+      .form-login {
+          display: block;
+          margin: auto;
+          margin-top: 5px;
+      }
+  }
+
+  #login-vault-lock {
+      display: none;
+  }
+
+  /* Now for serious business: */
 
   .topbar-logo-name { display: none; }
   .topbar-actions { max-width: 250px;  }
@@ -73,6 +161,58 @@
     h4 { font-size: 14px; padding: 4px; padding-left: 10px; }
     h5 { font-size: 10px; padding: 4px; padding-left: 4px; }
   }
+
+  .content-normal section {
+      width: 100%;
+      max-width: 100%;
+      table {
+          width: 100%;
+          max-width: 100%;
+
+          th {
+              display: none;
+          }
+
+          tr {
+              display: block;
+              border-bottom: 1px solid @grayMid;
+          }
+
+          td {
+              display: inline-block;
+          }
+
+          td#email-address, td#first-name {
+              padding-top: 5px;
+              padding-bottom: 0px;
+              display: block;
+          }
+
+          td#first-name a {
+              font-size: 20px;
+          }
+
+          td#compose-message {
+              float: right;
+              padding-bottom: 0px;
+              a {
+                  font-size: 24px;
+              }
+          }
+
+          td#settings-actions, td#stats-new, td#stats-all {
+              a { padding-right: 8px; font-size: 16px; }
+          }
+      }
+  }
+  .content-normal section.motd {
+
+      padding: 0px;
+      .version-info {
+          padding-left: 5px;
+      }
+  }
+
   #pile-bottom {
     h5 { font-size: 12px; margin-top: 0px !important; }
   }
