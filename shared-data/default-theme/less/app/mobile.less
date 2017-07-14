@@ -1,5 +1,11 @@
+/* Mobile only components to hide under normal circumstances */
+.mobile-block { display: none; }
+.mobile-inline { display: none; }
+
 /* Mobile - All Sizes (devices and browser) */
 @media only screen and (max-width: 767px), (orientation: portrait) {
+  .mobile-block { display: block; }
+  .mobile-inline { display: inline-block; }
 
   .topbar-logo-name { display: none; }
   .topbar-actions { max-width: 250px;  }
@@ -73,6 +79,58 @@
     h4 { font-size: 14px; padding: 4px; padding-left: 10px; }
     h5 { font-size: 10px; padding: 4px; padding-left: 4px; }
   }
+
+  .content-normal section {
+      width: 100%;
+      max-width: 100%;
+      table {
+          width: 100%;
+          max-width: 100%;
+
+          th {
+              display: none;
+          }
+
+          tr {
+              display: block;
+              border-bottom: 1px solid @grayMid;
+          }
+
+          td {
+              display: inline-block;
+          }
+
+          td#email-address, td#first-name {
+              padding-top: 5px;
+              padding-bottom: 0px;
+              display: block;
+          }
+
+          td#first-name a {
+              font-size: 20px;
+          }
+
+          td#compose-message {
+              float: right;
+              padding-bottom: 0px;
+              a {
+                  font-size: 24px;
+              }
+          }
+
+          td#settings-actions, td#stats-new, td#stats-all {
+              a { padding-right: 8px; font-size: 16px; }
+          }
+      }
+  }
+  .content-normal section.motd {
+
+      padding: 0px;
+      .version-info {
+          padding-left: 5px;
+      }
+  }
+
   #pile-bottom {
     h5 { font-size: 12px; margin-top: 0px !important; }
   }

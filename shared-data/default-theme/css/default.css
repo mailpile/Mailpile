@@ -6017,58 +6017,68 @@ div.settings-page,
   color: #777;
 }
 /* Mailpile - Settings */
-table.account-list {
-  margin: 3em 0;
+.content-normal .actions {
+  float: right;
+}
+.content-normal section {
+  display: inline-block;
+  margin-top: 1.7em;
+  vertical-align: top;
+}
+.content-normal section h3 {
+  margin-top: 0.7em;
+  margin-bottom: 0.7em;
+}
+@media only screen and (min-width: 1600px), (orientation: portrait) {
+  .content-normal section {
+    max-width: 50%;
+  }
+}
+section.account-list table {
+  margin: 0;
   background: none;
   border: 0;
   text-align: right;
 }
-table.account-list th {
+section.account-list table td#email-address,
+section.account-list table td#first-name {
+  text-align: left;
+}
+section.account-list table th {
   background: none;
   border: 0;
   text-align: left;
 }
-table.account-list tr.message {
+section.account-list table tr.message {
   background: #ffffff;
 }
-table.account-list tr:hover {
-  background: none;
-}
-table.account-list h3 {
-  margin: 0;
-}
-table.account-list .icon-logo {
+section.account-list .icon-logo {
   font-size: 1.3em;
 }
-div.motd {
-  max-width: 35em;
-  opacity: 0.5;
-  transition: opacity 1s;
+@media only screen and (min-width: 1600px), (orientation: portrait) {
+  section.motd {
+    padding-left: 4%;
+  }
 }
-div.motd.recent,
-div.motd:hover {
-  opacity: 1.0;
-  transition: opacity 1s;
-}
-div.motd p,
-div.motd h4 {
+section.motd p,
+section.motd h4 {
   margin: 0.5em 0 0 0;
 }
-div.motd.recent,
-div.motd.recent h4 {
+section.motd.recent,
+section.motd.recent h3 {
   color: #225577;
 }
-div.motd.recent p.motd,
-div.motd.recent p.motd a.motd-signed {
+section.motd.recent p.motd,
+section.motd.recent p.motd a.motd-signed {
   color: #4b9441;
 }
-div.motd .updated {
+section.motd .updated {
   color: #be1c21;
 }
-div.motd p.motd {
+section.motd p.motd {
   margin-left: 1em;
 }
-div.motd a.motd-signed {
+section.motd a.motd-signed {
   display: block;
   margin-top: 0.5em;
   text-align: right;
@@ -9525,8 +9535,21 @@ a.modal-tag-color-option:hover {
     display: inline;
   }
 }
+/* Mobile only components to hide under normal circumstances */
+.mobile-block {
+  display: none;
+}
+.mobile-inline {
+  display: none;
+}
 /* Mobile - All Sizes (devices and browser) */
 @media only screen and (max-width: 767px), (orientation: portrait) {
+  .mobile-block {
+    display: block;
+  }
+  .mobile-inline {
+    display: inline-block;
+  }
   .topbar-logo-name {
     display: none;
   }
@@ -9658,6 +9681,52 @@ a.modal-tag-color-option:hover {
     font-size: 10px;
     padding: 4px;
     padding-left: 4px;
+  }
+  .content-normal section {
+    width: 100%;
+    max-width: 100%;
+  }
+  .content-normal section table {
+    width: 100%;
+    max-width: 100%;
+  }
+  .content-normal section table th {
+    display: none;
+  }
+  .content-normal section table tr {
+    display: block;
+    border-bottom: 1px solid #cccccc;
+  }
+  .content-normal section table td {
+    display: inline-block;
+  }
+  .content-normal section table td#email-address,
+  .content-normal section table td#first-name {
+    padding-top: 5px;
+    padding-bottom: 0px;
+    display: block;
+  }
+  .content-normal section table td#first-name a {
+    font-size: 20px;
+  }
+  .content-normal section table td#compose-message {
+    float: right;
+    padding-bottom: 0px;
+  }
+  .content-normal section table td#compose-message a {
+    font-size: 24px;
+  }
+  .content-normal section table td#settings-actions a,
+  .content-normal section table td#stats-new a,
+  .content-normal section table td#stats-all a {
+    padding-right: 8px;
+    font-size: 16px;
+  }
+  .content-normal section.motd {
+    padding: 0px;
+  }
+  .content-normal section.motd .version-info {
+    padding-left: 5px;
   }
   #pile-bottom h5 {
     font-size: 12px;
