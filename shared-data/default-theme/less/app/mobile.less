@@ -18,6 +18,75 @@
       }
   }
 
+  /* Make setup and login look less horrible */
+  div.setup-box-medium {
+      width: 100%;
+  }
+
+  div.setup-box {
+      border: 0px;
+      border-radius: 0px;
+      height: 100%;
+      width: 100%;
+      padding: 0px;
+      padding-top: 20px;
+      padding-bottom: 30px;
+  }
+
+  div.add-top {
+      margin-top: 0px !important;
+  }
+
+  div#identity-vault-lock {
+      display: block;
+      left: 0px;
+      margin-left:
+      auto;
+      margin-right: auto;
+  }
+
+  body {
+      background: @grayLight;
+  }
+
+  #login {
+      display: none;
+      #login-right, #login-left { display: none; }
+  }
+
+  #login-logo {
+      zoom: 0.8;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      display: block;
+      svg {
+          margin: auto;
+      }
+  }
+
+  #login-details {
+      left: 0px;
+      width: 100%;
+
+      .form-text {
+          display: block;
+          top: 0px;
+          left: 0px;
+          text-align: center;
+      }
+
+      .form-login {
+          display: block;
+          margin: auto;
+          margin-top: 5px;
+      }
+  }
+
+  #login-vault-lock {
+      display: none;
+  }
+
   /* Now for serious business: */
 
   .topbar-logo-name { display: none; }

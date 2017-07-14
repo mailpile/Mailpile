@@ -45,15 +45,16 @@
   {% endif %}
 {%- endblock %}
 
-{%- block content %}<div id="page" class="content-normal">
+{%- block content %}
+<div id="page" class="content-normal">
 
   <h1>
     <span class="icon icon-home"></span> {{_("Welcome Home")}}
   </h1>
 
+{%- if result.profiles|length > 0 %}
   <section class="account-list">
       <h3>{{_("E-mail Accounts")}}</h3>
-      {%- if result.profiles|length > 0 %}
       <table>
         <tr>
           <th colspan="1">
@@ -155,7 +156,7 @@
                        <span class="icon icon-user" style="color: #070;"></span>
              </a>
            </td>
-    {%- if is_dev_version() %}
+           {%- if is_dev_version() %}
            <td id="delete-account">
              <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
                 title="{{_("Delete or disable account")}}"
@@ -164,32 +165,32 @@
                <span class="icon icon-trash" style="color: #750;"></span>
              </a>
            </td>
-    {%- endif %}
+           {%- endif %}
         </tr>
         {%- endfor %}
-        {%- elif not is_configured() %}
-        <tr class="message"><td colspan=9><div class='text-center'>
-          <br>
-          <p><i>{{_("Please review your privacy settings before adding any accounts.")}}</i></p>
-          <p><a title="{{_("Security and Privacy Settings")}}"
-                href="{{ U('/settings/privacy.html?ui_from_profiles=True') }}"><button type=button class="button-secondary">
-            <span class="icon icon-settings"></span> {{_("Privacy & Security")}}
-          </button></a></p>
-        </div></td></tr>
-        {%- elif result.profiles|length < 1 %}
-        <tr class="message"><td colspan=9><div class='text-center'>
-          <br>
-          <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
-          <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
-                title="{{_("Create a new Account")}}"
-                href="{{ U('/profiles/add/') }}"><button type=button class="button-primary">
-            <span class="icon icon-plus"></span> {{_("Add Account")}}
-          </button></a></p>
-        </div></td></tr>
-        {%- endif %}
-      </table>
       {% endif %}
-  </section>
+      </table>
+    </section>
+      {% elif not is_configured() %}
+      <section class="message text-center">
+        <br>
+        <p><i>{{_("Please review your privacy settings before adding any accounts.")}}</i></p>
+        <p><a title="{{_("Security and Privacy Settings")}}"
+              href="{{ U('/settings/privacy.html?ui_from_profiles=True') }}"><button type=button class="button-secondary">
+          <span class="icon icon-settings"></span> {{_("Privacy & Security")}}
+        </button></a></p>
+    </section>
+      {%- elif result.profiles|length < 1 %}
+      <section class="message text-center">
+        <br>
+        <p><i>{{_("You have not configured any accounts yet.")}}</i></p>
+        <p><a class="auto-modal" data-flags="reload" data-icon="icon-user"
+              title="{{_("Create a new Account")}}"
+              href="{{ U('/profiles/add/') }}"><button type=button class="button-primary">
+          <span class="icon icon-plus"></span> {{_("Add Account")}}
+        </button></a></p>
+    </section>
+      {%- endif %}
 
   {% set motd = mailpile('motd', '--noupdate').result %}
   {% if motd._motd %}
@@ -210,7 +211,7 @@
       <i {% if config.version|string() != motd.latest_version|string() -%}
          class="updated"{% endif %}>{{ motd._version_info }}</i>.
     </p>
-</section>
+  </section>
   {% endif %}
 
 </div>

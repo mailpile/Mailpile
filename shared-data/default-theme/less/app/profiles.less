@@ -8,22 +8,28 @@
     h3 {
         margin-top: 0.7em;
         margin-bottom: 0.7em;
+        padding-left: 4px;
     }
+
+    margin-left: -3px;
+    margin-right: -3px;
 
     display: inline-block;
     margin-top: 1.7em;
 
     @media only screen and (min-width: 1600px), (orientation: portrait) {
         max-width: 50%;
+        width: 100%;
     }
     vertical-align: top;
 }
 
 section.account-list table {
-    margin: 0;
+    margin: auto;
     background: none;
     border: 0;
     text-align: right;
+    width: 100%;
 
     td#email-address, td#first-name {
         text-align: left;
@@ -36,11 +42,17 @@ section.account-list table th {
     text-align: left;
 }
 
-section.account-list table tr.message {
-    background: @white;
+tr.message {
+    background: @white;    
 }
 
-section.account-list table tr:hover {
+section.message {
+    width: 100%;
+    max-width: 100%;
+
+    background: @white;
+    border-radius: @base-border-radius;
+    border: 1px solid @grayMid;
 
 }
 

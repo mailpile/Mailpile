@@ -6021,6 +6021,8 @@ div.settings-page,
   float: right;
 }
 .content-normal section {
+  margin-left: -3px;
+  margin-right: -3px;
   display: inline-block;
   margin-top: 1.7em;
   vertical-align: top;
@@ -6028,17 +6030,20 @@ div.settings-page,
 .content-normal section h3 {
   margin-top: 0.7em;
   margin-bottom: 0.7em;
+  padding-left: 4px;
 }
 @media only screen and (min-width: 1600px), (orientation: portrait) {
   .content-normal section {
     max-width: 50%;
+    width: 100%;
   }
 }
 section.account-list table {
-  margin: 0;
+  margin: auto;
   background: none;
   border: 0;
   text-align: right;
+  width: 100%;
 }
 section.account-list table td#email-address,
 section.account-list table td#first-name {
@@ -6049,8 +6054,15 @@ section.account-list table th {
   border: 0;
   text-align: left;
 }
-section.account-list table tr.message {
+tr.message {
   background: #ffffff;
+}
+section.message {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 3px;
+  border: 1px solid #cccccc;
 }
 section.account-list .icon-logo {
   font-size: 1.3em;
@@ -9574,6 +9586,66 @@ a.modal-tag-color-option:hover {
   #pile-results.snug td.from span.conversation-count {
     top: 1px;
     padding: 4px 8px;
+  }
+  /* Make setup and login look less horrible */
+  div.setup-box-medium {
+    width: 100%;
+  }
+  div.setup-box {
+    border: 0px;
+    border-radius: 0px;
+    height: 100%;
+    width: 100%;
+    padding: 0px;
+    padding-top: 20px;
+    padding-bottom: 30px;
+  }
+  div.add-top {
+    margin-top: 0px !important;
+  }
+  div#identity-vault-lock {
+    display: block;
+    left: 0px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body {
+    background: #e9e9e9;
+  }
+  #login {
+    display: none;
+  }
+  #login #login-right,
+  #login #login-left {
+    display: none;
+  }
+  #login-logo {
+    zoom: 0.8;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #login-logo svg {
+    margin: auto;
+  }
+  #login-details {
+    left: 0px;
+    width: 100%;
+  }
+  #login-details .form-text {
+    display: block;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+  }
+  #login-details .form-login {
+    display: block;
+    margin: auto;
+    margin-top: 5px;
+  }
+  #login-vault-lock {
+    display: none;
   }
   /* Now for serious business: */
   .topbar-logo-name {
