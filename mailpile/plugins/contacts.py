@@ -1,6 +1,7 @@
 import os
 import random
 import time
+from email import encoders
 
 import mailpile.config.defaults
 import mailpile.security as security
@@ -1363,13 +1364,28 @@ class ContentTxf(EmailTransform):
         txf_matched, txf_continue = False, True
 
         profile = self._get_sender_profile(sender, kwargs)
-        signature = profile.get('signature')
-        if signature:
+        sig = profile.get('signature')
+        if sig:
             part = self._get_first_part(msg, 'text/plain')
             if part is not None:
-                msg_text = (part.get_payload() or '\n\n').replace('\r', '')
+                msg_text = (part.get_payload(decode=True) or '\n\n'
+                            ).replace('\r', '').decode('utf-8')
                 if '\n-- \n' not in msg_text:
-                    part.set_payload(msg_text.strip() + '\n\n-- \n' + signature)
+                    msg_text = msg_text.strip() + '\n\n-- \n' + sig
+                    try:
+                        msg_text.encode('us-ascii')
+                        need_utf8 = False
+                    except (UnicodeEncodeError, UnicodeDecodeError):
+                        msg_text = msg_text.encode('utf-8')
+                        need_utf8 = True
+
+                    part.set_payload(msg_text)
+                    if need_utf8:
+                        part.set_charset('utf-8')
+                        while 'content-transfer-encoding' in part:
+                            del part['content-transfer-encoding']
+                        encoders.encode_base64(part)
+
                     txf_matched = True
 
         return sender, rcpts, msg, txf_matched, txf_continue
