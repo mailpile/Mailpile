@@ -2,6 +2,7 @@ import datetime
 import json
 import re
 import time
+import traceback
 import unicodedata
 
 import mailpile.security as security
@@ -9,7 +10,7 @@ from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, FormatMbxId, AddressHeaderParser
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, MBX_ID_LEN
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
 from mailpile.security import evaluate_signature_key_trust
@@ -310,24 +311,90 @@ class SearchResults(dict):
                 del att['part']
         return tree
 
-    def _message(self, email):
-        tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
-                                            self.WANT_MSG_TREE))
-        email.evaluate_pgp(tree, decrypt=True)
-        evaluate_signature_key_trust(self.session.config, email, tree)
+    def _troubleshoot_missing_message(self, email, tree):
+        mi = email.get_msg_info()
+        details = {"locations": []}
+        problems = []
+        for msg_ptr, mbox, fd in email.index.enumerate_ptrs_mboxes_fds(mi):
+            pf = None
+            mbox_ptr = msg_ptr[:MBX_ID_LEN]
+            mail_ptr = msg_ptr[MBX_ID_LEN:]
+            info = {
+                'msg_ptr': msg_ptr,
+                'mbox_key': mbox_ptr,
+                'mail_key': mail_ptr}
 
-        editing_strings = tree.get('editing_strings')
-        if editing_strings:
-            for key in ('from', 'to', 'cc', 'bcc'):
-                if key in editing_strings:
-                    cids = self._msg_addresses(
-                        addresses=AddressHeaderParser(
-                            unicode_data=editing_strings[key]))
-                    editing_strings['%s_aids' % key] = cids
-                    for cid in cids:
-                        if cid not in self['data']['addresses']:
-                            self['data']['addresses'
-                                         ][cid] = self._address(cid=cid)
+            if fd:
+                try:
+                    fd.read(10240)
+                except:
+                    pf = _("Failed to read message {mail_key}, {mail_desc}.")
+                    info['mail_desc'] = _('unknown error')
+            elif mbox is not None:
+                pf = _("Failed to open message {mail_key}, {mail_desc}.")
+            else:
+                pf = _("Failed to open mailbox {mbox_key}")
+
+            if mbox is not None:
+                info.update({
+                    'mail_desc': mbox.describe_msg_by_ptr(msg_ptr),
+                    'mbox_desc': unicode(mbox)})
+            if pf:
+                problems.append(pf.format(**info))
+            details["locations"].append(info)
+
+        if problems:
+            details['details'] = ' '.join(problems)
+
+        return details
+
+    def _message(self, email):
+        problem, tree = None, {}
+        try:
+            # We load the message in stages (relying on the internal cache
+            # to make this not slow), so we can report more accurately what
+            # has failed.
+            problem = _('Failed to load and parse message data.')
+            msg = email.get_msg(pgpmime=False)
+
+            problem = _('Failed process message crypto (decrypt, etc).')
+            msg = email.get_msg(pgpmime='default')
+
+            problem = _('Failed to parse message.')
+            tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
+                                                self.WANT_MSG_TREE))
+
+            problem = _('Failed process message crypto (decrypt, etc).')
+            email.evaluate_pgp(tree, decrypt=True)
+
+            problem = _("Failed to evalute key trust")
+            evaluate_signature_key_trust(self.session.config, email, tree)
+
+            editing_strings = tree.get('editing_strings')
+            if editing_strings:
+                for key in ('from', 'to', 'cc', 'bcc'):
+                    problem = _("Failed to parse %s headers." % key)
+                    if key in editing_strings:
+                        cids = self._msg_addresses(
+                            addresses=AddressHeaderParser(
+                                unicode_data=editing_strings[key]))
+                        editing_strings['%s_aids' % key] = cids
+                        for cid in cids:
+                            if cid not in self['data']['addresses']:
+                                self['data']['addresses'
+                                             ][cid] = self._address(cid=cid)
+            problem = None
+
+        except Exception, e:
+            if problem:
+                problem += ' ' + _('Message may be corrupt!')
+            details = {
+                'error': unicode(e),
+                 'details': problem,
+                'traceback': traceback.format_exc(e)}
+            details.update(self._troubleshoot_missing_message(email, tree))
+            self['errors'] = self.get('errors', {})
+            self['errors'][email.msg_mid()] = details
 
         return self._prune_msg_tree(tree)
 

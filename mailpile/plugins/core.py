@@ -1837,7 +1837,7 @@ class Help(Command):
             for cls in COMMANDS:
                 name = cls.SYNOPSIS[1] or cls.SYNOPSIS[2]
                 width = len(name or '')
-                if name and name == command:
+                if name and command in cls.SYNOPSIS[1:3]:
                     order = 1
                     cmd_list = {'_main': (name, cls.SYNOPSIS[3],
                                           cls.__doc__, order)}

@@ -29,6 +29,12 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             for t in [k for k in self._toc.keys() if k.startswith('.')]:
                 del self._toc[t]
 
+    def __unicode__(self):
+        return _("Maildir at %s") % self._path
+
+    def _describe_msg_by_ptr(self, msg_ptr):
+        return _("e-mail in file %s") % self._lookup(msg_ptr[MBX_ID_LEN:])
+
     def get_metadata_keywords(self, toc_id):
         subdir, name = os.path.split(self._lookup(toc_id))
         if self.colon in name:

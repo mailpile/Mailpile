@@ -70,7 +70,7 @@
           {% endfor %}
           {% endif %}
         </ul>
-        <div class="clearfix"></div>
+        <div class="clearfix" id="compose-signature-{{mid}}"></div>
         <ul class="horizontal">
           <li>
             <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>{{_("Add Attachment")}}</a><span class="attachment-progress-bar"></span>
@@ -80,11 +80,10 @@
             <label class="compose-attach-key" data-mid="{{mid}}"
                    title="{{_("Attach your public encryption key to this message")}}">
               <input type="hidden" id="compose-hidden-attach-key-{{mid}}"
-                     name="attach-pgp-pubkey"
-                     value="{{ editing_strings.get('attach-pgp-pubkey', 'no')
-                              }}">
+                     value="{{ editing_strings.get('attach-pgp-pubkey', 'no') }}"
+                     name="attach-pgp-pubkey">
               <input type="checkbox" id="compose-attach-key-{{mid}}"
-                     {%- if truthy(editing_strings['attach-pgp-pubkey']) %} checked{% endif %}>
+                     {%- if truthy(editing_strings.get('attach-pgp-pubkey', 'no')) %} checked{% endif %}>
               {{_("Attach Key")}}
             </label>
           </li>{% endif %}
@@ -168,17 +167,19 @@
                              or {'fn': from.fn} -%}
             {%- if profile['x-mailpile-profile-route'] -%}
             <li role="presentation">
-              <a href="#" class="compose-from" data-mid="{{mid}}">
+              <a href="#" class="compose-from"
+                 data-mid="{{mid}}" data-email="{{ profile_email }}"
+                 data-sig="{{ profiles.default_sig if ('x-mailpile-profile-signature' not in profile) else profile['x-mailpile-profile-signature'] }}">
                 <div class="avatar">
-                {% if profile.photo %}
-                <img src="{{profile.photo[0].photo}}">
-                {% else %}
-                <img src="{{ U('/static/img/avatar-default-white.png') }}">
-                {% endif %}
+                  {%- if profile.photo %}
+                  <img src="{{profile.photo[0].photo}}">
+                  {%- else %}
+                  <img src="{{ U('/static/img/avatar-default-white.png') }}">
+                  {%- endif %}
                 </div>
                 <div class="name-and-address">
-                    <div class="name">{{profile.fn}}</div>
-                    <div class="address">{{ profile_email }}</div>
+                  <div class="name">{{profile.fn}}</div>
+                  <div class="address">{{ profile_email }}</div>
                 </div>
               </a>
             </li>

@@ -1,4 +1,5 @@
 {%    set message = result.data.messages.get(mid)
+%}{%  set message_errors = (result.errors or {}).get(mid)
 %}{%  set metadata = result.data.metadata[mid]
 %}{%  set thread = result.data.threads[metadata.thread_mid]
 %}{%  set conversation_count = thread|length
@@ -45,7 +46,7 @@
 {%- endif %}
     data-mid="{{mid}}">
   <td class="draggable"></td>
-{% if message %}
+{% if message or message_errors %}
   <td class="message-nav">
   {%- if previous_mid %}
     <a href="{{msg_url(previous_mid)}}" title="{{_('Previous Conversation')}}"
@@ -169,7 +170,9 @@
   {%- endif %}
   </td>
   <td class="subject">
-{%- if not message %}
+{%- if message_errors %}
+    {% include("partials/error_message_missing.html") %}
+{%- elif not message %}
     <a class="item-subject" title="{{metadata.body.snippet}}"
        data-noblank=1 data-keep-selection=1
        href="{{msg_url(mid)}}">{{ nice_subject(metadata.subject) }}</a>

@@ -1,6 +1,6 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
-{% if result %}
+{% if result and not result.errors %}
   {% set profiles = mailpile('profiles').result %}
   {% set showed_composer = [] %}
   {% set show_reply = "true" %}
@@ -12,7 +12,6 @@
     {% endif %}
   {% endfor %}
 {% else %}
-  {% set error_title = "message_missing" %}
-  {% include("partials/errors_content.html") %}
+  {% include("partials/error_message_missing.html") %}
 {% endif  %}{# if result #}
 {% endblock %}

@@ -52,6 +52,16 @@ class MailpileMailbox(mailbox.mbox):
         self.unlock()
         self._lock.release()
 
+    def __unicode__(self):
+        return _("Unix mbox at %s") % self._path
+
+    def describe_msg_by_ptr(self, msg_ptr):
+        try:
+            parts, start, length = self._parse_ptr(msg_ptr)
+            return _("message at bytes %d..%d") % (start, start+length)
+        except KeyError:
+            return _("message not found in mailbox")
+
     def _get_fd(self):
         return open(self._path, 'rb+')
 

@@ -1,7 +1,7 @@
 {% extends "layouts/" + render_mode + "-tall.html" %}
 {% block title %}{{_("Compose")}}{% endblock %}
 {% block content %}
-{% if result %}
+{% if result and not result.errors %}
 {% set profiles = mailpile('profiles').result %}
   {# Note: this code follows the pattern described on the following
            stackexchange link, collecting information about how the loop
@@ -22,7 +22,7 @@
         {% do found_editable.append(mid) %}
         {% set composer_view = "draft" %}
         {% set attachments = message.attachments %}
-        {% set editing_strings = message.editing_strings %}
+        {% set editing_strings = message.editing_strings or {} %}
         {% set editing_addresses = result.data.addresses %}
         {% include("partials/compose.html") %}
       {% endif %}
@@ -35,8 +35,7 @@
 
 {% else %}
 
-  {% set error_title = "message_missing" %}
-  {% include("partials/errors_content.html") %}
+  {% include("partials/error_message_missing.html") %}
 
 {% endif %}
 {% endblock %}

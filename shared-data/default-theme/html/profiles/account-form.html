@@ -256,7 +256,10 @@
           $('input[name=name]').focus();
           $('#form-profile-editor').on('keydown', ':tabbable', function(e) {
             // Make ENTER behave like TAB, to avoid accidental form submission.
-            if (e.which == 13 || e.keyCode == 13) {
+            if (document.activeElement.tagName == "TEXTAREA") {
+              // Do nothing
+            }
+            else if (e.which == 13 || e.keyCode == 13) {
               e.preventDefault();
               var nxt = $(document.activeElement).data("next");
               if (nxt) {

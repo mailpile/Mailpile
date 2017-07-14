@@ -377,6 +377,7 @@ class SharedImapMailbox(Mailbox):
         self._last_updated = None
         self._index = None
         self._factory = None  # Unused, for Mailbox compatibility
+        self._broken = None
 
     def open_imap(self):
         return self.source.open(throw=IMAP_IOError, conn_cls=self.conn_cls)
@@ -392,21 +393,27 @@ class SharedImapMailbox(Mailbox):
             raise IMAP_IOError(error)
 
     def __nonzero__(self):
+        if self._broken is not None:
+            return not self._broken
         try:
             with self.open_imap() as imap:
                 ok, data = self.timed_imap(imap.noop, mailbox=self.path)
-                return ok
+                self._broken = False
         except (IOError, AttributeError):
-            return False
+            self._broken = True
+        return not self._broken
 
     def add(self, message):
         raise Exception('FIXME: Need to RETURN AN ID.')
+        self._broken = None
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.append, self.path, message=message)
             self._last_updated = time.time()
             self._assert(ok, _('Failed to add message'))
+        self._broken = False
 
     def remove(self, key):
+        self._broken = None
         with self.open_imap() as imap:
             uidv, uid = (int(k, 36) for k in key.split('.'))
             ok, data = self.timed_imap(imap.uid, 'STORE', uid,
@@ -414,13 +421,17 @@ class SharedImapMailbox(Mailbox):
                                        mailbox=self.path)
             self._last_updated = time.time()
             self._assert(ok, _('Failed to remove message'))
+        self._broken = False
 
     def mailbox_info(self, k, default=None):
+        self._broken = None
         with self.open_imap() as imap:
             imap.select(self.path)
             return imap.mailbox_info(k, default=default)
+        self._broken = False
 
     def get_info(self, key):
+        self._broken = None
         with self.open_imap() as imap:
             uidv, uid = (int(k, 36) for k in key.split('.'))
             ok, data = self.timed_imap(imap.uid, 'FETCH', uid,
@@ -437,6 +448,7 @@ class SharedImapMailbox(Mailbox):
             info = dict(zip(*[iter(data[1])]*2))
             info['UIDVALIDITY'] = uidv
             info['UID'] = uid
+        self._broken = False
         return info
 
     def get(self, key, _bytes=None):
@@ -491,13 +503,15 @@ class SharedImapMailbox(Mailbox):
         return StringIO.StringIO(payload)
 
     def iterkeys(self):
+        self._broken = None
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.uid, 'SEARCH', None, 'ALL',
                                        mailbox=self.path)
             self._assert(ok, _('Failed to list mailbox contents'))
             validity = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
-            return ('%s.%s' % (b36(int(validity)), b36(int(k)))
-                    for k in sorted(data))
+        self._broken = False
+        return ('%s.%s' % (b36(int(validity)), b36(int(k)))
+                for k in sorted(data))
 
     def keys(self):
         return list(self.iterkeys())
@@ -535,9 +549,11 @@ class SharedImapMailbox(Mailbox):
             return False
 
     def __len__(self):
+        self._broken = None
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.noop, mailbox=self.path)
             return imap.mailbox_info('EXISTS', ['0'])[0]
+        self._broken = False
 
     def flush(self):
         pass
@@ -559,6 +575,18 @@ class SharedImapMailbox(Mailbox):
         if self._index is None:
             self._index = ImapMailboxIndex(config, self, mbx_mid=mbx_mid)
         return self._index
+
+    def __unicode__(self):
+        if self:
+            return _("IMAP: %s") % self.path
+        else:
+            return _("IMAP: %s (not logged in)") % self.path
+
+    def describe_msg_by_ptr(self, msg_ptr):
+        if self:
+            return _("e-mail with ID %s") % unquote(msg_ptr[MBX_ID_LEN:])
+        else:
+            return _("remote mailbox is inavailable")
 
 
 def _connect_imap(session, settings, event,
