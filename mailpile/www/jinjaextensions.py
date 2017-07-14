@@ -824,9 +824,9 @@ class MailpileCommand(Extension):
     @classmethod
     def _recipient_summary(self, editing_strings, addresses, truncate):
         summary_list = []
-        recipients = (editing_strings['to_aids'] +
-                      editing_strings['cc_aids'] +
-                      editing_strings['bcc_aids'])
+        recipients = (editing_strings.get('to_aids', []) +
+                      editing_strings.get('cc_aids', []) +
+                      editing_strings.get('bcc_aids', []))
         for aid in recipients:
             summary_list.append(addresses[aid].fn)
         summary = ', '.join(summary_list)
