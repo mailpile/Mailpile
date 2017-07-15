@@ -41,7 +41,7 @@ Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
   Mailpile.UI.Sidebar.SubtagsRender(tid, true);
 
   // Save to Config
-  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) { 
+  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) {
   });
 };
 
@@ -76,7 +76,7 @@ Mailpile.UI.Sidebar.Sortable = function() {
 
       // Save Tag Order
       var tag_setting = Mailpile.tag_setting(tid, 'display_order', new_order);
-      Mailpile.API.settings_set_post(tag_setting, function(result) { 
+      Mailpile.API.settings_set_post(tag_setting, function(result) {
         // Update Current Element
         $(ui.item).attr('data-display_order', new_order).data('display_order', new_order);
       });
@@ -185,7 +185,7 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
     // Display tags that are normally hidden
     $('li.sidebar-tag.hide').addClass('should-hide').slideDown();
     $('li.sidebar-tag.hide a.sidebar-tag').css({'opacity': 0.5});
-    
+
     // Update Cursor Make Links Not Work
     $('.sidebar-sortable li').addClass('is-editing');
 
@@ -213,7 +213,7 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
     Mailpile.ui_in_action -= 1;
 
     // Enable Drag & Drop
-    $('a.sidebar-tag').draggable({ disabled: false });    
+    $('a.sidebar-tag').draggable({ disabled: false });
 
     // Update Cursor Make Links Work
     $('.sidebar-sortable li').removeClass('is-editing');
