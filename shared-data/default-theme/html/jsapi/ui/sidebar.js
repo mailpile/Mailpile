@@ -5,11 +5,12 @@ Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
   if ((_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1)
       && ($('#sidebar-tag-' + tid).not('.should-hide').length > 0)) {
     $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
+    var subtags = $('.subtag-of-' + tid + ':not(.hide)');
     if (gradual) {
-      $('.subtag-of-' + tid).slideDown('fast');
+      subtags.slideDown('fast');
     }
     else {
-      $('.subtag-of-' + tid).show();
+      subtags.show();
     }
   } else {
     $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
