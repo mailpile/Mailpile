@@ -470,7 +470,7 @@ class SharedImapMailbox(Mailbox):
         # how much data to expect. So we just FETCH chunk until one comes up
         # short or empty and assume that's it...
         while chunk >= 0:
-            req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
+            req = '(BODY.PEEK[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
             with self.open_imap() as imap:
                 # Note: use the raw method, not the convenient parsed version.
                 typ, data = self.source.timed(imap.uid,
@@ -1185,4 +1185,3 @@ if __name__ == "__main__":
             print '%s(%d bytes) = %s\n%s' % (mbx.get_msg_ptr('0000', key),
                                              mbx.get_msg_size(key),
                                              info, payload)
-
