@@ -1000,10 +1000,15 @@ class MailIndex(BaseIndex):
                 msg_body,                            # Snippet etc.
                 ','.join(tags),                      # Initial tags
                 '',                                  # No replies for now
-                msg_mid                              # Conversation ID
-            ]
+                msg_mid]                             # Conversation ID
+
             if msg_from:
-                email, fn = ExtractEmailAndName(msg_from)
+                ahp = AddressHeaderParser(msg_from)
+                if ahp:
+                    fn = ahp[0].fn
+                    email = ahp[0].address
+                else:
+                    email, fn = ExtractEmailAndName(msg_from)
             else:
                 email = fn = None
             if email and fn:
