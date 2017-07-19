@@ -70,11 +70,12 @@ class OAuth2(TestableWebbable):
                           '&login_hint=%(username)s')}}
 
     @classmethod
-    def RedirectURI(cls, config, http_host):
-        if http_host == "":
+    def RedirectURI(cls, config, http_host=None):
+        if not http_host:
             http_host = "%s:%s" % config.http_worker.httpd.sspec[:2]
+        meth = 'http' if http_host.startswith('localhost:') else 'https'
         return '/'.join([
-            'http://%s%s' % (http_host, config.http_worker.httpd.sspec[2]),
+            '%s://%s%s' % (meth, http_host, config.http_worker.httpd.sspec[2]),
             cls.SYNOPSIS[2],
             ''])
 
