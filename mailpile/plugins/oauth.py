@@ -70,9 +70,11 @@ class OAuth2(TestableWebbable):
                           '&login_hint=%(username)s')}}
 
     @classmethod
-    def RedirectURI(cls, config):
+    def RedirectURI(cls, config, http_host):
+        if http_host == "":
+            http_host = "%s:%s" % config.http_worker.httpd.sspec[:2]
         return '/'.join([
-            'http://%s:%s%s' % config.http_worker.httpd.sspec,
+            'http://%s%s' % (http_host, config.http_worker.httpd.sspec[2]),
             cls.SYNOPSIS[2],
             ''])
 
@@ -98,7 +100,7 @@ class OAuth2(TestableWebbable):
         state = '%s/%s/%s' % (
             username, ocfg._key, session.ui.html_variables['csrf_token'])
         return ocfg['oauth_url'] % {
-            'redirect_uri': quote_plus(cls.RedirectURI(session.config)),
+            'redirect_uri': quote_plus(cls.RedirectURI(session.config, session.ui.html_variables.get("http_host"))),
             'client_id': quote_plus(ocfg['client_id']),
             'username': quote_plus(username),
             'state': state}
@@ -125,7 +127,7 @@ class OAuth2(TestableWebbable):
             ('code', code),
             ('client_id', oauth2_cfg['client_id']),
             ('client_secret', oauth2_cfg['client_secret']),
-            ('redirect_uri', cls.RedirectURI(session.config)),
+            ('redirect_uri', cls.RedirectURI(session.config, session.ui.html_variables.get("http_host"))),
             ('grant_type', 'authorization_code')])
 
         data = json.loads(cls.URLGet(
