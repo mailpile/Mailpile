@@ -165,6 +165,71 @@ EventLog.unsubscribe = function(ev, func_or_id) {
 };
 
 
+EventLog.get_popup_events_cache = function() {
+    if (Mailpile.local_storage["seen_popup_events"] === undefined ||
+        Mailpile.local_storage["seen_popup_events"] === "") {
+        Mailpile.local_storage.setItem("seen_popup_events", JSON.stringify(new Array()));
+    }
+    return JSON.parse(Mailpile.local_storage["seen_popup_events"]);
+}
+
+
+// The following functions control intermittent popups, mostly
+//  for logging into stuff.
+
+EventLog.TIMEOUT_EXPIRE_OLD_EVENTS = 604800; // Once per week
+EventLog.TIMEOUT_CHECK_OLD_EVENTS = 3600; // Once per hour
+
+EventLog.seen_event_recently = function(ev) {
+    var events = EventLog.get_popup_events_cache();
+    for (e in events) {
+        if (events[e][0] == ev) {
+            return true;
+        }
+    }
+    return false;
+};
+
+
+EventLog.clear_old_events = function(ev) {
+    var events = EventLog.get_popup_events_cache();
+    var curTime = Math.floor(Date.now() / 1000);
+    for (e in events) {
+        if (curTime - events[e][1] > EventLog.TIMEOUT_EXPIRE_OLD_EVENTS) {
+            events.splice(e, 1);
+            Mailpile.local_storage["seen_popup_events"] = JSON.stringify(events);
+        }
+    }
+    return true;
+};
+
+
+EventLog.forget_about_event = function(ev) {
+    var events = EventLog.get_popup_events_cache();
+    for (e in events) {
+        if (events[e][0] == ev) {
+            events.splice(e, 1);
+            Mailpile.local_storage["seen_popup_events"] = JSON.stringify(events);
+            return true;
+        }
+    }
+    return true;
+};
+
+
+EventLog.just_saw_event = function(ev) {
+    if (EventLog.seen_event_recently(ev)) {
+        return false;
+    }
+    var events = EventLog.get_popup_events_cache();
+    var curTime = Math.floor(Date.now() / 1000);
+    events.push([ev, curTime]);
+    Mailpile.local_storage["seen_popup_events"] = JSON.stringify(events);
+    return true;
+};
+
+
+
 $(document).ready(function () {
   window.addEventListener('storage', function(evt) {
     // When the localStorage result sharing object gets updated, we parse
@@ -174,4 +239,5 @@ $(document).ready(function () {
       EventLog.last_ts = EventLog.invoke_callbacks(JSON.parse(evt.newValue));
     }
   }, false);
+  window.setTimeout(EventLog.clear_old_events, EventLog.TIMEOUT_CHECK_OLD_EVENTS * 1000);
 });
