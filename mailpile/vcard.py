@@ -1278,6 +1278,8 @@ class VCardStore(dict):
                     c.load(path, config=self.config)
                     try:
                         def ccb(key, card):
+                            if card.kind == 'profile':
+                                return  # Deleting user input is never OK!
                             if session:
                                 session.ui.error('DISABLING %s, eclipses %s'
                                                  % (path, key))
