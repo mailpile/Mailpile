@@ -277,6 +277,11 @@
       };
     })();
     setTimeout("_fpa.setup();", 100);
+
+    $(function() {
+      // Make authentication popups forget about the current profile:
+      EventLog.forget_about_event("{{result.rid}}");
+    });
   </script>
 
   <form id="form-profile-editor" class="standard"

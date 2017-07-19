@@ -358,11 +358,20 @@ EventLog.subscribe('.*mail_source.*', function(ev) {
     ev.action_text = '{{_("please log in")|escapejs}}';
     ev.action_js = ("onclick=\"Mailpile.mailsource_login('"
        + ev.data.id + "','" + ev.event_id + "');\"");
+    if (!EventLog.seen_event_recently(ev.data.profile_id)) {
+      EventLog.just_saw_event(ev.data.profile_id);
+      Mailpile.mailsource_login(ev.data.id, ev.event_id);
+    }
   }
   else if (conn_error == 'oauth2') {
     ev.action_text = '{{_("grant access")|escapejs}}';
     ev.action_js = ("onclick=\"Mailpile.mailsource_oauth2('"
        + ev.data.id + "','" + ev.event_id + "');\"");
+    console.log(ev.data);
+    if (!EventLog.seen_event_recently(ev.data.profile_id)) {
+       EventLog.just_saw_event(ev.data.profile_id);
+       Mailpile.mailsource_oauth2(ev.data.id, ev.event_id);
+    }
   }
   ev.icon = 'icon-mailsource';
   Mailpile.notification(ev);
