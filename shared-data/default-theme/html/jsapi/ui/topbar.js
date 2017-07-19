@@ -1,11 +1,4 @@
-/* Topbar - Search - Focus */
-$(document).on('focus', '#search-query', function() {
-  $(this).select();
-});
-
-
 /* Clear button */
-
 Mailpile.UI.set_clear_state = setClarState = function(queryBox){
   var $clearButton = $(queryBox).next('.clear-search');
   if (queryBox.value.length > 0) {
@@ -89,13 +82,13 @@ $(document).on('blur', '#button-search-options', function(key) {
 Mailpile.UI.content_setup.push(function($content) {
   // FIXME: This will do silly things if we have multiple search results
   //        on a page at a time.
-  var $sq = $('#search-query');
   var $st = $content.find('#search-terms');
   var search_terms = $st.data('q');
-  if (!search_terms) search_terms = '';
-  if (($sq.data('q') == $sq.val()) || ($sq.val() == "")) {
+  if (search_terms) {
+    var $sq = $('#search-query');
     $sq.val(search_terms);
+    $sq.data('q', search_terms);
+    $sq.data('context', $st.data('context'));
+    Mailpile.UI.set_clear_state($sq[0]);
   }
-  $sq.data('q', search_terms).data('context', $st.data('context'));
-  Mailpile.UI.set_clear_state($sq[0]);
 });
