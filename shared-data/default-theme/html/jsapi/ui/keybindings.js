@@ -9,7 +9,11 @@ Mailpile.initialize_keybindings = function() {
   // Map user/system configured bindings
   for (item in Mailpile.keybindings) {
     var keybinding = Mailpile.keybindings[item];
-    Mousetrap.bind(keybinding.keys, keybinding.callback);
+    if (keybinding.global) {
+        Mousetrap.bindGlobal(keybinding.keys, keybinding.callback);
+    } else {
+        Mousetrap.bind(keybinding.keys, keybinding.callback);
+    }
   }
 };
 
