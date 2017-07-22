@@ -40,6 +40,12 @@
     'url': U('/settings/set/password/keys.html'),
     'text': _("Keys"),
     'description': _("Encryption Key Management")
+  },{
+    'name': 'terminal',
+    'icon': 'robot',
+    'url': 'javascript:Mailpile.Terminal.toggle("small")',
+    'text': _("CLI"),
+    'description': _("Command Line Interface")
   }] %}
   {%- set selection_initial_prompt = _("System activity, logs, events, troubleshooting, ...") %}
   {%- include("partials/tools_default.html") %}
