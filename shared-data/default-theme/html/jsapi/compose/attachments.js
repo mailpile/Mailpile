@@ -137,12 +137,6 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
     filters : {
       max_file_size : '50mb'
     },
-    resize: {
-      width: '3600',
-      height: '3600',
-      crop: true,
-      quaility: 100
-    },
     views: {
       list: true,
       thumbs: true,
