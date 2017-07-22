@@ -41,39 +41,47 @@ def _score_validity(validity, local=False):
 #        different types of sources.  Check it!
 def _update_scores(key_id, key_info, known_keys_list):
     """Update scores and score explanations"""
-    key_info["score"] = sum([score for source, (score, reason)
-                             in key_info.get('scores', {}).iteritems()
-                             if source != 'Known encryption keys'])
 
-    # This is done here, not on the keychain lookup handler, in case
-    # for some reason (e.g. UID changes on source keys) remote sources
+    # This is done here, potentially overriding the keychain lookup handler,
+    # in case for some reason (e.g. UID changes on source keys) remote sources
     # suggest matches which our local search doesn't catch.
     if key_id in known_keys_list:
         score, reason = _score_validity(known_keys_list[key_id]["validity"],
                                         local=True)
         if score == 0:
-            score += 9
+            score = 9
             reason = _('Encryption key has been imported')
 
         key_info["on_keychain"] = True
-        key_info['score'] += score
         key_info['scores']['Known encryption keys'] = [score, reason]
+
+    # FIXME: For this to work better, we need a list of signing subkeys.
+    #        However, if a match is found then that counts, so we use it.
+    if session:
+        msgs = session.config.index.search(
+            session, ['sig:' + key_id[-16:].lower()]).as_set()
+        score = int(math.log(len(msgs) + 1, 2))
+        if score:
+            reason = _('Signature seen on %d messages') % len(msgs)
+            key_info['scores']['Used to sign e-mail'] = [score, reason]
 
     if "keysize" in key_info:
         bits = int(key_info["keysize"])
         score = bits // 1024
-        key_info['score'] += score
 
         if bits >= 4096: 
           key_strength = _('Encryption key is very strong')
         elif bits >= 3072: 
           key_strength = _('Encryption key is strong')
         elif bits >= 2048:
-          key_strength = _('Encryption key is average')
+          key_strength = _('Encryption key is good')
         else: 
           key_strength = _('Encryption key is weak')
 
         key_info['scores']['Encryption key strength'] = [score, key_strength]
+
+    key_info["score"] = sum([score for source, (score, reason)
+                             in key_info.get('scores', {}).iteritems()])
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
@@ -150,7 +158,8 @@ def lookup_crypto_keys(session, address,
                                strict_email_match=strict_email_match,
                                get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
-        except (TimedOut, IOError, ValueError, TypeError, AttributeError):
+        except (TimedOut, IOError, KeyError, ValueError, TypeError,
+                AttributeError):
             if session.config.sys.debug:
                 traceback.print_exc()
             results = {}
