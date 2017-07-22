@@ -13,6 +13,7 @@ mp-virtualenv
 mailpile.egg-info/
 mailpile-tmp.py
 static/default/plugins/
+mailpile/tests/data/private-test-data.mbx
 mailpile/tests/data/tmp
 mailpile/tests/data/gpg-keyring/random_seed
 scripts/less-compiler.mk

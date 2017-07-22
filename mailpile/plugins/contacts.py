@@ -471,7 +471,7 @@ class ListVCards(VCardCommand):
     }
     HTTP_CALLABLE = ('GET')
 
-    def _augment_info(self, info):
+    def _augment_list_info(self, info):
         return info
 
     def command(self):
