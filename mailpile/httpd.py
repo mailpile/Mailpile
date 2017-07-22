@@ -587,6 +587,6 @@ class HttpWorker(threading.Thread):
 
     def quit(self, join=False):
         if self.httpd:
-            self.httpd.shutdown()
             self.httpd.server_close()
+            self.httpd.shutdown()
         self.httpd = None

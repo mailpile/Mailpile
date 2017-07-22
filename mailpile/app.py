@@ -3,6 +3,7 @@ import gettext
 import locale
 import os
 import sys
+import traceback
 
 import mailpile.util
 import mailpile.config.defaults
@@ -106,9 +107,9 @@ def Interact(session):
                     session.ui.block()
                     session.ui.display_result(result)
                 except UsageError, e:
-                    session.error(unicode(e))
+                    session.fatal_error(unicode(e))
                 except UrlRedirectException, e:
-                    session.error('Tried to redirect to: %s' % e.url)
+                    session.fatal_error('Tried to redirect to: %s' % e.url)
     except EOFError:
         print
     finally:
@@ -231,7 +232,7 @@ def Main(args):
                         session, args[0], ' '.join(args[1:]).decode('utf-8')))
 
         except (getopt.GetoptError, UsageError), e:
-            session.error(unicode(e))
+            session.fatal_error(unicode(e))
 
         if (not allopts) and (not a1) and (not a2):
             InteractCommand(session).run()
@@ -239,13 +240,15 @@ def Main(args):
     except KeyboardInterrupt:
         pass
 
+    except:
+        traceback.print_exc()
+
     finally:
-        if readline:
-            readline.write_history_file(session.config.history_file())
+        readline.write_history_file(session.config.history_file())
 
         # Make everything in the background quit ASAP...
         mailpile.util.LAST_USER_ACTIVITY = 0
-        mailpile.util.QUITTING = True
+        mailpile.util.QUITTING = mailpile.util.QUITTING or True
 
         if config.plugins:
             config.plugins.process_shutdown_hooks()
@@ -263,6 +266,10 @@ def Main(args):
 
         # Remove anything that we couldn't remove before
         safe_remove()
+
+        # Restart the app if that's what was requested
+        if mailpile.util.QUITTING == 'restart':
+            os.execv(sys.argv[0], sys.argv)
 
 
 _plugins.register_commands(InteractCommand, WaitCommand)

@@ -1093,7 +1093,7 @@ class BaseMailSource(threading.Thread):
         self.interrupt_rescan(_('Shut down'))
         self.alive = False
         self.wake_up()
-        if join:
+        if join and self.isAlive():
             self.join()
 
 

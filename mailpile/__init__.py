@@ -62,6 +62,6 @@ class Mailpile(object):
         except KeyboardInterrupt:
             pass
         finally:
-            mailpile.util.QUITTING = True
+            mailpile.util.QUITTING = mailpile.util.QUITTING or True
             self._session.config.stop_workers()
             self._session.interactive = self._session.ui.interactive = False

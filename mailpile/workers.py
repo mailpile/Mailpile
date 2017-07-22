@@ -166,11 +166,8 @@ class Cron(threading.Thread):
                         the Cron thread exits.
         """
         self.ALIVE = False
-        if join:
-            try:
-                self.join()
-            except RuntimeError:
-                pass
+        if join and (not self.daemon) and self.isAlive():
+            self.join()
 
 
 class Worker(threading.Thread):
@@ -331,11 +328,8 @@ class Worker(threading.Thread):
 
     def quit(self, session=None, join=True):
         self.die_soon(session=session)
-        if join:
-            try:
-                self.join()
-            except RuntimeError:
-                pass
+        if join and (not self.daemon) and self.isAlive():
+            self.join()
 
 
 class ImportantWorker(Worker):
@@ -389,6 +383,12 @@ class DumbWorker(Worker):
         return self.add_task(session, name, task)
 
     def run(self):
+        pass
+
+    def die_soon(self, *args, **kwargs):
+        pass
+
+    def quit(self, *args, **kwargs):
         pass
 
 
