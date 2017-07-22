@@ -112,13 +112,15 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
-            for key_data in self._get_keys(messageid):
+            for key_info, raw_key in self._get_message_keys(messageid):
                 if strict_email_match:
-                    match = [u for u in key_data.get('uids', [])
+                    match = [u for u in key_info.get('uids', [])
                              if (u['email'] or '').lower() == address]
                     if not match:
                         continue
-                results[key_data["fingerprint"]] = copy.copy(key_data)
+                fp = key_info["fingerprint"]
+                results[fp] = copy.copy(key_info)
+                self.key_cache[fp] = raw_key
             if len(results) > 5 or time.time() > deadline:
                 break
         return results
@@ -130,7 +132,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         else:
             raise ValueError("Key not found")
 
-    def _get_keys(self, messageid):
+    def _get_message_keys(self, messageid):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
@@ -140,8 +142,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                 if _might_be_pgp_key(part["filename"], part["mimetype"]):
                     key = part["part"].get_payload(None, True)
                     for keydata in _get_keydata(key):
-                        keys.append(keydata)
-                        self.key_cache[keydata["fingerprint"]] = key
+                        keys.append((keydata, key))
                     if len(keys) > 5:  # Just to set some limit...
                         break
             self.key_cache[messageid] = keys
