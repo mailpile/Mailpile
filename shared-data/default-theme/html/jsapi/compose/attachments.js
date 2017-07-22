@@ -121,6 +121,7 @@ Mailpile.Composer.Attachments.Uploader = {
   }
 };
 
+Mailpile.Composer.Attachments.Uploader.uploading = 0;
 Mailpile.Composer.Attachments.Uploader.init = function(settings) {
   var uploader = new plupload.Uploader({
     runtimes : 'html5',
@@ -149,7 +150,6 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
         uploader.refresh();
       },
       FilesAdded: function(up, files) {
-
         // Loop through added files
         plupload.each(files, function(file) {
 
@@ -161,6 +161,9 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
                       '{{_("Send it anyway?")}}'))
           {
             uploader.start();
+            $('#form-compose-' + settings.mid + ' button.compose-action'
+              ).prop("disabled", true).css({'opacity': 0.25});
+            Mailpile.Composer.Attachments.Uploader.uploading += 1;
           } else {
             start_upload = false;
           }
@@ -170,10 +173,8 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
         $('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
         var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
         $('.attachment-progress-bar').html(progressBar);
-        $('#compose-send-'+settings.mid).attr("disabled","disabled");
       },
       FileUploaded: function(up, file, response) {
-
         if (response.status == 200) {
 
           var response_json = $.parseJSON(response.response);
@@ -181,17 +182,28 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
 
           //console.log(file);
           $('.attachment-progress-bar').empty();
-          $('#compose-send-'+settings.mid).removeAttr("disabled");
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
           Mailpile.notification({status: 'error', message: '{{_("Attachment upload failed: status")|escapejs}}: ' + response.status });
+        }
+        Mailpile.Composer.Attachments.Uploader.uploading -= 1;
+        if (Mailpile.Composer.Attachments.Uploader.uploading < 1) {
+          $('#form-compose-' + settings.mid + ' button.compose-action'
+            ).prop("disabled", false).css({'opacity': 1.0});
+          Mailpile.Composer.Attachments.Uploader.uploading = 0;
         }
       },
       Error: function(up, err) {
         Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
+        Mailpile.Composer.Attachments.Uploader.uploading -= 1;
+        if (Mailpile.Composer.Attachments.Uploader.uploading < 1) {
+          $('#form-compose-' + settings.mid + ' button.compose-action'
+            ).prop("disabled", false).css({'opacity': 1.0});
+          Mailpile.Composer.Attachments.Uploader.uploading = 0;
+        }
       }
     }
   });
