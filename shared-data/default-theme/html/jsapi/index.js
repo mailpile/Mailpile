@@ -93,6 +93,18 @@ Mailpile = {
     {                                                 keys: "g 7",     callback: function(e) { $('#sidebar-lists #sidebar-tag li').not('.hide').find('a.sidebar-tag').eq(6).trigger('click'); }},
     {                                                 keys: "g 8",     callback: function(e) { $('#sidebar-lists #sidebar-tag li').not('.hide').find('a.sidebar-tag').eq(7).trigger('click'); }},
     {                                                 keys: "g 9",     callback: function(e) { $('#sidebar-lists #sidebar-tag li').not('.hide').find('a.sidebar-tag').eq(8).trigger('click'); }},
+    {
+      keys: "alt+t",
+      callback: function(e) { Mailpile.Terminal.toggle("small") },
+      title: "{{_("Show terminal (small).")|escapejs}}",
+      global: true
+    },
+    {
+      keys: "alt+y",
+      callback: function(e) { Mailpile.Terminal.toggle("full") },
+      title: "{{_("Show terminal (full).")|escapejs}}",
+      global: true
+    }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
   commands:      [],
@@ -452,6 +464,7 @@ Mailpile.API = {
 {% include("jsapi/ui/tooltips.js") %}
 {% include("jsapi/ui/keybindings.js") %}
 {% include("jsapi/ui/events.js") %}
+{% include("jsapi/ui/terminal.js") %}
 
 
 // Plugin Javascript /========================================================

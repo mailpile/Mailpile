@@ -27,7 +27,7 @@ __all__ = [
     'setup_magic', 'oauth', 'exporters', 'plugins', 'motd',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
     'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
-    'keylookup'
+    'keylookup', 'webterminal'
 ]
 PLUGINS = __all__
 
@@ -769,7 +769,7 @@ class PluginManager(object):
     def register_ui_element(self, ui_type,
                             context=None, name=None,
                             text=None, icon=None, description=None,
-                            url=None, javascript_setup=None, 
+                            url=None, javascript_setup=None,
                             javascript_events=None, **kwargs):
         name = name.replace('/', '_')
         if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
