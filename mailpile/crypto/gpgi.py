@@ -489,7 +489,7 @@ class GnuPG:
     LAST_KEY_USED = 'DEFAULT'  # This is a 1-value global cache
 
     def __init__(self, config,
-                 session=None, use_agent=None, debug=False,
+                 session=None, use_agent=None, debug=False, dry_run=False,
                  event=None, passphrase=None):
         global DEBUG_GNUPG
         self.available = None
@@ -513,6 +513,7 @@ class GnuPG:
             self.passphrases = None
             self.passphrase = passphrase.get_reader()
             self.use_agent = use_agent
+        self.dry_run = dry_run
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
 
@@ -616,6 +617,9 @@ class GnuPG:
         args.insert(1, "--status-fd=2")
         if will_send_passphrase:
             args.insert(2, "--passphrase-fd=0")
+
+        if self.dry_run:
+            args.insert(1, "--dry-run")
 
         return args
 
