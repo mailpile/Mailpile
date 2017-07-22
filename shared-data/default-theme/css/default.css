@@ -6038,6 +6038,9 @@ div.settings-page,
     width: 100%;
   }
 }
+section.account-list {
+  margin-right: 5px;
+}
 section.account-list table {
   margin: auto;
   background: none;
@@ -6095,6 +6098,9 @@ section.motd a.motd-signed {
   margin-top: 0.5em;
   text-align: right;
   padding-right: 2em;
+}
+section.motd .version-info {
+  padding-left: 0.5em;
 }
 /* Connection Down */
 #connection-down {
@@ -9948,12 +9954,12 @@ a.modal-tag-color-option:hover {
     position: absolute;
     top: 0px;
     left: 0px;
-    padding-right: 5px;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
   }
   #pile-results td.avatar a img,
   #pile-results.comfy td.avatar a img {
+    margin: 5px 5px 5px 0px;
     width: 40px;
     height: 40px;
   }
@@ -9984,6 +9990,7 @@ a.modal-tag-color-option:hover {
     left: 50px;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-left: 8px;
   }
   #pile-results td.draggable,
   #pile-results.comfy td.draggable {
