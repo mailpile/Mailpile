@@ -14,6 +14,7 @@ Build-Depends: debhelper (>= 9),
                python-dns,
                python-pgpdump,
                python-pil,
+               python-socksipychain,
 # requirements-dev.txt
                python-mock,
                python-selenium,
@@ -70,6 +71,7 @@ Depends: ${misc:Depends},
          python-dns,
          python-pgpdump,
          python-pil
+Recommends: tor
 Description: library and command-line interface for mailpile
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
  privacy features. Mailpile places great emphasis on providing a clean, elegant

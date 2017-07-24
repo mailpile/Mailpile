@@ -6,27 +6,42 @@
 FROM debian:unstable
 MAINTAINER Alexandre Viau <aviau@debian.org>
 
+# The big list below is a subset of what we get from mk-build-deps; manually
+# copied so the Docker intermediate images will change a little bit less when
+# the Debian package rules themselves get updated. Less wasted bandwidth,
+# quicker development cycles...
 RUN apt-get update && \
     apt-get install -y -qq software-properties-common \
                            build-essential \
                            debhelper \
                            devscripts \
-                           equivs
+                           equivs \
+  chromedriver chromium chromium-driver fontconfig fontconfig-config \
+  fonts-dejavu-core fonts-liberation gnome-icon-theme gtk-update-icon-cache \
+  libjs-animate.css libjs-autosize libjs-bootstrap libjs-dompurify \
+  libjs-favico.js libjs-jquery libjs-jquery-slugify libjs-jquery-timer \
+  libjs-jquery-ui libjs-jquery-ui-touch-punch libjs-less-elements \
+  libjs-list.js libjs-mousetrap libjs-moxie libjs-plupload libjs-qtip2 \
+  libjs-rebar libjs-select2.js libjs-typeahead.js libjs-underscore \
+  node-less node-uglify python-all python-bs4 python-dns python-funcsigs \
+  python-jinja2 python-lockfile python-lxml python-markupsafe \
+  python-mock python-nose python-olefile python-pbr python-pgpdump \
+  python-pil python-selenium python-setuptools python-webencodings \
+  python-socksipychain \
+  spambayes va-driver-all vdpau-driver-all window-size x11-common x11-utils \
+  x11-xserver-utils xdg-utils
 
-RUN mkdir /root/mailpile
+RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian
-COPY mailpile.tar.gz /root/mailpile.tar.gz
-RUN mv /root/mailpile.tar.gz /root/mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz
-RUN sed -i "s|<-- version -->|0.0~git$(date +'%Y%m%d')-1|" /root/mailpile/debian/changelog
-
-RUN apt-get update && mk-build-deps --install /root/mailpile/debian/control --tool "apt-get --force-yes -y"
-
-RUN mkdir /mnt/dist
 VOLUME /mnt/dist
 
+RUN ln -s /mnt/dist/mailpile.tar.gz /root/mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz
+RUN sed -i "s|<-- version -->|0.0~git$(date +'%Y%m%d')-1|" /root/mailpile/debian/changelog
+
+RUN mk-build-deps --install /root/mailpile/debian/control --tool "apt-get --force-yes -y"
+
 WORKDIR /root/mailpile
-
-RUN tar xvf ../mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz -C ./
-
 ENV DESTINATION_DPKG_DIR /mnt/dist
-CMD dpkg-buildpackage -us -uc -b && cp ../*.deb /mnt/dist
+CMD tar xvf ../mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz -C ./ \
+    && dpkg-buildpackage -us -uc -b \
+    && cp ../*.deb /mnt/dist

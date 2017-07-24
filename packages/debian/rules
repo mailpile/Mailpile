@@ -69,7 +69,7 @@ override_dh_auto_build:
 	mkdir -p bower_components/animate.css
 	ln -s /usr/share/javascript/animate.css/animate.css bower_components/animate.css/animate.css
 
-	mkdir -p bower_components/less-elements
+	mkdir -p bower_components/less-elements-old
 	ln -s /usr/share/javascript/less-elements/elements.less bower_components/less-elements-old/elements.less
 
 	mkdir -p bower_components/rebar
@@ -81,6 +81,18 @@ override_dh_auto_build:
 	mkdir -p bower_components/qtip2/basic
 	ln -s /usr/share/javascript/qtip2/jquery.qtip.css bower_components/qtip2/basic/jquery.qtip.css
 
-	lessc shared-data/default-theme/less/default.less > shared-data/default-theme/css/default.css
+        # NOTE: This differs from the normal Mailpile build system in that
+        # we're using the Node lessc, Mailpile's build uses Ruby's lessc.
+	(cd shared-data/default-theme/less; lessc default.less) \
+            |perl -npe 's,(libraries|app)/,,g' \
+            |perl -npe 's,/shared-data/,../,g' \
+            |perl -npe 's,.\./\.\./,../,g' \
+          > shared-data/default-theme/css/default.css
 
 	dh_auto_build
+
+
+override_dh_install:
+	# FIXME: This is a build step, but the .mo files are ignored. :(
+	scripts/compile-messages.sh
+	dh_install

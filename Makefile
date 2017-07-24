@@ -111,6 +111,7 @@ clean:
 	        mailpile-tmp.py mailpile.py \
 	        ChangeLog AUTHORS \
 	        .appver MANIFEST .SELF .*deps \
+                dist/*.tar.gz dist/*.deb dist/*.rpm \
 	        scripts/less-compiler.mk ghostdriver.log
 	@rm -rf *.egg-info build/ \
                mailpile/tests/data/tmp/ testing/tmp/
@@ -205,23 +206,21 @@ transifex:
 # BUILD
 # -----------------------------------------------------------------------------
 
-tarball: mrproper js genmessages transifex
+dist/mailpile.tar.gz: mrproper js genmessages transifex
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
-	tar --exclude='./packages/debian' --exclude-vcs -czf /tmp/mailpile.tar.gz -C $(shell pwd) .
-	mv /tmp/mailpile.tar.gz .
+	mkdir -p dist
+	tar --exclude='./packages/debian' --exclude=dist --exclude-vcs -czf dist/mailpile.tar.gz -C $(shell pwd) .
 
-dpkg: tarball
-	if [ ! -d dist ]; then \
-	    mkdir dist; \
-	fi;
-	if [ -e ./dist/*.deb ]; then \
-	    sudo rm ./dist/*.deb; \
-	fi;
+.dockerignore: packages/Dockerfile_debian packages/debian packages/debian/rules
+	mkdir -p dist
 	sudo docker build \
 	    --file=packages/Dockerfile_debian \
 	    --tag=mailpile-deb-builder \
 	    ./
+	touch .dockerignore
+
+dpkg: .dockerignore dist/mailpile.tar.gz
 	sudo docker run \
-	    --volume=$$(pwd)/dist:/mnt/dist \
+	    --rm --volume=$$(pwd)/dist:/mnt/dist \
 	    mailpile-deb-builder
