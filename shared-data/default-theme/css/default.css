@@ -10162,6 +10162,9 @@ a.modal-tag-color-option:hover {
   padding-right: 6px;
   bottom: 0px;
 }
+#terminal #console #terminal_input #terminal_halfsize_button {
+  display: none;
+}
 #terminal #console #terminal_input form {
   display: inline-block;
   width: 90%;

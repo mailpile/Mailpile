@@ -76,6 +76,12 @@ Mailpile.Terminal.init = function() {
     "        <a onclick=\"Mailpile.Terminal.session_end();\">" +
     "            <span class=\"icon icon-x\">" +
     "        </a>" +
+    "        <a id=\"terminal_fullsize_button\" onclick=\"Mailpile.Terminal.makeFull();\">" +
+    "            <span class=\"icon icon-arrow-down\">" +
+    "        </a>" +
+    "        <a id=\"terminal_halfsize_button\" onclick=\"Mailpile.Terminal.makeSmall();\">" +
+    "            <span class=\"icon icon-arrow-up\">" +
+    "        </a>" +
     "        mailpile&gt; " +
     "        <form>" +
     "            <input>" +
@@ -104,8 +110,8 @@ Mailpile.Terminal.toggle = function(size) {
         if (size == "full") {
             $("#terminal").css("height", "100%");
         } else if (size == "small") {
-            $("#terminal").css("height", "350px");
         }
+        $("#terminal").css("height", "350px");
         $("#terminal_blanket").show();
         $("#terminal").slideDown('fast');
         Mailpile.Terminal.settings.enabled = true;
@@ -114,6 +120,18 @@ Mailpile.Terminal.toggle = function(size) {
     var d = document.getElementById("terminal_output");
     d.scrollTop = d.scrollHeight;
 };
+
+Mailpile.Terminal.makeFull = function() {
+    $("#terminal").animate({"height": "100%"});
+    $("#terminal_fullsize_button").hide();
+    $("#terminal_halfsize_button").show();
+}
+
+Mailpile.Terminal.makeSmall = function() {
+    $("#terminal").animate({"height": "350px"});
+    $("#terminal_halfsize_button").hide();
+    $("#terminal_fullsize_button").show();
+}
 
 Mailpile.Terminal.hide = function() {
     $("#terminal_blanket").hide();
