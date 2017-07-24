@@ -78,9 +78,9 @@ class TerminalCommand(Command):
         cmd = self.data.get('command', [''])[0]
         sid = self.data.get('sid', [''])[0]
         if sid == '':
-            return self._error(_('No SID supplied'), result={'sessions': sessions.keys()})
+            return self._error(_('No session ID supplied'), result={'sessions': sessions.keys()})
         if sid not in sessions.keys():
-            return self._error(_('Unknown SID'), result={'sessions': sessions.keys()})
+            return self._error(_('Unknown session ID'), result={'sessions': sessions.keys()})
         session = sessions[sid]
 
         cmd = cmd.split(" ")
