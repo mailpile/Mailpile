@@ -91,6 +91,7 @@ CC_CPU_INTENSIVE      = [_lockdown_basic]
 CC_LIST_PRIVATE_DATA  = [_lockdown_minimal]
 CC_TAG_EMAIL          = [_lockdown_strict]
 CC_QUIT               = [_lockdown_minimal]
+CC_WEB_TERMINAL       = [_lockdown_config]
 
 CC_CONFIG_MAP = {
     # These are security critical

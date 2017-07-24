@@ -5,6 +5,7 @@ from mailpile.plugins import PluginManager
 from mailpile.ui import Session
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.security import CC_WEB_TERMINAL
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -17,6 +18,7 @@ class TerminalSessionNew(Command):
     HTTP_CALLABLE = ('POST', )
     CONFIG_REQUIRED = True
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
         config = self.session.config
@@ -40,6 +42,7 @@ class TerminalSessionEnd(Command):
     }
     CONFIG_REQUIRED = True
     IS_USER_ACTIVITY = True
+    COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
         config = self.session.config
@@ -65,6 +68,8 @@ class TerminalCommand(Command):
         'sid': 'id of session to use',
         'command': 'command to execute'
     }
+    TERMINAL_BLACKLIST = ["pipe", "gpg"]
+    COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
         global sessions
@@ -82,6 +87,8 @@ class TerminalCommand(Command):
         command = cmd[0]
         args = ' '.join(cmd[1:])
 
+        if command in self.TERMINAL_BLACKLIST:
+            return self._error(_('Command disallowed'), result={})
         try:
             result = Action(session, command, args)
         except Exception, e:
