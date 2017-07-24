@@ -73,7 +73,7 @@ Mailpile.mailsource_login = function(mailsource_id, event_id) {
 
 Mailpile.mailsource_oauth2 = function(mailsource_id, event_id) {
   var url = Mailpile.API.U('/setup/oauth2/?mailsource=' + mailsource_id);
-  Mailpile.auto_modal({ url: url, method: 'POST' });
+  Mailpile.auto_modal({ url: url, method: 'POST', sticky: true });
   //Mailpile.cancel_notification(event_id, false, false, true);
 };
 

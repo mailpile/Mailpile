@@ -802,7 +802,7 @@ class Session(object):
                         return rv
                 self.wait_lock.wait()
 
-    def error(self, message):
+    def fatal_error(self, message):
         self.ui.error(message)
         if not self.interactive:
             sys.exit(1)

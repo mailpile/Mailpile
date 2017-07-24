@@ -1231,12 +1231,17 @@ class VCardStore(dict):
             for attr in attrs:
                 for n, vcl in enumerate(card.get_all(attr, sort=True)):
                     key = vcl.value.lower()
-                    if n == 0 or key not in self:
-                        if collision_callback and key in self:
-                            existing = self[key].get(attr, 0)
-                            if existing is not 0 and existing.value == key:
-                                collision_callback(key, card)
-                        self[key] = card
+                    if n == 0 or (key not in self):
+                        if key in self:
+                            if collision_callback is not None:
+                                existing = self[key].get(attr, 0)
+                                if existing is not 0 and existing.value == key:
+                                    collision_callback(key, card)
+                                self[key] = card
+                            else:
+                                pass  # Do not override existing cards
+                        else:
+                            self[key] = card
             self[card.random_uid] = card
 
     def deindex_vcard(self, card):
@@ -1510,7 +1515,7 @@ class VCardImporter(VCardPluginClass):
         return self.config.guid
 
     def import_vcards(self, session, vcard_store, **kwargs):
-        create_profiles = kwargs.get('profiles', False)
+        update_profiles = kwargs.get('profiles', False)
         if 'profiles' in kwargs:
             del kwargs['profiles']
 
@@ -1540,6 +1545,8 @@ class VCardImporter(VCardPluginClass):
                         vcard_store.find_vcards_with_line(merge_by, vcl.value))
             last = ''
             existing.sort(key=lambda k: (k.email, k.random_uid))
+            if not update_profiles:
+                existing = [e for e in existing if e.kind != 'profile']
             for card in existing:
                 if card.random_uid == last:
                     continue
@@ -1556,7 +1563,7 @@ class VCardImporter(VCardPluginClass):
 
             # Otherwise, create new ones.
             kindhint = vcard.get('x-mailpile-kind-hint', 0)
-            if not existing and (create_profiles or
+            if not existing and (update_profiles or
                                  kindhint is 0 or
                                  kindhint.value != 'profile'):
                 try:

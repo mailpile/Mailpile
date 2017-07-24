@@ -1,3 +1,4 @@
+{% if render_mode != 'minimal' %}
 <!doctype html>
 <!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
 <!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
@@ -9,6 +10,9 @@
   {% block head %}{% endblock %}
 </head>
 <body>
+{% endif %}
   {%- block content %}{{results}}{% endblock %}
+{% if render_mode != 'minimal' %}
 </body>
 </html>
+{% endif %}

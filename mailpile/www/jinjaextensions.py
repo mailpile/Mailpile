@@ -264,10 +264,14 @@ class MailpileCommand(Extension):
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
+        if number in ('', None, False):
+            return ''
         return friendly_number(number, decimals=decimals, base=1000)
 
     def _friendly_bytes(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
+        if number in ('', None, False):
+            return ''
         return friendly_number(number,
                                decimals=decimals, base=1024, suffix='B')
 

@@ -4,6 +4,8 @@
 {%- if result.oauth_url %}
 
 <div class="content-normal settings-page">
+ <form method="POST" action="{{ U('/setup/oauth2/') }}">{{ csrf_field|safe }}
+  <input type="hidden" name="state" value="{{ result.state }}">
   <h1>
     <span class="icon icon-checkmark"></span>
     {{_("Grant Access")}}
@@ -12,7 +14,15 @@
     {{ _("In order for Mailpile to process your e-mail, you need to grant permission for the application to access your e-mail account.") }}
   </p>
   <p>
-    {{ _("The authentication process will take place in a new window (or tab).") }}
+    {{ _("The authorization process will take place in a new window (or tab).") }}
+  {%- if not result.have_redirect %}
+    {{ _("You will need to copy and paste an access code into the form below.") }}
+    <br>
+    <b>Code:</b>
+    <input type="text" id="oauth-code" name="code" style="width: 35em;"
+           value="" placeholder="{{ _('Paste your access code here!') }}">
+    <br>
+  {%- endif %}
     <br>
     {{ _("If given a choice, be sure to grant access to:") }}
     <b>{{ result.username }}</b>
@@ -24,6 +34,10 @@
       {{_("Authenticate")}}
     </button>
   </a>
+  <button id="submit-gamo" class="right button-secondary hide" type="submit">
+    {{_("Save")}}
+  </button>
+  </a>
   <button id="dismiss-gamo" data-dismiss="modal" class="button-info">
     {{_("Cancel")}}
   </button>
@@ -31,18 +45,31 @@
   <script>
     Mailpile.popup_oauth2_window = function(ev) {
       ev.preventDefault();
+  {%- if result.have_redirect %}
       $('#dismiss-gamo').click();
+  {%- else %}
+      $('#oauth-a-gamo').hide();
+      $('#submit-gamo').slideDown().prop("disabled", true).css({ opacity: 0.25 });
+      $('#oauth-code').focus().bind("keyup paste input change", function() {
+        $('#submit-gamo').prop("disabled", false).css({ opacity: 1.0 });
+        Mailpile.popup_oauth2_window_ref.close();
+      });
+  {%- endif %}
       var win = window.open("", "OAuth2", "width=400,height=550");
       win.location.href = $('a#oauth-a-gamo').attr('href');
+      Mailpile.popup_oauth2_window_ref = win;
       return false;
     };
   </script>
+ </form>
 </div>
 
 {%- else %}
 
 <div id="setup-welcome" class="text-center add-top">
+{% if render_mode != 'minimal' %}
   <br style="margin-top: 25%;">
+{% endif %}
   <img src="{{ config.sys.http_path }}/static/img/logo-color.svg"
        class="animated bounceIn welcome-logo">
   <br><br>
@@ -59,7 +86,9 @@
   </p>
  {% endif %}
   <br><br>
-  <button id="close-window" onclick="javascript:window.close();">
+  <button id="close-window" data-dismiss="modal" class="button-info"
+          {%- if render_mode != 'minimal' %}
+          onclick="javascript:window.close();"{%- endif %}>
     {{ _("Close Window") }}
   </button>
 </div>

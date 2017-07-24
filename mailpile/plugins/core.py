@@ -417,7 +417,7 @@ class BrowseOrLaunch(Command):
         try:
             socket.create_connection(sspec[:2])
             self.Browse(sspec)
-            os._exit(1)
+            os._exit(127)
         except IOError:
             pass
 
@@ -1643,7 +1643,7 @@ class Pipe(Command):
 
 class Quit(Command):
     """Exit Mailpile, normal shutdown"""
-    SYNOPSIS = ("q", "quit", "quitquitquit", None)
+    SYNOPSIS = ("q", "quit", "quitquitquit", '[restart]')
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
     CONFIG_REQUIRED = False
@@ -1651,20 +1651,32 @@ class Quit(Command):
     COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        mailpile.util.QUITTING = True
+        if 'restart' in self.args:
+            mailpile.util.QUITTING = 'restart'
+        else:
+            mailpile.util.QUITTING = mailpile.util.QUITTING or True
+
         self._background_save(index=True, config=True, wait=True)
         if self.session.config.http_worker:
             self.session.config.http_worker.quit()
+
         try:
             import signal
             os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
         except:
-            def exiter():
-                time.sleep(1)
-                os._exit(0)
-            threading.Thread(target=exiter).start()
+            pass
+
+        # This puts a hard deadline on the shutdown process.
+        # This is a dangerous thing.
+        def exiter():
+            time.sleep(15)
+            os._exit(0)
+        ex = threading.Thread(target=exiter)
+        ex.daemon = True
+        ex.start()
 
         return self._success(_('Shutting down...'))
+
 
 class IdleQuit(Command):
     """Shut down Mailpile if it has been idle for a while"""
@@ -1713,7 +1725,7 @@ class Abort(Command):
     COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        mailpile.util.QUITTING = True
+        mailpile.util.QUITTING = mailpile.util.QUITTING or True
         if 'no_save' not in self.data:
             self._background_save(index=True, config=True, wait=True,
                                   wait_callback=lambda: os._exit(1))

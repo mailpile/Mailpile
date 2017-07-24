@@ -39,41 +39,49 @@ def _score_validity(validity, local=False):
 # FIXME: https://leap.se/en/docs/design/transitional-key-validation
 #        ... provides a very structured ranking for keys coming from
 #        different types of sources.  Check it!
-def _update_scores(key_id, key_info, known_keys_list):
+def _update_scores(session, key_id, key_info, known_keys_list):
     """Update scores and score explanations"""
-    key_info["score"] = sum([score for source, (score, reason)
-                             in key_info.get('scores', {}).iteritems()
-                             if source != 'Known encryption keys'])
 
-    # This is done here, not on the keychain lookup handler, in case
-    # for some reason (e.g. UID changes on source keys) remote sources
+    # This is done here, potentially overriding the keychain lookup handler,
+    # in case for some reason (e.g. UID changes on source keys) remote sources
     # suggest matches which our local search doesn't catch.
     if key_id in known_keys_list:
         score, reason = _score_validity(known_keys_list[key_id]["validity"],
                                         local=True)
         if score == 0:
-            score += 9
+            score = 9
             reason = _('Encryption key has been imported')
 
         key_info["on_keychain"] = True
-        key_info['score'] += score
         key_info['scores']['Known encryption keys'] = [score, reason]
+
+    # FIXME: For this to work better, we need a list of signing subkeys.
+    #        However, if a match is found then that counts, so we use it.
+    if session:
+        msgs = session.config.index.search(
+            session, ['sig:' + key_id[-16:].lower()]).as_set()
+        score = int(math.log(len(msgs) + 1, 2))
+        if score:
+            reason = _('Signature seen on %d messages') % len(msgs)
+            key_info['scores']['Used to sign e-mail'] = [score, reason]
 
     if "keysize" in key_info:
         bits = int(key_info["keysize"])
         score = bits // 1024
-        key_info['score'] += score
 
         if bits >= 4096: 
           key_strength = _('Encryption key is very strong')
         elif bits >= 3072: 
           key_strength = _('Encryption key is strong')
         elif bits >= 2048:
-          key_strength = _('Encryption key is average')
+          key_strength = _('Encryption key is good')
         else: 
           key_strength = _('Encryption key is weak')
 
         key_info['scores']['Encryption key strength'] = [score, key_strength]
+
+    key_info["score"] = sum([score for source, (score, reason)
+                             in key_info.get('scores', {}).iteritems()])
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
@@ -115,11 +123,15 @@ def lookup_crypto_keys(session, address,
     known_keys_list = GnuPG(session and session.config or None).list_keys()
     found_keys = {}
     ordered_keys = []
+
     if origins:
-        handlers = [h for h in KEY_LOOKUP_HANDLERS if h.NAME in origins]
+        handlers = [h for h in KEY_LOOKUP_HANDLERS
+                    if (h.NAME in origins) or (h.NAME.lower() in origins)]
     else:
         handlers = KEY_LOOKUP_HANDLERS
+
     ungotten = get and get[:] or []
+
     for handler in handlers:
         if get and not ungotten:
             # We have all the keys!
@@ -150,7 +162,8 @@ def lookup_crypto_keys(session, address,
                                strict_email_match=strict_email_match,
                                get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
-        except (TimedOut, IOError, ValueError, TypeError, AttributeError):
+        except (TimedOut, IOError, KeyError, ValueError, TypeError,
+                AttributeError):
             if session.config.sys.debug:
                 traceback.print_exc()
             results = {}
@@ -176,7 +189,7 @@ def lookup_crypto_keys(session, address,
                 found_keys[key_id] = key_info
                 found_keys[key_id]["origins"] = []
             found_keys[key_id]["origins"].append(h.NAME)
-            _update_scores(key_id, found_keys[key_id], known_keys_list)
+            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
             _normalize_key(session, found_keys[key_id])
 
         # This updates and sorts ordered_keys in place. This will magically
@@ -248,6 +261,7 @@ class KeyImport(Command):
                                     get=[f.strip() for f in fprints],
                                     origins=origins,
                                     event=self.event)
+
         if len(result) > 0:
             # Update the VCards!
             PGPKeysImportAsVCards(self.session,
@@ -263,7 +277,115 @@ class KeyImport(Command):
                              result=result)
 
 
-PluginManager(builtin=__file__).register_commands(KeyLookup, KeyImport)
+class KeyTofu(Command):
+    """Import or refresh keys"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/keytofu', 'crypto/keytofu', '<emails>')
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'email': 'E-mail addresses to find or update encryption keys for',
+    }
+    TOFU_ORIGINS = ['e-mail keys']
+    TOFU_MIN_EMAILS = 3
+
+    def _key_can_encrypt(self, gnupg, fingerprint):
+        rc, data = gnupg.encrypt("hello", tokeys=[fingerprint])
+        return (rc == 0)
+
+    def _uses_crypto(self, idx, email):
+        crypto = idx.search(self.session, ['from:' + email, 'has:crypto'])
+        if len(crypto) < self.TOFU_MIN_EMAILS:
+            return False
+        recent = idx.search(self.session, ['from:' + email])
+        recent = set(sorted(list(recent.as_set()))[-25:])
+        crypto = crypto.as_set() & recent
+        return (crypto >= self.TOFU_MIN_EMAILS)
+
+    def _seen_enough_signatures(self, idx, email, keyinfo):
+        fp = keyinfo['fingerprint'][-16:].lower()
+        signed = idx.search(self.session, ['from:' + email, 'sig:' + fp])
+        return (len(signed.as_set()) >= self.TOFU_MIN_EMAILS)
+
+    def command(self):
+        emails = set(list(self.args)) | set(self.data.get('email', []))
+        assert(emails)
+
+        idx = self._idx()
+        gnupg = self._gnupg(dry_run=True)
+        missing, old, status = [], {}, {}
+
+        for email in emails:
+            vc = self.session.config.vcards.get_vcard(email)
+            fp = vc.pgp_key if vc else None
+            if vc and fp:
+                if self._key_can_encrypt(gnupg, fp):
+                    old[email] = fp
+                    status[email] = 'Key is already on our key-chain'
+                else:
+                    # FIXME: Should we remove the bad key from the vcard?
+                    # FIXME: Should we blacklist the bad key?
+                    missing.append(email)
+                    status[email] = 'Obsolete key is on our key-chain'
+            else:
+                missing.append(email)
+                status[email] = 'We have no key for this person'
+
+        should_import = {}
+        for email in missing:
+            if self._uses_crypto(idx, email):
+                keys = lookup_crypto_keys(self.session, email,
+                                          origins=self.TOFU_ORIGINS,
+                                          strict_email_match=True,
+                                          event=self.event)
+                for keyinfo in (keys or []):
+                    if self._seen_enough_signatures(idx, email, keyinfo):
+                        should_import[email] = keyinfo['fingerprint']
+                        break
+                if keys and 'email' not in should_import:
+                    status[email] = 'Found keys, but none in active use'
+            else:
+                status[email] = 'Have not seen enough PGP messages'
+
+        imported = {}
+        for email, fingerprint in should_import.iteritems():
+            keys = lookup_crypto_keys(
+                self.session, email,
+                get=[fingerprint],
+                origins=self.TOFU_ORIGINS,
+                strict_email_match=True,
+                event=self.event)
+            if keys:
+                imported[email] = keys
+                status[email] = 'Imported key!'
+            else:
+                status[email] = 'Failed to import key'
+
+        for email in imported:
+            if email in missing:
+                missing.remove(email)
+
+        if len(imported) > 0:
+            # Update the VCards!
+            fingerprints = []
+            for keys in imported.values():
+                fingerprints.extend([k['fingerprint'] for k in keys])
+            PGPKeysImportAsVCards(self.session, arg=fingerprints).run()
+            # Previous crypto evaluations may now be out of date, so we
+            # clear the cache so users can see results right away.
+            ClearParseCache(pgpmime=True)
+
+        # i18n note: Not translating things here, since messages are not
+        #            generally use-facing and we want to reduce load on our
+        #            translators.
+        return self._success('Evaluated key TOFU', result={
+            'missing_keys': missing,
+            'imported_keys': imported,
+            'status': status,
+            'on_keychain': old})
+
+
+PluginManager(builtin=__file__).register_commands(
+    KeyLookup, KeyImport, KeyTofu)
 
 
 ##[ Basic lookup handlers ]###################################################
@@ -341,7 +463,7 @@ class KeychainLookupHandler(LookupHandler):
         results = {}
         for key_id, key_info in self.known_keys.iteritems():
             for uid in key_info.get('uids', []):
-                if strict_email_match:
+                if not strict_email_match:
                     match = (address in uid.get('name', '').lower() or
                              address in uid.get('email', '').lower())
                 else:
