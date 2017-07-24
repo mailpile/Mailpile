@@ -1,72 +1,117 @@
 
 /* Terminal */
 
+#terminal_blanket {
+    position: fixed;
+    z-index: 99999;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: none;
+    opacity: 0.0;
+}
+
 #terminal {
     position: fixed;
-    z-index: 1000;
+    z-index: 100000;
     width: 100%;
     height: 350px;
     display: none;
     background: #000;
     opacity: 0.9;
+    font-family: monospace;
+    font-size: 14px;
+    color: #eee;
 
-    #terminal_output {
-        display: block;
-        position: absolute;
-        top: 0px;
-        bottom: 25px;
-        left: 0px;
-        right: 0px;
-        padding: 6px;
-        font-family: monospace;
-        font-size: 15px;
+    div.output {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        position: relative;
+        bottom: 0px;
+        vertical-align: bottom;
+        background: none;
+        padding: 0px;
+        margin: 0px;
+        padding-top: 3px;
         color: #eee;
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        div.output {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            position: relative;
-            bottom: 0px;
-            vertical-align: bottom;
-            background: none;
-            padding: 0px;
-            margin: 0px;
-            padding-top: 3px;
-            color: #eee;
-            border: 0px;
-        }
+        border: 0px;
     }
 
-    #terminal_input {
-        height: 20px;
-        background: #000;
-        position: absolute;
-        border-top: 1px solid #ccc;
-        width: 100%;
-        padding: 3px;
-        padding-left: 6px;
-        padding-right: 6px;
+    /*
+     * For now we're disabling the debug window for now because it's incomplete.
+     * TODO: Bring this to life! -- @smari 2017-07-24
+     *
+    #debug_container {
+        background: #500;
+        top: 0px;
         bottom: 0px;
-        font-family: monospace;
-        color: #eee;
-        font-size: 15px;
+        right: 0px;
+        position: absolute;
+        width: 40%;
 
-        form {
-            display: inline-block;
-            width: 90%;
+        #debug_output {
+            overflow-y: scroll;
+            overflow-x: hidden;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 3px;
+            right: 0px;
+        }
+    }
+    */
+
+    #console {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+
+        #terminal_output {
+            display: block;
+            position: absolute;
+            top: 0px;
+            bottom: 25px;
+            left: 0px;
+            right: 0px;
+            padding: 6px;
+            overflow-y: scroll;
+            overflow-x: hidden;
         }
 
-        input {
-            outline: none;
-            display: inline-block;
+        #terminal_input {
+            height: 20px;
+            background: #000;
+            position: absolute;
+            border-top: 1px solid #ccc;
             width: 100%;
-            background: none;
-            border: none;
-            font-family: monospace;
-            color: #eee;
-            font-size: 15px;
+            padding: 3px;
+            padding-left: 6px;
+            padding-right: 6px;
+            bottom: 0px;
+
+            #terminal_halfsize_button {
+                display: none;
+            }
+
+            #terminal_fullsize_button {}
+
+            form {
+                display: inline-block;
+                width: 90%;
+            }
+
+            input {
+                outline: none;
+                display: inline-block;
+                width: 100%;
+                background: none;
+                border: none;
+                font-family: monospace;
+                color: #eee;
+                font-size: 15px;
+            }
         }
     }
 }

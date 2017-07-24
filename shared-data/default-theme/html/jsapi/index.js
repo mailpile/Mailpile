@@ -95,18 +95,8 @@ Mailpile = {
     {                                                 keys: "g 9",     callback: function(e) { $('#sidebar-lists #sidebar-tag li').not('.hide').find('a.sidebar-tag').eq(8).trigger('click'); }},
     {
       keys: "t",
-      callback: function(e) { Mailpile.Terminal.toggle("small") },
-      title: "{{_("Show/hide terminal.")|escapejs}}"
-    },
-    {
-      keys: "alt+t",
-      callback: function(e) { Mailpile.Terminal.toggle("small") },
-      global: true
-    },
-    {
-      keys: "alt+y",
-      callback: function(e) { Mailpile.Terminal.toggle("full") },
-      global: true
+      callback: function(e) { Mailpile.Terminal.toggle("small"); return false; },
+      title: "{{_("Show terminal (small).")|escapejs}}"
     }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
