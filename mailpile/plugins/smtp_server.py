@@ -192,11 +192,8 @@ class SMTPWorker(threading.Thread):
 
     def quit(self, join=True):
         self.quitting = True
-        if join:
-            try:
-                self.join()
-            except RuntimeError:
-                pass
+        if join and self.isAlive():
+            self.join()
 
 
 class HashCash(Command):

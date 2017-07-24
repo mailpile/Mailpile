@@ -959,7 +959,7 @@ class Search(Command):
             except ValueError:
                 self._email_view_pairs = {}
 
-        if 'flat' in session.order:
+        if 'flat' in (session.order or ''):
             # Above we have guaranteed that the target message is in the
             # result set; unset this dictionary to force a flat display
             # of the chosen message.

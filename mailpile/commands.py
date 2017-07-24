@@ -292,8 +292,8 @@ class Command(object):
         path_parts[-1] += '.' + ttype
         return os.path.join(*path_parts)
 
-    def _gnupg(self):
-        return GnuPG(self.session.config, event=self.event)
+    def _gnupg(self, **kwargs):
+        return GnuPG(self.session.config, event=self.event, **kwargs)
 
     def _config(self):
         session, config = self.session, self.session.config

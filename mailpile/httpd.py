@@ -181,7 +181,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             cookies[self.server.session_cookie]['path'] = '/'
             cookies[self.server.session_cookie]['max-age'] = 24 * 3600
             self.send_header(*cookies.output().split(': ', 1))
-            self.send_header('Cache-Control', 'no-cache="set-cookie"')
         if mailpile.util.QUITTING:
             self.send_header('Connection', 'close')
         self.end_headers()
@@ -462,7 +461,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     else:
                         http_headers.append(('ETag', etag))
                 max_age = min(max_ages) if max_ages else 10
-                cachectrl = 'must-revalidate, no-store, max-age=%d' % max_age
+                if max_age:
+                    cachectrl = 'must-revalidate, max-age=%d' % max_age
+                else:
+                    cachectrl = 'must-revalidate, no-store, max-age=0'
 
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
@@ -585,6 +587,6 @@ class HttpWorker(threading.Thread):
 
     def quit(self, join=False):
         if self.httpd:
-            self.httpd.shutdown()
             self.httpd.server_close()
+            self.httpd.shutdown()
         self.httpd = None

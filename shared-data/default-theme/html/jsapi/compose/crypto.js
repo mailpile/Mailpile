@@ -56,10 +56,23 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
       });
     }
 
+    if (changes || initial) {
+      Mailpile.API.async_crypto_keytofu_post({
+        email: emails
+      }, function(data, ev) {
+        if (data.result && data.result.imported_keys)
+        {
+          for (key in data.result.imported_keys) {
+            Mailpile.Composer.Crypto.UpdateEncryptionState(mid);
+            return;
+          }
+        }
+      });
+    }
+
     // Update encrypt/sign icons
     Mailpile.Composer.Crypto.LoadStates(mid, policy);
     if (changes) Mailpile.Composer.Crypto.SetState(mid);
-
     if (chain) chain(mid);
   });
 };

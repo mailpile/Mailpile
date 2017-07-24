@@ -23,6 +23,7 @@ _plugins.register_config_section(
             'server_re':     ('Regular expression to match servers', str, ''),
             'client_id':     ('The OAuth Client ID', str, ''),
             'client_secret': ('The OAuth token itself', str, ''),
+            'redirect_re':   ('Regexp of URLs we can redirect to', str, ''),
             'token_url':     ('The OAuth token endpoint', str, ''),
             'oauth_url':     ('The OAuth authentication endpoint', str, ''),
         }, {}),
@@ -59,6 +60,7 @@ class OAuth2(TestableWebbable):
             'client_id': ('174733765695-1dnhaq06gt61tg432t0d6jlt76nng2t1'
                           '.apps.googleusercontent.com'),
             'client_secret': 'vbUxR2Dvqb1c-nI2-X_7NvCu',
+            'redirect_re': '^http://localhost[:/]',
             'token_url': ('https://www.googleapis.com/oauth2/v4/token'),
             'oauth_url': ('https://accounts.google.com/o/oauth2/v2/auth'
                           '?response_type=code'
@@ -68,15 +70,23 @@ class OAuth2(TestableWebbable):
                           '&client_id=%(client_id)s'
                           '&state=%(state)s'
                           '&login_hint=%(username)s')}}
+    OAUTH2_OOB_REDIRECT = "urn:ietf:wg:oauth:2.0:oob"
 
     @classmethod
-    def RedirectURI(cls, config, http_host):
-        if http_host == "":
+    def RedirectURI(cls, config, oauth2_cfg, http_host=None):
+        if not http_host:
             http_host = "%s:%s" % config.http_worker.httpd.sspec[:2]
-        return '/'.join([
-            'http://%s%s' % (http_host, config.http_worker.httpd.sspec[2]),
+        meth = 'http' if http_host.startswith('localhost:') else 'https'
+        url = '/'.join([
+            '%s://%s%s' % (meth, http_host, config.http_worker.httpd.sspec[2]),
             cls.SYNOPSIS[2],
             ''])
+
+        url_re = oauth2_cfg.get('redirect_re')
+        if url_re and not re.match(url_re, url, re.DOTALL):
+            return cls.OAUTH2_OOB_REDIRECT
+
+        return url
 
     @classmethod
     def ActivateHardCodedOAuth(cls, config):
@@ -95,15 +105,23 @@ class OAuth2(TestableWebbable):
         return (None, None)
 
     @classmethod
-    def GetOAuthURL(cls, session, ocfg, username):
+    def GetOAuthURLVars(cls, session, ocfg, username):
         # FIXME: Make this a custom token just for OAuth
         state = '%s/%s/%s' % (
             username, ocfg._key, session.ui.html_variables['csrf_token'])
-        return ocfg['oauth_url'] % {
-            'redirect_uri': quote_plus(cls.RedirectURI(session.config, session.ui.html_variables.get("http_host"))),
+        http_host = session.ui.html_variables.get("http_host")
+        return {
+            'redirect_uri': quote_plus(
+                 cls.RedirectURI(session.config, ocfg, http_host)),
             'client_id': quote_plus(ocfg['client_id']),
             'username': quote_plus(username),
             'state': state}
+
+    @classmethod
+    def GetOAuthURL(cls, session, ocfg, username, url_vars=None):
+        if url_vars is None:
+            url_vars = cls.GetOAuthURLVars(session, ocfg, username)
+        return ocfg['oauth_url'] % url_vars
 
     @classmethod
     def XOAuth2Response(cls, username, token_info):
@@ -127,7 +145,9 @@ class OAuth2(TestableWebbable):
             ('code', code),
             ('client_id', oauth2_cfg['client_id']),
             ('client_secret', oauth2_cfg['client_secret']),
-            ('redirect_uri', cls.RedirectURI(session.config, session.ui.html_variables.get("http_host"))),
+            ('redirect_uri', cls.RedirectURI(
+                session.config, oauth2_cfg,
+                session.ui.html_variables.get("http_host"))),
             ('grant_type', 'authorization_code')])
 
         data = json.loads(cls.URLGet(
@@ -195,13 +215,7 @@ class OAuth2(TestableWebbable):
             username = config.routes[rtid].username
             hostname = config.routes[rtid].host
 
-        if username and hostname:
-            oname, ocfg = self.GetOAuthConfig(config, hostname)
-            results.update({
-                'username': username,
-                'oauth_url': self.GetOAuthURL(session, ocfg, username) })
-
-        elif code:
+        if code:
             username, oname, csrf = state.split('/', 2)
             if not session.ui.valid_csrf_token(csrf):
                 print 'Invalid CSRF token: %s' % csrf
@@ -221,6 +235,17 @@ class OAuth2(TestableWebbable):
                     route.password = tok_info.access_token
 
             results['success'] = True
+
+        elif username and hostname:
+            oname, ocfg = self.GetOAuthConfig(config, hostname)
+            uv = self.GetOAuthURLVars(session, ocfg, username)
+            hr = (uv['redirect_uri'] != quote_plus(self.OAUTH2_OOB_REDIRECT))
+            results.update(uv)
+            results.update({
+                'have_redirect': hr,
+                'username': username,
+                'oauth_url': self.GetOAuthURL(session, ocfg, username,
+                                              url_vars=uv) })
 
         return self._success(_('OAuth2 Authorization'), results)
 

@@ -15,17 +15,16 @@ $(document).on('click', '.compose-contact-find-keys', function() {
 });
 
 
-$(document).on('click', '.compose-crypto-encryption', function() {
-  var mid = $(this).data('mid');
+Mailpile.Composer.ToggleEncryption = function(mid, want) {
   var status = $('#compose-encryption-' + mid).val();
   var can = $('#compose-crypto-encryption-' + mid).data('can');
   var change = '';
 
   if (status === 'encrypt') {
-    change = 'none';
+    change = want || 'none';
   }
   else if (status === 'cannot' && can) {
-    change = 'encrypt';
+    change = want || 'encrypt';
   }
   else if (status === 'cannot' || !can) {
     change = 'cannot';
@@ -35,12 +34,15 @@ $(document).on('click', '.compose-crypto-encryption', function() {
     });
   }
   else {
-    change = 'encrypt';
+    change = want || 'encrypt';
   }
 
   Mailpile.Composer.Crypto.EncryptionToggle(change, mid, 'manual');
   Mailpile.Composer.Tooltips.Encryption();
   return false;
+};
+$(document).on('click', '.compose-crypto-encryption', function() {
+  Mailpile.Composer.ToggleEncryption($(this).data('mid'));
 });
 
 
@@ -401,6 +403,6 @@ $(document).on('click', '.encryption-helper-find-key', function(e) {
 $(document).on('click', '.modal-retry-encryption', function(e) {
   var mid = $(this).data('mid');
   Mailpile.Composer.Crypto.UpdateEncryptionState(mid, function() {
-    $('#form-compose-' + mid + ' .compose-crypto-encryption').click();
+    Mailpile.Composer.ToggleEncryption(mid, 'encrypt');
   });
 });
