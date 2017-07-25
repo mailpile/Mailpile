@@ -9926,7 +9926,8 @@ a.modal-tag-color-option:hover {
   }
   /* Stuff we just hide... */
   #sidebar hr,
-  #notifications-header {
+  #notifications-header,
+  #pile-speed {
     display: none;
   }
   #pile-results,
@@ -10051,10 +10052,6 @@ a.modal-tag-color-option:hover {
   }
   div.footer-nav {
     display: none;
-  }
-  #pile-speed {
-    margin-bottom: 0px;
-    font-size: 70%;
   }
   #display-density-selector {
     display: none;
