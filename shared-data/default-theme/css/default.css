@@ -8167,6 +8167,7 @@ tr.modal-tag-picker-item td.checkbox {
 }
 /* Pile */
 #pile-results {
+  table-layout: fixed;
   width: 100%;
   min-width: 800px;
   border-collapse: collapse;
@@ -8238,7 +8239,7 @@ tr.modal-tag-picker-item td.checkbox {
 #pile-results td.crypto-and-tags,
 #pile-results td.message-nav,
 #pile-results td.avatar {
-  min-width: 24px;
+  width: 24px;
   text-align: center;
   white-space: nowrap;
 }
@@ -8335,13 +8336,11 @@ tr.modal-tag-picker-item td.checkbox {
   color: #cccccc;
 }
 #pile-results td.subject {
-  min-width: 374px;
   overflow: hidden;
   word-wrap: normal;
   word-break: normal;
 }
 #pile-results td.subject a.item-subject {
-  width: 700px;
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -9517,13 +9516,7 @@ a.modal-tag-color-option:hover {
     min-width: 300px;
   }
   #pile-results td.from {
-    width: 150px;
-  }
-  #pile-results td.subject {
-    min-width: 220px;
-  }
-  #pile-results td.subject a {
-    width: 214px;
+    width: 220px;
   }
   div.bulk-actions-hints {
     position: fixed;
@@ -9534,9 +9527,6 @@ a.modal-tag-color-option:hover {
   }
   #pile-results td.avatar {
     padding-left: 4px;
-  }
-  #pile-results td.subject a.item-subject {
-    width: 485px;
   }
   xtable,
   xtbody {
@@ -9847,9 +9837,7 @@ a.modal-tag-color-option:hover {
   #pile-results td.date {
     padding-right: 3px;
   }
-  #pile-results td.subject a.item-subject {
-    width: 370px;
-  }
+  /*  #pile-results td.subject a.item-subject { width: 370px; }*/
   #content-tools nav li {
     padding: 2px;
     margin: 0;
