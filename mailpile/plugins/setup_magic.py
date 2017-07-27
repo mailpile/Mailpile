@@ -1038,7 +1038,9 @@ class CreatePassword(TestableWebbable):
         for path in (p for p in self.PATHS if os.path.exists(p)):
             for fn in (os.path.join(path, f) for f in os.listdir(path)):
                 fpath = os.path.realpath(fn)
-                if not os.path.isdir(fpath):
+                ext = fpath.split('.')[-1]
+                if (not os.path.isdir(fpath)
+                        and ext not in ('aff', 'hash')):
                     stat = os.stat(fpath)
                     if stat.st_size > 100000:
                         dictionaries.add((stat.st_size, fpath))
