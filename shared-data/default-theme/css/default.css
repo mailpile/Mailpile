@@ -8237,8 +8237,7 @@ tr.modal-tag-picker-item td.checkbox {
   cursor: move;
 }
 #pile-results td.crypto-and-tags,
-#pile-results td.message-nav,
-#pile-results td.avatar {
+#pile-results td.message-nav {
   width: 24px;
   text-align: center;
   white-space: nowrap;
@@ -8259,6 +8258,18 @@ tr.modal-tag-picker-item td.checkbox {
 #pile-results.snug td.avatar {
   padding-top: 4px;
   padding-bottom: 3px;
+}
+#pile-results.comfy td.avatar {
+  width: 32px;
+  padding-right: 8px;
+}
+#pile-results.cozy td.avatar {
+  width: 24px;
+  padding-right: 6px;
+}
+#pile-results.snug td.avatar {
+  width: 18px;
+  padding-right: 4px;
 }
 #pile-results.comfy td.avatar a img {
   width: 24px;
