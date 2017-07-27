@@ -278,7 +278,8 @@
 
   /* Stuff we just hide... */
   #sidebar hr,
-  #notifications-header {
+  #notifications-header,
+  #pile-speed{
     display: none;
   }
 
@@ -361,17 +362,26 @@
     display: none;
   }
 
-  #pile-speed {
-    margin-bottom: 0px;
-    font-size: 70%;
-  }
-
   #display-density-selector {
     display: none;
   }
 
   #pile-more {
       display: none;
+  }
+
+  #pile-bottom .button-primary {
+     width: 49.3%;
+     float: none;
+     text-align: center;
+     margin-left: auto;
+     margin-right: auto;
+  }
+
+  /* Single  footer button case */
+  #pile-previous.button-primary:last-of-type,
+  #pile-next.button-primary:nth-of-type(2) {
+    width: 100%;
   }
 
   table.account-list {
