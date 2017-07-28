@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
@@ -179,10 +180,26 @@ def GetTagID(cfg, tn):
 def GuessTags(cfg, name):
     tags = set()
     name = name.lower()
+    # When guessing tag/folder names not in localized language
+    # let's also try some common mappings/translations
+    # FIXME: decide how to tread 'trash' folders on servers
+    TYPICAL_FOLDER_NAMES = {u'gesendet': 'sent',
+                            u'gelöscht': 'trash',
+                            u'entwürfe': 'drafts',
+                            u'spamverdacht': 'spam',
+                            u'éléments envoyés': 'sent',
+                            u'éléments supprimés': 'trash',
+                            u'brouillons': 'drafts',
+    }
+    try:
+        tname = TYPICAL_FOLDER_NAMES[name]
+    except KeyError:
+        tname = ''
     for tagtype in ('inbox', 'drafts', 'sent', 'spam'):
         for tag in cfg.get_tags(type=tagtype):
             if (name.endswith(tag.name.lower()) or
-                    name.endswith(_(tag.name).lower())):
+                    name.endswith(_(tag.name).lower()) or
+                    tname.endswith(tag.name.lower())):
                 tags.add(tag._key)
     return tags
 
