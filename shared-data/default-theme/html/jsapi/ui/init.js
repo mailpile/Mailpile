@@ -32,18 +32,8 @@ Mailpile.UI.prepare_new_content = function(content) {
   }
 };
 
-Mailpile.UI.show_modal = function(html) {
-  if (Mailpile.UI.is_modal_active()) {
-    return false;
-  }
-
-  var modal = Mailpile.UI.get_modal();
-  if (html) {
-    modal.html(html);
-  }
-  modal.modal(Mailpile.UI.modal_options);
-  Mailpile.UI.prepare_new_content(modal);
-  return modal;
+Mailpile.UI.get_modal = function() {
+  return $("#modal-full");
 };
 
 Mailpile.UI.is_modal_active = function() {
@@ -58,11 +48,21 @@ Mailpile.UI.is_modal_active = function() {
 };
 
 Mailpile.UI.hide_modal = function() {
-  return Mailpile.UI.get_modal().modal('hide');
+  if (Mailpile.UI.is_modal_active()) {
+    Mailpile.UI.get_modal().modal('hide');
+  }
+  $('.modal-backdrop').remove();
 };
 
-Mailpile.UI.get_modal = function() {
-  return $("#modal-full");
+Mailpile.UI.show_modal = function(html) {
+  Mailpile.UI.hide_modal();
+  var modal = Mailpile.UI.get_modal();
+  if (html) {
+    modal.html(html);
+  }
+  modal.modal(Mailpile.UI.modal_options);
+  Mailpile.UI.prepare_new_content(modal);
+  return modal;
 };
 
 Mailpile.UI.init = function() {
