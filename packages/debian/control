@@ -67,11 +67,12 @@ Depends: ${misc:Depends},
          python-lxml,
          python-jinja2,
          spambayes,
+         wordlist,
          python-markupsafe,
          python-dns,
          python-pgpdump,
          python-pil
-Recommends: tor
+Recommends: tor, wamerican-small
 Description: library and command-line interface for mailpile
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
  privacy features. Mailpile places great emphasis on providing a clean, elegant
@@ -87,6 +88,8 @@ Depends: ${misc:Depends},
          apache2,
          python,
          screen,
+         net-tools,
+         sudo,
          expect
 Description: multi-user mailpile web server
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
