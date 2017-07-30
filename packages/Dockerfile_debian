@@ -33,15 +33,16 @@ RUN apt-get update && \
 
 RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian
+COPY dist/version.txt /root/mailpile-version.txt
 VOLUME /mnt/dist
 
-RUN ln -s /mnt/dist/mailpile.tar.gz /root/mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz
-RUN sed -i "s|<-- version -->|0.0~git$(date +'%Y%m%d')-1|" /root/mailpile/debian/changelog
+RUN ln -s /mnt/dist/mailpile.tar.gz /root/mailpile_$(cat /root/mailpile-version.txt).orig.tar.gz
+RUN sed -i "s|<-- version -->|$(cat /root/mailpile-version.txt)-1|" /root/mailpile/debian/changelog
 
 RUN mk-build-deps --install /root/mailpile/debian/control --tool "apt-get --force-yes -y"
 
 WORKDIR /root/mailpile
 ENV DESTINATION_DPKG_DIR /mnt/dist
-CMD tar xvf ../mailpile_0.0~git$(date +'%Y%m%d').orig.tar.gz -C ./ \
+CMD tar xvf ../mailpile_$(cat /root/mailpile-version.txt).orig.tar.gz -C ./ \
     && dpkg-buildpackage -us -uc -b \
     && cp ../*.deb /mnt/dist

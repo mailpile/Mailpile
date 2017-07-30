@@ -8,6 +8,8 @@ import re
 import subprocess
 from glob import glob
 
+from scripts.version import APPVER
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 ########################################################
@@ -49,25 +51,6 @@ def _find_git_files(dirname='', git_dir=None):
 pbr.git._find_git_files = _find_git_files
 
 ########## end of pbr fix ######
-
-## This figures out what version we want to call ourselves ###################
-try:
-    GIT_HEAD = open('.git/HEAD').read().strip().split('/')[-1]
-    BRANCH = {
-       'master': 'dev',
-       'release': ''
-    }.get(GIT_HEAD, GIT_HEAD)
-except (OSError, IOError):
-    BRANCH = None
-if BRANCH:
-    BRANCHVER = '.%s%s' % (BRANCH, str(datetime.date.today()).replace('-', ''))
-else:
-    BRANCHVER = ''
-
-APPVER = '%s%s' % (next(
-    line.strip() for line in open('mailpile/config/defaults.py', 'r')
-    if re.match(r'^APPVER\s*=', line)
-).split('"')[1], BRANCHVER)
 
 
 ## Cleanup ###################################################################

@@ -1,5 +1,5 @@
 mailpile (<-- version -->) unstable; urgency=medium
 
-  * Nightly build.
+  * Automated build.
 
  -- Mailpile Team <team@mailpile.is>  Mon, 28 Dec 2015 02:16:41 -0500

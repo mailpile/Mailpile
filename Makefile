@@ -210,7 +210,9 @@ dist/mailpile.tar.gz: mrproper js genmessages transifex
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
 	mkdir -p dist
-	tar --exclude='./packages/debian' --exclude=dist --exclude-vcs -czf dist/mailpile.tar.gz -C $(shell pwd) .
+	scripts/version.py > dist/version.txt
+	tar --exclude='./packages/debian' --exclude=dist --exclude-vcs -czf dist/mailpile-$$(cat dist/version.txt).tar.gz -C $(shell pwd) .
+	(cd dist; ln -fs mailpile-$$(cat version.txt).tar.gz mailpile.tar.gz)
 
 .dockerignore: packages/Dockerfile_debian packages/debian packages/debian/rules
 	mkdir -p dist
