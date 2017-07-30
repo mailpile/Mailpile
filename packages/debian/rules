@@ -28,6 +28,22 @@ override_dh_auto_build:
 		--multipile-www /usr/share/mailpile/multipile/www \
 		> mailpile-apache.conf
 
+	dh_auto_build
+
+unused_override_dh_auto_build:
+	# Remove unused files
+	rm -f shared-data/default-theme/index.html
+	rm -f shared-data/default-theme/webfonts/LICENSE
+
+	########################
+	# Generate apache conf #
+	########################
+	python shared-data/multipile/mailpile-admin.py --generate-apache-config \
+		--mailpile-share /usr/share/mailpile \
+		--mailpile-theme /usr/share/mailpile/default-theme \
+		--multipile-www /usr/share/mailpile/multipile/www \
+		> mailpile-apache.conf
+
 	##############################
 	# Replacing libraries.min.js #
 	##############################
