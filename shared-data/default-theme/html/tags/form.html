@@ -214,26 +214,32 @@
       <span class="icon-robot"></span> {{_("Automation")}}</h4>
     </p>
     <div class="tag-edit-automation hide">
-{%-   if tag.type in ('tag', 'attribute', 'spam') %}
+{%-  if tag.type in ('tag', 'attribute', 'spam') %}
       <div class="left" title="
   {{- _("Enable to tag messages automatically, like spam.")}}
   {{  _("Tag or un-tag mail by hand to train the system.")}}">
         <label>{{_("Tagging")}}:</label>
+{%-   if tag.auto_tag in ('fancy', 'builtin') %}
+        <p style="padding: 1em; font-style: italic;">
+         {{ _("Auto-tagging is always enabled for this tag.") }}
+        </p>
+{%-   else %}
         <ul>
           <li>
               <input type="radio" name="{{prefix}}auto_tag"
-                     value="true" {% if tag.auto_tag %}checked{% endif %}>
+                     value="true" {% if tag.auto_tag and tag.auto_tag != 'false' %}checked{% endif %}>
               <span class="checkbox">{{_("Automatic tagging")}}</span>
 {# FIXME:     (<a href="">{{_("help")}}</a>) #}
           </li>
           <li>
               <input type="radio" name="{{prefix}}auto_tag"
-                     value="false" {% if not tag.auto_tag %}checked{% endif %}>
+                     value="false" {% if not tag.auto_tag or tag.auto_tag == 'false' %}checked{% endif %}>
               <span class="checkbox">{{_("Tag by hand")}}</span>
           </li>
         </ul>
-      </div>
 {%-   endif %}
+      </div>
+{%-  endif %}
   
       <div class="right">
         <label>{{_("Untagging")}}:</label>
