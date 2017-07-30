@@ -105,7 +105,7 @@ Mailpile.auto_modal_display = function(jhtml_url, params, modal, data) {
       }
       var post_data = mf.find('form').serialize();
 
-      loadtimer = setTimeout(function() {
+      var loadtimer = setTimeout(function() {
         Mailpile.UI.show_modal(
           Mailpile.safe_template($('#template-modal-loading').html())
         );
@@ -132,7 +132,7 @@ Mailpile.auto_modal_display = function(jhtml_url, params, modal, data) {
 };
 
 Mailpile.auto_modal = function(params) {
-  loadtimer = setTimeout(function() {
+  var loadtimer = setTimeout(function() {
     Mailpile.UI.show_modal(
       Mailpile.safe_template($('#template-modal-loading').html())
     );
@@ -151,11 +151,13 @@ Mailpile.auto_modal = function(params) {
       type: params.method,
       data: post_data,
       success: function(data) {
+        console.log("AM: Success!");
         clearTimeout(loadtimer);
         Mailpile.auto_modal_display(jhtml_url, params, modal, data);
       },
       error: function(xhr, status, error) {
         // FIXME: This is a bit lame...
+        console.log("AM: Error: " + status);
         clearTimeout(loadtimer);
         Mailpile.UI.hide_modal();
       }

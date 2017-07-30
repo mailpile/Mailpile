@@ -55,7 +55,6 @@ Mailpile.UI.hide_modal = function() {
 };
 
 Mailpile.UI.show_modal = function(html) {
-  Mailpile.UI.hide_modal();
   var modal = Mailpile.UI.get_modal();
   if (html) {
     modal.html(html);
