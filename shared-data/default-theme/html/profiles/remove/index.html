@@ -1,0 +1,104 @@
+{%- extends "layouts/" + render_mode + ".html" %}
+{%- block title %}{{_("Remove Account")}}{% endblock %}
+{%- block content %}
+{%- if result and result.form and result.rid %}
+<div class="content-normal" style="max-width: 42em">
+  <h1><span class="icon-trash"></span> {{_("Remove Account")}}</h1>
+  <form method="POST" action="{{ U('/profiles/remove/') }}">{{ csrf_field|safe }}
+    <input type="hidden" name="rid" value="{{ result.rid }}">
+    <p>
+      {{ _("You are about to remove this account from your Mailpile") }}:
+    </p>
+    <ul style="padding: 0; border: 1px solid #aaa;">
+      <li class="account-info text-left" style="overflow: hidden; margin: 0;">
+        <label class="radio-list-item">
+          <div class="text-center" style="font-size: 54px; width: 20%; padding-right: 0;">
+            {%- if result.profile.photo %}
+            <img width="64" height="64"
+                 style="width: 64px; height: 64px;"
+                 src="data:{{ result.profile.photo.0.photo }}">
+            {%- else %}
+            <span class="icon icon-user"></span>
+            {%- endif %}
+          </div>
+          <div style="white-space: nowrap; font-size: 0.9em; width: 40%;">
+            <span style="font-size: 1.3em; line-height: 1.5em;">
+              {{ result.profile.fn }}
+            </span>
+            {%- for email in result.profile.email %}
+              <br><span class="icon icon-inbox"></span>
+              {{ email.email }}
+            {%- endfor %}
+            {%- for key in result.profile.key %}
+              <br><span class="icon icon-lock-closed"></span>
+              0x{{ key.key.split(',')[1][-8:] }}
+            {%- endfor %}
+          </div>
+          <div style="white-space: nowrap; font-size: 0.9em;">
+            {%- if result.profile['x-mailpile-profile-route'] %}
+              {%- set route = config.routes[result.profile['x-mailpile-profile-route']] %}
+              <br><span class="icon icon-outbox"></span>
+              {%- if route.protocol == 'local' %}
+                {{ _('Unix shell') }}
+              {%- else %}
+                {{ route.host }}:{{ route.port }}
+              {%- endif %}
+            {%- endif %}
+            {%- for s in result.profile['x-mailpile-profile-source'] %}
+              {%- set source = config.sources[s['profile-source']] %}
+              <br><span class="icon icon-mailsource"></span>
+              {%- if source.protocol == 'local' %}
+                {{ _('Local files') }}
+              {%- else %}
+                {{ source.host }}:{{ source.port }}
+              {%- endif %}
+            {%- endfor %}
+            {%- if 'x-mailpile-profile-tag' in result.profile and result.profile['x-mailpile-profile-tag'] in config.tags %}
+              {%- set t = mailpile('tags', config.tags[result.profile['x-mailpile-profile-tag']].slug).result.tags.0 %}
+            {%- else %}
+              {%- set t = {'slug': 'all-mail', 'stats': {'new': '', 'all': ''}} %}
+            {%- endif %}
+            {%- if t.stats.all %}
+              <br><span class="icon icon-logo"></span>
+              {{ _('{TOTAL} e-mails').format(TOTAL=t.stats.all) }}
+            {%- endif %}
+          </div>
+        </label>
+      </li>
+    </ul>
+    <ul style="margin-left: 1.5em; float: right;">
+      <li><input type="checkbox" name="delete-tags" value="yes">
+          <span class="checkbox">{{ _("Delete Account Tags") }}</span></li>
+    {%- if result.profile.key %}
+      <li><input type="checkbox" name="delete-keys" value="yes">
+          <span class="checkbox">{{ _("Delete Encryption Keys") }}</span></li>
+    {%- endif %}
+      <li><input type="checkbox" name="trash-email" value="yes">
+          <span class="checkbox">{{ _("Move E-mail to Trash") }}</span></li>
+    </ul>
+    <p>
+      {{ _("By default this will remove: account details, OAuth credentials, saved passwords, linked mail sources, and route settings.") }}
+      {{ _("This only affects local data, e-mail and settings on remote mail servers will not be modifed.") }}
+    </p>
+    {%- if result.profile.key %}
+    <p>
+      {{ _("If you also delete the encryption keys, you may be unable to read old encrypted e-mail.") }}
+    </p>
+    {%- endif %}
+    <p>
+      {{ _("Be careful!") }}
+      <b>{{ _("This operation can not be undone.") }}</b>
+    </p>
+    <br clear="both">
+    <button class="button button-secondary" data-dismiss="modal" aria-hidden="true">
+      {{ _("Cancel") }}
+    </button>
+    <button type="submit" class="button-primary right">
+      <span class="icon icon-trash"></span> {{ _("Remove Account")}}
+    </button>
+  </form>
+</div>
+{%- else %}
+  {{ mailpile('http/redirect', U('/profiles/')) }}
+{%- endif %}
+{%- endblock %}

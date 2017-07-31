@@ -81,6 +81,9 @@ class VCardCommand(Command):
                         lines.append('   %-32.32s key:%s' % ('', key))
             return '\n'.join(lines)
 
+    def _form_defaults(self):
+        return {'form': self.HTTP_POST_VARS}
+
     def _make_new_vcard(self, handle, name, note, kind):
         l = [VCardLine(name='fn', value=name),
              VCardLine(name='kind', value=kind)]
@@ -198,9 +201,6 @@ class AddVCard(VCardCommand):
 
     def _after_vcard_create(self, kind, vcard, state):
         pass
-
-    def _form_defaults(self):
-        return {'form': self.HTTP_POST_VARS}
 
     def command(self, recipients=False, quietly=False, internal=False):
         idx = self._idx()  # Make sure VCards are all loaded
@@ -1048,8 +1048,7 @@ def ProfileVCard(parent):
                variables=dict_merge(GnuPGBaseKeyGenerator.VARIABLES, key_args),
                on_complete=(random_uid,
                             lambda: self._new_key_created(event, random_uid,
-                                                          passphrase))
-            )
+                                                          passphrase)))
             self._key_generator.start()
             self.session.config.event_log.log_event(event)
 
@@ -1307,6 +1306,134 @@ class EditProfile(AddProfile):
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):
     """Remove a profile"""
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = dict_merge(RemoveVCard.HTTP_QUERY_VARS, {
+        'rid': 'x-mailpile-rid of profile to remove'})
+    HTTP_POST_VARS = {
+        'rid': 'x-mailpile-rid of profile to remove',
+        'trash-email': 'If yes, move linked e-mail to Trash',
+        'delete-keys': 'If yes, delete linked PGP keys',
+        'delete-tags': 'If yes, remove linked Tags'}
+
+    def _trash_email(self, vcard):
+        trashes = self.session.config.get_tags(type='trash', default=[])
+        if vcard.tag and trashes:
+            idx = self.session.config.index
+            idx.add_tag(self.session, trashes[0]._key,
+                        msg_idxs=idx.TAGS.get(vcard.tag, set()),
+                        allow_message_id_clearing=True,
+                        conversation=False)
+
+    def _delete_keys(self, vcard):
+        if vcard.pgp_key:
+            self._gnupg().delete_key(vcard.pgp_key)
+
+    def _cleanup_tags(self, vcard, delete_tags=False):
+        if vcard.tag:
+            if delete_tags:
+                from mailpile.plugins.tags import DeleteTag
+                DeleteTag(self.session, arg=[vcard.tag]).run()
+            else:
+                self.session.config.tags[vcard.tag].type = 'attribute'
+                self.session.config.tags[vcard.tag].display = 'invisible'
+                self.session.config.tags[vcard.tag].label = True
+
+    def _unique_usernames(self, vcard):
+        config, usernames = self.session.config, set()
+
+        if (vcard.route not in ('', None)) and config.routes[vcard.route].username:
+            usernames.add(config.routes[vcard.route].username)
+        for source_id in vcard.sources():
+            if config.sources[source_id].username:
+                usernames.add(config.sources[source_id].username)
+
+        for msid, source in config.sources.iteritems():
+            if (source.username in usernames) and (source.profile != vcard.random_uid):
+                usernames.remove(source.username)
+        for mrid, route in config.routes.iteritems():
+            if (route.username in usernames) and (mrid != vcard.route):
+                usernames.remove(source.username)
+
+        return usernames
+
+    def _delete_credentials(self, vcard):
+        # Check every stored credential; if it is in use by any route or source that
+        # doesn't belong to this VCard, leave intact. Otherwise, delete.
+        usernames = self._unique_usernames(vcard)
+        oauth_tks = self.session.config.oauth.tokens
+        for username in (set(oauth_tks.keys()) & usernames):
+            del oauth_tks[username]
+        secrets = self.session.config.secrets
+        for username in (set(secrets.keys()) & usernames):
+            del secrets[username]
+
+    def _delete_routes(self, vcard):
+        if vcard.route not in (None, ''):
+            self.session.config.routes[vcard.route] = {}
+
+    def _delete_sources(self, vcard, delete_tags=False):
+        config, sources = self.session.config, self.session.config.sources
+        for source_id in vcard.sources():
+            src = sources[source_id]
+            tids = set()
+
+            # Tell the worker to shut down, if any
+            if source_id in config.mail_sources:
+                config.mail_sources[source_id].quit()
+                config.mail_sources[source_id].event.flags = Event.COMPLETE
+
+            # Keep the reference to our local mailboxes in sys.mailbox
+            for mbx_id, mbx_info in src.mailbox.iteritems():
+                if mbx_info.primary_tag:
+                    tids.add(mbx_info.primary_tag)
+                if mbx_info.local and (mbx_info.path[:1] == '@'):
+                    config.sys.mailbox[mbx_info.path[1:]] = mbx_info.local
+
+            # Reconfigure all the tags
+            from mailpile.plugins.tags import DeleteTag
+            if src.discovery.parent_tag:
+                tids.add(src.discovery.parent_tag)
+            for tid in tids:
+                if ((tid in config.tags)
+                        and config.tags[tid].type in ('mailbox', 'profile')):
+                    config.tags[tid].type = 'tag'
+                    if delete_tags:
+                        DeleteTag(self.session, arg=[tid]).run()
+
+            # Nuke it!
+            sources[source_id] = {
+                'name': 'Deleted source',
+                'enabled': False}
+
+    def command(self, *args, **kwargs):
+        session, config = self.session, self.session.config
+
+        if 'rid' in self.data:
+            vcard = config.vcards.get_vcard(self.data['rid'][0])
+        else:
+            vcard = None
+
+        if vcard and self.data.get('_method', 'not-http').upper() != 'GET':
+            if self.data.get('trash-email', [''])[0].lower() == 'yes':
+                self._trash_email(vcard)
+
+            if self.data.get('delete-keys', [''])[0].lower() == 'yes':
+                self._delete_keys(vcard)
+
+            delete_tags = (self.data.get('delete-tags', [''])[0].lower() == 'yes')
+            self._delete_credentials(vcard)
+            self._delete_routes(vcard)
+            self._delete_sources(vcard, delete_tags=delete_tags)
+            self._cleanup_tags(vcard, delete_tags=delete_tags)
+            self._background_save(config=True, index=True)
+
+            return RemoveVCard.command(self, *args, **kwargs)
+
+        return self._success(_("Remove account"), result=dict_merge(
+            self._form_defaults(), {
+                'rid': vcard.random_uid if vcard else None,
+                'profile': (self._vcard_list([vcard])['profiles'][0]
+                            if vcard else None)}))
 
 
 class ListProfiles(ProfileVCard(ListVCards)):

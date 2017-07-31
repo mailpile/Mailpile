@@ -208,7 +208,7 @@ class SearchResults(dict):
 
     def _msg_tags(self, msg_info):
         tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',')
-                if t and t in self.session.config.tags]
+                if t and self.session.config.tags.get(t)]
         return tids
 
     def _tag(self, tid, attributes={}):

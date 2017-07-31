@@ -57,14 +57,13 @@
       <h3>{{_("E-mail Accounts")}}</h3>
       <table>
         <tr>
-          <th colspan="1">
-          </th>
+          <th colspan="2"></th>
           <th>{{_("Your name")}}</th>
           <th>{{_("E-mail address")}}</th>
-          <th style="text-align: right"><span class="icon icon-new"></span> {{_("New")}}</th>
+          <th style="text-align: right; padding-left: 1.5em;"><span class="icon icon-new"></span> {{_("New")}}</th>
           <th style="text-align: right"><span class="icon icon-logo"></span> {{_("Total")}}</th>
-          <th style="text-align: right"><span class="icon icon-settings"></span> {{_("Settings")}}
-          </th>
+          <th style="text-align: right; padding-left: 1.5em;"><span class="icon icon-settings"></span> {{_("Settings")}}</th>
+          <th></th>
         </tr>
         {%- if result.loading or not result.loaded %}
         <tr class="message">
@@ -94,22 +93,27 @@
          {%- endif %}
         <tr valign="top" class="message">
           <td id="compose-message">
-             {%- if route %}
+            {%- if route %}
             <a class="button-compose" title="Compose as {{ p.email.0.email }}"
                 href="/message/compose/?from={{ p.email.0.email }}">
               <span class="icon icon-compose"></span>
             </a>
-             {%- endif %}
+            {%- endif %}
+          </td>
+          <td id="photo" style="padding: 0; margin: 0;">
+            {%- if p.photo %}
+            <img width="20" height="20" style="margin: 0 5px -4px 5px;"
+                 src="data:{{ p.photo.0.photo }}">
+            {%- endif %}
           </td>
           <td id="first-name">
-             <a href="{{ U('/in/inbox/?q=in:', t.slug) }}">
-               {{ p.fn }}
-             </a>
+            <a href="{{ U('/in/inbox/?q=in:', t.slug) }}">
+              {{ p.fn }}
+            </a>
           </td>
           <td id="email-address">{% for e in p.email %}
-             {{ e.email }}{% if not loop.last %}<br>{% endif %}
-           {%- endfor %}
-          </td>
+            {{ e.email }}{% if not loop.last %}<br>{% endif %}
+          {%- endfor %}</td>
           <td id="stats-new">
             <span class="mobile-inline icon icon-new"></span>
             <a href="{{ U('/in/', t.slug, '/?q=is:unread') }}"><b>{{ friendly_number(t.stats.new) }}</b></a>
@@ -121,7 +125,7 @@
            <td id="settings-actions">
              {%- if not (p['x-mailpile-profile-source'] or []) %}
              <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
-                title="{{_('Configure incoming mail')}}"
+                title="{{_('Configure Incoming Mail')}}"
                 href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
                <span class="unconfigured icon icon-mailsource"></span>
              </a>
@@ -130,20 +134,20 @@
                {%- set source_id = ms['profile-source'] %}
                {%- set source = config.sources[source_id] %}
              <a class="source-{{source_id}} auto-modal" data-flags="reload" data-icon="icon-mailsource"
-                data-title="{{_('Incoming mail:')}} {{source.name}}"
-                title="{{_('Incoming mail:')}} {{source.name}}"
+                data-title="{{_('Incoming Mail:')}} {{source.name}}"
+                title="{{_('Incoming Mail:')}} {{source.name}}"
                 href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=sources') }}">
                <span class="configured icon icon-mailsource"></span>
              </a>
              {%- endfor %}
              <a class="auto-modal" data-flags="reload" data-icon="icon-outbox"
-                title="{{_('Outgoing mail settings')}}"
+                title="{{_('Outgoing Mail Settings')}}"
                 href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=route') }}">
                <span class="{% if not route %}un{% endif %}configured icon icon-outbox"></span>
              </a>
 
              <a class="auto-modal" data-flags="reload" data-icon="icon-lock-closed"
-                title="{{_("Security settings")}}"
+                title="{{_("Security Settings")}}"
                 href="{{ U('/profiles/edit/?rid=', profile_rid, '&ui_open=security') }}">
                <span class="profile-{{profile_rid}}-key
                             {% if p.key %}configured icon icon-lock-closed
@@ -156,16 +160,13 @@
                        <span class="icon icon-user" style="color: #070;"></span>
              </a>
            </td>
-           {%- if is_dev_version() %}
            <td id="delete-account">
              <a class="auto-modal" data-flags="reload" data-icon="icon-trash"
-                title="{{_("Delete or disable account")}}"
-                onclick="javascript:alert('This does not work yet, sorry!');"
-                href="{{ U('/profiles/remove/?ui_profile=', profile_rid) }}">
+                title="{{_("Remove Account")}}"
+                href="{{ U('/profiles/remove/?rid=', profile_rid) }}">
                <span class="icon icon-trash" style="color: #750;"></span>
              </a>
            </td>
-           {%- endif %}
         </tr>
         {%- endfor %}
       {% endif %}
@@ -180,7 +181,7 @@
           <span class="icon icon-settings"></span> {{_("Privacy & Security")}}
         </button></a></p>
     </section>
-      {%- elif result.profiles|length < 1 %}
+      {%- elif result.profiles|length < 1 %}{# > #}
       <section class="message text-center">
         <br>
         <p><i>{{_("You have not configured any accounts yet.")}}</i></p>

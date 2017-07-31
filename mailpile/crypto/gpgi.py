@@ -1252,6 +1252,10 @@ class GnuPG:
 
         return retvals
 
+    def delete_key(self, key_fingerprint):
+        cmd = ['--yes', '--delete-secret-and-public-key', key_fingerprint]
+        return self.run(cmd)
+
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
                  keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
