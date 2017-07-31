@@ -266,13 +266,13 @@
   {% else %}
 
    <div class='text-center'>
-     <h3>{{_("No Accounts Here!")}}</h3>
+     <h3>{{_("No Saved Passwords Here!")}}</h3>
      <p>
-       <a href="{{ U('/') }}">{{_("Accounts can be created on the Home page.")}}</a>
+       {{_("Hopefully that is a good thing...")}}
      </p>
    </div>
 
-   <pre class="xhide">{{ result|json }}</pre>
+   <pre class="hide">{{ result|json }}</pre>
 
   {% endif %}
 
