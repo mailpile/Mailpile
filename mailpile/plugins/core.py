@@ -819,19 +819,29 @@ class GpgCommand(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
+            if self.result:
+                return '%s\n\n%s' % (
+                    (self.result['stdout'] or _('(no output)')).strip(),
+                    self.message)
             return '%s' % self.message
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
-
-        # FIXME: For this to work anywhere but in a terminal, we'll need
-        #        to somehow pipe input to/from GPG in a more sane way.
-
         binary, rv = self._gnupg().gpgbinary, '(unknown)'
         with self.session.ui.term:
             try:
                 self.session.ui.block()
-                rv = os.system(' '.join([binary] + args))
+                if (self.session.ui.interactive and
+                        self.session.ui.render_mode == 'text'):
+                    rv = os.system(' '.join([binary] + args))
+                    stdout = None
+                else:
+                    sp = subprocess.Popen(
+                        [binary] + ['--batch', '--no-tty'] + args,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        stdin=subprocess.PIPE)
+                    (stdout, stderr) = sp.communicate(input='')
+                    rv = sp.wait()
                 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
                 PGPKeysImportAsVCards(self.session).run()
             except:
@@ -839,7 +849,9 @@ class GpgCommand(Command):
 
         return self._success(_("That was fun!") + ' ' +
                              _("%s returned: %s") % (binary, rv),
-                             result={'binary': binary, 'returned': rv})
+                             result={'binary': binary,
+                                     'stdout': stdout,
+                                     'returned': rv})
 
 
 class ListDir(Command):

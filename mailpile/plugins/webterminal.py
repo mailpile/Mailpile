@@ -68,7 +68,7 @@ class TerminalCommand(Command):
         'sid': 'id of session to use',
         'command': 'command to execute'
     }
-    TERMINAL_BLACKLIST = ["pipe", "gpg"]
+    TERMINAL_BLACKLIST = ["pipe", "eventlog/watch"]
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
