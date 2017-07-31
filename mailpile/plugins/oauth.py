@@ -180,7 +180,7 @@ class OAuth2(TestableWebbable):
                 ('refresh_token', tok_info.refresh_token),
                 ('client_id', oauth2_cfg['client_id']),
                 ('client_secret', oauth2_cfg['client_secret']),
-                ('grant_type', 'refresh_tokee')])
+                ('grant_type', 'refresh_token')])
             data = json.loads(cls.URLGet(
                session, oauth2_cfg['token_url'], data=post_data))
 
