@@ -32,6 +32,7 @@
 import datetime
 import socket
 import ssl
+import subprocess
 import sys
 import threading
 import time
@@ -39,9 +40,12 @@ import traceback
 
 try:
     import cryptography
-    import cryptography.x509
     import cryptography.hazmat.backends
     import cryptography.hazmat.primitives.hashes
+    try:
+        import cryptography.x509 as cryptography_x509
+    except ImportError:
+        cryptography_x509 = None
 except ImportError:
     cryptography = None
 
@@ -781,11 +785,70 @@ class GetTlsCertificate(Command):
         def oidmap(entries):
             return dict((oidName(e.oid), e.value) for e in entries)
 
-        def fingerprint(pcert):
-            sha256 = cryptography.hazmat.primitives.hashes.SHA256()
-            fp = ['%2.2x' % ord(b) for b in pcert.fingerprint(sha256)]
+        def subjmap(stext):
+            def subjpair(kv):
+                k, v = kv.split('=', 1)
+                return ({'CN': 'commonName',
+                         'C': 'countryName',
+                         'ST': 'stateOrProvinceName',
+                         'L': 'localityName',
+                         'O': 'organizationName',
+                         'OU': 'organizationalUnitName'}.get(k, k), v)
+            parts = []
+            for part in stext.strip().split('/'):
+                if '=' in part:
+                    parts.append(part)
+                elif parts:
+                    parts[-1] += '/' + part
+            return dict(subjpair(kv) for kv in parts)
+
+        def fingerprint(cert_sha_256):
+            fp = ['%2.2x' % ord(b) for b in cert_sha_256]
             fp2 = [fp[i*2] + fp[i*2 + 1] for i in range(0, len(fp)/2)]
             return fp2
+
+        def pts(t):
+            dt, tz = t.rsplit(' ', 1)  # Strip off the timezone
+            return datetime.datetime.strptime(dt, '%b %d %H:%M:%S %Y')
+
+        def parse_pem_cert(cert_pem, s256):
+            cert_sha_256 = s256.decode('base64')
+            now = datetime.datetime.today()
+            if cryptography_x509 is None:
+                # Shell out to openssl, boo.
+                (stdout, stderr) = subprocess.Popen(
+                    ['openssl', 'x509',
+                        '-subject', '-issuer', '-dates', '-noout'],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    stdin=subprocess.PIPE).communicate(input=str(cert_pem))
+                if not stdout:
+                    raise ValueError(stderr)
+                details = dict(l.split('=', 1)
+                               for l in stdout.strip().splitlines()
+                               if l and '=' in l)
+                details['notAfter'] = pts(details['notAfter'])
+                details['notBefore'] = pts(details['notBefore'])
+                return {
+                    'fingerprint': fingerprint(cert_sha_256),
+                    'date_matches': False,
+                    'date_matches': ((details['notBefore'] < now) and
+                                     (details['notAfter'] > now)),
+                    'not_valid_before': ts(details['notBefore']),
+                    'not_valid_after': ts(details['notAfter']),
+                    'subject': subjmap(details['subject']),
+                    'issuer': subjmap(details['issuer'])}
+            else:
+                parsed = cryptography_x509.load_pem_x509_certificate(
+                    str(cert_pem),
+                    cryptography.hazmat.backends.default_backend())
+                return {
+                    'fingerprint': fingerprint(cert_sha_256),
+                    'date_matches': ((parsed.not_valid_before < now) and
+                                     (parsed.not_valid_after > now)),
+                    'not_valid_before': ts(parsed.not_valid_before),
+                    'not_valid_after': ts(parsed.not_valid_after),
+                    'subject': oidmap(parsed.subject),
+                    'issuer': oidmap(parsed.issuer)}
 
         def attempt_starttls(addr, sock):
             # Attempt a minimal SMTP interaction, for STARTTLS support
@@ -893,19 +956,7 @@ class GetTlsCertificate(Command):
                     'tofu_invalid': (using_tofu and not tofu_seen),
                     'pem': ssl.DER_cert_to_PEM_cert(cert)}
 
-                if cryptography is not None:
-                    now = datetime.datetime.today()
-                    parsed = cryptography.x509.load_pem_x509_certificate(
-                        str(cert['pem']),
-                        cryptography.hazmat.backends.default_backend())
-                    cert.update({
-                        'fingerprint': fingerprint(parsed),
-                        'date_matches': ((parsed.not_valid_before < now) and
-                                         (parsed.not_valid_after > now)),
-                        'not_valid_before': ts(parsed.not_valid_before),
-                        'not_valid_after': ts(parsed.not_valid_after),
-                        'subject': oidmap(parsed.subject),
-                        'issuer': oidmap(parsed.issuer)})
+                cert.update(parse_pem_cert(cert['pem'], s256))
 
                 certs[host] = (True, s256, cert, None)
                 ok += 1
