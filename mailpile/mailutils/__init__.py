@@ -1093,7 +1093,18 @@ class Email(object):
                     session.ui.notify(_('Failed to generate thumbnail'))
                     raise UrlRedirectException('/static/img/image-default.png')
             else:
-                if mode.startswith('get'):
+                WHITELIST = ('image/png',
+                             'image/gif',
+                             'image/jpeg',
+                             'image/tiff',
+                             'audio/mp3',
+                             'audio/ogg',
+                             'audio/x-wav',
+                             'audio/mpeg',
+                             'video/mpeg',
+                             'video/ogg',
+                             'application/pdf')
+                if mode.startswith('get') and mimetype in WHITELIST:
                     # This allows the browser to (optionally) handle the
                     # content, instead of always forcing a download dialog.
                     attributes['disposition'] = 'inline'
