@@ -49,6 +49,7 @@ openpgp_algorithms = {1: _("RSA"),
 # For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
 
+ENTROPY_LOCK = threading.Lock()
 
 class GnuPGEventUpdater:
     """
@@ -1368,7 +1369,7 @@ class GnuPG:
             self.debug('Running %s' % ' '.join(gpg_args))
             self.event.update_args(gpg_args)
             proc = Popen(gpg_args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                         bufsize=0)
+                         bufsize=0, long_running=True)
 
             return callback(proc, *args, **kwargs)
         finally:
@@ -1612,6 +1613,7 @@ class GnuPGExpectScript(threading.Thread):
 
 class GnuPGBaseKeyGenerator(GnuPGExpectScript):
     """This is a background thread which generates a new PGP key."""
+    AWAITING_LOCK = 'Pending keygen'
     KEY_SETUP = 'Key Setup'
     GATHER_ENTROPY = 'Creating key'
     CREATED_KEY = 'Created key'
@@ -1625,18 +1627,29 @@ class GnuPGBaseKeyGenerator(GnuPGExpectScript):
         'passphrase': 'mailpile'}
     DESCRIPTION = _('Creating a %(bits)s bit GnuPG key')
     RUNNING_STATES = (GnuPGExpectScript.RUNNING_STATES +
-                      [KEY_SETUP, GATHER_ENTROPY, HAVE_KEY])
+                      [AWAITING_LOCK, KEY_SETUP, GATHER_ENTROPY, HAVE_KEY])
 
     failed = property(lambda self: (not self.running and
                                     not self.generated_key))
 
     def __init__(self, *args, **kwargs):
-        GnuPGExpectScript.__init__(self, *args, **kwargs)
+        super(GnuPGBaseKeyGenerator, self).__init__(*args, **kwargs)
         self.generated_key = None
 
     def in_state(self, state):
         if state == self.HAVE_KEY:
              self.generated_key = self.before.strip().split()[-1]
+
+    def run(self):
+        # In order to minimize risk of timeout during key generation,
+        # we serialize them here using a global lock
+        self.set_state(self.AWAITING_LOCK)
+        self.event.message = _('Waiting for a slot to create a %d bit GnuPG key'
+                               % self.variables['bits'])
+        with ENTROPY_LOCK:
+            self.event.message = _('Generating new %d bit PGP key. '
+                                   'This may take some time!' % self.variables['bits'])
+            super(GnuPGBaseKeyGenerator, self).run()
 
 
 class GnuPG14KeyGenerator(GnuPGBaseKeyGenerator):
