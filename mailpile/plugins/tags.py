@@ -744,6 +744,7 @@ class DeleteTag(TagCommand):
         session, config = self.session, self.session.config
         clean_session = mailpile.ui.Session(config)
         clean_session.ui = session.ui
+        clean_session.order = 'all-flat'
         result = []
 
         tag_names = []
@@ -761,9 +762,10 @@ class DeleteTag(TagCommand):
 
                 # FIXME: Refuse to delete tag if in use by filters
 
-                rv = (Search(clean_session, arg=['tag:%s' % tag_id]).run() and
-                      Tag(clean_session, arg=['-%s' % tag_id, 'all']).run())
-                if rv:
+                msgs = set(config.index.TAGS.get(tag_id, set()))
+                rem = config.index.remove_tag(clean_session, tag_id,
+                                              msg_idxs=msgs)
+                if not config.index.TAGS.get(tag_id, set()):
                     del config.tags[tag_id]
                     result.append({'name': tag.name, 'tid': tag_id})
                 else:
