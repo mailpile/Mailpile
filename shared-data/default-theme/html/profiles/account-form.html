@@ -70,7 +70,7 @@
           $(pf + '.' + cls).hide();
           if (val) {
             $(pf + '.' + cls + '.any').show();
-            $(pf + '.' + cls + '.' + val).show();
+            if (val[0] != '!') $(pf + '.' + cls + '.' + val).show();
           }
           else {
             $(pf + '.' + cls + '.undefined').show();
@@ -125,13 +125,14 @@
           var email = $(pf + '.fpa-email').val();
           var found = 0;
           $(pf + '.fpa-pgp-key option').each(function(i) {
-            var uids = $(this).data('uids');
-            if (found == 0 && uids && uids.indexOf(" "+email+" ") != -1) {
-              $(this).prop('selected', true);
+            var uid = $(this).data('uid');
+            if (found == 0 && uid == email) {
+              $(this).prop('selected', true).removeClass('hide');
               found = 1;
             }
             else {
               $(this).prop('selected', false);
+              if (uid) $(this).addClass('hide');
             }
             if (!found) {
               $(pf + '.fpa-pgp-key-default').prop('selected', true);
@@ -706,21 +707,25 @@
     </p>
     <div class="section profile-add-security  {% if ui_open != 'security' %}hide{% endif %}"
          style="position: relative;">
-      <div class="left" style="margin-right: 0; width: 29em;">
+      <div class="left" style="margin-right: 0; width: 100%;">
         <label>{{_("Encryption key")}}</label>
         <select class='fpa-pgp-key' style="width: 100%"
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
           <option value="!CREATE:RSA2048" class="fpa-pgp-key-default">{{_("Create a new 2048 bit RSA key")}}</option>
-        {% set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
+        {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
         {%- for fingerprint in pgp_keys -%}
           {%- set key = pgp_keys[fingerprint] -%}
-          <option value="{{fingerprint}}" data-uids="{% for uid in key.uids %}{{ uid.email}} {% endfor %}"
-                  {%- if fingerprint == result['security-pgp-key'] %} selected{% endif %}>
+          {%- for uid in key.uids %}
+          <option value="{{fingerprint}}" data-uid="{{ uid.email }}"
+                  {%- if (fingerprint == result['security-pgp-key']) and (uid.email == result.email) %} selected{% endif %}
+                  {%- if (uid.email != result.email) %} class="hide"{% endif %}>
             {{key.creation_date}}/{{key.keytype_name}}{{key.keysize}}:
-            {{key.uids[0].name}} &lt;{{key.uids[0].email}}&gt;
-            {% if key.uids[0].comment %}({{key.uids[0].comment}}){% endif %}
-          </option>{% endfor %}
+            {{uid.name}} &lt;{{uid.email}}&gt;
+            ({% if uid.comment %}{{uid.comment}}{% else %}0x{{ fingerprint[-8:] }}{% endif %})
+          </option>
+          {%- endfor %}
+        {%- endfor %}
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
 {%- if is_dev_version() %}
           <option value="!CREATE:RSA1024">{{_("Create a new 1024 bit RSA key (weak)")}}</option>
