@@ -8,6 +8,7 @@ import math
 import time
 import datetime
 
+import mailpile.util
 from mailpile.commands import Command
 from mailpile.config.base import ConfigDict
 from mailpile.i18n import gettext as _
@@ -279,6 +280,8 @@ class Retrain(AutoTagCommand):
                                           self._get_keywords(e),
                                           which)
                             play_nice_with_threads()
+                            if mailpile.util.QUITTING:
+                                return self._error('Aborted')
                         except (IndexError, TypeError, ValueError,
                                 OSError, IOError):
                             if 'autotag' in session.config.sys.debug:
