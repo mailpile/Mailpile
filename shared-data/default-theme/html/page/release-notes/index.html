@@ -3,16 +3,74 @@
 {% block content %}
 <div class="content-normal" style="max-width: 46em;">
 
-  <h1><span class="icon-donate"></span> {{_("Welcome to Mailpile %(version)s", version=config.version)}}</h1>
-  <p>
-    <b>FIXME:</b> Write release notes.
-  </p>
+  {%- set target_version = config.version.split('rc')[0].rsplit('.', 1)[0] %}
+  <h1>
+    <span class="icon-donate"></span>
+    {{_("Welcome to Mailpile %(version)s", version=config.version)}}
+  </h1>
+  {% if "rc" in config.version %}
+  <p class="text-center"><i>
+    {{_("Thank you for testing our release candidate!")}}<br>
+    {{_("If no critical bugs are found, this will become version %(version)s.",
+        version=target_version )}}
+  </i></p><br>
+  {% endif %}
 
-  <p>
-    <i>This is the <a href="https://www.mailpile.is/blog/2016-01-01_Happy_Frozen_New_Year.html">Feature Freeze</a> in progress.</i>
-  </p>
+  <h3>{{_("What is Mailpile %(version)s?", version=target_version)}}</h3>
+  <ul style="list-style: disc; margin: 1em 0 2em 2em;">
+    <li>{{_("An e-mail client with a strong focus on privacy")}}</li>
+    <li>{{_("A tool for organizing and searching large volumes of e-mail")}}</li>
+    <li>{{_("An easy way to get started with PGP e-mail encryption")}}</li>
+  </ul>
 
-  <p class="center release-notes-got-it">
+  <h3>{{_("What is Mailpile not?")}}</h3>
+  <ul style="list-style: disc; margin: 1em 0 2em 2em;">
+    <li>{{_("A synchronizing IMAP client:")}}
+        {{_("local changes stay local, we don't tell the server")}}</li>
+    <li>{{_("A money-making enterprise")}}</li>
+    <li>{{_("A calendar")}}</li>
+    <li>{{_("Finished.")}}
+        <a style="font-size: 0.8em;"
+           target=_blank href="https://www.mailpile.is/donate/"><i>
+          {{_("Help make it better!")}}
+        </i></a></li>
+  </ul>
+
+  <p class="text-center" style="border-top: 1px solid #aaa; padding: 1em 0;"><i>
+    {{_("That's it!")}}
+    {{_("Read on if you've used one of the Mailpile Beta or Github releases.")}}
+  </i></p>
+
+  <h5>{{_("What's new?")}}</h5>
+  <ul style="list-style: disc; margin: 1em 0 2em 2em;">
+    <li>{{_("A better (shorter) setup process")}}</li>
+    <li>{{_("Support for GMail OAuth2 authentication")}}</li>
+    <li>{{_("Improved PGP support, including automatic importing of keys")}}</li>
+    <li>{{_('Per-tag automatic bayesian classification, as <a target=_blank href="%(blog_url)s">discussed on our blog</a>',
+            blog_url="https://www.mailpile.is/blog/2014-01-12_A_Plan_For_Spam.html")}}</li>
+    <li>{{_("The ability to delete email and accounts")}}</li>
+  </ul>
+
+  <h5>{{_("What's fixed?")}}</h5>
+  <ul style="list-style: disc; margin: 1em 0 2em 2em;">
+    <li>{{_('See Github for <a target=_blank href="%(closed_url)s">all closed issues</a> and <a target=_blank href="%(release_url)s">issues closed for this release</a>',
+            closed_url='https://github.com/mailpile/Mailpile/issues?q=is%3Aissue+is%3Aclosed',
+            release_url='https://github.com/mailpile/Mailpile/milestone/4?closed=1'
+            )|safe }}</li>
+  </ul>
+
+  <h5>{{_("What's still broken?")}}</h5>
+  <ul style="list-style: disc; margin: 1em 0 2em 2em;">
+    <li>{{_("Mailpile is still rather slow and RAM-hungry")}}</li>
+    <li>{{_("IMAP synchronization is not yet implemented")}}</li>
+    <li>{{_("Our Security Roadmap is incomplete")}}</li>
+    <li>{{_('Github has <a target=_blank href="%(issues_url)s">many open issues</a>.',
+            issues_url='https://github.com/mailpile/Mailpile/issues'
+            )|safe }} {{_("Maybe you can help?")}}</li>
+  </ul>
+
+  <p class="center release-notes-got-it"
+     style="border-top: 1px solid #aaa; padding: 1em 0 0 0;"><i>
     <a data-variable="web.release_notes" data-remove="release-notes-got-it"
        class="ok-got-it">
       <span class="icon-checkmark"></span> {{_("OK, got it")}}
