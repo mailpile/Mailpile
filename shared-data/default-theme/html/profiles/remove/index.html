@@ -73,8 +73,10 @@
       <li><input type="checkbox" name="delete-keys" value="yes">
           <span class="checkbox">{{ _("Delete Encryption Keys") }}</span></li>
     {%- endif %}
+    {%- if result.trash_email_is_safe %}
       <li><input type="checkbox" name="trash-email" value="yes">
           <span class="checkbox">{{ _("Move E-mail to Trash") }}</span></li>
+    {%- endif %}
     </ul>
     <p>
       {{ _("By default this will remove: account details, OAuth credentials, saved passwords, linked mail sources, and route settings.") }}

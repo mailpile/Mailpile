@@ -1326,7 +1326,12 @@ class RemoveProfile(ProfileVCard(RemoveVCard)):
 
     def _delete_keys(self, vcard):
         if vcard.pgp_key:
-            self._gnupg().delete_key(vcard.pgp_key)
+            found = 0
+            for vc in self.session.config.vcards.find_vcards([], kinds=['profile']):
+                if vc.pgp_key == vcard.pgp_key:
+                    found += 1
+            if found == 1:
+                self._gnupg().delete_key(vcard.pgp_key)
 
     def _cleanup_tags(self, vcard, delete_tags=False):
         if vcard.tag:
@@ -1369,7 +1374,12 @@ class RemoveProfile(ProfileVCard(RemoveVCard)):
 
     def _delete_routes(self, vcard):
         if vcard.route not in (None, ''):
-            self.session.config.routes[vcard.route] = {}
+            found = 0
+            for vc in self.session.config.vcards.find_vcards([], kinds=['profile']):
+                if vc.route == vcard.route:
+                    found += 1
+            if found == 1:
+                self.session.config.routes[vcard.route] = {}
 
     def _delete_sources(self, vcard, delete_tags=False):
         config, sources = self.session.config, self.session.config.sources
@@ -1405,6 +1415,14 @@ class RemoveProfile(ProfileVCard(RemoveVCard)):
                 'name': 'Deleted source',
                 'enabled': False}
 
+    def _trash_email_is_safe(self, vcard):
+        if vcard:
+            for src_id in vcard.sources():
+                if self.session.config.sources[src_id].protocol == 'local':
+                    return False
+            return True
+        return False
+
     def command(self, *args, **kwargs):
         session, config = self.session, self.session.config
 
@@ -1432,6 +1450,7 @@ class RemoveProfile(ProfileVCard(RemoveVCard)):
         return self._success(_("Remove account"), result=dict_merge(
             self._form_defaults(), {
                 'rid': vcard.random_uid if vcard else None,
+                'trash_email_is_safe': self._trash_email_is_safe(vcard),
                 'profile': (self._vcard_list([vcard])['profiles'][0]
                             if vcard else None)}))
 
