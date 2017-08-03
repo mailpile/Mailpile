@@ -1035,8 +1035,6 @@ def ProfileVCard(parent):
                 'comment': ''
             }
             event = Event(source=self,
-                          message=_('Generating new %d bit PGP key. '
-                                    'This may take some time!') % bits,
                           flags=Event.INCOMPLETE,
                           data={'keygen_started': int(time.time()),
                                 'profile_id': random_uid},
