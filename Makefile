@@ -119,7 +119,7 @@ clean:
 
 mrproper: clean
 	@rm -rf shared-data/locale/?? shared-data/locale/??[_@]*
-	@rm -rf dist/ bower_components/ shared-data/locale/mailpile.pot
+	@rm -rf bower_components/ shared-data/locale/mailpile.pot
 	@rm -rf mp-virtualenv/
 	git reset --hard && git clean -dfx
 
@@ -206,7 +206,11 @@ transifex:
 # BUILD
 # -----------------------------------------------------------------------------
 
-dist/mailpile.tar.gz: mrproper js genmessages transifex
+dist/version.txt: mailpile/config/defaults.py scripts/version.py
+	mkdir -p dist
+	scripts/version.py > dist/version.txt
+
+dist/mailpile.tar.gz: mrproper js genmessages transifex dist/version.txt
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
 	mkdir -p dist
@@ -214,15 +218,15 @@ dist/mailpile.tar.gz: mrproper js genmessages transifex
 	tar --exclude='./packages/debian' --exclude=dist --exclude-vcs -czf dist/mailpile-$$(cat dist/version.txt).tar.gz -C $(shell pwd) .
 	(cd dist; ln -fs mailpile-$$(cat version.txt).tar.gz mailpile.tar.gz)
 
-.dockerignore: packages/Dockerfile_debian packages/debian packages/debian/rules
+.dockerignore: dist/version.txt packages/Dockerfile_debian packages/debian packages/debian/rules
 	mkdir -p dist
-	sudo docker build \
+	docker build \
 	    --file=packages/Dockerfile_debian \
 	    --tag=mailpile-deb-builder \
 	    ./
 	touch .dockerignore
 
-dpkg: .dockerignore dist/mailpile.tar.gz
-	sudo docker run \
+dpkg: dist/mailpile.tar.gz .dockerignore
+	docker run \
 	    --rm --volume=$$(pwd)/dist:/mnt/dist \
 	    mailpile-deb-builder
