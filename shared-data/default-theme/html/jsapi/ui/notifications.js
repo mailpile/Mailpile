@@ -297,15 +297,23 @@ EventLog.subscribe('.*(Add|Edit)Profile', function(ev) {
           $icon.removeClass('unconfigured');
           $icon.removeClass('icon-clock').removeClass('icon-lock-open');
           $icon.addClass('configured').addClass('icon-lock-closed');
+          ev.timeout = 60000; // Keep completed notification up for 1 minute
       }
       else {
           $icon.removeClass('configured');
           $icon.removeClass('icon-lock-open').removeClass('icon-lock-closed');
           $icon.addClass('unconfigured').addClass('icon-clock');
+          if (ev.data.keygen_gotlock > 0) {
+              ev.action_url = '/page/entropy/';
+              ev.action_cls = 'auto-modal';
+              ev.action_text = '{{_("learn more")|escapejs}}';
+              ev.message2 = '{{_("This may take some time!")|escapejs}}';
+          }
       }
       Mailpile.notification(ev);
   }
 });
+
 EventLog.subscribe('.*mail_source.*', function(ev) {
   //
   // Mail source notifications behave differently depending on which

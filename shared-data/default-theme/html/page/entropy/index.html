@@ -1,0 +1,31 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Increasing Entropy")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-robot"></span>
+    {{_("Increasing Entropy")}}
+  </h1>
+  <p>
+    {{_("Mailpile needs true random numbers to generate good encryption keys.")}}
+  </p>
+  <p>
+    {{_("Although your computer may be powerful, it may still have hard time finding enough randomness when generating keys.")}}
+    {{_("The technical term used to describe the source of randomness is Entropy!")}}
+  </p>
+  <p>
+    {{_("On the machine that is running Mailpile you can do a few things to increase the Entropy:")}}
+    <br>
+    <ul class="list" style="margin-left: 2em; list-style: disc">
+      <li>{{_("Move the mouse.")}}</li>
+      <li>{{_("Perform other activity which requires using the keyboard.")}}</li>
+      <li>{{_("Start a process that utilizes the disk(s).")}}</li>
+      <li>{{_("Browse the internet.")}}</li>
+    </ul>
+  </p>
+  <p>
+    {{_("Because the computer cannot predict human activity these actions help the computer generate random numbers.")}}
+  </p>
+
+</div>
+{% endblock %}
