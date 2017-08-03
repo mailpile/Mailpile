@@ -1644,7 +1644,7 @@ class GnuPGBaseKeyGenerator(GnuPGExpectScript):
         # In order to minimize risk of timeout during key generation (due to
         # lack of entropy), we serialize them here using a global lock
         self.set_state(self.AWAITING_LOCK)
-        self.event.message = _('Waiting for a slot to create a %d bit GnuPG key.'
+        self.event.message = _('Waiting to generate a %d bit GnuPG key.'
                                % self.variables['bits'])
         with ENTROPY_LOCK:
             self.event.data['keygen_gotlock'] = 1
