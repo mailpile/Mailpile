@@ -1641,14 +1641,15 @@ class GnuPGBaseKeyGenerator(GnuPGExpectScript):
              self.generated_key = self.before.strip().split()[-1]
 
     def run(self):
-        # In order to minimize risk of timeout during key generation,
-        # we serialize them here using a global lock
+        # In order to minimize risk of timeout during key generation (due to
+        # lack of entropy), we serialize them here using a global lock
         self.set_state(self.AWAITING_LOCK)
-        self.event.message = _('Waiting for a slot to create a %d bit GnuPG key'
+        self.event.message = _('Waiting for a slot to create a %d bit GnuPG key.'
                                % self.variables['bits'])
         with ENTROPY_LOCK:
-            self.event.message = _('Generating new %d bit PGP key. '
-                                   'This may take some time!' % self.variables['bits'])
+            self.event.data['keygen_gotlock'] = 1
+            self.event.message = _('Generating new %d bit PGP key.'
+                                   % self.variables['bits'])
             super(GnuPGBaseKeyGenerator, self).run()
 
 
