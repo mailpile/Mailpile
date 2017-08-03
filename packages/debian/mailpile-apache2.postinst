@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for mailpile-server
+# postinst script for mailpile-apache2
 
 set -e
 

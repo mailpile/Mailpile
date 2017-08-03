@@ -47,19 +47,6 @@ Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/mailpile.git
 Homepage: https://www.mailpile.is/
 
 Package: mailpile
-Section: metapackages
-Architecture: all
-Depends: ${misc:Depends},
-         mailpile-server
-Description: email client with user-friendly encryption and privacy features
- Mailpile is a modern, fast web-mail client with user-friendly encryption and
- privacy features. Mailpile places great emphasis on providing a clean, elegant
- user interface and pleasant user experience. In particular, Mailpile aims to
- make it easy and convenient to receive and send PGP encrypted or signed e-mail.
- .
- This is package provides the currenty recommended install for Mailpile.
-
-Package: mailpile-core
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
@@ -81,10 +68,10 @@ Description: library and command-line interface for mailpile
  .
  This package contains the core library and command-line interface
 
-Package: mailpile-server
+Package: mailpile-apache2
 Architecture: all
 Depends: ${misc:Depends},
-         mailpile-core,
+         mailpile,
          apache2,
          python,
          screen,
@@ -97,5 +84,5 @@ Description: multi-user mailpile web server
  user interface and pleasant user experience. In particular, Mailpile aims to
  make it easy and convenient to receive and send PGP encrypted or signed e-mail.
  .
- This package installs a web server, Multipile, that allows system users to
- launch their Mailpile by logging in on the web interface.
+ This package configures Apache with "Multipile", a thin wrapper that allows
+ system users to launch their Mailpile by logging in on the web interface.

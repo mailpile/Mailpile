@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for mailpile-server
+# postrm script for mailpile-apache2
 
 set -e
 
