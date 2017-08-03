@@ -16,8 +16,6 @@ RUN apt-get update && \
                            debhelper \
                            devscripts \
                            equivs \
-  chromedriver chromium chromium-driver fontconfig fontconfig-config \
-  fonts-dejavu-core fonts-liberation gnome-icon-theme gtk-update-icon-cache \
   libjs-animate.css libjs-autosize libjs-bootstrap libjs-dompurify \
   libjs-favico.js libjs-jquery libjs-jquery-slugify libjs-jquery-timer \
   libjs-jquery-ui libjs-jquery-ui-touch-punch libjs-less-elements \
@@ -27,9 +25,7 @@ RUN apt-get update && \
   python-jinja2 python-lockfile python-lxml python-markupsafe \
   python-mock python-nose python-olefile python-pbr python-pgpdump \
   python-pil python-selenium python-setuptools python-webencodings \
-  python-socksipychain \
-  spambayes va-driver-all vdpau-driver-all window-size x11-common x11-utils \
-  x11-xserver-utils xdg-utils
+  python-socksipychain spambayes xdg-utils
 
 RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian
