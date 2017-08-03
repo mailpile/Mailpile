@@ -1671,7 +1671,7 @@ class GnuPG14KeyGenerator(GnuPGBaseKeyGenerator):
         ('GET_LINE keygen.comment',     '%(comment)s',   -1, None),
         ('GET_HIDDEN passphrase',    '%(passphrase)s',   -1, None),
         ('GOT_IT',                               None,   -1, B.GATHER_ENTROPY),
-        ('KEY_CREATED',                          None, 1800, B.CREATED_KEY),
+        ('KEY_CREATED',                          None, 7200, B.CREATED_KEY),
         ('\n',                                   None,   -1, B.HAVE_KEY)]
 
     def gpg_args(self):

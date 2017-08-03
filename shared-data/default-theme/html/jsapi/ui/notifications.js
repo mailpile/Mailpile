@@ -297,6 +297,7 @@ EventLog.subscribe('.*(Add|Edit)Profile', function(ev) {
           $icon.removeClass('unconfigured');
           $icon.removeClass('icon-clock').removeClass('icon-lock-open');
           $icon.addClass('configured').addClass('icon-lock-closed');
+          ev.timeout = 60000; // Keep completed notification up for 1 minute
       }
       else {
           $icon.removeClass('configured');
