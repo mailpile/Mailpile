@@ -28,7 +28,8 @@ _ = lambda s: s
 
 DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
                       "hkp://subset.pool.sks-keyservers.net"]
-DEFAULT_KEYSERVER_OPTIONS = ['ca-cert-file=%s' % __file__]
+DEFAULT_KEYSERVER_OPTIONS = [
+  'ca-cert-file=%s' % __file__.replace('.pyc', '.py')]
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses

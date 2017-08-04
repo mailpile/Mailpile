@@ -54,12 +54,13 @@ Depends: ${misc:Depends},
          python-jinja2,
          spambayes,
          wordlist,
+         gnupg,
          python-markupsafe,
          python-socksipychain,
          python-dns,
          python-pgpdump,
          python-pil
-Recommends: tor, wamerican-small
+Recommends: tor, wamerican-small, gnupg-curl
 Description: library and command-line interface for mailpile
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
  privacy features. Mailpile places great emphasis on providing a clean, elegant
