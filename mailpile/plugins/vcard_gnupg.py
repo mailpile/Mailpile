@@ -24,7 +24,7 @@ class GnuPGImporter(VCardImporter):
     SHORT_NAME = 'gpg'
     CONFIG_RULES = {
         'active': [_('Enable this importer'), bool, True],
-        'gpg_home': [_('Location of keyring'), 'path', DEF_GNUPG_HOME],
+        'gpg_home': [_('Location of keyring'), 'str', DEF_GNUPG_HOME],
     }
     VCL_KEY_FMT = 'data:application/x-pgp-fingerprint,%s'
 
