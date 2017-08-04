@@ -68,7 +68,7 @@
   #pile-results.snug td.message-nav span.icon { font-size: 14px; }
 
   #pile-results td.from {
-    width: 255px;
+    width: 279px /* 255+24 */;
     overflow-x: hidden;
     word-wrap: normal;
     word-break: normal;
@@ -376,19 +376,36 @@
     transition: opacity 1s;
   }
 
-  #pile-results .full-message td.crypto-and-tags {
+  #pile-results .full-message div.crypto-and-tags {
     white-space: normal;
     padding-top: 10px;
   }
 
-  #pile-results .full-message td.crypto-and-tags .pile-message-tag,
-  #pile-results .full-message td.crypto-and-tags .icon.crypto {
+  #pile-results .full-message div.crypto-and-tags .pile-message-tag,
+  #pile-results .full-message div.crypto-and-tags .icon.crypto {
     display: block; margin: 0 0 5px 0; padding: 0; border: 0;
     font-size: 16px; line-height: 16px;
   }
 
-  #pile-results .full-message td.crypto-and-tags .item-tags {
+  #pile-results div.crypto-and-tags {
+    float: right;
+    text-align: right;
+  }
+
+  #pile-results .full-message div.crypto-and-tags .item-tags {
     display: block; margin-bottom: 0 0 5px 0;
+  }
+
+  #pile-results.snug div.crypto-and-tags {
+    padding-right: 4px;
+  }
+
+  #pile-results.cozy div.crypto-and-tags {
+    padding-right: 6px;
+  }
+
+  #pile-results.comfy div.crypto-and-tags {
+    padding-right: 8px;
   }
 
   #pile-results td.subject .message-container h3 {

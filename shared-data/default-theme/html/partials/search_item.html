@@ -127,7 +127,6 @@
   {%- if thread|length > 1 %}
     {%- include "partials/pile_threading.html" %}
   {%- endif %}
-  </td>
 {% else %}
   <td class="avatar">
     <a><img src="{{ show_avatar(from) }}"></a>
@@ -145,9 +144,8 @@
       {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
       {% endif %}
     </a>
-  </td>
 {%endif %}
-  <td class="crypto-and-tags">
+    <div class="crypto-and-tags">
     <span class="item-tags" style="opacity: 0.5"> {# FIXME #}
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
@@ -168,6 +166,7 @@
     <span class="icon crypto icon-lock-closed color-12-red"></span>
     {% endif %}
   {%- endif %}
+    </div>
   </td>
   <td class="subject">
 {%- if message_errors %}
