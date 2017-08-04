@@ -17,10 +17,11 @@ except (OSError, IOError):
 
 
 now = os.getenv('SOURCE_DATE_EPOCH', time.time())
-today = datetime.date.fromtimestamp(float(now))
+today = datetime.datetime.fromtimestamp(float(now))
 
 if BRANCH:
-    BRANCHVER = '~%s%s' % (BRANCH, str(today).replace('-', ''))
+    ts = str(today).replace('-', '').replace(' ', '').replace(':', '')
+    BRANCHVER = '~%s%s' % (BRANCH, ts[:12])
 else:
     BRANCHVER = ''
 
