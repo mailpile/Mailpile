@@ -175,7 +175,7 @@ EventLog.unsubscribe = function(ev, func_or_id) {
   // Returns true if successfully unsubscribed.
   var initialLength = this.eventBindings.length;
   this.eventBindings = this.eventBindings.filter(function (eventBinding) {
-    return eventBinding.id === func_or_id || eventBinding.callback === func_or_id;
+    return !(eventBinding.id === func_or_id || eventBinding.callback === func_or_id);
   });
 
   return this.eventBindings.length === initialLength;
