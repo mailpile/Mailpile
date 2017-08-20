@@ -54,5 +54,5 @@ Mailpile.Search.init = function() {
       $("#logo-redmail").fadeIn(6000);
     }
     $('.status-in-title').attr('title', ev.data.name + ': ' + ev.message);
-  });
+  }, 'mail-source-123-subscription');
 };

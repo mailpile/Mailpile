@@ -1,5 +1,5 @@
 var EventLog = {
-  eventbindings: [],  // All the subscriptions
+  eventBindings: [],  // All the subscriptions
   last_ts: Mailpile.local_storage['eventlog_last_ts'] || -1800,
   first_load: true,
   other_tab: 0,
@@ -84,13 +84,18 @@ EventLog.invoke_callbacks = function(response) {
   var last_ts = response.result.ts;
   for (event in response.result.events) {
     var ev = response.result.events[event];
-    for (id in EventLog.eventbindings) {
-      binding = EventLog.eventbindings[id][0];
-      callback = EventLog.eventbindings[id][1];
-      if ((!binding.source || ev.source.match(new RegExp(binding.source)))
-          && (!binding.event_id || ev.event_id == binding.event_id)
-          && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))) {
-        callback(ev);
+
+    for (i in EventLog.eventBindings) {
+      var eventBinding = EventLog.eventBindings[i];
+
+      var binding = eventBinding.event,
+        sourceMatched = !binding.source || ev.source.match(new RegExp(binding.source)),
+        eventIdMatched = !binding.event_id || ev.event_id == binding.event_id,
+        flagsMatched = !binding.flags || ev.flags.match(new RegExp(binding.flags))
+      ;
+
+      if (sourceMatched && eventIdMatched && flagsMatched) {
+        eventBinding.callback(ev);
       }
     }
 
@@ -131,18 +136,36 @@ EventLog.process_result = function(result, textstatus) {
 };
 
 
-EventLog.subscribe = function(ev, func) {
+EventLog.subscribe = function(ev, func, id) {
+  // generate a random id if not specified
+  if (typeof id === 'undefined' || id === null) {
+    id = Math.random().toString(24).substring(5);
+  }
+
+  // Check if event is already subscribed
+  var existingEventBinding = this.eventBindings.filter(function (eventBinding) {
+    return eventBinding.id === id;
+  });
+
+  if (existingEventBinding.length) {
+    console.log('Already subscribed event with id: ' + id);
+
+    return false;
+  }
+
   // Subscribe a function to an event.
   // Returns a subscription ID.
   if (!$.isFunction(func)) {
     console.log("Can only subscribe functions");
     return false;
   }
+
   if (typeof(ev) == "string") {
     ev = {source: ev, event_id: null};
   }
-  this.eventbindings.push([ev, func]);
-  return this.eventbindings.length - 1;
+  this.eventBindings.push({id: id, event: ev, callback: func});
+
+  return id;
 };
 
 
@@ -150,18 +173,12 @@ EventLog.unsubscribe = function(ev, func_or_id) {
   // Given an event class and a subscription id
   // or a function, will unsubscribe from the event.
   // Returns true if successfully unsubscribed.
-  if ($.isFunction(func_or_id)) {
-    for (i in this.eventbindings) {
-      if (this.eventbindings[i][1] == func_or_id) {
-        this.eventbindings.splice(i, 1);
-        return true;
-      }
-    }
-  } else {
-    this.eventbindings.splice(func_or_id, 1);
-    return true;
-  }
-  return false;
+  var initialLength = this.eventBindings.length;
+  this.eventBindings = this.eventBindings.filter(function (eventBinding) {
+    return eventBinding.id === func_or_id || eventBinding.callback === func_or_id;
+  });
+
+  return this.eventBindings.length === initialLength;
 };
 
 
