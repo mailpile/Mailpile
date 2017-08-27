@@ -575,7 +575,7 @@ class SetupGetEmailSettings(TestableWebbable):
                         result['docs'] = result.get('docs', [])
                         result['docs'].append({
                             'url': docs.get('url', ''),
-                            'description': str(docs.descr)
+                            'description': docs.descr.text
                         })
                 except AttributeError:
                     pass
