@@ -89,6 +89,9 @@
 {%- endif %}
             <li class="action"><a title="{{_("Private Reply")}}" class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon icon-reply"></span></a></li>
           </ul>
+          <div class="crypto-and-tags">
+            {%- include "partials/pile_email_tags.html" %}
+          </div>
         </h3>
         <span class="header-value" title='{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;'>
           <span class="address-avatar"><img src="{{ show_avatar(metadata.from) }}"></span>
@@ -145,9 +148,9 @@
       {% endif %}
     </a>
 {%endif %}
+  {%- if not message and not message_errors %}
     <div class="crypto-and-tags">
       {%- include "partials/pile_email_tags.html" %}
-  {%- if not message %}
     {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
     <span class="icon crypto icon-lock-closed color-08-green"></span>
     {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
