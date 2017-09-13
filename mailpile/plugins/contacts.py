@@ -1237,7 +1237,7 @@ class EditProfile(AddProfile):
             'security-always-encrypt': ('encrypt' in cp),
             'security-attach-keys': ('send_keys' in cf),
             'security-prefer-inline': ('prefer_inline' in cf),
-            'security-prefer-pgpgmime': ('pgpmime' in cf),
+            'security-prefer-pgpmime': ('pgpmime' in cf),
             'security-obscure-metadata': ('obscure_meta' in cf),
             'security-openpgp-header-encrypt': ('openpgp_header:E' in cf or
                                                 'openpgp_header:SE' in cf),
