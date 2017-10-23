@@ -1245,7 +1245,7 @@ class ConfigManager(ConfigDict):
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
-            raise ValueError(_('Parent paths are not allowed'))
+            raise ValueError(_('Only specify the folder'))
         fpath, mt = self.data_file_and_mimetype(ftype, fpath,
                                                 mode=mode, mkdir=mkdir)
         if not fpath:
