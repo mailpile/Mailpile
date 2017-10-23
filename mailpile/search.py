@@ -319,14 +319,15 @@ class MailIndex(BaseIndex):
 
     def update_ptrs_and_msgids(self, session):
         session.ui.mark(_('Updating high level indexes'))
-        for offset in range(0, len(self.INDEX)):
-            message = self.l2m(self.INDEX[offset])
-            if len(message) == self.MSG_FIELDS_V2:
-                self.MSGIDS[message[self.MSG_ID]] = offset
-                for msg_ptr in message[self.MSG_PTRS].split(','):
-                    self.PTRS[msg_ptr] = offset
-            else:
-                session.ui.warning(_('Bogus line: %s') % line)
+        with self._lock:
+            for offset in range(0, len(self.INDEX)):
+                message = self.l2m(self.INDEX[offset])
+                if len(message) == self.MSG_FIELDS_V2:
+                    self.MSGIDS[message[self.MSG_ID]] = offset
+                    for msg_ptr in message[self.MSG_PTRS].split(','):
+                        self.PTRS[msg_ptr] = offset
+                else:
+                    session.ui.warning(_('Bogus line: %s') % line)
 
     def _remove_location(self, session, msg_ptr):
         msg_idx_pos = self.PTRS[msg_ptr]
