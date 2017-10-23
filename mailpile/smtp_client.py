@@ -192,7 +192,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
         update_to_vcards = msg and msg["x-mp-internal-pubkeys-attached"]
 
         if 'sendmail' in session.config.sys.debug:
-            sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n')
+            sys.stderr.write(_('Sendmail: From %s (%s), to %s via %s\n')
                              % (frm, frm_vcard and frm_vcard.random_uid or '',
                                 to, route_description))
         sm_write = sm_close = lambda: True
@@ -356,7 +356,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             if test_only:
                 return True
 
-            mark(_('Preparing message...'), events)
+            mark(_('Preparing message…'), events)
 
             msg_string = MessageAsString(CleanMessage(session.config, msg))
             total = len(msg_string)
