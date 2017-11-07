@@ -1,0 +1,17 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Gravatar Usage Reminder")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+  <h1><span class="icon-archive"></span>
+    {{_("Gravatar Usage Reminder")}}
+  </h1>
+  <p>
+    {{_("Mailpile integrates with Gravatar to provide thumbnail images of your contacts.")
+        .format(t=(config.tags|length - 36), e=mailpile_size)}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li>{{_("See <a href="https://secure.gravatar.com">Gravatar</a> for setup of your own profile")}}</li>
+    <li>{{_("Once your Gravatar is configured people using Gravatar enabled applications will be able to see your image if they know your email address")}}</li>
+   </ul>
+</div>
+{% endblock %}
