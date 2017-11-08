@@ -191,13 +191,16 @@ Mailpile.notification = function(result) {
   // Show Notification
   var $elem = Mailpile.cancel_notification(result.event_id, undefined, 'keep');
   var notification_template = Mailpile.unsafe_template($('#template-notification-bubble').html());
+  // Remove excess whitespace from notification to avoid creating TextNodes in the
+  // DOM. Fixes a subtle memory leak (https://github.com/mailpile/Mailpile/issues/1931).
+  var notification_html = notification_template(result).trim();
   if ($elem) {
-      $elem.replaceWith(notification_template(result));
+      $elem.replaceWith(notification_html);
   }
   else {
       var bubbles = $('#notification-bubbles');
       if (bubbles.children().length < 15) {
-          bubbles.prepend($(notification_template(result)).slideDown('normal'));
+          bubbles.prepend($(notification_html).slideDown('normal'));
           $('.notifications-close-all span').show();
       }
   }
