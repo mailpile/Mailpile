@@ -11,7 +11,7 @@
 # This script is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
 
-REQUIREMENTS="requirements-with-deps.txt"
+VERSION="0.99.1"
 
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
@@ -20,6 +20,10 @@ PYTHON_SITE="https://www.python.org/ftp/python/2.7.14/"
 PYTHON_FILE="python-2.7.14.msi"
 # Checksum from https://www.python.org/downloads/release/python-2714  No SHA256!
 PYTHON_FILE_MD5=fff688dc4968ec80bbb0eedf45de82db
+REQUIREMENTS="requirements-with-deps.txt"
+
+MPLAUNCHER_SITE="https://www.mailpile.is/files/build/"
+MPLAUNCHER_FILE="MailpileLauncher.zip"
 
 OPENSSL_SITE="https://www.openssl.org/source"
 OPENSSL_FILE="openssl-1.1.0f.tar.gz"
@@ -46,6 +50,8 @@ for ARG in $* ; do
     shift
 done
 
+echo " "
+echo "Release identifier:   $VERSION"
 echo " "
 echo "Mailpile repository:  $MAILPILE_GIT"
 echo "Mailpile branch:      $MAILPILE_BRANCH"
@@ -112,7 +118,8 @@ fi
 # (Python won't install these on a Linux build system, but will download them.)
 # If none, try for a pure Python package.
 # FIXME: pip downloads latest version even if earlier version is present 
-    echo pypiwin32      # Get pypiwin32 even if it is not in $REQUIREMENTS.
+    echo " "
+    echo Get pypiwin32      # Get pypiwin32 even if it is not in $REQUIREMENTS.
     python -m pip download --no-cache-dir --no-deps --dest $PYTHON_DL \
                 pypiwin32 \
                 --only-binary :all: --platform win32 --python-version 27
@@ -120,11 +127,13 @@ while read PACKAGE; do
     # Python MSI file already includes pip and setuptools.
     if [ $PACKAGE == pip* ] || [ $PACKAGE == setuptools* ]; then continue; fi
     
-    echo $PACKAGE
-    if ! python -m pip download --no-cache-dir --no-deps --dest $PYTHON_DL \
-                $PACKAGE \
+    echo " "
+    echo "Get $PACKAGE"
+    if ! python -m pip download --no-cache-dir --no-deps \
+                --dest $PYTHON_DL $PACKAGE \
                 --only-binary :all: --platform win32 --python-version 27
     then
+    echo "No binary package - request pure Python package"
         python -m pip download --no-cache-dir --no-deps --dest $PYTHON_DL \
                 $PACKAGE --no-binary :all:
     fi
@@ -147,14 +156,21 @@ if [ -e $SCRIPTDIR/MailpileLauncher/Mailpile.exe ]; then
     echo "    Reusing previously downloaded MailpileLauncher"
     echo "    To force rebuild, delete $SCRIPTDIR/MailpileLauncher"
 else
-    echo "    Downloading MailpileLauncher"
     cd $DOWNLOADDIR
-    wget -q -c https://www.mailpile.is/files/build/MailpileLauncher.zip ||true
+    if [ ! -f $DOWNLOADDIR/$MPLAUNCHER_FILE ]; then    
+        echo "    Downloading MailpileLauncher"
+        wget -c $MPLAUNCHER_SITE/$MPLAUNCHER_FILE || true
+    fi   
     cd $SCRIPTDIR
     rm -rf MailpileLauncher/*
     unzip $DOWNLOADDIR/MailpileLauncher.zip
+    mv -f MailpileLauncher/MailpileLauncher/* MailpileLauncher
+    rm -r MailpileLauncher/MailpileLauncher
+    
+    # FIXME: 2017-11-08 the Mailpile.exe.cfg file from www.mailpile.is is bad.
+    cp launcher.exe.config MailpileLauncher/Mailpile.exe.config
 fi
-cp -r $SCRIPTDIR/MailpileLauncher/MailpileLauncher/* -t $WORKDIR/Mailpile
+cp -r $SCRIPTDIR/MailpileLauncher/* -t $WORKDIR/Mailpile
 
 # OpenSSL
 #
@@ -276,13 +292,15 @@ cd $WORKDIR/Mailpile
 
 # Build the installer
 
-makensis -V2 -NOCD "$SCRIPTDIR/mailpile.nsi"
+makensis -V2 -NOCD -DVERSION=$VERSION "$SCRIPTDIR/mailpile.nsi" 
+
+echo 
 
 # Save source code archive to publish for licence compliance.
 cp -r $DOWNLOADDIR/* -t $WORKDIR/SourceArchive
 
 echo " "
-echo "Windows installer:    $WORKDIR/Mailpile-Installer.exe"
+echo "Windows installer:    $WORKDIR/Mailpile-$VERSION-Installer.exe"
 echo "Source code archive:  $WORKDIR/SourceArchive"
 echo " "
 sleep 5

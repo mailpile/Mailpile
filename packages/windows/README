@@ -19,8 +19,14 @@ repackage-linux.sh [--local] [<branch>]
 When run, the installer creates a start menu section Mailpile with entries
      Open Mailpile
      Start Mailpile
-     Stop Mailpile
      Uninstall Mailpile
+     
+Whem Mailpile is run, it creates a System Tray icon. Right-clicking on that
+icon pops up a menu with entries
+    Open Mailpile
+    Donate
+    Debug
+    Quit
 
 # What it builds and where
 
@@ -28,6 +34,11 @@ It builds the Windows installer in /tmp/mailpile-winbuild. In addition, the
 installed image, a collection of source archive files and (if third party
 packages are rebuilt) the build directories for the third party packages are
 left in /tmp/mailpile-winbuild.
+
+The specific archives to be used in building the installer are determined by
+shell variable settings at the beginning of the script. As new versions of
+third party packages are released by the upstream developers, these can be
+modified (or not) as required.
 
 # Mailpile code
 
@@ -48,8 +59,10 @@ already downloaded files.
             out from the repository.
             
     Note: After installing on Windows, check the file 
-            C:\Program Files (x86)\Mailpile ehf\Mailpile\Python27\check.txt
-            to determine if any dependencies are missing.
+            C:\Program Files (x86)\Mailpile ehf\Mailpile\Python27\check.txt .
+            to determine if any dependencies are missing. Also the pip log
+            can be checked if there are problems. It is saved at
+            C:\Program Files (x86)\Mailpile ehf\Mailpile\Python27\install.txt .
             
 # Other third party packages
 
@@ -67,6 +80,11 @@ avoid unnecessary rebuilding of the third party pacages.
 
 An archive of the Mailpile code image, identified by its commit id, is also 
 saved in /tmp/mailpile-winbuild/SourceArchive.
+
+The MailpileLauncher package is downloaded in binary form from
+https://www.mailpile.is/files/build/MailpileLauncher.zip
+It appears to require MS Visual Studio to build. Possibly in the future
+a free version could be substituted.
 
 # File integrity
 

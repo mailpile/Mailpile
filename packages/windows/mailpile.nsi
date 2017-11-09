@@ -2,10 +2,13 @@
 # This is the Mailpile installer for Windows
 
 !define PRODUCT_NAME "Mailpile"
-!define PRODUCT_VERSION "0.99.1"
+!define PRODUCT_VERSION "${VERSION}"
 !define PRODUCT_PUBLISHER "Mailpile ehf"
 !define PRODUCT_WEB_SITE "https://www.mailpile.is/"
-!define RUN_SCRIPT_NAME "mp.cmd"
+# !define RUN_SCRIPT_NAME "mp.cmd"
+!define PRODUCT_EXE_NAME "mailpile.exe"
+
+OutFile "../Mailpile-${VERSION}-Installer.exe"
 
 !include "MUI.nsh"
 !define MUI_ABORTWARNING
@@ -31,7 +34,6 @@ InstallDir "$PROGRAMFILES\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}"
 ShowInstDetails show
 ShowUnInstDetails show
 
-OutFile "../Mailpile-Installer.exe"
 
 #Get installation folder from registry if available
 InstallDirRegKey HKCU "Software\Mailpile" ""
@@ -74,18 +76,22 @@ Section "install" InstallationInfo
     
     WriteRegStr HKCU "Software\Mailpile" "" "$INSTDIR"
 
+#    createDirectory "$SMPROGRAMS\Mailpile"
+#    createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" \
+#                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
+#                    "$INSTDIR\packages\windows\mailpile.ico" "" \
+#                     SW_SHOWMINIMIZED
+#    WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" \
+#                    "InternetShortcut" "URL" "http://localhost:33411"
+#    WriteINIStr "$SMPROGRAMS\Mailpile\Stop Mailpile.url" \
+#                    "InternetShortcut" "URL" \
+#                    "http://localhost:33411/quitquitquit"
+#    createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" \
+#                    "$INSTDIR\uninstall.exe" "" ""
     createDirectory "$SMPROGRAMS\Mailpile"
-    createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" \
-                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
-                    "$INSTDIR\packages\windows\mailpile.ico" "" \
-                     SW_SHOWMINIMIZED
-    WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" \
-                    "InternetShortcut" "URL" "http://localhost:33411"
-    WriteINIStr "$SMPROGRAMS\Mailpile\Stop Mailpile.url" \
-                    "InternetShortcut" "URL" \
-                    "http://localhost:33411/quitquitquit"
-    createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" \
-                    "$INSTDIR\uninstall.exe" "" ""
+    createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\Mailpile.exe" "" "$INSTDIR\packages\windows\mailpile.ico"
+    createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" "$INSTDIR\uninstall.exe" "" ""
+    WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
 
 # This would start Mailpile automatically, not sure we're ready for that
 #   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" \
@@ -128,9 +134,13 @@ Function un.onUninstSuccess
                                         removed from your computer. How sad..."
 FunctionEnd
 
+#Function createDesktopShortcut
+#    CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" \
+#                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
+#                    "$INSTDIR\packages\windows\mailpile.ico" "" \
+#                     SW_SHOWMINIMIZED
+#FunctionEnd
 Function createDesktopShortcut
-    CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" \
-                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
-                    "$INSTDIR\packages\windows\mailpile.ico" "" \
-                     SW_SHOWMINIMIZED
+	CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE_NAME}" ""
 FunctionEnd
+
