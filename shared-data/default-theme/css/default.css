@@ -6915,8 +6915,8 @@ div.notification-bubble span.action {
 }
 .form-search input {
   width: 282px;
-  height: 18px;
-  padding: 9px 12px;
+  height: 20px;
+  padding: 8px 12px;
   float: left;
   font: normal 18px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   border: 0;
