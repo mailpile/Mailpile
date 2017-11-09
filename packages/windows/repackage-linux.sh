@@ -11,7 +11,7 @@
 # This script is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
 
-VERSION="0.99.1"
+VERSION="0.99.1.1"
 
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
