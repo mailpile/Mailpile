@@ -11,7 +11,10 @@
 # This script is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
 
-VERSION="0.99.1.1"
+# Configuration strings:
+# (Do not use embedded spaces or environment variables.)
+
+VERSION="0.99.1++"
 
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
@@ -24,6 +27,8 @@ REQUIREMENTS="requirements-with-deps.txt"
 
 MPLAUNCHER_SITE="https://www.mailpile.is/files/build/"
 MPLAUNCHER_FILE="MailpileLauncher.zip"
+MPLAUNCHER_FILE_SHA256=\
+fad7ee1a4a26943af8f20c7facc166c34f84326c02ee0561757219bbd330e437
 
 OPENSSL_SITE="https://www.openssl.org/source"
 OPENSSL_FILE="openssl-1.1.0f.tar.gz"
@@ -35,8 +40,10 @@ GNUPG_SITE="https://www.gnupg.org/ftp/gcrypt/gnupg"
 GNUPG_FILE="gnupg-2.2.1.tar.bz2"
 # Checksum from https://gnupg.org/download/integrity_check.html. Why no SHA-256?
 GNUPG_FILE_SHA1=5455373fd7208b787f319027de2464721cdd4413
-# Pattern for archive including 3rd party source generated in build process.
+# Pattern for archive generated in build process including 3rd party source.
 GNUPG_FILE_ALL="gnupg-w32-2.2.1_*.tar.xz"
+
+# End of configuration strings.
 
 # Command line arguments can be used to change default repository and branch.
 for ARG in $* ; do
@@ -72,7 +79,8 @@ echo "Python download dir:  $PYTHON_DL"
 # Create build directory and source archive directory
 rm -rf /tmp/mailpile-winbuild/*         # Use rm -rf with hardcoded path only!
 WORKDIR="/tmp/mailpile-winbuild"
-mkdir -p $WORKDIR/SourceArchive
+SOURCEARCHIVEDIR=$WORKDIR/SourceWin$VERSION
+mkdir -p $SOURCEARCHIVEDIR
 echo "Working dir:          $WORKDIR"
 echo " "
 sleep 5
@@ -83,7 +91,7 @@ git clone --branch $MAILPILE_BRANCH --depth=1 --recursive $MAILPILE_GIT Mailpile
 cd Mailpile;
 COMMIT=`git log -1 --pretty=format:"%h"`
 cd ..
-tar -c --file $WORKDIR/SourceArchive/Mailpile-$COMMIT.tar.gz --gzip Mailpile
+tar -c --file $SOURCEARCHIVEDIR/Mailpile-$COMMIT.tar.gz --gzip Mailpile
 cd Mailpile
 
 # Create install directories for Python and its packages
@@ -117,7 +125,8 @@ fi
 # First try for a Python 2.7 Win32 .whl file.
 # (Python won't install these on a Linux build system, but will download them.)
 # If none, try for a pure Python package.
-# FIXME: pip downloads latest version even if earlier version is present 
+# FIXME: pip downloads latest version even if earlier version is present
+# FIXME: Does pip check file integrity?
     echo " "
     echo Get pypiwin32      # Get pypiwin32 even if it is not in $REQUIREMENTS.
     python -m pip download --no-cache-dir --no-deps --dest $PYTHON_DL \
@@ -161,9 +170,16 @@ else
         echo "    Downloading MailpileLauncher"
         wget -c $MPLAUNCHER_SITE/$MPLAUNCHER_FILE || true
     fi   
+    # Test source code integrity.
+    if [ `openssl dgst -sha256 -hex $MPLAUNCHER_FILE | cut -d " " --f 2` != \
+        $MPLAUNCHER_FILE_SHA256 ]
+    then
+        echo "File integrity check failed"
+        exit
+    fi
     cd $SCRIPTDIR
     rm -rf MailpileLauncher/*
-    unzip $DOWNLOADDIR/MailpileLauncher.zip
+    unzip -q $DOWNLOADDIR/MailpileLauncher.zip
     mv -f MailpileLauncher/MailpileLauncher/* MailpileLauncher
     rm -r MailpileLauncher/MailpileLauncher
     
@@ -215,6 +231,7 @@ else
     
     # Copy needed files to script directory.
     cd $SCRIPTDIR;  rm -rf OpenSSL ; mkdir -p OpenSSL
+    # FIXME: be more selective
     cp -r $WORKDIR/OpenSSL/bin -t $SCRIPTDIR/OpenSSL
 fi
 cp -r $SCRIPTDIR/OpenSSL -t $WORKDIR/Mailpile
@@ -253,7 +270,9 @@ else
         
         # The w32-source target downloads third party source packages
         # makes a consolidated archive containing GnuPG and 3rd party source
-        # then builds the .dll and .exe.files       
+        # then builds the .dll and .exe.files
+        # FIXME: Does speedo.mk check integrity of 3rd party source downloads?
+
         make -f build-aux/speedo.mk w32-source
         
         # Save the consolidated source archive for next time.
@@ -276,32 +295,25 @@ else
     # Copy needed files to script directory.
     cd $SCRIPTDIR;  rm -rf GnuPG ; mkdir -p GnuPG
     cd $WORKDIR/GnuPG/*
+    # FIXME: be more selective
     cp -r PLAY/inst/bin/* -t $SCRIPTDIR/GnuPG
 fi
 cp -r $SCRIPTDIR/GnuPG -t $WORKDIR/Mailpile
 
-#cd $WORKDIR
-#mkdir STunnel
-#cd STunnel
-#wget -q -c https://www.stunnel.org/downloads/stunnel-5.42-win32-installer.exe || true
-#7z e -aoa stunnel-5.42-win32-installer.exe
-#cd ..
-#mv STunnel Mailpile
-
-cd $WORKDIR/Mailpile
 
 # Build the installer
 
+echo " "
+echo "Build installer"
+cd $WORKDIR/Mailpile
 makensis -V2 -NOCD -DVERSION=$VERSION "$SCRIPTDIR/mailpile.nsi" 
 
-echo 
-
 # Save source code archive to publish for licence compliance.
-cp -r $DOWNLOADDIR/* -t $WORKDIR/SourceArchive
+cp -r $DOWNLOADDIR/* -t $SOURCEARCHIVEDIR
 
 echo " "
 echo "Windows installer:    $WORKDIR/Mailpile-$VERSION-Installer.exe"
-echo "Source code archive:  $WORKDIR/SourceArchive"
+echo "Source code archive:  $SOURCEARCHIVEDIR"
 echo " "
 sleep 5
 
