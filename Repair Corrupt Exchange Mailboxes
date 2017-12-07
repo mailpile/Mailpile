@@ -1,0 +1,48 @@
+Reasons behind Exchange Corruption
+
+When we use the term ‘Exchange Corruption’, it means EDB file corruption. 
+EDB file is the Exchange Database file which is the storehouse of all data that resides on the Exchange server. 
+Damage or corruption in this file leads to corruption of the Exchange server. 
+Some common causes behind EDB file corruption include:
+1.Virus infection
+
+2.Improper system shutdown
+
+3.Application malfunction
+
+4.User errors
+
+5.Missing database objects
+
+Database Errors that lead to Corruption
+More often than not, the server displays some symptoms that eventually lead up to corruption.
+These symptoms are displayed in the form of errors that unexpectedly crop up while trying to perform various operations on the database.
+Here’s a list of some common Exchange error codes that lead up to corruption:
+
+Error -515: "JET_errInvalidLogSequence"
+
+One of the log files is missing or doesn’t match the other logs in the sequence.
+
+Error 1018: “JET_errReadVerifyFailure”
+
+Page-level corruption in the EDB file.
+
+Error 1216:  "JET_errAttachedDatabaseMismatch"
+
+Assessment of header information in log files and databases shows some important files have been removed. 
+Find here more about Jet Engine Errors
+
+Error 1601: "Operation terminated with error -1601 (JET_errRecordNotFound, The key was not found) after 2.354 seconds."
+The internal structure of STM file has been damaged while trying to repair it.
+
+Error 1605: "Operation terminated with error -1605 (JET_errKeyDuplicate, Illegal duplicate key) after xxx.xxx seconds."
+Premature exit of Eseutil /p while rebuilding B-trees directly
+
+Event ID 9175: "The Microsoft Exchange Server computer is not available. 
+Either there are network problems or the Microsoft Exchange Server computer is down for maintenance. The MAPI provider failed."
+
+Exchange mailbox failed to mount since Information Store Service was stopped or is damaged
+
+Exchange Dirty Shutdown Error: "ERROR: database was not shutdown cleanly (dirty shutdown)."
+
+Information store service was abruptly shut down causing corruption in EDB and STM files.
