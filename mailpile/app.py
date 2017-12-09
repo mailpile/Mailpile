@@ -4,6 +4,9 @@ import locale
 import os
 import sys
 import traceback
+import fasteners
+import socket
+import appdirs
 
 import mailpile.util
 import mailpile.config.defaults
@@ -172,6 +175,46 @@ class WaitCommand(Command):
         while not mailpile.util.QUITTING:
             time.sleep(1)
         return self._success(_('Did nothing much for a while'))
+        
+def GetLegacyWorkDir(profile):
+    if profile == 'default':
+        # Backwards compatibility: If the old ~/.mailpile exists, use it.
+        workdir = os.path.expanduser('~/.mailpile')
+        if os.path.exists(workdir) and os.path.isdir(workdir):
+            return workdir
+
+    basedir = None
+    if sys.platform.startswith('win'):
+        # Obey Windows conventions (more or less?)
+        basedir = os.getenv('APPDATA', os.path.expanduser('~'))
+    elif sys.platform.startswith('darwin'):
+        # Obey Mac OS X conventions
+        basedir = os.path.expanduser('~/Library/Application Support')
+    else:
+        # Assume other platforms are Unixy
+        basedir = os.getenv('XDG_DATA_HOME',
+                            os.path.expanduser('~/.local/share'))
+
+    return os.path.join(basedir, 'Mailpile', profile)
+
+def GetWorkDir():
+    # The Mailpile environment variable trumps everything
+    workdir = os.getenv('MAILPILE_HOME')
+    if workdir:
+        return workdir
+
+    # Which profile?
+    profile = os.getenv('MAILPILE_PROFILE', 'default')
+
+    # Check if we have a legacy setup we need to preserve
+    workdir = GetLegacyWorkDir(profile)
+    if (os.path.exists(workdir) and os.path.isdir(workdir)):
+        return workdir
+
+    # Use platform-specific defaults
+    # via https://github.com/ActiveState/appdirs
+    dirs = AppDirs("Mailpile", "Mailpile ehf")
+    return os.path.join(dirs.user_data_dir, profile)
 
 
 def Main(args):
@@ -179,10 +222,45 @@ def Main(args):
 
     # Bootstrap translations until we've loaded everything else
     mailpile.i18n.ActivateTranslation(None, ConfigManager, None)
+    
     try:
+        # Determine the path to the profile directory, make sure it exists.
+        # Allow only one Mailpile instance to use it.
+        workdir = GetWorkDir()
+        if not os.path.exists(workdir):
+            print _('Creating: %s') % workdir
+            os.makedirs(self.workdir, mode=0700)
+        profile_lock = fasteners.InterProcessLock(
+                                        os.path.join(workdir, 'profile-lock'))
+        if not profile_lock.acquire(blocking=False):
+            print _('Profile %s is in use by another Mailpile '
+                                'or another program') % workdir
+            sys.exit(1)
+                    
+        # Save pid for killing zombie Mailpiles.
+        with open(os.path.join(workdir, 'mailpile.pid'), 'w') as fd:
+            fd.write(str(os.getpid()))
+            
+        # Other instances may read mailpile.rc - warn them during write.                  
+        public_lock = fasteners.InterProcessLock(
+                                        os.path.join(workdir, 'public-lock'))
+        
         # Create our global config manager and the default (CLI) session
-        config = ConfigManager(rules=mailpile.config.defaults.CONFIG_RULES)
+        config = ConfigManager(rules=mailpile.config.defaults.CONFIG_RULES,
+                                workdir=workdir)
+
+        # Check that no other process is listening on the configured port.
+        try:
+            socket.socket().connect((config.sys.http_host,config.sys.http_port))
+            print _('%s:%s is in use by another Mailpile or another program'
+                        ) % ( config.sys.http_host, config.sys.http_port )
+            sys.exit(1)
+        except socket.error:
+            pass
+        
         session = Session(config)
+        session.profile_lock = profile_lock
+        session.public_lock = public_lock
         cli_ui = session.ui = UserInteraction(config)
         session.main = True
         try:
@@ -266,6 +344,9 @@ def Main(args):
 
         # Remove anything that we couldn't remove before
         safe_remove()
+        
+        # Release profile directory lock
+        session.profile_lock.release()
 
         # Restart the app if that's what was requested
         if mailpile.util.QUITTING == 'restart':
