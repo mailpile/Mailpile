@@ -9,16 +9,12 @@ import sys
 import random
 import re
 import threading
+import fasteners
 import traceback
 import ConfigParser
 
 from urllib import quote, unquote
 from urlparse import urlparse
-
-try:
-    from appdirs import AppDirs
-except ImportError:
-    AppDirs = None
 
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
@@ -60,47 +56,6 @@ class ConfigManager(ConfigDict):
     the settings themselves, as well as global objects like the index and
     references to any background worker threads.
     """
-    @classmethod
-    def DEFAULT_WORKDIR(self):
-        # The Mailpile environment variable trumps everything
-        workdir = os.getenv('MAILPILE_HOME')
-        if workdir:
-            return workdir
-
-        # Which profile?
-        profile = os.getenv('MAILPILE_PROFILE', 'default')
-
-        # Check if we have a legacy setup we need to preserve
-        workdir = self.LEGACY_DEFAULT_WORKDIR(profile)
-        if not AppDirs or (os.path.exists(workdir) and os.path.isdir(workdir)):
-            return workdir
-
-        # Use platform-specific defaults
-        # via https://github.com/ActiveState/appdirs
-        dirs = AppDirs("Mailpile", "Mailpile ehf")
-        return os.path.join(dirs.user_data_dir, profile)
-
-    @classmethod
-    def LEGACY_DEFAULT_WORKDIR(self, profile):
-        if profile == 'default':
-            # Backwards compatibility: If the old ~/.mailpile exists, use it.
-            workdir = os.path.expanduser('~/.mailpile')
-            if os.path.exists(workdir) and os.path.isdir(workdir):
-                return workdir
-
-        basedir = None
-        if sys.platform.startswith('win'):
-            # Obey Windows conventions (more or less?)
-            basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-        elif sys.platform.startswith('darwin'):
-            # Obey Mac OS X conventions
-            basedir = os.path.expanduser('~/Library/Application Support')
-        else:
-            # Assume other platforms are Unixy
-            basedir = os.getenv('XDG_DATA_HOME',
-                                os.path.expanduser('~/.local/share'))
-
-        return os.path.join(basedir, 'Mailpile', profile)
 
     @classmethod
     def DEFAULT_SHARED_DATADIR(self):
@@ -133,7 +88,7 @@ class ConfigManager(ConfigDict):
     def __init__(self, workdir=None, shareddatadir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
-        self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
+        self.workdir = workdir
         self.gnupghome = None
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
 
@@ -581,8 +536,11 @@ class ConfigManager(ConfigDict):
                 self.event_log.ui_unwatch(session.ui)
 
         # Save the public config data first
+        # Warn other processes against reading public data during write.        
+        session.public_lock.acquire(blocking=True, timeout=1)
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
+        session.public_lock.release()
 
         if not self.loaded_config:
             return
