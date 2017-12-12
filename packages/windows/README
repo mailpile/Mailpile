@@ -1,21 +1,100 @@
 # Executive summary
 
 The script `repackage-linux.sh` can rebuild the Mailpile installer for
-Windows.  Run it, yay!
+Windows when run on Gnu-Linux. Run it, yay!
 
-... or read on to learn about bits and pieces.
+repackage-linux.sh [--local] [<branch>]
+
+ --local causes the Mailpile code that is packaged to be cloned from the local
+        git repository from which the repackage-linux.sh script was checked
+        out. Default is to clone from https://github.com/mailpile/Mailpile.git.
+        
+ <branch> is the branch of the Mailpile git repository that will be checked out.
+        The default is "master".
+
+ ... or read on to learn about bits and pieces.
+ 
+# Windows details
+
+When run, the installer creates a start menu section Mailpile with entries
+     Open Mailpile
+     Start Mailpile
+     Uninstall Mailpile
+     
+When Mailpile is run, it creates a System Tray icon. Right-clicking on that
+icon pops up a menu with entries
+    Open Mailpile
+    Donate
+    Debug
+    Quit
+
+# What it builds and where
+
+It builds the Windows installer in /tmp/mailpile-winbuild. In addition, the
+installed image, a collection of source archive files and (if third party
+packages are rebuilt) the build directories for the third party packages are
+left in /tmp/mailpile-winbuild.
+
+The specific archives to be used in building the installer are configured by
+shell variable settings at the beginning of the script. As new versions of
+third party packages are released by the upstream developers, these can be
+modified (or not) as required.
+
+A complete build takes 15 minutes on my 2011 vintage AMD 8 core 2.8 GHz system.
+
+# Mailpile code
+
+The Mailpile code is checked out from either the local repository or github.
+
+# Python
+
+The Python Windows (.msi) installer and package files for all needed Python 
+modules are downloaded from python.org to PythonDistFiles in the local git
+working copy, then PythonDistFiles is copied to the install image. The Python
+installer and pip are run on the target Windows computer to install all the
+needed Python code. Subsequent builds in the same git working copy use the 
+already downloaded files.
+
+    Caution: The file requirements-with-deps.txt must list all the Python
+            packages that will be required including indirect dependencies. 
+            That file must be committed - the version used is the one checked 
+            out from the repository.
+            
+    Note: After installing on Windows, check the file 
+            C:\Program Files (x86)\Mailpile ehf\Mailpile\Python27\check.txt .
+            to determine if any dependencies are missing. Also the pip log
+            can be checked if there are problems. It is saved at
+            C:\Program Files (x86)\Mailpile ehf\Mailpile\Python27\install.txt .
+            
+# Other third party packages
+
+Third party packages (e.g. GnuPG, OpenSSL) are built from source archives
+downloaded from each project's home web site to SourceArchive in the local git
+working copy, using the unique build system of each project. The packages are
+built in subdirectories of /tmp/mailpile-winbuild. Once built, needed files are
+copied to subdirectories of the script directory (e.g. packages/windows/GnuPG).
+Those subdirectories are then copied to the install image. The SourceArchive
+directory is copied to /tmp/mailpile-winbuild so that all the source is
+available to publish for licence compliance purposes.
+
+Subsequent builds will use the needed files stored in the script directory so
+avoid unnecessary rebuilding of the third party packages.
+
+An archive of the Mailpile code image, identified by its commit id, is also 
+saved in /tmp/mailpile-winbuild/SourceArchive.
+
+The MailpileLauncher package is downloaded in binary form from
+https://www.mailpile.is/files/build/MailpileLauncher.zip
+It appears to require MS Visual Studio to build. Possibly in the future
+a free version could be substituted.
+
+# File integrity
+
+Some downloaded files are checked for integrity against checksums hardcoded
+into the script. This includes the Python installer, GnuPG and OpenPG.
 
 
-## Building the environment
 
-The environment is currently a hodge-podge of things.  This will become
-more polished and move towards a proper build setup over time.
 
-Currently we are pulling binaries from the following locations:
 
-   - http://www.python.org/
-   - http://www.lfd.uci.edu/~gohlke/pythonlibs/
-   - https://www.mailpile.is/files/build/
 
-The files on www.mailpile.is either come from the other sources, or have
-been built by us using PIP under Windows.

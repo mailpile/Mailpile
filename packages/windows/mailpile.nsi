@@ -1,11 +1,14 @@
-;----------------------------------------------
-; This is the Mailpile installer for Windows
+#----------------------------------------------
+# This is the Mailpile installer for Windows
 
 !define PRODUCT_NAME "Mailpile"
-!define PRODUCT_VERSION "Beta"
+!define PRODUCT_VERSION "${VERSION}"
 !define PRODUCT_PUBLISHER "Mailpile ehf"
 !define PRODUCT_WEB_SITE "https://www.mailpile.is/"
+# !define RUN_SCRIPT_NAME "mp.cmd"
 !define PRODUCT_EXE_NAME "mailpile.exe"
+
+OutFile "../Mailpile-${VERSION}-Installer.exe"
 
 !include "MUI.nsh"
 !define MUI_ABORTWARNING
@@ -16,7 +19,7 @@
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION createDesktopShortcut
 
-; Wizard pages
+# Wizard pages
 !insertmacro MUI_PAGE_LICENSE "COPYING.md"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -31,67 +34,113 @@ InstallDir "$PROGRAMFILES\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}"
 ShowInstDetails show
 ShowUnInstDetails show
 
-OutFile "Mailpile-Installer.exe"
 
-;Get installation folder from registry if available
+#Get installation folder from registry if available
 InstallDirRegKey HKCU "Software\Mailpile" ""
 
-;Request application privileges for Windows Vista
+#Request application privileges for Windows Vista
 RequestExecutionLevel admin
 
 
 Section "install" InstallationInfo
-	SetOutPath $INSTDIR
-	SetOverwrite ifnewer
+    SetOutPath $INSTDIR
+    SetOverwrite ifnewer
 
-	File /r /x junk /x macosx /x tmp /x .git /x testing "*.*"
+#   Copy the needed parts of the program tree.
+    File /r /x junk /x macosx /x tmp /x .git /x testing "*.*"
+    
+#   Install Python. Option /a prevents registry and start menu changes
+#   which could conflict with another Python installation.
+    ExecWait '"msiexec" /qb- /a "$INSTDIR\PythonDistFiles\python-2.7.14.msi" \
+                                TARGETDIR="$INSTDIR\Python27"'
+                                
+#   Use ensurepip to install pip and setuptools (packaged with Python).
+    ExecWait '"$INSTDIR\Python27\python" -m ensurepip --upgrade'
+    
+#   Make sure pypiwin32 is installed even if its not in requirements file.                                              
+    ExecWait '"$INSTDIR\Python27\python" -m pip install pypiwin32 --no-deps \
+                                --log "$INSTDIR\Python27\install.txt" \
+                                --no-index -f "$INSTDIR\PythonDistFiles"' 
 
-	WriteRegStr HKCU "Software\Mailpile" "" "$INSTDIR"
+#   Use pip to install the packages listed in the requirements file.
+    ExecWait '"$INSTDIR\Python27\python" -m pip install --no-deps \
+                                --log "$INSTDIR\Python27\install.txt" \
+                                -r "$INSTDIR\requirements-with-deps.txt" \
+                                --no-index -f "$INSTDIR\PythonDistFiles"' 
+    
+#   List packages and check dependencies (mostly for debugging purposes)
+    ExecWait '"$INSTDIR\Python27\python" -m pip list \
+                --log "$INSTDIR\Python27\list.txt"'  
+    ExecWait '"$INSTDIR\Python27\python" -m pip check \
+                --log "$INSTDIR\Python27\check.txt"'  
+    
+    WriteRegStr HKCU "Software\Mailpile" "" "$INSTDIR"
 
-	createDirectory "$SMPROGRAMS\Mailpile"
-	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\Mailpile.exe" "" "$INSTDIR\packages\windows\mailpile.ico"
-	createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" "$INSTDIR\uninstall.exe" "" ""
-	WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
+#    createDirectory "$SMPROGRAMS\Mailpile"
+#    createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" \
+#                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
+#                    "$INSTDIR\packages\windows\mailpile.ico" "" \
+#                     SW_SHOWMINIMIZED
+#    WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" \
+#                    "InternetShortcut" "URL" "http://localhost:33411"
+#    WriteINIStr "$SMPROGRAMS\Mailpile\Stop Mailpile.url" \
+#                    "InternetShortcut" "URL" \
+#                    "http://localhost:33411/quitquitquit"
+#    createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" \
+#                    "$INSTDIR\uninstall.exe" "" ""
+    createDirectory "$SMPROGRAMS\Mailpile"
+    createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\Mailpile.exe" "" "$INSTDIR\packages\windows\mailpile.ico"
+    createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" "$INSTDIR\uninstall.exe" "" ""
+    WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
 
-; This would start Mailpile automatically, not sure we're ready for that
-;	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCT_NAME}" "$INSTDIR\${PRODUCT_EXE_NAME}"
+# This would start Mailpile automatically, not sure we're ready for that
+#   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" \
+#                   "${PRODUCT_NAME}" "$INSTDIR\${RUN_SCRIPT_NAME}"
 
-	WriteUninstaller $INSTDIR\uninstall.exe
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME} (remove only)"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\uninstall.exe"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" "${PRODUCT_VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteUninstaller $INSTDIR\uninstall.exe
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME} (remove only)"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\uninstall.exe"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" "${PRODUCT_VERSION}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "Publisher" "${PRODUCT_PUBLISHER}"
 SectionEnd
 
 Section "un.Uninstall"
-; We list things which the /r would catch anyway, to make the progress bar
-; a bit more interesting to the poor impatient user who can't wait to get
-; rid of us... ;-)
-	Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
-	DeleteRegKey HKCU "Software\Mailpile"
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-	RMDir /r "$SMPROGRAMS\Mailpile"
-	RMDir /r "$INSTDIR\Python27\DLLs"
-	RMDir /r "$INSTDIR\Python27\Lib\site-packages"
-	RMDir /r "$INSTDIR\Python27\Lib"
-	RMDir /r "$INSTDIR\Python27\libs"
-	RMDir /r "$INSTDIR\Python27\include"
-	RMDir /r "$INSTDIR\Python27"
-	RMDir /r "$INSTDIR\OpenSSL"
-	RMDir /r "$INSTDIR\GnuPG"
-	RMDir /r "$INSTDIR\locale"
-	RMDir /r "$INSTDIR\mailpile"
-	RMDir /r "$INSTDIR\plugins"
-	RMDir /r "$INSTDIR"
-	SetAutoClose true
+# We list things which the /r would catch anyway, to make the progress bar
+# a bit more interesting to the poor impatient user who can't wait to get
+# rid of us... ;-)
+    Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
+    DeleteRegKey HKCU "Software\Mailpile"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+    RMDir /r "$SMPROGRAMS\Mailpile"
+    RMDir /r "$INSTDIR\Python27\DLLs"
+    RMDir /r "$INSTDIR\Python27\Lib\site-packages"
+    RMDir /r "$INSTDIR\Python27\Lib"
+    RMDir /r "$INSTDIR\Python27\libs"
+    RMDir /r "$INSTDIR\Python27\include"
+    RMDir /r "$INSTDIR\Python27"
+    RMDir /r "$INSTDIR\OpenSSL"
+    RMDir /r "$INSTDIR\GnuPG"
+    RMDir /r "$INSTDIR\locale"
+    RMDir /r "$INSTDIR\mailpile"
+    RMDir /r "$INSTDIR\plugins"
+    RMDir /r "$INSTDIR"
+    SetAutoClose true
 SectionEnd
 
 Function un.onUninstSuccess
-	HideWindow
-	MessageBox MB_ICONINFORMATION|MB_OK "Mailpile has been successfully removed from your computer. How sad..."
+    HideWindow
+    MessageBox MB_ICONINFORMATION|MB_OK "Mailpile has been successfully \
+                                        removed from your computer. How sad..."
 FunctionEnd
 
+#Function createDesktopShortcut
+#    CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" \
+#                    "$INSTDIR\${RUN_SCRIPT_NAME}" "" \
+#                    "$INSTDIR\packages\windows\mailpile.ico" "" \
+#                     SW_SHOWMINIMIZED
+#FunctionEnd
 Function createDesktopShortcut
 	CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE_NAME}" ""
 FunctionEnd
+
