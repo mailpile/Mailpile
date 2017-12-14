@@ -178,7 +178,7 @@ class PluginManager(object):
     def _load(self, plugin_name, process_manifest=False, config=None):
         full_name = 'mailpile.plugins.%s' % plugin_name
         if full_name in sys.modules:
-            return
+            return self
 
         self.loading_plugin = full_name
         if plugin_name in self.BUILTIN:
@@ -215,7 +215,9 @@ class PluginManager(object):
             except:
                 traceback.print_exc(file=sys.stderr)
                 print 'FIXME: Loading %s failed, tell user!' % full_name
-                return
+                if full_name in sys.modules:
+                    del sys.modules[full_name]
+                return None
 
             spec = (full_name, manifest, dirname)
             self.manifests.append(spec)

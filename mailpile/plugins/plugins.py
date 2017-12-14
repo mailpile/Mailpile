@@ -50,8 +50,10 @@ class LoadPlugin(mailpile.commands.Command):
         for plugin in self.args:
             try:
                 # FIXME: This fails to update the ConfigManger
-                plugins.load(plugin, process_manifest=True, config=config)
-                config.sys.plugins.append(plugin)
+                if plugins.load(plugin, process_manifest=True, config=config):
+                    config.sys.plugins.append(plugin)
+                else:
+                    raise ValueError('Loading failed')
             except Exception, e:
                 self._ignore_exception()
                 return self._error(_('Failed to load plugin: %s') % plugin,
