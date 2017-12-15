@@ -1,47 +1,38 @@
-Mailpile.UI.Sidebar.SubtagsRender = function(tid, gradual) {
-  // FIXME: This assumes we have a Mailpile.config object that is up to date.
-  //        That is not a safe or reasonable assumption...
-
-  if ((_.indexOf(Mailpile.config.web.subtags_collapsed, tid) == -1)
-      && ($('#sidebar-tag-' + tid).not('.should-hide').length > 0)) {
-    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
-    var subtags = $('.subtag-of-' + tid + ':not(.hide)');
-    if (gradual) {
-      subtags.slideDown('fast');
-    }
-    else {
-      subtags.show();
-    }
-  } else {
-    $('#sidebar-tag-' + tid).find('a.sidebar-tag-expand span').removeClass('icon-arrow-down').addClass('icon-arrow-right');
-    if (gradual) {
-      $('.subtag-of-' + tid).slideUp('fast');
-    }
-    else {
-      $('.subtag-of-' + tid).hide();
-    }
-  }
-};
-
-
 Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
-  // FIXME: This assumes we have a Mailpile.config object that is up to date.
-  //        That is not a safe or reasonable assumption...
+  // Strategy: assume whatever is in the DOM is correct and take actions
+  // based on that (after all, that's what the users sees). However, we
+  // then send config updates to the backend for persistence.
 
-  // Toggle show/hide for this tid
-  if (_.indexOf(Mailpile.config.web.subtags_collapsed, tid) > -1) {
-    var collapsed = _.without(Mailpile.config.web.subtags_collapsed, tid);
-  } else {
-    Mailpile.config.web.subtags_collapsed.push(tid);
-    var collapsed = Mailpile.config.web.subtags_collapsed;
+  var $toggle = $('.sidebar-tag-expand[data-tid='+ tid +']');
+  var $subtags = $('.subtag-of-' + tid);
+
+  var is_collapsed = $toggle.data('collapsed');
+  if (is_collapsed == 'False') is_collapsed = false;
+
+  if (is_collapsed) {
+    $toggle.find('span').removeClass('icon-arrow-right').addClass('icon-arrow-down');
+    $toggle.data('collapsed', 'False');
+    $subtags.slideDown('fast');
+  }
+  else {
+    $toggle.find('span').addClass('icon-arrow-right').removeClass('icon-arrow-down');
+    $toggle.data('collapsed', 'True');
+    $subtags.slideUp('fast');
   }
 
-  // Display and record new state
-  Mailpile.config.web.subtags_collapsed = collapsed;
-  Mailpile.UI.Sidebar.SubtagsRender(tid, true);
+  var collapsed = [];
+  $('.sidebar-tag-expand').each(function(k, v) {
+    var $v = $(v);
+    var is_collapsed = $v.data('collapsed');
+    if (is_collapsed == 'False') is_collapsed = false;
+    if (is_collapsed) collapsed.push($v.data('tid'));
+  });
+  if (collapsed.length < 1) collapsed = ['_none_'];
 
-  // Save to Config
-  Mailpile.API.settings_set_post({ 'web.subtags_collapsed': collapsed }, function(result) {
+  Mailpile.API.settings_set_post({
+    'web.subtags_collapsed': collapsed
+  }, function(result) {
+    // Nothing
   });
 };
 
@@ -243,7 +234,4 @@ Mailpile.UI.content_setup.push(function($content) {
   Mailpile.UI.Sidebar.Droppable(
     $content.find('.sidebar-tags-draggable'),
    'td.draggable, div.thread-draggable');
-  $content.find('.sidebar-tag-expand').each(function(i, elem) {
-    Mailpile.UI.Sidebar.SubtagsRender($(elem).data('tid'), false);
-  });
 });
