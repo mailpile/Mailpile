@@ -84,7 +84,7 @@ def Interact(session):
         prompt = session.ui.term.color('mailpile> ',
                                        color=session.ui.term.BLACK,
                                        weight=session.ui.term.BOLD,
-                                       readline=True)
+                                       readline=(readline is not None))
         while not mailpile.util.QUITTING:
             try:
                 with session.ui.term:
@@ -120,7 +120,7 @@ def Interact(session):
             readline.write_history_file(session.config.history_file())
         else:
             safe_remove(session.config.history_file())
-    except OSError:
+    except (OSError, AttributeError):
         pass
 
 
@@ -244,7 +244,8 @@ def Main(args):
         traceback.print_exc()
 
     finally:
-        readline.write_history_file(session.config.history_file())
+        if readline is not None:
+            readline.write_history_file(session.config.history_file())
 
         # Make everything in the background quit ASAP...
         mailpile.util.LAST_USER_ACTIVITY = 0
