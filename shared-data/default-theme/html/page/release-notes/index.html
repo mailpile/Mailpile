@@ -49,6 +49,7 @@
     <li>{{_('Per-tag automatic bayesian classification, as <a target=_blank href="%(blog_url)s">discussed on our blog</a>',
             blog_url="https://www.mailpile.is/blog/2014-01-12_A_Plan_For_Spam.html")}}</li>
     <li>{{_("The ability to delete e-mail and accounts")}}</li>
+    <li>{{_("A more responsive (almost) mobile-friendly web interface")}}</li>
   </ul>
 
   <h5>{{_("What's fixed?")}}</h5>
@@ -63,8 +64,10 @@
   <ul style="list-style: disc; margin: 1em 0 2em 2em;">
     <li>{{_("Mailpile is still rather slow and RAM-hungry")}}</li>
     <li>{{_("IMAP synchronization is not yet implemented")}}</li>
-    <li>{{_("Our Security Roadmap is incomplete")}}</li>
-    <li>{{_('GitHub has <a target=_blank href="%(issues_url)s">many open issues</a>.',
+    <li>{{_('The <a target=_blank href="%(roadmap_url)s">Security Roadmap</a> is incomplete',
+            roadmap_url='https://github.com/mailpile/Mailpile/wiki/Security-roadmap'
+            )|safe }}</li>
+    <li>{{_('Github has <a target=_blank href="%(issues_url)s">many open issues</a>.',
             issues_url='https://github.com/mailpile/Mailpile/issues'
             )|safe }} {{_("You can help.")}}</li>
   </ul>
