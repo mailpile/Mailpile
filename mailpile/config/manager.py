@@ -149,11 +149,16 @@ class ConfigManager(ConfigDict):
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
-        # The lock files are not actually created until the first acquire().
+        
+        # Process lock files are not actually created until the first acquire().
+        # FIX_ME fasteners Upstream - acquiring the same lock more than once
+        # fails under Windows - the work-around uses .have attributes.
         self.lock_profile = fasteners.InterProcessLock(
                                     os.path.join(self.workdir, 'profile-lock'))
+        self.lock_profile.have = False                           
         self.lock_pub = fasteners.InterProcessLock(
                                     os.path.join(self.workdir, 'public-lock'))
+        self.lock_profile.have = False                           
 
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
@@ -217,7 +222,9 @@ class ConfigManager(ConfigDict):
             os.makedirs(self.workdir, mode=0700)
         
         # Once acquired, lock_profile is only released by process termination.
-        if not self.lock_profile.acquire( blocking=False ):
+        self.lock_profile.have = self.lock_profile.have or 
+                                    self.lock_profile.acquire( blocking=False ):
+        if not self.lock_profile.have:
             session.ui.error(
                 _('Another Mailpile or program is using the profile directory'))
             sys.exit(1)
@@ -598,10 +605,11 @@ class ConfigManager(ConfigDict):
         # Save the public config data first
         # Warn other processes against reading public data during write
         # But wait for 2 s max so other processes can't block Mailpile.
-        locked = self.lock_pub.acquire(blocking=True, timeout=2) # *** DEBUG
+        self.lock_pub.have = self.lock_pub.have or
+                                self.lock_pub.acquire(blocking=True, timeout=2) 
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
-        if locked:
+        if self.lock_pub.have:
             self.lock_pub.release()
         if not self.loaded_config:
             return

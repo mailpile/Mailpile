@@ -248,7 +248,7 @@ def Main(args):
         traceback.print_exc()
 
     finally:
-        # *** DEBUG readline.write_history_file(session.config.history_file())
+        readline.write_history_file(session.config.history_file())
 
         # Make everything in the background quit ASAP...
         mailpile.util.LAST_USER_ACTIVITY = 0
