@@ -158,7 +158,7 @@ class ConfigManager(ConfigDict):
         self.lock_profile.have = False                           
         self.lock_pub = fasteners.InterProcessLock(
                                     os.path.join(self.workdir, 'public-lock'))
-        self.lock_profile.have = False                           
+        self.lock_pub.have = False                           
 
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
@@ -222,8 +222,8 @@ class ConfigManager(ConfigDict):
             os.makedirs(self.workdir, mode=0700)
         
         # Once acquired, lock_profile is only released by process termination.
-        self.lock_profile.have = self.lock_profile.have or 
-                                    self.lock_profile.acquire( blocking=False ):
+        self.lock_profile.have = (self.lock_profile.have or 
+                                    self.lock_profile.acquire( blocking=False ))
         if not self.lock_profile.have:
             session.ui.error(
                 _('Another Mailpile or program is using the profile directory'))
@@ -605,12 +605,13 @@ class ConfigManager(ConfigDict):
         # Save the public config data first
         # Warn other processes against reading public data during write
         # But wait for 2 s max so other processes can't block Mailpile.
-        self.lock_pub.have = self.lock_pub.have or
-                                self.lock_pub.acquire(blocking=True, timeout=2) 
+        self.lock_pub.have = (self.lock_pub.have or
+                                self.lock_pub.acquire(blocking=True, timeout=2)) 
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
         if self.lock_pub.have:
             self.lock_pub.release()
+            self.lock_pub.have = False
         if not self.loaded_config:
             return
 
