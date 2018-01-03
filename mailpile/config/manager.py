@@ -1322,13 +1322,23 @@ class ConfigManager(ConfigDict):
                               config.sys.http_path or '')
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 try:
+                    if sys.platform.startswith('win'):
+                        # FIXME: On Windows config.http_worker does not detect
+                        # port reuse so do this kludgy test.
+                        try:
+                            socket.socket().connect((sspec[0],sspec[1]))
+                            port_in_use = True
+                        except socket.error:
+                            port_in_use = False
+                        if port_in_use:
+                            raise socket.error, errno.EADDRINUSE
                     config.http_worker = HttpWorker(config.background, sspec)
                     config.http_worker.start()
                 except socket.error, e:
                     if e[ 0 ] == errno.EADDRINUSE:
                         session.ui.error( 
                             _('Port %s:%s in use by another Mailpile or program'
-                            ) % ( config.sys.http_host, config.sys.http_port ) )
+                            ) % (sspec[0], sspec[1]) )
 
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
