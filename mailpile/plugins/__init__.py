@@ -141,7 +141,7 @@ class PluginManager(object):
                 try:
                     with open(manifest_filename) as mfd:
                         manifest = json.loads(self._uncomment(mfd.read()))
-                        assert(manifest.get('name') == subdir)
+                        safe_assert(manifest.get('name') == subdir)
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
                 except (ValueError, AssertionError):
@@ -167,7 +167,7 @@ class PluginManager(object):
                 sys.modules[mp] = imp.new_module(mp)
                 sys.modules[module].__dict__[parent] = sys.modules[mp]
             module = mp
-        assert(module == full_name)
+        safe_assert(module == full_name)
 
         # load actual module
         sys.modules[full_name].__file__ = full_path
@@ -715,8 +715,8 @@ class PluginManager(object):
 
     def register_worker(self, thread_obj):
         self._compat_check()
-        assert(hasattr(thread_obj, 'start'))
-        assert(hasattr(thread_obj, 'quit'))
+        safe_assert(hasattr(thread_obj, 'start'))
+        safe_assert(hasattr(thread_obj, 'quit'))
         # FIXME: complain about duplicates?
         self.WORKERS.append(thread_obj)
 

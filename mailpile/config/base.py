@@ -265,7 +265,7 @@ def RuledContainer(pcls):
             raise Exception(_('Please override this method'))
 
         def set_rules(self, rules):
-            assert(isinstance(rules, dict))
+            safe_assert(isinstance(rules, dict))
             self.reset()
             for key, rule in rules.iteritems():
                 self.add_rule(key, rule)

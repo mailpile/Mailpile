@@ -1287,9 +1287,9 @@ class EditProfile(AddProfile):
         session, config = self.session, self.session.config
 
         # OK, fetch the VCard.
-        assert('rid' in self.data and len(self.data['rid']) == 1)
+        safe_assert('rid' in self.data and len(self.data['rid']) == 1)
         vcard = config.vcards.get_vcard(self.data['rid'][0])
-        assert(vcard)
+        safe_assert(vcard)
 
         if self.data.get('_method') == 'POST':
             self._update_vcard_from_post(vcard)

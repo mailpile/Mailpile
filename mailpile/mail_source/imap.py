@@ -177,7 +177,7 @@ class SharedImapConn(threading.Thread):
     def _mk_proxy(self, method):
         def proxy_method(*args, **kwargs):
             try:
-                assert(self._lock.locked())
+                safe_assert(self._lock.locked())
                 if 'mailbox' in kwargs:
                     # We're sharing this connection, so all mailbox methods
                     # need to tell us which mailbox they're operating on.
@@ -227,7 +227,7 @@ class SharedImapConn(threading.Thread):
             self._update_name()
 
     def close(self):
-        assert(self._lock.locked())
+        safe_assert(self._lock.locked())
         self._selected = None
         if '(closed)' not in self.name:
             self.name += ' (closed)'
@@ -237,7 +237,7 @@ class SharedImapConn(threading.Thread):
         # This routine caches the SELECT operations, because we will be
         # making lots and lots of superfluous ones "just in case" as part
         # of multiplexing one IMAP connection for multiple mailboxes.
-        assert(self._lock.locked())
+        safe_assert(self._lock.locked())
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
         elif self._selected:

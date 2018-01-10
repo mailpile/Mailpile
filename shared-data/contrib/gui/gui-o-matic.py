@@ -12,6 +12,8 @@ import traceback
 import urllib
 import webbrowser
 
+from mailpile.util import safe_assert
+
 
 ##[ Parent Indicator class, interface and common helpers ]####################
 
@@ -99,7 +101,7 @@ class Indicator(object):
         return None
 
     def show_url(self, url=None):
-        assert(url is not None)
+        safe_assert(url is not None)
         if not self.config.get('external_browser'):
             webview = self._get_webview()
             if webview:
@@ -335,7 +337,7 @@ except ImportError:
 
 
 def MacOSXIndicator():
-    assert(objc is not None)
+    safe_assert(objc is not None)
 
     class MacOSXThing(NSObject):
         indicator = None

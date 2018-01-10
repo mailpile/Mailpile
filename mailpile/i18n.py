@@ -22,8 +22,8 @@ def _fmt_safe(translation, original):
         return FORMAT_CHECKED[translation]
     if '%' in original:
         try:
-            assert(len([c for c in translation if c == '%'])
-                   == len([c for c in original if c == '%']))
+            safe_assert(len([c for c in translation if c == '%'])
+                        == len([c for c in original if c == '%']))
             bogon = translation % 1
             FORMAT_CHECKED[translation] = translation
         except TypeError:

@@ -13,7 +13,7 @@ _ = lambda t: t
 import random
 from mailpile.config.defaults import APPVER
 from mailpile.commands import Command
-from mailpile.util import md5_hex
+from mailpile.util import md5_hex, safe_assert
 
 
 TIMESTAMPS = None
@@ -163,14 +163,14 @@ class hintsCommand(Command):
         ctx = self.data.get('context')
 
         if 'reset' in self.args:
-            assert(self.data.get('_method', 'POST') == 'POST')
+            safe_assert(self.data.get('_method', 'POST') == 'POST')
             ts = self.timestamps()
             for k in ts.keys():
                 del ts[k]
             ts['initial'] = self._today()
 
         elif 'next' in self.args:
-            assert(self.data.get('_method', 'POST') == 'POST')
+            safe_assert(self.data.get('_method', 'POST') == 'POST')
             self.timestamps()['last_displayed'] = 0
             self.timestamps()['initial'] -= 30
 

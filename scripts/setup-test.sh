@@ -42,7 +42,8 @@ if [ "$1" = "--cleanup" ]; then
 fi
 
 [ "$1" = "" ] && IA="--interact" || IA=""
-$PYTHON ./mp --set 'sys.debug = log http' \
+$PYTHON -OOR ./mp \
+             --set 'sys.debug = log http' \
              --set "sys.gpg_binary = $GPG_BINARY" \
              --pidfile "$MAILPILE_HOME/mailpile.pid" \
              --www 'localhost:33433' \

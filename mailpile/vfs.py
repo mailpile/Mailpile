@@ -23,6 +23,7 @@ import os
 import posixpath
 
 from mailpile.i18n import gettext as _
+from mailpile.util import safe_assert
 
 
 VFS_HANDLERS = []
@@ -36,7 +37,7 @@ def register_handler(prio, obj):
 
 def register_alias(name, prefix):
     global VFS_ALIASES
-    assert(name[:1] == '/')
+    safe_assert(name[:1] == '/')
     VFS_ALIASES[name] = prefix
 
 
@@ -51,7 +52,7 @@ class FilePath(object):
     is suitable for writing to a config file or JSON stream.
     """
     def __init__(self, cooked_fp=None, binary_fp=None, flags=None):
-        assert((cooked_fp or binary_fp) and not (cooked_fp and binary_fp))
+        safe_assert((cooked_fp or binary_fp) and not (cooked_fp and binary_fp))
         if cooked_fp:
             if isinstance(cooked_fp, FilePath):
                 self.raw_fp = cooked_fp.raw_fp

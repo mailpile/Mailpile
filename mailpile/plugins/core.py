@@ -476,7 +476,7 @@ class Cleanup(Command):
 
     @classmethod
     def AddTask(cls, task, last=False, first=False):
-        assert(not (first and last))
+        safe_assert(not (first and last))
         if (first or last) and not cls.TASKS:
             cls.TASKS = [lambda: True]
         if first:

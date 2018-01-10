@@ -255,7 +255,7 @@ class KeyImport(Command):
             address = self.data.get('address', [''])[0]
             fprints = self.data.get('fingerprints', [])
             origins = self.data.get('origins', [])
-        assert(address or fprints or origins)
+        safe_assert(address or fprints or origins)
 
         result = lookup_crypto_keys(self.session, address,
                                     get=[f.strip() for f in fprints],
@@ -308,7 +308,7 @@ class KeyTofu(Command):
 
     def command(self):
         emails = set(list(self.args)) | set(self.data.get('email', []))
-        assert(emails)
+        safe_assert(emails)
 
         idx = self._idx()
         gnupg = self._gnupg(dry_run=True)

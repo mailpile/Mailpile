@@ -85,10 +85,11 @@ class Safe_Popen(Unsafe_Popen):
         # platforms, so we don't allow the programmer to configure them
         # at all.
         if SERIALIZE_POPEN_STRICT:
-            assert(preexec_fn is None)
-            assert(close_fds is None)
-            assert(startupinfo is None)
-            assert(creationflags is None)
+            if not ((preexec_fn is None) and
+                    (close_fds is None) and
+                    (startupinfo is None) and
+                    (creationflags is None)):
+                raise AssertionError("Unsafe use of POpen API!")
 
         # The goal of the following sections is to achieve two things:
         #

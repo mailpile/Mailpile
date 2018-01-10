@@ -191,7 +191,8 @@ class EncryptedRecordStore(_SimpleList):
 
         if not self._parse_header():
             self._write_header()
-        assert(max_bytes <= self._max_bytes)
+        if max_bytes > self._max_bytes:
+            raise AssertionError('max_bytes mismatch')
 
     def _calculate_constants(self):
         # Calculate our constants! Magic numbers:

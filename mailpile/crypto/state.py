@@ -48,16 +48,17 @@ class CryptoInfo(dict):
     def _set_status(self, value):
         if value not in self.STATUSES:
             print 'Bogus status for %s: %s' % (type(self), value)
-        assert(value in self.STATUSES)
+            raise ValueError('Invalid status: %s' % value)
         self._status = value
         self.mix_bubbles()
 
     def __setitem__(self, item, value):
-        assert(item in self.KEYS)
+        if item not in self.KEYS:
+            raise KeyError('Invalid key: %s' % item)
         if item == "status":
             if value not in self.STATUSES:
                 print 'Bogus status for %s: %s' % (type(self), value)
-            assert(value in self.STATUSES)
+                raise ValueError('Invalid value for %s: %s' % (key, value))
             if self._status is None:  # Capture initial value
                 self._status = value
         dict.__setitem__(self, item, value)

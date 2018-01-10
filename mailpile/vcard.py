@@ -947,7 +947,7 @@ class MailpileVCard(SimpleVCard):
             return {}
 
     def record_history(self, what, when, mid, now=None):
-        assert(what[0] in ('s', 'r'))
+        safe_assert(what[0] in ('s', 'r'))
         with self._lock:
             try:
                 history_vcl = self.get('x-mailpile-history')

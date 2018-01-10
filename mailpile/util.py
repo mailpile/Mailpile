@@ -216,6 +216,10 @@ class AccessError(Exception):
     pass
 
 
+class InternalError(AssertionError):
+    pass
+
+
 class UrlRedirectException(Exception):
     """An exception indicating we need to redirecting to another URL."""
     def __init__(self, url):
@@ -245,6 +249,12 @@ class MultiContext:
                 raised.append(e)
         if raised:
             raise raised[0]
+
+
+def safe_assert(check, *args):
+    """A safe-to-use assert() replacement that never gets compiled out."""
+    if not check:
+        raise InternalError(*args)
 
 
 def thread_context_push(**kwargs):

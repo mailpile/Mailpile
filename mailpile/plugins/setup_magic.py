@@ -820,11 +820,12 @@ class SetupGetEmailSettings(TestableWebbable):
 
         if settings['protocol'].startswith('smtp'):
             try:
-                assert(SendMail(self.session, None,
-                                [(email,
-                                  [email, 'test@mailpile.is'], None,
-                                  [event])],
-                                test_only=True, test_route=settings))
+                safe_assert(
+                    SendMail(self.session, None,
+                             [(email,
+                               [email, 'test@mailpile.is'], None,
+                               [event])],
+                             test_only=True, test_route=settings))
                 return True, True
             except (IOError, OSError, AssertionError, SendMailError):
                 pass
@@ -1161,7 +1162,7 @@ class SetupTestRoute(TestableWebbable):
 
         if route_id:
             route = self.session.config.routes[route_id]
-            assert(route)
+            safe_assert(route)
         else:
             route = {}
             for k in CONFIG_RULES['routes'][1]:
@@ -1178,16 +1179,17 @@ class SetupTestRoute(TestableWebbable):
         if not fromaddr or '@' not in fromaddr:
             fromaddr = '%s@%s' % (route.get('username', 'test'),
                                   route.get('host', 'example.com'))
-        assert(fromaddr)
+        safe_assert(fromaddr)
 
         error_info = {'error': _('Unknown error')}
         try:
-            assert(SendMail(self.session, None,
-                            [(fromaddr,
-                              [fromaddr, 'test@mailpile.is'],
-                              None,
-                              [self.event])],
-                            test_only=True, test_route=route))
+            safe_assert(
+                SendMail(self.session, None,
+                         [(fromaddr,
+                           [fromaddr, 'test@mailpile.is'],
+                           None,
+                           [self.event])],
+                         test_only=True, test_route=route))
             return self._success(_('Route is working'),
                                  result=route)
         except OSError:
@@ -1241,7 +1243,7 @@ class SetupTor(TestableWebbable):
             with ConnBroker.context(need=need_tor) as context:
                 motd = urlopen(MOTD_URL_TOR_ONLY_NO_MARS,
                                data=None, timeout=10).read()
-                assert(motd.strip().endswith('}'))
+                safe_assert(motd.strip().endswith('}'))
             session.config.sys.proxy.protocol = 'tor'
             message = _('Successfully configured and enabled Tor!')
         except (IOError, AssertionError):

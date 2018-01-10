@@ -40,8 +40,9 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         sps = SecurePassphraseStorage(passphrase)
         passphrase = 'this probably does not really overwrite :-( '
 
-    assert(sps is not None)
-    assert(config.load_master_key(sps))
+    safe_assert(
+        (sps is not None) and
+        (config.load_master_key(sps)))
 
     # Fun side effect: changing the passphrase invalidates the message cache
     import mailpile.mailutils
@@ -141,7 +142,7 @@ class Authenticate(Command):
         # arbitrary URLs on the Internet.
         if path:
             url = urlparse(path)
-            assert(not url.scheme and not url.netloc)
+            safe_assert(not url.scheme and not url.netloc)
 
         if (path and
                not path[1:].startswith(DeAuthenticate.SYNOPSIS[2] or '!') and
@@ -443,7 +444,7 @@ class SetPassphrase(Command):
         if self.data.get('_method', None) == 'GET':
             return self._success(pass_prompt, result)
 
-        assert(fingerprint is not None)
+        safe_assert(fingerprint is not None)
         fingerprint = fingerprint.lower()
         if fingerprint in config.secrets:
             if config.secrets[fingerprint].policy == 'protect':
@@ -461,7 +462,7 @@ class SetPassphrase(Command):
             update_ms = update_mr = (account is not None)
 
         if update_ms or update_mr:
-            assert(account is not None)
+            safe_assert(account is not None)
 
         if not pass_check(password, account=account, fingerprint=fingerprint):
             result['error'] = _('Password incorrect! Try again?')

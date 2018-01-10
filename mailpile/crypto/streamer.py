@@ -44,7 +44,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.gpgi import GPG_BINARY
 from mailpile.safe_popen import Popen, PIPE
-from mailpile.util import CryptoLock, safe_remove
+from mailpile.util import CryptoLock, safe_remove, safe_assert
 from mailpile.util import sha512b64 as genkey
 
 from mailpile.crypto.aes_utils import getrandbits
@@ -952,7 +952,7 @@ class DecryptingStreamer(InputCoprocess):
         elif self.decryptor is not None:
             return None
         elif self.state == self.STATE_PGP_DATA:
-            assert(self.gpgi is not None)
+            safe_assert(self.gpgi is not None)
             if self.gpg_pass:
                 return self.gpgi.common_args(will_send_passphrase=True)
             else:

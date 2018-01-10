@@ -157,7 +157,7 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
         try:
             if not hasattr(fd, 'read'):  # Not a file, is it a function?
                 fd = fd()
-            assert(hasattr(fd, 'read'))
+            safe_assert(hasattr(fd, 'read'))
         except (TypeError, AssertionError):
             return None
 
@@ -287,7 +287,7 @@ def PrepareMessage(config, msg,
 
     rcpts = rcpts or []
     if bounce:
-        assert(len(rcpts) > 0)
+        safe_assert(len(rcpts) > 0)
 
     # Iterate through headers to figure out what we want to do...
     need_rcpts = not rcpts

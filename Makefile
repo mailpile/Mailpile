@@ -107,6 +107,7 @@ pytests:
 
 clean:
 	@rm -f `find . -name \\*.pyc` \
+	       `find . -name \\*.pyo` \
 	       `find . -name \\*.mo` \
 	        mailpile-tmp.py mailpile.py \
 	        ChangeLog AUTHORS \
