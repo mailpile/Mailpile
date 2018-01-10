@@ -39,9 +39,10 @@ def _fmt_safe(translation, original):
 
 def gettext(string):
     with RECENTLY_TRANSLATED_LOCK:
-        global RECENTLY_TRANSLATED
-        RECENTLY_TRANSLATED = [t for t in RECENTLY_TRANSLATED[-100:]
-                               if t != string] + [string]
+        if isinstance(string, str):
+            global RECENTLY_TRANSLATED
+            RECENTLY_TRANSLATED = [t for t in RECENTLY_TRANSLATED[-100:]
+                                   if t != string] + [string]
     if not ACTIVE_TRANSLATION:
         return string
 

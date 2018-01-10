@@ -172,7 +172,7 @@ def test_load_save_rescan():
                    ['from:brennan', 'subject:encrypted',
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
                    ['from:brennan', 'subject:signed',
-                    'tag:mp_sig-unverified'],
+                    'tag:mp_sig-expired'],
                    ['from:barnaby', 'subject:testing', 'soup',
                     'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
                    ['from:square', 'subject:here', '-has:attachment'],
@@ -182,7 +182,9 @@ def test_load_save_rescan():
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
-        assert(results.result['stats']['count'] == 1)
+        if results.result['stats']['count'] != 1:
+            raise AssertionError(
+                'Count = %s != 1' % results.result['stats']['count'])
 
     say('Checking size of inbox')
     mp.order('flat-date')

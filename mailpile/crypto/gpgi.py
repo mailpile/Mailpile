@@ -513,7 +513,10 @@ class GnuPG:
             self.homedir = GNUPG_HOMEDIR
             self.gpgbinary = GPG_BINARY
             self.passphrases = None
-            self.passphrase = passphrase.get_reader()
+            if passphrase:
+                self.passphrase = passphrase.get_reader()
+            else:
+                self.passphrase = None
             self.use_agent = use_agent
         self.dry_run = dry_run
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
