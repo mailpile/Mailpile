@@ -155,6 +155,6 @@ def ListTranslations(config):
                         languages[lang] = ' '.join([word for word in
                                                     line[1:-2].split()[1:-1]]
                                                    ).replace('LANGUAGE', lang)
-        except (IOError, OSError):
+        except (IOError, OSError, UnicodeDecodeError):
             pass
     return languages

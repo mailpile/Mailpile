@@ -1,21 +1,21 @@
 # Translations template for mailpile.
-# Copyright (C) 2017 Mailpile ehf
+# Copyright (C) 2018 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-# Mailpile Team <team@mailpile.is>, 2017.
+# Mailpile Team <team@mailpile.is>, 2018.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: mailpile VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-11-24 19:35+0100\n"
+"POT-Creation-Date: 2018-01-11 16:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.3.4\n"
+"Generated-By: Babel 1.3\n"
 
 #: mailpile/app.py:95
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
@@ -33,85 +33,85 @@ msgstr ""
 msgid "Failed to decrypt configuration, please log in!"
 msgstr ""
 
-#: mailpile/auth.py:184
+#: mailpile/auth.py:185
 msgid "Hello world, welcome!"
 msgstr ""
 
-#: mailpile/auth.py:194
+#: mailpile/auth.py:195
 msgid "Invalid password, please try again"
 msgstr ""
 
-#: mailpile/auth.py:205
+#: mailpile/auth.py:206
 msgid "Incorrect username or password"
 msgstr ""
 
-#: mailpile/auth.py:217
+#: mailpile/auth.py:218
 msgid "Your password: "
 msgstr ""
 
-#: mailpile/auth.py:225 mailpile/commands.py:576
+#: mailpile/auth.py:226 mailpile/commands.py:576
 #: shared-data/default-theme/html/auth/login/index.html:2
 #: shared-data/default-theme/html/auth/logout/index.html:2
 msgid "Please log in"
 msgstr ""
 
-#: mailpile/auth.py:250
+#: mailpile/auth.py:251
 msgid "Goodbye!"
 msgstr ""
 
-#: mailpile/auth.py:254
+#: mailpile/auth.py:255
 msgid "No session found!"
 msgstr ""
 
-#: mailpile/auth.py:437
+#: mailpile/auth.py:438
 msgid "Enter your Mailpile password"
 msgstr ""
 
-#: mailpile/auth.py:440
+#: mailpile/auth.py:441
 msgid "Enter your password"
 msgstr ""
 
-#: mailpile/auth.py:451
+#: mailpile/auth.py:452
 msgid "That key is managed by Mailpile, it cannot be changed directly."
 msgstr ""
 
-#: mailpile/auth.py:453
+#: mailpile/auth.py:454
 msgid "Protected secret"
 msgstr ""
 
-#: mailpile/auth.py:467
+#: mailpile/auth.py:468
 msgid "Password incorrect! Try again?"
 msgstr ""
 
-#: mailpile/auth.py:468
+#: mailpile/auth.py:469
 msgid "Incorrect password"
 msgstr ""
 
-#: mailpile/auth.py:509
+#: mailpile/auth.py:510
 msgid "No password found"
 msgstr ""
 
-#: mailpile/auth.py:511
+#: mailpile/auth.py:512
 msgid "Retrieved stored password"
 msgstr ""
 
-#: mailpile/auth.py:520
+#: mailpile/auth.py:521
 msgid "Password forgotten!"
 msgstr ""
 
-#: mailpile/auth.py:526
+#: mailpile/auth.py:527
 msgid "Password will never be stored"
 msgstr ""
 
-#: mailpile/auth.py:534
+#: mailpile/auth.py:535
 msgid "Password remembered!"
 msgstr ""
 
-#: mailpile/auth.py:544
+#: mailpile/auth.py:545
 msgid "The password has been stored temporarily"
 msgstr ""
 
-#: mailpile/auth.py:547
+#: mailpile/auth.py:548
 msgid "Invalid password policy"
 msgstr ""
 
@@ -262,31 +262,31 @@ msgstr ""
 msgid "Failed to download TLS certificates"
 msgstr ""
 
-#: mailpile/httpd.py:297
+#: mailpile/httpd.py:299
 msgid "XMLRPC has been disabled for now."
 msgstr ""
 
-#: mailpile/httpd.py:319
+#: mailpile/httpd.py:321
 msgid "OMG, input too big"
 msgstr ""
 
-#: mailpile/httpd.py:322
+#: mailpile/httpd.py:324
 msgid "Unknown content-type"
 msgstr ""
 
-#: mailpile/httpd.py:328 mailpile/httpd.py:504 mailpile/ui.py:412
+#: mailpile/httpd.py:330 mailpile/httpd.py:506 mailpile/ui.py:412
 msgid "Internal Error"
 msgstr ""
 
-#: mailpile/httpd.py:368
+#: mailpile/httpd.py:370
 msgid "File not found (invalid path)"
 msgstr ""
 
-#: mailpile/httpd.py:497
+#: mailpile/httpd.py:499
 msgid "Access Denied"
 msgstr ""
 
-#: mailpile/i18n.py:135
+#: mailpile/i18n.py:136
 #, python-format
 msgid "Loaded language %s"
 msgstr ""
@@ -431,12 +431,48 @@ msgstr ""
 msgid "Collapsing conversations..."
 msgstr ""
 
-#: mailpile/plugins/core.py:759 mailpile/security.py:48
+#: mailpile/security.py:48 mailpile/plugins/core.py:759
 msgid "Insufficient free disk space"
 msgstr ""
 
 #: mailpile/security.py:55 mailpile/security.py:65 mailpile/security.py:77
 msgid "In lockdown, doing nothing."
+msgstr ""
+
+#: mailpile/security.py:577
+msgid "We trust ourselves"
+msgstr ""
+
+#: mailpile/security.py:609
+msgid "This sender's reputation is unknown"
+msgstr ""
+
+#: mailpile/security.py:676
+msgid "The digital signature is invalid"
+msgstr ""
+
+#: mailpile/security.py:678
+msgid "This person usually signs their mail"
+msgstr ""
+
+#: mailpile/security.py:680
+msgid "This was signed by an unexpected key"
+msgstr ""
+
+#: mailpile/security.py:682
+msgid "This was signed by an expired key"
+msgstr ""
+
+#: mailpile/security.py:684
+msgid "Good signature, we are happy"
+msgstr ""
+
+#: mailpile/security.py:686
+msgid "This came from an unexpected source"
+msgstr ""
+
+#: mailpile/security.py:688
+msgid "No problems detected."
 msgstr ""
 
 #: mailpile/smtp_client.py:196
@@ -464,12 +500,12 @@ msgstr ""
 msgid "Failed to connect to %s"
 msgstr ""
 
-#: mailpile/mail_source/imap.py:654 mailpile/mail_source/imap.py:710
-#: mailpile/mail_source/pop3.py:51 mailpile/smtp_client.py:279
+#: mailpile/smtp_client.py:279 mailpile/mail_source/imap.py:654
+#: mailpile/mail_source/imap.py:710 mailpile/mail_source/pop3.py:51
 msgid "Failed to make a secure TLS connection"
 msgstr ""
 
-#: mailpile/mail_source/imap.py:673 mailpile/smtp_client.py:294
+#: mailpile/smtp_client.py:294 mailpile/mail_source/imap.py:673
 msgid "Access denied by mail server"
 msgstr ""
 
@@ -477,8 +513,8 @@ msgstr ""
 msgid "Bad character in username or password"
 msgstr ""
 
-#: mailpile/mail_source/imap.py:663 mailpile/mail_source/pop3.py:48
-#: mailpile/smtp_client.py:310
+#: mailpile/smtp_client.py:310 mailpile/mail_source/imap.py:663
+#: mailpile/mail_source/pop3.py:48
 msgid "Invalid username or password"
 msgstr ""
 
@@ -540,194 +576,194 @@ msgstr ""
 msgid "Number of edited messages does not match!"
 msgstr ""
 
-#: mailpile/util.py:483
+#: mailpile/util.py:493
 msgid "false"
 msgstr ""
 
-#: mailpile/util.py:483
+#: mailpile/util.py:493
 msgid "no"
 msgstr ""
 
-#: mailpile/util.py:483
+#: mailpile/util.py:493
 msgid "off"
 msgstr ""
 
-#: mailpile/util.py:485
+#: mailpile/util.py:495
 msgid "true"
 msgstr ""
 
-#: mailpile/util.py:485
+#: mailpile/util.py:495
 msgid "yes"
 msgstr ""
 
-#: mailpile/util.py:485
+#: mailpile/util.py:495
 msgid "on"
 msgstr ""
 
-#: mailpile/util.py:643
+#: mailpile/util.py:653
 msgid "now"
 msgstr ""
 
-#: mailpile/util.py:645
+#: mailpile/util.py:655
 #, python-format
 msgid "%d mins"
 msgstr ""
 
-#: mailpile/util.py:647
+#: mailpile/util.py:657
 #, python-format
 msgid "%d hour"
 msgstr ""
 
-#: mailpile/util.py:649
+#: mailpile/util.py:659
 #, python-format
 msgid "%d hours"
 msgstr ""
 
-#: mailpile/util.py:659
+#: mailpile/util.py:669
 msgid "Monday"
 msgstr ""
 
-#: mailpile/util.py:659
+#: mailpile/util.py:669
 msgid "Mon"
 msgstr ""
 
-#: mailpile/util.py:659
+#: mailpile/util.py:669
 msgid "Tuesday"
 msgstr ""
 
-#: mailpile/util.py:659
+#: mailpile/util.py:669
 msgid "Tue"
 msgstr ""
 
-#: mailpile/util.py:660
+#: mailpile/util.py:670
 msgid "Wednesday"
 msgstr ""
 
-#: mailpile/util.py:660
+#: mailpile/util.py:670
 msgid "Wed"
 msgstr ""
 
-#: mailpile/util.py:660
+#: mailpile/util.py:670
 msgid "Thursday"
 msgstr ""
 
-#: mailpile/util.py:660
+#: mailpile/util.py:670
 msgid "Thu"
 msgstr ""
 
-#: mailpile/util.py:661
+#: mailpile/util.py:671
 msgid "Friday"
 msgstr ""
 
-#: mailpile/util.py:661
+#: mailpile/util.py:671
 msgid "Fri"
 msgstr ""
 
-#: mailpile/util.py:661
+#: mailpile/util.py:671
 msgid "Saturday"
 msgstr ""
 
-#: mailpile/util.py:661
+#: mailpile/util.py:671
 msgid "Sat"
 msgstr ""
 
-#: mailpile/util.py:662
+#: mailpile/util.py:672
 msgid "Sunday"
 msgstr ""
 
-#: mailpile/util.py:662
+#: mailpile/util.py:672
 msgid "Sun"
 msgstr ""
 
-#: mailpile/util.py:663
+#: mailpile/util.py:673
 msgid "January"
 msgstr ""
 
-#: mailpile/util.py:663
+#: mailpile/util.py:673
 msgid "Jan"
 msgstr ""
 
-#: mailpile/util.py:663
+#: mailpile/util.py:673
 msgid "February"
 msgstr ""
 
-#: mailpile/util.py:663
+#: mailpile/util.py:673
 msgid "Feb"
 msgstr ""
 
-#: mailpile/util.py:664
+#: mailpile/util.py:674
 msgid "March"
 msgstr ""
 
-#: mailpile/util.py:664
+#: mailpile/util.py:674
 msgid "Mar"
 msgstr ""
 
-#: mailpile/util.py:664
+#: mailpile/util.py:674
 msgid "April"
 msgstr ""
 
-#: mailpile/util.py:664
+#: mailpile/util.py:674
 msgid "Apr"
 msgstr ""
 
-#: mailpile/util.py:665
+#: mailpile/util.py:675
 msgid "May"
 msgstr ""
 
-#: mailpile/util.py:665
+#: mailpile/util.py:675
 msgid "June"
 msgstr ""
 
-#: mailpile/util.py:665
+#: mailpile/util.py:675
 msgid "Jun"
 msgstr ""
 
-#: mailpile/util.py:666
+#: mailpile/util.py:676
 msgid "July"
 msgstr ""
 
-#: mailpile/util.py:666
+#: mailpile/util.py:676
 msgid "Jul"
 msgstr ""
 
-#: mailpile/util.py:666
+#: mailpile/util.py:676
 msgid "August"
 msgstr ""
 
-#: mailpile/util.py:666
+#: mailpile/util.py:676
 msgid "Aug"
 msgstr ""
 
-#: mailpile/util.py:667
+#: mailpile/util.py:677
 msgid "September"
 msgstr ""
 
-#: mailpile/util.py:667
+#: mailpile/util.py:677
 msgid "Sep"
 msgstr ""
 
-#: mailpile/util.py:667
+#: mailpile/util.py:677
 msgid "October"
 msgstr ""
 
-#: mailpile/util.py:667
+#: mailpile/util.py:677
 msgid "Oct"
 msgstr ""
 
-#: mailpile/util.py:668
+#: mailpile/util.py:678
 msgid "November"
 msgstr ""
 
-#: mailpile/util.py:668
+#: mailpile/util.py:678
 msgid "Nov"
 msgstr ""
 
-#: mailpile/util.py:668
+#: mailpile/util.py:678
 msgid "December"
 msgstr ""
 
-#: mailpile/util.py:668
+#: mailpile/util.py:678
 msgid "Dec"
 msgstr ""
 
@@ -760,15 +796,15 @@ msgstr ""
 msgid "Saving %d updated vCards"
 msgstr ""
 
-#: mailpile/vfs.py:319
+#: mailpile/vfs.py:320
 msgid "My Files"
 msgstr ""
 
-#: mailpile/vfs.py:335
+#: mailpile/vfs.py:336
 msgid "Unix mail spool"
 msgstr ""
 
-#: mailpile/vfs.py:386
+#: mailpile/vfs.py:387
 msgid "Mailpile VFS"
 msgstr ""
 
@@ -961,26 +997,26 @@ msgstr ""
 msgid "Allow fallback to direct conns"
 msgstr ""
 
-#: mailpile/config/defaults.py:70 mailpile/config/defaults.py:170
-#: mailpile/config/defaults.py:191
+#: mailpile/config/defaults.py:70 mailpile/config/defaults.py:171
+#: mailpile/config/defaults.py:192
 msgid "User name"
 msgstr ""
 
-#: mailpile/config/defaults.py:71 mailpile/config/defaults.py:171
-#: mailpile/config/defaults.py:192
+#: mailpile/config/defaults.py:71 mailpile/config/defaults.py:172
+#: mailpile/config/defaults.py:193
 #: shared-data/default-theme/html/page/multipile/index.html:37
 #: shared-data/default-theme/html/page/multipile/index.html:38
 #: shared-data/default-theme/html/settings/index.html:22
 msgid "Password"
 msgstr ""
 
-#: mailpile/config/defaults.py:72 mailpile/config/defaults.py:174
-#: mailpile/config/defaults.py:194
+#: mailpile/config/defaults.py:72 mailpile/config/defaults.py:175
+#: mailpile/config/defaults.py:195
 msgid "Host"
 msgstr ""
 
-#: mailpile/config/defaults.py:73 mailpile/config/defaults.py:175
-#: mailpile/config/defaults.py:195
+#: mailpile/config/defaults.py:73 mailpile/config/defaults.py:176
+#: mailpile/config/defaults.py:196
 #: shared-data/default-theme/html/settings/index.html:26
 msgid "Port"
 msgstr ""
@@ -1038,332 +1074,336 @@ msgid "Wrap keys and signatures in helpful HTML"
 msgstr ""
 
 #: mailpile/config/defaults.py:94
-msgid "Key Trust Model"
+msgid "Enable anti-phishing heuristics "
 msgstr ""
 
 #: mailpile/config/defaults.py:95
+msgid "Key Trust Model"
+msgstr ""
+
+#: mailpile/config/defaults.py:96
 msgid "Minimum number of signatures required"
 msgstr ""
 
-#: mailpile/config/defaults.py:97
+#: mailpile/config/defaults.py:98
 msgid "Window of time (days) to evaluate trust"
 msgstr ""
 
-#: mailpile/config/defaults.py:99
+#: mailpile/config/defaults.py:100
 msgid "Signed ratio (%) above which we expect sigs"
 msgstr ""
 
-#: mailpile/config/defaults.py:101
+#: mailpile/config/defaults.py:102
 msgid "Ratio of key use (%) above which we trust key"
 msgstr ""
 
-#: mailpile/config/defaults.py:103
+#: mailpile/config/defaults.py:104
 msgid "Consider key new below this ratio (%) of sigs"
 msgstr ""
 
-#: mailpile/config/defaults.py:106
+#: mailpile/config/defaults.py:107
 msgid "Advertise PGP preferences in a header?"
 msgstr ""
 
-#: mailpile/config/defaults.py:109
+#: mailpile/config/defaults.py:110
 msgid "Default encryption policy for outgoing mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:111
+#: mailpile/config/defaults.py:112
 msgid "Use inline PGP when possible"
 msgstr ""
 
-#: mailpile/config/defaults.py:112
+#: mailpile/config/defaults.py:113
 msgid "Encrypt subjects by default"
 msgstr ""
 
-#: mailpile/config/defaults.py:113
+#: mailpile/config/defaults.py:114
 msgid "Default sort order"
 msgstr ""
 
-#: mailpile/config/defaults.py:114
+#: mailpile/config/defaults.py:115
 msgid "Key to use to scramble the index"
 msgstr ""
 
-#: mailpile/config/defaults.py:115
+#: mailpile/config/defaults.py:116
 msgid "Make encrypted content searchable"
 msgstr ""
 
-#: mailpile/config/defaults.py:117
+#: mailpile/config/defaults.py:118
 msgid "Encrypt locally stored mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:118
+#: mailpile/config/defaults.py:119
 msgid "Encrypt the local search index"
 msgstr ""
 
-#: mailpile/config/defaults.py:119
+#: mailpile/config/defaults.py:120
 msgid "Encrypt the contact database"
 msgstr ""
 
-#: mailpile/config/defaults.py:120
+#: mailpile/config/defaults.py:121
 msgid "Encrypt the event log"
 msgstr ""
 
-#: mailpile/config/defaults.py:121
+#: mailpile/config/defaults.py:122
 msgid "Encrypt misc. local data"
 msgstr ""
 
-#: mailpile/config/defaults.py:122
+#: mailpile/config/defaults.py:123
 msgid "Allow permanent deletion of e-mails"
 msgstr ""
 
-#: mailpile/config/defaults.py:124
+#: mailpile/config/defaults.py:125
 msgid "Command run before rescanning"
 msgstr ""
 
-#: mailpile/config/defaults.py:125
+#: mailpile/config/defaults.py:126
 msgid "Default outgoing e-mail address"
 msgstr ""
 
-#: mailpile/config/defaults.py:126 mailpile/config/defaults.py:130
+#: mailpile/config/defaults.py:127 mailpile/config/defaults.py:131
 msgid "Default outgoing mail route"
 msgstr ""
 
-#: mailpile/config/defaults.py:127
+#: mailpile/config/defaults.py:128
 msgid "Target line length, <40 disables reflow"
 msgstr ""
 
-#: mailpile/config/defaults.py:129
+#: mailpile/config/defaults.py:130
 msgid "Always BCC self on outgoing mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:131
+#: mailpile/config/defaults.py:132
 msgid "User interface language"
 msgstr ""
 
-#: mailpile/config/defaults.py:132
+#: mailpile/config/defaults.py:133
 msgid "vCard import/export settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:133
+#: mailpile/config/defaults.py:134
 msgid "vCard import settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:134
+#: mailpile/config/defaults.py:135
 msgid "vCard export settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:135
+#: mailpile/config/defaults.py:136
 msgid "vCard context helper settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:138
+#: mailpile/config/defaults.py:139
 msgid "Web Interface Preferences"
 msgstr ""
 
-#: mailpile/config/defaults.py:139
+#: mailpile/config/defaults.py:140
 msgid "User completed setup experience"
 msgstr ""
 
-#: mailpile/config/defaults.py:140
+#: mailpile/config/defaults.py:141
 msgid "Display density of interface"
 msgstr ""
 
-#: mailpile/config/defaults.py:141
+#: mailpile/config/defaults.py:142
 msgid "Quote replies to messages"
 msgstr ""
 
-#: mailpile/config/defaults.py:142
+#: mailpile/config/defaults.py:143
 msgid "Nag user to backup their key"
 msgstr ""
 
-#: mailpile/config/defaults.py:143
+#: mailpile/config/defaults.py:144
 msgid "Collapsed subtags in sidebar"
 msgstr ""
 
-#: mailpile/config/defaults.py:144
+#: mailpile/config/defaults.py:145
 msgid "Display donate link in topbar?"
 msgstr ""
 
-#: mailpile/config/defaults.py:145
+#: mailpile/config/defaults.py:146
 msgid "Display HTML hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:146
+#: mailpile/config/defaults.py:147
 msgid "Display crypto hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:147
+#: mailpile/config/defaults.py:148
 msgid "Display reply hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:148
+#: mailpile/config/defaults.py:149
 msgid "Display tagging hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:149
+#: mailpile/config/defaults.py:150
 msgid "Display release notes?"
 msgstr ""
 
-#: mailpile/config/defaults.py:151
+#: mailpile/config/defaults.py:152
 msgid "Credentials allowed to access Mailpile"
 msgstr ""
 
-#: mailpile/config/defaults.py:152
+#: mailpile/config/defaults.py:153
 msgid "Salted and hashed password"
 msgstr ""
 
-#: mailpile/config/defaults.py:154
+#: mailpile/config/defaults.py:155
 msgid "Secrets the user wants saved"
 msgstr ""
 
-#: mailpile/config/defaults.py:155
+#: mailpile/config/defaults.py:156
 msgid "A secret"
 msgstr ""
 
-#: mailpile/config/defaults.py:156
+#: mailpile/config/defaults.py:157
 msgid "Security policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:160
+#: mailpile/config/defaults.py:161
 msgid "Settings for TLS certificate validation"
 msgstr ""
 
-#: mailpile/config/defaults.py:161
+#: mailpile/config/defaults.py:162
 msgid "Server hostname:port"
 msgstr ""
 
-#: mailpile/config/defaults.py:162
+#: mailpile/config/defaults.py:163
 msgid "SHA256 of acceptable certs"
 msgstr ""
 
-#: mailpile/config/defaults.py:163
+#: mailpile/config/defaults.py:164
 msgid "Use web certificate authorities"
 msgstr ""
 
-#: mailpile/config/defaults.py:165
+#: mailpile/config/defaults.py:166
 msgid "Outgoing message routes"
 msgstr ""
 
-#: mailpile/config/defaults.py:166
+#: mailpile/config/defaults.py:167
 #: shared-data/default-theme/html/settings/index.html:18
 msgid "Route name"
 msgstr ""
 
-#: mailpile/config/defaults.py:167
+#: mailpile/config/defaults.py:168
 msgid "Messaging protocol"
 msgstr ""
 
-#: mailpile/config/defaults.py:172 mailpile/config/defaults.py:193
+#: mailpile/config/defaults.py:173 mailpile/config/defaults.py:194
 msgid "Authentication scheme"
 msgstr ""
 
-#: mailpile/config/defaults.py:173
+#: mailpile/config/defaults.py:174
 #: shared-data/default-theme/html/profiles/account-form.html:457
 msgid "Shell command"
 msgstr ""
 
-#: mailpile/config/defaults.py:177
+#: mailpile/config/defaults.py:178
 msgid "Incoming message sources"
 msgstr ""
 
-#: mailpile/config/defaults.py:178
+#: mailpile/config/defaults.py:179
 msgid "Source name"
 msgstr ""
 
-#: mailpile/config/defaults.py:179
+#: mailpile/config/defaults.py:180
 msgid "Profile this source belongs to"
 msgstr ""
 
-#: mailpile/config/defaults.py:180
+#: mailpile/config/defaults.py:181
 msgid "Is this mail source enabled?"
 msgstr ""
 
-#: mailpile/config/defaults.py:181
+#: mailpile/config/defaults.py:182
 msgid "Mail source protocol"
 msgstr ""
 
-#: mailpile/config/defaults.py:188
+#: mailpile/config/defaults.py:189
 msgid "Shell command run before syncing"
 msgstr ""
 
-#: mailpile/config/defaults.py:189
+#: mailpile/config/defaults.py:190
 msgid "Shell command run after syncing"
 msgstr ""
 
-#: mailpile/config/defaults.py:190
+#: mailpile/config/defaults.py:191
 msgid "How frequently to check for mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:196
+#: mailpile/config/defaults.py:197
 msgid "Keep server connections alive"
 msgstr ""
 
-#: mailpile/config/defaults.py:197
+#: mailpile/config/defaults.py:198
 msgid "Mailbox discovery policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:198
+#: mailpile/config/defaults.py:199
 msgid "Paths to watch for new mailboxes"
 msgstr ""
 
-#: mailpile/config/defaults.py:199
+#: mailpile/config/defaults.py:200
 msgid "Default mailbox policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:202
+#: mailpile/config/defaults.py:203
 msgid "Copy mail to a local mailbox?"
 msgstr ""
 
-#: mailpile/config/defaults.py:203
+#: mailpile/config/defaults.py:204
 msgid "Parent tag for mailbox tags"
 msgstr ""
 
-#: mailpile/config/defaults.py:204
+#: mailpile/config/defaults.py:205
 msgid "Guess which local tags match"
 msgstr ""
 
-#: mailpile/config/defaults.py:205
+#: mailpile/config/defaults.py:206
 msgid "Create a tag for each mailbox?"
 msgstr ""
 
-#: mailpile/config/defaults.py:206
+#: mailpile/config/defaults.py:207
 msgid "Make tags visible by default?"
 msgstr ""
 
-#: mailpile/config/defaults.py:207
+#: mailpile/config/defaults.py:208
 msgid "Is a potential source of new mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:208 mailpile/config/defaults.py:220
+#: mailpile/config/defaults.py:209 mailpile/config/defaults.py:221
 msgid "Tags applied to messages"
 msgstr ""
 
-#: mailpile/config/defaults.py:209
+#: mailpile/config/defaults.py:210
 msgid "Max mailboxes to add"
 msgstr ""
 
-#: mailpile/config/defaults.py:211
+#: mailpile/config/defaults.py:212
 msgid "Mailboxes"
 msgstr ""
 
-#: mailpile/config/defaults.py:212
+#: mailpile/config/defaults.py:213
 msgid "The name of this mailbox"
 msgstr ""
 
-#: mailpile/config/defaults.py:213
+#: mailpile/config/defaults.py:214
 msgid "Mailbox source path"
 msgstr ""
 
-#: mailpile/config/defaults.py:214
+#: mailpile/config/defaults.py:215
 msgid "Mailbox policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:217
+#: mailpile/config/defaults.py:218
 msgid "Local mailbox path"
 msgstr ""
 
-#: mailpile/config/defaults.py:218
+#: mailpile/config/defaults.py:219
 msgid "Is a source of new mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:219
+#: mailpile/config/defaults.py:220
 msgid "A tag representing this mailbox"
 msgstr ""
 
@@ -1516,114 +1556,114 @@ msgstr ""
 msgid "GnuPG returned %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:532
+#: mailpile/crypto/gpgi.py:535
 msgid "Your PGP key is needed for decrypting."
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:534
+#: mailpile/crypto/gpgi.py:537
 msgid "Your PGP key is needed for signing."
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:536
+#: mailpile/crypto/gpgi.py:539
 msgid "Unlock your encryption key"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:558
+#: mailpile/crypto/gpgi.py:561
 msgid "Checking GnuPG version"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:573
+#: mailpile/crypto/gpgi.py:576
 msgid "Checking GnuPG home directory"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:582
+#: mailpile/crypto/gpgi.py:585
 msgid "Checking GnuPG availability"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:759
+#: mailpile/crypto/gpgi.py:762
 #, python-format
 msgid "Fetching GnuPG public key list (selectors=%s)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:788
+#: mailpile/crypto/gpgi.py:791
 #, python-format
 msgid "Fetching GnuPG secret key list (selectors=%s)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:817
+#: mailpile/crypto/gpgi.py:820
 msgid "Importing key to GnuPG key chain"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:893
+#: mailpile/crypto/gpgi.py:896
 #, python-format
 msgid "Decrypting %d bytes of data"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1169
+#: mailpile/crypto/gpgi.py:1172
 #, python-format
 msgid "Checking signature in %d bytes of data"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1189
+#: mailpile/crypto/gpgi.py:1192
 #, python-format
 msgid "Encrypting %d bytes of data to %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1193
+#: mailpile/crypto/gpgi.py:1196
 #, python-format
 msgid "Encrypting %d bytes of data with password"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1238
+#: mailpile/crypto/gpgi.py:1241
 #, python-format
 msgid "Signing %d bytes of data with %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1239 mailpile/crypto/gpgi.py:1252
+#: mailpile/crypto/gpgi.py:1242 mailpile/crypto/gpgi.py:1255
 msgid "default"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1251
+#: mailpile/crypto/gpgi.py:1254
 #, python-format
 msgid "Signing key %s with %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1264
+#: mailpile/crypto/gpgi.py:1267
 #, python-format
 msgid "Downloading key %s from key servers"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1279 mailpile/crypto/gpgi.py:1319
+#: mailpile/crypto/gpgi.py:1282 mailpile/crypto/gpgi.py:1322
 #, python-format
 msgid "Searching for key for %s in key servers"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1447
+#: mailpile/crypto/gpgi.py:1450
 #, python-format
 msgid "Keys missing for %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1451
+#: mailpile/crypto/gpgi.py:1454
 #, python-format
 msgid "Keys ambiguous for %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1633
+#: mailpile/crypto/gpgi.py:1636
 #, python-format
 msgid "Creating a %(bits)s bit GnuPG key"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1652
+#: mailpile/crypto/gpgi.py:1655
 #, python-format
 msgid "Waiting to generate a %d bit GnuPG key.bits"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1656
+#: mailpile/crypto/gpgi.py:1659
 #, python-format
 msgid "Generating new %d bit PGP key.bits"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1703
+#: mailpile/crypto/gpgi.py:1706
 #, python-format
 msgid "Unable to create a %(bits)s bit key, wrong GnuPG version"
 msgstr ""
@@ -2022,7 +2062,7 @@ msgstr ""
 msgid "=%s/%s has a bogus date"
 msgstr ""
 
-#: mailpile/plugins/__init__.py:746
+#: mailpile/plugins/__init__.py:748
 #, python-format
 msgid "Already registered: %s"
 msgstr ""
@@ -2697,7 +2737,7 @@ msgstr ""
 msgid "My encryption key"
 msgstr ""
 
-#: mailpile/plugins/crypto_gnupg.py:209 mailpile/plugins/search.py:727
+#: mailpile/plugins/crypto_gnupg.py:209 mailpile/plugins/search.py:730
 #: mailpile/plugins/vcard_gnupg.py:234
 msgid "No results"
 msgstr ""
@@ -3012,137 +3052,138 @@ msgstr ""
 msgid "Already loaded: %s"
 msgstr ""
 
-#: mailpile/plugins/plugins.py:57
+#: mailpile/plugins/plugins.py:59
 #, python-format
 msgid "Failed to load plugin: %s"
 msgstr ""
 
-#: mailpile/plugins/plugins.py:61
+#: mailpile/plugins/plugins.py:63
 #, python-format
 msgid "Loaded plugins: %s"
 msgstr ""
 
-#: mailpile/plugins/plugins.py:77
+#: mailpile/plugins/plugins.py:79
 #, python-format
 msgid "Required plugins can not be disabled: %s"
 msgstr ""
 
-#: mailpile/plugins/plugins.py:80
+#: mailpile/plugins/plugins.py:82
 #, python-format
 msgid "Plugin not loaded: %s"
 msgstr ""
 
-#: mailpile/plugins/plugins.py:87
+#: mailpile/plugins/plugins.py:89
 #, python-format
 msgid "Disabled plugins: %s (restart required)"
 msgstr ""
 
-#: mailpile/plugins/search.py:331
+#: mailpile/plugins/search.py:334
 msgid "Failed to read message {mail_key}, {mail_desc}."
 msgstr ""
 
-#: mailpile/plugins/search.py:332
+#: mailpile/plugins/search.py:335
 msgid "unknown error"
 msgstr ""
 
-#: mailpile/plugins/search.py:334
+#: mailpile/plugins/search.py:337
 msgid "Failed to open message {mail_key}, {mail_desc}."
 msgstr ""
 
-#: mailpile/plugins/search.py:336
+#: mailpile/plugins/search.py:339
 msgid "Failed to open mailbox {mbox_key}"
 msgstr ""
 
-#: mailpile/plugins/search.py:357
+#: mailpile/plugins/search.py:360
 msgid "Failed to load and parse message data."
 msgstr ""
 
-#: mailpile/plugins/search.py:360 mailpile/plugins/search.py:367
+#: mailpile/plugins/search.py:363 mailpile/plugins/search.py:370
 msgid "Failed process message crypto (decrypt, etc)."
 msgstr ""
 
-#: mailpile/plugins/search.py:363
+#: mailpile/plugins/search.py:366
 msgid "Failed to parse message."
 msgstr ""
 
-#: mailpile/plugins/search.py:370
-msgid "Failed to evalute key trust"
+#: mailpile/plugins/search.py:373
+msgid "Failed to evalute sender trust"
 msgstr ""
 
-#: mailpile/plugins/search.py:376
+#: mailpile/plugins/search.py:379
 #, python-format
 msgid "Failed to parse %s headers."
 msgstr ""
 
-#: mailpile/plugins/search.py:390
+#: mailpile/plugins/search.py:393
 msgid "Message may be corrupt!"
 msgstr ""
 
-#: mailpile/plugins/search.py:431
+#: mailpile/plugins/search.py:434
 #, python-format
 msgid "Parsing metadata for %d results (full_threads=%s)"
 msgstr ""
 
-#: mailpile/plugins/search.py:436
+#: mailpile/plugins/search.py:439
 #, python-format
 msgid "Search: %s"
 msgstr ""
 
-#: mailpile/plugins/search.py:725
+#: mailpile/plugins/search.py:728
 msgid "Unprintable results"
 msgstr ""
 
-#: mailpile/plugins/search.py:813
+#: mailpile/plugins/search.py:816
 #, python-format
 msgid "Weird starting point: %s"
 msgstr ""
 
-#: mailpile/plugins/search.py:1015
+#: mailpile/plugins/search.py:1018
 #, python-format
 msgid "Prepared %d search results (context=%s)"
 msgstr ""
 
-#: mailpile/plugins/search.py:1017
+#: mailpile/plugins/search.py:1020
 #, python-format
 msgid "Found %d results in %.3fs"
 msgstr ""
 
-#: mailpile/plugins/search.py:1035
+#: mailpile/plugins/search.py:1038
 msgid "You must perform a search before requesting the next page."
 msgstr ""
 
-#: mailpile/plugins/search.py:1038
+#: mailpile/plugins/search.py:1041
 msgid "Displayed next page of results."
 msgstr ""
 
-#: mailpile/plugins/search.py:1054
+#: mailpile/plugins/search.py:1057
 msgid "You must perform a search before requesting the previous page."
 msgstr ""
 
-#: mailpile/plugins/search.py:1057
+#: mailpile/plugins/search.py:1060
 msgid "Displayed previous page of results."
 msgstr ""
 
-#: mailpile/plugins/search.py:1073
+#: mailpile/plugins/search.py:1076
 #, python-format
 msgid "Changed sort order to %s"
 msgstr ""
 
-#: mailpile/plugins/search.py:1130
+#: mailpile/plugins/search.py:1133
 #, python-format
 msgid "Raw message: %s"
 msgstr ""
 
-#: mailpile/plugins/search.py:1158
+#: mailpile/plugins/search.py:1161
 msgid "Displayed a single message"
 msgstr ""
 
-#: mailpile/plugins/search.py:1162
+#: mailpile/plugins/search.py:1165
 #, python-format
 msgid "Displayed %d messages"
 msgstr ""
 
 #: mailpile/plugins/setup_magic.py:56
+#: shared-data/default-theme/html/partials/tools_search.html:157
 #: shared-data/default-theme/html/profiles/index.html:63
 msgid "New"
 msgstr ""
@@ -3176,6 +3217,7 @@ msgid "Ham"
 msgstr ""
 
 #: mailpile/plugins/setup_magic.py:143
+#: shared-data/default-theme/html/partials/thread_message.html:176
 msgid "Trash"
 msgstr ""
 
@@ -3281,119 +3323,119 @@ msgstr ""
 msgid "Ran out of time, results may be incomplete"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:871
+#: mailpile/plugins/setup_magic.py:872
 #, python-format
 msgid "Probing %s, cleartext=%s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:907
+#: mailpile/plugins/setup_magic.py:908
 #, python-format
 msgid "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:911
+#: mailpile/plugins/setup_magic.py:912
 #, python-format
 msgid "Testing %(protocol)4.4s on %(host)s:%(port)s as %(username)s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:915
+#: mailpile/plugins/setup_magic.py:916
 msgid "insecure"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:924
+#: mailpile/plugins/setup_magic.py:925
 #: shared-data/default-theme/html/setup/oauth2/index.html:77
 msgid "Success"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:930
+#: mailpile/plugins/setup_magic.py:931
 msgid "Protocol is OK"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:933
+#: mailpile/plugins/setup_magic.py:934
 msgid "Login failed"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:958
+#: mailpile/plugins/setup_magic.py:959
 msgid "Can only test settings for one account at a time"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:978
+#: mailpile/plugins/setup_magic.py:979
 #, python-format
 msgid "Found settings for %d addresses"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:981
+#: mailpile/plugins/setup_magic.py:982
 msgid "No settings found"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1011
+#: mailpile/plugins/setup_magic.py:1012
 #, python-format
 msgid "Invalid language: %s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1031 mailpile/plugins/setup_magic.py:1093
-#: mailpile/plugins/setup_magic.py:1139
+#: mailpile/plugins/setup_magic.py:1032 mailpile/plugins/setup_magic.py:1094
+#: mailpile/plugins/setup_magic.py:1140
 #: shared-data/default-theme/html/setup/welcome/index.html:2
 #: shared-data/default-theme/html/setup/welcome/index.html:5
 msgid "Welcome to Mailpile!"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1183
+#: mailpile/plugins/setup_magic.py:1184
 msgid "Unknown error"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1191
+#: mailpile/plugins/setup_magic.py:1193
 msgid "Route is working"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1194
+#: mailpile/plugins/setup_magic.py:1196
 msgid "Invalid command"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1204
+#: mailpile/plugins/setup_magic.py:1206
 msgid "Route is not working"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1224
+#: mailpile/plugins/setup_magic.py:1226
 #, python-format
 msgid "Failed to connect to Tor on %s:%s. Is it installed?"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1246
+#: mailpile/plugins/setup_magic.py:1248
 msgid "Successfully configured and enabled Tor!"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1249
+#: mailpile/plugins/setup_magic.py:1251
 #, python-format
 msgid "Failed to configure Tor on %s:%s. Is the network down?"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1258
+#: mailpile/plugins/setup_magic.py:1260
 msgid "Proxy settings have already been configured."
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1324
+#: mailpile/plugins/setup_magic.py:1326
 #, python-format
 msgid "Language set to: %s"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1329
+#: mailpile/plugins/setup_magic.py:1331
 msgid "Choose a password for Mailpile: "
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1331
+#: mailpile/plugins/setup_magic.py:1333
 msgid "Confirm password: "
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1338
+#: mailpile/plugins/setup_magic.py:1340
 msgid "Passwords did not match! Please try again."
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1346
+#: mailpile/plugins/setup_magic.py:1348
 msgid "Performed initial Mailpile setup"
 msgstr ""
 
-#: mailpile/plugins/setup_magic.py:1350
+#: mailpile/plugins/setup_magic.py:1352
 msgid "Entering setup flow"
 msgstr ""
 
@@ -3414,7 +3456,7 @@ msgid "name"
 msgstr ""
 
 #: mailpile/plugins/tags.py:426 shared-data/contrib/datadig/datadig.py:37
-#: shared-data/contrib/hints/hints.py:170
+#: shared-data/contrib/hints/hints.py:185
 msgid "Nothing Happened"
 msgstr ""
 
@@ -3680,6 +3722,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:327
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:217
+#: shared-data/default-theme/html/partials/compose.html:99
 msgid "Unsigned"
 msgstr ""
 
@@ -3854,6 +3897,7 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:476
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:254
+#: shared-data/default-theme/html/partials/tools_search.html:179
 msgid "Encrypted"
 msgstr ""
 
@@ -4057,47 +4101,61 @@ msgstr ""
 msgid "Displayed message HeaderPrint"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:35
+#: shared-data/contrib/hints/hints.py:45
 #, python-format
 msgid "This is Mailpile version %s"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:41
+#: shared-data/contrib/hints/hints.py:51
 msgid "Your Mailpile is configured to never delete e-mail"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:48
+#: shared-data/contrib/hints/hints.py:56
+msgid "Your spam filter is broken: please install spambayes"
+msgstr ""
+
+#: shared-data/contrib/hints/hints.py:63
 msgid "Mailpile has keyboard short-cuts!"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:54
+#: shared-data/contrib/hints/hints.py:69
 msgid "Learn how to get the most out of Mailpile's spam filter"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:61
+#: shared-data/contrib/hints/hints.py:76
 msgid "You really should make backups of your Mailpile"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:67
+#: shared-data/contrib/hints/hints.py:82
 msgid "Mailpile can automatically tag or untag any kind of e-mail!"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:114
+#: shared-data/contrib/hints/hints.py:129
 msgid "never"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:123
+#: shared-data/contrib/hints/hints.py:138
 #: shared-data/default-theme/html/jsapi/ui/notifications.js:312
 msgid "learn more"
 msgstr ""
 
-#: shared-data/contrib/hints/hints.py:125
-#: shared-data/contrib/hints/hints.py:173
+#: shared-data/contrib/hints/hints.py:140
+#: shared-data/contrib/hints/hints.py:188
 msgid "Did you know"
 msgstr ""
 
 #: shared-data/contrib/i18nhelper/i18nhelper.py:19
 msgid "Nothing recently translated"
+msgstr ""
+
+#: shared-data/contrib/print/print.py:48
+#, python-format
+msgid "Printing e-mail to %s"
+msgstr ""
+
+#: shared-data/contrib/print/print.py:64
+#, python-format
+msgid "Printed to %d files"
 msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:24
@@ -4118,6 +4176,49 @@ msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:45
 msgid "You Have Been Logged Out!"
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:5
+msgid "Browsing folders and mailboxes"
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:7
+msgid "Browsing"
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:15
+#: shared-data/default-theme/html/partials/tag_add.html:19
+#: shared-data/default-theme/html/partials/tools_search.html:210
+#: shared-data/default-theme/html/tags/form.html:114
+msgid "Parent"
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:16
+#: shared-data/default-theme/html/partials/tools_search.html:211
+msgid "Open Parent Folder"
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:44
+msgid "Browse local or remote folders for mailboxes to add to your pile."
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:48
+msgid "These are mailboxes recognized by Mailpile."
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:49
+msgid "Click to view mailbox contents or change settings."
+msgstr ""
+
+#: shared-data/default-theme/html/browse/index.html:97
+#: shared-data/default-theme/html/profiles/index.html:65
+#: shared-data/default-theme/html/settings/index.html:152
+#: shared-data/default-theme/html/settings/index.html:154
+#: shared-data/default-theme/html/settings/index.html:156
+#: shared-data/default-theme/html/settings/index.html:158
+#: shared-data/default-theme/html/settings/index.html:160
+#: shared-data/default-theme/html/tags/form.html:108
+msgid "Settings"
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/index.html:2
@@ -4143,6 +4244,7 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/index.html:59
+#: shared-data/default-theme/html/search/default.html:68
 msgid "Previous"
 msgstr ""
 
@@ -4150,14 +4252,17 @@ msgstr ""
 #: shared-data/default-theme/html/profiles/account-form.html:352
 #: shared-data/default-theme/html/profiles/account-form.html:475
 #: shared-data/default-theme/html/profiles/account-form.html:672
+#: shared-data/default-theme/html/search/default.html:89
 msgid "Next"
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/index.html:64
+#: shared-data/default-theme/html/search/default.html:93
 msgid "of"
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/index.html:64
+#: shared-data/default-theme/html/search/default.html:95
 msgid "1 Conversation"
 msgstr ""
 
@@ -4167,8 +4272,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/contacts/add/index.html:2
 #: shared-data/default-theme/html/jsapi/templates/modal-contact-add.html:6
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:62
 #: shared-data/default-theme/html/partials/search_item.html:87
+#: shared-data/default-theme/html/partials/thread_message.html:152
 #: shared-data/default-theme/html/partials/thread_metadata.html:17
 #: shared-data/default-theme/html/partials/tools_contacts.html:43
 msgid "Add Contact"
@@ -4221,6 +4326,7 @@ msgid "Hey that's you"
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/view/index.html:32
+#: shared-data/default-theme/html/message/draft/index.html:2
 #: shared-data/default-theme/html/partials/topbar.html:37
 msgid "Compose"
 msgstr ""
@@ -4256,6 +4362,7 @@ msgid "Find Encryption Keys"
 msgstr ""
 
 #: shared-data/default-theme/html/contacts/view/index.html:121
+#: shared-data/default-theme/html/search/default.html:93
 msgid "Conversations"
 msgstr ""
 
@@ -4425,6 +4532,8 @@ msgid "Filters"
 msgstr ""
 
 #: shared-data/default-theme/html/filter/list/index.html:30
+#: shared-data/default-theme/html/partials/tools_search.html:220
+#: shared-data/default-theme/html/partials/tools_search.html:221
 #: shared-data/default-theme/html/partials/tooltips.html:9
 #: shared-data/default-theme/html/settings/index.html:48
 #: shared-data/default-theme/html/settings/index.html:71
@@ -4758,6 +4867,7 @@ msgid "This message and metadata will not be encrypted"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:268
+#: shared-data/default-theme/html/partials/compose.html:96
 #: shared-data/default-theme/html/profiles/account-form.html:403
 #: shared-data/default-theme/html/profiles/account-form.html:498
 #: shared-data/default-theme/html/tags/form.html:116
@@ -5369,6 +5479,11 @@ msgid "Disable Quoted Replies"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-compose-quoted-reply.html:14
+#: shared-data/default-theme/html/partials/compose.html:200
+#: shared-data/default-theme/html/partials/compose.html:201
+#: shared-data/default-theme/html/partials/pile_compose.html:170
+#: shared-data/default-theme/html/partials/pile_compose.html:171
+#: shared-data/default-theme/html/partials/tools_search.html:229
 #: shared-data/default-theme/html/profiles/edit/index.html:8
 #: shared-data/default-theme/html/settings/mailbox/index.html:89
 #: shared-data/default-theme/html/setup/oauth2/index.html:38
@@ -5538,6 +5653,7 @@ msgstr ""
 #: shared-data/default-theme/html/jsapi/templates/modal-tag-picker.html:7
 #: shared-data/default-theme/html/jsapi/templates/template-modal-tag-picker-item.html:9
 #: shared-data/default-theme/html/partials/tools_message.html:7
+#: shared-data/default-theme/html/partials/tools_search.html:49
 msgid "Messages"
 msgstr ""
 
@@ -5545,6 +5661,8 @@ msgstr ""
 #: shared-data/default-theme/html/partials/tools_message.html:9
 #: shared-data/default-theme/html/partials/tools_tags.html:4
 #: shared-data/default-theme/html/partials/topbar.html:44
+#: shared-data/default-theme/html/tags/index.html:2
+#: shared-data/default-theme/html/tags/index.html:46
 #: shared-data/default-theme/html/tags/sidebar.html:2
 msgid "Tags"
 msgstr ""
@@ -5584,6 +5702,8 @@ msgid "Unable to create uploader"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:18
+#: shared-data/default-theme/html/partials/compose.html:77
+#: shared-data/default-theme/html/partials/pile_compose.html:94
 msgid "update your browser"
 msgstr ""
 
@@ -5626,10 +5746,11 @@ msgid "grant access"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/ui/selection.js:142
+#: shared-data/default-theme/html/partials/tools_search.html:189
 msgid "All"
 msgstr ""
 
-#: shared-data/default-theme/html/jsapi/ui/sidebar.js:105
+#: shared-data/default-theme/html/jsapi/ui/sidebar.js:96
 #: shared-data/default-theme/html/partials/hidden.html:19
 msgid "to"
 msgstr ""
@@ -5765,6 +5886,8 @@ msgid "Event Log"
 msgstr ""
 
 #: shared-data/default-theme/html/logs/layout.html:15
+#: shared-data/default-theme/html/logs/events/index.html:2
+#: shared-data/default-theme/html/logs/events/index.html:54
 msgid "Mailpile Event Log"
 msgstr ""
 
@@ -5773,6 +5896,8 @@ msgid "Network"
 msgstr ""
 
 #: shared-data/default-theme/html/logs/layout.html:21
+#: shared-data/default-theme/html/logs/network/index.html:3
+#: shared-data/default-theme/html/logs/network/index.html:7
 msgid "Recent Network Activity"
 msgstr ""
 
@@ -5808,6 +5933,128 @@ msgstr ""
 
 #: shared-data/default-theme/html/logs/layout.html:50
 msgid "System activity, logs, events, troubleshooting, ..."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:57
+msgid "Ongoing Events"
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:61
+msgid ""
+"Ongoing events represent current actions taken by Mailpile on your "
+"behalf, such as watching a Mail Source for new mail or refreshing your "
+"contact database."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:65
+msgid ""
+"Browsing the event details can help with troubleshooting if Mailpile is "
+"not behaving as you expect."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:78
+msgid "No Events Found"
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:95
+msgid "Completed Events"
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:99
+msgid ""
+"The Event Log gives an overview over what has happened in your Mailpile "
+"recently."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/events/index.html:103
+msgid "Some events, such as Tagging operations, can be undone."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:14
+msgid "Recent Activity"
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:19
+msgid ""
+"Here you can see a log of recent network activity, both successful and "
+"failed attempts."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:23
+#, python-format
+msgid "You have a proxy (%(proxy)s) configured at %(host)s:%(port)s."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:31
+msgid ""
+"Proxy fallback is disabled, so if the proxy cannot connect to a given "
+"server, the connection will fail."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:33
+msgid ""
+"Some service providers block connections from Tor, so this may prevent "
+"you from accessing your mail or other data."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:38
+msgid ""
+"You can configure destinations to bypass the proxy in the Advanced "
+"section of Networking in your Privacy Policy."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:44
+msgid ""
+"Fall-back is enabled, so a direct connection will be made if Tor cannot "
+"connect."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:45
+#: shared-data/default-theme/html/logs/network/index.html:62
+msgid ""
+"This may leak your IP address and allow monitoring of which servers you "
+"communicate with."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:47
+msgid ""
+"Fall-back is enabled, so a direct connection will be made if the proxy "
+"cannot connect."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:54
+msgid "You are using Tor for unencrypted traffic."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:55
+msgid ""
+"This may allow exit-node operators to listen in or modify your "
+"communications."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:61
+msgid "You are not using Tor."
+msgstr ""
+
+#: shared-data/default-theme/html/logs/network/index.html:66
+msgid "Edit your Privacy Policy."
+msgstr ""
+
+#: shared-data/default-theme/html/message/index.html:46
+#: shared-data/default-theme/html/message/index.html:72
+msgid "Could Not Render Composer"
+msgstr ""
+
+#: shared-data/default-theme/html/message/index.html:53
+msgid "Unable to see message preview"
+msgstr ""
+
+#: shared-data/default-theme/html/message/index.html:76
+msgid "People in Conversation"
+msgstr ""
+
+#: shared-data/default-theme/html/message/index.html:87
+msgid "Tags in Conversation"
 msgstr ""
 
 #: shared-data/default-theme/html/page/contribute/bugs.html:2
@@ -6124,11 +6371,15 @@ msgstr ""
 msgid "The ability to delete e-mail and accounts"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:54
+#: shared-data/default-theme/html/page/release-notes/index.html:52
+msgid "A more responsive (almost) mobile-friendly web interface"
+msgstr ""
+
+#: shared-data/default-theme/html/page/release-notes/index.html:55
 msgid "What's fixed?"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:56
+#: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
 "See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
@@ -6136,32 +6387,35 @@ msgid ""
 "for this release</a>"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:62
+#: shared-data/default-theme/html/page/release-notes/index.html:63
 msgid "What's still broken?"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:64
+#: shared-data/default-theme/html/page/release-notes/index.html:65
 msgid "Mailpile is still rather slow and RAM-hungry"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:65
-msgid "IMAP synchronization is not yet implemented"
-msgstr ""
-
 #: shared-data/default-theme/html/page/release-notes/index.html:66
-msgid "Our Security Roadmap is incomplete"
+msgid "IMAP synchronization is not yet implemented"
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:67
 #, python-format
-msgid "GitHub has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgid ""
+"The <a target=_blank href=\"%(roadmap_url)s\">Security Roadmap</a> is "
+"incomplete"
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:69
+#: shared-data/default-theme/html/page/release-notes/index.html:70
+#, python-format
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgstr ""
+
+#: shared-data/default-theme/html/page/release-notes/index.html:72
 msgid "You can help."
 msgstr ""
 
-#: shared-data/default-theme/html/page/release-notes/index.html:76
+#: shared-data/default-theme/html/page/release-notes/index.html:79
 #: shared-data/default-theme/html/partials/pile_email_hints.html:13
 #: shared-data/default-theme/html/partials/pile_email_hints.html:27
 msgid "OK, got it"
@@ -6173,6 +6427,131 @@ msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/license.html:10
 msgid "Translations may be available on the FSF web site."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:7
+#: shared-data/default-theme/html/partials/compose.html:13
+#: shared-data/default-theme/html/partials/compose.html:105
+#: shared-data/default-theme/html/partials/pile_compose.html:18
+#: shared-data/default-theme/html/partials/search_item.html:138
+#: shared-data/default-theme/html/partials/thread_metadata.html:63
+#: shared-data/default-theme/html/partials/thread_metadata.html:67
+#: shared-data/default-theme/html/partials/thread_metadata.html:68
+msgid "To"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:10
+#: shared-data/default-theme/html/partials/compose.html:16
+#: shared-data/default-theme/html/partials/compose.html:20
+#: shared-data/default-theme/html/partials/pile_compose.html:19
+#: shared-data/default-theme/html/partials/thread_metadata.html:77
+#: shared-data/default-theme/html/partials/thread_metadata.html:80
+#: shared-data/default-theme/html/partials/thread_metadata.html:81
+msgid "Cc"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:11
+#: shared-data/default-theme/html/partials/compose.html:23
+#: shared-data/default-theme/html/partials/compose.html:27
+#: shared-data/default-theme/html/partials/pile_compose.html:20
+#: shared-data/default-theme/html/partials/thread_metadata.html:88
+msgid "Bcc"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:18
+msgid "hide"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:30
+#: shared-data/default-theme/html/partials/compose.html:31
+#: shared-data/default-theme/html/partials/pile_compose.html:43
+#: shared-data/default-theme/html/partials/pile_compose.html:46
+#: shared-data/default-theme/html/partials/search_item.html:189
+#: shared-data/default-theme/html/partials/thread_metadata.html:98
+msgid "Subject"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:35
+#: shared-data/default-theme/html/partials/pile_compose.html:52
+msgid "Your Message..."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:76
+#: shared-data/default-theme/html/partials/pile_compose.html:93
+msgid "Add Attachment"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:77
+#: shared-data/default-theme/html/partials/pile_compose.html:94
+msgid "Unable to add attachments"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:81
+#: shared-data/default-theme/html/partials/pile_compose.html:98
+msgid "Attach your public encryption key to this message"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:87
+#: shared-data/default-theme/html/partials/pile_compose.html:105
+msgid "Attach Key"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:105
+msgid "hide details"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:108
+#: shared-data/default-theme/html/partials/pile_compose.html:32
+msgid "autosaving..."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:108
+#: shared-data/default-theme/html/partials/pile_compose.html:33
+msgid "error autosaving"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:113
+msgid "Quote"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:149
+msgid "Choose Sending Account"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:199
+#: shared-data/default-theme/html/partials/pile_compose.html:11
+msgid "Move Draft to Trash"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/compose.html:206
+#: shared-data/default-theme/html/partials/compose.html:207
+#: shared-data/default-theme/html/partials/pile_compose.html:173
+#: shared-data/default-theme/html/partials/pile_compose.html:174
+msgid "Send"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/error_message_missing.html:3
+msgid "Message Not Found"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/error_message_missing.html:20
+msgid "Display technical details."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/error_message_missing.html:32
+msgid "We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/error_message_missing.html:37
+#, python-format
+msgid ""
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details "
+"above."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/error_message_missing.html:47
+msgid "DESCRIBE YOUR PROBLEM HERE"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/errors_content.html:3
@@ -6257,7 +6636,6 @@ msgid "Don't Use This Key"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:19
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:48
 #: shared-data/default-theme/html/partials/search_item.html:73
 #: shared-data/default-theme/html/partials/search_item.html:137
 #: shared-data/default-theme/html/partials/thread_metadata.html:4
@@ -6407,72 +6785,118 @@ msgid ""
 "mouse over their name and click the reply icon that appears."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:9
+#: shared-data/default-theme/html/partials/pile_message.html:71
+msgid "Blocked attachments, replies, and links."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:72
+msgid "Attachments and replies are blocked."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:73
+msgid "Links are blocked."
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:85
+msgid "Remove from spam"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:86
+#: shared-data/default-theme/html/partials/pile_message.html:90
+#: shared-data/default-theme/html/partials/pile_message.html:96
+msgid "Show risky content"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:91
+#: shared-data/default-theme/html/partials/pile_message.html:97
+msgid "Send to spam"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:95
+msgid "Add to contacts"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:138
+#: shared-data/default-theme/html/partials/thread_message.html:86
+msgid "Unknown Text Part"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:149
+msgid "HTML rendering requires Javascript, sorry!"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:158
+#: shared-data/default-theme/html/partials/thread_message.html:96
+msgid "Message content is empty"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:171
+#: shared-data/default-theme/html/partials/pile_message.html:199
+#: shared-data/default-theme/html/partials/thread_message.html:108
+#: shared-data/default-theme/html/partials/thread_message.html:120
+msgid "Untitled"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:241
+#: shared-data/default-theme/html/partials/thread_message.html:157
+msgid "Reply"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_message.html:242
+#: shared-data/default-theme/html/partials/thread_message.html:159
+msgid "Forward"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_threading.html:3
+msgid "Conversation"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/pile_threading.html:43
+msgid "Show entire conversation"
+msgstr ""
+
 #: shared-data/default-theme/html/partials/search_item.html:36
 msgid "View e-mail from this mailing list"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:15
 #: shared-data/default-theme/html/partials/search_item.html:42
 msgid "Search for e-mail from:"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:27
 #: shared-data/default-theme/html/partials/search_item.html:52
 msgid "Previous Conversation"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:33
 #: shared-data/default-theme/html/partials/search_item.html:58
 msgid "Close"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:36
 #: shared-data/default-theme/html/partials/search_item.html:61
 msgid "Next Conversation"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:65
 #: shared-data/default-theme/html/partials/search_item.html:90
 msgid "Private Reply"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:133
-#: shared-data/default-theme/html/partials/search_item.html:189
-#: shared-data/default-theme/html/partials/thread_metadata.html:98
-msgid "Subject"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:147
 #: shared-data/default-theme/html/partials/search_item.html:203
 msgid "Display HTML formatted message content"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:151
 #: shared-data/default-theme/html/partials/search_item.html:207
 msgid "Display plain-text message content"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:169
 #: shared-data/default-theme/html/partials/search_item.html:225
 msgid "Switch to full conversation view"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:172
 #: shared-data/default-theme/html/partials/search_item.html:228
 msgid "Display message source code"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_unfolded_message.html:175
 #: shared-data/default-theme/html/partials/search_item.html:231
 msgid "Display technical message data as JSON"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/search_item.html:138
-#: shared-data/default-theme/html/partials/thread_metadata.html:63
-#: shared-data/default-theme/html/partials/thread_metadata.html:67
-#: shared-data/default-theme/html/partials/thread_metadata.html:68
-msgid "To"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/sidebar.html:15
@@ -6504,16 +6928,12 @@ msgid "friends-family"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/tag_add.html:13
+#: shared-data/default-theme/html/partials/tools_search.html:62
 msgid "Display"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/tag_add.html:16
 msgid "Archive"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/tag_add.html:19
-#: shared-data/default-theme/html/tags/form.html:114
-msgid "Parent"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/tag_add.html:21
@@ -6530,6 +6950,31 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/tag_add.html:34
 msgid "Search Terms"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:161
+msgid "Move"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:163
+msgid "Archive Message"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:164
+#: shared-data/default-theme/html/tags/form.html:264
+msgid "Move to Inbox"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:165
+msgid "Flag as Spam"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:167
+msgid "Remove from Thread"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/thread_message.html:171
+msgid "Unsubscribe"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/thread_message_cryptofail.html:12
@@ -6563,16 +7008,6 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/thread_metadata.html:72
 msgid "No Recipients"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/thread_metadata.html:77
-#: shared-data/default-theme/html/partials/thread_metadata.html:80
-#: shared-data/default-theme/html/partials/thread_metadata.html:81
-msgid "Cc"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/thread_metadata.html:88
-msgid "Bcc"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/thread_metadata.html:91
@@ -6646,6 +7081,101 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/tools_message.html:8
 msgid "People"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:29
+msgid "Order"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:34
+msgid "Freshness"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:39
+msgid "Newest First"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:44
+msgid "Oldest First"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:54
+msgid "Unsorted"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:66
+msgid "Snug"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:70
+msgid "Cozy"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:74
+msgid "Comfy"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:87
+#, python-format
+msgid "Toggle %(tag_name)s"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:90
+#, python-format
+msgid "Move to %(tag_name)s"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:113
+msgid "Move to Spam"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:122
+#: shared-data/default-theme/html/tags/form.html:266
+msgid "Move to Trash"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:131
+msgid "Untag Selection"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:140
+msgid "Archive Selection"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:140
+msgid "untag completely"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:158
+msgid "Unread messages"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:168
+msgid "Attachments"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:169
+msgid "Messages with attachments"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:180
+msgid "Encrypted Messages"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:190
+msgid "All messages"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:198
+msgid "List"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:199
+msgid "List view"
+msgstr ""
+
+#: shared-data/default-theme/html/partials/tools_search.html:230
+msgid "Save the results of this search to a new tag"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/tools_tags.html:5
@@ -6983,15 +7513,15 @@ msgstr ""
 msgid "Browse Files and Mailboxes"
 msgstr ""
 
-#: shared-data/default-theme/html/profiles/add/index.html:2
 #: shared-data/default-theme/html/profiles/index.html:30
 #: shared-data/default-theme/html/profiles/index.html:191
+#: shared-data/default-theme/html/profiles/add/index.html:2
 msgid "Add Account"
 msgstr ""
 
-#: shared-data/default-theme/html/profiles/add/index.html:6
 #: shared-data/default-theme/html/profiles/index.html:31
 #: shared-data/default-theme/html/profiles/index.html:189
+#: shared-data/default-theme/html/profiles/add/index.html:6
 msgid "Create a new Account"
 msgstr ""
 
@@ -7019,16 +7549,6 @@ msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:64
 msgid "Total"
-msgstr ""
-
-#: shared-data/default-theme/html/profiles/index.html:65
-#: shared-data/default-theme/html/settings/index.html:152
-#: shared-data/default-theme/html/settings/index.html:154
-#: shared-data/default-theme/html/settings/index.html:156
-#: shared-data/default-theme/html/settings/index.html:158
-#: shared-data/default-theme/html/settings/index.html:160
-#: shared-data/default-theme/html/tags/form.html:108
-msgid "Settings"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:73
@@ -7137,6 +7657,70 @@ msgstr ""
 
 #: shared-data/default-theme/html/profiles/remove/index.html:92
 msgid "This operation can not be undone."
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:79
+msgid "More"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:100
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:102
+msgid "Vroom!"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:107
+#: shared-data/default-theme/html/search/default.html:125
+msgid "Nothing Happened."
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:108
+msgid "Usually, matching e-mails would be listed here."
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:110
+msgid "You need to create an account and add some mail first!"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:115
+msgid "Manage your Accounts"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:121
+msgid "No Spam Found, Hooray!"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:123
+msgid "Inbox zero? Impressive!"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:126
+msgid "It seems your Mailpile does not contain any messages for the search"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:131
+msgid "Here are some other options for you"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:135
+msgid "Browse for mailboxes"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:140
+msgid "Compose a message"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:147
+msgid "Search Tips & Tricks"
+msgstr ""
+
+#: shared-data/default-theme/html/search/default.html:156
+msgid "Hrm, We Could Not Find Anything"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/backup-keys.html:7
@@ -8080,6 +8664,7 @@ msgid "Keyword"
 msgstr ""
 
 #: shared-data/default-theme/html/tags/form.html:97
+#: shared-data/default-theme/html/tags/index.html:23
 msgid "Subtags"
 msgstr ""
 
@@ -8169,19 +8754,27 @@ msgstr ""
 msgid "Remove from %(name)s"
 msgstr ""
 
-#: shared-data/default-theme/html/tags/form.html:264
-msgid "Move to Inbox"
-msgstr ""
-
-#: shared-data/default-theme/html/tags/form.html:266
-msgid "Move to Trash"
-msgstr ""
-
 #: shared-data/default-theme/html/tags/form.html:268
 msgid "Delete e-mails"
 msgstr ""
 
 #: shared-data/default-theme/html/tags/form.html:289
 msgid "Delete Tag"
+msgstr ""
+
+#: shared-data/default-theme/html/tags/index.html:35
+msgid "Priority Tags"
+msgstr ""
+
+#: shared-data/default-theme/html/tags/index.html:64
+msgid "Archived"
+msgstr ""
+
+#: shared-data/default-theme/html/tags/index.html:75
+msgid "Hide Archived"
+msgstr ""
+
+#: shared-data/default-theme/html/tags/index.html:75
+msgid "Show Archived"
 msgstr ""
 

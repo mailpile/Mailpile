@@ -3,6 +3,8 @@ set -x
 set -e
 cd "$(dirname $0)"/..
 
+export PYTHONPATH=$(pwd)
+
 pybabel extract --project=mailpile \
     -F babel.cfg \
     -o shared-data/locale/mailpile.pot.tmp \
