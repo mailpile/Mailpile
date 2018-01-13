@@ -1,0 +1,12 @@
+<span class="item-tags" style="opacity: 0.5"> {# FIXME #}
+    {% for tid in metadata.tag_tids %}
+      {% set tag = result.data.tags[tid] %}
+      {% if tag.label and not tag.searched %}
+    <span class="pile-message-tag pile-message-tag-{{tag.tid}}
+          color-{{tag.label_color}}"
+          data-tid="{{tag.tid}}" data-mid="{{mid}}">
+        <span class="icon pile-message-tag-icon {{tag.icon}}"></span>
+    </span>
+      {% endif %}
+    {% endfor %}
+</span>

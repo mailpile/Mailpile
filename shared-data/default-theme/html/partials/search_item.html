@@ -89,6 +89,9 @@
 {%- endif %}
             <li class="action"><a title="{{_("Private Reply")}}" class="message-action-reply" data-mid="{{mid}}" href="#"><span class="icon icon-reply"></span></a></li>
           </ul>
+          <div class="crypto-and-tags">
+            {%- include "partials/pile_email_tags.html" %}
+          </div>
         </h3>
         <span class="header-value" title='{{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;'>
           <span class="address-avatar"><img src="{{ show_avatar(metadata.from) }}"></span>
@@ -127,7 +130,6 @@
   {%- if thread|length > 1 %}
     {%- include "partials/pile_threading.html" %}
   {%- endif %}
-  </td>
 {% else %}
   <td class="avatar">
     <a><img src="{{ show_avatar(from) }}"></a>
@@ -145,29 +147,17 @@
       {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
       {% endif %}
     </a>
-  </td>
 {%endif %}
-  <td class="crypto-and-tags">
-    <span class="item-tags" style="opacity: 0.5"> {# FIXME #}
-    {% for tid in metadata.tag_tids %}
-      {% set tag = result.data.tags[tid] %}
-      {% if tag.label and not tag.searched %}
-      <span class="pile-message-tag pile-message-tag-{{tag.tid}}
-                   color-{{tag.label_color}}"
-            data-tid="{{tag.tid}}" data-mid="{{mid}}">
-        <span class="icon pile-message-tag-icon {{tag.icon}}"></span>
-      </span>
-      {% endif %}
-    {% endfor %}
-    </span>
-
-  {%- if not message %}
+  {%- if not message and not message_errors %}
+    <div class="crypto-and-tags">
+      {%- include "partials/pile_email_tags.html" %}
     {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted', 'lockedkey', 'mixed-lockedkey') %}
     <span class="icon crypto icon-lock-closed color-08-green"></span>
     {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
     <span class="icon crypto icon-lock-closed color-12-red"></span>
     {% endif %}
   {%- endif %}
+    </div>
   </td>
   <td class="subject">
 {%- if message_errors %}

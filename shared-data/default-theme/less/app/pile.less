@@ -1,6 +1,7 @@
         /* Pile */
 
   #pile-results {
+    table-layout: fixed;
     width: 100%;
     min-width: 800px;
     border-collapse: collapse;
@@ -39,15 +40,20 @@
 
   #pile-results        td.draggable       { width: 12px; cursor: move; }
   #pile-results        td.draggable:hover { cursor: move; }
-  #pile-results        td.crypto-and-tags,
-  #pile-results        td.message-nav,
-  #pile-results        td.avatar       { min-width: 24px; text-align: center; white-space: nowrap; }
+  #pile-results        td.message-nav { text-align: center; white-space: nowrap; }
   #pile-results        td.avatar a     { display: block; text-align: center; }
   #pile-results        td.avatar a img { display: inline-block; border-radius: 2px; }
 
   #pile-results.comfy  td.avatar,
   #pile-results.cozy   td.avatar { padding-top: 6px; padding-bottom: 5px; }
   #pile-results.snug   td.avatar { padding-top: 4px; padding-bottom: 3px; }
+
+  #pile-results.comfy  td.message-nav,
+  #pile-results.comfy  td.avatar { width: 32px; padding-right: 8px; }
+  #pile-results.cozy   td.message-nav,
+  #pile-results.cozy   td.avatar { width: 24px; padding-right: 6px; }
+  #pile-results.snug   td.message-nav,
+  #pile-results.snug   td.avatar { width: 18px; padding-right: 4px; }
   #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }
   #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
   #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
@@ -62,7 +68,7 @@
   #pile-results.snug td.message-nav span.icon { font-size: 14px; }
 
   #pile-results td.from {
-    width: 255px;
+    width: 279px /* 255+24 */;
     overflow-x: hidden;
     word-wrap: normal;
     word-break: normal;
@@ -111,14 +117,12 @@
   }
 
   #pile-results td.subject {
-    min-width: 374px;
     overflow: hidden;
     word-wrap: normal;
     word-break: normal;
   }
 
   #pile-results td.subject a.item-subject {
-    width: 700px;
     display: block;
     white-space: nowrap;
     overflow: hidden;
@@ -142,7 +146,7 @@
     #pile-results td.subject .message-container { max-width: 214px; }}
 
   #pile-results td.date {
-    width: 60px;
+    width: 80px;
     text-align: right;
     white-space: nowrap;
     color: @gray;
@@ -210,7 +214,7 @@
   #pile-results .message-details .header-cooked .header-value,
   #pile-results .thread-container .thread-message {
     display: block;
-    width: 245px;
+    width: 264px;
     margin: 0 10px;
     padding: 0px 2px;
     border: 0;
@@ -372,19 +376,36 @@
     transition: opacity 1s;
   }
 
-  #pile-results .full-message td.crypto-and-tags {
+  #pile-results .full-message div.crypto-and-tags {
     white-space: normal;
-    padding-top: 10px;
+    padding-top: 2px;
   }
 
-  #pile-results .full-message td.crypto-and-tags .pile-message-tag,
-  #pile-results .full-message td.crypto-and-tags .icon.crypto {
-    display: block; margin: 0 0 5px 0; padding: 0; border: 0;
+  #pile-results .full-message div.crypto-and-tags .pile-message-tag,
+  #pile-results .full-message div.crypto-and-tags .icon.crypto {
+    display: inline-block; margin: 0 0 5px 0; padding: 0; border: 0;
     font-size: 16px; line-height: 16px;
   }
 
-  #pile-results .full-message td.crypto-and-tags .item-tags {
+  #pile-results div.crypto-and-tags {
+    float: right;
+    text-align: right;
+  }
+
+  #pile-results .full-message div.crypto-and-tags .item-tags {
     display: block; margin-bottom: 0 0 5px 0;
+  }
+
+  #pile-results.snug div.crypto-and-tags {
+    padding-right: 4px;
+  }
+
+  #pile-results.cozy div.crypto-and-tags {
+    padding-right: 6px;
+  }
+
+  #pile-results.comfy div.crypto-and-tags {
+    padding-right: 8px;
   }
 
   #pile-results td.subject .message-container h3 {
@@ -556,5 +577,3 @@
     font-size: 14px;
     font-weight: bold;
   }
-
-
