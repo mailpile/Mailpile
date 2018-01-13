@@ -45,8 +45,8 @@ _outerHTML = function(elem) {
 
 _update_title = function(message) {
     var ct = document.title;
-    suffix = ct.substring(ct.indexOf('|') - 1);
-    document.title = message + suffix;
+    suffix = ct.substring(ct.indexOf('|'));
+    document.title = message + ' ' + suffix;
 };
 
 _scroll_up = function(elem, scrollto) {
