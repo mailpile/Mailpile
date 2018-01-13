@@ -10,4 +10,3 @@ pgpdump
 pillow
 pbr
 fasteners
-monotonic

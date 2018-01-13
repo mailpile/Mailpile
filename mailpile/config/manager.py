@@ -149,16 +149,11 @@ class ConfigManager(ConfigDict):
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
-        
-        # Process lock files are not actually created until the first acquire().
-        # FIX_ME fasteners Upstream - acquiring the same lock more than once
-        # fails under Windows - the work-around uses .have attributes.
-        self.lock_profile = fasteners.InterProcessLock(
-                                    os.path.join(self.workdir, 'profile-lock'))
-        self.lock_profile.have = False                           
-        self.lock_pub = fasteners.InterProcessLock(
-                                    os.path.join(self.workdir, 'public-lock'))
-        self.lock_pub.have = False                           
+
+        # Process lock files are not actually created until the first acquire()
+        self.lock_workdir = os.path.join(self.workdir, 'workdir-lock')
+        self.lock_pubconf = fasteners.InterProcessLock(
+            os.path.join(self.workdir, 'public-lock'))
 
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
@@ -214,21 +209,23 @@ class ConfigManager(ConfigDict):
 
         self._magic = True  # Enable the getattr/getitem magic
 
-    def _mkworkdir(self, session):
+    def create_and_lock_workdir(self, session):
         # Make sure workdir exists and that other processes are not using it.
         if not os.path.exists(self.workdir):
             if session:
                 session.ui.notify(_('Creating: %s') % self.workdir)
             os.makedirs(self.workdir, mode=0700)
-        
-        # Once acquired, lock_profile is only released by process termination.
-        self.lock_profile.have = (self.lock_profile.have or 
-                                    self.lock_profile.acquire( blocking=False ))
-        if not self.lock_profile.have:
-            session.ui.error(
-                _('Another Mailpile or program is using the profile directory'))
-            sys.exit(1)
-            
+
+        # Once acquired, lock_workdir is only released by process termination.
+        if isinstance(self.lock_workdir, str):
+            ipl = fasteners.InterProcessLock(self.lock_workdir)
+            if ipl.acquire(blocking=False):
+                 self.lock_workdir = ipl
+            else:
+                if session:
+                    session.ui.error(_('Another Mailpile or program is'
+                                       ' using the profile directory'))
+                sys.exit(1)
 
     def parse_config(self, session, data, source='internal'):
         """
@@ -407,7 +404,7 @@ class ConfigManager(ConfigDict):
         # but fail to load the encrypted part due to a lack of authentication.
         # In this case IOError will be raised.
         #
-        self._mkworkdir(session)
+        self.create_and_lock_workdir(session)
         if self.index:
             self.index_check.acquire()
             self.index = None
@@ -593,7 +590,7 @@ class ConfigManager(ConfigDict):
         pubfile = self.conf_pub
         keyfile = self.conf_key
 
-        self._mkworkdir(None)
+        self.create_and_lock_workdir(None)
         self.timestamp = int(time.time())
 
         if session and self.event_log:
@@ -605,13 +602,13 @@ class ConfigManager(ConfigDict):
         # Save the public config data first
         # Warn other processes against reading public data during write
         # But wait for 2 s max so other processes can't block Mailpile.
-        self.lock_pub.have = (self.lock_pub.have or
-                                self.lock_pub.acquire(blocking=True, timeout=2)) 
-        with open(pubfile, 'wb') as fd:
-            fd.write(self.as_config_bytes(_type='public'))
-        if self.lock_pub.have:
-            self.lock_pub.release()
-            self.lock_pub.have = False
+        try:
+            locked = self.lock_pubconf.acquire(blocking=True, timeout=2)
+            with open(pubfile, 'wb') as fd:
+                fd.write(self.as_config_bytes(_type='public'))
+        finally:
+            if locked:
+                self.lock_pubconf.release()
         if not self.loaded_config:
             return
 
@@ -1323,8 +1320,8 @@ class ConfigManager(ConfigDict):
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 try:
                     if sys.platform.startswith('win'):
-                        # FIXME: On Windows config.http_worker does not detect
-                        # port reuse so do this kludgy test.
+                        # On Windows config.http_worker does not detect
+                        # port reuse, so do this kludgy test.
                         try:
                             socket.socket().connect((sspec[0],sspec[1]))
                             port_in_use = True
@@ -1335,10 +1332,10 @@ class ConfigManager(ConfigDict):
                     config.http_worker = HttpWorker(config.background, sspec)
                     config.http_worker.start()
                 except socket.error, e:
-                    if e[ 0 ] == errno.EADDRINUSE:
-                        session.ui.error( 
+                    if e[0] == errno.EADDRINUSE:
+                        session.ui.error(
                             _('Port %s:%s in use by another Mailpile or program'
-                            ) % (sspec[0], sspec[1]) )
+                              ) % (sspec[0], sspec[1]))
 
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
