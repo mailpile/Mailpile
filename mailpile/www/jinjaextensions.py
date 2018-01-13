@@ -151,7 +151,7 @@ class MailpileCommand(Extension):
         e.globals['nice_name'] = s._nice_name
         e.filters['nice_name'] = s._nice_name
 
-        # Makes a UI usable classification of attachment from mimetype
+        # Makes a UI usable classification of attachment from MIME-type
         e.globals['attachment_type'] = s._attachment_type
         e.filters['attachment_type'] = s._attachment_type
 
@@ -303,136 +303,126 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-signature-none",
             _("Unknown"),
-            _("There is something unknown or wrong with this signature")]
+            _("There is something unknown or wrong with this signature.")]
     _STATUS_SIGNATURE = {
         "none": [
             "crypto-color-gray",
             "icon-signature-none",
             _("Not Signed"),
-            _("This data has no digital signature, which means it could have"
+            _("Data lacks digital signature, meaning it could have"
               " come from anyone, not necessarily the apparent sender")],
         "error": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Error"),
-            _("There was a weird error with this digital signature")],
+            _("Digital signature produced weird error.")],
         "mixed-error": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Error"),
-            _("Parts of this message have a signature with a weird error")],
+            _("Parts of this message are signed in such a way as to produce a weird error.")],
         "unsigned": [
             "crypto-color-red",
             "icon-signature-unknown",
             _("Unsigned"),
-            _("This data has no digital signature, which means it could "
+            _("Data lacks digital signature, meaning it could "
               "easily have been forged. This sender usually signs their "
               "messages, so be careful!")],
         "mixed-unsigned": [
             "crypto-color-red",
             "icon-signature-unknown",
             _("Mixed Unsigned"),
-            _("This message has no digital signature, which means it could "
+            _("Message lacks digital signature, meaning it could "
               "easily have been forged. This sender usually signs their "
               "messages, so be careful!")],
         "invalid": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Invalid"),
-            _("The digital signature was invalid or bad")],
+            _("Invalid or bad digital signature.")],
         "mixed-invalid": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Invalid"),
-            _("Parts of this message have a digital signature that is invalid"
-              " or bad")],
+            _("Parts of this message has a bad or invalid or digital signature.")],
         "revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Revoked"),
-            _("Watch out, the digital signature was made with a key that has"
-              " been revoked - this is not a good thing")],
+            _("Watch out, digital signature made with a revoked key"
+              "—this is not a good thing.")],
         "mixed-revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Mixed Revoked"),
-            _("Watch out, parts of this message were digitally signed with a"
-              " key that has been revoked")],
+            _("Watch out, parts of message digitally signed with revoked key.")],
         "expired": [
             "crypto-color-orange",
             "icon-signature-expired",
             _("Expired"),
-            _("The digital signature was made with an expired key")],
+            _("Signed with expired key.")],
         "mixed-expired": [
             "crypto-color-orange",
             "icon-signature-expired",
             _("Mixed Expired"),
-            _("Parts of this message have a digital signature made with an "
-              "expired key")],
+            _("Message partly signed with expired key.")],
         "unknown": [
             "crypto-color-gray",
             "icon-signature-unknown",
             _("Unknown"),
-            _("The digital signature was made with an unknown key, so we can"
-              " not verify it")],
+            _("Signed with unknown key, thus unverifiable.")],
         "mixed-unknown": [
             "crypto-color-gray",
             "icon-signature-unknown",
             _("Mixed Unknown"),
-            _("Parts of this message have a signature made with an unknown"
-              " key which we can not verify")],
+            _("Parts of message unverifiable due to unknown key signature.")],
         "changed": [
             "crypto-color-orange",
             "icon-signature-unknown",
             _("Changed"),
-            _("The digital signature was made with an unexpected key."
+            _("Digital signature made with unexpected key."
               " Be careful!")],
         "mixed-changed": [
             "crypto-color-orange",
             "icon-signature-unknown",
             _("Mixed Changed"),
-            _("Parts of this message have a digital signature that was made"
-              " with an unexpected key. Be careful!")],
+            _("Message partly signed with unexpected key. Be careful!")],
         "unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Unverified"),
-            _("The signature was good but it came from a key that is not"
-              " verified yet")],
+            _("Good signature from yet to be verified key.")],
         "mixed-unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Mixed Unverified"),
-            _("Parts of this message have an unverified signature")],
+            _("Message partly signed with untrusted key.")],
         "signed": [
             "crypto-color-green",
             "icon-signature-verified",
             _("Signed"),
-            _("The digital signature is valid and was made with a key we have"
-              " seen before. Looks good!")],
+            _("Digitally signed with known key. Looks good!")],
         "mixed-signed": [
             "crypto-color-blue",
             "icon-signature-verified",
             _("Mixed Signed"),
-            _("Parts of the message have a good digital signature, made with"
-              " a key we have seen before.")],
+            _("Message partly signed with known key.")],
         "verified": [
             "crypto-color-green",
             "icon-signature-verified",
             _("Verified"),
-            _("The signature was good and came from a verified key, w00t!")],
+            _("Trusted signature.")],
         "mixed-verified": [
             "crypto-color-blue",
             "icon-signature-verified",
             _("Mixed Verified"),
-            _("Parts of the message have a verified signature, but other "
-              "parts do not")]
+            _("Message only partly signed with trusted signature.")]
     }
 
     @classmethod
     def _show_text_part_signature(self, status):
         # Within a text part, mixed state is equivalent to no encryption, and
-        # no signature - the signed/encrypted parts are explictly marked.
+        # no signature - the signed/encrypted parts are explicitly marked.
         try:
             if status and status.startswith('mixed-'):
                 status = 'none'
@@ -462,60 +452,55 @@ class MailpileCommand(Extension):
         "crypto-color-gray",
         "icon-lock-open",
         _("Unknown"),
-        _("There is some unknown thing wrong with this encryption")]
+        _("Something is unknown about this encryption.")]
     _STATUS_ENCRYPTION = {
         "none": [
             "crypto-color-gray",
             "icon-lock-open",
             _("Not Encrypted"),
-            _("This content was not encrypted. It could have been intercepted "
-              "and read by an unauthorized party")],
+            _("This unencrypted content could have been intercepted "
+              "and read by an unauthorized party.")],
         "decrypted": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Encrypted"),
-            _("This content was encrypted, great job being secure")],
+            _("Encrypted content, great job on being secure.")],
         "mixed-decrypted": [
             "crypto-color-blue",
             "icon-lock-closed",
             _("Mixed Encrypted"),
-            _("Part of this message were encrypted, but other parts were not "
-              "encrypted")],
+            _("Message only partly encrypted.")],
         "lockedkey": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Locked Key"),
-            _("You have the encryption key to decrypt this, "
-              "but the key itself is locked.")],
+            _("Key to decrypt needs to be unlocked first.")],
         "mixed-lockedkey": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Mixed Locked Key"),
-            _("Parts of the message could not be decrypted because your "
-              "encryption key is locked.")],
+            _("Locked encryption key means parts of message could not be decrypted.")],
         "missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You don't have the encryption key to decrypt this, "
-              "perhaps it was encrypted to an old key you don't have anymore?")],
+            _("Lacking key to decrypt this. Perhaps one you don\'t have anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
-            _("Parts of the message could not be decrypted because you "
-              "are missing the private key. Perhaps it was encrypted to an "
-              "old key you don't have anymore?")],
+            _("Parts message could not be decrypted due to missing private key."
+              "Perhaps one you don\'t have anymore?")],
         "error": [
             "crypto-color-red",
             "icon-lock-error",
             _("Error"),
-            _("We failed to decrypt and are unsure why.")],
+            _("Decryption failed for reasons unknown.")],
         "mixed-error": [
             "crypto-color-red",
             "icon-lock-error",
             _("Mixed Error"),
-            _("We failed to decrypt parts of this message and are unsure why")]
+            _("Parts of this message failed to decrypt, for reasons unknown.")]
     }
 
     @classmethod
@@ -549,25 +534,29 @@ class MailpileCommand(Extension):
 
     _DEFAULT_CRYPTO_POLICY = [
         _("Automatic"),
-        _("Mailpile will intelligently try to guess and suggest the best "
-          "security with the given contact")]
+        _("Mailpile will suggest the best "
+          "security for correspondence with given contact.")]
     _CRYPTO_POLICY = {
         "default": [
             _("Automatic"),
-            _("Mailpile will intelligently try to guess and suggest the best "
-              "security with the given contact")],
+            _("Mailpile will suggest the best "
+              "security for correspondence with given contact.")],
         "none": [
             _("Don't Sign or Encrypt"),
-            _("Messages will not be encrypted nor signed by your encryption key")],
+            _("Messages will not be confidential nor verifiable, "
+              "as they are not signed by your encryption key.")],
         "sign": [
             _("Only Sign"),
-            _("Messages will only be signed by your encryption key")],
+            _("Messages will not be confidential, but verifiable, "
+              "as they are merely signed by your encryption key.")],
         "encrypt": [
             _("Only Encrypt"),
-            _("Messages will only be encrypted but not signed by your encryption key")],
+            _("Messages will only be confidential, but not verifiable, "
+             "as they are merely encrypted, but not signed by your encryption key.")],
         "sign-encrypt": [
             _("Always Encrypt & Sign"),
-            _("Messages will be both encrypted and signed by your encryption key")]
+            _("Messages will be both confidential and verifiable, "
+             "as they are encrypted and signed by your encryption key.")]
     }
 
     @classmethod
@@ -754,7 +743,7 @@ class MailpileCommand(Extension):
     def _escapejs(self, value):
         """ Hex encodes some characters for use in JavaScript strings.
 
-        Lightly inspired from https://github.com/django/django/blame/ebc773ada3e4f40cf5084268387b873d7fe22e8b/django/utils/html.py#L63
+        Light inspiration from https://github.com/django/django/blame/ebc773ada3e4f40cf5084268387b873d7fe22e8b/django/utils/html.py#L63
         """
         for bad, good in self._JS_ESCAPES:
             value = value.replace(bad, good)
