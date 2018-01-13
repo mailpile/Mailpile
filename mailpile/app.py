@@ -199,6 +199,10 @@ def Main(args):
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
+    # Save pid for killing zombie Mailpiles.
+    with open(os.path.join(config.workdir, 'mailpile.pid'), 'w') as fd:
+        fd.write(str(os.getpid()))
+
     try:
         try:
             if '--login' in args:

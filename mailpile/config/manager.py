@@ -9,8 +9,10 @@ import sys
 import random
 import re
 import threading
+import fasteners
 import traceback
 import ConfigParser
+import errno
 
 from urllib import quote, unquote
 from urlparse import urlparse
@@ -147,6 +149,16 @@ class ConfigManager(ConfigDict):
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
         self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
+        
+        # Process lock files are not actually created until the first acquire().
+        # FIX_ME fasteners Upstream - acquiring the same lock more than once
+        # fails under Windows - the work-around uses .have attributes.
+        self.lock_profile = fasteners.InterProcessLock(
+                                    os.path.join(self.workdir, 'profile-lock'))
+        self.lock_profile.have = False                           
+        self.lock_pub = fasteners.InterProcessLock(
+                                    os.path.join(self.workdir, 'public-lock'))
+        self.lock_pub.have = False                           
 
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
@@ -203,10 +215,20 @@ class ConfigManager(ConfigDict):
         self._magic = True  # Enable the getattr/getitem magic
 
     def _mkworkdir(self, session):
+        # Make sure workdir exists and that other processes are not using it.
         if not os.path.exists(self.workdir):
             if session:
                 session.ui.notify(_('Creating: %s') % self.workdir)
             os.makedirs(self.workdir, mode=0700)
+        
+        # Once acquired, lock_profile is only released by process termination.
+        self.lock_profile.have = (self.lock_profile.have or 
+                                    self.lock_profile.acquire( blocking=False ))
+        if not self.lock_profile.have:
+            session.ui.error(
+                _('Another Mailpile or program is using the profile directory'))
+            sys.exit(1)
+            
 
     def parse_config(self, session, data, source='internal'):
         """
@@ -581,9 +603,15 @@ class ConfigManager(ConfigDict):
                 self.event_log.ui_unwatch(session.ui)
 
         # Save the public config data first
+        # Warn other processes against reading public data during write
+        # But wait for 2 s max so other processes can't block Mailpile.
+        self.lock_pub.have = (self.lock_pub.have or
+                                self.lock_pub.acquire(blocking=True, timeout=2)) 
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
-
+        if self.lock_pub.have:
+            self.lock_pub.release()
+            self.lock_pub.have = False
         if not self.loaded_config:
             return
 
@@ -1293,8 +1321,24 @@ class ConfigManager(ConfigDict):
             sspec = sspec or (config.sys.http_host, config.sys.http_port,
                               config.sys.http_path or '')
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                config.http_worker = HttpWorker(config.background, sspec)
-                config.http_worker.start()
+                try:
+                    if sys.platform.startswith('win'):
+                        # FIXME: On Windows config.http_worker does not detect
+                        # port reuse so do this kludgy test.
+                        try:
+                            socket.socket().connect((sspec[0],sspec[1]))
+                            port_in_use = True
+                        except socket.error:
+                            port_in_use = False
+                        if port_in_use:
+                            raise socket.error, errno.EADDRINUSE
+                    config.http_worker = HttpWorker(config.background, sspec)
+                    config.http_worker.start()
+                except socket.error, e:
+                    if e[ 0 ] == errno.EADDRINUSE:
+                        session.ui.error( 
+                            _('Port %s:%s in use by another Mailpile or program'
+                            ) % (sspec[0], sspec[1]) )
 
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
