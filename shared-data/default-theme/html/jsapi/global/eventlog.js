@@ -88,11 +88,10 @@ EventLog.invoke_callbacks = function(response) {
     for (i in EventLog.eventBindings) {
       var eventBinding = EventLog.eventBindings[i];
 
-      var binding = eventBinding.event,
-        sourceMatched = !binding.source || ev.source.match(new RegExp(binding.source)),
-        eventIdMatched = !binding.event_id || ev.event_id == binding.event_id,
-        flagsMatched = !binding.flags || ev.flags.match(new RegExp(binding.flags))
-      ;
+      var binding = eventBinding.event;
+      var sourceMatched = !binding.source || ev.source.match(new RegExp(binding.source));
+      var eventIdMatched = !binding.event_id || (ev.event_id == binding.event_id);
+      var flagsMatched = !binding.flags || ev.flags.match(new RegExp(binding.flags));
 
       if (sourceMatched && eventIdMatched && flagsMatched) {
         eventBinding.callback(ev);
@@ -137,6 +136,13 @@ EventLog.process_result = function(result, textstatus) {
 
 
 EventLog.subscribe = function(ev, func, id) {
+  // Subscribe a function to an event.
+  // Returns a subscription ID.
+  if (!$.isFunction(func)) {
+    console.log("Can only subscribe functions");
+    return false;
+  }
+
   // generate a random id if not specified
   if (typeof id === 'undefined' || id === null) {
     id = Math.random().toString(24).substring(5);
@@ -147,25 +153,20 @@ EventLog.subscribe = function(ev, func, id) {
     return eventBinding.id === id;
   });
 
-  if (existingEventBinding.length) {
-    console.log('Already subscribed event with id: ' + id);
-
-    return false;
-  }
-
-  // Subscribe a function to an event.
-  // Returns a subscription ID.
-  if (!$.isFunction(func)) {
-    console.log("Can only subscribe functions");
-    return false;
-  }
-
   if (typeof(ev) == "string") {
     ev = {source: ev, event_id: null};
   }
-  this.eventBindings.push({id: id, event: ev, callback: func});
 
-  return id;
+  if (existingEventBinding.length) {
+    console.log('Overriding already subscribed event with id: ' + id);
+    existingEventBinding[0].event = ev;
+    existingEventBinding[0].callback = func;
+    return existingEventBinding[0].id;
+  }
+  else {
+    this.eventBindings.push({id: id, event: ev, callback: func});
+    return id;
+  }
 };
 
 
