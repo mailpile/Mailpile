@@ -24,9 +24,9 @@
     {{_("Your Mailpile data is in these locations:")}}
   </p>
   <ul class="list" style="margin-left: 2em; list-style: disc">
-    <li><a href="file://{{ config.workdir }}">{{ config.workdir }}</a>
+    <li><a target=_blank href="file://{{ config.workdir }}">{{ config.workdir }}</a>
 {%- if config.gnupghome != config.workdir %} ({{_("Mailpile data")}})</li>
-    <li><a href="file://{{ config.gnupghome }}">{{ config.gnupghome }}</a> ({{_("PGP keys")}})
+    <li><a target=_blank href="file://{{ config.gnupghome }}">{{ config.gnupghome }}</a> ({{_("PGP keys")}})
 {%- endif %}</li>
   </ul>
   <p>

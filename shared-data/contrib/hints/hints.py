@@ -69,6 +69,12 @@ class hintsCommand(Command):
             _('Learn how to get the most out of Mailpile\'s spam filter'),
             '/page/hints/spam.html'),
 
+        # Introduce Gravatar integration after 10 days, and yearly repetition.
+        # Remind of the privacy implications
+        ('gravatar', 10, 365,
+            _('Mailpile uses Gravatar thumbnails!'),
+            '/page/hints/gravatar.html'),
+
         # Don't bother the user about backups unless they've been using the
         # app for at least 2 weeks. After that, only bug them every 6 months.
         # FIXME: Allow user to somehow say "I have backups, shutup".
@@ -81,12 +87,6 @@ class hintsCommand(Command):
         ('autotagging', 21, 365,
             _('Mailpile can automatically tag or untag any kind of e-mail!'),
             '/page/hints/autotagging.html')]
-
-        # Introduce Gravatar integration after 2 weeks and yearly repetition.
-        # Remind of the privacy implications
-        ('gravatar', 14, 365,
-            _('Mailpile uses Gravatar thumbnails!'),
-            '/page/hints/gravatar.html')]
 
     def _today(self):
         return int(time.time() // (24*3600))
