@@ -82,6 +82,11 @@ class hintsCommand(Command):
             _('Mailpile can automatically tag or untag any kind of e-mail!'),
             '/page/hints/autotagging.html')]
 
+        # Introduce Gravatar integration after 2 weeks and yearly repetition.
+        # Remind of the privacy implications
+        ('gravatar', 14, 365,
+            _('Mailpile uses Gravatar thumbnails!'),
+            '/page/hints/gravatar.html')]
 
     def _today(self):
         return int(time.time() // (24*3600))
