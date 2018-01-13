@@ -72,7 +72,7 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
 
     // Update encrypt/sign icons
     Mailpile.Composer.Crypto.LoadStates(mid, policy);
-    if (changes) Mailpile.Composer.Crypto.SetState(mid);
+    Mailpile.Composer.Crypto.SetState(mid);
     if (chain) chain(mid);
   });
 };
