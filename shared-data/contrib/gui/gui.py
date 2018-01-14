@@ -52,7 +52,7 @@ def _real_startup(config):
         script = os.path.join(script_dir, 'gui-o-matic.py')
 
         global __GUI__
-        gui = __GUI__ = Popen(['python2', '-u', script],
+        gui = __GUI__ = Popen(['python2.7', '-u', script],
                               bufsize=1,  # line buffered
                               stdin=PIPE, stderr=PIPE,
                               long_running=True)

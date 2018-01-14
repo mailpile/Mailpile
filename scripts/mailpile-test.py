@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #
 # This script runs a set of black-box tests on Mailpile using the test
 # messages found in `testing/`.
