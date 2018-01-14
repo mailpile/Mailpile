@@ -319,11 +319,11 @@ class SharedImapConn(threading.Thread):
     def quit(self):
         with self._lock:
             try:
-                if self._conn and self._selected:
-                    self._conn.close()
                 if self._conn and self._conn.file:
+                    if self._selected:
+                        self._conn.close()
                     self.logout()
-            except (IOError, IMAP4.error):
+            except (IOError, IMAP4.error, AttributeError):
                 pass
             self._conn = None
             self._update_name()
