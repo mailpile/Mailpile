@@ -3,6 +3,9 @@
 {
     "name": "hints",
     "author": "The Mailpile Team <team@mailpile.is>",
+    "description": "Incremental learning! This plugin provides periodic tips and hints on how to make the most of your Mailpile.",
+    "display": true,
+    "public": true,
     "code": {
         "python": ["hints.py"],
         "javascript": ["hints.js"]
@@ -14,6 +17,7 @@
         "/page/hints/gravatar.html": {"file": "hints/gravatar.html"},
         "/page/hints/spam.html": {"file": "hints/spam.html"},
         "/page/hints/spambayes.html": {"file": "hints/spambayes.html"},
+        "/page/hints/keyboard-shortcuts.html": {"file": "hints/keyboard-shortcuts.html"},
         "/page/hints/autotagging.html": {"file": "hints/autotagging.html"}
     },
     "user_interface": {

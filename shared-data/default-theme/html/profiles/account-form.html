@@ -301,7 +301,8 @@
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">
-{%- if is_dev_version() %}
+
+{%- if 0 %}{# TODO: Partner and make it possible to create e-mail accounts #}
       {%- if not result.rid %}
       <select class="right" style="width: auto;"
               onchange="javascript:_fpa.select(this, 'basics');">
@@ -310,6 +311,7 @@
       </select>
       {% endif %}
 {%- endif %}
+
       <div style="padding-right: 0em; width: 29em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%"
@@ -596,7 +598,7 @@
             <span class="checkbox">
               {{_("Copy mail to Mailpile secure storage")}}
             </span><br>
-{%- if is_dev_version() %}
+{%- if 0 and is_dev_version() %}
             <input type="checkbox" name="source-{{ new_rid }}-delete-source" value="yes"
                    onchange='javascript:_fpa.require(this, "source-{{ new_rid }}-copy-local");'
                    {% if result['source-' + rid + '-delete-source'] %}checked{% endif %}>
@@ -727,9 +729,6 @@
           {%- endfor %}
         {%- endfor %}
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
-{%- if is_dev_version() %}
-          <option value="!CREATE:RSA1024">{{_("Create a new 1024 bit RSA key (weak)")}}</option>
-{%- endif %}
           <option {% if not result['security-pgp-key'] %}selected {% endif -%}
                   value="">{{_("Disable encryption for this account")}}</option>
         </select>
@@ -750,10 +749,6 @@
                  {% if result['security-best-effort-crypto'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Best-effort: Encrypt and/or sign mail whenever possible")}}
-{%- if is_dev_version() %}
-            (<a class='auto-help' href="{{ U('/help/crypto-policy.html') }}"
-                target=_blank>details</a>)
-{%- endif %}
           </span>
         </div>
         <div class="more-crypto {% if not result['security-always-sign'] %}hide{% endif %}">
@@ -788,6 +783,7 @@
             {{_("Prefer compatibility; avoid PGP/MIME (makes mail ugly)")}}
           </span>
         </div>
+{% if config.web.developer_mode %}
         <div class="more-crypto {% if not result['security-prefer-pgpmime'] %}hide{% endif %}">
           <input type="checkbox" name="security-prefer-pgpmime" value="yes"
                  onchange='javascript:_fpa.exclude(this, "security-prefer-inline");'
@@ -796,6 +792,7 @@
             {{_("Prefer PGP/MIME")}}
           </span>
         </div>
+{% endif %}
         <div style="margin-top: 0.7em"
              class="more-crypto {% if not result['security-openpgp-header-encrypt'] %}hide{% endif %}">
           <input type="checkbox" name="security-openpgp-header-encrypt" value="yes"
@@ -803,10 +800,6 @@
                  {% if result['security-openpgp-header-encrypt'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Signal a preference for encrypted mail")}}
-{%- if is_dev_version() %}
-            (<a class='auto-help' href="{{ U('/help/crypto-signaling.html') }}"
-                target=_blank>details</a>)
-{%- endif %}
           </span>
         </div>
         <div class="more-crypto {% if not result['security-openpgp-header-sign'] %}hide{% endif %}">

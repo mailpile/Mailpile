@@ -11,12 +11,6 @@
 {%- block contenttools %}
   {%- if is_configured() %}
     {%- set activities = [{
-      'name': 'privacy',
-      'icon': 'settings',
-      'url': U('/settings/privacy.html'),
-      'text': _("Privacy"),
-      'description': _("Security and Privacy Settings")
-    },{
       'name': 'browser',
       'icon': 'list',
       'url': U('/browse/'),

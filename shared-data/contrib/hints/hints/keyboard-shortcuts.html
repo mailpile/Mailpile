@@ -1,0 +1,27 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Keyboard Shortcuts")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-lightbulb"></span>
+    {{_("Keyboard Shortcuts")}}
+  </h1>
+  <p>
+    {{_("Mailpile has keyboard shortcuts which let you perform common operations using only the keyboard.")}}
+    {{_("These are disabled by default to prevent random key presses from causing accidents.")}}
+  </p>
+  <p>
+    {{_("Once keyboard shortcuts have been enabled, you can press `?` at any time to get help.")}}
+  </p>
+  <p>
+    {{_("To enable keyboard shortcuts, visit the preferences page.")}}<br>
+    <a data-dismiss="modal" href="/settings/preferences.html">
+      <button class="button-secondary right">
+        <span class="icon icon-animals"></span>
+        {{_("Preferences")}}
+      </button>
+    </a>
+  </p>
+
+</div>
+{% endblock %}

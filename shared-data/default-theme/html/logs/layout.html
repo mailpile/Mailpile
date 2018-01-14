@@ -2,11 +2,11 @@
 
 {%- block contenttools %}
   {%- set activities = [{
-    'name': 'privacy',
+    'name': 'settings',
     'icon': 'settings',
-    'url': U('/settings/privacy.html'),
-    'text': _("Privacy"),
-    'description': _("Security and Privacy Settings")
+    'url': U('/settings/'),
+    'text': _("Settings"),
+    'description': _("Settings and Technical Tools")
   },{
     'name': 'notifications',
     'icon': 'notifications',
@@ -19,35 +19,8 @@
     'url': U('/logs/network/'),
     'text': _("Network"),
     'description': _("Recent Network Activity")
-  },{
-    'name': 'tls',
-    'icon': 'links',
-    'aclass': 'auto-modal auto-modal-sticky',
-    'url': U('/crypto/tls/getcert/'),
-    'text': _("TLS Certs"),
-    'description': _("TLS Certificate Tool")
-  },{
-    'name': 'passwords',
-    'icon': 'user',
-    'aclass': 'auto-modal auto-modal-sticky',
-    'url': U('/settings/set/password/'),
-    'text': _("Passwords"),
-    'description': _("Account Password Management")
-  },{
-    'name': 'keys',
-    'icon': 'key',
-    'aclass': 'auto-modal auto-modal-sticky',
-    'url': U('/settings/set/password/keys.html'),
-    'text': _("Keys"),
-    'description': _("Encryption Key Management")
-  },{
-    'name': 'terminal',
-    'icon': 'robot',
-    'url': 'javascript:Mailpile.Terminal.toggle("small")',
-    'text': _("CLI"),
-    'description': _("Command Line Interface")
   }] %}
-  {%- set selection_initial_prompt = _("System activity, logs, events, troubleshooting, ...") %}
+  {%- set selection_initial_prompt = _("Settings, logs, events, troubleshooting, ...") %}
   {%- include("partials/tools_default.html") %}
 {%- endblock %}
 

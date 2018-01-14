@@ -443,7 +443,8 @@ class ConfigManager(ConfigDict):
 
             # Configure and load plugins as per config requests
             with mailpile.i18n.i18n_disabled:
-                self._configure_default_plugins()
+                if self.loaded_config:
+                    self._configure_default_plugins()
                 self.load_plugins(session)
 
             # Now all the plugins are loaded, reset and parse again!

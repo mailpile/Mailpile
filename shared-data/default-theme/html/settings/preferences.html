@@ -1,0 +1,180 @@
+{% if ui_from_profiles %}
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% else %}
+{% extends "logs/layout.html" %}
+{% endif %}
+
+{% block title %}{{_("Preferences")}}{% endblock %}
+
+{% block content %}
+<div class="content-normal settings-page">
+ <form method="POST"
+       action="{{ U('/settings/set/') }}?ui_return={{ U('/settings/preferences.html?ui_saved=True') }}"
+       >{{ csrf_field|safe }}
+
+  <h1>
+    <span class="icon icon-animals"></span>
+    {{_("Preferences")}}
+  </h1>
+
+  <div class="notices">
+  {% if ui_saved %}
+    <p>
+      <span class="icon icon-checkmark"></span>
+      {{_("Your settings have been saved.")}}
+    </p>
+  {% endif %}
+  </div>
+
+  <a name="searching"></a><div class="setting-group">
+    <h3>{{_("Searches and Tags")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-tags"></span>
+        {{_("Here you can customize how search results and tag views are displayed.")}}
+        {{_("The ordering and grouping options determine whether messages are grouped together into conversations or not, and which results are sorted to the top of the list.")}}
+      </p>
+      <p class="what">
+        <span class="icon icon-eye"></span>
+        {{_("The display density determines how tightly the results are packed together on your screen.")}}
+      </p>
+    </div>
+    <div class="settings">
+      {%- set rpp = {config.prefs.num_results: ' selected'} %}
+      {%- set rpp_opts = [20, 40, 80, 120] %}
+      {%- if config.prefs.num_results not in rpp_opts %}
+        {%- do rpp_opts.insert(0, config.prefs.num_results) %}
+      {%- endif %}
+      <p style="line-height: 1.8em;">
+        <label>{{_("Search results per page")}}:</label>
+        <select name="prefs.num_results" style="float: right;">
+          {% for val in rpp_opts %}
+          <option value="{{ val }}"{{ rpp.get(val, '') }}>{{ val }}</option>
+          {% endfor %}
+        </select>
+      </p>
+      {%- set dgo = {config.prefs.default_order: ' selected'} %}
+      {%- set orders = [
+              ('rev-date',      _("Conversations") + ", " + _("Newest First")),
+              ('date',          _("Conversations") + ", " + _("Oldest First")),
+              ('rev-flat-date', _("Messages") + ", " + _("Newest First")),
+              ('flat-date',     _("Messages") + ", " + _("Oldest First")),
+              ('rev-index',     _("Conversations") + ", " + _("Unsorted"))] %}
+      {%- if config.prefs.default_order not in ('rev-date', 'date', 'rev-flat-date', 'flat-date', 'rev-index') %}
+        {%- do orders.insert(0, (config.prefs.default_order, _("Custom") + ': ' + config.prefs.default_order)) %}
+      {%- endif %}
+      <p style="line-height: 1.8em;">
+        <label>{{_("Ordering and grouping")}}:</label>
+        <select name="prefs.default_order" style="float: right;">
+          {% for val, txt in orders %}
+          <option value="{{ val }}"{{ dgo.get(val, '') }}>{{ txt }}</option>
+          {% endfor %}
+        </select>
+      </p>
+      {%- set dd = {config.web.display_density: ' selected'} %}
+      <p style="line-height: 1.8em;">
+        <label>{{_("Display density")}}:</label>
+        <select name="web.display_density" style="float: right;">
+          <option value="comfy"{{ dd.get('comfy', '') }}>{{_("Comfy")}}</option>
+          <option value="cozy"{{  dd.get('cozy',  '') }}>{{_("Cozy")}}</option>
+          <option value="snug"{{  dd.get('snug',  '') }}>{{_("Snug")}}</option>
+        </select>
+      </p>
+    </div>
+    <br clear="both">
+  </div>
+
+  {%- set languages = mailpile("languages").result %}
+  <a name="language"></a><div class="setting-group">
+    <h3>{{_("User Interface")}}</h3>
+    <div class="explanation">
+      <p class="what">
+        <span class="icon icon-map"></span>
+        {{_("Mailpile is translated to many languages.")}}
+        {{_("The translation only applies to the application, not the e-mails themselves.")}}
+      </p>
+      <p class="risks">
+        <span class="icon icon-dislike"></span>
+        {{_("Note that some translations may be incomplete.")}}
+      </p>
+      <p class="more">
+        <a href="https://www.transifex.com/otf/mailpile/"
+           target=_blank>{{_("Help translate Mailpile")}}</a>.
+      </p>
+    </div>
+    <div class="settings">
+  {%- if languages %}
+      <p style="line-height: 1.8em;">
+        <label>{{_("User interface language")}}</label>:
+        <select name="prefs.language" style="float: right;">
+        {%- set selected = { (config.prefs.language or 'C'): ' selected' } %}
+        {%- for lc, txt in languages %}
+          <option value="{{ lc }}"{{ selected.get(lc, '') }}>{{ txt }}</option>
+        {%- endfor %}
+        </select>
+      </p>
+  {% endif %}
+    {%- for pref, val, label in (
+            ('web.keybindings', config.web.keybindings, _("Enable keyboard short-cuts")+':'),
+            ('web.donate_visibility', config.web.donate_visibility, _("Display donate link in topbar?")),
+            ) %}
+      {%- set sel = {val: ' checked'} %}
+      <p style="line-height: 1.6em;">
+        <label>{{ label }}</label>
+        <span class="float: right">
+          <input type=radio name="{{ pref }}" value="true" {{  sel.get(true,  '') }}>
+          <span class="checkbox">{{_("On")}}</span>
+          <input type=radio name="{{ pref }}" value="false" {{  sel.get(false,  '') }}>
+          <span class="checkbox">{{_("Off")}}</span>
+        </span>
+      </p>
+    {% endfor %}
+    </div>
+    <br clear="both">
+  </div>
+
+  <a name="searching"></a><div class="setting-group">
+    <h3>{{_("Danger Zone")}}</h3>
+    <div class="explanation">
+      <p class="risks">
+        <span class="icon icon-signature-unknown"></span>
+        {{_("Be careful!")}}
+        {{_("These are technical settings which may interfere with normal use of Mailpile.")}}
+        {{_("If Mailpile came with a warranty, changing these would invalidate it.")}}
+      </p>
+    </div>
+    <div class="settings">
+    {%- set danger_zone = [
+            ('web.developer_mode', config.web.developer_mode, _("Enable developer-only features")+':'),
+            ('prefs.open_in_browser', config.prefs.open_in_browser, _("Open in browser on startup")+':'),
+            ('prefs.always_bcc_self', config.prefs.always_bcc_self, _("Always BCC self when sending mail")+':'),
+            ('prefs.auto_mark_as_read', config.prefs.auto_mark_as_read, _("Automatically mark e-mail as read")+':'),
+            ] %}
+    {%- if config.web.developer_mode %}
+      {%- do danger_zone.extend([
+            ('prefs.gpg_use_agent', config.prefs.gpg_use_agent, _("Use the local GnuPG agent")+':'),
+            ('prefs.gpg_html_wrap', config.prefs.gpg_html_wrap, _("Wrap keys and signatures in helpful HTML")+':'),
+            ]) %}
+    {%- endif %}
+    {%- for pref, val, label in danger_zone %}
+      {%- set sel = {val: ' checked'} %}
+      <p style="line-height: 1.6em;">
+        <label>{{ label }}</label>
+        <span class="float: right">
+          <input type=radio name="{{ pref }}" value="true" {{  sel.get(true,  '') }}>
+          <span class="checkbox">{{_("On")}}</span>
+          <input type=radio name="{{ pref }}" value="false" {{  sel.get(false,  '') }}>
+          <span class="checkbox">{{_("Off")}}</span>
+        </span>
+      </p>
+    {% endfor %}
+    </div>
+    <br clear="both">
+  </div>
+
+  <span style="position: fixed; bottom: 15px; border: 5px solid #eee;">
+    <button class="button-primary" type="submit">{{_("Save Settings")}}</button>
+  </span>
+ </form>
+</div>
+{% endblock %}

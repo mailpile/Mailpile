@@ -690,9 +690,8 @@ class MailpileCommand(Extension):
     def _truthy(cls, txt, default=False):
         return truthy(txt, default=default)
 
-    @classmethod
-    def _is_dev_version(cls):
-        return ('dev' in APPVER or 'github' in APPVER or 'test' in APPVER)
+    def _is_dev_version(self):
+        return (self.env.session.config.web.developer_mode)
 
     def _is_configured(self):
         return (self.env.session.config.prefs.web_content != "unknown")

@@ -2,6 +2,9 @@
 {
     "name": "hacks",
     "author": "The Mailpile Team <team@mailpile.is>",
+    "description": "Tools for hackers and developers. This plugin adds some low-level CLI commands for exploring Mailpile data structures and internals.",
+    "display": true,
+    "public": false,
     "code": {
         "python": ["hacks.py"],
         "javascript": [],

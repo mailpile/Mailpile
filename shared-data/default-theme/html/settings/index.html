@@ -1,163 +1,151 @@
-{% extends "layouts/" + render_mode + ".html" %}
+{% if ui_from_profiles %}
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% else %}
+{% extends "logs/layout.html" %}
+{% endif %}
 
-{% macro render_form_settings_profile(routes) -%}  
-  <label>{{_("Name")}}</label>
-  <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
-  <label>{{_("Email")}}</label>
-  <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" autocorrect="off" autocapitalize="off" id="profile-add-email">
-  <label>{{_("Delivery route")}}</label>
-  <select name="route">
-    {% for route in routes %}
-    <option value="{{route}}">{{routes[route].name}}</option>
-    {% endfor %}
-  </select>
-{%- endmacro %}
-
-{% macro render_form_settings_route(rid, route) -%}
-  <input type="hidden" name="route_id" value="{{rid}}"/>
-  <label>{{_("Route name")}}</label>
-  <input type="text" name="name" value="{{route.name or ""}}" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
-  <label>{{_("Login")}}</label>
-  <input type="text" name="username" value="{{route.username or ""}}" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
-  <label>{{_("Password")}}</label>
-  <input type="password" name="password" value="{{route.password or ""}}" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
-  <label>{{_("Server")}}</label>
-  <input type="text" name="host" value="{{route.host or ""}}" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
-  <label>{{_("Port")}}</label>
-  <select name="port" id="route-add-port">
-    <option {% if route.port == 25 %}selected {% endif %}value="25">25</option>
-    <option {% if route.port == 587 %}selected {% endif %}value="587">587</option>
-    <option {% if route.port == 465 %}selected {% endif %}value="465">465 (TLS)</option>
-  </select>
-{%- endmacro %}
+{% block title %}{{_("Settings and Technical Tools")}}{% endblock %}
 
 {% block content %}
+<div class="content-normal settings-page">
 
-{% if "profiles" in result %}
-<!-- Profiles - Accessed via /settings/profiles -->
-<div id="settings-profiles" class="content-normal">
-  <button id="btn-settings-profile-add" class="right"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
-  <h3>{{_("Your Profiles")}}</h3>
-  <ul class="items">
-    {% for profile in result.profiles %}
-    <li class="separate">
-      <h3>{{profile.name}}</h3>
-      <label>{{_("Address:")}}</label> {{ profile.email }}<br/>
-      <label>{{_("Route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
-      <ul class="horizontal right">
-        <li><a href="" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
-        <li><a href=""><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
-      </ul>
-      <form id="form-settings-profile-" class="form-settings-profile-edit hide standard">{{ csrf_field|safe }}
-        {{ render_form_settings_profile(config.routes) }}
-      </form>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
+  <h1>
+    <span class="icon icon-settings"></span>
+    {{_("Settings and Tools")}}
+  </h1>
 
-{% if "routes" in result %}
-<!-- Routes - Accessed via /settings/routes -->
-<div id="settings-routes" class="content-normal">
-  <button id="btn-settings-route-add" class="right"><span class="icon-plus"></span> {{_("Add Route")}}</button>
-  <h3>{{_("Routes")}}</h3>
-  <ul class="items">
-  {% for rid in result.routes %}
-  {% set route = result.routes[rid] %}
-    <li class="separate">
-      <h4 class="">{{route.name}}</h4>
-      <ul class="horizontal right">
-        <li><a href="#" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
-        <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
-      </ul>
-      <form id="form-settings-route-{{rid}}" class="form-settings-route-edit hide standard">{{ csrf_field|safe }}
-        <h4>{{_("Edit Route")}}</h4>
-        {{ render_form_settings_route(rid, route) }}
-        <input type="submit" value="Cancel" class="button-info">
-        <input type="submit" value="Save" class="button-primary">
-      </form>
-    </li>
-  {% endfor %}
-  </ul>
-</div>
-{% endif %}
+  {% set motd = mailpile('motd', '--noupdate').result %}
+  
+  <p class="version-info" style="margin-left: 2em;">
+    {{_("This is Mailpile version %(version)s",
+        version=config.version)}}{% if motd._version_info %}:
+    <i>{{ motd._version_info }}</i>{% endif %}.
+  </p>
 
-{% if "prefs" in result %}
-<!-- Preferences - Accessed via /settings/prefs -->
-<div id="settings-preferrences" class="content-normal">
-  <h3>{{_("Preferences")}}</h3>
-  <a class="button" id="notifications-permission-option">{{_("Permit browser notifications")}}</a>
-  <ul>
-    {% for p in result.prefs %}
-    <li>{{p}}</li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
+  <a name="settings"></a><div class="setting-group" style="width: 33em; float: left;">
+    <h3>{{_("Settings")}}</h3>
+    <div style="margin-left: 1em; display: inline-block;">
+      <p>
+        <a href="{{ U('/settings/preferences.html') }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-animals"></span> {{_("Preferences")}}
+          </button>
+        </a> &nbsp;
+        {{_("Your Preferences")}}
+      </p>
+      <p>
+        <a href="{{ U('/settings/plugins.html') }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-lightbulb"></span> {{_("Plugins")}}
+          </button>
+        </a> &nbsp;
+        {{_("Plugins and Addons")}}
+      </p>
+{# FIXME: Make this work!
+      <p>
+        <a href="{{ U('/settings/remote-access.html') }}">
+          <button style="width: 175px; text-align: left;">
+            <span class="icon icon-force-graph"></span> {{_("Remote Access")}}
+          </button>
+        </a> &nbsp;
+        {{_("Mobile and Remote Access to Mailpile")}}
+      </p>
+#}
+      <p>
+        <a href="{{ U('/settings/privacy.html') }}">
+          <button style="width: 175px; text-align: left;">
+            <span class="icon icon-privacy"></span> {{_("Privacy")}}
+          </button>
+        </a> &nbsp;
+        {{_("Security and Privacy Settings")}}
+      </p>
+      <p>
+        <a href="{{ U('/setup/password/') }}">
+          <button class="button-warning" style="width: 175px; text-align: left;">
+            <span class="icon icon-lock-closed"></span> {{_("Password")}}
+          </button>
+        </a> &nbsp;
+        {{_("Change Your Mailpile Password")}}
+      </p>
 
-{% if "sys" in result %}
-<!-- Advanced - Accessed via /settings/sys -->
-<div id="settings-advanced" class="content-normal">
-  <h3>{{_("Advanced Settings")}}</h3>
-  <ul>
-    {% for p in result.sys %}
-    <li>{{p}}</li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
-
-<!-- Settings - Modal for form to add a new profile -->
-<script id="modal-settings-profile-add" type="text/template">
-  <div class="modal-dialog">
-  <form id="form-settings-profile-add" class="standard" action="" method="POST">{{ csrf_field|safe }}
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title"><span class="icon-profiles"></span> {{_("Add Profile")}}</h4>
-      </div>
-      <div class="modal-body">
-        {{ render_form_settings_profile(config.routes) }}
-      </div>
-      <div class="modal-footer">
-        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
-      </div>
     </div>
-  </form>
-</script>
+  </div>
 
-<!-- Settings - Modal for form to add a new route -->
-<script id="modal-settings-route-add" type="text/template">
-  <div class="modal-dialog">
-  <form id="form-settings-route-add" class="standard" action="" method="POST">{{ csrf_field|safe }}
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title"><span class="icon-routes"></span> {{_("Add Route")}}</h4>
-      </div>
-      <div class="modal-body">
-        {{ render_form_settings_route('add', config.routes) }}
-      </div>
-      <div class="modal-footer">
-        <button class="button-primary" type="submit"><span class="icon-plus"></span> {{_("Add Route")}}</button>
-      </div>
+  <a name="tools"></a><div class="setting-group" style="width: 33em; float: left;">
+    <h3>{{_("Tools")}}</h3>
+    <div style="margin-left: 1em; display: inline-block;">
+      <p>
+        <a href="{{ U('/logs/events/') }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-notifications"></span> {{_("Event Log")}}
+          </button>
+        </a> &nbsp;
+        {{_("Mailpile Event Log")}}
+      </p>
+      <p>
+        <a href="{{ U('/logs/network/') }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-force-graph"></span> {{_("Network")}}
+          </button>
+        </a> &nbsp;
+        {{_("Recent Network Activity")}}
+      </p>
+      <p>
+        <a class="auto-modal auto-modal-sticky" href="{{ U('/crypto/tls/getcert/') }}">
+          <button style="width: 175px; text-align: left;">
+            <span class="icon icon-links"></span> {{_("TLS Certs")}}
+          </button>
+        </a> &nbsp;
+        {{_("TLS Certificate Tool")}}
+      </p>
+      <p>
+        <a class="auto-modal auto-modal-sticky" href="{{ U('/settings/set/password/') }}">
+          <button style="width: 175px; text-align: left;">
+            <span class="icon icon-user"></span> {{_("Passwords")}}
+          </button>
+        </a> &nbsp;
+        {{_("Account Password Management")}}
+      </p>
+      <p>
+        <a class="auto-modal auto-modal-sticky" href="{{ U('/settings/set/password/keys.html') }}">
+          <button style="width: 175px; text-align: left;">
+            <span class="icon icon-key"></span> {{_("Keys")}}
+          </button>
+        </a> &nbsp;
+        {{_("Encryption Key Management")}}
+      </p>
+      <p>
+        <a href="#" onclick="Mailpile.Terminal.toggle('small');">
+          <button class="button-warning" style="width: 175px; text-align: left;">
+            <span class="icon icon-code"></span> {{_("CLI")}}
+          </button>
+        </a> &nbsp;
+        {{_("Command Line Interface")}}
+      </p>
+      <p>
+        <a href="#" class="shutdown-mailpile">
+          <button class="button-warning" style="width: 175px; text-align: left;">
+            <span class="icon icon-logout"></span> {{_("Shut Down")}}
+          </button>
+        </a> &nbsp;
+        {{_("Shut Down Mailpile")}}
+      </p>
     </div>
-  </form>
+  </div>
+  <br clear="both">
+
+</div>
+<script language="javascript">
+
+  $('a.shutdown-mailpile').click(function(ev) {
+    if (confirm(
+        "{{_('Are you sure you want to shut down Mailpile?')|escapejs}}")) {
+      Mailpile.API.quitquitquit_post({}, function() {
+        Mailpile.API._notify_dead(
+          'user', "{{_('Shutting down ...')|escapejs}}", true);
+      });
+    };
+  });
+
 </script>
-
 {% endblock %}
-{% block title %}
-  {% if "profiles" in result %}
-    {{_("Profiles")}} | {{_("Settings")}}  
-  {% elif "routes" in result %}
-    {{_("Routes")}} | {{_("Settings")}}
-  {% elif "prefs" in result %}
-    {{_("Preferences")}} | {{_("Settings")}}
-  {% elif "sys" in result %}
-    {{_("Advanced")}} | {{_("Settings")}}
-  {% else %}
-    ??? | {{_("Settings")}}
-  {% endif %}
-{% endblock %}
-

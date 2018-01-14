@@ -57,11 +57,10 @@ class hintsCommand(Command):
             '/page/hints/spambayes.html',
             BrokenSpambayes),
 
-        # FIXME: We should track whether the user is actually USING keyboard
-        #        shortcuts, and not bother them if that is the case.
         ('keyboard', 4, 180,
-            _('Mailpile has keyboard short-cuts!'),
-            "javascript:Mailpile.plugins.hints.keybindings();"),
+            _('Mailpile has keyboard shortcuts!'),
+            "/page/hints/keyboard-shortcuts.html",
+            lambda cfg, cgx: not cfg.web.keybindings),
 
         # Remind the user to manage their spam every 3 months.
         # FIXME: Allow user to somehow say "I know, shutup".

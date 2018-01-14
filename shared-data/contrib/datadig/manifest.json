@@ -3,7 +3,9 @@
 {
     "name": "datadig",
     "author": "The Mailpile Team <team@mailpile.is>",
-    "description": "Poor-man's data-mining: extract tabular (spreadsheet) data from e-mail.",
+    "description": "Poor-man's data-mining! This plugin adds a selection action for extracting data from e-mail. The extracted data can be downloaded as CSV and imported into standard spreadsheet applications.",
+    "display": true,
+    "public": true,
 
     "config": {},
     "code": {

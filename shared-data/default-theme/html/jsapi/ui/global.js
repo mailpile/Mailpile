@@ -40,8 +40,10 @@ Mailpile.render = function() {
     $('#sidebar-tag-outbox').show();
   }
 
+{% if config.web.keybindings %}
   // Initialize/Configure Keybindings
   Mailpile.initialize_keybindings();
+{% endif %}
 
   // This fixes some of the drag-drop misbehaviours; first we disable the
   // native HTML5 drag-drop of <a> elements...
