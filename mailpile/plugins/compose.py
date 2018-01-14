@@ -278,10 +278,10 @@ class CompositionCommand(AddComposeMethods(Search)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
-                self._background_save(index=True)
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) created') % len(emails)
+        self._background_save(index=True)
         session.ui.mark(self.message)
         return self._return_search_results(self.message, emails,
                                            expand=emails,
@@ -758,6 +758,9 @@ class Attach(CompositionCommand):
             self.message = _('Attached %s to %d messages'
                              ) % (file_list, len(updated))
 
+        if updated:
+            self._background_save(index=True)
+
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
                                            expand=updated, error=errors)
@@ -819,6 +822,9 @@ class UnAttach(CompositionCommand):
         else:
             self.message = _('Removed %s from %d messages'
                              ) % (', '.join(atts), len(updated))
+
+        if updated:
+            self._background_save(index=True)
 
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
@@ -960,6 +966,7 @@ class Sendit(CompositionCommand):
                 email.reset_caches()
                 idx.index_email(self.session, email)
 
+            self._background_save(index=True)
             return self._return_search_results(
                 _('Sent %d messages') % len(sent), sent, sent=sent)
         else:
@@ -1000,6 +1007,7 @@ class Update(CompositionCommand):
 
             if outbox:
                 self._create_contacts(emails)
+                self._background_save(index=True)
                 return self._return_search_results(message, emails,
                                                    sent=emails)
             else:
@@ -1046,6 +1054,7 @@ class UnThread(CompositionCommand):
         if emails:
             for email in emails:
                 idx.unthread_message(email.msg_mid())
+            self._background_save(index=True)
             return self._return_search_results(
                 _('Unthreaded %d messages') % len(emails), emails)
         else:
