@@ -228,6 +228,7 @@ class EventLog(object):
             self._log_fd = EncryptingStreamer(enc_key,
                                               dir=self.logdir,
                                               name='EventLog/ES',
+                                              use_filter=False,
                                               long_running=True)
             self._log_fd.save(self._save_filename(), finish=False)
         else:
@@ -235,7 +236,7 @@ class EventLog(object):
 
         # Write any incomplete events to the new file
         for e in self.incomplete():
-            self._log_fd.write('%s\n' % e)
+            self._log_fd.write_pad_and_flush('%s\n' % e, pad=' ')
 
         # We're starting over, incomplete events don't count
         self._logged = 0
@@ -260,7 +261,7 @@ class EventLog(object):
         events.sort(key=lambda ev: ev.ts)
         try:
             for event in events:
-                self._log_fd.write('%s\n' % event)
+                self._log_fd.write_pad_and_flush('%s\n' % event, pad=' ')
                 self._events[event.event_id] = event
         except IOError:
             if recursed:
@@ -282,7 +283,7 @@ class EventLog(object):
                 lines = fd.read()
             if lines:
                 for line in lines.splitlines():
-                    event = Event.Parse(line)
+                    event = Event.Parse(line.strip())
                     self._events[event.event_id] = event
 
     def _match(self, event, filters):

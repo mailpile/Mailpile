@@ -308,6 +308,9 @@ class OutputCoprocess(IOCoprocess):
     def write(self, data, *args, **kwargs):
         return self._fd.write(self._write_filter(data), *args, **kwargs)
 
+    def flush(self):
+        return self._fd.flush()
+
 
 class InputCoprocess(IOCoprocess):
     """
@@ -493,6 +496,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
 
     PREFERRED_CIPHER = None
+    FILTER_BLOCKSIZE = 19 * 3 * 16  # Make AES and Base64 happy
 
     def __init__(self, key,
                  dir=None, cipher=None, name=None, header_data=None,
@@ -506,11 +510,11 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
         if self.cipher == 'aes-128-ctr':
             self.encryptor = aes_ctr_encryptor(self.key, self.nonce)
             self.encoder = base64.encodestring
-            self.encode_batches = 19 * 3 * 16  # Make AES and Base64 happy
+            self.encode_batches = self.FILTER_BLOCKSIZE
         elif self.cipher == 'none':
             self.encryptor = lambda d: d
             self.encoder = base64.encodestring
-            self.encode_batches = 19 * 3 * 16  # Make AES and Base64 happy
+            self.encode_batches = self.FILTER_BLOCKSIZE
         elif self.cipher == 'broken':
             self.encoder = self.encryptor = lambda d: d
             self.encode_batches = None
@@ -564,6 +568,16 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
 
     def outer_mac_sha256(self):
         return mac_sha256(self.key or '', self.outer_sha.digest())
+
+    def write_pad_and_flush(self, data, pad=' '):
+        if self.encryptor and (data or self.encode_buffer):
+            if self.encode_batches:
+                remainder = len(self.encode_buffer) + len(data)
+                remainder %= self.encode_batches
+                padding = self.encode_batches - remainder
+                data += (pad * padding)
+        self.write(data)
+        self.flush()
 
     def finish(self, *args, **kwargs):
         if not self.finished:
