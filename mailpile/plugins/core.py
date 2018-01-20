@@ -1028,6 +1028,22 @@ class CatFile(Command):
 
 ##[ Configuration commands ]###################################################
 
+
+class ListLanguages(Command):
+    """List available languages"""
+    SYNOPSIS = (None, 'languages', 'settings/languages', '')
+    ORDER = ('Config', 1)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = False
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self):
+        from mailpile.i18n import ListTranslations
+        langs = ListTranslations(self.session.config)
+        return self._success(_('Listed available translations'),
+                             result=sorted([(l, langs[l]) for l in langs]))
+
+
 class ConfigSet(Command):
     """Change a setting"""
     SYNOPSIS = ('S', 'set', 'settings/set',
@@ -1660,10 +1676,14 @@ class Quit(Command):
     ORDER = ("Internals", 2)
     CONFIG_REQUIRED = False
     RAISES = (KeyboardInterrupt,)
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'restart': 'Set to restart instead of shutting down'
+    }
     COMMAND_SECURITY = security.CC_QUIT
 
     def command(self):
-        if 'restart' in self.args:
+        if 'restart' in self.args or self.data.get('restart', [False])[0]:
             mailpile.util.QUITTING = 'restart'
         else:
             mailpile.util.QUITTING = mailpile.util.QUITTING or True
@@ -1993,6 +2013,6 @@ _plugins.register_commands(
     BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus, HealthCheck,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID, Cleanup,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
-    RenderPage, Output, Pipe,
+    ListLanguages, RenderPage, Output, Pipe,
     Help, HelpVars, HelpSplash, Quit, IdleQuit, TrustingQQQ, Abort
 )

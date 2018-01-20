@@ -1,0 +1,133 @@
+{% if ui_from_profiles %}
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% else %}
+{% extends "logs/layout.html" %}
+{% endif %}
+
+{% block title %}{{_("Plugins")}}{% endblock %}
+
+{% block content %}
+<div class="content-normal settings-page">
+  <h1>
+    <span class="icon icon-lightbulb"></span>
+    {{_("Plugins")}}
+  </h1>
+
+  <div class="notices">
+  {% if ui_saved %}
+    <p>
+      <span class="icon icon-checkmark"></span>
+      {{_("Your settings have been saved.")}}
+    </p>
+  {% endif %}
+  </div>
+
+  {%- set plugins = mailpile("plugins").result %}
+  {%- for pname in plugins|sort %}
+  {%- set plugin = plugins[pname] %}
+  {%- if (plugin.manifest and
+          plugin.manifest.display and
+          (plugin.manifest.public or is_dev_version())) %}
+  <a name="plugin-{{ pname }}"></a><div class="setting-group">
+    {%- set ui = plugin.manifest.user_interface %}
+    {%- set icon = (
+         (ui and ui.activities and ui.activities[0].icon) or
+         (ui and ui.selection_actions and ui.selection_actions[0].icon) or
+         (ui and ui.display_refiners and ui.display_refiners[0].icon) or
+         'code') %}
+    {%- set icon = 'code' if '/' in icon else icon %}
+    <h3>
+      {{ plugin.manifest.name or pname }}
+    </h3>
+    <div class="explanation">
+      {% if plugin.loaded %}
+      <p class="what">
+        <span class="icon icon-{{ icon }}"></span>
+        {{_("This plugin is currently enabled!")}}
+      </p>
+      {% else %}
+      <p>
+        <span class="icon icon-{{ icon }}"></span>
+        {{_("This plugin is disabled.")}}
+      </p>
+      {% endif %}
+      <p>
+        {{_("Author")}}: <i>{{ plugin.manifest.author }}</i>
+      </p>
+      {% if not plugin.manifest.public %}
+      <p class="risks">
+        <span class="icon icon-signature-unknown"></span>
+        {{_("Be careful!")}}
+        {{_("This plugin is meant for developers and may be incomplete or dangerous.")}}
+      </p>
+      {% endif %}
+    </div>
+    <div class="settings">
+      <p>
+        {{ _(plugin.manifest.description) }}
+      </p>
+      <p>
+      {%- if plugin.loaded %}
+       {% if pname not in config.sys.plugins %}
+        <span class="right">
+          <i>{{_("Plugin will be disabled on restart.")}}</i> &nbsp;
+          <button class="button-warning plugin-restart">
+            <span class="icon icon-logout"></span>
+            {{_("Restart Now")}}
+          </button>
+        </span>
+       {% else %}
+        <button class="button-primary right plugin-disable"
+                data-plugin="{{ pname }}">
+          <span class="icon icon-x"></span>
+          {{_("Disable:")}} {{ pname }}
+        </button>
+       {% endif %}
+      {%- else %}
+        <button class="button-secondary right plugin-enable"
+                data-plugin="{{ pname }}">
+          <span class="icon icon-{{ icon }}"></span>
+          {{_("Enable")}}: {{ pname }}
+        </button>
+      {%- endif %}
+      </p>
+    </div>
+    <br clear="both">
+  </div>
+  {% endif %}{%- endfor %}
+</div>
+<script language="javascript">
+
+  $('button.plugin-disable').click(function(ev) {
+    var plugin = $(this).data('plugin');
+    Mailpile.API.plugins_disable_post({
+      plugin: plugin
+    }, function() {
+      document.location.href = document.location.href;
+    });
+  });
+
+  $('button.plugin-enable').click(function(ev) {
+    var plugin = $(this).data('plugin');
+    Mailpile.API.plugins_load_post({
+      plugin: plugin
+    }, function() {
+      // Plugin loaded, just refresh page.
+      document.location.href = document.location.href;
+    });
+  });
+
+  $('button.plugin-restart').click(function(ev) {
+    if (confirm(
+        "{{_('Are you sure you want to restart Mailpile?')|escapejs}}")) {
+      Mailpile.API.quitquitquit_post({
+        restart: 'now'
+      }, function() {
+        Mailpile.API._notify_dead(
+          'user', "{{_('Restarting ...')|escapejs}}", true);
+      });
+    }
+  });
+
+</script>
+{% endblock %}

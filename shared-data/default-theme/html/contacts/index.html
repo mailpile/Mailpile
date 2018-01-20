@@ -6,6 +6,7 @@
 </div>
 {% endblock %}
 {% block content %}
+{% if 0 and is_dev_version() %}
   <h2>
     IMPORTANT: This page is unfinished. Please don't be surprised by bugs.
   </h2>
@@ -69,5 +70,8 @@ $(document).ready(function() {
   Mailpile.Contacts.init();
 });
 </script>
+{% else %}
+  {{ mailpile('http/redirect', U('/')) }}
+{% endif %}
 {% endblock %}
 

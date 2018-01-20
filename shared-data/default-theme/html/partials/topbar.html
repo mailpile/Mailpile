@@ -26,7 +26,7 @@
         <li class="nav-search">
           <a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a>
         </li>
-  {%- if is_dev_version() %}
+  {%- if is_dev_version() %}{# FIXME ! #}
         <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;">
           <a class="auto-modal" data-flags="" data-icon="icon-code"
              title="{{_('How to report bugs')}}"
@@ -60,9 +60,13 @@
 #}
         {% if config.web.donate_visibility %}
         <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %}">
-          <a class="donate" href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}" alt="{{_("Contribute")}}"><span class="link-icon icon-donate"></span></a>
+          <a class="donate auto-modal" data-flags="" data-icon="icon-code"
+             href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}" alt="{{_("Contribute")}}"><span class="link-icon icon-donate"></span></a>
         </li>
         {% endif %}
+        <li class="{% if command == "settings" %} navigation-on{% endif %}">
+          <a class="home" href="{{ U("/settings/") }}" title="{{_("Settings and Tools")}}" alt="{{_("Home")}}"><span class="link-icon icon-settings"></span></a>
+        </li>
         <li><a href="{{ U("/auth/logout/") }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>

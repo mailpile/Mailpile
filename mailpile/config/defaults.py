@@ -22,6 +22,7 @@ from mailpile.config.base import KeyConfigRule as k
 _ = lambda string: string
 
 
+DEV_MODE = ('rc' in APPVER or 'dev' in APPVER or 'github' in APPVER)
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
@@ -79,7 +80,8 @@ CONFIG_RULES = {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('Misc. data refresh frequency'), int,       900),
         'open_in_browser':p(_('Open in browser on startup'), bool,       True),
-        'auto_mark_as_read': p(_('Automatically mark as read'), bool, True),
+        'auto_mark_as_read': p(_('Automatically mark e-mail as read'),
+                                                                   bool, True),
         'web_content':     (_('Download content from the web'),
                             ["off", "anon", "on"],                  "unknown"),
         'html5_sandbox':   (_('Use HTML5 sandboxes'), bool,              True),
@@ -110,7 +112,7 @@ CONFIG_RULES = {
                             str, 'none'),
         'inline_pgp':      (_('Use inline PGP when possible'), bool,     True),
         'encrypt_subject': (_('Encrypt subjects by default'), bool,      True),
-        'default_order':   (_('Default sort order'), str,     'rev-freshness'),
+        'default_order':   (_('Default sort order'), str,          'rev-date'),
         'obfuscate_index':X(_('Key to use to scramble the index'), str,    ''),
         'index_encrypted':X(_('Make encrypted content searchable'),
                             bool, False),
@@ -136,6 +138,8 @@ CONFIG_RULES = {
         }],
     }),
     'web': (_("Web Interface Preferences"), False, {
+        'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
+        'developer_mode':  (_('Enable developer-only features'), bool, DEV_MODE),
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),

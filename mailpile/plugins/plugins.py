@@ -14,7 +14,7 @@ class Plugins(mailpile.commands.Command):
     """List the currently available plugins."""
     SYNOPSIS = (None, 'plugins', None, '[<plugins>]')
     ORDER = ('Config', 9)
-    HTTP_CALLABLE = ()
+    HTTP_CALLABLE = ('GET',)
 
     def command(self):
         pm = self.session.config.plugins
@@ -34,20 +34,25 @@ class Plugins(mailpile.commands.Command):
 
 class LoadPlugin(mailpile.commands.Command):
     """Load and enable a given plugin."""
-    SYNOPSIS = (None, 'plugins/load', None, '<plugin>')
+    SYNOPSIS = (None, 'plugins/load', 'plugins/load', '<plugin>')
     ORDER = ('Config', 9)
-    HTTP_CALLABLE = ()
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'plugin': '<plugin name>'
+    }
     COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         config = self.session.config
         plugins = config.plugins
-        for plugin in self.args:
+        args = list(self.args) + self.data.get('plugin', [])
+
+        for plugin in args:
             if plugin in plugins.LOADED:
                 return self._error(_('Already loaded: %s') % plugin,
                                    info={'loaded': plugin})
 
-        for plugin in self.args:
+        for plugin in args:
             try:
                 # FIXME: This fails to update the ConfigManger
                 if plugins.load(plugin, process_manifest=True, config=config):
@@ -66,22 +71,26 @@ class LoadPlugin(mailpile.commands.Command):
 
 class DisablePlugin(mailpile.commands.Command):
     """Disable a plugin."""
-    SYNOPSIS = (None, 'plugins/disable', None, '<plugin>')
+    SYNOPSIS = (None, 'plugins/disable', 'plugins/disable', '<plugin>')
     ORDER = ('Config', 9)
-    HTTP_CALLABLE = ()
+    HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'plugin': '<plugin name>'
+    }
     COMMAND_SECURITY = security.CC_CHANGE_CONFIG
 
     def command(self):
         config = self.session.config
         plugins = config.plugins
-        for plugin in self.args:
+        args = list(self.args) + self.data.get('plugin', [])
+        for plugin in args:
             if plugin in plugins.REQUIRED:
                 return self._error(_('Required plugins can not be disabled: %s'
                                      ) % plugin)
             if plugin not in config.sys.plugins:
                 return self._error(_('Plugin not loaded: %s') % plugin)
 
-        for plugin in self.args:
+        for plugin in args:
             while plugin in config.sys.plugins:
                 config.sys.plugins.remove(plugin)
 

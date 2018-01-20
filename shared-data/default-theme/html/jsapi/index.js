@@ -172,6 +172,7 @@ Mailpile.API = {
     var advice = ((document.location.href.indexOf('/localhost:') == -1)
                   ? '{{_("Check your network?")|escapejs}}'
                   : '{{_("Restart the app?")|escapejs}}');
+    if (status == "user") advice = "";
     if (fullscreen) {
       if (!$('#connection-down').length) {
         var template = Mailpile.safe_template($('#template-connection-down').html());

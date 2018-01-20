@@ -10,7 +10,7 @@
       </div>
     </div>
     <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(from)}}">
-{%- if is_dev_version() %}
+{%- if 0 and is_dev_version() %}
       {% if not from.flags.contact and not from.flags.profile: %}
       <li role="presentation">
         <a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#">

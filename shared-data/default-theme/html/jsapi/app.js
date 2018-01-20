@@ -20,7 +20,7 @@
 {% include("jsapi/compose/body.js") %}
 
 /* JS - Contacts */
-{% if is_dev_version() %}
+{% if 0 and is_dev_version() %}
 {% include("jsapi/contacts/init.js") %}
 {% include("jsapi/contacts/display_modes.js") %}
 {% include("jsapi/contacts/events.js") %}

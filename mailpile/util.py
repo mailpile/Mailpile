@@ -842,7 +842,12 @@ def dict_merge(*dicts):
 
 def play_nice(niceness):
     if hasattr(os, 'nice'):
-        os.nice(niceness)
+        try:
+            # Note: This fails on WSL (the "native" Ubuntu on Windows)
+            return os.nice(niceness)
+        except OSError:
+            pass
+    # FIXME: Try alternate strategies on other platforms?
 
 
 def play_nice_with_threads(sleep=True, weak=False, deadline=None):

@@ -4,48 +4,56 @@
 <div class="content-normal" style="max-width: 46em;">
 
   <h1><span class="icon-code"></span> {{_("Reporting Bugs")}}</h1>
+  <div style="font-size: 0.9em; width: 40%; text-align: right; float: right; margin-left: 1em; line-height: 1.1em;">
+    <b>{{_("Note:")}}</b>
+    {{_("These instructions are in English only, because we are currently unable to accept bug reports in other languages. Sorry!")}}
+  </div>
   <p>
-    Thank you for testing Mailpile! Have you found a bug?
+    {{_("Thank you for testing Mailpile!")}}<br>
+    Have you found a bug?<br>
+    Please follow the following instructions to report it.
+  </p>
+  <ul style="list-style: disc; padding: 0.5em 2em;">
+    <li>
+      Ensure the bug was not already reported by searching on GitHub
+      under <a href="https://github.com/mailpile/Mailpile/issues"
+               target=_blank>Issues</a>.
+    </li>
+    <li>
+      If you're unable to find an open issue addressing the problem,
+      <a href="https://github.com/mailpile/Mailpile/issues/new"
+         target=_blank>open a new one</a>.
+      Be sure to include a title and clear description, and as much
+      relevant information as possible.
+    </li>
+    <li>
+      Remember, we cannot read your mind or see your screen, so you'll
+      probably need to answer all of these:
+      <ol style="list-style: disc; padding: 0.5em 2em 0 2em;">
+        <li>What were you doing?
+        <li>What did you expect would happen?
+        <li>What actually happened?
+        <li>Operating system? GnuPG version? Mailpile version?
+      </ol>
+    </li>
+    <li>
+      Reproducability is key. If you cannot reliably trigger the bug or
+      cannot describe how to do so, then unfortunately it's less likely that
+      the Mailpile team will be able to do anything about it. It may still
+      be useful to file a report in case others are having the same issue, but
+      bugs that can be reproduced will in general get fixed much faster!
+    </li>
+  </ul>
+  <p>
+    Please consult our
+    <a href="https://github.com/mailpile/Mailpile/blob/master/CONTRIBUTING.md"
+       target=_blank>Contributor Guidelines</a> for further details.<br>
+    The <a href="https://github.com/mailpile/Mailpile/blob/master/DEV_FAQ.md"
+           target=_blank>Developer FAQ</a> has a section on debugging techniques.
+  </p>
+  <p>
+    Thank you!
   </p>
 
-{%- if is_dev_version() %}
-  <h4>Warning: Men at work!</h4>
-  <p>
-    This is a development verson of Mailpile! You are running code which is
-    being actively developed and many things are <b>expected</b> to be broken.
-  </p>
-  <p>
-    So for now, we don't particularly recommend filing
-    <a target=_blank href="https://github.com/mailpile/Mailpile/issues">issues
-    on Github</a>, except for long-term ideas, discussions or feature requests.
-    Pull requests on the other hand, are <i>always</i> welcome! ;-)
-  </p>
-  <p>
-    We don't mean to be ungrateful. Quite the opposite, writing a good bug
-    report is a lot of work and we really don't want you to waste your time.
-    While so many things are broken, the only way for you to know whether a
-    bug is worth filing, is to <i>talk to us</i>.
-  </p>
-  <p>
-    So please,
-    <a target=_blank href="https://webchat.freenode.net/?channels=%23mailpile">hop
-    on to #mailpile on Freenode</a> and have a chat!
-  </p>
-  <p>
-    Obviously, this will all change
-    <a target=_blank href="https://www.mailpile.is/roadmap/">once development
-    slows down</a> for the next release. But for now: IRC before Issues.<br>
-  </p>
-  <p>
-    Thanks!
-  </p>
-
-{%- else %}
-
-  <p>
-    <b>FIXME: Write a bug reporting policy for releases!</b>
-  </p>
-
-{%- endif %}
 </div>
 {% endblock %}
