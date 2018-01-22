@@ -226,7 +226,7 @@ class PluginManager(object):
                 self._process_manifest_pass_two(*spec)
                 self._process_startup_hooks(*spec)
         else:
-            print 'What what what?? %s' % plugin_name
+            print 'Unrecognized plugin: %s' % plugin_name
             return self
 
         if plugin_name not in self.LOADED:

@@ -382,13 +382,13 @@ class ConfigManager(ConfigDict):
                                        ] = [None] + self.plugins.loadable()
 
     def _configure_default_plugins(self):
-        if len(self.sys.plugins) == 0:
+        if (len(self.sys.plugins) == 0) and self.loaded_config:
             self.sys.plugins.extend(self.plugins.DEFAULT)
             for plugin in self.plugins.WANTED:
                 if plugin in self.plugins.available():
                     self.sys.plugins.append(plugin)
         else:
-            for pos in range(0, len(self.sys.plugins)):
+            for pos in self.sys.plugins.keys():
                 name = self.sys.plugins[pos]
                 if name in self.plugins.RENAMED:
                     self.sys.plugins[pos] = self.plugins.RENAMED[name]
@@ -443,14 +443,16 @@ class ConfigManager(ConfigDict):
 
             # Configure and load plugins as per config requests
             with mailpile.i18n.i18n_disabled:
-                if self.loaded_config:
-                    self._configure_default_plugins()
+                self._configure_default_plugins()
                 self.load_plugins(session)
 
             # Now all the plugins are loaded, reset and parse again!
             self.reset_rules_from_source()
             self.parse_config(session, '\n'.join(pub_lines), source=self.conf_pub)
             self.parse_config(session, '\n'.join(prv_lines), source=self.conffile)
+
+            # Do this again, so renames and cleanups persist
+            self._configure_default_plugins()
 
         ## The following events only happen when we've successfully loaded
         ## both config files!
