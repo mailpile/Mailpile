@@ -152,6 +152,7 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
       FilesAdded: function(up, files) {
         // Loop through added files
         plupload.each(files, function(file) {
+	  
           // Show warning for ~20MB or larger
           if ((file.size < 200000000) ||
               confirm(file.name + ' {{_("is")|escapejs}} ' + plupload.formatSize(file.size) + '.\n' +
@@ -171,13 +172,13 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
       UploadProgress: function(up, file) {
         $('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
 	if (file.percent < 100) {
-          var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
+          var progress = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
 	}
 	else {
-	  var progressBar = "Processing Upload...";
+	  var progress = "Processing Upload...";
 	}
         //$('.attachment-progress-bar').html(progressBar);
-	Mailpile.notification({status: 'info', message: progressBar, event_id: "Upload-" + file.id });
+	Mailpile.notification({status: 'info', message: progress, event_id: "Upload-" + file.id });
       },
       FileUploaded: function(up, file, response) {
         if (response.status == 200) {
