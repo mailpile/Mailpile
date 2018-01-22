@@ -199,6 +199,8 @@ def Main(args):
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
+    print 'AAAAA' # *** DEBUG
+
     try:
         try:
             if '--login' in args:
