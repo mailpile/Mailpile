@@ -3,9 +3,10 @@ python: 2.7
 env:
   - TOX_ENV=py27
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install -y gnupg
+addons:
+  apt:
+    packages:
+      - gnupg
 
 install:
   - pip install tox coveralls
