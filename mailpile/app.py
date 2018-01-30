@@ -187,9 +187,11 @@ def Main(args):
         session.main = True
         try:
             CatchUnixSignals(session)
-            config.clean_tempfile_dir()
+            config.clean_tempfile_dir()     # *** What if this is 2nd Mailpile.
             config.load(session)
+            print 'TTTTT'
         except IOError:
+            print 'UUUUU', config.sys.lockdown
             if config.sys.debug:
                 session.ui.error(_('Failed to decrypt configuration, '
                                    'please log in!'))
@@ -199,7 +201,7 @@ def Main(args):
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
-    print 'AAAAA' # *** DEBUG
+    print 'AAAAA', config.sys.lockdown
 
     try:
         try:
@@ -246,6 +248,11 @@ def Main(args):
         traceback.print_exc()
 
     finally:
+    
+        print 'BBBBB',config.sys.lockdown
+        if isinstance(config.lock_workdir, str):
+            pass
+    
         if readline is not None:
             readline.write_history_file(session.config.history_file())
 

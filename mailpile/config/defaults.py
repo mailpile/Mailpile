@@ -35,6 +35,8 @@ CONFIG_RULES = {
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_host':     p(_('Listening host for web UI'),
                            'hostname', 'localhost'),
+        'http_port_min': p(_('Min random port for web UI'), int,        32769),
+        'http_port_max': p(_('Max random port for web UI'), int,        39999),
         'http_port':     p(_('Listening port for web UI'), int,         33411),
         'http_path':     p(_('HTTP path of web UI'), 'webroot',            ''),
         'http_no_auth':  X(_('Disable HTTP authentication'),      bool, False),

@@ -69,22 +69,25 @@ class ConfigManager(ConfigDict):
         if workdir:
             return workdir
 
-        # Which profile?
-        profile = os.getenv('MAILPILE_PROFILE', 'default')
+        # Which pile?
+        pile = os.getenv('MAILPILE_PILENAME', 'default')
+        if not pile:
+            # Legacy env variable (PROFILE here means pile)
+            pile = os.getenv('MAILPILE_PROFILE', 'default')
 
         # Check if we have a legacy setup we need to preserve
-        workdir = self.LEGACY_DEFAULT_WORKDIR(profile)
+        workdir = self.LEGACY_DEFAULT_WORKDIR(pile)
         if not AppDirs or (os.path.exists(workdir) and os.path.isdir(workdir)):
             return workdir
 
         # Use platform-specific defaults
         # via https://github.com/ActiveState/appdirs
         dirs = AppDirs("Mailpile", "Mailpile ehf")
-        return os.path.join(dirs.user_data_dir, profile)
+        return os.path.join(dirs.user_data_dir, pile)
 
     @classmethod
-    def LEGACY_DEFAULT_WORKDIR(self, profile):
-        if profile == 'default':
+    def LEGACY_DEFAULT_WORKDIR(self, pile):
+        if pile == 'default':
             # Backwards compatibility: If the old ~/.mailpile exists, use it.
             workdir = os.path.expanduser('~/.mailpile')
             if os.path.exists(workdir) and os.path.isdir(workdir):
@@ -102,7 +105,7 @@ class ConfigManager(ConfigDict):
             basedir = os.getenv('XDG_DATA_HOME',
                                 os.path.expanduser('~/.local/share'))
 
-        return os.path.join(basedir, 'Mailpile', profile)
+        return os.path.join(basedir, 'Mailpile', pile)
 
     @classmethod
     def DEFAULT_SHARED_DATADIR(self):
@@ -224,7 +227,7 @@ class ConfigManager(ConfigDict):
             else:
                 if session:
                     session.ui.error(_('Another Mailpile or program is'
-                                       ' using the profile directory'))
+                                       ' using the pile data directory'))
                 sys.exit(1)
 
     def parse_config(self, session, data, source='internal'):

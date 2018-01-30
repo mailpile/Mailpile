@@ -6,6 +6,7 @@
 import datetime
 import json
 import os
+import getpass
 import random
 import re
 import socket
@@ -415,7 +416,7 @@ class BrowseOrLaunch(Command):
                      config.sys.http_path or '')
 
         try:
-            socket.create_connection(sspec[:2])
+            #*** DEBUG socket.create_connection(sspec[:2])
             self.Browse(sspec)
             os._exit(127)
         except IOError:
@@ -429,6 +430,8 @@ class RunWWW(Command):
     SYNOPSIS = (None, 'www', None, '[<host:port/path>]')
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
+    
+    RANDOM_PORT_TRIES = 5
 
     def command(self):
         config = self.session.config
@@ -438,18 +441,49 @@ class RunWWW(Command):
         if self.args:
             host, portpath = self.args[0].split('://')[-1].split(':', 1)
             port, path = (portpath+'/').split('/', 1)
-            port = int(port)
+            port = int(port) # *** User input - Validate!
+             
+            if port == 0:
+                # Select random port number and check for prior use.
+                
+                # Make discover_piles() request to get configured ports.
+                try:
+                    port_option = ('config/sys:', 'http_port',
+                                    config.rules['sys'][2]['http_port'][2] )
+                except (IndexError, KeyError):
+                    port_option = ('config/sys:', 'http_port', 33411 )
+                
+                # List ports configured in accessible piles.
+                ports_taken = []
+                try:
+                    for port_value in discover_piles([port_option],
+                                        getpass.getuser(), config.workdir):
+                        ports_taken.append(port_value[0])
+                except :
+                    pass
+                    
+                for tries in range(self.RANDOM_PORT_TRIES):
+                    port_try = random.randrange(config.sys.http_port_min,
+                                                config.sys.http_port_max)
+                    if port_try in ports_taken:
+                        continue
+                    try:
+                        socket.socket().connect((host,port_try))
+                    except socket.error:
+                        port = port_try
+                        break
             sspec = (host, port, WebRootCheck(path))
         else:
             sspec = ospec
 
-        if self.session.config.http_worker:
-            self.session.config.http_worker.quit(join=True)
-            self.session.config.http_worker = None
+        if config.http_worker:
+            config.http_worker.quit(join=True)
+            config.http_worker = None
 
-        self.session.config.prepare_workers(self.session,
-                                            httpd_spec=tuple(sspec),
-                                            daemons=True)
+        if sspec[1] != 0:
+            config.prepare_workers(self.session,
+                                                httpd_spec=tuple(sspec),
+                                                daemons=True)
         if config.http_worker:
             sspec = config.http_worker.httpd.sspec
             http_url = 'http://%s:%s%s/' % sspec
