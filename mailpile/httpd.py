@@ -561,10 +561,13 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def finish_request(self, request, client_address):
         try:
             SimpleXMLRPCServer.finish_request(self, request, client_address)
-        except socket.error:
+        except (socket.error, AttributeError):
+            # AttributeError may get thrown if the underlying socket has
+            # already been closed elsewhere and _sock = None.
             pass
-        if mailpile.util.QUITTING:
-            self.shutdown()
+        finally:
+            if mailpile.util.QUITTING:
+                self.shutdown()
 
 
 class HttpWorker(threading.Thread):
