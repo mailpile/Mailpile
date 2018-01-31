@@ -80,7 +80,7 @@ Mailpile.silly_strings = {
     '{{_("We like volcanos, do you like volcanos?")|escapejs}}',
     '{{_("A million hamsters are spinning their wheels right now")|escapejs}}',
     '{{_("Tapping earth for more geothermal energy")|escapejs}}',
-    '{{_("Digging moat. Filing with alligators. Fortifying walls")|escapejs}}',
+    '{{_("Digging moat. Filling with alligators. Fortifying walls")|escapejs}}',
     '{{_("Crossing out swear words...")|escapejs}}',
     '{{_("Compiling bullshit bingo grid...")|escapejs}}',
     '{{_("Abandon all hope, ye who enter here")|escapejs}}',
