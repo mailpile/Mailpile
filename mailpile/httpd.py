@@ -410,6 +410,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         else:
             name = 'Chelsea Manning'
 
+        http_headers = []
         http_session = self.http_session()
         csrf_token = security.make_csrf_token(self.server.secret, http_session)
         session.ui.html_variables = {
@@ -421,6 +422,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             'http_method': method,
             'http_session': http_session,
             'http_request': self,
+            'http_response_headers': http_headers,
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',
@@ -450,7 +452,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 else:
                     raise
 
-            http_headers = []
             cachectrl = None
             if 'http' not in config.sys.debug:
                 etag_data = []

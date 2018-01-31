@@ -112,6 +112,18 @@ class JsApi(RenderPage):
         return self._success(_('Generated Javascript API'), result=res)
 
 
+class ProgressiveWebApp(RenderPage):
+    """Output PWA Manifest"""
+    SYNOPSIS = (None, None, 'jsapi/pwa', None)
+    ORDER = ('Internals', 0)
+    HTTP_CALLABLE = ('GET', )
+    HTTP_AUTH_REQUIRED = False
+    HTTP_QUERY_VARS = {'ts': 'Cache busting timestamp'}
+
+    def command(self):
+        return self._success(_('Rendered Progressive Web App Data'), result={})
+
+
 class HttpProxyGetRequest(Command):
     """HTTP GET content from the public web"""
     SYNOPSIS = (None, None, 'http_proxy', None)
@@ -166,4 +178,4 @@ class HttpProxyGetRequest(Command):
         raise SuppressHtmlOutput()
 
 
-_plugins.register_commands(JsApi, HttpProxyGetRequest)
+_plugins.register_commands(JsApi, ProgressiveWebApp, HttpProxyGetRequest)

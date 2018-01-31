@@ -1,0 +1,27 @@
+{
+    "name": "Mailpile",
+    "short_name": "Mailpile",
+    "icons": [{
+        "src": "{{ U('/static/img/favicon.svg') }}",
+        "sizes": "32x32",
+        "type": "image/png"
+    },{
+        "src": "{{ U('/static/img/logo-color.png') }}",
+        "sizes": "100x100",
+        "type": "image/png"
+    },{
+        "src": "{{ U('/static/img/logo-color.svg') }}",
+        "sizes": "101x101 192x192 256x256",
+        "type": "image/svg+xml"
+    }],
+    "start_url": "{{ U('/?ui_from_homescreen=1') }}",
+    "background_color": "#ffffff",
+    "theme_color": "#e9e9e9",
+    "display": "standalone",
+    "serviceworker": {
+        "src": "{{ U('/jsapi/pwa/service-worker.js?ts=', version_identifier()) }}",
+        "scope": "{{ U('/') }}",
+        "use_cache": false
+    }
+}
+
