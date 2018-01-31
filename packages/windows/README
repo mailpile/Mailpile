@@ -1,7 +1,7 @@
 # Executive summary
 
 The script `repackage-linux.sh` can rebuild the Mailpile installer for
-Windows when run on Gnu-Linux. Run it, yay!
+Windows when run on Linux|GNU. Run it, yay!
 
 repackage-linux.sh [--local] [<branch>]
 
@@ -21,7 +21,7 @@ When run, the installer creates a start menu section Mailpile with entries
      Start Mailpile
      Uninstall Mailpile
      
-When Mailpile is run, it creates a System Tray icon. Right-clicking on that
+When Mailpile is run, it creates a system tray icon. Right-clicking on that
 icon pops up a menu with entries
     Open Mailpile
     Donate
@@ -44,7 +44,7 @@ A complete build takes 15 minutes on my 2011 vintage AMD 8 core 2.8 GHz system.
 
 # Mailpile code
 
-The Mailpile code is checked out from either the local repository or github.
+The Mailpile code is checked out from either the local repository or GitHub.
 
 # Python
 
@@ -80,7 +80,7 @@ available to publish for licence compliance purposes.
 Subsequent builds will use the needed files stored in the script directory so
 avoid unnecessary rebuilding of the third party packages.
 
-An archive of the Mailpile code image, identified by its commit id, is also 
+An archive of the Mailpile code image, identified by its commit ID, is also 
 saved in /tmp/mailpile-winbuild/SourceArchive.
 
 The MailpileLauncher package is downloaded in binary form from
