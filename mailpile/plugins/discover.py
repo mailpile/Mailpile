@@ -12,41 +12,21 @@ import getpass
 import ConfigParser
 import fasteners
 
-#import datetime
-#import json
 import random
-#import re
-#import socket
-#import subprocess
-#import traceback
-#import threading
-#import time
-#import webbrowser
-#import mailpile.util
-#import mailpile.postinglist
-#import mailpile.security as security
 from mailpile.commands import *
-#from mailpile.config.validators import WebRootCheck
-#from mailpile.crypto.gpgi import GnuPG
-#from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-#from mailpile.mailboxes import IsMailbox
-#from mailpile.mailutils import ClearParseCache, Email
-#from mailpile.postinglist import GlobalPostingList
 from mailpile.plugins import PluginManager
-#from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
-#from mailpile.search import MailIndex
-#from mailpile.util import *
-#from mailpile.vcard import AddressInfo
-#from mailpile.vfs import vfs, FilePath
+from mailpile.config.base import CommentedEscapedConfigParser
 
 _plugins = PluginManager(builtin=__file__)
 
 
-def discover_piles(option_list, this_user, this_workdir):
+def discover_piles(option_list, this_user, this_workdir,
+                                only_users = None, only_piles = None):
 
     # Extracts specified public options from accessible Mailpile configurations.
+    # Search restricted to specified user and pile if those arguments present. 
 
     # Find Mailpile data directory for this user.
     this_workdir_parent = os.path.abspath(this_workdir + '/..')
@@ -75,6 +55,8 @@ def discover_piles(option_list, this_user, this_workdir):
     # Loop through accessible Mailpile data directories for all users.
     pile_specs = []
     for parent in parent_list:
+        if only_users and not parent[0] in only_users:
+            continue
         try:
             workdir_list = os.listdir(parent[1])
         except OSError:
@@ -82,9 +64,11 @@ def discover_piles(option_list, this_user, this_workdir):
             
         # Loop through all accessible Mailpile workdirs for one user.
         for pile in workdir_list:
+            if only_piles and not pile in only_piles:
+                continue
             workdir = os.path.join(parent[1], pile)
             if os.path.isdir(workdir):
-                public = ConfigParser.ConfigParser()
+                public = CommentedEscapedConfigParser()
                 public_file = os.path.join(workdir, 'mailpile.rc')
                 
                 # If permissions allow, prevent mailpile.rc from being
@@ -138,8 +122,9 @@ def discover_piles(option_list, this_user, this_workdir):
 
 
 class Discover(Command):
-    """Discover Mailpile piles present on this machine"""
-    SYNOPSIS = (None, 'discover', None, "")
+    """Discover Mailpile piles accessible on this machine"""
+    SYNOPSIS = (None, 'discover', None,
+                    '[--user=<user1[,user2 ...]] [--pile=<pile1[,pile2 ...]]')
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
@@ -178,6 +163,16 @@ class Discover(Command):
         this_workdir = config.workdir
         this_user = getpass.getuser()
         
+        arg_users = None
+        arg_piles = None
+        for arg in self.args:
+            if arg.startswith('--user='):
+                arg_users = arg[len('--user='):].split(',')
+            elif arg.startswith('--pile='):
+                arg_piles = arg[len('--pile='):].split(',')
+            else:
+                return self._error(_('Unknown parameter %s' ) % arg)
+                
         # Extract default values from config.rules
         option_list = []
         for option in self.option_list_spec:
@@ -196,7 +191,8 @@ class Discover(Command):
                 pass
             option_list += [option]
             
-        pile_specs = discover_piles(option_list, this_user, this_workdir)
+        pile_specs = discover_piles(option_list, this_user, this_workdir,
+                            only_users = arg_users, only_piles = arg_piles )
 
         return self._success(_('Listed %d piles') % len(pile_specs),
                                                             result=pile_specs)

@@ -35,6 +35,7 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 from mailpile.vfs import vfs, FilePath
+from mailpile.plugins.discover import discover_piles
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -416,7 +417,7 @@ class BrowseOrLaunch(Command):
                      config.sys.http_path or '')
 
         try:
-            #*** DEBUG socket.create_connection(sspec[:2])
+            socket.create_connection(sspec[:2])
             self.Browse(sspec)
             os._exit(127)
         except IOError:
