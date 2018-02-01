@@ -1,17 +1,18 @@
 <div id="header" class="topbar">
   <div class="topbar-logo">
   {% set status = _("%(name)s's Mailpile is version %(version)s with %(size)s messages", name=(name or _("Somebody")), size=mailpile_size, version=config.version) %}
-  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
-    {% include("../img/logo-color.svg") %}
-  </a>
+    <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
+      {% include("../img/logo-color.svg") %}
+    </a>
   </div>
   <div class="topbar-logo-name">
-  <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
-    {% include("../img/logo-name.svg") %}
-  </a>
+    <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
+      {% include("../img/logo-name.svg") %}
+    </a>
   </div>
   <div class="topbar-actions">
-    <form id="form-search" class="form-search clearfix" action="{{ U('/search/') }}">
+    <form id="form-search" class="form-search clearfix mobile-pt-hide"
+          action="{{ U('/search/') }}">
       <input id="search-query" class="typeahead" type="text"
              name="q" placeholder="{{_("Search")}}" autocomplete="off"
              tabindex=1 alt="{{_("Search")}}"
@@ -23,51 +24,65 @@
     </form>
     <nav class="topbar-nav">
       <ul>
-        <li class="nav-search">
-          <a href="#" title="{{_("Search")}}" alt="{{_("Search")}}"><span class="link-icon icon-search"></span></a>
+        <li class="nav-search mobile-pt-inline">
+          <a href="#" id='nav-search'
+            ><span class="link-icon icon-search"></span></a>
+        </li>
+        <li class="nav-search-hide hide">
+          <a href="#" id='nav-search-hide'
+            ><span class="link-icon icon-x"></span></a>
         </li>
   {%- if is_dev_version() %}{# FIXME ! #}
-        <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;">
+        <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;"
+            class="mobile-hide">
           <a class="auto-modal" data-flags="" data-icon="icon-code"
              title="{{_('How to report bugs')}}"
              href="{{ U('/page/contribute/bugs.html') }}">{{_("Report Bugs")}}</a>
         </li>
   {%- endif %}
         <li class="{% if command == "edit" %} navigation-on{% endif %}">
-          <a href="{{ U('/message/compose/') }}" class="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a>
+          <a href="{{ U('/message/compose/') }}" class="button-compose" title="{{_("Compose")}}"
+            ><span class="link-icon icon-compose"></span></a>
         </li>
 <!--
         <li class="{% if command == "contacts" %} navigation-on{% endif %}">
-          <a href="{{ U('/contacts/') }}" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a>
+          <a href="{{ U('/contacts/') }}" title="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a>
         </li>
         <li class="{% if state.command_url in ("/tags/", "/filter/list/") %}navigation-on{% endif %}">
-          <a href="{{ U('/tags/') }}" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a>
+          <a href="{{ U('/tags/') }}" title="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a>
         </li>
  -->
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}">
-          <a href="{{ U(a.url) }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ U(a.icon) }}"></a>
+          <a href="{{ U(a.url) }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"
+            ><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ U(a.icon) }}"></a>
         </li>
         {%- endfor -%}
 
-        <li class="{% if command == "profiles" %} navigation-on{% endif %}">
-          <a class="home" href="{{ U("/profiles/") }}" title="{{_("Home")}}" alt="{{_("Home")}}"><span class="link-icon icon-home"></span></a>
+        <li class="{% if command == "profiles" %} navigation-on{% endif %} mobile-hide">
+          <a class="home" href="{{ U("/profiles/") }}" title="{{_("Home")}}"
+            ><span class="link-icon icon-home"></span></a>
+        </li>
+        {%- if config.web.donate_visibility %}
+        <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %} mobile-hide">
+          <a class="donate auto-modal" data-flags="" data-icon="icon-code"
+             href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}"
+            ><span class="link-icon icon-donate"></span></a>
+        </li>
+        {%- endif %}
+        <li class="{% if command == "settings" %} navigation-on{% endif %}">
+          <a href="{{ U("/settings/") }}" title="{{_("Settings and Tools")}}"
+            ><span class="link-icon icon-settings"></span></a>
+        </li>
+        <li>
+           <a href="{{ U("/auth/logout/") }}" title="{{_("Logout")}}"
+             ><span class="link-icon icon-logout"></span></a>
         </li>
 {#
         <li class="">
-          <a class="secure" href="#" title="{{_("Secure Mode")}}" alt="{{_("Secure Mode")}}"><span class="link-icon icon-lock-open"></span></a>
+          <a class="secure" href="#" title="{{_("Secure Mode")}}"><span class="link-icon icon-lock-open"></span></a>
         </li>
 #}
-        {% if config.web.donate_visibility %}
-        <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %}">
-          <a class="donate auto-modal" data-flags="" data-icon="icon-code"
-             href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}" alt="{{_("Contribute")}}"><span class="link-icon icon-donate"></span></a>
-        </li>
-        {% endif %}
-        <li class="{% if command == "settings" %} navigation-on{% endif %}">
-          <a class="home" href="{{ U("/settings/") }}" title="{{_("Settings and Tools")}}" alt="{{_("Home")}}"><span class="link-icon icon-settings"></span></a>
-        </li>
-        <li><a href="{{ U("/auth/logout/") }}" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>
   </div>

@@ -159,7 +159,7 @@
   {%- endif %}
     </div>
   </td>
-  <td class="subject">
+  <td class="subject{% if message %} full-message{% endif %}">
 {%- if message_errors %}
     {% include("partials/error_message_missing.html") %}
 {%- elif not message %}

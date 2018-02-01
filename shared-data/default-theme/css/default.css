@@ -6350,7 +6350,7 @@ body {
 /* Sub Navigation */
 .sub-navigation {
   width: 100%;
-  min-height: 45px;
+  height: 46px;
   display: block;
   background: #e9e9e9;
   border-bottom: 1px solid #b3b3b3;
@@ -6409,9 +6409,11 @@ body {
   line-height: 16px;
   padding: 11px 5px;
 }
-.bulk-actions div,
-.bulk-actions ul {
+.bulk-actions div {
   margin: 0px 15px;
+}
+.bulk-actions ul {
+  margin: -5px 15px;
 }
 .bulk-actions li {
   padding: 0 15px;
@@ -6454,7 +6456,7 @@ body {
 #content-tall-view,
 #content-view {
   position: absolute;
-  top: 86px;
+  top: 84px;
   bottom: 0;
   right: 0;
   left: 0;
@@ -7031,13 +7033,13 @@ div.notification-bubble span.action {
 .topbar-nav > ul > li.navigation-on.nav-dropdown > a:hover {
   cursor: pointer !important;
 }
-.topbar-nav .nav-search {
-  display: none;
-}
 .topbar-nav > ul > li.nav-dropdown ul.dropdown-menu li {
   display: block;
   float: none;
   text-align: left;
+}
+.topbar-nav .nav-search {
+  display: none;
 }
 /* Sidebar */
 #sidebar {
@@ -9490,9 +9492,6 @@ a.modal-tag-color-option:hover {
     width: 90px;
     overflow: hidden;
   }
-  .topbar-logo-name {
-    display: none;
-  }
   /* Shrink the sidebar a bit, but keep it. */
   #sidebar {
     width: 180px;
@@ -9570,18 +9569,27 @@ a.modal-tag-color-option:hover {
 }
 /* Mobile only components to hide under normal circumstances */
 .mobile-block {
-  display: none;
+  display: none !important;
 }
 .mobile-inline {
-  display: none;
+  display: none !important;
+}
+.mobile-pt-block {
+  display: none !important;
+}
+.mobile-pt-inline {
+  display: none !important;
 }
 /* Mobile - All Sizes (devices and browser) */
 @media only screen and (max-width: 767px), (orientation: portrait) {
   .mobile-block {
-    display: block;
+    display: block !important;
   }
   .mobile-inline {
-    display: inline-block;
+    display: inline-block !important;
+  }
+  .mobile-hide {
+    display: none !important;
   }
   /* Start by making comfy/cozy/snug be identical: */
   #pile-results.comfy td,
@@ -9607,6 +9615,16 @@ a.modal-tag-color-option:hover {
   #pile-results.snug td.from span.conversation-count {
     top: 1px;
     padding: 4px 8px;
+  }
+  #content-view {
+    top: 46px;
+  }
+  .bulk-actions {
+    top: 0px;
+    position: absolute;
+    height: 46px;
+    width: 100%;
+    padding-top: 15px;
   }
   /* Make setup and login look less horrible */
   div.setup-box-medium {
@@ -9669,25 +9687,56 @@ a.modal-tag-color-option:hover {
     display: none;
   }
   /* Now for serious business: */
+  .topbar {
+    min-width: 100%;
+  }
+  .topbar-logo {
+    width: 67px;
+    min-width: 5%;
+    padding: 0;
+    margin: 0;
+  }
   .topbar-logo-name {
-    display: none;
+    min-width: 10%;
+  }
+  .topbar-logo #logo-icon,
+  .topbar-logo-name #logo-name {
+    width: 75%;
   }
   .topbar-actions {
-    max-width: 250px;
+    min-width: 80%;
+    /* Won't be satisfied, but will give us as much space as poss. */
+    text-align: right;
   }
-  .form-search {
-    width: auto;
-    margin-left: 0px;
+  .topbar-nav {
+    right: 8px;
   }
-  .form-search input {
-    width: auto;
-    max-width: 190px;
+  .topbar-nav > ul > li {
+    margin: 0 0 0 9px;
+    padding: 0;
+  }
+  .topbar-nav > ul > li > a {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+  }
+  .topbar-nav > ul > li > a span.link-icon {
+    font-size: 18px;
+    line-height: 18px;
+    margin: 0;
+    padding: 10px 0 0 0;
   }
   .topbar-nav .nav-search {
     display: list-item;
   }
-  .topbar-nav {
-    display: none;
+  .form-search {
+    width: auto;
+    margin: 0 0 0 2px;
+  }
+  .form-search input {
+    width: auto;
+    max-width: 145px;
   }
   #sidebar,
   #sidebar-wrapper {
@@ -9717,11 +9766,10 @@ a.modal-tag-color-option:hover {
   }
   #sidebar-lists li {
     width: 72px;
-    height: 72px;
+    height: 56px;
     padding: 3px;
     margin: 0;
     overflow: hidden;
-    height: 56px;
   }
   #sidebar li.sidebar-subtag a.sidebar-tag span.name,
   #sidebar li.sidebar-subtag a.sidebar-tag span.notification,
@@ -9801,6 +9849,17 @@ a.modal-tag-color-option:hover {
     padding: 4px;
     padding-left: 4px;
   }
+  div.content-normal {
+    margin: 1px 5px;
+  }
+  div.settings-page,
+  .settings-page .setting-group,
+  .settings-page .setting-group .settings {
+    max-width: 100%;
+  }
+  .settings-page .setting-group .explanation {
+    display: none;
+  }
   .content-normal section {
     width: 100%;
     max-width: 100%;
@@ -9864,7 +9923,7 @@ a.modal-tag-color-option:hover {
   }
   /*  #pile-results td.subject a.item-subject { width: 370px; }*/
   #content-tools nav li {
-    padding: 2px;
+    padding: 0;
     margin: 0;
   }
   #content-tools nav .navigation-text {
@@ -9874,8 +9933,57 @@ a.modal-tag-color-option:hover {
     position: absolute;
   }
 }
+@media only screen and (max-width: 767px) and (min-width: 350px), (orientation: portrait) and (min-width: 350px) {
+  .topbar-nav > ul > li {
+    margin-left: 10px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 400px), (orientation: portrait) and (min-width: 400px) {
+  .topbar-nav > ul > li {
+    margin-left: 11px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 450px), (orientation: portrait) and (min-width: 450px) {
+  .topbar-nav > ul > li {
+    margin-left: 12px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 500px), (orientation: portrait) and (min-width: 500px) {
+  .topbar-nav > ul > li {
+    margin-left: 13px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 550px), (orientation: portrait) and (min-width: 550px) {
+  .topbar-nav > ul > li {
+    margin-left: 14px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 370px), (orientation: portrait) and (min-width: 370px) {
+  .form-search input {
+    max-width: 165px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 450px), (orientation: portrait) and (min-width: 450px) {
+  .form-search input {
+    max-width: 180px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 550px), (orientation: portrait) and (min-width: 550px) {
+  .form-search input {
+    max-width: 195px;
+  }
+}
 /* This is too small for the tabular result list, switch to card-style */
 @media only screen and (max-width: 480px), (orientation: portrait) {
+  .mobile-pt-block {
+    display: block !important;
+  }
+  .mobile-pt-inline {
+    display: inline-block !important;
+  }
+  .mobile-pt-hide {
+    display: none !important;
+  }
   #content {
     left: 0;
     bottom: 72px;
@@ -9915,17 +10023,31 @@ a.modal-tag-color-option:hover {
   }
   #sidebar-lists li {
     width: 72px;
-    height: 72px;
+    height: 64px;
+    padding: 3px 3px 0 3px;
     margin-bottom: 0;
   }
   #notifications {
     top: 0;
-    right: 15%;
-    left: 15%;
-    width: 70%;
+    left: 36px;
+    right: 36px;
     bottom: auto;
+    width: auto;
+    min-width: 50%;
+    max-width: 100%;
+    max-height: 95px;
+    opacity: 0.95;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+  }
+  div.notification-bubble {
+    padding: 2px 5px;
+  }
+  div.notification-bubble br {
+    display: inline;
+  }
+  div.notification-bubble span.text {
+    padding-left: 5px;
   }
   .compose-from-select {
     position: relative;
@@ -9942,6 +10064,19 @@ a.modal-tag-color-option:hover {
   #notifications-header,
   #pile-speed {
     display: none;
+  }
+  .bulk-actions ul {
+    margin-right: 0px;
+    white-space: nowrap;
+  }
+  .bulk-actions li {
+    padding: 0px 8px;
+  }
+  .topbar-nav > ul > li > a span.link-icon {
+    padding: 0;
+  }
+  .topbar-nav > ul > li.nav-search-hide > a span.link-icon {
+    padding-top: 10px;
   }
   #pile-results,
   #pile-results.comfy {
@@ -9983,7 +10118,10 @@ a.modal-tag-color-option:hover {
   }
   #pile-results td.checkbox,
   #pile-results.comfy td.checkbox {
-    display: none;
+    position: absolute;
+    bottom: 0px;
+    right: -5px;
+    pull: right;
   }
   #pile-results td.date,
   #pile-results.comfy td.date {
@@ -10004,6 +10142,15 @@ a.modal-tag-color-option:hover {
     left: 50px;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  #pile-results td.full-message,
+  #pile-results.comfy td.full-message {
+    width: 100%;
+    max-width: 100%;
+  }
+  #pile-results td.full-message .pile-message-content,
+  #pile-results.comfy td.full-message .pile-message-content {
+    margin: 2px;
   }
   #pile-results td.draggable,
   #pile-results.comfy td.draggable {
@@ -10101,6 +10248,31 @@ a.modal-tag-color-option:hover {
   .account-list thead {
     display: block;
     border: none;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 470px), (orientation: portrait) and (min-width: 470px), only screen and (max-width: 480px) and (orientation: landscape), (orientation: portrait) and (orientation: landscape) {
+  div.notification-bubble br {
+    display: none;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 340px), (orientation: portrait) and (min-width: 340px) {
+  .bulk-actions li {
+    padding: 0px 9px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 360px), (orientation: portrait) and (min-width: 360px) {
+  .bulk-actions li {
+    padding: 0px 10px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 380px), (orientation: portrait) and (min-width: 380px) {
+  .bulk-actions li {
+    padding: 0px 11px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 400px), (orientation: portrait) and (min-width: 400px) {
+  .bulk-actions li {
+    padding: 0px 12px;
   }
 }
 /* Terminal */
