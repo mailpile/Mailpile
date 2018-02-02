@@ -125,7 +125,7 @@ class Discover(Command):
     """Discover Mailpile piles accessible on this machine"""
     SYNOPSIS = (None, 'discover', None,
                     '[--user=<user1[,user2 ...]] [--pile=<pile1[,pile2 ...]]')
-    ORDER = ('Internals', 5)
+    ORDER = ('Internals', 9)
     CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
     COMMAND_SECURITY = security.CC_BROWSE_FILESYSTEM

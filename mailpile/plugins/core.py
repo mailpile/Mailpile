@@ -35,7 +35,10 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 from mailpile.vfs import vfs, FilePath
-from mailpile.plugins.discover import discover_piles
+try:
+    from mailpile.plugins.discover import discover_piles
+except:
+    discover_piles = None
 
 _plugins = PluginManager(builtin=__file__)
 
