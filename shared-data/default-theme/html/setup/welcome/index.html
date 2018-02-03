@@ -4,7 +4,8 @@
 <div id="setup-welcome" class="text-center add-top">
   <h1 class="animated fadeIn">{{_("Welcome to Mailpile!")}}</h1>
   <div class="add-top half-bottom">
-    <img src="{{ config.sys.http_path }}/static/img/logo-color.svg" class="animated bounceIn welcome-logo">
+    <img src="{{ U('/static/img/logo-color.svg') }}"
+         class="animated bounceIn welcome-logo">
   </div>
   <div class="welcome-icons add-top half-bottom clearfix">
   <ul class="animated fadeIn horizontal clearfix needjs hide">
@@ -17,13 +18,16 @@
     <li><span class="icon-donate"></span></li>
   </ul>
   </div>
-  <h4 class="text-detail animated fadeIn">{{_("You're about to experience secure e-mail like never before!")}}</h4>
-  <noscript><p>
+  <h4 class="text-detail animated fadeIn">
+    {{_("You're about to experience secure e-mail like never before!")}}
+  </h4>
+  <p><noscript>
     {{_("Uh oh! You have JavaScript disabled. This will cause problems.")}}
-  </p></noscript>
-  <form method="POST" action="{{ config.sys.http_path }}/setup/welcome/" class="animated bounceIn">
+  </noscript></p>
+  <form method="POST" action="{{ U('/setup/welcome/') }}"
+        class="animated bounceIn">
     <p>
-    <select name="language">
+    <select id='langs' name="language">
       <option value="">{{_("Select Language")}}...</option>
       {% set selected = {(result.language or 'en_US'): ' selected'} %}
       {% for lc, txt in result.languages %}
@@ -38,6 +42,15 @@
     <input type="hidden" name="advance" value="Yes">
     <input type="submit" value="{{_("Begin")}}" class="button-primary">
   </form>
+  <a id='rfab' style="position: absolute; bottom: 10px; right: 20px;"
+     href="{{ U('/backup/restore/') }}"
+    ><span class="icon icon-help"></span> {{_("Restore from a Backup")}}</a>
 </div>
-<script>$(document).ready(function() {$('.needjs').show()});</script>
+<script>
+  $(document).ready(function() {$('.needjs').show()});
+  $('#rfab').mouseover(function() {
+    $(this).attr('href', '{{ U("/backup/restore/") }}' +
+                         '?lang=' + $('#langs').val());
+  });
+</script>
 {% endblock %}
