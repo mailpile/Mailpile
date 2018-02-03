@@ -10210,6 +10210,9 @@ a.modal-tag-color-option:hover {
     padding: 0px;
     top: -20px;
   }
+  .pile-results-drag .drag-info {
+    display: none;
+  }
   div.footer-nav {
     display: none;
   }
