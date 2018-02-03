@@ -48,8 +48,8 @@ web-mail on a personal server or VPS.
 
 The core of Mailpile is a fast search engine, custom written to deal
 with large volumes of e-mail on consumer hardware. The search engine
-allows e-mail to be organized using tags (similar to GMail's labels) and
-the application can be configured to automatically tag incoming mail
+allows e-mail to be organized using tags (similar to Gmail's labels) and
+the application can be configured to automatically tag incoming e-mail
 either based on static rules or bayesian classifiers.
 
 **Note:** We are currently "in beta", which means the app's basic features
@@ -79,27 +79,27 @@ Please see our [download page](https://www.mailpile.is/download/) or read
 
 ## Credits and License ##
 
-Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
-it's neat, you should also check out PageKite: <https://pagekite.net/>. At some point Bjarni, that crafty fellow convinced [Smári](<http://www.smarimccarthy.is/>) and [Brennan](https://brennannovak.com) to start working on the project as well.
+Bjarni R. Einarsson (<https://bre.klaki.net/>) created this! If you think
+it's neat, you should also check out PageKite: <https://pagekite.net/>. At some point Bjarni, that crafty fellow convinced [Smári](<https://www.smarimccarthy.is/>) and [Brennan](https://brennannovak.com) to start working on the project as well.
 
-The GMail guys get mad props for creating the best webmail service out
-there.  Wishing the Free Software world had something like it is what
-inspired Bjarni to start working on Mailpile. Edward Snowden also gets mad props for inspiring us to try and make PGP usable for journalists and everday folks!
+The Gmail guys are lauded for creating the best webmail service out
+there. Wishing the Free Software world had something like it is what
+inspired Bjarni to start working on Mailpile. Edward Snowden also inspired us to try and make PGP usable for journalists and everday folks!
 
 Contributors:
 
-- Bjarni R. Einarsson (<http://bre.klaki.net/>)
+- Bjarni R. Einarsson (<https://bre.klaki.net/>)
 - Brennan Novak (<https://brennannovak.com/>)
-- Smari McCarthy (<http://www.smarimccarthy.is/>)
-- Lots more, run `git shortlog -s` for a list! (Or see the list [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
+- Smari McCarthy (<https://www.smarimccarthy.is/>)
+- Lots more, run `git shortlog -s` for a list! (Or see the list [on GitHub](https://github.com/pagekite/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
 backers](https://www.mailpile.is/#community).
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file `COPYING.md` for details.
+Free Software Foundation, either version 3 of the License,
+or (at your option) any later version. See the file `COPYING.md` for details.
 
 
 %prep

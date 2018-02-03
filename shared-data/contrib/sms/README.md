@@ -1,9 +1,9 @@
 SMS
 ===
 
-A plugin to allow people to send SMS messages from their Mailpiles using 3rd party services (Twilio, Tropo, etc...)
+A plugin to allow people to send SMS messages from their Mailpiles using 3rd party services (Twilio, Tropo, etc.)
 
-Interested in helping develop this? See this [Github Issue](https://github.com/pagekite/Mailpile/issues/268)
+Interested in helping develop this? See this [GitHub Issue](https://github.com/pagekite/Mailpile/issues/268)
 
 #### Dependencies
 
