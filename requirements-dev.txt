@@ -13,5 +13,4 @@ pyDNS
 pgpdump
 pillow
 pbr
-pycrypto
 fasteners
