@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #
 # This is a proof-of-concept quick hack, copy-pasted from code found here:
 #

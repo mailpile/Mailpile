@@ -1,4 +1,4 @@
-#!/usr/bin/python2 -u
+#!/usr/bin/env python2.7 -u
 #
 # This is a general-purpose GUI which can be configured and controlled
 # using a very simple line-based (JSON) protocol.

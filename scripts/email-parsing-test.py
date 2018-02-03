@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 #
 # This is code which tries very hard to interpret the From:, To: and Cc:
 # lines found in real-world e-mail addresses and make sense of them.

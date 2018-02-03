@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 from datetime import date
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
