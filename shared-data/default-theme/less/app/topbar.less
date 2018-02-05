@@ -19,25 +19,43 @@
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
+  text-align: center;
 }
-
 .topbar-logo #logo-icon {
   display: block;
-  margin-left: 15px;
+  margin: 0 10px 0 15px;
   height: 37px;
+}
+.topbar-logo span#page-title-icon {
+  font-size: 37px;
+  line-height: 37px;
 }
 
 .topbar-logo-name {
+  position: relative;
   width: 157px;
   height: 40px;
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
+  text-align: left;
 }
-
 .topbar-logo-name #logo-name {
   display: block;
-  margin-left: 10px;
+  margin-right: 10px;
+}
+.topbar-logo-name span#page-title-text {
+  display: block;
+  max-width: 75%;
+  position: absolute;
+  font-family: @mailpile-text-font-family-bold;
+  font-weight: normal;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: -7px 0 0 8px;
+  padding: 0;
 }
 
 .topbar-actions {

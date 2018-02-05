@@ -42,8 +42,9 @@
 {%- block content %}
 <div id="page" class="content-normal">
 
-  <h1>
-    <span class="icon icon-home"></span> {{_("Welcome Home")}}
+  <h1 class="page-title-data mobile-hide">
+    <span class="icon icon-home"></span>
+    {{_("Welcome Home")}}
   </h1>
 
 {%- if result.profiles|length > 0 %}

@@ -4,11 +4,13 @@
     <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
       {% include("../img/logo-color.svg") %}
     </a>
+    <span id='page-title-icon' class='icon hide'></span>
   </div>
   <div class="topbar-logo-name">
     <a href="{{ U('/profiles/') }}" class='status-in-title' title="{{status}}">
       {% include("../img/logo-name.svg") %}
     </a>
+    <span id='page-title-text' class="mobile-hide"></span>
   </div>
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix mobile-pt-hide"
@@ -24,10 +26,6 @@
     </form>
     <nav class="topbar-nav">
       <ul>
-        <li class="nav-search mobile-pt-inline">
-          <a href="#" id='nav-search'
-            ><span class="link-icon icon-search"></span></a>
-        </li>
         <li class="nav-search-hide hide">
           <a href="#" id='nav-search-hide'
             ><span class="link-icon icon-x"></span></a>
@@ -43,6 +41,10 @@
         <li class="{% if command == "edit" %} navigation-on{% endif %}">
           <a href="{{ U('/message/compose/') }}" class="button-compose" title="{{_("Compose")}}"
             ><span class="link-icon icon-compose"></span></a>
+        </li>
+        <li class="nav-search mobile-pt-inline">
+          <a href="#" id='nav-search'
+            ><span class="link-icon icon-search"></span></a>
         </li>
 <!--
         <li class="{% if command == "contacts" %} navigation-on{% endif %}">
@@ -70,7 +72,7 @@
             ><span class="link-icon icon-donate"></span></a>
         </li>
         {%- endif %}
-        <li class="{% if command == "settings" %} navigation-on{% endif %}">
+        <li class="{% if command == "settings" %} navigation-on{% endif %} mobile-pt-hide">
           <a href="{{ U("/settings/") }}" title="{{_("Settings and Tools")}}"
             ><span class="link-icon icon-settings"></span></a>
         </li>

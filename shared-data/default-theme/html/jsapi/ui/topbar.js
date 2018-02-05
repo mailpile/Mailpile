@@ -30,6 +30,7 @@ $(document).on('click', '#nav-search', function() {
   $('nav.topbar-nav ul li.nav-search').removeClass('mobile-pt-inline').hide();
   $('form#form-search').removeClass('mobile-pt-hide');
   $('nav.topbar-nav ul li.nav-search-hide').removeClass('hide');
+  $('#search-query').focus();
 });
 
 $(document).on('input change', '#search-query', function(e) {

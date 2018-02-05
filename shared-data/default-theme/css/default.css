@@ -6882,22 +6882,42 @@ div.notification-bubble span.action {
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
+  text-align: center;
 }
 .topbar-logo #logo-icon {
   display: block;
-  margin-left: 15px;
+  margin: 0 10px 0 15px;
   height: 37px;
 }
+.topbar-logo span#page-title-icon {
+  font-size: 37px;
+  line-height: 37px;
+}
 .topbar-logo-name {
+  position: relative;
   width: 157px;
   height: 40px;
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
+  text-align: left;
 }
 .topbar-logo-name #logo-name {
   display: block;
-  margin-left: 10px;
+  margin-right: 10px;
+}
+.topbar-logo-name span#page-title-text {
+  display: block;
+  max-width: 75%;
+  position: absolute;
+  font-family: Mailpile-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: -7px 0 0 8px;
+  padding: 0;
 }
 .topbar-actions {
   min-width: 775px;
@@ -8393,6 +8413,14 @@ tr.modal-tag-picker-item td.checkbox {
     max-width: 214px;
   }
 }
+@media only screen and (max-width: 480px) {
+  #pile-results td.subject {
+    max-width: 70%;
+  }
+  #pile-results td.subject .message-container {
+    max-width: 70%;
+  }
+}
 #pile-results td.date {
   width: 80px;
   text-align: right;
@@ -9315,7 +9343,7 @@ ul.message-actions li.action {
   margin-right: 20px;
 }
 ul.message-actions li.action a {
-  min-width: none;
+  min-width: auto;
 }
 ul.message-actions li.action ul.dropdown-menu li {
   display: block;
@@ -9487,11 +9515,6 @@ a.modal-tag-color-option:hover {
 }
 /* =============== Tablet Style =============== */
 @media only screen and (max-width: 1020px) {
-  /* Make logo into just icon */
-  .topbar-logo {
-    width: 90px;
-    overflow: hidden;
-  }
   /* Shrink the sidebar a bit, but keep it. */
   #sidebar {
     width: 180px;
@@ -9551,20 +9574,6 @@ a.modal-tag-color-option:hover {
   }
   #pile-results td.avatar {
     padding-left: 4px;
-  }
-  xtable,
-  xtbody {
-    display: block;
-    white-space: normal;
-    width: 100%;
-  }
-  xtr {
-    display: block;
-    height: auto;
-    width: 100%;
-  }
-  xtd {
-    display: inline;
   }
 }
 /* Mobile only components to hide under normal circumstances */
@@ -9691,52 +9700,65 @@ a.modal-tag-color-option:hover {
     min-width: 100%;
   }
   .topbar-logo {
+    min-width: 1%;
+    max-width: 1%;
     width: 67px;
-    min-width: 5%;
     padding: 0;
     margin: 0;
-  }
-  .topbar-logo-name {
-    min-width: 10%;
   }
   .topbar-logo #logo-icon,
   .topbar-logo-name #logo-name {
     width: 75%;
   }
+  .topbar-logo-name {
+    min-width: 30%;
+  }
   .topbar-actions {
     min-width: 80%;
-    /* Won't be satisfied, but will give us as much space as poss. */
+  }
+  .topbar-logo span#page-title-icon {
+    padding: 0 0 0 10px;
+  }
+  .topbar-logo-name span#page-title-text {
+    position: absolute;
+    display: block;
+    top: 0;
+    font-size: 24px;
+    margin: 18px 10px;
+  }
+  .topbar-actions {
+    white-space: nowrap;
     text-align: right;
   }
   .topbar-nav {
     right: 8px;
   }
   .topbar-nav > ul > li {
-    margin: 0 0 0 9px;
+    margin: 0 0 0 7px;
     padding: 0;
   }
   .topbar-nav > ul > li > a {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     margin: 0;
     padding: 0;
   }
   .topbar-nav > ul > li > a span.link-icon {
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 22px;
+    line-height: 22px;
     margin: 0;
-    padding: 10px 0 0 0;
+    padding: 8px 0 0 0;
   }
   .topbar-nav .nav-search {
     display: list-item;
   }
   .form-search {
     width: auto;
-    margin: 0 0 0 2px;
+    margin: 0 0 0 10px;
   }
   .form-search input {
     width: auto;
-    max-width: 145px;
+    max-width: 100px;
   }
   #sidebar,
   #sidebar-wrapper {
@@ -9860,6 +9882,10 @@ a.modal-tag-color-option:hover {
   .settings-page .setting-group .explanation {
     display: none;
   }
+  #pile-results td.from {
+    width: 110px;
+    text-overflow: ellipsis;
+  }
   .content-normal section {
     width: 100%;
     max-width: 100%;
@@ -9922,9 +9948,17 @@ a.modal-tag-color-option:hover {
     padding-right: 3px;
   }
   /*  #pile-results td.subject a.item-subject { width: 370px; }*/
+  #content-tools .sub-navigation > ul {
+    margin: 9px;
+  }
   #content-tools nav li {
-    padding: 0;
+    padding: 0 1px;
     margin: 0;
+    opacity: 0.95;
+  }
+  #content-tools nav li,
+  #content-tools nav .navigation-icon {
+    font-size: 18px;
   }
   #content-tools nav .navigation-text {
     display: none;
@@ -9958,23 +9992,28 @@ a.modal-tag-color-option:hover {
     margin-left: 14px;
   }
 }
-@media only screen and (max-width: 767px) and (min-width: 370px), (orientation: portrait) and (min-width: 370px) {
+@media only screen and (max-width: 767px) and (min-width: 600px), (orientation: portrait) and (min-width: 600px) {
   .form-search input {
-    max-width: 165px;
+    max-width: 150px;
   }
 }
-@media only screen and (max-width: 767px) and (min-width: 450px), (orientation: portrait) and (min-width: 450px) {
+@media only screen and (max-width: 767px) and (min-width: 700px), (orientation: portrait) and (min-width: 700px) {
   .form-search input {
-    max-width: 180px;
+    max-width: 160px;
   }
 }
 @media only screen and (max-width: 767px) and (min-width: 550px), (orientation: portrait) and (min-width: 550px) {
-  .form-search input {
-    max-width: 195px;
+  #pile-results td.from {
+    width: 125px;
+  }
+}
+@media only screen and (max-width: 767px) and (min-width: 630px), (orientation: portrait) and (min-width: 630px) {
+  #pile-results td.from {
+    width: 150px;
   }
 }
 /* This is too small for the tabular result list, switch to card-style */
-@media only screen and (max-width: 480px), (orientation: portrait) {
+@media only screen and (max-width: 480px) {
   .mobile-pt-block {
     display: block !important;
   }
@@ -9998,7 +10037,7 @@ a.modal-tag-color-option:hover {
     padding: 0;
     height: 73px;
     width: 100%;
-    vertical-align: center;
+    vertical-align: middle;
     border-top: 1px solid #b3b3b3;
     border-right: 0;
     z-index: 10;
@@ -10072,11 +10111,22 @@ a.modal-tag-color-option:hover {
   .bulk-actions li {
     padding: 0px 8px;
   }
-  .topbar-nav > ul > li > a span.link-icon {
-    padding: 0;
+  .topbar-logo-name {
+    min-width: 55%;
   }
-  .topbar-nav > ul > li.nav-search-hide > a span.link-icon {
-    padding-top: 10px;
+  .topbar-actions {
+    min-width: 45%;
+  }
+  .topbar-nav > ul > li > a span.link-icon {
+    padding: 0 2px;
+  }
+  .topbar-nav > ul > li.nav-search-hide {
+    position: absolute;
+    top: 9px;
+    right: 0px;
+  }
+  .form-search input {
+    max-width: 115px;
   }
   #pile-results,
   #pile-results.comfy {
@@ -10091,7 +10141,7 @@ a.modal-tag-color-option:hover {
     display: block;
     position: relative;
     border-bottom: 1px solid #cccccc;
-    overflow-x: hidden;
+    overflow: hidden;
   }
   #pile-results td,
   #pile-results.comfy td {
@@ -10119,27 +10169,28 @@ a.modal-tag-color-option:hover {
   #pile-results td.checkbox,
   #pile-results.comfy td.checkbox {
     position: absolute;
-    bottom: 0px;
+    bottom: -3px;
     right: -5px;
-    pull: right;
   }
   #pile-results td.date,
   #pile-results.comfy td.date {
     position: absolute;
     top: 0px;
     right: 5px;
-    pull: right;
   }
   #pile-results td.from,
   #pile-results.comfy td.from {
     position: absolute;
     top: 0px;
-    left: 50px;
+    left: 54px;
     display: inline-block;
+    padding-right: 3px;
+    width: auto;
+    max-width: 55%;
   }
   #pile-results td.subject,
   #pile-results.comfy td.subject {
-    left: 50px;
+    left: 54px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -10178,7 +10229,7 @@ a.modal-tag-color-option:hover {
   }
   #pile-results tr.full-message .form-compose,
   #pile-results.comfy tr.full-message .form-compose {
-    padding: none;
+    padding: 0;
     padding-left: 20px;
   }
   #pile-results tr.full-message h3,
@@ -10216,9 +10267,6 @@ a.modal-tag-color-option:hover {
   div.footer-nav {
     display: none;
   }
-  #display-density-selector {
-    display: none;
-  }
   #pile-more {
     display: none;
   }
@@ -10253,29 +10301,44 @@ a.modal-tag-color-option:hover {
     border: none;
   }
 }
-@media only screen and (max-width: 480px) and (min-width: 470px), (orientation: portrait) and (min-width: 470px), only screen and (max-width: 480px) and (orientation: landscape), (orientation: portrait) and (orientation: landscape) {
+@media only screen and (max-width: 480px) and (min-width: 470px), only screen and (max-width: 480px) and (orientation: landscape) {
   div.notification-bubble br {
     display: none;
   }
 }
-@media only screen and (max-width: 480px) and (min-width: 340px), (orientation: portrait) and (min-width: 340px) {
+@media only screen and (max-width: 480px) and (min-width: 340px) {
   .bulk-actions li {
     padding: 0px 9px;
   }
 }
-@media only screen and (max-width: 480px) and (min-width: 360px), (orientation: portrait) and (min-width: 360px) {
+@media only screen and (max-width: 480px) and (min-width: 360px) {
   .bulk-actions li {
     padding: 0px 10px;
   }
 }
-@media only screen and (max-width: 480px) and (min-width: 380px), (orientation: portrait) and (min-width: 380px) {
+@media only screen and (max-width: 480px) and (min-width: 380px) {
   .bulk-actions li {
     padding: 0px 11px;
   }
 }
-@media only screen and (max-width: 480px) and (min-width: 400px), (orientation: portrait) and (min-width: 400px) {
+@media only screen and (max-width: 480px) and (min-width: 400px) {
   .bulk-actions li {
     padding: 0px 12px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 360px) {
+  .form-search input {
+    max-width: 130px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 380px) {
+  .form-search input {
+    max-width: 140px;
+  }
+}
+@media only screen and (max-width: 480px) and (min-width: 400px) {
+  .form-search input {
+    max-width: 150px;
   }
 }
 /* Terminal */

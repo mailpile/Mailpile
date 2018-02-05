@@ -16,9 +16,9 @@
 {% endif %}
        >{{ csrf_field|safe }}
 
-  <h1>
-    <span class="icon icon-settings"></span>
-    {{_("Security and Privacy Settings")}}
+  <h1 class="page-title-data mobile-hide">
+    <span class="page-title-icon"><span class="icon icon-settings"></span></span>
+    <span class="page-title-text">{{_("Security and Privacy Settings")}}</span>
   </h1>
 
   <div class="notices">
@@ -38,7 +38,7 @@
       {{_("Your settings have been saved.")}}
     </p>
     {% else %}
-    <p>
+    <p class="mobile-hide">
       {{_("Choose your own privacy policy!")}}
     </p>
     {% endif %}

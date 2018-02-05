@@ -26,8 +26,12 @@
 {%- if result.index_capabilities.can_sort -%}
   {%- do display_things.append('
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-list"></span> ' + _("Order") + '</a>
-      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        <span class="navigation-icon icon-list"></span>
+        <span class="navigation-text">' + _("Order") + '</span>
+      </a>
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right"
+          role="menu" aria-labelledby="display-density">
         <li role="presentation">
           <a class="change-search-order' + oc.get('rev-freshness', '') + '"
              data-order="rev-freshness" data-keep-selection=1
@@ -58,7 +62,7 @@
 ') -%}
 {%- endif %}
 {%- do display_things.append('
-    <li class="dropdown" id="display-density-selector">
+    <li class="dropdown mobile-hide" id="display-density-selector">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-eye"></span> ' + _("Display") + '</a>
       <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
         <li role="presentation">

@@ -11,6 +11,29 @@
   {%- endfor %}
   {%- set with_top_composer = (False and profiles.profiles and with_top_composer) %}
   {# FIXME! ^^ false #}
+
+  <span class="page-title-data" style="display: none;">
+  {%- set theme_colors = theme_settings().colors %}
+  {%- if result.search_tag_ids %}
+    {%- set tag = config.tags[result.search_tag_ids[0]] %}
+    {%- if tag.type != 'inbox' %}
+    <span class="page-title-icon">
+      <span class="icon {{ tag.icon }}"
+            style="color: {{ theme_colors.get(tag.label_color, tag.label_color) }};"
+        ></span>
+    </span>
+    {%- endif %}
+    <span class="page-title-text">{% for tid in result.search_tag_ids %}
+     {{- config.tags[tid].name }}{% if not loop.last %}: {% endif %}
+    {%- endfor %}</span>
+  {%- else %}
+    <span class="page-title-icon">
+      <span class="icon icon-search" style="color: {{ theme_colors['08-green'] }};"></span>
+    </span>
+    <span class="page-title-text">{{ _("Search") }}</span>
+  {%- endif %}
+  </span>
+
   <table id="pile-results"
          data-tids="{{ result.search_tag_ids|join(' ') }}"
          data-tags="{% for tid in result.search_tag_ids -%}

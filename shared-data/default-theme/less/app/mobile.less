@@ -105,49 +105,57 @@
     min-width: 100%;
   }
   .topbar-logo {
+    min-width: 1%;
+    max-width: 1%;
     width: 67px;
-    min-width: 5%;
     padding: 0;
     margin: 0;
   }
-  .topbar-logo-name { min-width: 10%; }
-
   .topbar-logo #logo-icon,
   .topbar-logo-name #logo-name { width: 75%; }
+  .topbar-logo-name { min-width: 30%; }
+  .topbar-actions { min-width: 80%; }
+
+  .topbar-logo span#page-title-icon { padding: 0 0 0 10px; }
+  .topbar-logo-name span#page-title-text {
+    position: absolute;
+    display: block;
+    top: 0;
+    font-size: 24px;
+    margin: 18px 10px;
+  }
 
   .topbar-actions {
-    min-width: 80%;  /* Won't be satisfied, but will give us as much space as poss. */
+    white-space: nowrap;
     text-align: right;
   }
   .topbar-nav {
     right: 8px;
   }
-  .topbar-nav > ul > li { margin: 0 0 0 9px; padding: 0; }
+  .topbar-nav > ul > li { margin: 0 0 0 7px; padding: 0; }
   @media (min-width: 350px) { .topbar-nav > ul > li { margin-left: 10px; } }
   @media (min-width: 400px) { .topbar-nav > ul > li { margin-left: 11px; } }
   @media (min-width: 450px) { .topbar-nav > ul > li { margin-left: 12px; } }
   @media (min-width: 500px) { .topbar-nav > ul > li { margin-left: 13px; } }
   @media (min-width: 550px) { .topbar-nav > ul > li { margin-left: 14px; } }
-
   .topbar-nav > ul > li > a {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     margin: 0;
     padding: 0;
   }
   .topbar-nav > ul > li > a span.link-icon {
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 22px;
+    line-height: 22px;
     margin: 0;
-    padding: 10px 0 0 0;
+    padding: 8px 0 0 0;
   }
-
   .topbar-nav .nav-search { display: list-item; }
-  .form-search { width: auto; margin: 0 0 0 2px; }
-  .form-search input { width: auto; max-width: 145px; }
-  @media (min-width: 370px) { .form-search input { max-width: 165px; } }
-  @media (min-width: 450px) { .form-search input { max-width: 180px; } }
-  @media (min-width: 550px) { .form-search input { max-width: 195px; } }
+
+  .form-search { width: auto; margin: 0 0 0 10px; }
+  .form-search input { width: auto; max-width: 100px; }
+  @media (min-width: 600px) { .form-search input { max-width: 150px; } }
+  @media (min-width: 700px) { .form-search input { max-width: 160px; } }
 
   #sidebar, #sidebar-wrapper { width: 72px; }
   #sidebar-scroll-area { bottom: 0; }
@@ -220,6 +228,10 @@
   .settings-page .setting-group .settings { max-width: 100%; }
   .settings-page .setting-group .explanation { display: none; }
 
+  #pile-results td.from { width: 110px; text-overflow: ellipsis; }
+  @media (min-width: 550px) { #pile-results td.from { width: 125px; } }
+  @media (min-width: 630px) { #pile-results td.from { width: 150px; } }
+
   .content-normal section {
       width: 100%;
       max-width: 100%;
@@ -286,7 +298,10 @@
 
 /*  #pile-results td.subject a.item-subject { width: 370px; }*/
 
-  #content-tools nav li { padding: 0; margin: 0; }
+  #content-tools .sub-navigation > ul { margin: 9px; }
+  #content-tools nav li { padding: 0 1px; margin: 0; opacity: 0.95; }
+  #content-tools nav li,
+  #content-tools nav .navigation-icon { font-size: 18px; }
   #content-tools nav .navigation-text { display: none; }
 
   #bulk-actions-message { position: absolute; }
@@ -294,7 +309,7 @@
 }
 
 /* This is too small for the tabular result list, switch to card-style */
-@media only screen and (max-width: 480px), (orientation: portrait) {
+@media only screen and (max-width: 480px) { // , (orientation: portrait) {
   .mobile-pt-block { display: block !important; }
   .mobile-pt-inline { display: inline-block !important; }
   .mobile-pt-hide { display: none !important; }
@@ -307,7 +322,7 @@
     position: fixed; display: block;
     top: auto; left: 0; right: 0; bottom: 0;
     padding: 0;
-    height: 73px; width: 100%; vertical-align: center;
+    height: 73px; width: 100%; vertical-align: middle;
     border-top: 1px solid @gray; border-right: 0;
     z-index: 10;
   }
@@ -365,8 +380,19 @@
   @media (min-width: 380px) { .bulk-actions li { padding: 0px 11px; } }
   @media (min-width: 400px) { .bulk-actions li { padding: 0px 12px; } }
 
-  .topbar-nav > ul > li > a span.link-icon { padding: 0; }
-  .topbar-nav > ul > li.nav-search-hide > a span.link-icon { padding-top: 10px; }
+  .topbar-logo-name { min-width: 55%; }
+  .topbar-actions { min-width: 45%; }
+  .topbar-nav > ul > li > a span.link-icon { padding: 0 2px; }
+  .topbar-nav > ul > li.nav-search-hide {
+     position: absolute;
+     top: 9px;
+     right: 0px;
+  }
+
+  .form-search input { max-width: 115px; }
+  @media (min-width: 360px) { .form-search input { max-width: 130px; } }
+  @media (min-width: 380px) { .form-search input { max-width: 140px; } }
+  @media (min-width: 400px) { .form-search input { max-width: 150px; } }
 
   #pile-results, #pile-results.comfy {
     display: block;
@@ -375,7 +401,7 @@
       display: block;
       position: relative;
       border-bottom: 1px solid @grayMid;
-      overflow-x: hidden;
+      overflow: hidden;
     }
     td { display: block; border: none; }
     td.avatar {
@@ -389,15 +415,18 @@
         width: 40px; height: 40px; }
     }
     div.crypto-and-tags { display: none; }
-    td.checkbox { position: absolute; bottom: 0px; right: -5px; pull: right; }
-    td.date { position: absolute; top: 0px; right: 5px; pull: right; }
+    td.checkbox { position: absolute; bottom: -3px; right: -5px; }
+    td.date { position: absolute; top: 0px; right: 5px; }
     td.from {
         position: absolute;
         top: 0px;
-        left: 50px;
+        left: 54px;
         display: inline-block;
+        padding-right: 3px;
+        width: auto;
+        max-width: 55%;
     }
-    td.subject { left: 50px; overflow: hidden; text-overflow: ellipsis; }
+    td.subject { left: 54px; overflow: hidden; text-overflow: ellipsis; }
     td.full-message { width: 100%; max-width: 100%; }
     td.full-message .pile-message-content { margin: 2px; }
     td.draggable { display: block; visibility: hidden;}
@@ -412,7 +441,7 @@
         }
 
         .form-compose {
-            padding: none;
+            padding: 0;
             padding-left: 20px;
         }
 
@@ -447,10 +476,6 @@
   .pile-results-drag .drag-info { display: none; }
 
   div.footer-nav {
-    display: none;
-  }
-
-  #display-density-selector {
     display: none;
   }
 

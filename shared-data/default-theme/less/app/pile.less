@@ -145,6 +145,11 @@
   @media only screen and (max-width: 700px) {
     #pile-results td.subject .message-container { max-width: 214px; }}
 
+  // Avoid clobbering the things that are happening in mobile.less
+  @media only screen and (max-width: 480px) {
+    #pile-results td.subject {max-width: 70%;}
+    #pile-results td.subject .message-container { max-width: 70%; }}
+
   #pile-results td.date {
     width: 80px;
     text-align: right;
