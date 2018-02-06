@@ -1257,7 +1257,21 @@ class MailIndex(BaseIndex):
                 or 'feedback-id' in msg):
             keywords.extend(['personal:is'])
 
+            # This generates a unique group:X keyword identifying the
+            # participants in this conversation. This will facilitate
+            # more people-focused UI work down the line.
+            emails = []
+            for hdr in ('from', 'to', 'cc'):
+                hdr = msg.get(hdr)
+                if hdr:
+                    ahp = AddressHeaderParser(hdr)
+                    emails.extend([a.address.lower() for a in ahp])
+            emails = sorted(list(set(emails)))
+            if len(emails) > 1:
+                keywords.append('%s:group' % md5_hex(', '.join(emails)))
+
         for key in EXPECTED_HEADERS:
+            # This is a useful signal for spam classification
             if not msg[key]:
                 keywords.append('%s:missing' % key)
 
