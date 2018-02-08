@@ -1062,6 +1062,9 @@ class BaseMailSource(threading.Thread):
         self._sleeping = after
 
     def rescan_now(self, session=None, started_callback=None):
+        if not self.my_config.enabled:
+            return
+
         begin, end = MSrcLock(), MSrcLock()
         for l in (begin, end):
             l.acquire()
