@@ -63,7 +63,7 @@
        class="icon">&#x25BC;</a><br>
   {%- endif %}
   </td>
-  <td class="from" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
+  <td class="from people" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
   {%- if message.editing_strings %}
     <!-- FIXME -->
   {%- else %}
@@ -134,20 +134,38 @@
   <td class="avatar">
     <a><img src="{{ show_avatar(from) }}"></a>
   </td>
-  <td class="from">
+ {%- if to_cc and display_recipients %}
+  {%- set to1 = result.data.addresses[to_cc[0]] %}
+  <td class="to people">
+    <a href="{{ msg_url(mid) }}" data-noblank=1 data-keep-selection=1
+       title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
+{{ _("To") }}: {% if to_cc %}
+ &lt;{{ to1.address }}&gt;{% if to_cc|length > 1 %} +{{ to_cc|length -1 }}{% endif %}
+{%- else %}({{_("unknown")}}){% endif %}">
+      {%- if conversation_count > 1 %}
+      {%-   if to_cc|length > 1 %}<span class="icon icon-reply-all"></span>
+      {%-   else %}<span class="icon icon-reply"></span>{% endif %}
+      {%- else %}<span class="icon icon-forward"></span>
+      {%- endif %} &nbsp;
+      {%- if to1.fn %}{{ to1.fn|nice_name(28) }}{% else %}(&lt;{{ to1.address }}&gt;){% endif %}
+      {% if to_cc|length > 1 %}<span class="rcpt-count">+{{ to_cc|length -1 }}</span>{% endif %}
+    </a>
+ {%- else %}
+  <td class="from people">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
        title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
 {{ _("To") }}: {% if to_cc %}
  {%- set to1 = result.data.addresses[to_cc[0]] %}
  &lt;{{ to1.address }}&gt;{% if to_cc|length > 1 %} +{{ to_cc|length -1 }}{% endif %}
 {%- else %}({{_("unknown")}}){% endif %}">
-      {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
-      {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
-      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
-      {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
-      {% endif %}
+      {%- if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
+      {%- if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
+      {%- if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
+      {%-   if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
+      {%- endif %}
     </a>
-{%endif %}
+ {%- endif %}
+{% endif %}
   {%- if not message and not message_errors %}
     <div class="crypto-and-tags">
       {%- include "partials/pile_email_tags.html" %}

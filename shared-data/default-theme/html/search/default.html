@@ -1,7 +1,9 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
+{% set view_description = view_description or [] %}
 {% if result %}
   {%- set profiles = mailpile('profiles').result %}
+  {%- set theme_colors = theme_settings().colors %}
   {%- set with_top_composer = [] %}
   {%- for tid in result.search_tag_ids -%}
     {% if config.tags[tid].type == 'drafts' %}{% do with_top_composer.append(tid) %}{% endif %}
@@ -13,7 +15,6 @@
   {# FIXME! ^^ false #}
 
   <span class="page-title-data" style="display: none;">
-  {%- set theme_colors = theme_settings().colors %}
   {%- if result.search_tag_ids %}
     {%- set tag = config.tags[result.search_tag_ids[0]] %}
     {%- if tag.type != 'inbox' %}
@@ -24,8 +25,39 @@
     </span>
     {%- endif %}
     <span class="page-title-text">{% for tid in result.search_tag_ids %}
-     {{- config.tags[tid].name }}{% if not loop.last %}: {% endif %}
+      {{- config.tags[tid].name }}{% if not loop.last %}: {% endif %}
     {%- endfor %}</span>
+    {%- if result.search_tag_ids|length == 1 %}
+      {% if not view_description %}
+        {%- if tag.auto_tag and tag.auto_tag != "false" %}
+          {%- do view_description.append(_("Auto-tagging is enabled.")) %}
+        {%- endif %}
+        {%- if tag.auto_after > 0 %}
+          {%- if tag.auto_action == '!delete' %}
+            {%- if config.prefs.allow_deletion %}
+              {%- do view_description.append(
+                    _("Messages will be permanently deleted after {days} days."
+                      ).format(days=tag.auto_after)) %}
+            {%- endif %}
+          {%- else %}
+            {% if '+trash' in tag.auto_action %}
+              {%- do view_description.append(
+                    _("Messages will be moved to Trash after {days} days."
+                      ).format(days=tag.auto_after)) %}
+            {% else %}
+              {%- do view_description.append(
+                    _("Automation is enabled. Consult tag settings for details.")) %}
+            {%- endif %}
+          {%- endif %}
+        {%- elif tag.auto_tag and tag.auto_tag != "false" %}
+          {%- do view_description.append(_("Add and remove messages to train the system.")) %}
+        {%- endif %}
+      {%- endif %}
+    {%- endif %}
+    {%- if view_description %}
+      {%- do view_description.insert(0, "<b>" + tag.name + "</b> : ") %}
+      {%- do view_description.insert(0, "<span class='icon " + tag.icon + "'></span>") %}
+    {%- endif %}
   {%- else %}
     <span class="page-title-icon">
       <span class="icon icon-search" style="color: {{ theme_colors['08-green'] }};"></span>
@@ -48,7 +80,16 @@
                                 {%- endfor %}"
          class="pile-results {{ config.web.display_density }}">
   <tbody>
- {% if not result.data or not result.data.messages %}
+ {%- if view_description and result.stats.total > 0 and not result.data.messages %}
+    <div id="view_description" {# FIXME: Move styling to less! #}
+         style="background: #dfa; border-bottom: 1px solid #897; padding: 5px; text-align: center;"
+         class="mobile-pt-hide">
+      <div style="display: inline-block; margin: 0 auto; text-align: left;">
+        {%- for d in view_description %}{{ d|safe }} {% endfor %}
+      </div>
+    </div>
+ {%- endif %}
+ {%- if not result.data or not result.data.messages %}
    {# This puts a handy composer at the top of some search results #}
    {%- if with_top_composer %}
      {%- include("partials/pile_compose.html") %}
