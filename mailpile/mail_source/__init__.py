@@ -775,8 +775,9 @@ class BaseMailSource(threading.Thread):
             if config.prefs.allow_deletion:
                 try:
                     for i, key in enumerate(downloaded):
-                        progress['deleting'] = '%d/%d' % (i, len(downloaded))
+                        progress['deleting'] = '%d/%d' % (i+1, len(downloaded))
                         src.remove(key)
+                    src.flush()
                 except:
                     # Just ignore errors for now, we'll try again later.
                     if 'sources' in config.sys.debug:
@@ -790,6 +791,9 @@ class BaseMailSource(threading.Thread):
                 loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
                 return count
+
+            # Lock the source mailbox while we work with it
+            src.lock()
 
             # Perform housekeeping on the source_map, to make sure it does
             # not grow without bounds or misrepresent things.
@@ -864,6 +868,7 @@ class BaseMailSource(threading.Thread):
             progress['raised'] = True
             raise
         finally:
+            src.unlock()
             progress['running'] = False
 
         maybe_delete_from_server(loc, src)
