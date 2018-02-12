@@ -598,14 +598,12 @@
             <span class="checkbox">
               {{_("Copy mail to Mailpile secure storage")}}
             </span><br>
-{%- if 0 and is_dev_version() %}
             <input type="checkbox" name="source-{{ new_rid }}-delete-source" value="yes"
                    onchange='javascript:_fpa.require(this, "source-{{ new_rid }}-copy-local");'
                    {% if result['source-' + rid + '-delete-source'] %}checked{% endif %}>
             <span class="checkbox">
-              {{_("Delete from Unix mail spool")}}
+              {{_("Delete from Unix mail spool")}} ({{_("after copying")}})
             </span>
-{%- endif %}
           </div>
         </div>
 
