@@ -1033,11 +1033,9 @@ class BaseMailSource(threading.Thread):
                 next_save_time = self._last_saved + self.SAVE_STATE_INTERVAL
                 if self.alive and time.time() >= next_save_time:
                     self._save_state()
-                    if not self.my_config.keepalive:
-                        self.close()
-                elif (self._last_rescan_completed and
-                        not self.my_config.keepalive):
-                    self.close()
+                    self._check_keepalive()
+                elif self._last_rescan_completed:
+                    self._check_keepalive()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
                 self.session.ui.debug(self.event.data['traceback'])
@@ -1054,6 +1052,10 @@ class BaseMailSource(threading.Thread):
         self.close()
         self._log_status(_('Shut down'), clear_errors=True)
         self._save_state()
+
+    def _check_keepalive(self):
+        if not self.my_config.keepalive:
+            self.close()
 
     def _log_conn_errors(self):
         if 'connection' in self.event.data:

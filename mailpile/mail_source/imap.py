@@ -43,6 +43,7 @@ import imaplib
 import os
 import re
 import socket
+import select
 import ssl
 import traceback
 import time
@@ -290,8 +291,10 @@ class SharedImapConn(threading.Thread):
 
         self._can_idle = True
         self.select(self._idle_mailbox)
-        logger = (self._conn._mesg if (self._conn.debug >= 1)
-                  else self._conn._log)
+        if 'imap' in self.session.config.sys.debug:
+            logger = self.session.ui.debug
+        else:
+            logger = lambda x: True
 
         def send_line(data):
             logger('> %s' % data)
@@ -306,11 +309,17 @@ class SharedImapConn(threading.Thread):
             send_line('%s IDLE' % self._conn._new_tag())
             while self._can_idle and not get_line().startswith('+ '):
                 pass
-            # FIXME: We should set up a loop here which uses select()
-            #        to watch for activity, with a timeout that lets
-            #        us also watch for _can_idle going False.
-            #        If we see any EXISTS messages, then we invoke the
-            #        callback, but stay IDLE until told otherwise.
+            while True:
+                rl = wl = xl = None
+                try:
+                    rl, wl, xl = select.select([self._conn.sock], [], [], 1)
+                except socket.error:
+                    pass
+                if mailpile.util.QUITTING or not self._can_idle:
+                    break
+                elif rl and self._idle_callback(get_line()):
+                    self._selected = None
+                    break
             send_line('DONE')
             # Note: We let the IDLE response drop on the floor, don't care.
         except (socket.error, OSError), val:
@@ -325,11 +334,11 @@ class SharedImapConn(threading.Thread):
                     self.logout()
             except (IOError, IMAP4.error, AttributeError):
                 pass
+            self._can_idle = False
             self._conn = None
             self._update_name()
 
     def run(self):
-        # FIXME: Do IDLE stuff if requested.
         try:
             idle_counter = 0
             while self._conn:
@@ -339,9 +348,8 @@ class SharedImapConn(threading.Thread):
                     time.sleep(1 if self._conn else 0)
                     if self._can_idle and self._idle_mailbox:
                         idle_counter += 1
-                        # Unless we've been in "can idle" state for 10
-                        # seconds, then we switch to IDLE.
-                        if idle_counter == 5:
+                        # Once we've been in "can idle" state for 5: IDLE!
+                        if idle_counter >= 5:
                             with self as raw_conn:
                                 self._imap_idle()
                     else:
@@ -808,6 +816,7 @@ class ImapMailSource(BaseMailSource):
         self.last_op = 0
         self.watching = -1
         self.capabilities = set()
+        self.logged_in_at = None
         self.namespaces = {'private': []}
         self.flag_cache = {}
         self.conn = None
@@ -823,13 +832,6 @@ class ImapMailSource(BaseMailSource):
 
     def timed_imap(self, *args, **kwargs):
         return _parse_imap(RunTimed(self.timeout, *args, **kwargs))
-
-    def _sleep(self, seconds):
-        # FIXME: While we are sleeping, we should switch to IDLE mode
-        #        if it is available.
-        if 'IDLE' in self.capabilities:
-            pass
-        return BaseMailSource._sleep(self, seconds)
 
     def _conn_id(self):
         def e(s):
@@ -923,12 +925,25 @@ class ImapMailSource(BaseMailSource):
                              logged_in_cb=logged_in_cb,
                              source=self)
         if conn:
+            self.logged_in_at = time.time()
             return self.conn
         else:
             return WithaBool(False)
 
     def _idle_callback(self, data):
-        pass
+        if 'EXISTS' in data:
+            # Stop sleeping and check for mail
+            self.wake_up()
+            return True
+        else:
+            return False
+
+    def _check_keepalive(self):
+        alive_for = time.time() - self.logged_in_at
+        if (not self.my_config.keepalive) or alive_for > (12 * 3600):
+            if ('IDLE' not in self.capabilities or
+                    alive_for > self.my_config.interval):
+                self.close()
 
     def open_mailbox(self, mbx_id, mfn):
         try:
