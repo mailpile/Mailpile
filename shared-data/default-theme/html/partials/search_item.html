@@ -131,11 +131,14 @@
     {%- include "partials/pile_threading.html" %}
   {%- endif %}
 {% else %}
-  <td class="avatar">
-    <a><img src="{{ show_avatar(from) }}"></a>
-  </td>
- {%- if to_cc and display_recipients %}
+
+{%- if to_cc and display_recipients %}
   {%- set to1 = result.data.addresses[to_cc[0]] %}
+  <td class="avatar">
+    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1>
+      <img src="{{ show_avatar(to1) }}" alt="" />
+    </a>
+  </td>
   <td class="to people">
     <a href="{{ msg_url(mid) }}" data-noblank=1 data-keep-selection=1
        title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
@@ -151,6 +154,11 @@
       {% if to_cc|length > 1 %}<span class="rcpt-count">+{{ to_cc|length -1 }}</span>{% endif %}
     </a>
  {%- else %}
+  <td class="avatar">
+    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1>
+      <img src="{{ show_avatar(from) }}" alt="" />
+    </a>
+  </td>
   <td class="from people">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
        title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
