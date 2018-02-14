@@ -135,7 +135,9 @@
 {%- if to_cc and display_recipients %}
   {%- set to1 = result.data.addresses[to_cc[0]] %}
   <td class="avatar">
-    <a><img src="{{ show_avatar(to1) }}"></a>
+    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1>
+      <img src="{{ show_avatar(to1) }}" alt="" />
+    </a>
   </td>
   <td class="to people">
     <a href="{{ msg_url(mid) }}" data-noblank=1 data-keep-selection=1
@@ -153,7 +155,9 @@
     </a>
  {%- else %}
   <td class="avatar">
-    <a><img src="{{ show_avatar(from) }}"></a>
+    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1>
+      <img src="{{ show_avatar(from) }}" alt="" />
+    </a>
   </td>
   <td class="from people">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
