@@ -382,16 +382,19 @@ class BaseMailSource(threading.Thread):
     def _jitter(self, seconds):
         return seconds + random.randint(0, self.jitter)
 
+    def _sleeping_is_ok(self, slept):
+        return True
+
     def _sleep(self, seconds):
         enabled = self.my_config.enabled
-        if self._sleeping != 0:
-            self._sleeping = seconds
-            while (self.alive and
-                    self._sleeping > 0 and
-                    enabled == self.my_config.enabled and
-                    not mailpile.util.QUITTING):
-                time.sleep(min(1, self._sleeping))
-                self._sleeping -= 1
+        self._sleeping = seconds
+        while (self.alive and
+                self._sleeping > 0 and
+                self._sleeping_is_ok(seconds - self._sleeping) and
+                enabled == self.my_config.enabled and
+                not mailpile.util.QUITTING):
+            time.sleep(min(1, self._sleeping))
+            self._sleeping -= 1
         self._sleeping = None
         play_nice_with_threads()
         return (self.alive and not mailpile.util.QUITTING)

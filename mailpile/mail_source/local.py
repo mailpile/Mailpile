@@ -18,9 +18,28 @@ class LocalMailSource(BaseMailSource):
         BaseMailSource.__init__(self, *args, **kwargs)
         if not self.my_config.name:
             self.my_config.name = _('Local mail')
+        self.recently_changed = []
         self.my_config.protocol = 'local'  # We may be upgrading an old
                                            # mbox or maildir source.
         self.watching = -1
+
+    def _sleeping_is_ok(self, slept):
+        if slept > 5:
+            #
+            # If any of the most recently changed mailboxes has changed
+            # again, cut our sleeps short after 5 seconds. By basing this
+            # on recently changed mailboxes, we don't need to explicitly
+            # ask the user which mailbox(es) are being used as Inboxes.
+            #
+            # The number 10 should be "big enough", without us going
+            # nuts and scanning a gazillion mailboxes every second.
+            #
+            if len(self.recently_changed) > 10:
+                self.recently_changed = self.recently_changed[-10:]
+            for mbx in self.recently_changed:
+                if self._has_mailbox_changed(mbx, {}):
+                    return False
+        return True
 
     def close(self):
         pass
@@ -92,7 +111,13 @@ class LocalMailSource(BaseMailSource):
             mtszs = ['%s/%s' % (mt, sz)]
 
         mtsz = state['mtsz'] = ','.join(mtszs)
-        return (mtsz != self.event.data.get('mailbox_state', {}).get(mbx._key))
+        if (mtsz != self.event.data.get('mailbox_state', {}).get(mbx._key)):
+            while mbx in self.recently_changed:
+                self.recently_changed.remove(mbx)
+            self.recently_changed.append(mbx)
+            return True
+        else:
+            return False
 
     def _mark_mailbox_rescanned(self, mbx, state):
         if 'mailbox_state' in self.event.data:
