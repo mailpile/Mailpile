@@ -153,11 +153,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def send_standard_headers(self,
                               header_list=[],
                               cachectrl='private',
-                              mimetype='text/html'):
+                              mimetype='text/html',
+                              x_dns_prefetch='off'):
         """
         Send common HTTP headers plus a list of custom headers:
         - Cache-Control
         - Content-Type
+        - X-DNS-Prefetch-Control
 
         This function does not send the HTTP/1.1 header, so
         ensure self.send_http_response() was called before
@@ -174,6 +176,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.send_header('Content-Security-Policy',
                          security.http_content_security_policy(self.server))
         self.send_header('Content-Type', mimetype)
+        self.send_header('X-DNS-Prefetch-Control', x_dns_prefetch)
         for header in header_list:
             self.send_header(header[0], header[1])
         session_id = self.session.ui.html_variables.get('http_session')
