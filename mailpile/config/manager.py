@@ -70,7 +70,7 @@ class ConfigManager(ConfigDict):
             return workdir
 
         # Which pile?
-        pile = os.getenv('MAILPILE_PILENAME', 'default')
+        pile = os.getenv('MAILPILE_PILENAME')
         if not pile:
             # Legacy env variable (PROFILE here means pile)
             pile = os.getenv('MAILPILE_PROFILE', 'default')
