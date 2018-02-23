@@ -180,6 +180,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                          security.http_content_security_policy(self.server))
         self.send_header('Content-Type', mimetype)
         self.send_header('X-DNS-Prefetch-Control', x_dns_prefetch)
+        self.send_header('X-UA-Compatible', 'IE=Edge')  # For old Windowses
         for header in header_list:
             self.send_header(header[0], header[1])
         session_id = self.session.ui.html_variables.get('http_session')
