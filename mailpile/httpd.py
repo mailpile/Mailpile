@@ -146,9 +146,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.assert_no_newline(destination)
         self.assert_no_html(destination)
         self.send_http_response(302, 'Found')
-        self.wfile.write(('Location: %s\r\n\r\n'
-                          '<h1><a href="%s">Please look here!</a></h1>\n'
-                          ) % (destination, destination))
+        body = ('<h1><a href="%s">Please look here!</a></h1>\n'
+                ) % (destination,)
+        self.wfile.write(('Location: %s\r\n'
+                          'Content-Length: %d\r\n\r\n'
+                          ) % (destination, len(body)))
+        self.wfile.write(body)
 
     def send_standard_headers(self,
                               header_list=[],
