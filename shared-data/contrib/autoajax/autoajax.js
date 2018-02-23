@@ -252,7 +252,7 @@ refresh_from_cache = function(cid) {
                  var cid = json.state.cache_id;
                  if (can_refresh(cid)) {
                      var selected = get_selection_state();
-                     $('.content-'+cid).replaceWith(json.result);
+                     $('.content-'+cid).replaceWith(json.result.trim());
                      Mailpile.UI.prepare_new_content('.content-'+cid);
                      restore_selection_state(selected);
                      refresh_history[cid] = get_now();
