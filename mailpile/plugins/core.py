@@ -1136,7 +1136,15 @@ class ConfigSet(Command):
                         raise ValueError('Need --force to change auth policy.')
 
                 value = value.strip()
-                if value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):
+                if value == '{None}':
+                    value = None
+                elif value == '{Blank}':
+                    value = ''
+                elif value == '{False}':
+                    value = False
+                elif value == '{True}':
+                    value = True
+                elif value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):
                     value = json.loads(value)
                 try:
                     try:

@@ -217,7 +217,7 @@ def WebRootCheck(path):
     return p
 
 
-def FileCheck(path):
+def FileCheck(path=None):
     """
     Verify that a string is a valid path to a file, make it absolute.
 
@@ -229,13 +229,15 @@ def FileCheck(path):
         ...
     ValueError: Not a file: /
     """
+    if path in (None, 'None', 'none', ''):
+        return None
     path = PathCheck(path)
     if not os.path.isfile(path):
         raise ValueError(_('Not a file: %s') % path)
     return path
 
 
-def DirCheck(path):
+def DirCheck(path=None):
     """
     Verify that a string is a valid path to a directory, make it absolute.
 
@@ -247,6 +249,8 @@ def DirCheck(path):
         ...
     ValueError: Not a directory: /etc/passwd
     """
+    if path in (None, 'None', 'none', ''):
+        return None
     path = PathCheck(path)
     if not os.path.isdir(path):
         raise ValueError(_('Not a directory: %s') % path)
