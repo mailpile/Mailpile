@@ -350,6 +350,22 @@
       <br style="margin-bottom: 0.75em;">
 #}
 
+{# We only display this on first setup, because changing it later is likely
+ # to badly mess things up. Power users will want this though.
+ #}
+{% if ui_from_profiles %}
+      <input name="sys.gpg_home" type="radio" value="{Blank}"
+            {%- if not config.sys.gpg_home %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="sys.gpg_home" type="radio" value="{{ config.sys.gpg_home or config.workdir }}"
+             {%- if config.sys.gpg_home %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Use shared GnuPG keychain for PGP encryption keys")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br style="margin-bottom: 0.75em;">
+{% endif %}
+
       <input name="prefs.encrypt_mail" type="radio" value="true"
             {%- if config.prefs.encrypt_mail %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
