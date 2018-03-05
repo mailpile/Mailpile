@@ -3,6 +3,7 @@
 # Misc. utility functions for Mailpile.
 #
 import cgi
+import copy
 import ctypes
 import datetime
 import hashlib
@@ -1001,28 +1002,48 @@ class TimedOut(IOError):
     pass
 
 
+TIMED_THREAD_LOCK = threading.Lock()
+TIMED_THREADS = {}
+
 class RunTimedThread(threading.Thread):
-    def __init__(self, name, func):
+    def __init__(self, name, func, unique=None):
         threading.Thread.__init__(self, target=func)
-        self.name = name
         self.daemon = True
+        self.name = name
+        self.unique = unique
 
     def run_timed(self, timeout):
+        if self.unique:
+            with TIMED_THREAD_LOCK:
+                old_thread = TIMED_THREADS.get(self.unique)
+                if (old_thread is not None) and old_thread.isAlive():
+                    raise TimedOut('Old thread still alive: %s' % self.name)
+                TIMED_THREADS[self.unique] = self
+
         self.start()
         self.join(timeout=timeout)
+
         if self.isAlive() or QUITTING:
             raise TimedOut('Timed out: %s' % self.name)
+        else:
+            if self.unique:
+                with TIMED_THREAD_LOCK:
+                    TIMED_THREADS[self.unique] = None
 
 
 def RunTimed(timeout, func, *args, **kwargs):
     result, exception = [], []
+    unique = kwargs.get('unique_thread')
+    if unique:
+        kwargs = copy.copy(kwargs)
+        del kwargs['unique_thread']
     def work():
         try:
             result.append(func(*args, **kwargs))
         except:
             et, ev, etb = sys.exc_info()
             exception.append((et, ev, etb))
-    RunTimedThread(func.__name__, work).run_timed(timeout)
+    RunTimedThread(func.__name__, work, unique=unique).run_timed(timeout)
     if exception:
         t, v, tb = exception[0]
         raise t, v, tb

@@ -352,7 +352,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             # Run the entire connect/login sequence in a single timer, but
             # give it plenty of time in case the network is lame.
             if sm_startup:
-                RunTimed(300, sm_startup)
+                RunTimed(300, sm_startup, unique_thread='smtp-client')
 
             if test_only:
                 return True
@@ -367,9 +367,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 mark(('Sending message... (%d%%)'
                       ) % (100 * (total-len(msg_string))/total), events,
                      log=False)
-                RunTimed(120, sm_write, msg_string[:20480])
+                sm_write(msg_string[:20480])
                 msg_string = msg_string[20480:]
-            RunTimed(30, sm_close)
+            sm_close()
 
             mark(_n('Message sent, %d byte',
                     'Message sent, %d bytes',

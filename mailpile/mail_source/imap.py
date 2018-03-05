@@ -602,9 +602,13 @@ def _connect_imap(session, settings, event,
                   logged_in_cb=None, source=None):
 
     def timed(*args, **kwargs):
+        if source is not None:
+            kwargs['unique_thread'] = 'imap/%s' % (source.my_config._key,)
         return RunTimed(timeout, *args, **kwargs)
 
     def timed_imap(*args, **kwargs):
+        if source is not None:
+            kwargs['unique_thread'] = 'imap/%s' % (source.my_config._key,)
         return _parse_imap(RunTimed(timeout, *args, **kwargs))
 
     conn = None
