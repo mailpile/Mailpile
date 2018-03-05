@@ -145,6 +145,7 @@ Mailpile.notification = function(result) {
   }
   else if (result.source && result.source.indexOf('.mail_source.') == 0) {
     // Mail source specific notification logic
+    if (!result.data.enabled) return result.event_id;
 
     if ((result.data.discovery_error == "toomany") &&
         (!result.data.rescan || !result.data.rescan.running) &&
