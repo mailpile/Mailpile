@@ -205,6 +205,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             #       which should ensure that Popen does not spawn a shell
             #       with potentially exploitable arguments.
             cmd = (route['command'] % {"rcpt": ",".join(to)}).strip().split()
+            if cmd[0][:1] == '|':
+                cmd[0] = cmd[0][1:]
             proc = Popen(cmd, stdin=PIPE, long_running=True)
             sm_startup = None
             sm_write = proc.stdin.write
