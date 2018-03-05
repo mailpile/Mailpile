@@ -986,7 +986,9 @@ class BaseMailSource(threading.Thread):
         _original_session = self.session
 
         def sleeptime():
-            if self._last_rescan_completed or self._last_rescan_failed:
+            if not self.my_config.enabled:
+                return 24 * 3600
+            elif self._last_rescan_completed or self._last_rescan_failed:
                 return self.my_config.interval
             else:
                 return 1
