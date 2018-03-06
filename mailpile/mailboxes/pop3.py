@@ -75,15 +75,19 @@ class POP3Mailbox(Mailbox):
 
             with ConnBroker.context(need=[ConnBroker.OUTGOING_POP3]):
                 if self.conn_cls:
-                    self._pop3 = self.conn_cls(self.host, self.port or 110)
+                    self._pop3 = self.conn_cls(self.host, self.port or 110,
+                                               timeout=120)
                     self.secure = self.use_ssl
                 elif self.use_ssl:
-                    self._pop3 = wrappable_POP3_SSL(self.host, self.port or 995)
+                    self._pop3 = wrappable_POP3_SSL(self.host, self.port or 995,
+                                                    timeout=120)
                     self.secure = True
                 else:
-                    self._pop3 = poplib.POP3(self.host, self.port or 110)
+                    self._pop3 = poplib.POP3(self.host, self.port or 110,
+                                             timeout=120)
                     self.secure = False
 
+            self._pop3.sock.settimeout(120)
             if self.debug:
                 self._pop3.set_debuglevel(self.debug)
 

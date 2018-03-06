@@ -245,7 +245,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             serverbox = [None]
             def sm_connect_server():
                 server = (smtp_ssl and SMTP_SSL or SMTP
-                          )(local_hostname='mailpile.local', timeout=25)
+                          )(local_hostname='mailpile.local', timeout=120)
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
                 if smtp_ssl or proto in ('smtorp', 'smtptls'):
@@ -255,6 +255,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 try:
                     with ConnBroker.context(need=conn_needs) as ctx:
                         server.connect(host, int(port))
+                    server.sock.settimeout(120)
                     server.ehlo_or_helo_if_needed()
                 except (IOError, OSError, smtplib.SMTPServerDisconnected):
                     fail(_('Failed to connect to %s') % host, events,
