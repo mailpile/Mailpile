@@ -64,6 +64,12 @@ class POP3Mailbox(Mailbox):
         self._pop3 = None
         self._connect()
 
+    def lock(self):
+        pass
+
+    def unlock(self):
+        pass
+
     def _connect(self):
         with self._lock:
             if self._pop3:
@@ -94,6 +100,7 @@ class POP3Mailbox(Mailbox):
             self._keys = None
             try:
                 if self.auth_type.lower() == 'oauth2':
+                    from mailpile.plugins.oauth import OAuth2
                     token_info = OAuth2.GetFreshTokenInfo(self.session,
                                                           self.user)
                     if self.user and token_info and token_info.access_token:

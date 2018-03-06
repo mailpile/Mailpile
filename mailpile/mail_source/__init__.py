@@ -790,13 +790,13 @@ class BaseMailSource(threading.Thread):
                     _('Deletion is disabled'), should])
 
         try:
+            # Lock the source mailbox while we work with it
+            src.lock()
+
             with self._lock:
                 loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
                 return count
-
-            # Lock the source mailbox while we work with it
-            src.lock()
 
             # Perform housekeeping on the source_map, to make sure it does
             # not grow without bounds or misrepresent things.
