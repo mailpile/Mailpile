@@ -14,7 +14,7 @@
 # Configuration strings:
 # (Do not use embedded spaces or environment variables.)
 
-VERSION="0.99.1++"
+VERSION="1.0.0rc2+"
 
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
