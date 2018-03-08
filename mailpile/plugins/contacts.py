@@ -819,7 +819,7 @@ def ProfileVCard(parent):
         ORDER = ('Tagging', 3)
         VCARD = "profile"
 
-        DEFAULT_KEYTYPE = 'RSA2048'
+        DEFAULT_KEYTYPE = 'RSA3072'
 
         def _default_signature(self):
             return _('Sent using Mailpile, Free Software from www.mailpile.is')
