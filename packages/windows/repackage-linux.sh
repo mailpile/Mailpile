@@ -46,6 +46,11 @@ GNUPG_FILE_ALL="gnupg-w32-2.2.1_*.tar.xz"
 
 # End of configuration strings.
 
+# Capture path to package script directory, go there.
+set -e
+cd "$(dirname "$0")"
+SCRIPTDIR="$(pwd)"
+
 # Command line arguments can be used to change default repository and branch.
 for ARG in $* ; do
     if [ $ARG = "--local" ]; then
@@ -67,11 +72,8 @@ echo "Release identifier:   $VERSION"
 echo "Mailpile repository:  $MAILPILE_GIT"
 echo "Mailpile branch:      $MAILPILE_BRANCH"
 
-# Capture path to script directory, get the enclosing project directory path,
+# Get the enclosing project directory path,
 # define a path for downloads from external projects like GnuPG and OpenSSL.
-set -e
-cd "$(dirname "$0")"
-SCRIPTDIR="$(pwd)"
 PROJECTDIR=$(realpath $SCRIPTDIR/../..)
 echo "Project dir:          $PROJECTDIR"
 echo "Script dir:           $SCRIPTDIR"
