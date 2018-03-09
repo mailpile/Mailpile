@@ -217,7 +217,7 @@ class ConfigManager(ConfigDict):
             os.makedirs(self.workdir, mode=0700)
 
         # Once acquired, lock_workdir is only released by process termination.
-        if isinstance(self.lock_workdir, str):
+        if not isinstance(self.lock_workdir, fasteners.InterProcessLock):
             ipl = fasteners.InterProcessLock(self.lock_workdir)
             if ipl.acquire(blocking=False):
                  self.lock_workdir = ipl
