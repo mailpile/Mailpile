@@ -1,0 +1,28 @@
+[Desktop Entry]
+Version=1.0
+Name=Mailpile
+GenericName=E-mail Client
+X-GNOME-FullName=Mailpile Personal Web-mail Client
+Comment=A privacy-focused e-mail client with a web-based user interface
+Type=Application
+Exec=mailpile-gui.py
+TryExec=mailpile-gui.py
+Terminal=false
+Categories=Network;Email;GTK;
+StartupNotify=true
+Icon=mailpile
+
+# FIXME:
+#
+#   The following is an example of extra sections that could be added
+#   if we detected that the user is making use of the (barely documented)
+#   Mailpile "profiles". On Linux this would probably mean adding an
+#   action for creating a new profile, which then installs an enhanced
+#   mailpile.desktop file to ~/.share/local/applications/mailpile.desktop
+#   to override the system-wide one.
+#
+#Actions=Dogfood;
+#
+#[Desktop Action Dogfood]
+#Name=Mailpile: Dogfood
+#Exec=mailpile-gui.py --profile=Dogfood
