@@ -1,0 +1,126 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Restore from a Backup")}} | {{_('Setup')}}{% endblock %}
+{% block content %}
+{% if result.configured or result.restored %}
+  {{ mailpile('http/redirect', U('/')) }}
+{% else %}
+
+<div class="setup-box setup-box-medium add-top half-bottom animated fadeIn">
+  <div{% if result.metadata %} style="transform: scale(0.66); margin: -3em 0; color: #070;"{% endif %}> 
+    <div id="identity-vault-lock" class="vault-lock-outer">
+      <div class="vault-lock-inner">
+        <div class="vault-lock icon-help animated"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center half-top">
+    <form method="POST" action="" enctype="multipart/form-data">
+      {{ csrf_field|safe }}
+      <h3 class="text-center" style="margin-bottom: 0.75em;">
+      {% if result.metadata %}
+        {{_("Backup Archive is OK")}}
+      {% else %}
+        {{_("Restore from a Backup")}}
+      {% endif %}
+      </h3>
+
+    {% if result.metadata %}
+      <div id="restore-possible">
+        <p><i>
+          {{_("This backup was created by Mailpile version {ver} on {date}."
+              ).format(ver=result.metadata.mailpile_version,
+                       date=result.metadata.backup_date) }}
+        </i></p>
+        <p style="text-align: left; margin: -5px 0 0 9em; font-size: 0.9em; line-height: 0.9em;">
+          <input type="radio" name="keychain" value="shared" checked>
+          <span class="checkbox">{{_("Restore encryption keys to shared GnuPG keychain")}}</span>
+          <br>
+          <input type="radio" name="keychain" value="mailpile">
+          <span class="checkbox">{{_("Restore encryption keys to Mailpile-only keychain")}}</span>
+          <br>
+          <input type="radio" name="keychain" value="none">
+          <span class="checkbox">{{_("Do not restore GnuPG/PGP encryption keys")}}</span>
+          <br style="margin-bottom: 0.5em;">
+          <input type="checkbox" name="os_settings" value="keep" checked>
+          <span class="checkbox">{{_("Keep default Operating System settings (override backup)")}}</span>
+          <br style="margin-bottom: 1.25em;">
+        </p>
+        <p>
+          {{_("Enter your Mailpile master password to restore this configuration.")}}
+          <br style="margin-bottom: 0.5em;">
+          <input type="password" name="password" autocomplete="off"
+                 tabindex=1 alt="{{_("Your Passphrase")}}"
+                 placeholder="{{_("Your Passphrase")}}">
+          <input type="hidden" name="restore"
+                 value="{{ result.metadata.backup_date }}">
+        </p>
+        <button class="button-primary" type="submit">{{_("Restore")}}</button>
+      </div>
+    {% else %}
+      <div id="restore-how" style="text-align: left; margin: 0 3em">
+        <p>
+          {{_("You can restore a previous Mailpile configuration (keys, tags, etc.), provided you have a Mailpile Backup Archive available.")}}
+{# FIXME: Make this work!
+          {{_("Backup archives can be uploaded manually, or automatically over WiFi if you have been using the Mailpile mobile web-app on another device.")}}
+#}
+        </p>
+        <p style="text-align: center">
+          <button id="show-from-file">{{_("Upload a Backup Archive")}}</button>
+{# FIXME: Make this work!
+          &nbsp; &nbsp; &nbsp;
+          <button id="show-over-wifi">{{_("Restore Over WiFi")}}</button>
+#}
+        </p>
+      </div>
+
+      <div id="restore-from-file" class="hide">
+        <p>
+          {{_("Please upload your Mailpile Backup Archive to continue.")}}<br>
+          ({{_("It should have a name similar to: ")}}
+          <i>Mailpile_Backup_2017-01-01.zip</i>)
+        </p>
+        <p>
+          <input type="file" name="file-data">
+        </p>
+        <button class="button-primary" type="submit">{{_("Upload and Verify")}}</button>
+      </div>
+
+{# FIXME: Make this work!
+      <div id="restore-over-wifi" class="hide">
+        <div style="text-align: left; margin: 0 6em">
+          <ol style="list-style: decimal;">
+            <li>Connect your laptop and mobile device to the same WiFi network</li>
+            <li>Choose RESTORE from your Mobile Mailpile App</li>
+            <li>Enter the following details into the Mobile Restortion form</li>
+          </ol>
+        </div>
+        <p id="address" style="font-size: 1.75em; font-family: monospace;">
+          <i>... {{_("loading")}} ...</i>
+        </p>
+        <button class="button-primary" type="submit">{{_("Next")}}</button>
+      </div>
+#}
+    {% endif %}
+    </form>
+  </div>
+</div>
+<a id='rfab' style="position: absolute; bottom: 10px; right: 20px;"
+   href="{{ U('/setup/welcome/') }}"
+  ><span class="icon icon-logo"></span> {{_("Back to Setup")}}</a>
+
+<script type="text/javascript">
+  $('#show-from-file').click(function() {
+    $('#restore-how').slideUp();
+    $('#restore-from-file').slideDown();
+    return false;
+  });
+  $('#show-over-wifi').click(function() {
+    $('#restore-how').slideUp();
+    $('#restore-over-wifi').slideDown();
+    // Launch httpd on 0.0.0.0, get IP:PORT, inject into page.
+    return false;
+  });
+</script>
+{% endif %}
+{% endblock %}
