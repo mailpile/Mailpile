@@ -837,10 +837,12 @@ class GnuPG:
                     "4": "new signatures",
                     "8": "new subkeys",
                     "16": "contains private key",
+                    "17": "contains new private key",
                 }
                 res["updated"].append({
                     "details": int(x[1]),
-                    "details_text": reasons[x[1]],
+                    # FIXME: Reasons may be ORed! This does NOT handle that.
+                    "details_text": reasons.get(x[1], str(x[1])),
                     "fingerprint": x[2].rstrip(),
                 })
             elif x[0] == "IMPORT_PROBLEM":
@@ -853,7 +855,7 @@ class GnuPG:
                 }
                 res["failed"].append({
                     "details": int(x[1]),
-                    "details_text": reasons[x[1]],
+                    "details_text": reasons.get(x[1], str(x[1])),
                     "fingerprint": x[2].rstrip()
                 })
             elif x[0] == "IMPORT_RES":
@@ -1319,10 +1321,19 @@ class GnuPG:
         return results
 
     def get_pubkey(self, keyid):
-        self.event.running_gpg(_('Searching for key for %s in key servers'
-                                 ) % (keyid))
+        return self.export_pubkeys(selectors=[keyid])
+
+    def export_pubkeys(self, selectors=None):
+        self.event.running_gpg(_('Exporting keys %s from keychain'
+                                 ) % (selectors,))
         retvals = self.run(['--armor',
-                            '--export', keyid]
+                            '--export'] + (selectors or [])
+                            )[1]["stdout"]
+        return "".join(retvals)
+
+    def export_privkeys(self, selectors=None):
+        retvals = self.run(['--armor',
+                            '--export-secret-keys'] + (selectors or [])
                             )[1]["stdout"]
         return "".join(retvals)
 

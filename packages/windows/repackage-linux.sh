@@ -11,10 +11,11 @@
 # This script is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
 
+# Uncomment to hard code a version string.
+# VERSION="1.0.0rc2"
+
 # Configuration strings:
 # (Do not use embedded spaces or environment variables.)
-
-VERSION="0.99.1++"
 
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
@@ -45,6 +46,11 @@ GNUPG_FILE_ALL="gnupg-w32-2.2.1_*.tar.xz"
 
 # End of configuration strings.
 
+# Capture path to package script directory, go there.
+set -e
+cd "$(dirname "$0")"
+SCRIPTDIR="$(pwd)"
+
 # Command line arguments can be used to change default repository and branch.
 for ARG in $* ; do
     if [ $ARG = "--local" ]; then
@@ -57,17 +63,17 @@ for ARG in $* ; do
     shift
 done
 
+if [$VERSION == ""]; then
+    export VERSION=`../../scripts/version.py`
+fi
+
 echo " "
 echo "Release identifier:   $VERSION"
-echo " "
 echo "Mailpile repository:  $MAILPILE_GIT"
 echo "Mailpile branch:      $MAILPILE_BRANCH"
 
-# Capture path to script directory, get the enclosing project directory path,
+# Get the enclosing project directory path,
 # define a path for downloads from external projects like GnuPG and OpenSSL.
-set -e
-cd "$(dirname "$0")"
-SCRIPTDIR="$(pwd)"
 PROJECTDIR=$(realpath $SCRIPTDIR/../..)
 echo "Project dir:          $PROJECTDIR"
 echo "Script dir:           $SCRIPTDIR"
@@ -311,9 +317,15 @@ makensis -V2 -NOCD -DVERSION=$VERSION "$SCRIPTDIR/mailpile.nsi"
 # Save source code archive to publish for licence compliance.
 cp -r $DOWNLOADDIR/* -t $SOURCEARCHIVEDIR
 
+# Calculate SHA256 checksums for everything.
+cd ..
+openssl dgst -sha256 -hex Mailpile-$VERSION-Installer.exe SourceWin$VERSION/* \
+     > Mailpile-$VERSION-dgst.txt
+
 echo " "
 echo "Windows installer:    $WORKDIR/Mailpile-$VERSION-Installer.exe"
 echo "Source code archive:  $SOURCEARCHIVEDIR"
+echo "Integrity checks:     $WORKDIR/Mailpile-$VERSION-dgst.txt"
 echo " "
 sleep 5
 

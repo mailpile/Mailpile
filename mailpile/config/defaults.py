@@ -123,6 +123,10 @@ CONFIG_RULES = {
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'allow_deletion': X(_('Allow permanent deletion of e-mails'),
                                                                   bool, False),
+# FIXME:
+#       'backup_to_web':  X(_('Backup settings and keys to mobile web app'),
+#                                                                  bool, True),
+#       'backup_to_email':X(_('Backup settings and keys to e-mail'),  str, ''),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),

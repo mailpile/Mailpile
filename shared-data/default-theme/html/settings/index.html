@@ -91,6 +91,14 @@
         {{_("Recent Network Activity")}}
       </p>
       <p>
+        <a href="{{ U('/backup/download/?csrf=') }}{{ csrf_token }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-help"></span> {{_("Backup")}}
+          </button>
+        </a> &nbsp;
+        {{_("Backup Your Settings and Keys")}}
+      </p>
+      <p>
         <a class="auto-modal auto-modal-sticky" href="{{ U('/crypto/tls/getcert/') }}">
           <button style="width: 175px; text-align: left;">
             <span class="icon icon-links"></span> {{_("TLS Certs")}}
