@@ -87,7 +87,7 @@ def BASIC_GUI_CONFIGURATION(state):
                 "item": "open",
                 "type": "button",
                 "position": "first",
-                "label": _("Open in Browser"),
+                "label": _("Open in Web Browser"),
                 "op": "show_url",
                 "args": [mailpile_home]
             },{
@@ -123,7 +123,7 @@ def BASIC_GUI_CONFIGURATION(state):
                 "sensitive": False
             },{
                 "item": "browse",
-                "label": _("Open in Browser"),
+                "label": _("Open in Web Browser"),
                 "op": "show_url",
                 "args": [mailpile_home],
                 "sensitive": False

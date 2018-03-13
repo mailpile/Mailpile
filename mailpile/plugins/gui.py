@@ -49,11 +49,7 @@ class GuiOMaticConnection(threading.Thread):
             self._sock = False
 
     def _select_sleep(self, seconds):
-        r = w = x = None
-        while self._sock and (seconds > 0) and not (r or w or x):
-            r, w, x = select.select([self._sock], [self._sock], [self._sock],
-                                    min(1, seconds))
-            seconds -= 1
+        select.select([self._sock], [], [self._sock], seconds)
 
     def _state_startup(self, in_state):
         if in_state:
@@ -119,13 +115,9 @@ class GuiOMaticConnection(threading.Thread):
             with self._lock:
                 _GUIS[tid] = self
                 self._state(True)
-                delay = 0.5
             while self._sock:
-                self._select_sleep(delay)
-                if self.change_state():
-                    delay = 0.5
-                else:
-                    delay = min(2.0, delay + 0.1)
+                self._select_sleep(1)  # FIXME: Lengthen this when possible
+                self.change_state()
         finally:
             del _GUIS[tid]
 
