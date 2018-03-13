@@ -197,7 +197,8 @@ class Watch(Command):
         try:
             while not mailpile.util.QUITTING and not config.event_log:
                 time.sleep(1)
-            unregister = config.event_log.ui_watch(self.session.ui)
+            unregister = (config.event_log and
+                config.event_log.ui_watch(self.session.ui))
             self.session.ui.unblock(force=True)
             while not mailpile.util.QUITTING:
                 time.sleep(1)

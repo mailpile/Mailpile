@@ -12,6 +12,7 @@ import socket
 import subprocess
 import sys
 import traceback
+import thread
 import threading
 import time
 import webbrowser
@@ -1703,21 +1704,7 @@ class Quit(Command):
         if self.session.config.http_worker:
             self.session.config.http_worker.quit()
 
-        try:
-            import signal
-            os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
-        except:
-            pass
-
-        # This puts a hard deadline on the shutdown process.
-        # This is a dangerous thing.
-        def exiter():
-            time.sleep(15)
-            os._exit(0)
-        ex = threading.Thread(target=exiter)
-        ex.daemon = True
-        ex.start()
-
+        thread.interrupt_main()
         return self._success(_('Shutting down...'))
 
 
