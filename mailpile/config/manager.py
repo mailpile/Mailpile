@@ -136,6 +136,8 @@ class ConfigManager(ConfigDict):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
+        if sys.platform.startswith('win'):
+            self.sys.gpg_home = self.workdir
         self.gnupghome = None
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
 

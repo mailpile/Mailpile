@@ -7,11 +7,11 @@
 # git gnupg gzip mingw-w64 nsis openssl p7zip python2.7 python-pip tar unzip
 # wget xz-utils (? archiver used by GnuPG build?)   
 # 
-# Copyright (C) 2017 Jack Dodds
+# Copyright (C) 2017,2018 Jack Dodds
 # This script is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
 
-# Uncomment to hard code a version string.
+# Uncomment to hard code a version identifier.
 # VERSION="1.0.0rc2"
 
 # Configuration strings:
@@ -63,12 +63,7 @@ for ARG in $* ; do
     shift
 done
 
-if [$VERSION == ""]; then
-    export VERSION=`../../scripts/version.py`
-fi
-
 echo " "
-echo "Release identifier:   $VERSION"
 echo "Mailpile repository:  $MAILPILE_GIT"
 echo "Mailpile branch:      $MAILPILE_BRANCH"
 
@@ -82,20 +77,27 @@ echo "Source download dir:  $DOWNLOADDIR"
 PYTHON_DL=$PROJECTDIR/PythonDistFiles
 echo "Python download dir:  $PYTHON_DL"
 
-# Create build directory and source archive directory
+# Create build directory.
 rm -rf /tmp/mailpile-winbuild/*         # Use rm -rf with hardcoded path only!
 WORKDIR="/tmp/mailpile-winbuild"
-SOURCEARCHIVEDIR=$WORKDIR/SourceWin$VERSION
-mkdir -p $SOURCEARCHIVEDIR
 echo "Working dir:          $WORKDIR"
 echo " "
 sleep 5
 
-# Get Mailpile and save an archive --of it.
+# Get Mailpile.
 cd $WORKDIR
 git clone --branch $MAILPILE_BRANCH --depth=1 --recursive $MAILPILE_GIT Mailpile
-cd Mailpile;
-COMMIT=`git log -1 --pretty=format:"%h"`
+cd Mailpile
+
+# Get commit and version identifier from checked out Mailpile.
+iCOMMIT=`git log -1 --pretty=format:"%h"`
+if [$VERSION == ""]; then
+    export VERSION=`scripts/version.py`
+fi
+
+# Create source archive directory and put archive of Mailpile in it.
+SOURCEARCHIVEDIR=$WORKDIR/SourceWin$VERSION
+mkdir -p $SOURCEARCHIVEDIR
 cd ..
 tar -c --file $SOURCEARCHIVEDIR/Mailpile-$COMMIT.tar.gz --gzip Mailpile
 cd Mailpile
@@ -323,6 +325,7 @@ openssl dgst -sha256 -hex Mailpile-$VERSION-Installer.exe SourceWin$VERSION/* \
      > Mailpile-$VERSION-dgst.txt
 
 echo " "
+echo "Version identifier:   $VERSION"
 echo "Windows installer:    $WORKDIR/Mailpile-$VERSION-Installer.exe"
 echo "Source code archive:  $SOURCEARCHIVEDIR"
 echo "Integrity checks:     $WORKDIR/Mailpile-$VERSION-dgst.txt"
