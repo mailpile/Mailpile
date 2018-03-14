@@ -38,10 +38,11 @@ if not os.path.exists(os.path.join(APPDIR, 'media', 'splash.jpg')):
     APPDIR = os.path.join(
         ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui')
 
-LOGO_ICON             = os.path.join(APPDIR, 'media', 'logo-color.png')
-MAILPILE_HOME_IMAGE   = os.path.join(APPDIR, 'media', 'background.jpg')
-MAILPILE_SPLASH_IMAGE = os.path.join(APPDIR, 'media', 'splash.jpg')
-ICONS_PATH            = os.path.join(APPDIR, 'icons-%(theme)s')
+MEDIA_PATH = os.path.join(APPDIR, 'media')
+ICONS_PATH = os.path.join(APPDIR, 'icons-%(theme)s')
+
+MAILPILE_HOME_IMAGE   = os.path.join(MEDIA_PATH, 'background.jpg')
+MAILPILE_SPLASH_IMAGE = os.path.join(MEDIA_PATH, 'splash.jpg')
 
 
 def SPLASH_SCREEN(state, message):
@@ -60,28 +61,58 @@ def BASIC_GUI_CONFIGURATION(state):
     oib_checked = True if state.pub_config.prefs.open_in_browser else False
     return {
         "app_name": "Mailpile",
-        "app_icon": LOGO_ICON,
+        "app_icon": "icon:logo",
+        "icons": {
+            "logo":       os.path.join(MEDIA_PATH, 'logo-color.png'),
+            "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.svg'),
+            "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.svg'),
+            "logged-out": os.path.join(MEDIA_PATH, 'lock-closed.svg'),
+            "ra-on":      os.path.join(MEDIA_PATH, 'remote-access-on.svg'),
+            "ra-off":     os.path.join(MEDIA_PATH, 'remote-access-off.svg'),
+            "startup":    os.path.join(ICONS_PATH, 'startup.png'),
+            "normal":     os.path.join(ICONS_PATH, 'normal.png'),
+            "attention":  os.path.join(ICONS_PATH, 'attention.png'),
+            "working":    os.path.join(ICONS_PATH, 'working.png'),
+            "shutdown":   os.path.join(ICONS_PATH, 'shutdown.png')},
+        "font-styles": {
+            "label": {
+                "family": "normal",
+                "points": 18,
+                "bold": True
+            },
+            "hint": {
+                "points": 10
+            },
+            "splash": {
+                "points": 16
+            },
+            "status": {
+                "italic": True
+            }
+        },
         "main_window": {
             "show": False,
             "close_quits": False,
-            "width": 480,
-            "height": 360,
+            "width": 550,
+            "height": 330,
             "image": MAILPILE_HOME_IMAGE,
-            "status": [{
+            "status": '',
+            "substatus": [{
                 "item": "mailpile",
-                "icon": "indicator:startup",
+                "icon": "icon:logo",
                 "label": _("Mailpile is starting up"),
-                "hint": _("")
+                "hint": _("Patience is a virtue...")
             },{
-                "item": "logged_in",
-                "icon": "indicator:startup",
+                "item": "logged-in",
+                "icon": "icon:logged-out",
                 "label": _("You are not logged in"),
-                "hint": _("")
+                "hint": ''
             },{
                 "item": "remote_access",
-                "icon": "indicator:startup",
-                "label": _("Remote Access is disabled"),
-                "hint": _("")
+                "icon": "icon:ra-off",
+                "label": _("Remote access is disabled"),
+                "hint": _("Enable remote access if you would like to access\n"
+                          "Mailpile from your phone or another computer.")
             }],
             "actions": [{
                 "item": "open",
@@ -103,12 +134,7 @@ def BASIC_GUI_CONFIGURATION(state):
                 "label": _("Quit GUI"),
                 "op": "quit"}]},
         "indicator": {
-            "icons": {
-                "startup": os.path.join(ICONS_PATH, 'startup.png'),
-                "normal": os.path.join(ICONS_PATH, 'normal.png'),
-                "attention": os.path.join(ICONS_PATH, 'attention.png'),
-                "working": os.path.join(ICONS_PATH, 'working.png'),
-                "shutdown": os.path.join(ICONS_PATH, 'shutdown.png')},
+            "initial_status": "startup",
             "menu": [{
                 "item": "status",
                 "label": _("Starting up"),
@@ -224,7 +250,9 @@ def GenerateBootstrap(state):
             "OK LISTEN TCP: " + (
                 # FIXME: This should launch a screen session using the
                 #        same concepts as multipile's mailpile-admin.
-                'screen -S mailpile -d -m mailpile --gui=%PORT% --interact')]
+                'screen -S mailpile -d -m mailpile'
+                ' --set="prefs.open_in_browser = false" '
+                ' --gui=%PORT% --interact')]
 
     return '\n'.join(bootstrap)
 
