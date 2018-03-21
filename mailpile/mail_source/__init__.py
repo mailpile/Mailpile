@@ -267,6 +267,11 @@ class BaseMailSource(threading.Thread):
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
         event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
+        if random.randint(0, 5) == 1:
+            random_plan = [m._key for m in random.sample(plan, 1)]
+        else:
+            random_plan = []
+
         for mbx_cfg in plan:
             play_nice_with_threads(weak=True)
 
@@ -284,15 +289,16 @@ class BaseMailSource(threading.Thread):
                         continue
 
                 # Generally speaking, we only rescan if a mailbox looks like
-                # it has changed. However, every once in a while time we check
-                # anyway just in case looks are deceiving.
+                # it has changed. However, every once in a while (see logic
+                # around random_mailboxes above) we check anyway just in case
+                # looks are deceiving.
                 state = {}
                 if batch < 1:
                     event_plan[mbx_cfg._key][1] = _('Postponed')
 
                 elif (self._has_mailbox_changed(mbx_cfg, state) or
                         mbx_cfg.local == '!CREATE' or
-                        random.randint(0, 25 + len(plan)*5) == 1):
+                        mbx_cfg._key in random_plan):
                     event_plan[mbx_cfg._key][1] = _('Working ...')
 
                     this_batch = max(5, int(0.7 * batch))
