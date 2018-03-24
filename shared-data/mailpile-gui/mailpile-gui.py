@@ -47,7 +47,7 @@ MAILPILE_SPLASH_IMAGE = os.path.join(MEDIA_PATH, 'splash.jpg')
 
 def SPLASH_SCREEN(state, message):
     return {
-        "image": MAILPILE_SPLASH_IMAGE,
+        "background": MAILPILE_SPLASH_IMAGE,
         "width": 396,
         "height": 594,
         "message_y": 0.80,
@@ -61,8 +61,8 @@ def BASIC_GUI_CONFIGURATION(state):
     oib_checked = True if state.pub_config.prefs.open_in_browser else False
     return {
         "app_name": "Mailpile",
-        "app_icon": "icon:logo",
-        "icons": {
+        "app_icon": "image:logo",
+        "images": {
             "logo":       os.path.join(MEDIA_PATH, 'logo-color.png'),
             "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.svg'),
             "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.svg'),
@@ -74,19 +74,19 @@ def BASIC_GUI_CONFIGURATION(state):
             "attention":  os.path.join(ICONS_PATH, 'attention.png'),
             "working":    os.path.join(ICONS_PATH, 'working.png'),
             "shutdown":   os.path.join(ICONS_PATH, 'shutdown.png')},
-        "font-styles": {
-            "label": {
+        "font_styles": {
+            "title": {
                 "family": "normal",
                 "points": 18,
                 "bold": True
             },
-            "hint": {
+            "details": {
                 "points": 10
             },
             "splash": {
                 "points": 16
             },
-            "status": {
+            "notification": {
                 "italic": True
             }
         },
@@ -95,80 +95,72 @@ def BASIC_GUI_CONFIGURATION(state):
             "close_quits": False,
             "width": 550,
             "height": 330,
-            "image": MAILPILE_HOME_IMAGE,
-            "status": '',
-            "substatus": [{
-                "item": "mailpile",
-                "icon": "icon:logo",
-                "label": _("Mailpile is starting up"),
-                "hint": _("Patience is a virtue...")
+            "background": MAILPILE_HOME_IMAGE,
+            "initial_notification": '',
+            "status_displays": [{
+                "id": "mailpile",
+                "icon": "image:logo",
+                "title": _("Mailpile is starting up"),
+                "details": _("Patience is a virtue...")
             },{
-                "item": "logged-in",
-                "icon": "icon:logged-out",
-                "label": _("You are not logged in"),
-                "hint": ''
+                "id": "logged-in",
+                "icon": "image:logged-out",
+                "title": _("You are not logged in"),
             },{
-                "item": "remote_access",
-                "icon": "icon:ra-off",
-                "label": _("Remote access is disabled"),
-                "hint": _("Enable remote access if you would like to access\n"
-                          "Mailpile from your phone or another computer.")
+                "id": "remote_access",
+                "icon": "image:ra-off",
+                "title": _("Remote access is disabled"),
+                "details": _(
+                    "Enable remote access if you would like to access\n"
+                    "Mailpile from your phone or another computer.")
             }],
-            "actions": [{
-                "item": "open",
-                "type": "button",
+            "action_items": [{
+                "id": "open",
                 "position": "first",
                 "label": _("Open in Web Browser"),
                 "op": "show_url",
                 "args": [mailpile_home]
             },{
-#               "item": "cb_obs",
-#               "type": "checkbox",
-#               "checked": oib_checked,
-#               "position": "left",
-#               "label": "Open in Browser on Startup"
-#           },{
-                "item": "quit_button",
-                "type": "button",
-                "position": "last",
+                "id": "quit_button",
                 "label": _("Quit GUI"),
+                "position": "last",
                 "op": "quit"}]},
         "indicator": {
             "initial_status": "startup",
-            "menu": [{
-                "item": "status",
+            "menu_items": [{
+                "id": "status",
                 "label": _("Starting up"),
                 "sensitive": False
             },{
                 "separator": True
             },{
-                "item": "main",
+                "id": "main",
                 "label": _("Show Status Window"),
+                "sensitive": False,
                 "op": "show_main_window",
                 "args": [],
-                "sensitive": False
             },{
-                "item": "browse",
+                "id": "browse",
                 "label": _("Open in Web Browser"),
+                "sensitive": False,
                 "op": "show_url",
-                "args": [mailpile_home],
-                "sensitive": False
+                "args": [mailpile_home]
             },{
-                "item": "screen",
+                "id": "screen",
                 "label": _("Open in Terminal"),
+                "sensitive": True,
                 "op": "terminal",
                 "args": {
                     "command": "screen -r -x mailpile",
-                    "title": "mailpile"},
-                "sensitive": True
+                    "title": "mailpile"}
             },{
                 "separator": True
             },{
-                "item": "quit",
+                "id": "quit",
                 "op": "quit",
+                "sensitive": True,
                 "args": [],
-                "label": _("Quit GUI"),
-                "sensitive": True}]}}
+                "label": _("Quit GUI")}]}}
 
 
 class MailpileState(object):

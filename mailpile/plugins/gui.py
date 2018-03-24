@@ -56,61 +56,60 @@ class GuiOMaticConnection(threading.Thread):
             self._do('set_status', status='startup')
             self._do('notify_user', message=_('Connected'))
             if self._am_main:
-                self._do('set_item_label',
-                    item='quit', label=_("Shutdown Mailpile"))
-                self._do('set_item_label',
-                    item='quit_button', label=_("Shutdown"))
+                self._do('set_item', id='quit', label=_("Shutdown Mailpile"))
+                self._do('set_item', id='quit_button', label=_("Shutdown"))
             for ss in ('mailpile', 'logged_in', 'remote_access'):
-                self._do('set_substatus', substatus=ss, color='#999')
+                self._do('set_status_display', id=ss, color='#999')
         else:
             self._select_sleep(2)
             self._do('hide_splash_screen')
             self._do('show_main_window')
-            self._do('set_item_sensitive', item='main')
-            self._do('set_item_sensitive', item='browse')
-            self._do('set_substatus',
-                substatus='mailpile',
+            self._do('set_item', id='main', sensitive=True)
+            self._do('set_item', id='browse', sensitive=True)
+            self._do('set_status_display',
+                id='mailpile',
                 color='#333',
-                icon='icon:logo',
-                label=_('Welcome to Mailpile!'),
-                hint=_('Mailpile is now running on this computer.'))
+                icon='image:logo',
+                title=_('Welcome to Mailpile!'),
+                details=_('Mailpile is now running on this computer.'))
 
     def _state_need_setup(self, in_state):
         if in_state:
             self._do('set_status', status='attention')
-            self._do('set_substatus',
-                substatus="logged-in",
+            self._do('set_status_display',
+                id="logged-in",
                 color='#333',
-                icon='icon:new-setup',
-                label=_('Brand new installation!'),
-                hint=(_('This appears to be a new installation of Mailpile!')
-                      + '\n' +
-                      _('You need to choose a language, password and privacy policy.')
-                      + '\n' +
-                      _('To proceed, open Mailpile in your web browser.')))
+                icon='image:new-setup',
+                title=_('Brand new installation!'),
+                details=(
+                    _('This appears to be a new installation of Mailpile!')
+                    + '\n' +
+                    _('You need to choose a language, password and privacy policy.')
+                    + '\n' +
+                    _('To proceed, open Mailpile in your web browser.')))
 
     def _state_please_log_in(self, in_state):
         if in_state:
             self._do('set_status', status='attention')
-            self._do('set_substatus',
-                substatus="logged-in",
+            self._do('set_status_display',
+                id="logged-in",
                 color='#777',
-                icon='icon:logged-out',
-                label=_('Not logged in'),
-                hint=(_('Your data is stored encrypted and is'
-                        ' inaccessible until you log in.')
-                      + '\n' +
-                      _('To proceed, open Mailpile in your web browser.')))
+                icon='image:logged-out',
+                title=_('Not logged in'),
+                details=(_('Your data is stored encrypted and is'
+                           ' inaccessible until you log in.')
+                         + '\n' +
+                         _('To proceed, open Mailpile in your web browser.')))
 
     def _state_logged_in(self, in_state):
         if in_state:
             self._do('set_status', status='normal')
-            self._do('set_substatus',
-                substatus='logged-in',
-                icon='icon:logged-in',
+            self._do('set_status_display',
+                id='logged-in',
+                icon='image:logged-in',
                 color='#444',
-                label=_('You are logged in'),
-                hint=_('Mailpile can now process and display your e-mail.'))
+                title=_('You are logged in'),
+                details=_('Mailpile can now process and display your e-mail.'))
 
     def _state_shutting_down(self, in_state):
         if in_state:
@@ -144,7 +143,7 @@ class GuiOMaticConnection(threading.Thread):
                     label = _('Mailpile') + ': ' + _('Please log in')
                 else:
                     label = _('This is Mailpile!')
-                self._do('set_item_label', item="status", label=label)
+                self._do('set_item', id="status", label=label)
                 return False
 
     def run(self):
