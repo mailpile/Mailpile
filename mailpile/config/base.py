@@ -128,11 +128,12 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
                 in ConfigParser.RawConfigParser.items(self, section)]
 
 
-def _MakeCheck(pcls, name, comment, rules):
+def _MakeCheck(pcls, name, comment, rules, write_watcher):
     class Checker(pcls):
         _NAME = name
         _RULES = rules
         _COMMENT = comment
+        _WWATCHER = write_watcher
     return Checker
 
 
@@ -178,23 +179,29 @@ def RuledContainer(pcls):
             'url': validators.UrlCheck, # FIXME: check more than the scheme?
             'webroot': validators.WebRootCheck
         }
+        def _default_write_watcher(self, *args):
+            self._changed = True
+
         _NAME = 'container'
         _RULES = None
         _COMMENT = None
         _MAGIC = True
+        _WWATCHER = _default_write_watcher
 
         def __init__(self, *args, **kwargs):
             rules = kwargs.get('_rules', self._RULES or {})
             self._name = kwargs.get('_name', self._NAME)
             self._comment = kwargs.get('_comment', self._COMMENT)
+            self._write_watcher = kwargs.get('_write_watcher', self._WWATCHER)
             enable_magic = kwargs.get('_magic', self._MAGIC)
-            for kw in ('_rules', '_comment', '_name', '_magic'):
+            for kw in ('_rules', '_comment', '_name', '_magic', '_write_watcher'):
                 if kw in kwargs:
                     del kwargs[kw]
 
             pcls.__init__(self)
             self._key = self._name
             self._rules_source = rules
+            self._changed = False
             self.rules = {}
             self.set_rules(rules)
             self.update(*args, **kwargs)
@@ -292,6 +299,7 @@ def RuledContainer(pcls):
             name = '%s/%s' % (self._name, key)
             comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
+            ww = self.real_getattr('_write_watcher')
 
             if (isinstance(check, dict) and value is not None
                     and not isinstance(value, (dict, list))):
@@ -301,6 +309,7 @@ def RuledContainer(pcls):
             if isinstance(value, dict) and check is False:
                 pcls.__setitem__(self, key, ConfigDict(_name=name,
                                                        _comment=comment,
+                                                       _write_watcher=ww,
                                                        _rules=value))
 
             elif isinstance(value, dict):
@@ -308,7 +317,7 @@ def RuledContainer(pcls):
                     raise ConfigValueError(_('Subsections must be immutable '
                                              '(key %s).') % name)
                 sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
-                checker = _MakeCheck(ConfigDict, name, check, sub_rule)
+                checker = _MakeCheck(ConfigDict, name, check, sub_rule, ww)
                 pcls.__setitem__(self, key, checker())
                 rule[self.RULE_CHECKER] = checker
 
@@ -317,7 +326,7 @@ def RuledContainer(pcls):
                     raise ConfigValueError(_('Lists cannot have default '
                                              'values (key %s).') % name)
                 sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
-                checker = _MakeCheck(ConfigList, name, comment, sub_rule)
+                checker = _MakeCheck(ConfigList, name, comment, sub_rule, ww)
                 pcls.__setitem__(self, key, checker())
                 rule[self.RULE_CHECKER] = checker
 
@@ -347,7 +356,8 @@ def RuledContainer(pcls):
                     ConfigDict,
                     '%s/%s' % (self._name, key),
                     rule[self.RULE_COMMENT],
-                    rule[self.RULE_CHECKER])
+                    rule[self.RULE_CHECKER],
+                    self._write_watcher)
             return rule
 
         def ignored_keys(self):
@@ -464,6 +474,11 @@ def RuledContainer(pcls):
                 else:
                     raise Exception(_('Unknown constraint for %s/%s: %s'
                                       ) % (self._name, key, checker))
+
+            write_watcher = self.real_getattr('_write_watcher')
+            if write_watcher is not None:
+                write_watcher(self, key, value)
+
             self.__passkey__(key, value)
             self.__createkey_and_setitem__(key, value)
             self.__passkey_recurse__(key, value)

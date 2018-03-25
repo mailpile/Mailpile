@@ -349,7 +349,10 @@ class Command(object):
         session, cfg = self.session, self.session.config
         aut = cfg.save_worker.add_unique_task
         if everything or config:
-            aut(session, 'Save config', lambda: cfg.save(session), first=True)
+            aut(session,
+                'Save config',
+                lambda: cfg.save(session, force=(config == '!FORCE')),
+                first=True)
         if cfg.index:
             cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:

@@ -1006,7 +1006,7 @@ class SetupWelcome(TestableWebbable):
                 raise ValueError('Failed to configure i18n')
             config.prefs.language = language
             if save and not self._testing():
-                self._background_save(config=True)
+                self._background_save(config='!FORCE')
             return True
         except ValueError:
             return self._error(_('Invalid language: %s') % language)
@@ -1125,7 +1125,7 @@ class SetupPassword(TestableWebbable):
                         config.passphrases['DEFAULT'].set_passphrase(p1)
                         config.prefs.gpg_recipient = '!PASSWORD'
                         self.make_master_key()
-                        self._background_save(config=True)
+                        self._background_save(config='!FORCE')
                         mailpile.auth.LogoutAll()
                         done = True
                 else:

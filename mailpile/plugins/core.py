@@ -1700,7 +1700,7 @@ class Quit(Command):
         from mailpile.plugins.gui import UpdateGUIState
         UpdateGUIState()
 
-        self._background_save(index=True, config=True, wait=True)
+        self._background_save(index=True, config='!FORCE', wait=True)
         if self.session.config.http_worker:
             self.session.config.http_worker.quit()
 
