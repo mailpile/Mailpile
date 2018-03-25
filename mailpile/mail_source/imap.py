@@ -959,17 +959,19 @@ class ImapMailSource(BaseMailSource):
             pass
         return None
 
-    def _has_mailbox_changed(self, mbx, state):
-        src = self.session.config.open_mailbox(self.session,
-                                               FormatMbxId(mbx._key),
-                                               prefer_local=False)
-        uv = state['uv'] = src.mailbox_info('UIDVALIDITY', ['0'])[0]
-        ex = state['ex'] = src.mailbox_info('EXISTS', ['0'])[0]
+    def _get_mbx_id_and_mfn(self, mbx_cfg):
+        mbx_id = FormatMbxId(mbx_cfg._key)
+        return mbx_id, self.session.config.sys.mailbox[mbx_id]
+
+    def _has_mailbox_changed(self, mbx_cfg, state):
+        shared_mbox = self.open_mailbox(*self._get_mbx_id_and_mfn(mbx_cfg))
+        uv = state['uv'] = shared_mbox.mailbox_info('UIDVALIDITY', ['0'])[0]
+        ex = state['ex'] = shared_mbox.mailbox_info('EXISTS', ['0'])[0]
         uvex = '%s/%s' % (uv, ex)
         if uvex == '0/0':
             return True
         return (uvex != self.event.data.get('mailbox_state',
-                                            {}).get(mbx._key))
+                                            {}).get(mbx_cfg._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
         uvex = '%s/%s' % (state['uv'], state['ex'])
