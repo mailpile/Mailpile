@@ -25,6 +25,6 @@ VOLUME /home/mailpile/.local/share/Mailpile
 VOLUME /home/mailpile/.gnupg
 EXPOSE 33411
 
-ENTRYPOINT ["mailpile"]
+ENTRYPOINT ["service tor start;","mailpile"]
 CMD ["--www=0.0.0.0:33411/","--wait"]
 
