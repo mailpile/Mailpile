@@ -4,7 +4,7 @@ ENV GID 33411
 ENV UID 33411
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl apt-transport-https gnupg && \
+    apt-get install -y curl apt-transport-https gnupg && \
     curl -s https://packages.mailpile.is/deb/key.asc | apt-key add - && \
     echo "deb https://packages.mailpile.is/deb release main" | tee /etc/apt/sources.list.d/000-mailpile.list && \
     apt-get update && \
