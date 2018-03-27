@@ -9,6 +9,7 @@ import mailpile.util
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.ui import Session
 from mailpile.util import *
@@ -37,6 +38,7 @@ class GuiOMaticConnection(threading.Thread):
         self._sock = sock
         self._state = self._state_startup
         self._lock = threading.Lock()
+        self._notified = {}
 
     def _do(self, command, **args):
         try:
@@ -61,7 +63,7 @@ class GuiOMaticConnection(threading.Thread):
             for ss in ('mailpile', 'logged_in', 'remote_access'):
                 self._do('set_status_display', id=ss, color='#999')
         else:
-            self._select_sleep(2)
+            self._select_sleep(1)
             self._do('hide_splash_screen')
             self._do('show_main_window')
             self._do('set_item', id='main', sensitive=True)
@@ -146,15 +148,72 @@ class GuiOMaticConnection(threading.Thread):
                 self._do('set_item', id="status", label=label)
                 return False
 
+    def new_mail_notifications(self, summarize=False):
+        if not self.config.index or not self.config.index.TAGS:
+            return
+        if not self._notified:
+            summarize = True
+
+        new_messages = set([])
+        for tag in self.config.get_tags(type='unread'):
+            new_messages |= self.config.index.TAGS.get(tag._key, set([]))
+
+        notify = {}
+        for tag in self.config.get_tags(notify_new=True):
+            already_notified = self._notified.get(tag._key, set([]))
+            all_in_tag = self.config.index.TAGS.get(tag._key, set([]))
+            new_in_tag = (new_messages & all_in_tag)
+            new_new_in_tag = (new_in_tag - already_notified)
+            if new_in_tag:
+                notify[tag._key] = (tag, new_in_tag, new_new_in_tag)
+                self._notified[tag._key] = all_in_tag
+
+        all_new = set([])
+        all_new_new = set([])
+        for tag, new_in_tag, new_new_in_tag in notify.values():
+            all_new |= new_in_tag
+            all_new_new |= new_new_in_tag
+        unread = len(all_new)
+        count = len(all_new_new)
+
+        if count == 1:
+            # FIXME: There is only one brand new message.
+            #        Tell the user more about it.
+            pass
+
+        tag_count = len(notify.keys())
+        if (tag_count == 0) and (count == 0):
+            message=_('No unread mail, {num} messages total.'
+                      ).format(num=len(self.config.index.INDEX))
+
+        elif tag_count == 1:
+            tag, new_msgs, new_new_msgs = notify.values()[0]
+            if (len(new_new_msgs) == len(new_msgs)) or not new_new_msgs:
+                message=_('{tagName}: {num} unread messages'
+                          ).format(num=len(new_msgs), tagName=tag.name)
+            else:
+                message=_('{tagName}: {new} new messages ({num} unread)'
+                          ).format(new=len(new_new_msgs),
+                                   num=len(new_msgs),
+                                   tagName=tag.name)
+        else:
+            message=_('You have {num} unread messages in {tags} tags'
+                      ).format(num=unread, tags=tag_count)
+
+        self._do('notify_user', popup=(count > 0), message=message)
+
+
     def run(self):
         tid = self.ident
         try:
             with self._lock:
                 _GUIS[tid] = self
                 self._state(True)
+            self.new_mail_notifications(summarize=True)
             while self._sock:
                 self._select_sleep(1)  # FIXME: Lengthen this when possible
                 self.change_state()
+                self.new_mail_notifications()
         finally:
             del _GUIS[tid]
 

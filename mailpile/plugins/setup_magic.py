@@ -61,6 +61,7 @@ class SetupMagic(Command):
             'display_order': 2,
             'icon': 'icon-inbox',
             'label_color': '06-blue',
+            'notify_new': True,
             'name': _('Inbox'),
         },
         'Blank': {
