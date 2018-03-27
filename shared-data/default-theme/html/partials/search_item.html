@@ -22,9 +22,11 @@
 %}{{      m_metadata.urls.thread
 }}{%    endif
 %}{%  endmacro %}
+{%- if not display_attachments or metadata.body.parts %}
 <tr class="pile-message pile-message-{{mid}}{% if mid != this_mid %} pile-message-{{this_mid}}{% endif %} result has-mid
            {%- for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}
            {%- if message %} full-message has-url{% endif %}
+           {%- if display_attachments %} display-attachments{% endif %}
            {%- if metadata.flags.replied %} replied{% endif %}"
     data-tids="{{ metadata.tag_tids|join(',')  }}"
 {%- if message %}
@@ -138,7 +140,9 @@
   {%- set to1 = result.data.addresses[to_cc[0]] %}
   <td class="to people">
     <a href="{{ msg_url(mid) }}" data-noblank=1 data-keep-selection=1
-       title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
+       title="{% if display_attachments -%}
+{{ _("Subject") }}: {{ metadata.subject }}
+{% endif %}{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
 {{ _("To") }}: {% if to_cc %}
  &lt;{{ to1.address }}&gt;{% if to_cc|length > 1 %} +{{ to_cc|length -1 }}{% endif %}
 {%- else %}({{_("unknown")}}){% endif %}">
@@ -153,7 +157,9 @@
  {%- else %}
   <td class="from people">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
-       title="{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
+       title="{% if display_attachments -%}
+{{ _("Subject") }}: {{ metadata.subject }}
+{% endif %}{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
 {{ _("To") }}: {% if to_cc %}
  {%- set to1 = result.data.addresses[to_cc[0]] %}
  &lt;{{ to1.address }}&gt;{% if to_cc|length > 1 %} +{{ to_cc|length -1 }}{% endif %}
@@ -181,9 +187,53 @@
 {%- if message_errors %}
     {% include("partials/error_message_missing.html") %}
 {%- elif not message %}
+  {%- set displayed_atts = [] %}
+  {%- if display_attachments %}
+    {%- for bp in (metadata.body.parts or []) %}
+      {%- set bp = body_part_metadata(bp) %}
+      {%- if bp.mimetype not in ('text/plain', 'text/html') or bp.filename not in ('T', 'H', '', None) %}
+        {%- set fp = bp.filename.split('.') %}
+      <a class="item-attachment" style="line-height: 18px;" {# FIXME! #}
+           title="{{_('Download')}} {{ bp.bytes }} - {{ bp.filename }}"
+           href="{{ U('/message/download/get/=', mid, '/part-', loop.index, '/') }}"
+           data-noblank=1 data-keep-selection=1 target=_blank>
+        <span style="position: absolute; display: inline-block;">
+          <span class="icon-mime" style="margin: 0 3px 0 7px;"
+                type="{{ bp.mimetype }}"></span> {# FIXME! #}
+          <b style="font-family: monospace; margin: 0;">
+        {%- if fp|length > 1 %}
+          {{ fp[-1]|upper }}
+        {%- else %}
+          BIN
+        {%- endif %}</b>
+        </span>
+        <span style="color: #666; margin: 0 0 0 5em;">
+        {%- if fp|length > 1 %}
+          {{ fp[:-1]|join('.') }}
+        {%- else %}
+          {{ bp.filename }}
+        {%- endif %}
+        </span>
+        {% do displayed_atts.append(bp.filename) %}
+      </a>
+        {%- if not loop.last %}<br clear='both'>{% endif %}
+      {% endif %}
+    {%- endfor %}
+    {%- if not displayed_atts %}
+    <a data-noblank=1 data-keep-selection=1
+       href="{{msg_url(mid)}}">
+      <i style="color: #bbb; margin: 0 0 0 5em;">
+        {{_('Oops, no attachments found!')}}
+        {{_('A bug?')}}
+        {{_('Click to view the message.')}}
+      </i>
+    </a>
+    {%- endif %}
+  {%- else %}
     <a class="item-subject" title="{{metadata.body.snippet}}"
        data-noblank=1 data-keep-selection=1
        href="{{msg_url(mid)}}">{{ nice_subject(metadata.subject) }}</a>
+  {%- endif %}
 {%- else %}
     <div class="message-container">
     {%- if message.editing_strings %}
@@ -265,3 +315,4 @@
     <input type="checkbox" name="mid" value="{{mid}}">
   </td>
 </tr>
+{% endif %}

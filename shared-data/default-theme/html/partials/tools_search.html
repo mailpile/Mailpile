@@ -156,7 +156,7 @@
         'name': 'unread',
         'icon': 'new',
         'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
         'url_args_add': [['qr', 'is:unread']],
         'text': _("New"),
         'description': _("Unread messages")})
@@ -164,13 +164,22 @@
 {%- endif -%}
 {%- if result.index_capabilities.has_atts %}
 {%-   do display_refiners.append({
+        'name': 'has_photos',
+        'icon': 'photos',
+        'url': '/search/photos.html',
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
+        'url_args_add': [['qr', 'has:image'], ['order', 'rev-flat-date']],
+        'text': _("Images"),
+        'description': _("Photos and images in mail matching this search")})
+-%}
+{%-   do display_refiners.append({
         'name': 'has_attachment',
         'icon': 'attachment',
-        'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
-        'url_args_add': [['qr', 'has:attachment']],
+        'url': '/search/atts.html',
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
+        'url_args_add': [['qr', 'has:attachment'], ['order', 'rev-flat-date']],
         'text': _("Attachments"),
-        'description': _("Messages with attachments")})
+        'description': _("Attachments in mail matching this search")})
 -%}
 {%- endif %}
 {%- if display_refiners %}
@@ -178,7 +187,7 @@
         'name': 'display_all',
         'icon': 'logo',
         'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
         'text': _("All"),
         'description': _("All messages")})
 -%}
@@ -221,6 +230,15 @@
         'url': '#save_search',
         'text': _("Save"),
         'description': _("Save the results of this search to a new tag")})
+-%}
+{%- else %}
+{%-   do activities.append({
+        'name': 'home',
+        'icon': 'home',
+        'aclass': '',
+        'url': '/',
+        'text': _("Home"),
+        'description': _("E-mail Accounts")})
 -%}
 {%- endif %}
 {%- include('partials/tools_default.html') -%}

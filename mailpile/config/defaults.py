@@ -41,7 +41,7 @@ CONFIG_RULES = {
         'http_no_auth':  X(_('Disable HTTP authentication'),      bool, False),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
-        'snippet_max':    (_('Max length of metadata snippets'), int,     250),
+        'snippet_max':    (_('Max length of metadata snippets'), int,     275),
         'debug':         p(_('Debugging flags'), str,                      ''),
         'experiments':    (_('Enabled experiments'), str,                  ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),

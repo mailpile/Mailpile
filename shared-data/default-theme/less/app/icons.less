@@ -198,11 +198,7 @@
 
 /* Mimetype - icons */
 
-.icon-mime[type="application/mbox"]:before {
-  // mailbox
-  content: "\e635"
-}
-
+.icon-mime:before,
 .icon-mime[type="application/octet-stream"]:before,
 .icon-mime[type="application/mac-binhex40"]:before,
 .icon-mime[type="application/x-shockwave-flash"]:before,
@@ -212,7 +208,12 @@
 .icon-mime[type="application/x-msdownload"]:before,
 .icon-mime[type="application/x-director"]:before {
   // application
-	content: "\e648";
+	content: "\e609";
+}
+
+.icon-mime[type="application/mbox"]:before {
+  // mailbox
+  content: "\e635"
 }
 
 .icon-mime[type="application/x-compress"]:before,
@@ -265,6 +266,9 @@
 	content: "\e600";
 }
 
+.icon-mime[type="image/gif"]:before,
+.icon-mime[type="image/png"]:before,
+.icon-mime[type="image/jpeg"]:before,
 .icon-mime[type="image/cis-cod"]:before,
 .icon-mime[type="image/ief"]:before,
 .icon-mime[type="image/pipeg"]:before,

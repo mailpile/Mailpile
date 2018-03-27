@@ -1122,9 +1122,11 @@ class MailIndex(BaseIndex):
         body_info = {}
         payload = [None]
         textparts = 0
+        parts = []
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
+            pinfo = ''
             charset = part.get_content_charset() or 'utf-8'
 
             def _loader(p):
@@ -1138,9 +1140,11 @@ class MailIndex(BaseIndex):
                     ctype = 'text/html'
                 else:
                     textparts += 1
+                    pinfo = '%x::T' % len(payload[0])
 
             if ctype == 'text/html':
                 _loader(part)
+                pinfo = '%x::H' % len(payload[0])
                 if len(payload[0]) > 3:
                     try:
                         textpart = extract_text_from_html(payload[0])
@@ -1163,13 +1167,32 @@ class MailIndex(BaseIndex):
             att = part.get_filename()
             if att:
                 att = try_decode(att, charset)
-                # FIXME: These should be tags!
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
                                  in re.findall(WORD_REGEXP, att.lower())])
+                att_kws = []
                 for kw, ext_list in ATT_EXTS.iteritems():
-                    if att.lower().rsplit('.', 1)[-1] in ext_list:
+                    ext = att.lower().rsplit('.', 1)[-1]
+                    if ext in ext_list:
                         keywords.append('%s:has' % kw)
+                        att_kws.append(kw)
+
+                pmore = squish_mimetype(ctype)
+                pdata = part.get_payload(None, True) or ''
+                if 'image' in att_kws:
+                    try:
+                        if pdata:
+                            # We disallow use of C libraries here, because of
+                            # the massive attack surface, it's just not safe
+                            # to use on all incoming e-mail.
+                            size = image_size(pdata, pure_python=True)
+                            if size is not None:
+                                pmore = '%dx%d' % size
+                    except:
+                        traceback.print_exc()
+                        pass
+
+                pinfo = '%x:%s:%s' % (len(pdata), pmore, att)
                 textpart = (textpart or '') + ' ' + att
 
             if textpart:
@@ -1196,6 +1219,12 @@ class MailIndex(BaseIndex):
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part),
                                         body_info=body_info))
+
+            if not ctype.startswith('multipart/'):
+                parts.append(pinfo)
+
+        if len(parts) > 1:
+            body_info['parts'] = parts
 
         if textparts == 0:
             keywords.append('text:missing')
@@ -1301,6 +1330,9 @@ class MailIndex(BaseIndex):
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
                                     body_info=body_info))
 
+        # FIXME: If we have a good snippet from the HTML part, it is likely
+        #        to be more relevant due to the unfortunate habit of some
+        #        senders to put all content in HTML and useless crap in text.
         if snippet_text.strip() != '':
             body_info['snippet'] = self.clean_snippet(snippet_text[:1024])
         else:
