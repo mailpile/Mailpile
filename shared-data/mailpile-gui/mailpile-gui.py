@@ -128,7 +128,7 @@ def BASIC_GUI_CONFIGURATION(state):
         "indicator": {
             "initial_status": "startup",
             "menu_items": [{
-                "id": "status",
+                "id": "notification",
                 "label": _("Starting up"),
                 "sensitive": False
             },{

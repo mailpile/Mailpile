@@ -50,6 +50,7 @@ class MailIndex(BaseIndex):
     def __init__(self, config):
         BaseIndex.__init__(self, config)
         self.interrupt = None
+        self.loaded_index = False
         self.INDEX = []
         self.INDEX_SORT = {}
         self.INDEX_THR = []
@@ -195,6 +196,7 @@ class MailIndex(BaseIndex):
                                len(self.INDEX)
                                ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
+        self.loaded_index = True
 
     def update_msg_tags(self, msg_idx_pos, msg_info):
         tags = set(self.get_tags(msg_info=msg_info))

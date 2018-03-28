@@ -182,6 +182,7 @@ class ConfigManager(ConfigDict):
 
         self.event_log = None
         self.index = None
+        self.index_loading = None
         self.index_check = GLOBAL_INDEX_CHECK
         self.vcards = {}
         self.search_history = SearchHistory()
@@ -1262,14 +1263,15 @@ class ConfigManager(ConfigDict):
         with self.interruptable_wait_for_lock():
             if self.index:
                 return self.index
-            idx = MailIndex(self)
-            idx.load(session)
-            self.index = idx
+            self.index_loading = MailIndex(self)
+            self.index_loading.load(session)
+            self.index = self.index_loading
+            self.index_loading = None
             try:
                 self.index_check.release()
             except:
                 pass
-            return idx
+            return self.index
 
     def get_path_index(self, session, path):
         """

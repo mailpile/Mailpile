@@ -103,6 +103,14 @@ class GuiOMaticConnection(threading.Thread):
                          + '\n' +
                          _('To proceed, open Mailpile in your web browser.')))
 
+    def _state_loading_index(self, in_state):
+        if in_state:
+            self._do('set_status', status='working')
+            self._do('set_status_display',
+                id='logged-in',
+                color='#444',
+                title=_('Logging you in...'))
+
     def _state_logged_in(self, in_state):
         if in_state:
             self._do('set_status', status='normal')
@@ -126,6 +134,8 @@ class GuiOMaticConnection(threading.Thread):
             return self._state_need_setup
         elif not self.config.loaded_config:
             return self._state_please_log_in
+        elif self.config.index_loading:
+            return self._state_loading_index
         else:
             return self._state_logged_in
 
@@ -138,18 +148,27 @@ class GuiOMaticConnection(threading.Thread):
                 self._state(True)
                 return True
             else:
-                if self.config.index:
+                if self.config.index and self.config.index.loaded_index:
                     msg_count = len(self.config.index.INDEX)
                     label = _('Mailpile: %d messages') % msg_count
                 elif not self.config.loaded_config:
                     label = _('Mailpile') + ': ' + _('Please log in')
                 else:
                     label = _('This is Mailpile!')
-                self._do('set_item', id="status", label=label)
+                #self._do('set_item', id="notification", label=label)
                 return False
 
     def new_mail_notifications(self, summarize=False):
-        if not self.config.index or not self.config.index.TAGS:
+        # FIXME: This is quite a lot of set operations that don't really
+        #        belong here. Or do they? This feels out of place.
+        if self.config.index_loading:
+            self._do('set_status_display',
+                id='logged-in',
+                details=_(
+                    'Loaded metadata for {num} messages so far, please wait.'
+                    ).format(num=len(self.config.index_loading.INDEX)))
+            return
+        if self._state != self._state_logged_in:
             return
         if not self._notified:
             summarize = True
@@ -158,15 +177,23 @@ class GuiOMaticConnection(threading.Thread):
         for tag in self.config.get_tags(type='unread'):
             new_messages |= self.config.index.TAGS.get(tag._key, set([]))
 
+        hidden_messages = set([])
+        for tag in self.config.get_tags(flag_hides=True):
+            hidden_messages |= self.config.index.TAGS.get(tag._key, set([]))
+
         notify = {}
         for tag in self.config.get_tags(notify_new=True):
             already_notified = self._notified.get(tag._key, set([]))
-            all_in_tag = self.config.index.TAGS.get(tag._key, set([]))
-            new_in_tag = (new_messages & all_in_tag)
-            new_new_in_tag = (new_in_tag - already_notified)
-            if new_in_tag:
+            all_in_tag = (self.config.index.TAGS.get(tag._key, set([]))
+                          - hidden_messages)
+            new_in_tag = (all_in_tag & new_messages)
+            new_new_in_tag = (all_in_tag - already_notified)
+            print('%s: UNREAD=%d NEW=%d NOTIFIED=%d ALL=%d'
+                  % (tag.name, len(new_in_tag), len(new_new_in_tag),
+                     len(already_notified), len(all_in_tag)))
+            if new_in_tag or new_new_in_tag:
                 notify[tag._key] = (tag, new_in_tag, new_new_in_tag)
-                self._notified[tag._key] = all_in_tag
+            self._notified[tag._key] = all_in_tag
 
         all_new = set([])
         all_new_new = set([])
@@ -183,19 +210,19 @@ class GuiOMaticConnection(threading.Thread):
 
         tag_count = len(notify.keys())
         if (tag_count == 0) and (count == 0):
-            message=_('No unread mail, {num} messages total.'
+            message=_('No new mail, {num} messages total.'
                       ).format(num=len(self.config.index.INDEX))
 
         elif tag_count == 1:
             tag, new_msgs, new_new_msgs = notify.values()[0]
-            if (len(new_new_msgs) == len(new_msgs)) or not new_new_msgs:
-                message=_('{tagName}: {num} unread messages'
-                          ).format(num=len(new_msgs), tagName=tag.name)
-            else:
+            if new_new_msgs and not summarize:
                 message=_('{tagName}: {new} new messages ({num} unread)'
                           ).format(new=len(new_new_msgs),
                                    num=len(new_msgs),
                                    tagName=tag.name)
+            else:
+                message=_('{tagName}: {num} unread messages'
+                          ).format(num=len(new_msgs), tagName=tag.name)
         else:
             message=_('You have {num} unread messages in {tags} tags'
                       ).format(num=unread, tags=tag_count)
@@ -210,10 +237,15 @@ class GuiOMaticConnection(threading.Thread):
                 _GUIS[tid] = self
                 self._state(True)
             self.new_mail_notifications(summarize=True)
+            loop_count = 0
             while self._sock:
+                loop_count += 1
                 self._select_sleep(1)  # FIXME: Lengthen this when possible
                 self.change_state()
-                self.new_mail_notifications()
+                if loop_count % 5 == 0:
+                    # FIXME: This involves a fair number of set operations,
+                    #        should only do this after new mail has arrived.
+                    self.new_mail_notifications()
         finally:
             del _GUIS[tid]
 
