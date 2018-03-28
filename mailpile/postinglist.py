@@ -646,7 +646,48 @@ class GlobalPostingList(OldPostingList):
                 GLOBAL_GPL[sig] = set()
             for mail_id in mail_ids:
                 GLOBAL_GPL[sig].add(mail_id)
-
+                
+    @classmethod
+    def GetMaxMsgIdxPos(cls):
+    
+        global GLOBAL_GPL
+        with GLOBAL_GPL_LOCK:
+            try:
+                # Maximum MSG_MID in keyword index held under special key '1'.
+                max_msg_idx_pos = max([int(id, 36) for id in GLOBAL_GPL['1']])
+            except:
+                max_msg_idx_pos = None
+        return max_msg_idx_pos
+    
+    @classmethod
+    def UpdateMaxMsgMid(cls, session, msg_mids):
+    
+        if len(msg_mids) == 0:
+            return
+        try:
+            msg_idx_pos = max([int(id, 36) for id in msg_mids])
+        except:
+            return
+        
+        global GLOBAL_GPL   
+        with GLOBAL_GPL_LOCK:
+            try:
+                # Maximum msg_mid in keyword index held under special key '1'.
+                max_msg_idx_pos = max([int(id, 36) for id in GLOBAL_GPL['1']])
+            except:
+                max_msg_idx_pos = None
+            
+            if not max_msg_idx_pos or msg_idx_pos > max_msg_idx_pos:
+                msg_mid = b36(msg_idx_pos)
+                                            
+                super(GlobalPostingList, cls)._Append(session,
+                                    '', [msg_mid], sig='1', compact=False)                     
+                if GLOBAL_GPL is None:
+                    GLOBAL_GPL = {}
+                GLOBAL_GPL['1'] = set([msg_mid])
+            
+        return
+                
     def __init__(self, *args, **kwargs):
         with GLOBAL_GPL_LOCK:
             OldPostingList.__init__(self, *args, **kwargs)
@@ -671,6 +712,8 @@ class GlobalPostingList(OldPostingList):
     def _migrate(self, sig=None, compact=True):
         with self.lock:
             sig = sig or self.sig
+            if len(sig) <= 1:   # Don't migrate special sigs like max MSG_MID.
+                return          
             if sig in self.WORDS and len(self.WORDS[sig]) > 0:
                 PostingList.Append(self.session, sig, self.WORDS[sig],
                                    sig=sig, compact=compact)
