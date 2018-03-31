@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python2.7
 #
 # This is a basic GUI launcher for Mailpile.
 #
