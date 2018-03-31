@@ -33,10 +33,10 @@ from mailpile.i18n import gettext as _
 from mailpile.plugins.gui import GetUserSecret
 
 
-APPDIR = os.path.dirname(__file__)
+APPDIR = os.path.abspath(os.path.dirname(__file__))
 if not os.path.exists(os.path.join(APPDIR, 'media', 'splash.jpg')):
-    APPDIR = os.path.join(
-        ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui')
+    APPDIR = os.path.abspath(os.path.join(
+        ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui'))
 
 MEDIA_PATH = os.path.join(APPDIR, 'media')
 ICONS_PATH = os.path.join(APPDIR, 'icons-%(theme)s')
