@@ -60,7 +60,7 @@ class GuiOMaticConnection(threading.Thread):
             if self._am_main:
                 self._do('set_item', id='quit', label=_("Shutdown Mailpile"))
                 self._do('set_item', id='quit_button', label=_("Shutdown"))
-            for ss in ('mailpile', 'logged_in', 'remote_access'):
+            for ss in ('mailpile', 'logged-in', 'remote-access'):
                 self._do('set_status_display', id=ss, color='#999')
         else:
             self._select_sleep(1)

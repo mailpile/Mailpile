@@ -107,7 +107,7 @@ def BASIC_GUI_CONFIGURATION(state):
                 "icon": "image:logged-out",
                 "title": _("You are not logged in"),
             },{
-                "id": "remote_access",
+                "id": "remote-access",
                 "icon": "image:ra-off",
                 "title": _("Remote access is disabled"),
                 "details": _(
