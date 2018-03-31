@@ -1120,11 +1120,17 @@ class BaseMailSource(threading.Thread):
 
 
 def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
+    if 'dsn:has' in keywords or 'mdn:has' in keywords:
+        # FIXME: This is a delivery notfication of some sort!
+        #        Figure out what it is telling us...
+        return False
+
     if ('s:maildir' in msg_metadata_kws                  # Seen=read, maildir
             or 'r:maildir' in msg_metadata_kws           # Replied, maildir
             or 'r' in msg.get('status', '').lower()      # Read, mbox
-            or 'a' in msg.get('sx-tatus', '').lower()):  # PINE, answered
+            or 'a' in msg.get('x-status', '').lower()):  # PINE, answered
         return False
+
     keywords.update(['%s:in' % tag._key for tag in
                      session.config.get_tags(type='unread')])
     return True

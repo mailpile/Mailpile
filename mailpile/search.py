@@ -1136,6 +1136,11 @@ class MailIndex(BaseIndex):
                 else:
                     textpart = payload[0]
 
+            if ctype == 'message/delivery-status':
+                keywords.append('dsn:has')
+            elif ctype == 'message/disposition-notification':
+                keywords.append('mdn:has')
+
             if 'pgp' in part.get_content_type().lower():
                 keywords.append('pgp:has')
                 keywords.append('crypto:has')
