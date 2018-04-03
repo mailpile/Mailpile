@@ -68,6 +68,13 @@ class hintsCommand(Command):
             _('Learn how to get the most out of Mailpile\'s spam filter'),
             '/page/hints/spam.html'),
 
+	# Show the user how to organize their sidebar after 6 days
+	# Remind them about it every 90 days in case they forgot how
+	# FIXME: Allow the user to say, "I know, shut up forever please."
+	('organize-sidebar', 6, 90,
+	    _('Rearrange your sidebar to organize how you see your e-mail'),
+	    '/page/hints/organize-sidebar.html'),
+
         # Introduce Gravatar integration after 10 days, and yearly repetition.
         # Remind of the privacy implications
         ('gravatar', 10, 365,
