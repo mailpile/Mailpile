@@ -50,6 +50,7 @@ class MailIndex(BaseIndex):
     def __init__(self, config):
         BaseIndex.__init__(self, config)
         self.interrupt = None
+        self.loaded_index = False
         self.INDEX = []
         self.INDEX_SORT = {}
         self.INDEX_THR = []
@@ -195,19 +196,21 @@ class MailIndex(BaseIndex):
                                len(self.INDEX)
                                ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
-        
+
         # Make sure metadata index has entry for every msg_mid in keyword index.
         max_kw_msg_idx_pos = GlobalPostingList.GetMaxMsgIdxPos()
-        
+
         if max_kw_msg_idx_pos > len(self.INDEX) - 1:
             if session:
                 session.ui.warning(_(
                     'Fixing %d messages in keyword index not in metadata.'
                                  ) % (max_kw_msg_idx_pos + 1 - len(self.INDEX)))
-            
+
             for msg_idx_pos in range(len(self.INDEX), max_kw_msg_idx_pos + 1):
                 self.add_new_ghost(b36(msg_idx_pos))
-                
+
+        self.loaded_index = True
+
     def update_msg_tags(self, msg_idx_pos, msg_info):
         tags = set(self.get_tags(msg_info=msg_info))
         with self._lock:
@@ -1145,6 +1148,11 @@ class MailIndex(BaseIndex):
                         textpart = payload[0]
                 else:
                     textpart = payload[0]
+
+            if ctype == 'message/delivery-status':
+                keywords.append('dsn:has')
+            elif ctype == 'message/disposition-notification':
+                keywords.append('mdn:has')
 
             if 'pgp' in part.get_content_type().lower():
                 keywords.append('pgp:has')

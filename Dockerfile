@@ -1,33 +1,30 @@
-FROM alpine:3.5
+FROM debian:buster-slim
 
-WORKDIR /Mailpile
+ENV GID 33411
+ENV UID 33411
 
-# Create users and groups
-RUN addgroup -S mailpile && adduser -S -h /mailpile-data -G mailpile mailpile
+RUN apt-get update && \
+    apt-get install -y curl apt-transport-https gnupg && \
+    curl -s https://packages.mailpile.is/deb/key.asc | apt-key add - && \
+    echo "deb https://packages.mailpile.is/deb release main" | tee /etc/apt/sources.list.d/000-mailpile.list && \
+    apt-get update && \
+    apt-get install -y mailpile && \
+    # TODO Enable apache for multi users
+    # apt-get install -y mailpile-apache2
+    update-rc.d tor defaults && \
+    service tor start && \
+    groupadd -g $GID mailpile && \
+    useradd -u $UID -g $GID -m mailpile && \
+    su - mailpile -c 'mailpile setup' && \
+    apt-get clean
 
-# Install dependencies
-RUN apk --no-cache add \
-  ca-certificates \
-  openssl \
-  gnupg1 \
-  py-pip \
-  py-imaging \
-  py-jinja2 \
-  py-lxml \
-  py-lockfile \
-  py-pillow \
-  py-pbr \
-  py-cryptography \
-  su-exec
+WORKDIR /home/mailpile
+USER mailpile
 
-ADD requirements.txt /Mailpile/requirements.txt
-RUN pip install -r requirements.txt
-
-# Entrypoint
-ADD packages/docker/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ./mp --www=0.0.0.0:33411 --wait
+VOLUME /home/mailpile/.local/share/Mailpile
+VOLUME /home/mailpile/.gnupg
 EXPOSE 33411
 
-# Add code
-ADD . /Mailpile
+ENTRYPOINT ["service tor start;","mailpile"]
+CMD ["--www=0.0.0.0:33411/","--wait"]
+

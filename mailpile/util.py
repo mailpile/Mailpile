@@ -28,7 +28,7 @@ from mailpile.safe_popen import Popen, PIPE
 
 
 try:
-    from PIL import Image
+    from PIL import Image, ExifTags
 except:
     Image = None
 
@@ -907,6 +907,22 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
         fileobj = StringIO.StringIO(fileobj)
 
     image = Image.open(fileobj)
+    fmt = image.format
+
+    # If we have Exif rotation data, make use of it
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+        exif=dict(image._getexif().items())
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        pass
 
     # defining the size
     if height is None and width is None:
@@ -931,9 +947,9 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
     # If saving an optimized image fails, save it unoptimized
     # Keep the format (png, jpg) of the source image
     try:
-        image.save(output_fd, format=image.format, quality=90, optimize=1)
+        image.save(output_fd, format=fmt, quality=90, optimize=1)
     except:
-        image.save(output_fd, format=image.format, quality=90)
+        image.save(output_fd, format=fmt, quality=90)
 
     return image
 

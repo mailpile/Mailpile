@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python2.7
 #
 # This is a basic GUI launcher for Mailpile.
 #
@@ -33,10 +33,10 @@ from mailpile.i18n import gettext as _
 from mailpile.plugins.gui import GetUserSecret
 
 
-APPDIR = os.path.dirname(__file__)
+APPDIR = os.path.abspath(os.path.dirname(__file__))
 if not os.path.exists(os.path.join(APPDIR, 'media', 'splash.jpg')):
-    APPDIR = os.path.join(
-        ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui')
+    APPDIR = os.path.abspath(os.path.join(
+        ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui'))
 
 MEDIA_PATH = os.path.join(APPDIR, 'media')
 ICONS_PATH = os.path.join(APPDIR, 'icons-%(theme)s')
@@ -107,7 +107,7 @@ def BASIC_GUI_CONFIGURATION(state):
                 "icon": "image:logged-out",
                 "title": _("You are not logged in"),
             },{
-                "id": "remote_access",
+                "id": "remote-access",
                 "icon": "image:ra-off",
                 "title": _("Remote access is disabled"),
                 "details": _(
@@ -128,7 +128,7 @@ def BASIC_GUI_CONFIGURATION(state):
         "indicator": {
             "initial_status": "startup",
             "menu_items": [{
-                "id": "status",
+                "id": "notification",
                 "label": _("Starting up"),
                 "sensitive": False
             },{
