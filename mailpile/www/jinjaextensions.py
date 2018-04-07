@@ -804,7 +804,7 @@ class MailpileCommand(Extension):
         return [v for n, v in pairs if n.lower() == name.lower()]
 
     def _get_addresses(self, pairs, name):
-        from mailpile.mailutils import AddressHeaderParser
+        from mailpile.mailutils.addresses import AddressHeaderParser
         config = self.env.session.config
 
         addresses = []

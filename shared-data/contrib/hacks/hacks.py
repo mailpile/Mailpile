@@ -8,6 +8,7 @@ import mailpile.auth
 from mailpile.commands import Command
 from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
 from mailpile.mailutils.headerprint import *
+from mailpile.mailutils.emails import *
 from mailpile.mailutils import *
 from mailpile.plugins.core import Help
 from mailpile.search import *

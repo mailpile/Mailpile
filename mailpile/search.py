@@ -1,6 +1,5 @@
 import cStringIO
 import email
-import lxml.html
 import random
 import re
 import rfc822
@@ -20,11 +19,12 @@ from mailpile.index.base import BaseIndex
 from mailpile.index.search import SearchResultSet, CachedSearchResultSet
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
-from mailpile.mailutils import AddressHeaderParser, GetTextPayload
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import Email, ParseMessage
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils.emails import Email, ParseMessage, GetTextPayload
 from mailpile.mailutils.header import decode_header
 from mailpile.mailutils.headerprint import HeaderPrints
+from mailpile.mailutils.html import extract_text_from_html
 from mailpile.mailutils.safe import *
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
@@ -1140,8 +1140,7 @@ class MailIndex(BaseIndex):
                 _loader(part)
                 if len(payload[0]) > 3:
                     try:
-                        textpart = lxml.html.fromstring(payload[0]
-                                                        ).text_content()
+                        textpart = extract_text_from_html(payload[0])
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
                                              ) % (msg_mid, msg_id))

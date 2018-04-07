@@ -11,7 +11,7 @@ from email.mime.base import MIMEBase
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mail_generator import Generator
+from mailpile.mailutils.generator import Generator
 
 
 ##[ Common utilities ]#########################################################
@@ -407,7 +407,7 @@ def ObscureNames(hdr):
     u'<bre@klaki.net>, <e@b.c>'
 
     """
-    from mailpile.mailutils import AddressHeaderParser
+    from mailpile.mailutils.addresses import AddressHeaderParser
     return ', '.join('<%s>' % ai.address for ai in AddressHeaderParser(hdr))
 
 
@@ -483,7 +483,7 @@ class MimeWrapper:
                  use_html_wrapper=False,
                  wrapped_headers=None,
                  obscured_headers=None):
-        from mailpile.mailutils import MakeBoundary
+        from mailpile.mailutils.emails import MakeBoundary
         self.config = config
         self.event = event
         self.sender = sender

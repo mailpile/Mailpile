@@ -4,7 +4,7 @@ import mailpile
 
 from mailpile.tests import MailPileUnittest
 
-from mailpile import mail_generator as mail_generator
+import mailpile.mailutils.generator as mail_generator
 
 class TestMailGenerator(MailPileUnittest):
 

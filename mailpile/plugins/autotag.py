@@ -13,7 +13,7 @@ from mailpile.commands import Command
 from mailpile.config.base import ConfigDict
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mailutils import Email
+from mailpile.mailutils.emails import Email
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 
