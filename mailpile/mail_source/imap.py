@@ -640,7 +640,8 @@ def _connect_imap(session, settings, event,
                 return conn_cls(settings.get('host'),
                                 int(settings.get('port')))
         conn = timed(mkconn)
-        conn.sock.settimeout(120)
+        if hasattr(conn, 'sock'):
+            conn.sock.settimeout(120)
         conn.debug = ('imaplib' in session.config.sys.debug) and 4 or 0
 
         ok, data = timed_imap(conn.capability)
