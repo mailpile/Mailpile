@@ -196,6 +196,19 @@ class MailIndex(BaseIndex):
                                len(self.INDEX)
                                ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
+
+        # Make sure metadata index has entry for every msg_mid in keyword index.
+        max_kw_msg_idx_pos = GlobalPostingList.GetMaxMsgIdxPos()
+
+        if max_kw_msg_idx_pos > len(self.INDEX) - 1:
+            if session:
+                session.ui.warning(_(
+                    'Fixing %d messages in keyword index not in metadata.'
+                                 ) % (max_kw_msg_idx_pos + 1 - len(self.INDEX)))
+
+            for msg_idx_pos in range(len(self.INDEX), max_kw_msg_idx_pos + 1):
+                self.add_new_ghost(b36(msg_idx_pos))
+
         self.loaded_index = True
 
     def update_msg_tags(self, msg_idx_pos, msg_info):
@@ -1359,6 +1372,8 @@ class MailIndex(BaseIndex):
             except UnicodeDecodeError:
                 # FIXME: we just ignore garbage
                 pass
+                
+        GlobalPostingList.UpdateMaxMsgMid(session, [msg_mid])        
 
         self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
         return keywords, snippet
