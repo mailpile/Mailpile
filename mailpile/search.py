@@ -197,17 +197,17 @@ class MailIndex(BaseIndex):
                                ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
 
-        # Make sure metadata index has entry for every msg_mid in keyword index.
+        # Make sure metadata has entry for every msg_mid in keyword index.
         max_kw_msg_idx_pos = GlobalPostingList.GetMaxMsgIdxPos()
-        
-        if max_kw_msg_idx_pos > len(self.INDEX) - 1:
+        if max_kw_msg_idx_pos and max_kw_msg_idx_pos >= len(self.INDEX):
+            new_max_msg_idx_pos = max_kw_msg_idx_pos + 1
             if session:
-                session.ui.warning(_(
-                    'Fixing %d messages in keyword index not in metadata.'
-                                 ) % (max_kw_msg_idx_pos + 1 - len(self.INDEX)))
-            
-            for msg_idx_pos in range(len(self.INDEX), max_kw_msg_idx_pos + 1):
-                self.add_new_ghost(b36(msg_idx_pos))
+                session.ui.warning(
+                    _('Fixing %d messages in keyword index not in metadata.'
+                      ) % (new_max_msg_idx_pos - len(self.INDEX)))
+
+            for msg_idx_pos in range(len(self.INDEX), new_max_msg_idx_pos):
+                self.add_new_ghost(b36(msg_idx_pos), trash=True)
 
         self.loaded_index = True
 
@@ -1032,7 +1032,10 @@ class MailIndex(BaseIndex):
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
             return msg_idx_pos, msg_info
 
-    def add_new_ghost(self, msg_id):
+    def add_new_ghost(self, msg_id, trash=False):
+        tags = []
+        if trash:
+            tags = [t._key for t in self.config.get_tags(type='trash')]
         return self.add_new_msg(
             '',  # msg_ptr
             msg_id,
@@ -1043,7 +1046,7 @@ class MailIndex(BaseIndex):
             0,
             _('(missing message)'),
             self.MSG_BODY_GHOST,
-            [])
+            tags)
 
     def filter_keywords(self, session, msg_mid, msg, keywords, incoming=True):
         keywordmap = {}
@@ -1371,8 +1374,6 @@ class MailIndex(BaseIndex):
             except UnicodeDecodeError:
                 # FIXME: we just ignore garbage
                 pass
-                
-        GlobalPostingList.UpdateMaxMsgMid(session, [msg_mid])        
 
         self.config.command_cache.mark_dirty(set([u'mail:all']) | keywords)
         return keywords, snippet
