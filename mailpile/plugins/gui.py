@@ -188,9 +188,6 @@ class GuiOMaticConnection(threading.Thread):
                           - hidden_messages)
             new_in_tag = (all_in_tag & new_messages)
             new_new_in_tag = (all_in_tag - already_notified)
-            print('%s: UNREAD=%d NEW=%d NOTIFIED=%d ALL=%d'
-                  % (tag.name, len(new_in_tag), len(new_new_in_tag),
-                     len(already_notified), len(all_in_tag)))
             if new_in_tag or new_new_in_tag:
                 notify[tag._key] = (tag, new_in_tag, new_new_in_tag)
             self._notified[tag._key] = all_in_tag
