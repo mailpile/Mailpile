@@ -1,5 +1,11 @@
 #!/bin/bash
 set -e
+
+if ! javac --version ; then
+    echo "This script depends on javac; Please install version 10, or later, of the Java Developer Kit."
+	false
+fi
+
 export MAILPILE_BREW_ROOT="$(cd; pwd)/Mailpile-Brew"
 export OSX_MAJOR_VERSION="$(sw_vers -productVersion | cut -d . -f 2)"
 ##############################################################################
