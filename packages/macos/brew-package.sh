@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if ! javac --version ; then
+if ! javac -version&>/dev/null ; then
     echo "This script depends on javac; Please install version 10, or later, of the Java Developer Kit."
 	false
 fi
