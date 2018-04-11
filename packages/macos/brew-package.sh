@@ -38,7 +38,7 @@ cd "$MAILPILE_BREW_ROOT"
 # Install basic tools
 #
 [ -e bin/brew ] || \
-    curl -kL https://github.com/Homebrew/homebrew/tarball/master \
+    curl -kL https://github.com/Homebrew/brew/tarball/master \
     | tar xz --strip 1
 echo
 brew update
