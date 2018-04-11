@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-if ! javac -version&>/dev/null ; then
-    echo "This script depends on javac; Please install version 10, or later, of the Java Developer Kit."
-	false
-fi
-
 export MAILPILE_BREW_ROOT="$(cd; pwd)/Mailpile-Brew"
 export OSX_MAJOR_VERSION="$(sw_vers -productVersion | cut -d . -f 2)"
 ##############################################################################
@@ -18,7 +13,13 @@ This script is tested on Mac OS X 10.11.2, with XCode 7.2.
 
 tac
 ##############################################################################
+
 echo -n 'Press ENTER to continue, CTRL-C to bail out... '; read
+
+if ! javac -version&>/dev/null ; then
+    echo "This script depends on javac; Please install version 10, or later, of the Java Developer Kit."
+	false
+fi
 
 # See this mailing list post: http://curl.haxx.se/mail/archive-2013-10/0036.html
 if [ $(echo "$OSX_MAJOR_VERSION  < 9" | bc) == 1 ]; then
