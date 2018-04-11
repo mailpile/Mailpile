@@ -35,6 +35,7 @@ cd "$MAILPILE_BREW_ROOT"
     curl -kL https://github.com/Homebrew/homebrew/tarball/master \
     | tar xz --strip 1
 echo
+brew update
 brew install git
 brew install gnupg
 brew install openssl
