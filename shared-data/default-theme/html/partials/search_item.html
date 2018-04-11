@@ -130,6 +130,7 @@
   {%- if thread|length > 1 %}
     {%- include "partials/pile_threading.html" %}
   {%- endif %}
+  </td>
 {% else %}
   <td class="avatar">
     <a><img src="{{ show_avatar(from) }}"></a>
@@ -150,6 +151,7 @@
       {%- if to1.fn %}{{ to1.fn|nice_name(28) }}{% else %}(&lt;{{ to1.address }}&gt;){% endif %}
       {% if to_cc|length > 1 %}<span class="rcpt-count">+{{ to_cc|length -1 }}</span>{% endif %}
     </a>
+  </td>
  {%- else %}
   <td class="from people">
     <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
@@ -228,6 +230,7 @@
             {%- elif elem.icon -%}
             <span class="navigation-icon icon-{{elem.icon}}"></span>
             {%- endif %}
+          </a>
           </li>
           {%- endfor %}
           <li><a title="{{ _('Switch to full conversation view') }}"
