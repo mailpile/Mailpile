@@ -48,7 +48,7 @@ brew install gnupg
 brew install openssl
 brew link --force openssl
 brew install libjpeg
-brew install python
+brew install python@2
 brew install tor
 
 
