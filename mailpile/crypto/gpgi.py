@@ -35,8 +35,8 @@ GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 GPG_BINARY = 'gpg'
 GPG_VERSIONS = {}
-if sys.platform.startswith('win'):
-    GPG_BINARY = 'GnuPG\\gpg.exe'
+#if sys.platform.startswith('win'):
+#    GPG_BINARY = 'GnuPG\\gpg.exe'
 BLOCKSIZE = 65536
 
 openpgp_algorithms = {1: _("RSA"),
@@ -566,8 +566,8 @@ class GnuPG:
         """Returns a tuple representing the GnuPG version number."""
         global GPG_VERSIONS
         if update or not GPG_VERSIONS.get(self.gpgbinary):
-            vertext = self.version().strip().split()[-1]
-            version = tuple(int(v) for v in vertext.split('.'))
+            match = re.search( "(\d+).(\d+).(\d+)", self.version() )
+            version = tuple(int(v) for v in match.groups())
             GPG_VERSIONS[self.gpgbinary] = version
         return GPG_VERSIONS[self.gpgbinary]
 
