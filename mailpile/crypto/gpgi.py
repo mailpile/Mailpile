@@ -116,7 +116,7 @@ class GnuPGResultParser:
     def parse(rp, retvals):
         signature_info = rp.signature_info
         encryption_info = rp.encryption_info
-        from mailpile.mailutils import ExtractEmailAndName
+        from mailpile.mailutils.emails import ExtractEmailAndName
 
         # First pass, set some initial state.
         locked, missing = [], []

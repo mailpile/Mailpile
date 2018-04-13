@@ -14,8 +14,8 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.config.detect import ssl, socks
-from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.mailutils import InsecureSmtpError
+from mailpile.mailutils.emails import CleanMessage, MessageAsString
 from mailpile.safe_popen import Popen, PIPE
 from mailpile.util import *
 from mailpile.vcard import VCardLine

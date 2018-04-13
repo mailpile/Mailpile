@@ -13,10 +13,10 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.mailutils import ExtractEmailAndName, Email
-from mailpile.mailutils import NotEditableError, AddressHeaderParser
-from mailpile.mailutils import NoFromAddressError, PrepareMessage
-from mailpile.mailutils import MakeMessageID
+from mailpile.mailutils import NoFromAddressError, NotEditableError
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import ExtractEmailAndName, Email
+from mailpile.mailutils.emails import PrepareMessage, MakeMessageID
 from mailpile.search import MailIndex
 from mailpile.smtp_client import SendMail
 from mailpile.urlmap import UrlMap

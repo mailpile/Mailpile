@@ -93,7 +93,8 @@ class POP3Mailbox(Mailbox):
                                              timeout=120)
                     self.secure = False
 
-            self._pop3.sock.settimeout(120)
+            if hasattr(self._pop3, 'sock'):
+                self._pop3.sock.settimeout(120)
             if self.debug:
                 self._pop3.set_debuglevel(self.debug)
 

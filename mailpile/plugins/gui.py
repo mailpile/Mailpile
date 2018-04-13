@@ -148,14 +148,23 @@ class GuiOMaticConnection(threading.Thread):
                 self._state(True)
                 return True
             else:
-                if self.config.index and self.config.index.loaded_index:
-                    msg_count = len(self.config.index.INDEX)
-                    label = _('Mailpile: %d messages') % msg_count
-                elif not self.config.loaded_config:
+                label = None
+
+                if self.config.index_loading:
+                    pass  # new_mail_notifications handles this
+                elif self._state in (self._state_need_setup,):
+                    label =  _('Mailpile') + ': ' + _('New Installation')
+                elif self._state not in (
+                        self._state_logged_in, self._state_shutting_down):
                     label = _('Mailpile') + ': ' + _('Please log in')
-                else:
-                    label = _('This is Mailpile!')
-                #self._do('set_item', id="notification", label=label)
+
+                # FIXME: We rely on sending garbage over the socket
+                #        regularly to check for errors. When that is
+                #        gone we might not need to be so chatty.
+                #        Until then: do not remove, it breaks shutdown!
+                if label:
+                    self._do('set_item', id="notification", label=label)
+
                 return False
 
     def new_mail_notifications(self, summarize=False):
@@ -188,9 +197,6 @@ class GuiOMaticConnection(threading.Thread):
                           - hidden_messages)
             new_in_tag = (all_in_tag & new_messages)
             new_new_in_tag = (all_in_tag - already_notified)
-            print('%s: UNREAD=%d NEW=%d NOTIFIED=%d ALL=%d'
-                  % (tag.name, len(new_in_tag), len(new_new_in_tag),
-                     len(already_notified), len(all_in_tag)))
             if new_in_tag or new_new_in_tag:
                 notify[tag._key] = (tag, new_in_tag, new_new_in_tag)
             self._notified[tag._key] = all_in_tag

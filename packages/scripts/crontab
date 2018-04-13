@@ -1,0 +1,4 @@
+20 * * * * /home/buildbot/bin/build.sh release release/1.0
+30 * * * * /home/buildbot/bin/update-repos.sh
+50 3 * * * /home/buildbot/bin/build.sh nightly master
+00 4 * * * /home/buildbot/bin/update-repos.sh
