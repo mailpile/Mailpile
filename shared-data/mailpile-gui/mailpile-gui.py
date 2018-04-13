@@ -64,11 +64,11 @@ def BASIC_GUI_CONFIGURATION(state):
         "app_icon": "image:logo",
         "images": {
             "logo":       os.path.join(MEDIA_PATH, 'logo-color.png'),
-            "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.svg'),
-            "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.svg'),
-            "logged-out": os.path.join(MEDIA_PATH, 'lock-closed.svg'),
-            "ra-on":      os.path.join(MEDIA_PATH, 'remote-access-on.svg'),
-            "ra-off":     os.path.join(MEDIA_PATH, 'remote-access-off.svg'),
+            "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.png'),
+            "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.png'),
+            "logged-out": os.path.join(MEDIA_PATH, 'lock-closed.png'),
+            "ra-on":      os.path.join(MEDIA_PATH, 'remote-access-on.png'),
+            "ra-off":     os.path.join(MEDIA_PATH, 'remote-access-off.png'),
             "startup":    os.path.join(ICONS_PATH, 'startup.png'),
             "normal":     os.path.join(ICONS_PATH, 'normal.png'),
             "attention":  os.path.join(ICONS_PATH, 'attention.png'),
@@ -242,7 +242,7 @@ def GenerateBootstrap(state):
             "OK LISTEN TCP: " + (
                 # FIXME: This should launch a screen session using the
                 #        same concepts as multipile's mailpile-admin.
-                'screen -S mailpile -d -m mailpile'
+                sys.executable +' scripts/mailpile'
                 ' --set="prefs.open_in_browser = false" '
                 ' --gui=%PORT% --interact')]
 
