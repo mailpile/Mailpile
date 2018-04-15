@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-export MAILPILE_BREW_ROOT="$(cd; pwd)/Mailpile-Brew"
+export MAILPILE_BREW_ROOT="$(pwd)/build"
 export OSX_MAJOR_VERSION="$(sw_vers -productVersion | cut -d . -f 2)"
 ##############################################################################
 cat <<tac
@@ -9,7 +9,7 @@ cat <<tac
 This script will use Homebrew to build a complete environment for
 packaging Mailpile, here: $MAILPILE_BREW_ROOT
 
-This script is tested on Mac OS X 10.11.2, with XCode 7.2.
+This script is tested on macOS 10.13.4, with XCode 9.3.
 
 tac
 ##############################################################################
@@ -29,7 +29,7 @@ fi
 export PATH="$MAILPILE_BREW_ROOT"/bin:$PATH
 export GIT_SSL_NO_VERIFY=1
 export HOMEBREW_CC=gcc-4.2
-export MACOSX_DEPLOYMENT_TARGET=10.5
+export MACOSX_DEPLOYMENT_TARGET=10.13
 
 mkdir -p "$MAILPILE_BREW_ROOT"
 cd "$MAILPILE_BREW_ROOT"
@@ -43,7 +43,6 @@ cd "$MAILPILE_BREW_ROOT"
     | tar xz --strip 1
 echo
 brew update
-brew install git
 brew install gnupg
 brew install openssl
 brew link --force openssl
@@ -55,24 +54,7 @@ brew install tor
 #
 # Install Python packages
 #
-_ptest() {
-    echo "import $1" | python 2>/dev/null && echo "$1 is already installed"
-}
-_pip() {
-    _PM=$1
-    shift
-    _ptest $_PM || pip install "$@"
-}
-echo
-_pip   DNS       pydns
-_pip   jinja2    jinja2
-_pip   pexpect   pexpect
-_pip   pgpdump   pgpdump
-_pip   markdown  markdown
-_pip   spambayes http://pypi.python.org/packages/source/s/spambayes/spambayes-1.1b1.tar.gz
-_pip   PIL       pillow
-_ptest lxml ||   STATIC_DEPS=true pip install lxml
-_pip   objc      pyobjc || echo 'Incomplete pyobjc build'
+pip install -r ${0%/*}/../../../requirements.txt --ignore-installed
 
 
 #
@@ -130,19 +112,7 @@ done
 # Make symbolic links relative
 #
 if [ ! -e "$MAILPILE_BREW_ROOT"/bin/symlinks ]; then
-    TDIR=/tmp/symlinks-mailpile.$$
-    mkdir $TDIR
-    cd $TDIR
-    curl -O http://pkgs.fedoraproject.org/repo/pkgs/symlinks/symlinks-1.4.tar.gz/c38ef760574c25c8a06fd2b5b141307d/symlinks-1.4.tar.gz
-    [ "$(md5 symlinks-1.4.tar.gz|cut -f4 -d\ )" = \
-      "b4bab0a5140e977c020d96e7811cec61" ] || exit 1
-    tar xvfz symlinks-1.4.tar.gz
-    cd symlinks-1.4
-    perl -pi.bak -e 's/malloc.h/stdlib.h/' symlinks.c
-    make
-    cp symlinks "$MAILPILE_BREW_ROOT"/bin/
-    cd "$MAILPILE_BREW_ROOT"
-    rm -rf $TDIR
+	brew install https://raw.githubusercontent.com/peturingi/homebrew/06eefcfd0e4cb1e9496c5944cf861a8f7607c69b/Library/Formula/symlinks.rb
 else
     cd "$MAILPILE_BREW_ROOT"
 fi
@@ -155,7 +125,7 @@ fi
 #
 cd "$MAILPILE_BREW_ROOT"
 for target in /lib/python2.7/site-packages/sitecustomize.py \
-              /Cellar/python/2.7.8/Frameworks/Python.framework/Versions/2.7/lib/python2.7/_sysconfigdata.py \
+              /Cellar/python@2/2.7.14_3/Frameworks/Python.framework/Versions/2.7/lib/python2.7/_sysconfigdata.py \
 ; do
     perl -pi.bak -e \
         "s|'$MAILPILE_BREW_ROOT|__file__.replace('$target', '') + '|g" \
@@ -168,7 +138,7 @@ done
 LSUIELEM="<key>LSUIElement</key><string>1</string>"
 perl -pi.bak -e \
     "s|(\\s+)(<key>CFBundleDocumentTypes)|\\1$LSUIELEM\\2|" \
-    ./Cellar/python/*/Frame*/Python*/V*/C*/Res*/Python.app/Cont*/Info.plist
+    ./Cellar/python@2/*/Frame*/Python*/V*/C*/Res*/Python.app/Cont*/Info.plist
 
 
 #
@@ -189,7 +159,6 @@ echo |./bin/openssl 2>/dev/null && echo ... is OK
 cat << tac | ./bin/python
 import DNS
 import jinja2
-import pexpect
 import pgpdump
 import markdown
 import spambayes
@@ -197,6 +166,11 @@ import PIL
 import lxml
 import objc
 import hashlib
+import appdirs
+import setuptools
+import cryptography
+import pbr
+import fasteners
 print "Python is OK"
 tac
 cd
