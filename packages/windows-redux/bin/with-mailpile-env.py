@@ -10,6 +10,7 @@ Example: path\\to\\python with-mailpile-env.py mailpile-gui.py
 import os
 import sys
 import subprocess
+import argparse
 
 locate = ( ("Mailpile","mailpile"),
            ("Mailpile","bin","gpg.exe"),
@@ -33,6 +34,21 @@ def locate_parent( path_parts ):
         else:
             directory = parent
 
+def split_args( args = sys.argv[1:] ):
+    '''
+    Split arguments into options and remainder at first non-option argument
+    '''
+    opts = []
+    
+    for arg in args:
+        if arg.startswith('-'):
+            opts.append( arg )
+        else:
+            break
+        
+    invoke = args[ len(opts): ]
+    return (opts, invoke)
+
 if __name__ == '__main__':
     path_additions = list( map( locate_parent, locate ) )
     python_dir = os.path.abspath( os.path.split( sys.executable )[0] )
@@ -44,9 +60,39 @@ if __name__ == '__main__':
         except KeyError:
             os.environ[ key ] = path_additions
 
-    if sys.argv[1].endswith( '.py' ):
-        args = [ sys.executable ]
-        args.extend( sys.argv[1:] )
-    else:
-        args = sys.argv[1:]
-    subprocess.check_call( args, shell = True )
+    parser = argparse.ArgumentParser(description="Invokes a command with environment variables setup for mailpile")
+    parser.add_argument( '--stdin', type = str,
+                         help= "Redirect stdin from file" )
+    parser.add_argument( '--stdout', type = str,
+                         help = "Redirect stdout to file" )
+    parser.add_argument( '--stderr', type = str,
+                         help = "Redirect stderr to file" )
+
+    parser.add_argument( '-q', '--quiet',
+                         action = 'store_true',
+                         help = "Redirect stdin, stdout, stderr to devnull unless otherwise specified" )
+
+    if len(sys.argv) <= 1:
+        parser.print_usage()
+        exit( -1 )
+        
+    opts, invoke = split_args()
+    args = parser.parse_args(opts)
+
+    redirects = {}
+
+    for (key, mode) in (('stdin','r'), ('stdout','w'), ('stderr','w')):
+        path = getattr( args, key )
+        if path:
+            redirects[ key ] = open( path, mode )
+        elif args.quiet:
+            redirects[ key ] = open( os.devnull, mode )
+
+    if invoke[0].endswith( '.py' ):
+        invoke = [ sys.executable ] + invoke
+        
+    try:
+        subprocess.check_call( invoke, shell = True, **redirects )
+    finally:
+        for handle in redirects.values():
+            handle.close()

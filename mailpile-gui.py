@@ -230,6 +230,31 @@ def LocateMailpile():
         else:
             directory = parts[ 0 ]
 
+def MailpileInvocation():
+    """
+    Return an appropriately formated string for invoking mailpile.
+
+    Really this is a container for platform specific behavior
+    """
+    parts = []
+    common_opts = [
+        '--set="prefs.open_in_browser = false"',
+        '--gui=%PORT% ' ]
+    
+    if os.name == 'nt':
+        parts.append('"{}"'.format( sys.executable ))
+        parts.append('"{}"'.format( LocateMailpile() ))
+        parts.extend( common_opts )
+        parts.append('--www=')
+        parts.append('--wait')
+    else:
+        # FIXME: This should launch a screen session using the
+        #        same concepts as multipile's mailpile-admin.
+        parts.append('screen -S mailpile -d -m "{}"'.format( LocateMailpile() ))
+        parts.extend( common_opts )
+        parts.append( '--interact' )
+
+    return ' '.join( parts )    
 
 def GenerateBootstrap(state):
     """
@@ -258,12 +283,7 @@ def GenerateBootstrap(state):
                 SPLASH_SCREEN(state, _("Launching Mailpile"))),
             "set_next_error_message %s" % json.dumps({
                 'message': _("Failed to launch Mailpile!")}),
-            "OK LISTEN TCP: " + (
-                # FIXME: This should launch a screen session using the
-                #        same concepts as multipile's mailpile-admin.
-                '"' + sys.executable + '" "' + LocateMailpile() + '"' +
-                ' --set="prefs.open_in_browser = false" '
-                ' --gui=%PORT% --interact')]
+            "OK LISTEN TCP: " + MailpileInvocation() ]
 
     return '\n'.join(bootstrap)
 
