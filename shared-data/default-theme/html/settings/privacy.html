@@ -16,9 +16,9 @@
 {% endif %}
        >{{ csrf_field|safe }}
 
-  <h1>
-    <span class="icon icon-settings"></span>
-    {{_("Security and Privacy Settings")}}
+  <h1 class="page-title-data mobile-hide">
+    <span class="page-title-icon"><span class="icon icon-settings"></span></span>
+    <span class="page-title-text">{{_("Security and Privacy Settings")}}</span>
   </h1>
 
   <div class="notices">
@@ -38,7 +38,7 @@
       {{_("Your settings have been saved.")}}
     </p>
     {% else %}
-    <p>
+    <p class="mobile-hide">
       {{_("Choose your own privacy policy!")}}
     </p>
     {% endif %}
@@ -301,12 +301,16 @@
         <span class="icon icon-dislike"></span>
         {{_("Encryption makes it harder to migrate your data to another e-mail client, slows things down and may increase the odds of data loss.")}}
         {{_("Losing your encryption key becomes equivalent to losing all your mail.")}}
+        <br>
+        <a href="{{ U('/backup/download/?csrf=') }}{{ csrf_token }}">
+          {{ _("Download a backup of current settings and keys.") }}</a>
       </p>
       <p class="risks">
         <span class="icon icon-key"></span>
         {{_("Also keep in mind that the security of your data depends entirely on the strength of your password.")}}
         <br>
-        <a href="/setup/password/">{{ _("You can change your Mailpile password here.") }}</a>
+        <a href="{{ U('/setup/password/') }}">
+          {{ _("You can change your Mailpile password here.") }}</a>
       </p>
     </div>
     <div class="settings">
@@ -318,7 +322,49 @@
              {%- if not config.prefs.allow_deletion %} checked{% endif %}>
       <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
       {{_("Allow deletion of e-mail from servers and mailboxes")}}
+      <br style="margin-bottom: 0.75em;">
+
+{# FIXME: Make this work!
+      <input name="prefs.backup_to_web" type="radio" value="true"
+            {%- if config.prefs.backup_to_web %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.backup_to_web" type="radio" value="false"
+             {%- if not config.prefs.backup_to_web %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Backup settings and keys to mobile web app")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
       <br>
+
+      {% set bte_on = (config.prefs.backup_to_email not in (False, None, '-', '')) %}
+      <input name="prefs.backup_to_email" type="radio"
+             value="{{ config.prefs.backup_to_email }}"
+             {%- if bte_on %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="prefs.backup_to_email" type="radio" value="-"
+             {%- if not bte_on %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Backup settings and keys to e-mail")-}}
+        <span id="backup_email"{% if not bte_on %} class="hide"{% endif %}>: 
+        <b>{{ config.prefs.backup_to_email }}</b></span>
+      <br style="margin-bottom: 0.75em;">
+#}
+
+{# We only display this on first setup, because changing it later is likely
+ # to badly mess things up. Power users will want this though.
+ #}
+{% if ui_from_profiles %}
+      <input name="sys.gpg_home" type="radio" value="{Blank}"
+            {%- if not config.sys.gpg_home %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      <input name="sys.gpg_home" type="radio" value="{{ config.sys.gpg_home or config.workdir }}"
+             {%- if config.sys.gpg_home %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
+      {{_("Use shared GnuPG keychain for PGP encryption keys")}}
+      <span title="{{_('Recommended setting')}}"
+            class="icon default icon-star"></span>
+      <br style="margin-bottom: 0.75em;">
+{% endif %}
 
       <input name="prefs.encrypt_mail" type="radio" value="true"
             {%- if config.prefs.encrypt_mail %} checked{% endif %}>
@@ -379,6 +425,7 @@
         <li>{{_("Changing encryption settings will only affect data created or edited from now on.")}}</li>
         <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
         <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
+        <li>{{_("Backups are protected by the same password and encryption as the configuration.")}}</li>
       </ul>
     </div>
     <br clear="both">

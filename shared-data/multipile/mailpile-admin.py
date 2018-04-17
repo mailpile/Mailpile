@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #
 # This is the Mailpile admin tool! It can do these things:
 #

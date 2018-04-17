@@ -64,6 +64,12 @@ class POP3Mailbox(Mailbox):
         self._pop3 = None
         self._connect()
 
+    def lock(self):
+        pass
+
+    def unlock(self):
+        pass
+
     def _connect(self):
         with self._lock:
             if self._pop3:
@@ -75,21 +81,27 @@ class POP3Mailbox(Mailbox):
 
             with ConnBroker.context(need=[ConnBroker.OUTGOING_POP3]):
                 if self.conn_cls:
-                    self._pop3 = self.conn_cls(self.host, self.port or 110)
+                    self._pop3 = self.conn_cls(self.host, self.port or 110,
+                                               timeout=120)
                     self.secure = self.use_ssl
                 elif self.use_ssl:
-                    self._pop3 = wrappable_POP3_SSL(self.host, self.port or 995)
+                    self._pop3 = wrappable_POP3_SSL(self.host, self.port or 995,
+                                                    timeout=120)
                     self.secure = True
                 else:
-                    self._pop3 = poplib.POP3(self.host, self.port or 110)
+                    self._pop3 = poplib.POP3(self.host, self.port or 110,
+                                             timeout=120)
                     self.secure = False
 
+            if hasattr(self._pop3, 'sock'):
+                self._pop3.sock.settimeout(120)
             if self.debug:
                 self._pop3.set_debuglevel(self.debug)
 
             self._keys = None
             try:
                 if self.auth_type.lower() == 'oauth2':
+                    from mailpile.plugins.oauth import OAuth2
                     token_info = OAuth2.GetFreshTokenInfo(self.session,
                                                           self.user)
                     if self.user and token_info and token_info.access_token:

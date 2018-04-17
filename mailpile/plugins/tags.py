@@ -56,6 +56,7 @@ _plugins.register_config_section('tags', ["Tags", {
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
     'parent': ['ID of parent tag, if any', 'str', ''],
+    'notify_new': ['Notify users about new messages', 'bool', False],
 
     # Automation settings
     'auto_after': ['After N days, perform automatic action', 'int', 0],

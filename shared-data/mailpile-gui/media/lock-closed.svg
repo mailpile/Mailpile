@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 16.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="110"
+   height="110"
+   viewBox="0 0 110 110"
+   enable-background="new 0 0 100 100"
+   xml:space="preserve"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="lock-closed.svg"
+   inkscape:export-filename="/home/bre/Projects/MailPile/Code/shared-data/mailpile-gui/media/lock-closed.png"
+   inkscape:export-xdpi="418.91"
+   inkscape:export-ydpi="418.91"><metadata
+     id="metadata9"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+     id="defs7" /><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="703"
+     inkscape:window-height="480"
+     id="namedview5"
+     showgrid="false"
+     inkscape:zoom="2.36"
+     inkscape:cx="50"
+     inkscape:cy="50"
+     inkscape:window-x="57"
+     inkscape:window-y="21"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1" /><path
+     d="m 86.349458,51.132 c -1.195,0 -1.925,0 -1.925,0 l 0,-15.653 c -0.098,-19.194 -13.19,-29.643 -29.101,-29.643 -15.906,0 -30.172,10.946 -29.675,29.643 l -0.016,15.633 c 0,0 0.24,0.021 -0.96,0.021 -1.27,0 -9.64,1.473 -9.64,8.936 l 0,35.824 c 0,7.959 9.42,9.943 9.64,9.943 16.76,0 44.438,0 61.202,0 0.22,0 9.154,-0.993 9.154,-9.943 l 0,-35.329 c 0.001,-8.455 -8.454,-9.432 -8.679,-9.432 z m -22.168,40.923 -18.273,0 4.963,-14.566 c -2.12,-1.412 -3.528,-3.866 -3.528,-6.665 0,-4.384 3.442,-7.938 7.687,-7.938 4.245,0 7.687,3.557 7.687,7.938 0,2.795 -1.404,5.253 -3.522,6.661 l 4.986,14.57 z m -25.073,-40.923 0.016,-15.446 c 0,-9.949 6.071,-17.903 15.906,-17.903 9.741,0 15.905,6.958 15.905,17.903 l 0.01,15.446 -31.837,0 z"
+     id="path3"
+     inkscape:connector-curvature="0"
+     style="fill:#aaaaaa;fill-opacity:1" /></svg>

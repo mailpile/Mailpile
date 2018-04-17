@@ -1,5 +1,5 @@
 /* Clear button */
-Mailpile.UI.set_clear_state = setClarState = function(queryBox){
+Mailpile.UI.set_clear_state = function(queryBox){
   var $clearButton = $(queryBox).next('.clear-search');
   if (queryBox.value.length > 0) {
     $clearButton.show();
@@ -16,6 +16,23 @@ $(function(){
   }
 });
 
+Mailpile.UI.maybe_hide_search_box = function() {
+  $('nav.topbar-nav ul li').removeClass('hide');
+  $('div.topbar-logo-name').show().removeClass('hide');
+  $('nav.topbar-nav ul li.nav-search').show().addClass('mobile-pt-inline');
+  $('form#form-search').addClass('mobile-pt-hide');
+  $('nav.topbar-nav ul li.nav-search-hide').addClass('hide');
+};
+$(document).on('click', '#nav-search-hide', Mailpile.UI.maybe_hide_search_box);
+$(document).on('click', '#nav-search', function() {
+  $('nav.topbar-nav ul li').addClass('hide');
+  $('div.topbar-logo-name').hide().addClass('hide');
+  $('nav.topbar-nav ul li.nav-search').removeClass('mobile-pt-inline').hide();
+  $('form#form-search').removeClass('mobile-pt-hide');
+  $('nav.topbar-nav ul li.nav-search-hide').removeClass('hide');
+  $('#search-query').focus();
+});
+
 $(document).on('input change', '#search-query', function(e) {
   Mailpile.UI.set_clear_state(e.target);
 });
@@ -30,7 +47,6 @@ $(document).on('click', '#form-search .clear-search', function(e) {
     $('#search-query').val(dflt).focus();
   }
 });
-
 
 
 // {# FIXME: Disabled by Bjarni, this doesn't really work reliably

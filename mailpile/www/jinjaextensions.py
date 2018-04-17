@@ -74,6 +74,8 @@ class MailpileCommand(Extension):
         e.filters['friendly_bytes'] = s._friendly_bytes
         e.globals['friendly_number'] = s._friendly_number
         e.filters['friendly_number'] = s._friendly_number
+        e.globals['body_part_metadata'] = s._body_part_metadata
+        e.filters['body_part_metadata'] = s._body_part_metadata
         e.globals['show_avatar'] = s._show_avatar
         e.filters['show_avatar'] = s._show_avatar
         e.globals['navigation_on'] = s._navigation_on
@@ -273,6 +275,36 @@ class MailpileCommand(Extension):
         if number in ('', None, False):
             return ''
         return friendly_number(number,
+                               decimals=decimals, base=1024, suffix='B')
+
+    def _body_part_metadata(self, bp):
+        bp = bp.split(':', 2)
+        pixels = 0
+        size = (0, 0)
+        if len(bp) < 2:
+            mimetype = 'application/octet-stream'
+        elif not bp[1]:
+            mimetype = 'text/html' if (bp[2] == 'H') else 'text/plain'
+        elif '/' in bp[1]:
+            mimetype = unsquish_mimetype(bp[1])
+        else:
+            xy = bp[1].split('x')
+            size = (int(xy[0]), int(xy[1]))
+            pixels = size[0] * size[1]
+            mimetype = 'image/jpeg'  # A lie!
+        return {
+            'filename': ((bp and bp[-1] or '').strip() or
+                         ('(%s)' % _('unnamed'))),
+            'bytes': self._friendly_bytes(int((bp and bp[0] or '0'), 16)),
+            'size': size,
+            'pixels': pixels,
+            'mimetype': mimetype}
+
+    def _friendly_hex_bytes(self, number, decimals=0):
+        # See mailpile/util.py:friendly_number if this needs fixing
+        if number in ('', None, False):
+            return ''
+        return friendly_number(int(number, 16),
                                decimals=decimals, base=1024, suffix='B')
 
     def _show_avatar(self, contact):
@@ -804,7 +836,7 @@ class MailpileCommand(Extension):
         return [v for n, v in pairs if n.lower() == name.lower()]
 
     def _get_addresses(self, pairs, name):
-        from mailpile.mailutils import AddressHeaderParser
+        from mailpile.mailutils.addresses import AddressHeaderParser
         config = self.env.session.config
 
         addresses = []

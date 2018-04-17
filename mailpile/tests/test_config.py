@@ -194,7 +194,7 @@ class TestConfig(MailPileUnittest):
     @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_FileCheck_invalid(self):
         invalid_paths = {
-          "posix" : ["/etc", "/", "", "laksh09hahs--x"]
+          "posix" : ["/etc", "/", "laksh09hahs--x"]
         }
         for i in invalid_paths[os.name]:
             self.assertRaises(ValueError, lambda: validators.FileCheck(i))
@@ -218,7 +218,7 @@ class TestConfig(MailPileUnittest):
     @unittest.skipIf(os.name == 'nt', "testing skipped in windows")
     def test_DirCheck_invalid(self):
         invalid_paths = {
-          "posix" : [ "/etc/group", "" ]
+          "posix" : [ "/etc/group" ]
         }
         for i in invalid_paths[os.name]:
             self.assertRaises(ValueError, lambda: validators.DirCheck(i))

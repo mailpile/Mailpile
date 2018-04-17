@@ -1,0 +1,60 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{%- set displayed = [] %}
+{% if result %}
+  {%- set theme_colors = theme_settings().colors %}
+
+  <span class="page-title-data" style="display: none;">
+  {%- if result.search_tag_ids %}
+    {%- set tag = config.tags[result.search_tag_ids[0]] %}
+    {%- if tag.type != 'inbox' %}
+    <span class="page-title-icon">
+      <span class="icon {{ tag.icon }}"
+            style="color: {{ theme_colors.get(tag.label_color, tag.label_color) }};"
+        ></span>
+    </span>
+    {%- endif %}
+    <span class="page-title-text">{% for tid in result.search_tag_ids %}
+      {{- config.tags[tid].name }}{% if not loop.last %}: {% endif %}
+    {%- endfor %}</span>
+  {%- endif %}
+  </span>
+
+  <div class='pile-results'>
+    <ul class='pile-message-attachments horizontal pile-images'>
+ {%- for previous_mid, this_mid, next_mid in result.thread_ids|with_context %}
+   {%- set mid = result.view_pairs.get(this_mid, this_mid) %}
+   {%- set metadata = result.data.metadata[mid] %}
+   {%- for bp in (metadata.body.parts or []) %}
+     {%- set bp = body_part_metadata(bp) %}
+     {%- if bp.pixels and bp.pixels > 128000 %}
+       {%- do displayed.append(mid) %}
+       <li class="left" style="padding: 5px;" data-mid="{{ mid }}">
+         <a class="attachment-image" target="_blank"
+            data-size="{{ bp.bytes }}"
+            title="{{ metadata.subject }}"
+            href="{{ U('/message/download/get/=', mid, '/part-', loop.index, '/') }}">
+           <div class="preview" style="background-image: url('{{ U('/message/download/preview/=', mid, '/part-', loop.index, '/') }}');"></div>
+         </a>
+       </li>
+     {% endif %}
+   {%- endfor %}
+ {%- endfor %}
+    </ul><br clear='both'>
+  </div>
+
+ {%- set prev_more_next_url = "/search/photos.html" %}
+ {%- include("search/prev_more_next.html") %}
+{%- endif %}
+{%- if not displayed %}
+  <div class="add-top add-bottom text-center">
+    <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
+  </div>
+{%- endif %}
+<script>
+$(document).ready(function() {
+  Mailpile.Search.init();
+  Mailpile.Tags.init();
+});
+</script>
+{% endblock %}

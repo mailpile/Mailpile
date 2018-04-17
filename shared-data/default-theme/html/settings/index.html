@@ -4,26 +4,26 @@
 {% extends "logs/layout.html" %}
 {% endif %}
 
-{% block title %}{{_("Settings and Technical Tools")}}{% endblock %}
+{% block title %}{{_("Settings & Tools")}}{% endblock %}
 
 {% block content %}
 <div class="content-normal settings-page">
 
-  <h1>
-    <span class="icon icon-settings"></span>
-    {{_("Settings and Tools")}}
+  <h1 class="page-title-data mobile-hide">
+    <span class="page-title-icon"><span class="icon icon-settings"></span></span>
+    <span class="page-title-text">{{_("Settings & Tools")}}</span>
   </h1>
 
   {% set motd = mailpile('motd', '--noupdate').result %}
   
-  <p class="version-info" style="margin-left: 2em;">
+  <p class="version-info mobile-hide" style="margin-left: 2em;">
     {{_("This is Mailpile version %(version)s",
         version=config.version)}}{% if motd._version_info %}:
     <i>{{ motd._version_info }}</i>{% endif %}.
   </p>
 
   <a name="settings"></a><div class="setting-group" style="width: 33em; float: left;">
-    <h3>{{_("Settings")}}</h3>
+    <h3 class="mobile-hide">{{_("Settings")}}</h3>
     <div style="margin-left: 1em; display: inline-block;">
       <p>
         <a href="{{ U('/settings/preferences.html') }}">
@@ -89,6 +89,14 @@
           </button>
         </a> &nbsp;
         {{_("Recent Network Activity")}}
+      </p>
+      <p>
+        <a href="{{ U('/backup/download/?csrf=') }}{{ csrf_token }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-help"></span> {{_("Backup")}}
+          </button>
+        </a> &nbsp;
+        {{_("Backup Your Settings and Keys")}}
       </p>
       <p>
         <a class="auto-modal auto-modal-sticky" href="{{ U('/crypto/tls/getcert/') }}">

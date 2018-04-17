@@ -143,7 +143,7 @@ Mailpile.UI.Search.Draggable = function(element) {
     containment: 'window',
     appendTo: 'body',
     cursor: 'move',
-    cursorAt: { left: -5, top: 15 },
+    cursorAt: { left: 15, bottom: -10 },
     scroll: false,
     revert: false,
     refreshPositions: true,
@@ -153,12 +153,14 @@ Mailpile.UI.Search.Draggable = function(element) {
       if ((selected.length < 2) && (selected[0] != '!all')) {
         // Note: Dragging w/o selecting first may mean the length is zero
         drag_count = '{{_("1 conversation")|escapejs}}';
+        icon = 'icon-inbox';
       }
       else {
         human_count = Mailpile.UI.Selection.human_length(selected);
         drag_count = human_count + ' {{_("conversations")|escapejs}}';
+        icon = 'icon-logo';
       }
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> {{_("Moving")|escapejs}} ' + drag_count + '</div>');
+      return $('<div class="pile-results-drag ui-widget-header"><span class="' + icon + '"></span> <span class="drag-info">{{_("Moving")|escapejs}} ' + drag_count + '</span></div>');
     },
     drag: function() {
       var $e = $(this);
@@ -199,7 +201,7 @@ Mailpile.UI.Search.Draggable = function(element) {
 };
 
 
-Mailpile.UI.Search.Dropable = function(element, accept) {
+Mailpile.UI.Search.Droppable = function(element, accept) {
   $(element).droppable({
     accept: accept,
     hoverClass: 'result-hover',
@@ -224,6 +226,7 @@ Mailpile.UI.Search.Dropable = function(element, accept) {
       }
       else {
         console.log('Dropped outside content area!');
+        return false;
       }
     }
   });

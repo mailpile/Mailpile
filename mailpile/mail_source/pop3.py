@@ -16,7 +16,7 @@ from mailpile.util import *
 GMAIL_TLDS = ('gmail.com', 'googlemail.com')
 
 
-def _open_pop3_mailbox(event, host, port,
+def _open_pop3_mailbox(session, event, host, port,
                        username, password, auth_type,
                        protocol, debug, throw=False):
     cev = event.data['connection'] = {
@@ -43,6 +43,7 @@ def _open_pop3_mailbox(event, host, port,
                                         password=password,
                                         auth_type=auth_type,
                                         use_ssl=('ssl' in protocol),
+                                        session=session,
                                         debug=debug)
     except AccessError:
         cev['error'] = ['auth', _('Invalid username or password'),
@@ -129,7 +130,7 @@ class Pop3MailSource(BaseMailSource):
         if 'src:' in mfn[:5] and FormatMbxId(mbx_id) in my_cfg.mailbox:
             debug = ('pop3' in self.session.config.sys.debug) and 99 or 0
             password = IndirectPassword(self.session.config, my_cfg.password)
-            return _open_pop3_mailbox(self.event,
+            return _open_pop3_mailbox(self.session, self.event,
                                       my_cfg.host, my_cfg.port,
                                       my_cfg.username, password,
                                       my_cfg.auth_type,
@@ -164,7 +165,7 @@ class Pop3MailSource(BaseMailSource):
 
 def TestPop3Settings(session, settings, event):
     password = IndirectPassword(session.config, settings['password'])
-    conn = _open_pop3_mailbox(event,
+    conn = _open_pop3_mailbox(session, event,
                               settings['host'],
                               int(settings['port']),
                               settings['username'],

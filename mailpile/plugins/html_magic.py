@@ -162,7 +162,6 @@ class HttpProxyGetRequest(Command):
                                       header_list=[('Content-Length',
                                                     len(data))])
         request.wfile.write(data)
-        request.send_full_response(response.code, response.msg)
 
         raise SuppressHtmlOutput()
 

@@ -3,6 +3,7 @@
 # Misc. utility functions for Mailpile.
 #
 import cgi
+import copy
 import ctypes
 import datetime
 import hashlib
@@ -19,6 +20,7 @@ import tempfile
 import threading
 import time
 import StringIO
+import cStringIO
 from distutils import spawn
 
 from mailpile.i18n import gettext as _
@@ -27,7 +29,12 @@ from mailpile.safe_popen import Popen, PIPE
 
 
 try:
-    from PIL import Image
+    import imgsize
+except:
+    imgsize = None
+
+try:
+    from PIL import Image, ExifTags
 except:
     Image = None
 
@@ -883,6 +890,72 @@ def play_nice_with_threads(sleep=True, weak=False, deadline=None):
     return delay
 
 
+class PeekableStringIO(StringIO.StringIO):
+    def peek(self, n):
+        StringIO._complain_ifclosed(self.closed)
+        if self.buflist:
+            self.buf += ''.join(self.buflist)
+            self.buflist = []
+        newpos = min(self.pos+n, self.len)
+        r = self.buf[self.pos:newpos]
+        return r
+
+
+SQUISH_MIME_RULES = (
+    # IMPORTANT: Order matters a great deal here! Full mime-types should come
+    #            first, with the shortest codes preceding the longer ones.
+    ('text/plain', 'tp/'),
+    ('text/html', 'h/'),
+    ('application/zip', 'z/'),
+    ('application/json', 'j/'),
+    ('application/pdf', 'p/'),
+    ('application/rtf', 'r/'),
+    ('application/octet-stream', 'o/'),
+    ('application/msword', 'ms/d'),
+    ('application/vnd.ms-excel', 'ms/x'),
+    ('application/vnd.ms-access', 'ms/m'),
+    ('application/vnd.ms-powerpoint', 'ms/p'),
+    ('application/pgp-keys', 'pgp/k'),
+    ('application/pgp-signature', 'pgp/s'),
+    ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'ms/xx'),
+    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'ms/dx'),
+    ('application/vnd.openxmlformats-officedocument.presentationml.presentation', 'ms/px'),
+    # These are prefixes that apply to many document types
+    ('application/vnd.openxmlformats-officedocument.', 'msx/'),
+    ('application/vnd.', 'vnd/'),
+    ('application/x-', 'x/'),
+    ('application/', '/'),
+    ('video/', 'v/'),
+    ('audio/', 'a/'),
+    ('image/', 'i/'),
+    ('text/', 't/'))
+
+
+def squish_mimetype(mimetype):
+    for prefix, rep in SQUISH_MIME_RULES:
+        if mimetype.startswith(prefix):
+            return rep + mimetype[len(prefix):]
+    return mimetype
+
+
+def unsquish_mimetype(mimetype):
+    for prefix, rep in reversed(SQUISH_MIME_RULES):
+        if mimetype.startswith(rep):
+            return prefix + mimetype[len(rep):]
+    return mimetype
+
+
+def image_size(img_data, pure_python=False):
+    try:
+        if imgsize is not None:
+            return imgsize.get_size(PeekableStringIO(img_data))
+        if Image is not None and not pure_python:
+            return Image.open(cStringIO.StringIO(img_data)).size
+    except (ValueError, imgsize.UnknownSize):
+        pass
+    return None
+
+
 def thumbnail(fileobj, output_fd, height=None, width=None):
     """
     Generates a thumbnail image , which should be a file,
@@ -903,9 +976,25 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
 
     # Ensure the source image is either a file-like object or a StringIO
     if (not isinstance(fileobj, (file, StringIO.StringIO))):
-        fileobj = StringIO.StringIO(fileobj)
+        fileobj = cStringIO.StringIO(fileobj)
 
     image = Image.open(fileobj)
+    fmt = image.format
+
+    # If we have Exif rotation data, make use of it
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+        exif=dict(image._getexif().items())
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        pass
 
     # defining the size
     if height is None and width is None:
@@ -930,9 +1019,9 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
     # If saving an optimized image fails, save it unoptimized
     # Keep the format (png, jpg) of the source image
     try:
-        image.save(output_fd, format=image.format, quality=90, optimize=1)
+        image.save(output_fd, format=fmt, quality=90, optimize=1)
     except:
-        image.save(output_fd, format=image.format, quality=90)
+        image.save(output_fd, format=fmt, quality=90)
 
     return image
 
@@ -973,7 +1062,7 @@ class CleanText:
                                         set(range(ord('0'), ord('9') + 1)) -
                                         set(range(ord('a'), ord('z') + 1)) -
                                         set(range(ord('A'), ord('Z') + 1)) -
-                                        set([ord('_'), ord('/')]))])
+                                        set([ord('-'), ord('_'), ord('/')]))])
 
     def __init__(self, text, banned='', replace=''):
         self.clean = str("".join([i if (((ord(i) > 31 and ord(i) < 127) or
@@ -1001,28 +1090,48 @@ class TimedOut(IOError):
     pass
 
 
+TIMED_THREAD_LOCK = threading.Lock()
+TIMED_THREADS = {}
+
 class RunTimedThread(threading.Thread):
-    def __init__(self, name, func):
+    def __init__(self, name, func, unique=None):
         threading.Thread.__init__(self, target=func)
-        self.name = name
         self.daemon = True
+        self.name = name
+        self.unique = unique
 
     def run_timed(self, timeout):
+        if self.unique:
+            with TIMED_THREAD_LOCK:
+                old_thread = TIMED_THREADS.get(self.unique)
+                if (old_thread is not None) and old_thread.isAlive():
+                    raise TimedOut('Old thread still alive: %s' % self.name)
+                TIMED_THREADS[self.unique] = self
+
         self.start()
         self.join(timeout=timeout)
+
         if self.isAlive() or QUITTING:
             raise TimedOut('Timed out: %s' % self.name)
+        else:
+            if self.unique:
+                with TIMED_THREAD_LOCK:
+                    TIMED_THREADS[self.unique] = None
 
 
 def RunTimed(timeout, func, *args, **kwargs):
     result, exception = [], []
+    unique = kwargs.get('unique_thread')
+    if unique:
+        kwargs = copy.copy(kwargs)
+        del kwargs['unique_thread']
     def work():
         try:
             result.append(func(*args, **kwargs))
         except:
             et, ev, etb = sys.exc_info()
             exception.append((et, ev, etb))
-    RunTimedThread(func.__name__, work).run_timed(timeout)
+    RunTimedThread(func.__name__, work, unique=unique).run_timed(timeout)
     if exception:
         t, v, tb = exception[0]
         raise t, v, tb

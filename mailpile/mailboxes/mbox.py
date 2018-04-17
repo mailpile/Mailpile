@@ -3,6 +3,7 @@ import mailbox
 import os
 import threading
 import time
+import traceback
 
 import mailpile.mailboxes
 from mailpile.i18n import gettext as _
@@ -158,10 +159,35 @@ class MailpileMailbox(mailbox.mbox):
                     session.ui.mark(_('Saving %s state to %s') % (self, fn))
                 pickler(self, fn)
 
+    def _locked_flush_without_tempfile(self):
+        """Dangerous, but we need this for /var/mail/USER on many Linuxes"""
+        with open(self._path, 'rb+') as new_file:
+            new_toc = {}
+            for key in sorted(self._toc.keys()):
+                start, stop = self._toc[key]
+                new_start = new_file.tell()
+                while True:
+                    buf = self._file.read(min(4096, stop-self._file.tell()))
+                    if buf == '':
+                        break
+                    new_file.write(buf)
+                new_toc[key] = (new_start, new_file.tell())
+            new_file.truncate()
+        self._file.seek(0, 0)
+        self._toc = new_toc
+        self._pending = False
+        self._pending_sync = False
+
     def flush(self, *args, **kwargs):
         with self._lock:
             self._last_updated = time.time()
-            mailbox.mbox.flush(self, *args, **kwargs)
+            try:
+                mailbox.mbox.flush(self, *args, **kwargs)
+            except OSError:
+                if '_create_temporary' in traceback.format_exc():
+                    self._locked_flush_without_tempfile()
+                else:
+                    raise
             self._last_updated = time.time()
 
     def clear(self, *args, **kwargs):

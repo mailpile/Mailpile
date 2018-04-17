@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="110"
+   height="110"
+   viewBox="0 0 110 110"
+   version="1.1"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="new-setup.svg">
+  <metadata
+     id="metadata15">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>donate</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="676"
+     inkscape:window-height="480"
+     id="namedview13"
+     showgrid="false"
+     inkscape:zoom="2.0813008"
+     inkscape:cx="116.54492"
+     inkscape:cy="50"
+     inkscape:window-x="57"
+     inkscape:window-y="21"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title4">donate</title>
+  <desc
+     id="desc6">Created with Sketch.</desc>
+  <defs
+     id="defs8" />
+  <g
+     id="Page-1"
+     sketch:type="MSPage"
+     style="fill:#be1c2f;fill-rule:evenodd;stroke:none;stroke-width:1;fill-opacity:0.94117647"
+     transform="translate(5,4.6666667)">
+    <g
+       id="donate"
+       sketch:type="MSArtboardGroup"
+       style="fill:#be1c2f;fill-opacity:0.94117647">
+      <path
+         d="M 74.14362,6.142 C 61.875,6.142 57.68718,12.393 50.5,21.437 43.31828,12.393 39.125,6.142 26.85001,6.142 13.6814,6.142 5,15.684 5,29.99 5,38.381 8.44344,47.756 16.375,56.307 L 50.5,93.642 84.625,56.307 C 92.55656,47.756 96,38.381 96,29.99 96,15.683 87.3186,6.142 74.14362,6.142 l 0,0 z"
+         id="Shape"
+         sketch:type="MSShapeGroup"
+         inkscape:connector-curvature="0"
+         style="fill:#be1c2f;fill-opacity:0.94117647" />
+    </g>
+  </g>
+</svg>

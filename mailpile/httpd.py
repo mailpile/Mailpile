@@ -146,18 +146,23 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.assert_no_newline(destination)
         self.assert_no_html(destination)
         self.send_http_response(302, 'Found')
-        self.wfile.write(('Location: %s\r\n\r\n'
-                          '<h1><a href="%s">Please look here!</a></h1>\n'
-                          ) % (destination, destination))
+        body = ('<h1><a href="%s">Please look here!</a></h1>\n'
+                ) % (destination,)
+        self.wfile.write(('Location: %s\r\n'
+                          'Content-Length: %d\r\n\r\n'
+                          ) % (destination, len(body)))
+        self.wfile.write(body)
 
     def send_standard_headers(self,
                               header_list=[],
                               cachectrl='private',
-                              mimetype='text/html'):
+                              mimetype='text/html',
+                              x_dns_prefetch='off'):
         """
         Send common HTTP headers plus a list of custom headers:
         - Cache-Control
         - Content-Type
+        - X-DNS-Prefetch-Control
 
         This function does not send the HTTP/1.1 header, so
         ensure self.send_http_response() was called before
@@ -174,6 +179,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.send_header('Content-Security-Policy',
                          security.http_content_security_policy(self.server))
         self.send_header('Content-Type', mimetype)
+        self.send_header('X-DNS-Prefetch-Control', x_dns_prefetch)
+        self.send_header('X-UA-Compatible', 'IE=Edge')  # For old Windowses
         for header in header_list:
             self.send_header(header[0], header[1])
         session_id = self.session.ui.html_variables.get('http_session')
@@ -561,10 +568,13 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def finish_request(self, request, client_address):
         try:
             SimpleXMLRPCServer.finish_request(self, request, client_address)
-        except socket.error:
+        except (socket.error, AttributeError):
+            # AttributeError may get thrown if the underlying socket has
+            # already been closed elsewhere and _sock = None.
             pass
-        if mailpile.util.QUITTING:
-            self.shutdown()
+        finally:
+            if mailpile.util.QUITTING:
+                self.shutdown()
 
 
 class HttpWorker(threading.Thread):

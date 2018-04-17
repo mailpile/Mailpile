@@ -6,7 +6,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.vcard import VCardLine, AddressInfo
 from mailpile.commands import Command
-from mailpile.mailutils import Email
+from mailpile.mailutils.emails import Email
 
 
 _plugins = PluginManager(builtin=__file__)

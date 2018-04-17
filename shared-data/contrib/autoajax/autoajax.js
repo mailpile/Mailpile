@@ -43,12 +43,6 @@ _outerHTML = function(elem) {
     return $('<div />').append(elem.clone()).html();
 };
 
-_update_title = function(message) {
-    var ct = document.title;
-    suffix = ct.substring(ct.indexOf('|'));
-    document.title = message + ' ' + suffix;
-};
-
 _scroll_up = function(elem, scrollto) {
     setTimeout(function() {
       $(elem).find('div, table, tbody, p').scrollTop(0);
@@ -193,7 +187,7 @@ Mailpile.UI.content_setup.push(prepare_new_content);
 render_result = function(data, cv, html) {
     var cv = cv || $('#content-view, #content-tall-view').parent();
 
-    if (data) _update_title(data['message']);
+    if (data) Mailpile.update_title(data['message']);
     cv.replaceWith(html || data['result']).show();
 
     clear_selection_state();
@@ -258,7 +252,7 @@ refresh_from_cache = function(cid) {
                  var cid = json.state.cache_id;
                  if (can_refresh(cid)) {
                      var selected = get_selection_state();
-                     $('.content-'+cid).replaceWith(json.result);
+                     $('.content-'+cid).replaceWith(json.result.trim());
                      Mailpile.UI.prepare_new_content('.content-'+cid);
                      restore_selection_state(selected);
                      refresh_history[cid] = get_now();

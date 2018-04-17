@@ -12,9 +12,9 @@
        action="{{ U('/settings/set/') }}?ui_return={{ U('/settings/preferences.html?ui_saved=True') }}"
        >{{ csrf_field|safe }}
 
-  <h1>
-    <span class="icon icon-animals"></span>
-    {{_("Preferences")}}
+  <h1 class="page-title-data mobile-hide">
+    <span class="page-title-icon"><span class="icon icon-animals"></span></span>
+    <span class="page-title-text">{{_("Preferences")}}</span>
   </h1>
 
   <div class="notices">

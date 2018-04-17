@@ -8,7 +8,7 @@ from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email
+from mailpile.mailutils.emails import Email
 
 import pgpdump
 

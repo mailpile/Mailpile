@@ -1,4 +1,5 @@
 # vim: set fileencoding=utf-8 :
+#
 import re
 from mailpile.util import md5_hex
 

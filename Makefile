@@ -65,9 +65,9 @@ submodules:
 	git submodule update --remote
 
 docs: submodules
-	@python2 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
+	@python2.7 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
 	@ls -l doc/URLS.md
-	@python2 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
+	@python2.7 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
            >doc/defaults.cfg
 	@ls -l doc/defaults.cfg
 
@@ -77,32 +77,33 @@ web: less js
 alltests: clean pytests
 	@chmod go-rwx mailpile/tests/data/gpg-keyring
 	@DISPLAY= nosetests
-	@DISPLAY= python2 scripts/mailpile-test.py || true
+	@DISPLAY= python2.7 scripts/mailpile-test.py || true
 	@git checkout mailpile/tests/data/
 
 pytests:
-	@echo -n 'security         ' && python2 mailpile/security.py
-	@echo -n 'urlmap           ' && python2 mailpile/urlmap.py -nomap
-	@echo -n 'search           ' && python2 mailpile/search.py
-	@echo -n 'mailutils        ' && python2 mailpile/mailutils/__init__.py
-	@echo -n 'mailutils.safe   ' && python2 mailpile/mailutils/safe.py
-	@echo -n 'config/base      ' && python2 mailpile/config/base.py
-	@echo -n 'config/validators' && python2 mailpile/config/validators.py
-	@echo -n 'config/manager   ' && python2 mailpile/config/manager.py
-	@echo -n 'conn_brokers     ' && python2 mailpile/conn_brokers.py
-	@echo -n 'crypto/mime      ' && python2 mailpile/crypto/mime.py
-	@echo -n 'index.base       ' && python2 mailpile/index/base.py
-	@echo -n 'index.msginfo    ' && python2 mailpile/index/msginfo.py
-	@echo -n 'index.mailboxes  ' && python2 mailpile/index/mailboxes.py
-	@echo -n 'index.search     ' && python2 mailpile/index/search.py
-	@echo -n 'util             ' && python2 mailpile/util.py
-	@echo -n 'vcard            ' && python2 mailpile/vcard.py
-	@echo -n 'workers          ' && python2 mailpile/workers.py
-	@echo -n 'packing          ' && python2 mailpile/packing.py
-	@echo -n 'mailboxes/pop3   ' && python2 mailpile/mailboxes/pop3.py
-	@echo -n 'mail_source/imap ' && python2 mailpile/mail_source/imap.py
-	@echo -n 'crypto/aes_utils ' && python2 mailpile/crypto/aes_utils.py
-	@echo 'crypto/streamer...'   && python2 mailpile/crypto/streamer.py
+	@echo -n 'security         ' && python2.7 mailpile/security.py
+	@echo -n 'urlmap           ' && python2.7 mailpile/urlmap.py -nomap
+	@echo -n 'search           ' && python2.7 mailpile/search.py
+	@echo -n 'mailutils.safe   ' && python2.7 mailpile/mailutils/safe.py
+	@echo -n 'mailutils.addrs  ' && python2.7 mailpile/mailutils/addresses.py
+	@echo -n 'mailutils.emails ' && python2.7 mailpile/mailutils/emails.py
+	@echo -n 'config/base      ' && python2.7 mailpile/config/base.py
+	@echo -n 'config/validators' && python2.7 mailpile/config/validators.py
+	@echo -n 'config/manager   ' && python2.7 mailpile/config/manager.py
+	@echo -n 'conn_brokers     ' && python2.7 mailpile/conn_brokers.py
+	@echo -n 'crypto/mime      ' && python2.7 mailpile/crypto/mime.py
+	@echo -n 'index.base       ' && python2.7 mailpile/index/base.py
+	@echo -n 'index.msginfo    ' && python2.7 mailpile/index/msginfo.py
+	@echo -n 'index.mailboxes  ' && python2.7 mailpile/index/mailboxes.py
+	@echo -n 'index.search     ' && python2.7 mailpile/index/search.py
+	@echo -n 'util             ' && python2.7 mailpile/util.py
+	@echo -n 'vcard            ' && python2.7 mailpile/vcard.py
+	@echo -n 'workers          ' && python2.7 mailpile/workers.py
+	@echo -n 'packing          ' && python2.7 mailpile/packing.py
+	@echo -n 'mailboxes/pop3   ' && python2.7 mailpile/mailboxes/pop3.py
+	@echo -n 'mail_source/imap ' && python2.7 mailpile/mail_source/imap.py
+	@echo -n 'crypto/aes_utils ' && python2.7 mailpile/crypto/aes_utils.py
+	@echo 'crypto/streamer...'   && python2.7 mailpile/crypto/streamer.py
 	@echo
 
 clean:
@@ -138,7 +139,7 @@ virtualenv: mp-virtualenv/bin/activate
 virtualenv-dev: mp-virtualenv/bin/.dev
 
 mp-virtualenv/bin/activate:
-	virtualenv -p python2 --system-site-packages mp-virtualenv
+	virtualenv -p python2.7 --system-site-packages mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 	@rm -rf mp-virtualenv/bin/.dev
 	@echo

@@ -82,7 +82,7 @@ Mailpile.UI.Sidebar.Draggable = function(element) {
     appendTo: 'body',
     handle: '.name',
     cursor: 'move',
-    cursorAt: { right: -5, top: 15 },
+    cursorAt: { left: 15, bottom: -10 },
     distance: 15,
     scroll: false,
     revert: false,
@@ -233,5 +233,5 @@ Mailpile.UI.content_setup.push(function($content) {
     $content.find('.sidebar-tags-draggable a.sidebar-tag'));
   Mailpile.UI.Sidebar.Droppable(
     $content.find('.sidebar-tags-draggable'),
-   'td.draggable, div.thread-draggable');
+   'td.draggable, td.avatar, div.thread-draggable');
 });

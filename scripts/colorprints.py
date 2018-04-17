@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 #
 # This is a small experiment in assigning colors to key fingerprints (or
 # any other fingerprint).

@@ -12,8 +12,8 @@ from mailpile.commands import Command, Action
 from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import AddressHeaderParser
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.security import SecurePassphraseStorage
 from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo
 from mailpile.util import *
@@ -819,7 +819,7 @@ def ProfileVCard(parent):
         ORDER = ('Tagging', 3)
         VCARD = "profile"
 
-        DEFAULT_KEYTYPE = 'RSA2048'
+        DEFAULT_KEYTYPE = 'RSA3072'
 
         def _default_signature(self):
             return _('Sent using Mailpile, Free Software from www.mailpile.is')

@@ -8,7 +8,8 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.index.msginfo import MessageInfoConstants
 from mailpile.index.search import SearchResultSet
-from mailpile.mailutils import AddressHeaderParser, MBX_ID_LEN
+from mailpile.mailutils import MBX_ID_LEN
+from mailpile.mailutils.addresses import AddressHeaderParser
 from mailpile.mailutils.safe import *
 from mailpile.util import *
 

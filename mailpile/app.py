@@ -34,6 +34,25 @@ readline = None
 ##[ Main ]####################################################################
 
 
+def threaded_raw_input(prompt):
+    """These shenigans are necessary to let Quit work reliably."""
+    def reader(container):
+        try:
+            line = raw_input(prompt).decode('utf-8').strip()
+            container.append(line)
+        except EOFError:
+            pass
+    o = []
+    t = threading.Thread(target=reader, args=(o,))
+    t.daemon = True
+    t.start()
+    while t.isAlive() and not mailpile.util.QUITTING:
+        t.join(timeout=1)
+    if not o:
+        raise EOFError()
+    return o[0]
+
+
 def CatchUnixSignals(session):
     def quit_app(sig, stack):
         Quit(session, 'quit').run()
@@ -89,7 +108,7 @@ def Interact(session):
             try:
                 with session.ui.term:
                     session.ui.block()
-                    opt = raw_input(prompt).decode('utf-8').strip()
+                    opt = threaded_raw_input(prompt)
             except KeyboardInterrupt:
                 session.ui.unblock(force=True)
                 session.ui.notify(_('Interrupted. '

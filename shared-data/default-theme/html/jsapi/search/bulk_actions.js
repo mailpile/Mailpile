@@ -42,7 +42,9 @@ Mailpile.bulk_actions_update_ui = function() {
         message += $context.find('#bulk-actions-message').data('bulk_selected');
         if (selected.length == 1) Mailpile.show_message_hints($context, selected);
       }
-      $context.find('#bulk-actions-message').html(message);
+      $context.find('#bulk-actions-message').addClass('mobile-hide').html(message);
+      $context.find('.sub-navigation').addClass('mobile-hide');
+      $context.find('.bulk-actions').removeClass('mobile-hide');
 
       var have_tags = {};
       for (var i = 0; i < selected.length; i++) {
@@ -57,8 +59,10 @@ Mailpile.bulk_actions_update_ui = function() {
     }
     else {
       var message = $context.find('#bulk-actions-message').data('bulk_selected_none');
-      $context.find('#bulk-actions-message').html(message);
+      $context.find('#bulk-actions-message').removeClass('mobile-hide').html(message);
       Mailpile.hide_bulk_actions($context.find('.bulk-actions').find('li.hide'));
+      $context.find('.sub-navigation').removeClass('mobile-hide');
+      $context.find('.bulk-actions').addClass('mobile-hide');
     }
   });
 };

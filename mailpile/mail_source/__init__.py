@@ -15,8 +15,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import *
 from mailpile.mailutils import FormatMbxId
 from mailpile.util import *
-from mailpile.vfs import MailpileVFS as vfs
-from mailpile.vfs import FilePath, MailpileVfsBase
+from mailpile.vfs import vfs, FilePath, MailpileVfsBase
 
 
 __all__ = ['local', 'imap', 'pop3']
@@ -267,6 +266,11 @@ class BaseMailSource(threading.Thread):
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
         event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
+        if plan and random.randint(0, 10) == 1:
+            random_plan = [m._key for m in random.sample(plan, 1)]
+        else:
+            random_plan = []
+
         for mbx_cfg in plan:
             play_nice_with_threads(weak=True)
 
@@ -284,15 +288,16 @@ class BaseMailSource(threading.Thread):
                         continue
 
                 # Generally speaking, we only rescan if a mailbox looks like
-                # it has changed. However, every once in a while time we check
-                # anyway just in case looks are deceiving.
+                # it has changed. However, every once in a while (see logic
+                # around random_mailboxes above) we check anyway just in case
+                # looks are deceiving.
                 state = {}
                 if batch < 1:
                     event_plan[mbx_cfg._key][1] = _('Postponed')
 
                 elif (self._has_mailbox_changed(mbx_cfg, state) or
                         mbx_cfg.local == '!CREATE' or
-                        random.randint(0, 25 + len(plan)*5) == 1):
+                        mbx_cfg._key in random_plan):
                     event_plan[mbx_cfg._key][1] = _('Working ...')
 
                     this_batch = max(5, int(0.7 * batch))
@@ -382,16 +387,19 @@ class BaseMailSource(threading.Thread):
     def _jitter(self, seconds):
         return seconds + random.randint(0, self.jitter)
 
+    def _sleeping_is_ok(self, slept):
+        return True
+
     def _sleep(self, seconds):
         enabled = self.my_config.enabled
-        if self._sleeping != 0:
-            self._sleeping = seconds
-            while (self.alive and
-                    self._sleeping > 0 and
-                    enabled == self.my_config.enabled and
-                    not mailpile.util.QUITTING):
-                time.sleep(min(1, self._sleeping))
-                self._sleeping -= 1
+        self._sleeping = seconds
+        while (self.alive and
+                self._sleeping > 0 and
+                self._sleeping_is_ok(seconds - self._sleeping) and
+                enabled == self.my_config.enabled and
+                not mailpile.util.QUITTING):
+            time.sleep(min(1, self._sleeping))
+            self._sleeping -= 1
         self._sleeping = None
         play_nice_with_threads()
         return (self.alive and not mailpile.util.QUITTING)
@@ -579,7 +587,7 @@ class BaseMailSource(threading.Thread):
         disco_cfg = self.my_config.discovery
 
         if mbx_cfg.local and mbx_cfg.local != '!CREATE':
-            if not os.path.exists(mbx_cfg.local):
+            if not vfs.exists(mbx_cfg.local):
                 config.flush_mbox_cache(self.session)
                 path, wervd = config.create_local_mailstore(self.session,
                                                             name=mbx_cfg.local)
@@ -610,15 +618,17 @@ class BaseMailSource(threading.Thread):
                 if len(name) < 4:
                     name = _('Mail: %s') % name
                 disco_cfg.parent_tag = name
-            from mailpile.plugins.tags import Slugify
-            disco_cfg.parent_tag = self._create_tag(
-                disco_cfg.parent_tag,
-                use_existing=False,
-                icon='icon-mailsource',
-                slug=Slugify(self.my_config.name, tags=self.session.config.tags),
-                unique=False)
-            if save:
-                self._save_config()
+            if disco_cfg.parent_tag not in self.session.config.tags.keys():
+                from mailpile.plugins.tags import Slugify
+                disco_cfg.parent_tag = self._create_tag(
+                    disco_cfg.parent_tag,
+                    use_existing=False,
+                    icon='icon-mailsource',
+                    slug=Slugify(
+                        self.my_config.name, tags=self.session.config.tags),
+                    unique=False)
+                if save:
+                    self._save_config()
             return disco_cfg.parent_tag
         else:
             return None
@@ -775,8 +785,9 @@ class BaseMailSource(threading.Thread):
             if config.prefs.allow_deletion:
                 try:
                     for i, key in enumerate(downloaded):
-                        progress['deleting'] = '%d/%d' % (i, len(downloaded))
+                        progress['deleting'] = '%d/%d' % (i+1, len(downloaded))
                         src.remove(key)
+                    src.flush()
                 except:
                     # Just ignore errors for now, we'll try again later.
                     if 'sources' in config.sys.debug:
@@ -786,6 +797,9 @@ class BaseMailSource(threading.Thread):
                     _('Deletion is disabled'), should])
 
         try:
+            # Lock the source mailbox while we work with it
+            src.lock()
+
             with self._lock:
                 loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
@@ -864,6 +878,7 @@ class BaseMailSource(threading.Thread):
             progress['raised'] = True
             raise
         finally:
+            src.unlock()
             progress['running'] = False
 
         maybe_delete_from_server(loc, src)
@@ -978,7 +993,9 @@ class BaseMailSource(threading.Thread):
         _original_session = self.session
 
         def sleeptime():
-            if self._last_rescan_completed or self._last_rescan_failed:
+            if not self.my_config.enabled:
+                return 24 * 3600
+            elif self._last_rescan_completed or self._last_rescan_failed:
                 return self.my_config.interval
             else:
                 return 1
@@ -1028,11 +1045,9 @@ class BaseMailSource(threading.Thread):
                 next_save_time = self._last_saved + self.SAVE_STATE_INTERVAL
                 if self.alive and time.time() >= next_save_time:
                     self._save_state()
-                    if not self.my_config.keepalive:
-                        self.close()
-                elif (self._last_rescan_completed and
-                        not self.my_config.keepalive):
-                    self.close()
+                    self._check_keepalive()
+                elif self._last_rescan_completed:
+                    self._check_keepalive()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
                 self.session.ui.debug(self.event.data['traceback'])
@@ -1050,6 +1065,10 @@ class BaseMailSource(threading.Thread):
         self._log_status(_('Shut down'), clear_errors=True)
         self._save_state()
 
+    def _check_keepalive(self):
+        if not self.my_config.keepalive:
+            self.close()
+
     def _log_conn_errors(self):
         if 'connection' in self.event.data:
             cinfo = self.event.data['connection']
@@ -1062,6 +1081,9 @@ class BaseMailSource(threading.Thread):
         self._sleeping = after
 
     def rescan_now(self, session=None, started_callback=None):
+        if not self.my_config.enabled:
+            return
+
         begin, end = MSrcLock(), MSrcLock()
         for l in (begin, end):
             l.acquire()
@@ -1098,11 +1120,17 @@ class BaseMailSource(threading.Thread):
 
 
 def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
+    if 'dsn:has' in keywords or 'mdn:has' in keywords:
+        # FIXME: This is a delivery notfication of some sort!
+        #        Figure out what it is telling us...
+        return False
+
     if ('s:maildir' in msg_metadata_kws                  # Seen=read, maildir
             or 'r:maildir' in msg_metadata_kws           # Replied, maildir
             or 'r' in msg.get('status', '').lower()      # Read, mbox
-            or 'a' in msg.get('sx-tatus', '').lower()):  # PINE, answered
+            or 'a' in msg.get('x-status', '').lower()):  # PINE, answered
         return False
+
     keywords.update(['%s:in' % tag._key for tag in
                      session.config.get_tags(type='unread')])
     return True

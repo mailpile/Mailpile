@@ -84,7 +84,7 @@
 </nav>
 {%- endif %}
 {%- if selection_actions or hard_coded_selection_actions or have_initial_prompt %}
-<div class="bulk-actions clearfix">
+<div class="bulk-actions clearfix mobile-hide">
   {%- if have_initial_prompt or not tools_disable_checkbox %}
   <div id="bulk-actions-message" class="left"
        data-bulk_selected="{{_("conversations selected")}}"

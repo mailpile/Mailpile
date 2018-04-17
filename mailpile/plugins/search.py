@@ -9,8 +9,9 @@ import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mailutils import Email, FormatMbxId, AddressHeaderParser
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, MBX_ID_LEN
+from mailpile.mailutils import MBX_ID_LEN, FormatMbxId
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
 from mailpile.security import evaluate_signature_key_trust

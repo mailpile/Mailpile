@@ -26,8 +26,12 @@
 {%- if result.index_capabilities.can_sort -%}
   {%- do display_things.append('
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-list"></span> ' + _("Order") + '</a>
-      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        <span class="navigation-icon icon-list"></span>
+        <span class="navigation-text">' + _("Order") + '</span>
+      </a>
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right"
+          role="menu" aria-labelledby="display-density">
         <li role="presentation">
           <a class="change-search-order' + oc.get('rev-freshness', '') + '"
              data-order="rev-freshness" data-keep-selection=1
@@ -58,7 +62,7 @@
 ') -%}
 {%- endif %}
 {%- do display_things.append('
-    <li class="dropdown" id="display-density-selector">
+    <li class="dropdown mobile-hide" id="display-density-selector">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="navigation-icon icon-eye"></span> ' + _("Display") + '</a>
       <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="display-density">
         <li role="presentation">
@@ -152,7 +156,7 @@
         'name': 'unread',
         'icon': 'new',
         'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
         'url_args_add': [['qr', 'is:unread']],
         'text': _("New"),
         'description': _("Unread messages")})
@@ -160,21 +164,30 @@
 {%- endif -%}
 {%- if result.index_capabilities.has_atts %}
 {%-   do display_refiners.append({
+        'name': 'has_photos',
+        'icon': 'photos',
+        'url': '/search/photos.html',
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
+        'url_args_add': [['qr', 'has:image'], ['order', 'rev-flat-date']],
+        'text': _("Images"),
+        'description': _("Photos and images in mail matching this search")})
+-%}
+{%-   do display_refiners.append({
         'name': 'has_attachment',
         'icon': 'attachment',
-        'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
-        'url_args_add': [['qr', 'has:attachment']],
+        'url': '/search/atts.html',
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
+        'url_args_add': [['qr', 'has:attachment'], ['order', 'rev-flat-date']],
         'text': _("Attachments"),
-        'description': _("Messages with attachments")})
+        'description': _("Attachments in mail matching this search")})
 -%}
 {%- endif %}
 {%- if display_refiners %}
 {%-   do display_refiners.append({
         'name': 'display_all',
-        'icon': 'inbox',
+        'icon': 'logo',
         'url': '/search/',
-        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', '']],
+        'url_args_remove': [['qr', ''], ['context', ''], ['start', ''], ['end', ''], ['view', ''], ['order', '']],
         'text': _("All"),
         'description': _("All messages")})
 -%}
@@ -217,6 +230,15 @@
         'url': '#save_search',
         'text': _("Save"),
         'description': _("Save the results of this search to a new tag")})
+-%}
+{%- else %}
+{%-   do activities.append({
+        'name': 'home',
+        'icon': 'home',
+        'aclass': '',
+        'url': '/',
+        'text': _("Home"),
+        'description': _("E-mail Accounts")})
 -%}
 {%- endif %}
 {%- include('partials/tools_default.html') -%}

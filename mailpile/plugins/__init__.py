@@ -23,8 +23,8 @@ from mailpile.util import *
 __all__ = [
     'core',
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
-    'setup_magic', 'oauth', 'exporters', 'plugins', 'motd',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg', 'gui',
+    'setup_magic', 'oauth', 'exporters', 'plugins', 'motd', 'backups',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
     'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
     'keylookup', 'webterminal'
@@ -78,7 +78,7 @@ class PluginManager(object):
         'core',
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'oauth', 'html_magic',
-        'plugins', 'keylookup', 'motd'
+        'plugins', 'keylookup', 'motd', 'backups', 'gui'
     ]
     # Plugins we want, if they are discovered
     WANTED = [
@@ -226,7 +226,7 @@ class PluginManager(object):
                 self._process_manifest_pass_two(*spec)
                 self._process_startup_hooks(*spec)
         else:
-            print 'What what what?? %s' % plugin_name
+            print 'Unrecognized plugin: %s' % plugin_name
             return self
 
         if plugin_name not in self.LOADED:

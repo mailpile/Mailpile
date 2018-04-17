@@ -1,4 +1,4 @@
-APPVER = "1.0.0rc2"
+APPVER = "1.0.0rc3"
 ABOUT = """\
 Mailpile.py              a tool             Copyright 2013-2018, Mailpile ehf
  v%8.0008s         for searching and               <https://www.mailpile.is/>
@@ -41,7 +41,7 @@ CONFIG_RULES = {
         'http_no_auth':  X(_('Disable HTTP authentication'),      bool, False),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
-        'snippet_max':    (_('Max length of metadata snippets'), int,     250),
+        'snippet_max':    (_('Max length of metadata snippets'), int,     275),
         'debug':         p(_('Debugging flags'), str,                      ''),
         'experiments':    (_('Enabled experiments'), str,                  ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),
@@ -123,6 +123,10 @@ CONFIG_RULES = {
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'allow_deletion': X(_('Allow permanent deletion of e-mails'),
                                                                   bool, False),
+# FIXME:
+#       'backup_to_web':  X(_('Backup settings and keys to mobile web app'),
+#                                                                  bool, True),
+#       'backup_to_email':X(_('Backup settings and keys to e-mail'),  str, ''),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),

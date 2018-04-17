@@ -67,21 +67,27 @@
   #pile-results.snug td.message-nav { font-size: 16px; line-height: 16px; }
   #pile-results.snug td.message-nav span.icon { font-size: 14px; }
 
-  #pile-results td.from {
+  #pile-results td.people {
     width: 279px /* 255+24 */;
     overflow-x: hidden;
     word-wrap: normal;
     word-break: normal;
   }
 
-  #pile-results td.from a {
+  #pile-results td.people a {
     display: inline-block;
     white-space: nowrap;
     border: 0; margin: 0;
     background: none;
   }
 
-  #pile-results td.from span.conversation-count {
+  #pile-results td.people span.rcpt-count {
+    color: @grayDark;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  #pile-results td.people span.conversation-count {
     text-align: center;
     vertical-align: top;
     position: relative;
@@ -97,12 +103,12 @@
     line-height: 11px;
   }
 
-  #pile-results.cozy td.from span.conversation-count {
+  #pile-results.cozy td.people span.conversation-count {
     top: 2px;
     padding: 3px 6px;
   }
 
-  #pile-results.snug td.from span.conversation-count {
+  #pile-results.snug td.people span.conversation-count {
     top: 2px;
     padding: 2px 4px;
   }
@@ -144,6 +150,11 @@
     #pile-results td.subject .message-container { max-width: 250px; }}
   @media only screen and (max-width: 700px) {
     #pile-results td.subject .message-container { max-width: 214px; }}
+
+  // Avoid clobbering the things that are happening in mobile.less
+  @media only screen and (max-width: 480px) {
+    #pile-results td.subject {max-width: 70%;}
+    #pile-results td.subject .message-container { max-width: 70%; }}
 
   #pile-results td.date {
     width: 80px;
@@ -379,6 +390,9 @@
   #pile-results .full-message div.crypto-and-tags {
     white-space: normal;
     padding-top: 2px;
+  }
+  #pile-results .display-attachments div.crypto-and-tags {
+    opacity: 0.33;
   }
 
   #pile-results .full-message div.crypto-and-tags .pile-message-tag,
