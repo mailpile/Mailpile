@@ -159,7 +159,7 @@
             });
             Mailpile.API.setup_email_servers_get({
               'track-id': new_src_id,
-              '_timeout': 300000, // AJAX timeout
+              '_timeout': (Mailpile.ajax_timeout * 30), // AJAX timeout
               'timeout': 240000,  // Server-side deadline
               'email': email,
               '_error_callback': function(response, _status) {

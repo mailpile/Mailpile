@@ -100,6 +100,7 @@ Mailpile = {
     }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
+  ajax_timeout: {{config.sys.ajax_timeout}},
   commands:      [],
   graphselected: [],
   defaults: {
@@ -249,7 +250,7 @@ Mailpile.API = {
   _action: function(base_url, command, data, method, callback) {
     // Output format, timeout...
     var output = '';
-    var timeout = 10000;
+    var timeout = Mailpile.ajax_timeout;
     var error_callback = undefined;
     if (data._output) {
       output = data._output;

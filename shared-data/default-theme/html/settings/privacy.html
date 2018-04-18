@@ -145,7 +145,7 @@
             $('#enable-tor-working').show();
             $('#enable-tor-result').html('');
             Mailpile.API.setup_tor_post({
-              _timeout: 300000
+              _timeout: (Mailpile.ajax_timeout * 30)
             }, function(result) {
               $('#enable-tor-working').hide();
               $('#enable-tor').show();
