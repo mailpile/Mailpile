@@ -212,6 +212,50 @@ def GenerateConfig(state):
     return json.dumps(config, indent=2)
 
 
+def LocateMailpile():
+    """
+    Locate mailpile's root script, searching upward from our script location
+    """
+    directory = os.path.abspath( __file__ )
+
+    while True:
+        scripts_path = os.path.join( directory, 'scripts' )
+        mailpile_path = os.path.join( scripts_path, 'mailpile' )
+        if os.path.exists( mailpile_path ):
+            return mailpile_path
+
+        parts = os.path.split( directory )
+        if parts[0] == directory:
+            raise IOError( "Cannot locate scripts/mailpile!" )
+        else:
+            directory = parts[ 0 ]
+
+def MailpileInvocation():
+    """
+    Return an appropriately formated string for invoking mailpile.
+
+    Really this is a container for platform specific behavior
+    """
+    parts = []
+    common_opts = [
+        '--set="prefs.open_in_browser = false"',
+        '--gui=%PORT% ' ]
+    
+    if os.name == 'nt':
+        parts.append('"{}"'.format( sys.executable ))
+        parts.append('"{}"'.format( LocateMailpile() ))
+        parts.extend( common_opts )
+        parts.append('--www=')
+        parts.append('--wait')
+    else:
+        # FIXME: This should launch a screen session using the
+        #        same concepts as multipile's mailpile-admin.
+        parts.append('screen -S mailpile -d -m "{}"'.format( LocateMailpile() ))
+        parts.extend( common_opts )
+        parts.append( '--interact' )
+
+    return ' '.join( parts )    
+
 def GenerateBootstrap(state):
     """
     Generate the gui-o-matic bootstrap sequence.
@@ -239,12 +283,7 @@ def GenerateBootstrap(state):
                 SPLASH_SCREEN(state, _("Launching Mailpile"))),
             "set_next_error_message %s" % json.dumps({
                 'message': _("Failed to launch Mailpile!")}),
-            "OK LISTEN TCP: " + (
-                # FIXME: This should launch a screen session using the
-                #        same concepts as multipile's mailpile-admin.
-                sys.executable +' scripts/mailpile'
-                ' --set="prefs.open_in_browser = false" '
-                ' --gui=%PORT% --interact')]
+            "OK LISTEN TCP: " + MailpileInvocation() ]
 
     return '\n'.join(bootstrap)
 

@@ -128,10 +128,10 @@ class WixConfig( object ):
                            Name = 'ProgramFiles' )
 
         self.logical_node( 'ProgramFilesFolder',
-                           Id = 'MailpileEHF',
+                           Id = 'APPLICATIONFOLDER',
                            Name = 'Mailpile ehf' )
 
-        self.logical_node( 'MailpileEHF',
+        self.logical_node( 'APPLICATIONFOLDER',
                            Id = 'MailpileClient',
                            Name = 'Mailpile Client {version}'.format( **self.config ) )
 
@@ -164,8 +164,46 @@ class WixConfig( object ):
         xml_append( self.feature, 'ComponentRef',
                     Id = 'ProgramMenuDir' )
 
-        for key, group in config['groups'].items():
+        for key, group in self.config['groups'].items():
             self.scan_group( key, **group )
+
+        try:
+            self.config_ui( **self.config['ui'] )
+        except KeyError:
+            logger.warn( "No UI specified, configuring MSI without dialogs." )
+
+    # These properties align folder relocation behavior with implicit structure
+    #
+    flavor_properties = {
+        'WixUI_InstallDir': {
+            'WIXUI_INSTALLDIR': 'APPLICATIONFOLDER'
+        },
+        'WixUI_Advanced': {
+            'ApplicationFolderName': 'Mailpile ehf',
+            'WixAppFolder': 'WixPerMachineFolder'
+        }
+    }
+
+    def config_ui( self, flavor = 'WixUI_Advanced', variables = {} ):
+        '''
+        configure wix UI
+        '''
+        logger.info( "Configuring UI flavor '{}'".format( flavor ) )
+        xml_append( self.product, 'UIRef', Id = flavor )
+        xml_append( self.product, 'UIRef', Id = 'WixUI_ErrorProgressText' )
+
+        if flavor not in self.flavor_properties:
+            logger.warn( "Unrecognized wix UI type: {}".format( flavor ) )
+
+        for key, value in self.flavor_properties.get( flavor, {} ).items():
+            xml_append( self.product, 'Property',
+                        Id = key,
+                        Value = value )
+
+        for key, value in variables.items():
+            xml_append( self.product, 'WixVariable',
+                        Id = key,
+                        Value = value )
 
     def logical_node( self, parent_id, **attrs ):
         '''
@@ -275,6 +313,7 @@ class WixConfig( object ):
         :root: local filesystem root directory
         :ignore: sequence of regular expressions to suppress files.
         '''
+        logger.info( "Scanning install root '{}' uuid '{}'".format( name, uuid ) )
         mask = os.path.split( root )[0]
         
         def ignore_path( path ):
@@ -289,7 +328,7 @@ class WixConfig( object ):
                 path = self.mask_path( mask, local_path )
                 
                 if ignore_path( path ):
-                    logger.info( 'Ignoring "{}"'.format( path ) )
+                    logger.debug( 'Ignoring "{}"'.format( path ) )
                     continue
                 else:
                     logger.debug( 'Processing file "{}"'.format( path ) )
@@ -307,7 +346,6 @@ class WixConfig( object ):
                                    DiskId = '1',
                                    Source = local_path,
                                    KeyPath = 'yes' )
-
 
                 try:
                     xml_append( self.menu_component, 'Shortcut',
@@ -328,7 +366,6 @@ class WixConfig( object ):
         reparsed = minidom.parseString( dense )
         pretty = reparsed.toprettyxml( indent = ' ' * indent, encoding = 'utf-8' ) 
         with open( path + '.wxs', 'w' ) as handle:
-            #handle.write( u"<?xml version='1.0' encoding='utf-8'?>" )
             handle.write( pretty.encode( 'utf-8' ) )
 
 
@@ -336,59 +373,8 @@ if __name__ == '__main__':
     logging.basicConfig()
     #logger.setLevel( logging.INFO )
 
-    config = {
-        'product_id': '19671260-92a2-437d-bb3a-d47e91e3cf23',
-        'version': '0.0.0',
-        'manufacturer': 'Mailpile ehf.',
-        'languages': '1033',
-        'codepage': '1252',
-        'installer_version': '100',
-        'product_code': '4685a239-2c80-4f51-8476-791316d2df3d',
-        'groups': {
-            'python': {
-                'uuid': '06dfe53e-01c3-4cd0-b6b6-1983f217692f',
-                'root': 'c:\\Users\\ededa\\Python27',
-                'ignore': [
-                    '.*\.py(?:c|o)$',
-                    '.*\.git.*',
-                    ]
-            },
-            'gui-o-matic': {
-                'uuid': '0465f2d6-becc-4279-82af-b6d23c6bf033',
-                'root': 'c:\\Users\\ededa\\Documents\\gui-o-matic',
-                'ignore': [
-                    '.*\.py(?:c|o)$',
-                    '.*\.git.*',
-                    ]
-            },
-            'mailpile': {
-                'uuid': '62e900bd-7f53-4746-8ef9-f8d93848e89d',
-                'root': 'c:\\Users\\ededa\\Documents\\Mailpile',
-                'ignore': [
-                    '.*\.py(?:c|o)$',
-                    '.*\.git.*',
-                    '.*\.msi$'
-                    ]
-            },
-            'platform-scripts': {
-                'uuid': '0540bc0b-a521-4488-812a-1c430ef1d8b3',
-                'root': 'c:\\Users\\ededa\\Documents\\Mailpile\\packages\\windows-redux\\bin',
-                'ignore': [
-                    '.*\.py(?:c|o)$',
-                    '.*\.git.*',
-                    '.*\.msi$'
-                ],
-                'shortcuts': {
-                    'bin\launch-mailpile.bat':{
-                        'Id': 'MailpileGUIMenuShortcut',
-                        'Name': 'Mailpile GUI',
-                        'Description': 'GUI for Mailpile Email Client',
-                        'WorkingDirectory': 'MailpileClient'
-                    }
-                }
-            }
-        }
-    }
+    with open( 'package.json', 'r' ) as handle:
+        config = json.load( handle )
 
     wix = WixConfig( config, 'mailpile.uuid.json' )
     wix.save( 'mailpile' )

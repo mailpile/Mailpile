@@ -13,7 +13,8 @@ import subprocess
 import argparse
 
 locate = ( ("Mailpile","mailpile"),
-           ("Mailpile","bin","gpg.exe"),
+           ("bin","gpg.exe"),
+           ("bin","gpg-agent.exe"),
            ("gui-o-matic","gui_o_matic"))
 
 def locate_parent( path_parts ):
@@ -50,15 +51,17 @@ def split_args( args = sys.argv[1:] ):
     return (opts, invoke)
 
 if __name__ == '__main__':
-    path_additions = list( map( locate_parent, locate ) )
+    path_additions = set( map( locate_parent, locate ) )
     python_dir = os.path.abspath( os.path.split( sys.executable )[0] )
-    path_additions.append( python_dir )
-    path_additions = ';'.join( path_additions )
+    path_additions.add( python_dir )
     for key in ("PATH", "PYTHONPATH" ):
         try:
-            os.environ[ key ] = path_additions + ';'  + os.environ[ key ]
+            paths = list( path_additions )
+            paths.extend( filter( lambda path: path not in path_additions,
+                                  os.environ[ key ].split( ';' ) ) )
+            os.environ[ key ] = ';'.join( paths )
         except KeyError:
-            os.environ[ key ] = path_additions
+            os.environ[ key ] = ';'.join( path_additions )
 
     parser = argparse.ArgumentParser(description="Invokes a command with environment variables setup for mailpile")
     parser.add_argument( '--stdin', type = str,
