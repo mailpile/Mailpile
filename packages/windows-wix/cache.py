@@ -114,6 +114,26 @@ class Cache( object ):
 
 if __name__ == '__main__':
     logging.basicConfig()
-    logger.setLevel( logging.DEBUG )
-    cache = Cache()
-    print cache.resolve( 'https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi', 'a84cb11bdae3e1cb76cf45aa96838d80b9dcd160' )
+    import argparse
+
+    parser = argparse.ArgumentParser( 'Download cache' )
+    parser.add_argument( '-c', '--cache', type = str, help = "Cache location" )
+    parser.add_argument( 'json', type = str, help = "Json of urls to cache" )
+    parser.add_argument( '-r', '--resource', type = str, help = "file to lookup" )
+    parser.add_argument( '-l', '--log-level', type = str, help = "logging level" )
+    args = parser.parse_args()
+
+    if args.log_level:
+        logger.setLevel( getattr( logging, args.log_level ) )
+    
+    cache = Cache( args.cache )
+    with open( args.json, 'r' ) as handle:
+        resources = json.load( handle )
+
+    if args.resource:
+        print cache.resolve( **resources[ args.resource ] )
+    else:
+        for resource in resources.values():
+            cache.resolve( **resource )
+            
+    #print cache.resolve( 'https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi', 'a84cb11bdae3e1cb76cf45aa96838d80b9dcd160' )
