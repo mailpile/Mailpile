@@ -1,0 +1,5 @@
+#!/bin/sh
+cd "${0%/*}" # Sets current directory to Mailpile.app/Contents/Resources/app/bin/
+export PATH=`pwd`/:$PATH
+export MAILPILE_SHARED=`pwd`/../share/mailpile/share/mailpile
+python ../opt/mailpile/mp "$@"
