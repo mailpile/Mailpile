@@ -189,14 +189,15 @@ class WixConfig( object ):
         configure wix UI
         '''
         logger.info( "Configuring UI flavor '{}'".format( flavor ) )
-        xml_append( self.product, 'UIRef', Id = flavor )
-        xml_append( self.product, 'UIRef', Id = 'WixUI_ErrorProgressText' )
+        ui = xml_append( self.product, 'UI' )
+        xml_append( ui, 'UIRef', Id = flavor )
+        xml_append( ui, 'UIRef', Id = 'WixUI_ErrorProgressText' )
 
         if flavor not in self.flavor_properties:
             logger.warn( "Unrecognized wix UI type: {}".format( flavor ) )
 
         for key, value in self.flavor_properties.get( flavor, {} ).items():
-            xml_append( self.product, 'Property',
+            xml_append( ui, 'Property',
                         Id = key,
                         Value = value )
 
@@ -204,6 +205,21 @@ class WixConfig( object ):
             xml_append( self.product, 'WixVariable',
                         Id = key,
                         Value = value )
+        '''
+        node = xml_append( ui, 'Publish',
+                           Dialog = 'WelcomeDlg',
+                           Control = 'Next',
+                           Event = 'NewDialog',
+                           Value = 'InstallDirDlg',
+                           Order = '2' )
+        node.text = "1"
+        node = xml_append( ui, 'Publish',
+                           Dialog = 'InstallDirDlg',
+                           Control = 'Back',
+                           Event = 'NewDialog',
+                           Value = 'WelcomeDlg' )
+        node.text = "1"
+        '''
 
     def logical_node( self, parent_id, **attrs ):
         '''
@@ -378,3 +394,6 @@ if __name__ == '__main__':
 
     wix = WixConfig( config, 'mailpile.uuid.json' )
     wix.save( 'mailpile' )
+
+    '''candle mailpile.wxs'''
+    '''light -ext WixUIExtensions mailpile.wixobj'''

@@ -5,6 +5,7 @@ import hashlib
 import tempfile
 import datetime
 import json
+import ssl
 
 logger = logging.getLogger( __name__ )
 
@@ -37,11 +38,19 @@ class Cache( object ):
     @classmethod
     def download( cls, url, writer, **kwargs ):
         logger.debug( "Downloading '{}'...".format( url ) )
+        context = ssl.create_default_context()
         try:
-            source = urllib2.urlopen(url)
+            try:
+                source = urllib2.urlopen(url, context = context)
+            except urllib2.URLError as e:
+                if "CERTIFICATE_VERIFY_FAILED" in str(e):
+                    logger.warning( "Cannot verify ssl cert for '{}', delegating authenticity to digest...".format( url ) )
+                    context = ssl._create_unverified_context()
+                    source = urllib2.urlopen(url, context = context)
+                else:
+                    raise
             cls.chunk_stream( source.read, writer, **kwargs )
-                    
-        except :
+        except:
               logging.exception( "Failed to fetch URL {}".format( url ) )
               raise
             
@@ -62,19 +71,38 @@ class Cache( object ):
         dst_meta = os.path.join( dst_dir, "metadata.json" )
         return (dst_dir, dst_file, dst_meta)
 
+    def __cache_handle( self, url, sha1, handle, **kwargs ):
+        (dst_dir, dst_file, dst_meta) = self.__paths_for( url, digest )
+        os.mkdir( dst_dir )
+
+        with open( dst_file, 'wb' ) as dst_handle:
+            self.chunk_stream( handle.read, dst_handle.write, **kwargs )
+
+        metadata = {
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "url": url,
+            "sha1": sha1,
+            "filename": os.path.basename( dst_file )
+        }
+        with open( dst_meta, 'w' ) as handle:
+            json.dump( metadata, handle )
+
+        return (dst_file, digest)
+
     def __fetch( self, url, sha1, **kwargs ):
         logger.debug( "attempting to cache {} at {}".format( sha1, url ) )
         with tempfile.TemporaryFile() as temp:
             self.download( url, temp.write, **kwargs )
             temp.seek( 0 )
             digest = self.sha1_handle( temp )
-            if sha1 != digest.lower():
+            if sha1 is not None and sha1 != digest.lower():
                 raise ValueError( "Mismatched digest: {} {} for url '{}'".format( sha1, digest, url ) )
 
-            (dst_dir, dst_file, dst_meta) = self.__paths_for( url, sha1 )
+            temp.seek( 0 )
+            
+            (dst_dir, dst_file, dst_meta) = self.__paths_for( url, digest )
             os.mkdir( dst_dir )
             
-            temp.seek( 0 )
             with open( dst_file, 'wb' ) as handle:
                 self.chunk_stream( temp.read, handle.write, **kwargs )
 
@@ -87,7 +115,7 @@ class Cache( object ):
             with open( dst_meta, 'w' ) as handle:
                 json.dump( metadata, handle )
 
-            return dst_file
+            return (dst_file, digest)
 
     def __open( self, url, sha1, **kwargs ):
         logger.debug( "inspecting cache for {} from {}".format( sha1, url ) )
@@ -110,7 +138,10 @@ class Cache( object ):
             return self.__open( url, sha1, **kwargs )
         except IOError:
             logger.info( "Url {}  is not cached.".format( url ) )
-            return self.__fetch( url, sha1 )
+            return self.__fetch( url, sha1 )[ 0 ]
+
+    def insert( self, url, **kwargs ):
+        return self.__fetch( url, None, **kwargs )
 
 if __name__ == '__main__':
     logging.basicConfig()
@@ -121,6 +152,8 @@ if __name__ == '__main__':
     parser.add_argument( 'json', type = str, help = "Json of urls to cache" )
     parser.add_argument( '-r', '--resource', type = str, help = "file to lookup" )
     parser.add_argument( '-l', '--log-level', type = str, help = "logging level" )
+    parser.add_argument( '-i', '--insert', type = str, help = "url to insert as {key:value}" )
+    parser.add_argument( '-a', '--all', action = 'store_true', help = 'fetch all resources' )
     args = parser.parse_args()
 
     if args.log_level:
@@ -130,9 +163,17 @@ if __name__ == '__main__':
     with open( args.json, 'r' ) as handle:
         resources = json.load( handle )
 
+    if args.insert:
+        for key, url in json.loads( args.insert ).items():
+            path, sha1 = cache.insert( url )
+            resources[ key ] = { 'url': url, 'sha1': sha1 }
+        with open( args.json, 'w' ) as handle:
+            json.dump( resources, handle )
+
     if args.resource:
         print cache.resolve( **resources[ args.resource ] )
-    else:
+        
+    if args.all:
         for resource in resources.values():
             cache.resolve( **resource )
             
