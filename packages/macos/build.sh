@@ -42,6 +42,9 @@ fi
 # Build GUI-o-Mac-tic
 mkdir -p "$BUILD_DIR"
 git clone -b "$GUI_O_MAC_TIC_BRANCH" "$GUI_O_MAC_TIC_REPO" "$BUILD_DIR/gui-o-mac-tic"
+cd "$BUILD_DIR/gui-o-mac-tic"
+git submodule update --init --recursive
+cd ~-
 cp configurator.sh "$BUILD_DIR/gui-o-mac-tic/share/configurator.sh"
 xcodebuild -project "$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj"
 mv "$BUILD_DIR/gui-o-mac-tic/build/Release/GUI-o-Mac-tic.app" "$BUILD_DIR/Mailpile.app"
