@@ -172,6 +172,18 @@ class WixConfig( object ):
         except KeyError:
             logger.warn( "No UI specified, configuring MSI without dialogs." )
 
+        for icon in self.config.get( 'icons', [] ):
+            xml_append( self.product, "Icon",
+                        Id = os.path.basename( icon ),
+                        SourceFile = icon )
+
+        try:
+            xml_append( self.product, 'Property',
+                        Id = 'ARPPRODUCTICON',
+                        Value = self.config['product_icon'] )
+        except KeyError:
+            raise
+
     # These properties align folder relocation behavior with implicit structure
     #
     flavor_properties = {
@@ -189,15 +201,15 @@ class WixConfig( object ):
         configure wix UI
         '''
         logger.info( "Configuring UI flavor '{}'".format( flavor ) )
-        ui = xml_append( self.product, 'UI' )
-        xml_append( ui, 'UIRef', Id = flavor )
-        xml_append( ui, 'UIRef', Id = 'WixUI_ErrorProgressText' )
+        #ui = xml_append( self.product, 'UI' )
+        xml_append( self.product, 'UIRef', Id = flavor )
+        xml_append( self.product, 'UIRef', Id = 'WixUI_ErrorProgressText' )
 
         if flavor not in self.flavor_properties:
             logger.warn( "Unrecognized wix UI type: {}".format( flavor ) )
 
         for key, value in self.flavor_properties.get( flavor, {} ).items():
-            xml_append( ui, 'Property',
+            xml_append( self.product, 'Property',
                         Id = key,
                         Value = value )
 
@@ -389,11 +401,47 @@ if __name__ == '__main__':
     logging.basicConfig()
     #logger.setLevel( logging.INFO )
 
-    with open( 'package.json', 'r' ) as handle:
+    import argparse
+    import sys
+    basedir = os.path.dirname( sys.argv[ 0 ] )
+
+    parser = argparse.ArgumentParser( "Generates the wix configuration from a"
+                                      " high level configuration file. Also"
+                                      " provides machinery for consistent uuids" )
+
+    parser.add_argument( '--candle',
+                         default = os.path.join( basedir, "tools\\wix311-binaries\\candle.exe {}" ),
+                         help = "template for invoking candle, using brace {} notation" )
+
+
+    parser.add_argument( '--light',
+                         default = os.path.join( basedir, "tools\\wix311-binaries\\light.exe -ext WixUIExtension {}" ),
+                         help = "template for invoking light, using brace {} notation" )
+
+    parser.add_argument( 'config',
+                         help = 'config file to inflate' )
+
+
+    parser.add_argument( '-l', '--log-level', help = "Logging verbosity" )
+
+    args = parser.parse_args()
+
+    if args.log_level:
+        logger.setLevel( getattr( logging, args.log_level ) )
+    
+    with open( args.config, 'r' ) as handle:
         config = json.load( handle )
 
     wix = WixConfig( config, 'mailpile.uuid.json' )
     wix.save( 'mailpile' )
 
+    import subprocess
+    import shlex
+    cmd = shlex.split( args.candle.format( "mailpile.wxs" ).replace( '\\', '\\\\' ) )
+    logger.info( "build step '{}'".format( cmd ) )
+    subprocess.check_call( cmd )
+    cmd = shlex.split( args.light.format( "mailpile.wixobj" ).replace( '\\', '\\\\' ) )
+    logger.info( "build step '{}'".format( cmd ) )
+    subprocess.check_call( cmd )
     '''candle mailpile.wxs'''
-    '''light -ext WixUIExtensions mailpile.wixobj'''
+    '''light -ext WixUIExtension mailpile.wixobj'''

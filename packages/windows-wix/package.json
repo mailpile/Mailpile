@@ -3,6 +3,13 @@
   "version": "0.0.0", 
   "installer_version": "100", 
   "product_id": "19671260-92a2-437d-bb3a-d47e91e3cf23",
+  "codepage": "1252", 
+  "product_code": "4685a239-2c80-4f51-8476-791316d2df3d", 
+  "manufacturer": "Mailpile ehf.",
+  "product_icon": "mailpile_logo.ico",
+  "icons": [
+	"assets\\mailpile_logo.ico"
+  ],
   "ui": {
     "flavor": "WixUI_Advanced",
     "variables": {
@@ -31,7 +38,9 @@
           "Description": "GUI for Mailpile Email Client", 
           "Id": "MailpileGUIMenuShortcut", 
           "WorkingDirectory": "MailpileClient", 
-          "Name": "Mailpile GUI"
+          "Name": "Mailpile GUI",
+          "Show": "minimized",
+          "Icon": "mailpile_logo.ico"
         }
       }, 
       "root": "c:\\Users\\ededa\\Documents\\Mailpile\\packages\\windows-wix\\bin", 
@@ -60,8 +69,5 @@
       "root": "c:\\Users\\ededa\\Documents\\gui-o-matic", 
       "uuid": "0465f2d6-becc-4279-82af-b6d23c6bf033"
     }
-  }, 
-  "codepage": "1252", 
-  "product_code": "4685a239-2c80-4f51-8476-791316d2df3d", 
-  "manufacturer": "Mailpile ehf."
+  }
 }
