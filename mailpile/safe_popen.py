@@ -97,6 +97,8 @@ class Safe_Popen(Unsafe_Popen):
         #    2. Prevent signals from propagating
         #
         if sys.platform.startswith('win'):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP  # 2.
             if (stdin is not None or
                     stdout is not None or
