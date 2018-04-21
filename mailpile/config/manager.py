@@ -379,8 +379,10 @@ class ConfigManager(ConfigDict):
             os.path.join(self.shareddatadir, 'contrib'),
             os.path.join(self.workdir, 'plugins')
         ])
-        self.sys.plugins.rules['_any'][self.RULE_CHECKER
-                                       ] = [None] + self.plugins.loadable()
+        self.sys.plugins.rules['_any'][
+            self.RULE_CHECKER] = [None] + self.plugins.loadable()
+        self.sys.plugins_early.rules['_any'][
+            self.RULE_CHECKER] = [None] + self.plugins.loadable_early()
 
     def _configure_default_plugins(self):
         if (len(self.sys.plugins) == 0) and self.loaded_config:
@@ -502,11 +504,15 @@ class ConfigManager(ConfigDict):
             self.set_rules(self._rules_source)
             self.sys.plugins.rules['_any'][
                 self.RULE_CHECKER] = [None] + self.plugins.loadable()
+            self.sys.plugins_early.rules['_any'][
+                self.RULE_CHECKER] = [None] + self.plugins.loadable_early()
 
     def load_plugins(self, session):
         with self._lock:
             from mailpile.plugins import PluginManager
-            plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
+            plugin_list = set(PluginManager.REQUIRED +
+                              self.sys.plugins +
+                              self.sys.plugins_early)
             for plugin in plugin_list:
                 if plugin is not None:
                     session.ui.mark(_('Loading plugin: %s') % plugin)

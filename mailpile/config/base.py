@@ -264,7 +264,12 @@ def RuledContainer(pcls):
                             config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    self[key].as_config(config=config, _type=_type, _xtype=_xtype)
+                    if isinstance(self[key], (list,)):
+                        # If a list is marked public, we export all items
+                        self[key].as_config(config=config)
+                    else:
+                        self[key].as_config(
+                            config=config, _type=_type, _xtype=_xtype)
 
             return config
 
