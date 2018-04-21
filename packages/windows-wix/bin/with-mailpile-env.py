@@ -13,8 +13,8 @@ import subprocess
 import argparse
 
 locate = ( ("Mailpile","mailpile"),
-           ("bin","gpg.exe"),
-           ("bin","gpg-agent.exe"),
+           ("gpg","bin","gpg.exe"),
+           ("gpg","bin","gpg-agent.exe"),
            ("gui-o-matic","gui_o_matic"))
 
 def locate_parent( path_parts ):

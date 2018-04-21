@@ -48,9 +48,9 @@
     }, 
     "gpg": {
       "ignore": [], 
-      "root": "c:\\Users\\ededa\\Documents\\gpg\\bin", 
+      "root": "build\\gpg", 
       "uuid": "a8014bc6-5282-4d7a-a46d-3b0d53519914"
-    }, 
+    },
     "mailpile": {
       "ignore": [
         ".*\\.py(?:c|o)$", 
