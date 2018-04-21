@@ -770,6 +770,7 @@ class PluginManager(object):
 
     # These are the elements that exist at the moment
     UI_ELEMENTS = {
+        'settings': [],
         'activities': [],
         'display_modes': [],
         'display_refiners': [],
