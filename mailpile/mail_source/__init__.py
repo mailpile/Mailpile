@@ -1120,9 +1120,9 @@ class BaseMailSource(threading.Thread):
 
 
 def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
-    if 'dsn:has' in keywords or 'mdn:has' in keywords:
+    if False and ('dsn:has' in keywords or 'mdn:has' in keywords):
         # FIXME: This is a delivery notfication of some sort!
-        #        Figure out what it is telling us...
+        # TODO:  Figure out what it is telling us, do not mark as "new".
         return False
 
     if ('s:maildir' in msg_metadata_kws                  # Seen=read, maildir
