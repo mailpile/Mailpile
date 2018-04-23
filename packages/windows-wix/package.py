@@ -151,7 +151,7 @@ class WixConfig( object ):
 
         menu_reg_key = xml_append( self.menu_component, 'RegistryValue',
                                    Root = 'HKCU',
-                                   Key = 'Software\\[Manufacturer]\\[ProductName]',
+                                   Key = 'Software\\[Manufacturer]\\[ProductName]\\StartMenuShortcut',
                                    Type = 'string',
                                    Value = '1',
                                    KeyPath = 'yes' )
@@ -164,6 +164,32 @@ class WixConfig( object ):
         xml_append( self.feature, 'ComponentRef',
                     Id = 'ProgramMenuDir' )
 
+        # Setup: Desktop shortcut directory
+        #
+        self.logical_node( 'TARGETDIR',
+                           Id = 'DesktopFolder' )
+
+        self.desktop_component = xml_append( self.logical['DesktopFolder' ],
+                                             'Component',
+                                             Id = 'DesktopFolderDir',
+                                             Guid = self.uuid( '\\windows\\DesktopFolder' ))
+
+        desktop_reg_key = xml_append( self.desktop_component, 'RegistryValue',
+                                   Root = 'HKCU',
+                                   Key = 'Software\\[Manufacturer]\\[ProductName]\\DesktopShortcut',
+                                   Type = 'string',
+                                   Value = '1',
+                                   KeyPath = 'yes' )
+
+        desktop_cleanup = xml_append( self.desktop_component, 'RemoveFolder',
+                                   Id = 'DesktopFolderDir',
+                                   On = 'uninstall' )
+
+        xml_append( self.feature, 'ComponentRef',
+                    Id = 'DesktopFolderDir' )
+
+        # Setup: unpack groups
+        #
         for key, group in self.config['groups'].items():
             self.scan_group( key, **group )
 
@@ -201,9 +227,9 @@ class WixConfig( object ):
         configure wix UI
         '''
         logger.info( "Configuring UI flavor '{}'".format( flavor ) )
-        #ui = xml_append( self.product, 'UI' )
-        xml_append( self.product, 'UIRef', Id = flavor )
-        xml_append( self.product, 'UIRef', Id = 'WixUI_ErrorProgressText' )
+        ui = xml_append( self.product, 'UI' )
+        xml_append( ui, 'UIRef', Id = flavor )
+        xml_append( ui, 'UIRef', Id = 'WixUI_ErrorProgressText' )
 
         if flavor not in self.flavor_properties:
             logger.warn( "Unrecognized wix UI type: {}".format( flavor ) )
@@ -217,7 +243,7 @@ class WixConfig( object ):
             xml_append( self.product, 'WixVariable',
                         Id = key,
                         Value = value )
-        '''
+        
         node = xml_append( ui, 'Publish',
                            Dialog = 'WelcomeDlg',
                            Control = 'Next',
@@ -229,9 +255,10 @@ class WixConfig( object ):
                            Dialog = 'InstallDirDlg',
                            Control = 'Back',
                            Event = 'NewDialog',
-                           Value = 'WelcomeDlg' )
+                           Value = 'WelcomeDlg',
+                           Order = '2' )
         node.text = "1"
-        '''
+        
 
     def logical_node( self, parent_id, **attrs ):
         '''
@@ -376,9 +403,18 @@ class WixConfig( object ):
                                    KeyPath = 'yes' )
 
                 try:
+                    shortcut = dict( shortcuts[path] )
+                    name = shortcut.pop( 'Id' )
                     xml_append( self.menu_component, 'Shortcut',
                                 Target = '[#{}]'.format( self.file_id( path ) ),
-                                **shortcuts[path] )
+                                Id = name + 'MenuItem',
+                                **shortcut )
+
+                    xml_append( self.desktop_component, 'Shortcut',
+                                Target = '[#{}]'.format( self.file_id( path ) ),
+                                Id = name + 'DesktopShortcut',
+                                **shortcut )
+                                
                     logger.info( "Created shortcut for '{}'".format( path ) )
                 except KeyError:
                     pass

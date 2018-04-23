@@ -11,7 +11,7 @@
 	"assets\\mailpile_logo.ico"
   ],
   "ui": {
-    "flavor": "WixUI_Advanced",
+    "flavor": "WixUI_InstallDir",
     "variables": {
       "WixUILicenseRtf": "assets\\LicenseText.rtf",
       "WixUIDialogBmp": "assets\\WixUIDialog.bmp",
@@ -36,7 +36,7 @@
       "shortcuts": {
         "bin\\launch-mailpile.bat": {
           "Description": "GUI for Mailpile Email Client", 
-          "Id": "MailpileGUIMenuShortcut", 
+          "Id": "MailpileGUI", 
           "WorkingDirectory": "MailpileClient", 
           "Name": "Mailpile GUI",
           "Show": "minimized",
@@ -48,7 +48,7 @@
     }, 
     "gpg": {
       "ignore": [], 
-      "root": "build\\gpg", 
+      "root": "c:\\Users\\ededa\\Documents\\gpg", 
       "uuid": "a8014bc6-5282-4d7a-a46d-3b0d53519914"
     },
     "mailpile": {
