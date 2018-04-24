@@ -8,6 +8,7 @@ import mailpile.auth
 from mailpile.commands import Command
 from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
 from mailpile.mailutils.headerprint import *
+from mailpile.mailutils.emails import *
 from mailpile.mailutils import *
 from mailpile.plugins.core import Help
 from mailpile.search import *
@@ -110,6 +111,11 @@ class ViewMetadata(Hacks):
                  for p in info[idx.MSG_PTRS].split(',') if p]
         to = idx.expand_to_list(info)
         cc = idx.expand_to_list(info, idx.MSG_CC)
+        body = info[idx.MSG_BODY]
+        if body[:1] == '{' and body[-1:] == '}':
+            body_info = json.loads(body)
+        else:
+            body_info = {'snippet': body}
         return {
             'mid': info[idx.MSG_MID],
             'ptrs': info[idx.MSG_PTRS],
@@ -120,11 +126,11 @@ class ViewMetadata(Hacks):
             'cc': info[idx.MSG_CC],
             'kb': info[idx.MSG_KB],
             'subject': info[idx.MSG_SUBJECT],
-            'body': info[idx.MSG_BODY],
             'tags': info[idx.MSG_TAGS],
             'replies': info[idx.MSG_REPLIES],
             'thread_mid': info[idx.MSG_THREAD_MID],
             'parsed': {
+                'body_info': body_info,
                 'date': friendly_datetime(long(info[idx.MSG_DATE], 36)),
                 'tags': ', '.join(ptags),
                 'to': to,

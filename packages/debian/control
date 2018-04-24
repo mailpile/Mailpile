@@ -58,6 +58,7 @@ Depends: ${misc:Depends},
          gnupg,
          python-markupsafe,
          python-fasteners,
+         python-imgsize,
          python-socksipychain,
          python-dns,
          python-pgpdump,
@@ -89,3 +90,20 @@ Description: multi-user mailpile web server
  .
  This package configures Apache with "Multipile", a thin wrapper that allows
  system users to launch their Mailpile by logging in on the web interface.
+
+Package: mailpile-desktop
+Architecture: all
+Depends: ${misc:Depends},
+         mailpile,
+         screen,
+         xterm,
+         python,
+         python-gui-o-matic,
+Description: GTK-based desktop integration for Mailpile
+ Mailpile is a modern, fast web-mail client with user-friendly encryption and
+ privacy features. Mailpile places great emphasis on providing a clean, elegant
+ user interface and pleasant user experience. In particular, Mailpile aims to
+ make it easy and convenient to receive and send PGP encrypted or signed e-mail.
+ .
+ This package provides a minimal native GUI for starting and stopping Mailpile,
+ as well as receiving desktop notifications.

@@ -45,8 +45,8 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
         (config.load_master_key(sps)))
 
     # Fun side effect: changing the passphrase invalidates the message cache
-    import mailpile.mailutils
-    mailpile.mailutils.ClearParseCache(full=True)
+    import mailpile.mailutils.emails
+    mailpile.mailutils.emails.ClearParseCache(full=True)
 
     return sps
 
@@ -475,8 +475,8 @@ class SetPassphrase(Command):
             if changed:
                 # Fun side effect: changing the passphrase invalidates the
                 # message cache
-                import mailpile.mailutils
-                mailpile.mailutils.ClearParseCache(full=True)
+                import mailpile.mailutils.emails
+                mailpile.mailutils.emails.ClearParseCache(full=True)
 
                 indirect_pwd = '_SECRET_:%s:%s' % (fingerprint, time.time())
                 if update_ms:

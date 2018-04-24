@@ -1,0 +1,32 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Organizing Your Sidebar")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+  <h1><span class="icon-tag"></span>
+    {{_("Organizing Your Sidebar")}}
+  </h1>
+  <p>
+    {{_("Mailpile lets you organize your mailbox the way you want it be.")}}<br>
+    {{_("You can start customizing your experince by rearranging the sidebar on the left.")}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc">
+    <li>{{_("In the bottom left, click:")}} <b>{{_("Organize")}}.</b></li>
+    <li>{{_("From here you can click and drag any of the tags (Inbox, Outbox, etc.) up or down to change its order in the sidebar.")}}</li>
+    <li>{{_("To customize each tag individually, click on one of the gears next to any tag.")}}</li>
+    <ul style="margin-left: 2em; list-style: circle">
+      <li>{{_("Under Tag Settings you can change the name and color of a tag as well as where it's located and if you want it in your searches.")}}</li>
+      <li>{{_("Under Technical Settings you can make sub-tags so that they're more organized.")}} {{_("For example:")}}</li>
+      <li>{{_("Receipts")}}</li>
+      <ul style="margin-left: 2em; list-style: circle">
+        <li>{{_("Bills")}}</li>
+        <li>{{_("Groceries")}}</li>
+        <li>{{_("Personal")}}</li>
+        <li>{{_("Work")}}</li> 
+      </ul>      
+    </ul>
+  </ul>
+  <p>
+    {{_("Stay tuned for more helpful hints to guide you in customizing your Mailpile!")}}
+  </p>
+</div>
+{% endblock %}

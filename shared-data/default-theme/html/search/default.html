@@ -106,55 +106,9 @@
  {%- endfor %}
   </tbody>
   </table>
+
  {% if result.stats.total > 0 %}
-  <div id="pile-bottom" class="clearfix">
-    {% set searchterms = result.search_terms|join(' ') %}
-    {% if result.stats.start > 1 %}
-    {% set newstart = result.stats.start-result.stats.count %}
-    {% set newend = newstart+result.stats.count-1 %}
-    {% set prv = {
-      'url': '/search/',
-      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
-      'url_args_add': [['start', newstart], ['end', newend]]
-    } %}
-    <a href="{{prv.url|add_state_query_string(state, prv)|url_path_fix}}"
-       class="button-primary left" id="pile-previous"
-       data-keep-selection=1>{{_("Previous")}}</a>
-    {% endif %}
-    {% if result.stats.start + result.stats.count < result.stats.total %}
-    {% set moar = {
-      'url': '/search/',
-      'url_args_remove': [['start', ''], ['end', '']],
-      'url_args_add': [['start', result.stats.start],
-                       ['end', result.stats.start+(2*result.stats.count)-1]]
-    } %}
-    <a href="{{moar.url|add_state_query_string(state, moar)|url_path_fix}}"
-       class="button-primary left" id="pile-more"
-       data-noblank=1 data-noscroll=1 data-keep-selection=1>{{_("More")}}</a>
-    {% set newstart = result.stats.start+result.stats.count %}
-    {% set newend = newstart+result.stats.count-1 %}
-    {% set nxt = {
-      'url': '/search/',
-      'url_args_remove': [['start', ''], ['end', ''], ['view', '']],
-      'url_args_add': [['start', newstart], ['end', newend]]
-    } %}
-    <a href="{{nxt.url|add_state_query_string(state, nxt)|url_path_fix}}"
-       class="button-primary left" id="pile-next"
-       data-keep-selection=1>{{_("Next")}}</a>
-    {% endif %}
-    <h5 class="text-right">
-    {% if result.stats.total > 1 %}
-      {{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}}
-    {% elif result.stats.total == 1 %}
-      {{_("1 Conversation")}}
-    {% endif %}
-    </h5>
-  </div>
-  <div id="pile-speed" class="text-center clearfix">
-    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.",
-                                        number=mailpile_size, elapsed=elapsed)}}
-    {% if elapsed < "0.25" %}{{_("Vroom!")}}{% endif %}
-  </div>
+  {%- include("search/prev_more_next.html") %}
  {% elif not with_top_composer %}
   <div id="pile-empty" class="clearfix add-bottom text-center">
   {%- if profiles.profiles|length <= 0 %}

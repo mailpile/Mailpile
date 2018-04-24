@@ -7,7 +7,7 @@ window.addEventListener("beforeunload", function (event) {
     event.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
     return confirmationMessage;                  // Gecko, WebKit, Chrome <34
   } else {
-    return true;
+    return null;
   }
 });
 

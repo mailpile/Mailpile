@@ -437,9 +437,7 @@
   color: #333333;
 }
 /* Mimetype - icons */
-.icon-mime[type="application/mbox"]:before {
-  content: "\e635";
-}
+.icon-mime:before,
 .icon-mime[type="application/octet-stream"]:before,
 .icon-mime[type="application/mac-binhex40"]:before,
 .icon-mime[type="application/x-shockwave-flash"]:before,
@@ -448,7 +446,10 @@
 .icon-mime[type="application/x-director"]:before,
 .icon-mime[type="application/x-msdownload"]:before,
 .icon-mime[type="application/x-director"]:before {
-  content: "\e648";
+  content: "\e609";
+}
+.icon-mime[type="application/mbox"]:before {
+  content: "\e635";
 }
 .icon-mime[type="application/x-compress"]:before,
 .icon-mime[type="application/x-compressed"]:before,
@@ -492,6 +493,9 @@
 .icon-mime[type="text/x-ms-contact"]:before {
   content: "\e600";
 }
+.icon-mime[type="image/gif"]:before,
+.icon-mime[type="image/png"]:before,
+.icon-mime[type="image/jpeg"]:before,
 .icon-mime[type="image/cis-cod"]:before,
 .icon-mime[type="image/ief"]:before,
 .icon-mime[type="image/pipeg"]:before,
@@ -8672,6 +8676,9 @@ tr.modal-tag-picker-item td.checkbox {
 #pile-results .full-message div.crypto-and-tags {
   white-space: normal;
   padding-top: 2px;
+}
+#pile-results .display-attachments div.crypto-and-tags {
+  opacity: 0.33;
 }
 #pile-results .full-message div.crypto-and-tags .pile-message-tag,
 #pile-results .full-message div.crypto-and-tags .icon.crypto {
