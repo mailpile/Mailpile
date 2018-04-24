@@ -61,6 +61,7 @@ class SetupMagic(Command):
             'display_order': 2,
             'icon': 'icon-inbox',
             'label_color': '06-blue',
+            'notify_new': True,
             'name': _('Inbox'),
         },
         'Blank': {
@@ -158,6 +159,7 @@ class SetupMagic(Command):
             'icon': 'icon-photos',
             'label': False,
             'label_color': '08-green',
+            'template': 'photos',
             'name': _('Photos'),
             'display_order': 1002,
             '_filters': ['att:jpg is:personal'],
@@ -167,6 +169,7 @@ class SetupMagic(Command):
             'icon': 'icon-document',
             'label': False,
             'label_color': '06-blue',
+            'template': 'atts',
             'name': _('Documents'),
             'display_order': 1003,
             '_filters': ['has:document is:personal'],
@@ -1006,7 +1009,7 @@ class SetupWelcome(TestableWebbable):
                 raise ValueError('Failed to configure i18n')
             config.prefs.language = language
             if save and not self._testing():
-                self._background_save(config=True)
+                self._background_save(config='!FORCE')
             return True
         except ValueError:
             return self._error(_('Invalid language: %s') % language)
@@ -1125,7 +1128,7 @@ class SetupPassword(TestableWebbable):
                         config.passphrases['DEFAULT'].set_passphrase(p1)
                         config.prefs.gpg_recipient = '!PASSWORD'
                         self.make_master_key()
-                        self._background_save(config=True)
+                        self._background_save(config='!FORCE')
                         mailpile.auth.LogoutAll()
                         done = True
                 else:

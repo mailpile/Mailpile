@@ -1,4 +1,6 @@
 import email
+import email.errors
+import email.message
 import random
 import re
 import rfc822

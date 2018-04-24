@@ -12,6 +12,7 @@ import socket
 import subprocess
 import sys
 import traceback
+import thread
 import threading
 import time
 import webbrowser
@@ -26,7 +27,7 @@ from mailpile.eventlog import Event
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import IsMailbox
-from mailpile.mailutils import ClearParseCache, Email
+from mailpile.mailutils.emails import ClearParseCache, Email
 from mailpile.postinglist import GlobalPostingList
 from mailpile.plugins import PluginManager
 from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
@@ -1696,25 +1697,14 @@ class Quit(Command):
         else:
             mailpile.util.QUITTING = mailpile.util.QUITTING or True
 
-        self._background_save(index=True, config=True, wait=True)
+        from mailpile.plugins.gui import UpdateGUIState
+        UpdateGUIState()
+
+        self._background_save(index=True, config='!FORCE', wait=True)
         if self.session.config.http_worker:
             self.session.config.http_worker.quit()
 
-        try:
-            import signal
-            os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
-        except:
-            pass
-
-        # This puts a hard deadline on the shutdown process.
-        # This is a dangerous thing.
-        def exiter():
-            time.sleep(15)
-            os._exit(0)
-        ex = threading.Thread(target=exiter)
-        ex.daemon = True
-        ex.start()
-
+        thread.interrupt_main()
         return self._success(_('Shutting down...'))
 
 

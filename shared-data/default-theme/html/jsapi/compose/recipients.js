@@ -175,14 +175,20 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       if (state.photo) {
         avatar = '<span class="avatar"><img src="' + _.escape(state.photo) + '" data-address="' + state.address + '"></span>';
       }
+
       if (!state.fn) {
         name = state.address;
       }
+
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed" data-address="' + _.escape(state.address) + '"></span>';
       }
 
+      if (!state.fn){
+      return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(state.address) + secure + '</span>';
+      } else {
       return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(name) + secure + '</span>';
+      }
     },
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';

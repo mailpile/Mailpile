@@ -1,6 +1,5 @@
 import cStringIO
 import email
-import lxml.html
 import random
 import re
 import rfc822
@@ -20,11 +19,12 @@ from mailpile.index.base import BaseIndex
 from mailpile.index.search import SearchResultSet, CachedSearchResultSet
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
-from mailpile.mailutils import AddressHeaderParser, GetTextPayload
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import Email, ParseMessage
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils.emails import Email, ParseMessage, GetTextPayload
 from mailpile.mailutils.header import decode_header
 from mailpile.mailutils.headerprint import HeaderPrints
+from mailpile.mailutils.html import extract_text_from_html
 from mailpile.mailutils.safe import *
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
@@ -50,6 +50,7 @@ class MailIndex(BaseIndex):
     def __init__(self, config):
         BaseIndex.__init__(self, config)
         self.interrupt = None
+        self.loaded_index = False
         self.INDEX = []
         self.INDEX_SORT = {}
         self.INDEX_THR = []
@@ -195,6 +196,20 @@ class MailIndex(BaseIndex):
                                len(self.INDEX)
                                ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
+
+        # Make sure metadata has entry for every msg_mid in keyword index.
+        max_kw_msg_idx_pos = GlobalPostingList.GetMaxMsgIdxPos()
+        if max_kw_msg_idx_pos and max_kw_msg_idx_pos >= len(self.INDEX):
+            new_max_msg_idx_pos = max_kw_msg_idx_pos + 1
+            if session:
+                session.ui.warning(
+                    _('Fixing %d messages in keyword index not in metadata.'
+                      ) % (new_max_msg_idx_pos - len(self.INDEX)))
+
+            for msg_idx_pos in range(len(self.INDEX), new_max_msg_idx_pos):
+                self.add_new_ghost(b36(msg_idx_pos), trash=True)
+
+        self.loaded_index = True
 
     def update_msg_tags(self, msg_idx_pos, msg_info):
         tags = set(self.get_tags(msg_info=msg_info))
@@ -1017,7 +1032,10 @@ class MailIndex(BaseIndex):
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
             return msg_idx_pos, msg_info
 
-    def add_new_ghost(self, msg_id):
+    def add_new_ghost(self, msg_id, trash=False):
+        tags = []
+        if trash:
+            tags = [t._key for t in self.config.get_tags(type='trash')]
         return self.add_new_msg(
             '',  # msg_ptr
             msg_id,
@@ -1028,7 +1046,7 @@ class MailIndex(BaseIndex):
             0,
             _('(missing message)'),
             self.MSG_BODY_GHOST,
-            [])
+            tags)
 
     def filter_keywords(self, session, msg_mid, msg, keywords, incoming=True):
         keywordmap = {}
@@ -1104,9 +1122,11 @@ class MailIndex(BaseIndex):
         body_info = {}
         payload = [None]
         textparts = 0
+        parts = []
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
+            pinfo = ''
             charset = part.get_content_charset() or 'utf-8'
 
             def _loader(p):
@@ -1120,19 +1140,25 @@ class MailIndex(BaseIndex):
                     ctype = 'text/html'
                 else:
                     textparts += 1
+                    pinfo = '%x::T' % len(payload[0])
 
             if ctype == 'text/html':
                 _loader(part)
+                pinfo = '%x::H' % len(payload[0])
                 if len(payload[0]) > 3:
                     try:
-                        textpart = lxml.html.fromstring(payload[0]
-                                                        ).text_content()
+                        textpart = extract_text_from_html(payload[0])
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
                                              ) % (msg_mid, msg_id))
                         textpart = payload[0]
                 else:
                     textpart = payload[0]
+
+            if ctype == 'message/delivery-status':
+                keywords.append('dsn:has')
+            elif ctype == 'message/disposition-notification':
+                keywords.append('mdn:has')
 
             if 'pgp' in part.get_content_type().lower():
                 keywords.append('pgp:has')
@@ -1141,13 +1167,32 @@ class MailIndex(BaseIndex):
             att = part.get_filename()
             if att:
                 att = try_decode(att, charset)
-                # FIXME: These should be tags!
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
                                  in re.findall(WORD_REGEXP, att.lower())])
+                att_kws = []
                 for kw, ext_list in ATT_EXTS.iteritems():
-                    if att.lower().rsplit('.', 1)[-1] in ext_list:
+                    ext = att.lower().rsplit('.', 1)[-1]
+                    if ext in ext_list:
                         keywords.append('%s:has' % kw)
+                        att_kws.append(kw)
+
+                pmore = squish_mimetype(ctype)
+                pdata = part.get_payload(None, True) or ''
+                if 'image' in att_kws:
+                    try:
+                        if pdata:
+                            # We disallow use of C libraries here, because of
+                            # the massive attack surface, it's just not safe
+                            # to use on all incoming e-mail.
+                            size = image_size(pdata, pure_python=True)
+                            if size is not None:
+                                pmore = '%dx%d' % size
+                    except:
+                        traceback.print_exc()
+                        pass
+
+                pinfo = '%x:%s:%s' % (len(pdata), pmore, att)
                 textpart = (textpart or '') + ' ' + att
 
             if textpart:
@@ -1174,6 +1219,12 @@ class MailIndex(BaseIndex):
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part),
                                         body_info=body_info))
+
+            if not ctype.startswith('multipart/'):
+                parts.append(pinfo)
+
+        if len(parts) > 1:
+            body_info['parts'] = parts
 
         if textparts == 0:
             keywords.append('text:missing')
@@ -1279,6 +1330,9 @@ class MailIndex(BaseIndex):
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
                                     body_info=body_info))
 
+        # FIXME: If we have a good snippet from the HTML part, it is likely
+        #        to be more relevant due to the unfortunate habit of some
+        #        senders to put all content in HTML and useless crap in text.
         if snippet_text.strip() != '':
             body_info['snippet'] = self.clean_snippet(snippet_text[:1024])
         else:

@@ -31,6 +31,12 @@ TIMERS = {
     'load_count': 0,
 }
 
+# These are special keys in the Global Posting List that never
+# get migrated into the search index itself.
+# Note: To avoid conflicts, these keys should be in all caps.
+GPL_MSGID_TRACKER = '_MAX_MSGID_'
+GPL_NEVER_MIGRATE = (GPL_MSGID_TRACKER, )
+
 
 def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5, runtime=None):
     def save(plc):
@@ -580,6 +586,10 @@ class GlobalPostingList(OldPostingList):
     @classmethod
     def _Optimize(cls, session, idx,
                   force=False, lazy=False, quick=False, ratio=1.0, runtime=0):
+
+        # Record the largest known msg_mid here so it doesn't get lost
+        cls.UpdateMaxMsgMid(session, [b36(cls.GetMaxMsgIdxPos())])
+
         starttime = time.time()
         count = 0
         global GLOBAL_GPL
@@ -647,6 +657,48 @@ class GlobalPostingList(OldPostingList):
             for mail_id in mail_ids:
                 GLOBAL_GPL[sig].add(mail_id)
 
+    @classmethod
+    def GetMaxMsgIdxPos(cls):
+        with GLOBAL_GPL_LOCK:
+            return cls._unlocked_GetMaxMsgIdxPos()
+
+    @classmethod
+    def _unlocked_GetMaxMsgIdxPos(cls):
+        global GLOBAL_GPL
+        try:
+            max_idx = 0
+            for hits in GLOBAL_GPL.values():
+                if hits:
+                    max_idx = max(max_idx, max(int(id, 36) for id in hits))
+            return max_idx
+        except:
+            return 0
+
+    @classmethod
+    def UpdateMaxMsgMid(cls, session, msg_mids):
+        if len(msg_mids) == 0:
+            return
+        try:
+            msg_idx_pos = max(int(id, 36) for id in msg_mids)
+        except:
+            return
+
+        global GLOBAL_GPL
+        with GLOBAL_GPL_LOCK:
+            max_msg_idx_pos = max(
+                int(id, 36)
+                for id in GLOBAL_GPL.get(GPL_MSGID_TRACKER, set(['0'])))
+            if max_msg_idx_pos and msg_idx_pos <= max_msg_idx_pos:
+                return
+
+            if GLOBAL_GPL is None:
+                GLOBAL_GPL = {}
+            GLOBAL_GPL[GPL_MSGID_TRACKER] = [b36(msg_idx_pos)]
+
+        super(GlobalPostingList, cls)._Append(
+            session, '', GLOBAL_GPL[GPL_MSGID_TRACKER],
+            sig=GPL_MSGID_TRACKER, compact=False)
+
     def __init__(self, *args, **kwargs):
         with GLOBAL_GPL_LOCK:
             OldPostingList.__init__(self, *args, **kwargs)
@@ -671,6 +723,8 @@ class GlobalPostingList(OldPostingList):
     def _migrate(self, sig=None, compact=True):
         with self.lock:
             sig = sig or self.sig
+            if sig in GPL_NEVER_MIGRATE:
+                return
             if sig in self.WORDS and len(self.WORDS[sig]) > 0:
                 PostingList.Append(self.session, sig, self.WORDS[sig],
                                    sig=sig, compact=compact)

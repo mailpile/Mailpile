@@ -4,7 +4,7 @@ from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.plugins import PluginManager
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email
+from mailpile.mailutils.emails import Email
 # from mailpile.crypto.state import *
 from mailpile.crypto.gpgi import GnuPG
 

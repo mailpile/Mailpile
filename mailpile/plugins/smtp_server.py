@@ -9,7 +9,7 @@ import mailpile.security as security
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.mailutils import Email
+from mailpile.mailutils.emails import Email
 from mailpile.plugins import PluginManager
 from mailpile.smtp_client import sha512_512kCheck, sha512_512kCollide
 from mailpile.smtp_client import SMTORP_HASHCASH_RCODE, SMTORP_HASHCASH_FORMAT
