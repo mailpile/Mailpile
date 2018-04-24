@@ -448,8 +448,16 @@ def tls_configure(sock, context, args, kwargs):
     hostname = None
     accept_certs = []
     if 'server_hostname' in kwargs:
-        hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
-        tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        try:
+            hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
+        except TypeError:
+            # sock.getpeername() may fail
+            hostname = '%s' % (kwargs.get('server_hostname'),)
+
+        if hostname:
+            tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        else:
+            tls_settings = None
 
         # These defaults allow us to do certificate TOFU
         if tls_settings is not None:
