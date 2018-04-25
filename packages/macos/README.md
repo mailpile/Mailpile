@@ -8,6 +8,9 @@ This directory contains:
 * appdmg.json.template - A template used by appdmg when building a .dmg.
 * background.png - The background to be used in the .dmg file built by package.sh.
 * mailpile.icns - The icons to be used in the .dmg file built by package.sh.
+* background/background.png - The background used in the .dmg when mounted on a non-retina display.
+* background/background@2x.png The background used in the .dmg when mounted on a retina display.
+
 
 ## Dependencies
 * Java Platform (JDK) (http://www.oracle.com/technetwork/java/javase/downloads/)

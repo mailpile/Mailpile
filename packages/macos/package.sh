@@ -6,7 +6,7 @@ BUILD_DIR=~/build
 TARGET=~/build/Mailpile.dmg
 ASSETS_DIR=`pwd`
 ICON=$ASSETS_DIR/mailpile.icns
-BACKGROUND=$ASSETS_DIR/background.png
+BACKGROUND=$ASSETS_DIR/background/background.png
 APP=$BUILD_DIR/Mailpile.app
 
 # Ensure dependencies are met.

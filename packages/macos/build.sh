@@ -21,7 +21,7 @@ export PYTHON_SUBVERSION="14_3"
 export SYMLINKS_SRC="https://raw.githubusercontent.com/peturingi/homebrew/06eefcfd0e4cb1e9496c5944cf861a8f7607c69b/Library/Formula/symlinks.rb"
 
 export GUI_O_MAC_TIC_BRANCH="master"
-export GUI_O_MAC_TIC_REPO="https://github.com/Mailpile/gui-o-mac-tic.git"
+export GUI_O_MAC_TIC_REPO="https://github.com/peturingi/gui-o-mac-tic.git"
 ##
 ## CHANGE THE ABOVE EXPORTS IF NEEDED ##
 
@@ -49,7 +49,6 @@ cp configurator.sh "$BUILD_DIR/gui-o-mac-tic/share/configurator.sh"
 xcodebuild -project "$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj"
 mv "$BUILD_DIR/gui-o-mac-tic/build/Release/GUI-o-Mac-tic.app" "$BUILD_DIR/Mailpile.app"
 rm -rf "$BUILD_DIR/gui-o-mac-tic"
-
 
 #
 # Install Mailpile Dependencies from homebrew.b
