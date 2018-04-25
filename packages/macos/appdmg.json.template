@@ -1,6 +1,5 @@
 {
   "title": "Mailpile",
-  "icon": "ICON",
   "background": "BACKGROUND",
   "window": { "width": 400, "height": 313 },
   "contents": [

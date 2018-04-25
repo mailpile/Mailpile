@@ -5,7 +5,6 @@ APPDMG_TEMPLATE=appdmg.json.template
 BUILD_DIR=~/build
 TARGET=~/build/Mailpile.dmg
 ASSETS_DIR=`pwd`
-ICON=$ASSETS_DIR/mailpile.icns
 BACKGROUND=$ASSETS_DIR/background/background.png
 APP=$BUILD_DIR/Mailpile.app
 
@@ -30,6 +29,6 @@ Example: To use a certificate with the common name 'Mac Developer: John Applesee
 fi
 
 APPDMG_CONFIG=`/usr/bin/mktemp -d`/appdmg.json
-/usr/bin/sed "s|DMG_SIGNING_IDENTITY|$DMG_SIGNING_IDENTITY|g; s|ICON|$ICON|g; s|BACKGROUND|$BACKGROUND|g; s|APP|$APP|g" appdmg.json.template > $APPDMG_CONFIG
+/usr/bin/sed "s|DMG_SIGNING_IDENTITY|$DMG_SIGNING_IDENTITY|g; s|BACKGROUND|$BACKGROUND|g; s|APP|$APP|g" appdmg.json.template > $APPDMG_CONFIG
 appdmg $APPDMG_CONFIG $TARGET
 rm $APPDMG_CONFIG
