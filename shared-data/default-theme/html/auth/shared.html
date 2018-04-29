@@ -42,7 +42,18 @@ Decrypting Index, Messages, and Contacts
   <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
   {% endif %}
   {% if status_message == 'logout' %}
-  <div class="logged-out-message">{{_("You Have Been Logged Out!")}}</div>
+  <div class="logged-out-message animated bounceIn">
+    {{_("You Have Been Logged Out!")}}
+  </div>
+  <div class="still-running">
+    <span class="icon icon-settings bigger"></span>
+    <span class="icon icon-settings"></span>
+    <span class="icon icon-settings smaller"></span>
+    <i><b>{{_("Note")}}:</b>
+      {{_("Mailpile is still running and processing your e-mail in the background.")}}
+      {{_("To disable Mailpile completely, press the Shutdown button on the settings page or in the desktop application window.")}}
+    </i>
+  </div>
   {% endif %}
 </div>
 
