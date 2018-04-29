@@ -1063,7 +1063,7 @@ class BaseMailSource(threading.Thread):
                 self.session = _original_session
             self._update_unknown_state()
         self.close()
-        self._log_status(_('Shut down'), clear_errors=True)
+        self._log_status(_('Shutdown'), clear_errors=True)
         self._save_state()
 
     def _check_keepalive(self):
@@ -1118,7 +1118,7 @@ class BaseMailSource(threading.Thread):
                     pass
 
     def quit(self, join=False):
-        self.interrupt_rescan(_('Shut down'))
+        self.interrupt_rescan(_('Shutdown'))
         self.alive = False
         self.wake_up()
         if join and self.isAlive():
