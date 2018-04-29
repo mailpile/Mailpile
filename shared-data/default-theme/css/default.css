@@ -5731,6 +5731,9 @@ div.setup-box-medium {
 div.setup-box-large {
   width: 800px;
 }
+div.setup-box h3 {
+  margin: 0 0 12px 0;
+}
 .setup-text-detail-large {
   color: #b3b3b3;
   font-size: 24px;
