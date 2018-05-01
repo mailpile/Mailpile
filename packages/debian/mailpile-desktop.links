@@ -1,0 +1,3 @@
+usr/share/mailpile/mailpile-gui/mailpile-gui.py usr/bin/mailpile-gui.py
+usr/share/mailpile/mailpile-gui/mailpile.desktop usr/share/applications/mailpile.desktop
+usr/share/mailpile/mailpile-gui/media/logo-color-wb.png usr/share/icons/hicolor/256x256/apps/mailpile.png

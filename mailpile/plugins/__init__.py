@@ -23,7 +23,7 @@ from mailpile.util import *
 __all__ = [
     'core',
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_gnupg', 'gui',
     'setup_magic', 'oauth', 'exporters', 'plugins', 'motd', 'backups',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
     'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
@@ -78,7 +78,7 @@ class PluginManager(object):
         'core',
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'oauth', 'html_magic',
-        'plugins', 'keylookup', 'motd', 'backups'
+        'plugins', 'keylookup', 'motd', 'backups', 'gui'
     ]
     # Plugins we want, if they are discovered
     WANTED = [

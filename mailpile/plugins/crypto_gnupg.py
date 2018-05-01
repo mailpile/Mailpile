@@ -19,8 +19,8 @@ from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
 from mailpile.crypto.mime import ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
-from mailpile.mailutils import Email, AddressHeaderParser, ClearParseCache
-from mailpile.mailutils import MakeContentID
+from mailpile.mailutils.addresses import AddressHeaderParser
+from mailpile.mailutils.emails import Email, MakeContentID, ClearParseCache
 from mailpile.plugins import PluginManager, EmailTransform
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
