@@ -1,31 +1,63 @@
 # README
 
-This directory contains:
-* build.sh - A build scripts which outputs ~/build/Mailpile.app
-* package.sh - A package scripts which places ~/build/Mailpile.app into a signed DMG file.
-* configurator.sh - A script which is copied into Mailpile.app. GUI-o-Mac-tic uses it as a GUI-configuration data source, the script is called just after Mailpile.app is launched but before the GUI is shown.
-* mailpile - A wrapper around mailpile which sets up the environment in which Mailpile is to run.
-* appdmg.json.template - A template used by appdmg when building a .dmg.
-* background.png - The background to be used in the .dmg file built by package.sh.
-* mailpile.icns - The icons to be used in the .dmg file built by package.sh.
-* background/background.png - The background used in the .dmg when mounted on a non-retina display.
-* background/background@2x.png The background used in the .dmg when mounted on a retina display.
+In this README, we explain how to build and package Mailpile for macOS.
+We also provide an overview of the files involved in the packaging process. 
 
+## Packaging Scripts for macOS
+The directory containing this README, contains packaging scripts and their required resource files.
 
-## Dependencies
-* Java Platform (JDK) (http://www.oracle.com/technetwork/java/javase/downloads/)
-* appdmg (A node package, see: https://github.com/LinusU/node-appdmg)
-* Xcode (Available in the App Store)
-* Xcode Command Line Tools (On a clean install, type 'git' in Terminal.app and macOS will offer you to install the Xcode tools).
+### Directory Contents
+The following lists the files contained within this directory. The packaging scripts, which build and package Mailpile, are marked in bold.
+
+| File | Description |
+| ---- | ----------- |
+| appdmg.json.template			| An [appdmg](https://www.npmjs.com/package/appdmg) specification. (Used by package.sh) |
+| background/background.png 	| A [.dmg](https://en.wikipedia.org/wiki/Apple_Disk_Image) background image for non-retina displays. (Used by package.sh.)|
+| background/background@2x.png| A .dmg background image for retina displays. (Used by package.sh.)|
+| **build.sh** 						| A script which builds Mailpile.app. |
+| configurator.sh 				| A script which is used by the built Mailpile.app, at runtime. It configures Mailpile.app's GUI. (Used by build.sh.)|
+| mailpile 						| A script which is used by the built Mailpile.app, at runtime. It sets environment variables and launches Mailpile. |
+| **package.sh** 				| A script which packages Mailpile.app (Mailpile.app is built by build.sh) into a signed .dmg file.|
+| README.md 						| This file. |
 
 ## Usage
-### Creating Mailpile.app
-Execute build.sh.
+In this section, we state requirements on the build machine, then we demonstrate how to use the packaging scripts.
 
-### Creating Mailpile.dmg
-Set the environment variable DMG_SIGNING_IDENTITY to hold the ID of Mac Developer certificate which is to be used when signing the .dmg. The certificate's ID is the string shown within parenthesis in the Keychain Access.app.
-Execute package.sh.
+### Prerequisites
+The following software must be installed prior to running the packaging scripts.
 
-## Known Limitations
-* The resulting Mailpile.app is 353 MiB. It contains files which are not needed and can safely be deleted. A list of those files is yet to be compiled.
-* On some systems, the user can not log on Mailpile after the initial setup because Mailpile claims the user has entered a wrong password.
+- macOS 10.13 (or later) - Available in the App Store.
+- Xcode 9.3 (or later) - Available in the App Store.
+- Command Line Tools for Xcode - Install them by executing `xcode-select --install` in Terminal.app.
+- JDK 10 (or later) - Available on [Oracle's website](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
+- Node.js - Available on [nodejs.org](https://nodejs.org/en/). (Provides the following dependency, namely appdmg.)
+- appdmg - Install it by executing `npm install -g appdmg` in Terminal.app. (Make sure to add it's install target to *PATH*.)
+
+### Requirements
+An internet connection is required as the packaging scripts use [Homebrew](https://brew.sh) and git to fetch dependencies.
+
+You must have installed your [Developer ID certificates](https://help.apple.com/xcode/mac/current/#/dev520c0324f) (both a *Developer ID Application* certificate and a *Developer ID Installer* certificate) into *Keychain Access.app*. See [developer.apple.com](https://developer.apple.com/support/certificates/) to learn how to obtain and install such certificates.
+
+### Environment
+Before executing the package scripts, ensure that the following statements are true:
+
+- The directory in which appdmg was installed, is on *PATH*
+- You have set the `DMG_SIGNING_IDENTITY` environment variable to be the *ID* of your Developer Certificate. (The ID is the parenthesised part of the certificate's Common Name). This is needed because appdmg does not automatically select a signing certificate. Example: For a certificate which has the Common Name *Mac Developer: Petur Ingi Egilsson (4P78A94863)*, execute `export DMG_SIGNING_IDENTITY=4P78A94863` before launching the build scripts.
+- The directory ~/build is empty or non-existing.
+
+
+### Packaging Mailpile
+Packaging Mailpile is a three step process.
+
+1. Execute `./build.sh` in the directory which contains build.sh. This outputs ~/build/Mailpile.app
+2. Execute `export DMG_SIGNING_IDENTITY=4P78A94863` after replacing 4P78A94863 with your Developer Certificate's ID.
+3. Execute `./package.sh` in the directory which contains package.sh. This outputs ~/build/Mailpile.dmg.
+
+You might want to run ~/build/Mailpile.app to test the build before shipping ~/build/Mailpile.dmg.
+
+
+## Taxonomy
+| Term | Definition |
+| ---- | ---------- |
+| Mailpile | [Mailpile](https://github.com/mailpile/Mailpile) is a free & open modern, fast email client with user-friendly encryption and privacy features |
+| Mailpile.app | A macOS App ([Application Bundle](https://developer.apple.com/library/content/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html)) which contains Mailpile and it's dependencies. The app also contains a macOS desktop GUI for Mailpile - the GUI which is displayed at launch.
