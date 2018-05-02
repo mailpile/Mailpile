@@ -38,7 +38,11 @@ _plugins = PluginManager()
 class MailIndex(BaseIndex):
     """This is a lazily parsing object representing a mailpile index."""
 
-    MAX_INCREMENTAL_SAVES = 25
+    # Parameters that set threshold to rewrite complete metadata index file.
+    MIN_ITEMS_PER_INCREMENT = 200   # Limits number of appends.
+    MIN_ITEMS_PER_DUPLICATE = 10    # Limits number of duplicated MSG_MIDs.
+    ITEM_COUNT_OFFSET = 5000        # Puts lower bound on limits.
+    
     MAX_CACHE_ENTRIES = 2500
     CAPABILITIES = set([
         BaseIndex.CAN_SEARCH,
@@ -61,6 +65,7 @@ class MailIndex(BaseIndex):
         self.EMAILS_SAVED = 0
         self._scanned = {}
         self._saved_changes = 0
+        self._saved_lines = 0
         self._lock = SearchRLock()
         self._save_lock = SearchRLock()
         self._prepare_sorting()
@@ -100,7 +105,10 @@ class MailIndex(BaseIndex):
         def process_lines(lines):
             for line in lines:
                 line = line.strip()
-                if line[:1] in ('#', ''):
+                if len(line) == 0:
+                    # Blank line marks start of an append.
+                    self._saved_changes += 1
+                elif line[:1] in ('#', ''):
                     pass
                 elif line[:1] == '@':
                     try:
@@ -111,6 +119,7 @@ class MailIndex(BaseIndex):
                         unquoted_email = unquote(email).decode('utf-8')
                         self.EMAILS[pos] = unquoted_email
                         self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
+                        self._saved_lines += 1
                     except (ValueError, IndexError, TypeError):
                         bogus_lines.append(line)
                 else:
@@ -141,6 +150,7 @@ class MailIndex(BaseIndex):
                                 session.ui.mark(
                                     _('Loading metadata index...') +
                                     ' %s' % len(self.INDEX))
+                            self._saved_lines += 1
                         except ValueError:
                             bogus = True
 
@@ -249,13 +259,23 @@ class MailIndex(BaseIndex):
             with self._lock:
                 mods, self.MODIFIED = self.MODIFIED, set()
                 old_emails_saved, total = self.EMAILS_SAVED, len(self.EMAILS)
+                index_items = total + len(self.INDEX)
 
             if old_emails_saved == total and not mods:
                 # Nothing to do...
                 return
-
-            if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
-                # Too much to do!
+                
+            max_incremental_saves = ( index_items + self.ITEM_COUNT_OFFSET
+                                    ) / self.MIN_ITEMS_PER_INCREMENT
+            max_saved_lines = index_items + (
+                                      index_items + self.ITEM_COUNT_OFFSET
+                                    ) / self.MIN_ITEMS_PER_DUPLICATE
+                                    
+            if not os.path.isfile(self.config.mailindex_file()) or (
+                    ( self._saved_changes > max_incremental_saves 
+                        or self._saved_lines > max_saved_lines )
+                    and not mailpile.util.QUITTING):                   
+                # Write a new metadata index file.
                 return self.save(session=session)
 
             if session:
@@ -269,14 +289,15 @@ class MailIndex(BaseIndex):
                     emails.append('@%s\t%s\n' % (b36(eid), quoted_email))
                 self.EMAILS_SAVED = total
 
-            # Unlocked, try to write this out
+            # Unlocked, try to write this out, starting with a blank line.
 
-            data = self._maybe_encrypt(
-                ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods]))
+            data = self._maybe_encrypt( ''.join(['\n'] + emails
+                                + [self.INDEX[pos] + '\n' for pos in mods]))
             with open(self.config.mailindex_file(), 'a') as fd:
                 fd.write(data)
                 self._saved_changes += 1
-
+                self._saved_lines += total - old_emails_saved + len(mods)
+                
             if session:
                 session.ui.mark(_("Saved metadata index changes"))
         except:
@@ -321,6 +342,7 @@ class MailIndex(BaseIndex):
             os.rename(newfile, idxfile)
 
             self._saved_changes = 0
+            self._saved_lines = email_counter + index_counter            
             if session:
                 session.ui.mark(_("Saved metadata index"))
         except:
