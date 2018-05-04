@@ -108,9 +108,11 @@ def Interact(session):
         while not mailpile.util.QUITTING:
             try:
                 with session.ui.term:
-                    session.ui.block()
                     if Setup.Next(session.config, 'anything') != 'anything':
-                        session.ui.notify('The app is unconfigured, please run setup or visit the web UI.')
+                        session.ui.notify(
+                            _('Mailpile is unconfigured, please run `setup`'
+                              ' or visit the web UI.'))
+                    session.ui.block()
                     opt = threaded_raw_input(prompt)
             except KeyboardInterrupt:
                 session.ui.unblock(force=True)
