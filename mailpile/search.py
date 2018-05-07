@@ -40,7 +40,7 @@ class MailIndex(BaseIndex):
 
     # Parameters that set threshold to rewrite complete metadata index file.
     MIN_ITEMS_PER_INCREMENT = 200   # Limits number of appends.
-    MIN_ITEMS_PER_DUPLICATE = 10    # Limits number of duplicated MSG_MIDs.
+    MIN_ITEMS_PER_DUPLICATE = 100   # Limits number of duplicated MSG_MIDs.
     ITEM_COUNT_OFFSET = 5000        # Puts lower bound on limits.
     
     MAX_CACHE_ENTRIES = 2500
@@ -105,10 +105,7 @@ class MailIndex(BaseIndex):
         def process_lines(lines):
             for line in lines:
                 line = line.strip()
-                if len(line) == 0:
-                    # Blank line marks start of an append.
-                    self._saved_changes += 1
-                elif line[:1] in ('#', ''):
+                if line[:1] in ('#', ''):
                     pass
                 elif line[:1] == '@':
                     try:
@@ -289,10 +286,10 @@ class MailIndex(BaseIndex):
                     emails.append('@%s\t%s\n' % (b36(eid), quoted_email))
                 self.EMAILS_SAVED = total
 
-            # Unlocked, try to write this out, starting with a blank line.
+            # Unlocked, try to write this out
 
-            data = self._maybe_encrypt( ''.join(['\n'] + emails
-                                + [self.INDEX[pos] + '\n' for pos in mods]))
+            data = self._maybe_encrypt(
+                ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods]))
             with open(self.config.mailindex_file(), 'a') as fd:
                 fd.write(data)
                 self._saved_changes += 1
