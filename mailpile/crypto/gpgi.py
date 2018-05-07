@@ -82,7 +82,7 @@ class GnuPGEventUpdater:
         self._log_public(' '.join(args))
 
     def update_sent_passphrase(self):
-        self._log_public(_('Sent passphrase'))
+        self._log_public('Sent passphrase')
 
     def _parse_gpg_line(self, line):
         if line.startswith('[GNUPG:] '):
@@ -97,7 +97,7 @@ class GnuPGEventUpdater:
         self._parse_gpg_line(line)
 
     def update_return_code(self, code):
-        self._log_public(_('GnuPG returned %s') % code)
+        self._log_public('GnuPG returned %s' % code)
 
 
 class GnuPGResultParser:
