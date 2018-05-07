@@ -86,15 +86,21 @@ def BASIC_GUI_CONFIGURATION(state):
             "splash": {
                 "points": 16
             },
-            "notification": {
+            "buttons": {
+                "points": 16
+            },
+            "notification_title": {
+                "points": 1,
+            },
+            "notification_details": {
                 "italic": True
             }
         },
         "main_window": {
             "show": False,
             "close_quits": False,
-            "width": 550,
-            "height": 330,
+            "width": 540,
+            "height": 300,
             "background": MAILPILE_HOME_IMAGE,
             "initial_notification": '',
             "status_displays": [{
@@ -107,22 +113,18 @@ def BASIC_GUI_CONFIGURATION(state):
                 "icon": "image:logged-out",
                 "title": _("You are not logged in"),
             },{
-                "id": "remote-access",
-                "icon": "image:ra-off",
-                "title": _("Remote access is disabled"),
-                "details": _(
-                    "Enable remote access if you would like to access\n"
-                    "Mailpile from your phone or another computer.")
+                "id": "notification",
+                "title": ""
             }],
             "action_items": [{
                 "id": "open",
                 "position": "first",
-                "label": _("Open in Web Browser"),
+                "label": _("Open Webmail"),
                 "op": "show_url",
                 "args": [mailpile_home]
             },{
                 "id": "quit_button",
-                "label": _("Quit GUI"),
+                "label": _("Quit"),
                 "position": "last",
                 "op": "quit"}]},
         "indicator": {
@@ -243,7 +245,7 @@ def GenerateBootstrap(state):
                 # FIXME: This should launch a screen session using the
                 #        same concepts as multipile's mailpile-admin.
                 'screen -S mailpile -d -m mailpile'
-                ' --set="prefs.open_in_browser = false" '
+                ' --set=prefs.open_in_browser=false '
                 ' --gui=%PORT% --interact')]
 
     return '\n'.join(bootstrap)
@@ -282,7 +284,8 @@ def Main(argv):
         MakePopenUnsafe()
 
         from gui_o_matic.control import GUIPipeControl
-        GUIPipeControl(StringIO('\n'.join(script) + '\n')).bootstrap()
+        gpc = GUIPipeControl(StringIO('\n'.join(script) + '\n'))
+        gpc.bootstrap(dry_run=('--compile' in argv))
 
 
 if __name__ == "__main__":

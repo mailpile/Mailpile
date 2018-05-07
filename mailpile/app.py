@@ -16,6 +16,7 @@ from mailpile.plugins import PluginManager
 from mailpile.plugins.core import Help, HelpSplash, HealthCheck
 from mailpile.plugins.core import Load, Rescan, Quit
 from mailpile.plugins.motd import MessageOfTheDay
+from mailpile.plugins.setup_magic import Setup
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
@@ -107,6 +108,10 @@ def Interact(session):
         while not mailpile.util.QUITTING:
             try:
                 with session.ui.term:
+                    if Setup.Next(session.config, 'anything') != 'anything':
+                        session.ui.notify(
+                            _('Mailpile is unconfigured, please run `setup`'
+                              ' or visit the web UI.'))
                     session.ui.block()
                     opt = threaded_raw_input(prompt)
             except KeyboardInterrupt:

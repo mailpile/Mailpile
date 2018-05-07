@@ -410,6 +410,7 @@ class SecurePassphraseStorage(object):
 # implement and enforce our own policies here.
 #
 KNOWN_TLS_HOSTS = {}
+MAX_TLS_CERTS = 5
 
 
 def tls_sock_cert_sha256(sock=None, cert=None):
@@ -447,8 +448,16 @@ def tls_configure(sock, context, args, kwargs):
     hostname = None
     accept_certs = []
     if 'server_hostname' in kwargs:
-        hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
-        tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        try:
+            hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
+        except TypeError:
+            # sock.getpeername() may fail
+            hostname = '%s' % (kwargs.get('server_hostname'),)
+
+        if hostname:
+            tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        else:
+            tls_settings = None
 
         # These defaults allow us to do certificate TOFU
         if tls_settings is not None:
@@ -514,7 +523,8 @@ def tls_cert_tofu(wrapped, accept_certs, sname):
         KNOWN_TLS_HOSTS[skey].use_web_ca = (accept_certs is None)
     if cert not in KNOWN_TLS_HOSTS[skey].accept_certs:
         KNOWN_TLS_HOSTS[skey].accept_certs.append(cert)
-
+        while len(KNOWN_TLS_HOSTS[skey].accept_certs) > MAX_TLS_CERTS:
+            del KNOWN_TLS_HOSTS[skey].accept_certs[0]
 
 def tls_context_wrap_socket(org_wrap, context, sock, *args, **kwargs):
     args, kwargs, sname, accept_certs = tls_configure(sock, context, args, kwargs)

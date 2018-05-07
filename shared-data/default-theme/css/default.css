@@ -5731,6 +5731,9 @@ div.setup-box-medium {
 div.setup-box-large {
   width: 800px;
 }
+div.setup-box h3 {
+  margin: 0 0 12px 0;
+}
 .setup-text-detail-large {
   color: #b3b3b3;
   font-size: 24px;
@@ -6319,6 +6322,27 @@ section.motd .version-info {
   font-size: 14px;
   line-height: 14px;
   color: #ffffff;
+}
+.still-running {
+  margin: 2em auto 0 auto;
+  padding: 1em 4em 0 0;
+  max-width: 26em;
+  color: #777;
+}
+.still-running .icon {
+  color: #aaa;
+  float: right;
+  margin: 0 2px 5px 2px;
+  padding-top: 2px;
+}
+.still-running .icon.bigger {
+  color: #bbb;
+  font-size: 2em;
+  padding-top: 0px;
+}
+.still-running .icon.smaller {
+  font-size: 0.7em;
+  padding-top: 4px;
 }
 /* Body */
 body {

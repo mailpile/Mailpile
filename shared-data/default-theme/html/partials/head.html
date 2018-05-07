@@ -47,22 +47,8 @@
   <!-- JS - App Specific -->
   <script>
   $(document).ready(function() {
-
     // Print JSON for JS Use
     Mailpile.instance = {};
-
-{### DISABLED FOR NOW, PENDING A NEW BACKUP STRATEGY ####
-
-    // Nagifications
-    {% if show_nagification(config.web.nag_backup_key) %}
-    Mailpile.notification({
-      status: 'warning',
-      message: '{{_("Back up your encryption key & passphrase")}}',
-      type: 'nagify',
-      action: '{{ U('/settings/backup-keys.html') }}'
-    });
-    {% endif %}
-#}
   });
 
   /* Plugins */
