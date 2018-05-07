@@ -385,46 +385,6 @@ class DeleteMessages(Command):
                              result=result)
 
 
-class BrowseOrLaunch(Command):
-    """Launch browser and exit, if already running"""
-    SYNOPSIS = (None, 'browse_or_launch', None, None)
-    ORDER = ('Internals', 5)
-    CONFIG_REQUIRED = False
-    RAISES = (KeyboardInterrupt,)
-
-    @classmethod
-    def Browse(cls, sspec):
-        http_url = ('http://%s:%s%s/' % sspec
-                    ).replace('//0.0.0.0:', '//localhost:')
-        try:
-            MakePopenUnsafe()
-            webbrowser.open(http_url)
-            return http_url
-        except:
-            pass
-        finally:
-            MakePopenSafe()
-        return False
-
-    def command(self):
-        config = self.session.config
-
-        if config.http_worker:
-            sspec = config.http_worker.sspec
-        else:
-            sspec = (config.sys.http_host, config.sys.http_port,
-                     config.sys.http_path or '')
-
-        try:
-            socket.create_connection(sspec[:2])
-            self.Browse(sspec)
-            os._exit(127)
-        except IOError:
-            pass
-
-        return self._success(_('Launching Mailpile'), result=True)
-
-
 class RunWWW(Command):
     """Just run the web server"""
     SYNOPSIS = (None, 'www', None, '[<host:port/path>]')
