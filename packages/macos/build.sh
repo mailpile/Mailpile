@@ -21,7 +21,7 @@ export PYTHON_SUBVERSION="14_3"
 export SYMLINKS_SRC="https://raw.githubusercontent.com/peturingi/homebrew/06eefcfd0e4cb1e9496c5944cf861a8f7607c69b/Library/Formula/symlinks.rb"
 
 export GUI_O_MAC_TIC_BRANCH="master"
-export GUI_O_MAC_TIC_REPO="https://github.com/peturingi/gui-o-mac-tic.git"
+export GUI_O_MAC_TIC_REPO="https://github.com/Mailpile/gui-o-mac-tic.git"
 ##
 ## CHANGE THE ABOVE EXPORTS IF NEEDED ##
 
@@ -39,19 +39,42 @@ if ! javac -version&>/dev/null ; then
 	false
 fi
 
+# Create AppIcon.appiconset
+export ICONSET_DIR=$BUILD_DIR/AppIcon.appiconset
+mkdir -p $ICONSET_DIR
+export Icon1024="../icons/1024x1024.png"
+sips -z 16 16     $Icon1024 --out $ICONSET_DIR/Icon-16.png
+sips -z 32 32     $Icon1024 --out $ICONSET_DIR/Icon-32.png
+sips -z 32 32     $Icon1024 --out $ICONSET_DIR/Icon-33.png
+sips -z 64 64     $Icon1024 --out $ICONSET_DIR/Icon-64.png
+sips -z 128 128   $Icon1024 --out $ICONSET_DIR/Icon-128.png
+sips -z 256 256   $Icon1024 --out $ICONSET_DIR/Icon-256.png
+sips -z 256 256   $Icon1024 --out $ICONSET_DIR/Icon-257.png
+sips -z 512 512   $Icon1024 --out $ICONSET_DIR/Icon-512.png
+sips -z 512 512   $Icon1024 --out $ICONSET_DIR/Icon-513.png
+cp $Icon1024 $ICONSET_DIR/Icon-1024.png
+
 # Build GUI-o-Mac-tic
-mkdir -p "$BUILD_DIR"
 git clone -b "$GUI_O_MAC_TIC_BRANCH" "$GUI_O_MAC_TIC_REPO" "$BUILD_DIR/gui-o-mac-tic"
 cd "$BUILD_DIR/gui-o-mac-tic"
 git submodule update --init --recursive
+rm src/Assets.xcassets/AppIcon.appiconset/Icon-*.png
+mv $ICONSET_DIR/* src/Assets.xcassets/AppIcon.appiconset/
+rmdir $ICONSET_DIR
 cd ~-
 cp configurator.sh "$BUILD_DIR/gui-o-mac-tic/share/configurator.sh"
-xcodebuild -project "$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj"
-mv "$BUILD_DIR/gui-o-mac-tic/build/Release/GUI-o-Mac-tic.app" "$BUILD_DIR/Mailpile.app"
+xcodebuild -project "$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj" \
+	EXECUTABLE_NAME=Mailpile \
+	PRODUCT_BUNDLE_IDENTIFIER=is.mailpile.gui-o-mac-tic.mailpile \
+	PRODUCT_MODULE_NAME=Mailpile \
+	PRODUCT_NAME=Mailpile \
+	PROJECT_NAME=Mailpile \
+	WRAPPER_NAME=Mailpile.app
+mv "$BUILD_DIR/gui-o-mac-tic/build/Release/Mailpile.app" "$BUILD_DIR/"
 rm -rf "$BUILD_DIR/gui-o-mac-tic"
 
 #
-# Install Mailpile Dependencies from homebrew.b
+# Install Mailpile Dependencies from homebrew.
 #
 mkdir -p $MAILPILE_BREW_ROOT
 cd "$MAILPILE_BREW_ROOT"

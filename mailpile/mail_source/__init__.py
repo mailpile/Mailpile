@@ -392,14 +392,15 @@ class BaseMailSource(threading.Thread):
 
     def _sleep(self, seconds):
         enabled = self.my_config.enabled
-        self._sleeping = seconds
-        while (self.alive and
-                self._sleeping > 0 and
-                self._sleeping_is_ok(seconds - self._sleeping) and
-                enabled == self.my_config.enabled and
-                not mailpile.util.QUITTING):
-            time.sleep(min(1, self._sleeping))
-            self._sleeping -= 1
+        if self._sleeping is None:
+            self._sleeping = seconds
+            while (self.alive and
+                    self._sleeping > 0 and
+                    self._sleeping_is_ok(seconds - self._sleeping) and
+                    enabled == self.my_config.enabled and
+                    not mailpile.util.QUITTING):
+                time.sleep(min(1, self._sleeping))
+                self._sleeping -= 1
         self._sleeping = None
         play_nice_with_threads()
         return (self.alive and not mailpile.util.QUITTING)
@@ -1062,7 +1063,7 @@ class BaseMailSource(threading.Thread):
                 self.session = _original_session
             self._update_unknown_state()
         self.close()
-        self._log_status(_('Shut down'), clear_errors=True)
+        self._log_status(_('Shutdown'), clear_errors=True)
         self._save_state()
 
     def _check_keepalive(self):
@@ -1077,8 +1078,13 @@ class BaseMailSource(threading.Thread):
                 if err_msg:
                     self._log_status(err_msg)
 
-    def wake_up(self, after=0):
-        self._sleeping = after
+    def wake_up(self):
+        self._sleeping = -1
+
+    def notify_config_changed(self):
+        # FIXME: It would be nice to check if the changes apply to us and
+        #        stay asleep otherwise.
+        self.wake_up()
 
     def rescan_now(self, session=None, started_callback=None):
         if not self.my_config.enabled:
@@ -1112,7 +1118,7 @@ class BaseMailSource(threading.Thread):
                     pass
 
     def quit(self, join=False):
-        self.interrupt_rescan(_('Shut down'))
+        self.interrupt_rescan(_('Shutdown'))
         self.alive = False
         self.wake_up()
         if join and self.isAlive():
@@ -1120,9 +1126,9 @@ class BaseMailSource(threading.Thread):
 
 
 def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
-    if 'dsn:has' in keywords or 'mdn:has' in keywords:
+    if False and ('dsn:has' in keywords or 'mdn:has' in keywords):
         # FIXME: This is a delivery notfication of some sort!
-        #        Figure out what it is telling us...
+        # TODO:  Figure out what it is telling us, do not mark as "new".
         return False
 
     if ('s:maildir' in msg_metadata_kws                  # Seen=read, maildir
