@@ -20,10 +20,10 @@
 MAILPILE_GIT="https://github.com/mailpile/Mailpile.git"
 MAILPILE_BRANCH=master
 
-PYTHON_SITE="https://www.python.org/ftp/python/2.7.14/"
-PYTHON_FILE="python-2.7.14.msi"
-# Checksum from https://www.python.org/downloads/release/python-2714  No SHA256!
-PYTHON_FILE_MD5=fff688dc4968ec80bbb0eedf45de82db
+PYTHON_SITE="https://www.python.org/ftp/python/2.7.15/"
+PYTHON_FILE="python-2.7.15.msi" 
+# Checksum from https://www.python.org/downloads/release/python-2715  No SHA256!
+PYTHON_FILE_MD5=023e49c9fba54914ebc05c4662a93ffe
 REQUIREMENTS="requirements-with-deps.txt"
 
 MPLAUNCHER_SITE="https://www.mailpile.is/files/build/"
@@ -32,17 +32,17 @@ MPLAUNCHER_FILE_SHA256=\
 fad7ee1a4a26943af8f20c7facc166c34f84326c02ee0561757219bbd330e437
 
 OPENSSL_SITE="https://www.openssl.org/source"
-OPENSSL_FILE="openssl-1.1.0f.tar.gz"
-# Checksum from https://www.openssl.org/source/openssl-1.1.0f.tar.gz.sha256
+OPENSSL_FILE="openssl-1.1.0h.tar.gz"
+# Checksum from https://www.openssl.org/source/openssl-1.1.0h.tar.gz.sha256
 OPENSSL_FILE_SHA256=\
-12f746f3f2493b2f39da7ecf63d7ee19c6ac9ec6a4fcd8c229da8a522cb12765
+5835626cde9e99656585fc7aaa2302a73a7e1340bf8c14fd635a62c66802a517
 
 GNUPG_SITE="https://www.gnupg.org/ftp/gcrypt/gnupg"
-GNUPG_FILE="gnupg-2.2.1.tar.bz2"
-# Checksum from https://gnupg.org/download/integrity_check.html. Why no SHA-256?
-GNUPG_FILE_SHA1=5455373fd7208b787f319027de2464721cdd4413
+GNUPG_FILE="gnupg-2.2.7.tar.bz2"
+# Checksum from https://lists.gnupg.org/pipermail/gnupg-announce. No SHA-256??
+GNUPG_FILE_SHA1=e222cda63409a86992369df8976f6c7511e10ea0
 # Pattern for archive generated in build process including 3rd party source.
-GNUPG_FILE_ALL="gnupg-w32-2.2.1_*.tar.xz"
+GNUPG_FILE_ALL="gnupg-w32-2.2.7_*.tar.xz"
 
 # End of configuration strings.
 
@@ -78,8 +78,9 @@ PYTHON_DL=$PROJECTDIR/PythonDistFiles
 echo "Python download dir:  $PYTHON_DL"
 
 # Create build directory.
-rm -rf /tmp/mailpile-winbuild/*         # Use rm -rf with hardcoded path only!
+rm -rf /tmp/mailpile-winbuild           # Use rm -rf with hardcoded path only!
 WORKDIR="/tmp/mailpile-winbuild"
+mkdir $WORKDIR
 echo "Working dir:          $WORKDIR"
 echo " "
 sleep 5
@@ -314,7 +315,8 @@ cp -r $SCRIPTDIR/GnuPG -t $WORKDIR/Mailpile
 echo " "
 echo "Build installer"
 cd $WORKDIR/Mailpile
-makensis -V2 -NOCD -DVERSION=$VERSION "$SCRIPTDIR/mailpile.nsi" 
+makensis -V2 -NOCD -DVERSION=$VERSION -DPYTHON_FILE=$PYTHON_FILE \
+                                                "$SCRIPTDIR/mailpile.nsi" 
 
 # Save source code archive to publish for licence compliance.
 cp -r $DOWNLOADDIR/* -t $SOURCEARCHIVEDIR

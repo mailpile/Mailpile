@@ -52,7 +52,7 @@ Section "install" InstallationInfo
 #   Install Python. Option /a prevents registry and start menu changes
 #   which could conflict with another Python installation.
     nsExec::ExecToLog '"msiexec" /qb- /a \
-                                "$INSTDIR\PythonDistFiles\python-2.7.14.msi" \
+                                "$INSTDIR\PythonDistFiles\${PYTHON_FILE}" \
                                 TARGETDIR="$INSTDIR\Python27"'
                                 
 #   Use ensurepip to install pip and setuptools (packaged with Python).
