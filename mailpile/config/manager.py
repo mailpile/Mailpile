@@ -424,10 +424,6 @@ class ConfigManager(ConfigDict):
         # Set the homedir default
         self.rules['homedir'][2] = self.workdir
         self._rules_source['homedir'][2] = self.workdir
-        # On Windows set default gnupg home to workdir
-        if sys.platform.startswith('win'):
-           self.rules['sys'][2]['gpg_home'][2] = self.workdir
-           self._rules_source['sys'][2]['gpg_home'][2] = self.workdir
         self.reset(rules=False, data=True)
         self.loaded_config = False
         pub_lines, prv_lines = [], []
