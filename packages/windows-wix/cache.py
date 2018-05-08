@@ -143,6 +143,56 @@ class Cache( object ):
     def insert( self, url, **kwargs ):
         return self.__fetch( url, None, **kwargs )
 
+class SemanticCache( object ):
+    '''
+    Operates at a resource-level of abstraction on top of a regular cache
+    '''
+
+    def __init__( self, resources, cache = None ):
+        '''
+        Create semantic cache with the specified resource dictionary.
+        '''
+        self.resources = resources
+        self.cache = cache or Cache()
+
+    def resource( self, name ):
+        '''
+        Get the path to a resource by name, fetching it if neccessary.
+        '''
+        return self.cache.resolve( **self.resources[name] )
+
+    def insert( self, resources ):
+        '''
+        insert one or more resources as name-url pairs.
+
+        hash is computed on insert.
+        '''
+        for key, url in resources.items():
+            path, sha1 = self.cache.insert( url )
+            self.resources[ key ] = { 'url': url, 'sha1': sha1 }
+
+    def save( self, path, indent = 2 ):
+        '''
+        save to json
+        '''
+        with open( path, 'w' ) as handle:
+            json.dump( self.resources, handle, indent = indent )
+
+    def preload( self ):
+        '''
+        preload all resources.
+        '''
+        for value in self.resources.values():
+            self.cache.resolve( **value )
+
+    @classmethod
+    def load( cls, path, cache = None ):
+        '''
+        create a new semantic cache from the specified path
+        '''
+        with open( path, 'r' ) as handle:
+            return cls( json.load( handle ), cache )
+
 if __name__ == '__main__':
     logging.basicConfig()
     import argparse
@@ -158,23 +208,18 @@ if __name__ == '__main__':
 
     if args.log_level:
         logger.setLevel( getattr( logging, args.log_level ) )
+
     
-    cache = Cache( args.cache )
-    with open( args.json, 'r' ) as handle:
-        resources = json.load( handle )
+    cache = SemanticCache.load( args.json, Cache( args.cache ) )
 
     if args.insert:
-        for key, url in json.loads( args.insert ).items():
-            path, sha1 = cache.insert( url )
-            resources[ key ] = { 'url': url, 'sha1': sha1 }
-        with open( args.json, 'w' ) as handle:
-            json.dump( resources, handle )
-
+        cache.insert( json.loads( args.insert ) )
+        cache.save( args.json )
+        
     if args.resource:
-        print cache.resolve( **resources[ args.resource ] )
+        print cache.resource( args.resource )
         
     if args.all:
-        for resource in resources.values():
-            cache.resolve( **resource )
+        cache.preload()
             
     #print cache.resolve( 'https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi', 'a84cb11bdae3e1cb76cf45aa96838d80b9dcd160' )

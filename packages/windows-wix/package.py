@@ -210,6 +210,12 @@ class WixConfig( object ):
         except KeyError:
             raise
 
+    def post_install( self ):
+        '''
+        post_install actions
+        '''
+        
+
     # These properties align folder relocation behavior with implicit structure
     #
     flavor_properties = {
@@ -258,7 +264,47 @@ class WixConfig( object ):
                            Value = 'WelcomeDlg',
                            Order = '2' )
         node.text = "1"
+
+        # Launch mailpile on exit.
+        #
+        xml_append( self.product, 'Property',
+                    Id = 'WixShellExecTarget',
+                    Value = '[#{}]'.format( self.file_id( 'bin\\launch-mailpile.bat' ) ) )
+
+        xml_append( self.product, 'CustomAction',
+                    Id = 'LaunchApplication',
+                    BinaryKey = 'WixCA',
+                    DllEntry = 'WixShellExec',
+                    Impersonate = 'yes' )
+
+        node = xml_append( ui, 'Publish',
+                           Dialog = 'ExitDialog',
+                           Control = 'Finish',
+                           Event = 'DoAction',
+                           Value = 'LaunchApplication' )
+
+        node.text = 'NOT Installed'
+
+        # Kill GPG Agent if this MSI is installed.
+        #
+        xml_append( self.product, 'Property',
+                    Id = 'WixQuietExecCmdLine',
+                    Value = '"[WindowsFolder]\\System32\\taskkill.exe" /F /IM gpg-agent.exe' )
         
+        xml_append( self.product, 'CustomAction',
+                    Id = 'GPGAgent.TaskKill',
+                    BinaryKey = 'WixCA',
+                    DllEntry = 'WixQuietExec',
+                    Execute = 'immediate',
+                    Return = 'ignore',
+                    Impersonate = 'yes' )
+
+        installSeq = xml_append( self.product, 'InstallExecuteSequence' )
+        node = xml_append( installSeq, 'Custom',
+                           Action = 'GPGAgent.TaskKill',
+                           Before = 'RemoveFiles' )
+
+        node.text = 'Installed'
 
     def logical_node( self, parent_id, **attrs ):
         '''
@@ -451,7 +497,7 @@ if __name__ == '__main__':
 
 
     parser.add_argument( '--light',
-                         default = os.path.join( basedir, "tools\\wix311-binaries\\light.exe -ext WixUIExtension {}" ),
+                         default = os.path.join( basedir, "tools\\wix311-binaries\\light.exe -ext WixUIExtension -ext WixUtilExtension {} -cc cache -reusecab" ),
                          help = "template for invoking light, using brace {} notation" )
 
     parser.add_argument( 'config',

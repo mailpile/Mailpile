@@ -53,7 +53,6 @@
     },
     "mailpile": {
       "ignore": [
-        ".*\\.py(?:c|o)$", 
         ".*\\.git.*", 
         ".*\\.msi$", 
         ".*packages\\\\windows.*"
@@ -63,11 +62,14 @@
     }, 
     "gui-o-matic": {
       "ignore": [
-        ".*\\.py(?:c|o)$", 
         ".*\\.git.*"
       ], 
       "root": "c:\\Users\\ededa\\Documents\\gui-o-matic", 
       "uuid": "0465f2d6-becc-4279-82af-b6d23c6bf033"
+    },
+    "tor": {
+      "root": ".\\build\\tor-win32-0.3.2.10",
+      "uuid": "b44d81df-26c5-468b-b9fe-348a9fd0d606"
     }
   }
 }
