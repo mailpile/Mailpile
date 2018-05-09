@@ -127,29 +127,58 @@ def pushdir( path ):
     finally:
         os.chdir( cwd )
 
-@contextlib.contextmanager
-def EditableTemporaryFile( **kwargs ):
+class TemporaryScope( object ):
     '''
-    Like named temporary file, but has a context for editing so that other
-    apps can use it
+    Context for tracking multiple temporary files.
+
+    Principly combats nested contexts:
+
+        with tempfile() as x:
+            with tempfile() as y:
+                with tempdir() as z:
+                    with tempsomething as q:
+                        ...
+    translates to:
     
-    https://stackoverflow.com/questions/5344287/create-read-from-tempfile/5344603#5344603
+        with TemporaryScope() as context:
+
+            with context.named_file(...) as x:
+                ...
+
+            with context.named_file(...) as Y:
+                ...
+
+            z = context.named_dir(...):
+                ...
+
+    so that named resouces may be sequentially constructed and automatically
+    cleaned up.
     '''
-    kwargs['delete'] = False
-    with tempfile.NamedTemporaryFile( **kwargs ) as handle:
-            name = handle.name
 
-    @contextlib.contextmanager
-    def reopen( mode ):
-        with open( name, mode ) as handle:
-            yield handle
+    def __init__( self, deleter = rmtree_log_error ):
+        self.deleter = deleter
 
-    reopen.name = name
+    def __enter__( self ):
+        self.paths = []
+        return self
 
-    try:
-        yield reopen
-    finally:
-        os.unlink( name )
+    def __exit__( self, *ignored ):
+        for path in self.paths:
+            self.deleter( path )
+
+        del self.paths
+
+    def named_file( self, *args, **kwargs ):
+        kwargs['delete'] = False
+        result = tempfile.NamedTemporaryFile( *args, **kwargs )
+        self.paths.append( result.name )
+        return result
+
+    def named_dir( self, *args, **kwargs ):
+        result = tempfile.mkdtemp( *args, **kwargs )
+        self.paths.append( result )
+        return result
+            
         
 class Build( object ):
     '''
@@ -321,86 +350,50 @@ def provide_python( build, keyword, dep_path ):
 
     return dep_path
 
+import textwrap
+
 @Build.provide( 'gpg' )
 def provide_gpg( build, keyword, dep_path ):
+    '''
+    install GPG in a temporary location and use mkportable to create a
+    portable GPG for the build. Requires ADMIN and that gpg4win *is not*
+    installed.
+    '''
     build.depend( 'python27' )
     gpg_installer = build.cache().resource( 'gpg' )
 
-    gpg_ini = [ '''[gpg4win]''',
-        '''  inst_gpgol = false''',
-        '''  inst_gpgex = false''',
-        '''  inst_kleopatra = false''',
-        '''  inst_gpa = false''',
-        '''  inst_claws_mail = false''',
-        '''  inst_compendium = false''',
-        '''  inst_start_menu = false''',
-        '''  inst_desktop = false''',
-        '''  inst_quick_launch_bar = false''' ]
+    gpg_ini = textwrap.dedent( '''
+        [gpg4win]
+            inst_gpgol = false
+            inst_gpgex = false
+            inst_kleopatra = false
+            inst_gpa = false
+            inst_claws_mail = false
+            inst_compendium = false
+            inst_start_menu = false
+            inst_desktop = false
+            inst_quick_launch_bar = false
+        ''')
 
     # Use the built python to elevate if needed
     # https://stackoverflow.com/questions/130763/request-uac-elevation-from-within-a-python-script
-    install_template = ('#!/usr/bin/python\n'
-                        'import sys\n'
-                        'import ctypes\n'
-                        'import subprocess\n'
-                        'if not ctypes.windll.shell32.IsUserAnAdmin():\n'
-                        '    ShellExecuteW = ctypes.windll.shell32.ShellExecuteW\n'
-                        '    status = ShellExecuteW(None,\n'
-                        '                           "runas",\n'
-                        '                           sys.executable,\n'
-                        '                           __file__,\n'
-                        '                           None,\n'
-                        '                           1)\n'
-                        '    exit( status )\n'
-                        '\n'
-                        'install_cmd = ("{installer_path}", "/S",\n'
-                        '               "/C={config}",\n'
-                        '               "/D={target}")\n'
-                        'uninstall_cmd = ("{uninstaller_path}",)\n'
-                        'subprocess.check_call( install_cmd )\n'
-                        'subprocess.check_call( uninstall_cmd )\n')
+    build_template = textwrap.dedent( '''
+        #!/usr/bin/python
+        import sys
+        import ctypes
+        import subprocess
+        import os.path
+        import win32com.shell.shell as shell
+        import win32com.shell.shellcon as shellcon
+        import win32event
+        import win32process
+        import win32api
+        import win32con
+        import socket
+        import random
+        import traceback
 
-    install_template = '''
-#!/usr/bin/python
-import sys
-import ctypes
-import subprocess
-import time
-import os.path
-import win32com.shell.shell as shell
-import win32com.shell.shellcon as shellcon
-import win32event
-import win32process
-import win32api
-import win32con
-import socket
-
-address = ("localhost", 54321)
-sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-
-try:
-    if not ctypes.windll.shell32.IsUserAnAdmin():
-        sock.settimeout( 720 )
-        sock.bind( address )
-        parameters = '"{{}}" {{}}'.format( os.path.abspath( __file__ ), address[0] )
-        result = shell.ShellExecuteEx(fMask = shellcon.SEE_MASK_NOCLOSEPROCESS,
-                                      lpVerb = "runas",
-                                      lpFile = sys.executable,
-                                      lpParameters = parameters,
-                                      nShow = win32con.SW_SHOW )
-
-        handle = result['hProcess']
-        print handle
-        status = win32event.WaitForSingleObject(handle, -1)
-        print status
-        win32api.CloseHandle( handle )
-        msg = sock.recv( 4096 )
-        sock.close()
-        sys.stderr.write( msg )
-        if len( msg ):
-            sys.exit( -1 )
-    else:
-        try:
+        def make_portable_gpg():
             install_cmd = ("{installer_path}", "/S",
                            "/C={config}",
                            "/D={target}")
@@ -409,41 +402,80 @@ try:
             subprocess.check_call( install_cmd )
             subprocess.check_call( portable_cmd )
             subprocess.check_call( uninstall_cmd )
+
+        def ellevate_and_wait( sock, timeout ):
+            sock.settimeout( timeout )
+            while True:
+                try:
+                    port = random.randint(1000, 2**16-1)
+                    sock.bind( ("localhost", port) )
+                    break
+                except socket.error:
+                    continue
+
+            parameters = '"{{}}" {{}}'.format( os.path.abspath( __file__ ), port )
+            result = shell.ShellExecuteEx(fMask = shellcon.SEE_MASK_NOCLOSEPROCESS,
+                                          lpVerb = "runas",
+                                          lpFile = sys.executable,
+                                          lpParameters = parameters,
+                                          nShow = win32con.SW_SHOW )
+
+            handle = result['hProcess']
+            status = win32event.WaitForSingleObject(handle, -1)
+            win32api.CloseHandle( handle )
+            return sock.recv( 4096*1024 )
+
+        def signal_result_and_exit( sock, error_message = '' ):
             if len( sys.argv ) > 1:
-                sock.sendto( '', address )
-        except:
-            if len( sys.argv ) > 1:
-                import traceback
-                sock.sendto( traceback.format_exc(), address )
-            raise
-finally:
-    sock.close()
-'''
+                port = int( sys.argv[1] )
+                sock.sendto(error_message, ("localhost", port))
+            else:
+                sys.stderr.write(error_message)
+            sys.exit( len( error_message ) )
+
+        try:
+            sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )    
+            if ctypes.windll.shell32.IsUserAnAdmin():
+                try:
+                    make_portable_gpg()
+                    result = ''
+                except:
+                    result = traceback.format_exc()
+            else:
+                result = ellevate_and_wait( sock, 14 )
+
+            signal_result_and_exit( sock, result )
+
+        finally:
+            sock.close()
+        ''')
 
     def escape( value ):
         return value.replace( '\\', '\\\\' )
 
     os.mkdir( dep_path )
-    
-    with EditableTemporaryFile() as ini_file:
-        with ini_file( 'w' ) as handle:
-            handle.writelines( gpg_ini )
-            
-        with tempdir() as tmp_path:
-            uninstaller = os.path.join(tmp_path, "gpg4win-uninstall.exe")
-            mkportable = os.path.join(tmp_path, "bin\\mkportable.exe")
-            script_vars = { 'installer_path': escape( gpg_installer ),
-                            'uninstaller_path': escape( uninstaller ),
-                            'config': escape( ini_file.name ),
-                            'target': escape( tmp_path ),
-                            'mkportable_path': escape(mkportable),
-                            'build': escape( dep_path ) }
 
-            with EditableTemporaryFile() as install_script:
-                with install_script( 'w' ) as handle:
-                    handle.write( install_template.format( **script_vars ) )
-                    #print install_template.format( **script_vars )
-                build.invoke( 'python', install_script.name )
+    with TemporaryScope() as scope:
+        tmp_path = scope.named_dir()
+        uninstaller = os.path.join(tmp_path, "gpg4win-uninstall.exe")
+        mkportable = os.path.join(tmp_path, "bin\\mkportable.exe")
+        
+        script_vars = { 'installer_path': escape( gpg_installer ),
+                        'uninstaller_path': escape( uninstaller ),
+                        'mkportable_path': escape( mkportable ),
+                        'build': escape( dep_path ),
+                        'target': escape( tmp_path ) }
+        
+        with scope.named_file() as ini_file:
+            ini_file.writelines( gpg_ini )
+            script_vars[ 'config' ] = escape( ini_file.name )
+
+        with scope.named_file() as build_script:
+            build_script.write( build_template.format( **script_vars ) )
+            print build_template.format( **script_vars )
+            script_path = build_script.name
+
+        build.invoke( 'python', script_path )
                                                     
     return dep_path
 
@@ -484,7 +516,7 @@ def config_mailpile( keyword ):
 
 @Build.default_config( 'gui-o-matic' )
 def config_gui_o_matic( keyword ):
-    return { 'commit': 'master',
+    return { 'commit': 'winapi',
                'repo': 'https://github.com/AlexanderHaase/gui-o-matic' }
     
 
@@ -511,7 +543,8 @@ if __name__ == '__main__':
     resources = cache.SemanticCache.load( 'resources.json' )
     with Build( resources ) as build:
         build.depend( 'tor' )
+        build.depend( 'gui-o-matic' )
+        build.depend( 'wix' )
         build.depend( 'python27' )
         print build.depend( 'gpg' )
-        time.sleep( 30 )
-    
+        time.sleep( 120 )

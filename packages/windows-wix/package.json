@@ -24,7 +24,7 @@
         ".*\\.py(?:c|o)$", 
         ".*\\.git.*"
       ], 
-      "root": "c:\\Users\\ededa\\Python27", 
+      "root": ".\\tmp8wzuv8\\Python27", 
       "uuid": "06dfe53e-01c3-4cd0-b6b6-1983f217692f"
     }, 
     "platform-scripts": {
@@ -48,7 +48,7 @@
     }, 
     "gpg": {
       "ignore": [], 
-      "root": ".\\build\\gpg", 
+      "root": ".\\tmp8wzuv8\\gpg", 
       "uuid": "a8014bc6-5282-4d7a-a46d-3b0d53519914"
     },
     "mailpile": {
@@ -57,18 +57,18 @@
         ".*\\.msi$", 
         ".*packages\\\\windows.*"
       ], 
-      "root": "c:\\Users\\ededa\\Documents\\Mailpile", 
+      "root": ".\\tmp8wzuv8\\Mailpile", 
       "uuid": "62e900bd-7f53-4746-8ef9-f8d93848e89d"
     }, 
     "gui-o-matic": {
       "ignore": [
         ".*\\.git.*"
       ], 
-      "root": "c:\\Users\\ededa\\Documents\\gui-o-matic", 
+      "root": ".\\tmp8wzuv8\\gui-o-matic", 
       "uuid": "0465f2d6-becc-4279-82af-b6d23c6bf033"
     },
     "tor": {
-      "root": ".\\build\\tor-win32-0.3.2.10",
+      "root": ".\\tmp8wzuv8\\tor",
       "uuid": "b44d81df-26c5-468b-b9fe-348a9fd0d606"
     }
   }
