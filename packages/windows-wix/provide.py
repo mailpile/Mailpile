@@ -547,6 +547,7 @@ def provide_checkout( build, keyword, dep_path ):
         build.invoke( 'git', 'clone', config['repo'], dep_path )
         with pushdir( dep_path ):
             build.invoke( 'git', 'checkout', config['commit'] )
+            build.invoke( 'git', 'submodule', 'update', '--init', '--recursive' )
             rmtree_log_error( '.git' )
             
     return dep_path

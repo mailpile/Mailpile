@@ -302,7 +302,7 @@ class WixConfig( object ):
         installSeq = xml_append( self.product, 'InstallExecuteSequence' )
         node = xml_append( installSeq, 'Custom',
                            Action = 'GPGAgent.TaskKill',
-                           After = 'InstallInitialize' )
+                           Before = 'InstallValidate' )
 
         node.text = 'Installed'
 
