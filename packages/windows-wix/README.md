@@ -1,4 +1,4 @@
-* WIX Mailpile packaging framwork *
+# WIX Mailpile packaging framwork #
 
 The WIX mailpile packaging framework automates constructing a windows package
 for mailpile and it's dependencies. It attempts to pull in dependencies in as
@@ -11,7 +11,7 @@ around sourcing, discovery, and versioning of files. While there's a fair
 amount of automation in the process, ultimately customizations are baked in to
 various points in the framework.
 
-** Producing a package **
+## Producing a package ##
 
 Producing a package has minimal requirements:
 
@@ -29,7 +29,7 @@ msi is located in 'package/package/mailpile.msi'.
 Note: This is a first draft--there's a lot of work in progress on customized
 packaging and improving automation. See TODO.md.
 
-** Integration points **
+## Integration points ##
 
 The mailpile package integrates various mailpile dependencies in various ways.
 Physicially, each top-level dependency is placed in it's own sub-directory
@@ -48,7 +48,7 @@ point.
 
 All mailpile dependencies run in the above environment unless otherwise specified.
 
-** Modifying the packaging process **
+## Modifying the packaging process ##
 
 Modifying packaging convers a very wide range of subjects:
 
@@ -62,7 +62,7 @@ with resources to prepare an install enviornment(somewhat akin to a fakeroot),
 which is then rolled into a package. Resources and package layout are largely
 described via configuration jsons, where as build steps are largely scripted.
 
-*** Specifying dependencies sources (a.k.a. resources) ***
+### Specifying dependencies sources (a.k.a. resources) ###
 
 Resources cover anything that needs to be downloaded and manipulated to produce
 the package. Resources are specified as a json dictionary where each entry is
@@ -86,7 +86,7 @@ resource sources (i.e. version of python, tor, etc.) opaquely at this level.
 See 'Producing a package' above for how to use a custom resource json in the
 build system.
 
-*** Modifying the build system to include new dependencies ***
+### Modifying the build system to include new dependencies ###
 
 The build system is based off of lazily evaluating dependent scripts to produce
 build artifacts. The artifacts need not be a package--the framework is flexible
@@ -110,7 +110,7 @@ The build system has three customization points:
   - configuration points to easily change run time
   - default configuration functions
 
-**** Build Scripts ****
+#### Build Scripts ####
 
 Each dependency is associated with a build script, which is responsible for
 completely configuring the dependency and returning a 'built' path for that
@@ -138,7 +138,6 @@ def provide_example( build, keyword, dep_path ):
     # use a function provided by a build script
     #
     build.invoke( 'function_from_external_dep', dep_path )
-
 
     # provide a function for other build scripts
     #
@@ -171,7 +170,7 @@ their registration:
 
 There are also examples for working with MSIs and exes.
 
-**** Configuration points ****
+#### Configuration points ####
 
 The build system exposes configuration to build scripts as a generic key-value
 store. Configuration consolidates two configuration streams: a default
@@ -193,7 +192,7 @@ def provide_config_example( build, keyword, dep_path ):
 
 ```
 
-**** Default configuation ****
+#### Default configuation ####
 
 Rather than baking defaults into build scripts, it's better to explicity expose
 them via the build system so that users can intuitively discover and manipulate
@@ -214,7 +213,7 @@ def config_repo_defaults( keyword ):
 ```
 
 
-*** Including new dependencies in packages ***
+### Including new dependencies in packages ###
 
 Packaging is actually just a build script that prepares an MSI via wix. It uses
 a template 'package_template.json' that describes build elements to scan/import.
