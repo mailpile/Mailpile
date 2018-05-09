@@ -35,10 +35,10 @@
       ], 
       "shortcuts": {
         "bin\\launch-mailpile.bat": {
-          "Description": "GUI for Mailpile Email Client", 
-          "Id": "MailpileGUI", 
+          "Description": "Mailpile Email Client", 
+          "Id": "MailpileShortcut", 
           "WorkingDirectory": "MailpileClient", 
-          "Name": "Mailpile GUI",
+          "Name": "Mailpile",
           "Show": "minimized",
           "Icon": "mailpile_logo.ico"
         }

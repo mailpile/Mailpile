@@ -37,7 +37,9 @@ class LessMSI( object ):
 
         args = (self.lessmsi, 'x', msi_path, temp_dir)
         try:
-            subprocess.check_call( args )
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.check_call( args, startupinfo = si )
             sub_dirs = os.listdir( temp_dir )
             if len( sub_dirs ) == 1:
                 src_dir = os.path.join( temp_dir, sub_dirs[0] )

@@ -16,7 +16,7 @@ locate = ( ("Mailpile","mailpile"),
            ("gpg","bin","gpg.exe"),
            ("gpg","bin","gpg-agent.exe"),
            ("gui-o-matic","gui_o_matic"),
-           ("tor-win32-0.3.2.10","Tor","tor.exe"))
+           ("tor","Tor","tor.exe"))
 
 def locate_parent( path_parts ):
 

@@ -98,10 +98,16 @@ def rmtree_log_error( path ):
     '''
     Remove an entire directory tree rm -rf style, logging any errors
     '''
-    def log_error( func, path, exec_info ):
+    def log_error( func, path, exc_info ):
         logger.error("Unable perform action {}: {} {}".format( msi_path, func, path ),
-                      exec_info = exec_info )
-    shutil.rmtree( path, ignore_errors = True, onerror = log_error )     
+                      exec_info = exc_info )
+    if os.path.isdir( path ):
+        shutil.rmtree( path, ignore_errors = True, onerror = log_error )
+    else:
+        try:
+            os.unlink( path )
+        except:
+            log_error( 'os.unlink', path, sys.exc_info() )
 
 @contextlib.contextmanager
 def tempdir( *args, **kwargs ):
@@ -195,13 +201,17 @@ class Build( object ):
         def __call__( self, *args ):
             cmdline = (self.exe,) + tuple(args)
             logger.debug( "Running command line: {}".format( cmdline ) )
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             with tempfile.TemporaryFile( 'a+' ) as error_file:
                 try:
-                    return self.method( cmdline, stderr = error_file )
+                    return self.method( cmdline,
+                                        stderr = error_file,
+                                        startupinfo = si )
                 except subprocess.CalledProcessError as e:
                     error_file.seek( 0 )
                     error_text = error_file.read()
-                    print "ERROR" + error_text
+                    logger.critical( "stderr from exception:\n" + error_text )
                     e.stderr = error_text
                     raise
 
@@ -215,16 +225,20 @@ class Build( object ):
             self.build_dir = tempfile.mkdtemp()
             self.built = {}
             self.cmds = {}
-            logger.info('Constructing build context at {}'.format(self.build_dir))
+            self.log = logger #TODO: Proxy things for clarity
+            self.log.info('Constructing build context at {}'.format(self.build_dir))
 
         def cache( self ):
             return self.build.cache
+
+        def root( self ):
+            return self.build_dir
         
         def depend( self, keyword ):
             try:
                 return self.built[ keyword ]
             except KeyError:
-                logger.info( "Inflating dependency {}".format( keyword ) )
+                self.log.info( "Inflating dependency {}".format( keyword ) )
                 dep_path = os.path.join( self.build_dir, keyword )
                 provider = self.build._providers[ keyword ]
                 result = provider( self, keyword, dep_path )
@@ -234,14 +248,14 @@ class Build( object ):
         def publish( self, keyword, invoker ):
             if not callable( invoker ):
                 invoker = self.build.Invoker( invoker )
-            logger.debug( 'registering invokable {}'.format( keyword ) )
+            self.log.debug( 'registering invokable {}'.format( keyword ) )
             self.cmds[ keyword ] = invoker
 
         def invoke( self, keyword, *args ):
             return self.cmds[ keyword ]( *args )
             
         def clear( self ):
-            logger.info('Removing build context at {}'.format(self.build_dir))
+            self.log.info('Removing build context at {}'.format(self.build_dir))
             rmtree_log_error( self.build_dir )
 
         def config( self, keyword ):
@@ -249,7 +263,7 @@ class Build( object ):
                 result = self.build.config[ keyword ]
             except KeyError:
                 result = self.build._defconfig[ keyword ]( keyword )
-                logger.info( "Using default {} config '{}'".format( keyword, result ) )
+                self.log.info( "Using default {} config '{}'".format( keyword, result ) )
             return result
 
     _providers = {}
@@ -325,7 +339,7 @@ def provide_python( build, keyword, dep_path ):
     # Manually bootstrap pip.
     # https://stackoverflow.com/questions/36132350/install-python-wheel-file-without-using-pip
     #
-    logger.debug( 'Bootstrapping pip from bundled wheels' )
+    build.log.debug( 'Bootstrapping pip from bundled wheels' )
     bundle_dir = os.path.join( dep_path, 'Lib\\ensurepip\\_bundled' )
     pip_wheel = next( glob.iglob( os.path.join( bundle_dir, 'pip*.whl' ) ) )
     setup_wheel = next( glob.iglob( os.path.join( bundle_dir, 'setup*.whl' ) ) )
@@ -399,9 +413,13 @@ def provide_gpg( build, keyword, dep_path ):
                            "/D={target}")
             uninstall_cmd = ("{uninstaller_path}", "/S")
             portable_cmd = ("{mkportable_path}", "{build}")
-            subprocess.check_call( install_cmd )
-            subprocess.check_call( portable_cmd )
-            subprocess.check_call( uninstall_cmd )
+            
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            
+            subprocess.check_call( install_cmd, startupinfo = si )
+            subprocess.check_call( portable_cmd, startupinfo = si )
+            subprocess.check_call( uninstall_cmd, startupinfo = si )
 
         def ellevate_and_wait( sock, timeout ):
             sock.settimeout( timeout )
@@ -418,7 +436,7 @@ def provide_gpg( build, keyword, dep_path ):
                                           lpVerb = "runas",
                                           lpFile = sys.executable,
                                           lpParameters = parameters,
-                                          nShow = win32con.SW_SHOW )
+                                          nShow = win32con.SW_HIDE )
 
             handle = result['hProcess']
             status = win32event.WaitForSingleObject(handle, -1)
@@ -472,7 +490,7 @@ def provide_gpg( build, keyword, dep_path ):
 
         with scope.named_file() as build_script:
             build_script.write( build_template.format( **script_vars ) )
-            print build_template.format( **script_vars )
+            #print build_template.format( **script_vars )
             script_path = build_script.name
 
         build.invoke( 'python', script_path )
@@ -484,7 +502,7 @@ def provide_from_env( build, keyword, dep_path ):
     try:
         exe_path = build.config( keyword )
     except KeyError:
-        logger.warning( "No explicit path configured for '{}', assuming on PATH".format( keyword ) )
+        build.log.warning( "No explicit path configured for '{}', assuming on PATH".format( keyword ) )
         exe_path = keyword
 
     build.publish( keyword, exe_path )
@@ -520,7 +538,6 @@ def config_gui_o_matic( keyword ):
                'repo': 'https://github.com/AlexanderHaase/gui-o-matic' }
     
 
-
 @Build.provide( 'mailpile', 'gui-o-matic' )
 def provide_checkout( build, keyword, dep_path ):
     build.depend( 'git' )
@@ -534,6 +551,101 @@ def provide_checkout( build, keyword, dep_path ):
             
     return dep_path
 
+@Build.provide( 'sign-tree' )
+def provide_sign_tree( build, keyword, dep_path ):
+    try:
+        key = build.config( 'sign-key' )
+
+        #TODO: publish a recursive scanner.
+
+    except KeyError:
+        build.log.warning( 'No signing key configured--outputs will not be signed' )
+
+        def sign_tree( path ):
+            build.log.info( "ignoring request to sign tree '{}'".format( path ) )
+
+    build.publish( keyword, sign_tree )
+
+    return None
+
+import package
+import json
+import copy
+
+def format_pod( template, **kwargs ):
+    '''
+    apply str.format to all str elements of a simple object tree template
+    '''
+    if isinstance( template, dict ):
+        template = { format_pod( key, **kwargs ): format_pod( value, **kwargs ) for (key,value) in template.items() }
+    elif isinstance( template, str ) or isinstance( template, unicode ):
+        template = template.format( **kwargs )
+    elif isinstance( template, list ):
+        template = [ format_pod( value, **kwargs ) for value in template ]
+    elif callable( template ):
+        template = format_pod( template(), **kwargs )
+    else:
+        # Maybe raise an error instead?
+        #
+        template = copy.copy( template )
+        
+    return template
+
+@Build.default_config( 'package_template', 'package_uuid_db' )
+def config_package_jsons( keyword ):
+    base = os.path.abspath( os.path.dirname( __file__ ) )
+    return os.path.join( base , keyword + '.json' )
+
+@Build.provide( 'package' )
+def provide_msi( build, keyword, dep_path ):
+    content_keys = ('tor',
+                    'mailpile',
+                    'gui-o-matic',
+                    'python27',
+                    'gpg')
+
+    if not os.path.exists( dep_path ):
+        os.mkdir( dep_path )
+
+    content_paths = { key: build.depend( key ) for key in content_keys }
+
+    tool_keys = ('wix',
+                 'sign-tree')
+
+    tool_paths = { key: build.depend( key ) for key in tool_keys }
+
+    for path in content_paths:
+        build.invoke( 'sign-tree', path )
+
+    with open( build.config( 'package_template' ), 'r' ) as handle:
+        package_template = json.load( handle )
+        package_config = format_pod( package_template, **content_paths )
+
+    with open( os.path.join( dep_path, 'mailpile.package.json' ), 'w' ) as handle:
+        json.dump( package_config, handle, indent = 2 )
+
+    uuid_db_path = build.config( 'package_uuid_db' )
+
+    if not os.path.exists( uuid_db_path ):
+        build.log.warning( "Creating new uuid database '{}'".format( uuid_db_path ))
+        with open( uuid_db_path, 'w' ) as handle:
+            json.dump( {}, handle )
+
+    wix = package.WixConfig( package_config, uuid_db_path )
+
+    # TODO: Split uuid and wix config saving
+    wix_config_path = os.path.join( dep_path, 'mailpile' )
+    wix.save( wix_config_path )
+
+    build.invoke( 'candle', wix_config_path + '.wxs',
+                  '-out', os.path.join( dep_path, 'mailpile.wixobj' ))
+    build.invoke( 'light',
+                  '-ext', 'WixUIExtension',
+                  '-ext', 'WixUtilExtension',
+                  wix_config_path + '.wixobj',
+                  '-out', os.path.join( dep_path, 'mailpile.msi' ))
+    return dep_path
+
 if __name__ == '__main__':
     import cache
     import time
@@ -542,9 +654,5 @@ if __name__ == '__main__':
     
     resources = cache.SemanticCache.load( 'resources.json' )
     with Build( resources ) as build:
-        build.depend( 'tor' )
-        build.depend( 'gui-o-matic' )
-        build.depend( 'wix' )
-        build.depend( 'python27' )
-        print build.depend( 'gpg' )
-        time.sleep( 120 )
+        build.depend( 'package' )
+        shutil.copytree( build.root(), 'package' )
