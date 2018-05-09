@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     test_dir = tempfile.mkdtemp()
     try:
-        dst_dir = os.path.join( test_dir, 'python27' )
+        dst_dir = 'foo' #os.path.join( test_dir, 'python27' )
         resources = cache.SemanticCache.load( 'resources.json' )
         extract = LessMSI( '.\\tools\\lessmsi-v1.6.1\\lessmsi.exe' )
         extract( resources.resource( "python27" ), dst_dir )
