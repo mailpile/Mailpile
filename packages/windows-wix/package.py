@@ -383,7 +383,7 @@ class WixConfig( object ):
         #size = len( attempt )
         #if size > 72:
         #    attempt = use + '_' + hashlib.sha1( name ).hexdigest()
-        return use + '_' + hashlib.sha1( name ).hexdigest()
+        return use + '_' + hashlib.sha1( name.encode() ).hexdigest()
 
     def directory_id( self, path ):
         return self.id_str( 'Directory', path )
@@ -475,13 +475,12 @@ class WixConfig( object ):
         dense = ET.tostring( self.root, encoding='utf-8' )
         reparsed = minidom.parseString( dense )
         pretty = reparsed.toprettyxml( indent = ' ' * indent, encoding = 'utf-8' ) 
-        with open( path + '.wxs', 'w' ) as handle:
-            handle.write( pretty.encode( 'utf-8' ) )
+        with open( path + '.wxs', 'wb' ) as handle:
+            handle.write( pretty )
 
 
 if __name__ == '__main__':
     logging.basicConfig()
-    #logger.setLevel( logging.INFO )
 
     import argparse
     import sys

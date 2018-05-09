@@ -203,11 +203,12 @@ class Build( object ):
             logger.debug( "Running command line: {}".format( cmdline ) )
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            with tempfile.TemporaryFile( 'a+' ) as error_file:
+            with tempfile.TemporaryFile( 'ab+' ) as error_file:
                 try:
                     return self.method( cmdline,
                                         stderr = error_file,
-                                        startupinfo = si )
+                                        startupinfo = si,
+                                        universal_newlines = True)
                 except subprocess.CalledProcessError as e:
                     error_file.seek( 0 )
                     error_text = error_file.read()
@@ -446,7 +447,7 @@ def provide_gpg( build, keyword, dep_path ):
         def signal_result_and_exit( sock, error_message = '' ):
             if len( sys.argv ) > 1:
                 port = int( sys.argv[1] )
-                sock.sendto(error_message, ("localhost", port))
+                sock.sendto(error_message.encode(), ("localhost", port))
             else:
                 sys.stderr.write(error_message)
             sys.exit( len( error_message ) )
@@ -485,11 +486,11 @@ def provide_gpg( build, keyword, dep_path ):
                         'target': escape( tmp_path ) }
         
         with scope.named_file() as ini_file:
-            ini_file.writelines( gpg_ini )
+            ini_file.write( gpg_ini.encode() )
             script_vars[ 'config' ] = escape( ini_file.name )
 
         with scope.named_file() as build_script:
-            build_script.write( build_template.format( **script_vars ) )
+            build_script.write( build_template.format( **script_vars ).encode() )
             #print build_template.format( **script_vars )
             script_path = build_script.name
 
@@ -572,6 +573,11 @@ def provide_sign_tree( build, keyword, dep_path ):
 import package
 import json
 import copy
+
+try:
+    check = unicode
+except NameError:
+    unicode = str
 
 def format_pod( template, **kwargs ):
     '''

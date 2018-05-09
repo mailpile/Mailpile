@@ -16,7 +16,7 @@ various points in the framework.
 Producing a package has minimal requirements:
 
   - A windows machine (tested: win 7, win 10)
-  - Python installed (tested: python 2.7.15)
+  - Python installed (tested: python 2.7.15, 3.4.3)
   - gpg4win **NOT** installed
   - git installed
   - mailpile checked out

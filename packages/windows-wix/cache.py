@@ -1,5 +1,8 @@
 import os.path
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
 import logging
 import hashlib
 import tempfile
@@ -217,9 +220,8 @@ if __name__ == '__main__':
         cache.save( args.json )
         
     if args.resource:
-        print cache.resource( args.resource )
+        print( cache.resource( args.resource ) )
         
     if args.all:
         cache.preload()
             
-    #print cache.resolve( 'https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi', 'a84cb11bdae3e1cb76cf45aa96838d80b9dcd160' )
