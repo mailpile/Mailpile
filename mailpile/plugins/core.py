@@ -20,6 +20,7 @@ import webbrowser
 import mailpile.util
 import mailpile.postinglist
 import mailpile.security as security
+import mailpile.platforms
 from mailpile.commands import *
 from mailpile.config.validators import WebRootCheck
 from mailpile.crypto.gpgi import GnuPG
@@ -1988,7 +1989,7 @@ class HelpSplash(Help):
         in_browser = False
         if http_worker:
             http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
-            if ((sys.platform[:3] in ('dar', 'win') or os.getenv('DISPLAY'))
+            if (mailpile.platforms.InDesktopEnvironment()
                     and self.session.config.prefs.open_in_browser):
                 if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
                     in_browser = True

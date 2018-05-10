@@ -22,6 +22,7 @@ try:
 except ImportError:
     AppDirs = None
 
+import mailpile.platforms
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
@@ -90,19 +91,8 @@ class ConfigManager(ConfigDict):
             if os.path.exists(workdir) and os.path.isdir(workdir):
                 return workdir
 
-        basedir = None
-        if sys.platform.startswith('win'):
-            # Obey Windows conventions (more or less?)
-            basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-        elif sys.platform.startswith('darwin'):
-            # Obey Mac OS X conventions
-            basedir = os.path.expanduser('~/Library/Application Support')
-        else:
-            # Assume other platforms are Unixy
-            basedir = os.getenv('XDG_DATA_HOME',
-                                os.path.expanduser('~/.local/share'))
-
-        return os.path.join(basedir, 'Mailpile', profile)
+        return os.path.join(
+            mailpile.platforms.GetAppDataDirectory(), 'Mailpile', profile)
 
     @classmethod
     def DEFAULT_SHARED_DATADIR(self):
@@ -670,10 +660,12 @@ class ConfigManager(ConfigDict):
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=900)
-        if sys.platform.startswith('win'):
+        if mailpile.platforms.RenameCannotOverwrite():
             try:
+                # We only do this if we have to; we would rather just
+                # use rename() as it's (more) atomic.
                 os.remove(self.conffile)
-            except WindowsError:
+            except (OSError, IOError):
                 pass
         os.rename(newfile, self.conffile)
 
@@ -1356,9 +1348,7 @@ class ConfigManager(ConfigDict):
                               config.sys.http_path or '')
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 try:
-                    if sys.platform.startswith('win'):
-                        # On Windows config.http_worker does not detect
-                        # port reuse, so do this kludgy test.
+                    if mailpile.platforms.NeedExplicitPortCheck():
                         try:
                             socket.socket().connect((sspec[0],sspec[1]))
                             port_in_use = True

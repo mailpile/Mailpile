@@ -17,6 +17,7 @@ from email.parser import Parser
 from email.message import Message
 from threading import Thread
 
+import mailpile.platforms
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
@@ -33,10 +34,8 @@ DEFAULT_KEYSERVER_OPTIONS = [
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
-GPG_BINARY = 'gpg'
+GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand()
 GPG_VERSIONS = {}
-if sys.platform.startswith('win'):
-    GPG_BINARY = 'GnuPG\\gpg.exe'
 BLOCKSIZE = 65536
 
 openpgp_algorithms = {1: _("RSA"),

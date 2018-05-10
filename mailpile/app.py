@@ -7,6 +7,7 @@ import traceback
 
 import mailpile.util
 import mailpile.config.defaults
+import mailpile.platforms
 from mailpile.commands import COMMANDS, Command, Action
 from mailpile.config.manager import ConfigManager
 from mailpile.conn_brokers import DisableUnbrokeredConnections
@@ -158,7 +159,7 @@ class InteractCommand(Command):
         session, config = self.session, self.session.config
 
         session.interactive = True
-        if sys.stdout.isatty() and sys.platform[:3] != "win":
+        if mailpile.platforms.TerminalSupportsAnsiColors():
             session.ui.term = ANSIColors()
 
         # Ensure we have a working GnuPG
