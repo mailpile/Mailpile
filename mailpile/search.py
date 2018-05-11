@@ -1290,8 +1290,11 @@ class MailIndex(BaseIndex):
                 emails = [e for e in emails if
                           (len(e) < 40) or ('+' not in e and '/' not in e)]
 
+                domains = [e.split('@')[-1] for e in emails]
+
                 keywords.extend(['%s:%s' % (t, key_lower) for t in words])
                 keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
+                keywords.extend(['%s:%s' % (d, key_lower) for d in domains])
                 keywords.extend(['%s:email' % e for e in emails])
 
         # Personal mail: not from lists or common robots?

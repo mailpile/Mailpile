@@ -1725,7 +1725,7 @@ class IdleQuit(Command):
         self.started = time.time()
         config.cron_worker.add_task('idlequit', self.timeout / 5, self.check)
         return self._success(
-            _('Will shut down if idle for over %s seconds') % self.timeout,
+            _('Will shutdown if idle for over %s seconds') % self.timeout,
             {'timeout': self.timeout})
 
 
