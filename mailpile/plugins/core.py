@@ -1968,7 +1968,7 @@ class HelpSplash(Help):
 
 _plugins.register_commands(
     Load, Optimize, Rescan, DeleteMessages,
-    BrowseOrLaunch, RunWWW, ProgramStatus, CronStatus, HealthCheck,
+    RunWWW, ProgramStatus, CronStatus, HealthCheck,
     GpgCommand, ListDir, ChangeDir, CatFile, WritePID, Cleanup,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, ConfigureMailboxes,
     ListLanguages, RenderPage, Output, Pipe,
