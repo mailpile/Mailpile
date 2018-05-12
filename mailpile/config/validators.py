@@ -1,6 +1,7 @@
 import os
 import socket
 import re
+import win_inet_pton
 
 from urlparse import urlparse
 
