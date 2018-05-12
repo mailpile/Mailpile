@@ -727,7 +727,7 @@ def decrypt_and_parse_lines(fd, parser, config,
                             passphrase=None, gpgi=None,
                             _raise=IOError, error_cb=None):
     import mailpile.crypto.streamer as cstrm
-    symmetric_key = config and config.master_key or 'missing'
+    symmetric_key = config and config.get_master_key() or 'missing'
     passphrase_reader = (passphrase.get_reader()
                          if (passphrase is not None) else
                          (config.passphrases['DEFAULT'].get_reader()

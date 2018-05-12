@@ -227,8 +227,8 @@ class MailIndex(BaseIndex):
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
 
-        if self.config.master_key:
-            with EncryptingStreamer(self.config.master_key,
+        if self.config.get_master_key():
+            with EncryptingStreamer(self.config.get_master_key(),
                                     delimited=True) as es:
                 es.write(data)
                 es.finish()

@@ -42,7 +42,7 @@ def _gunzip(data):
 
 def _decrypt(data, config):
     with DecryptingStreamer(cStringIO.StringIO(data),
-                            mep_key=config.master_key) as fd:
+                            mep_key=config.get_master_key()) as fd:
         data = fd.read()
         fd.verify(_raise=IOError)
     return data
@@ -121,7 +121,7 @@ class MakeBackup(Command):
         # The .ZIP is unencrypted, so generated contents needs protecting
         def _encrypt_and_add_data(filename, data):
             tempfile = os.path.join(config.tempfile_dir(), filename)
-            with EncryptingStreamer(config.master_key,
+            with EncryptingStreamer(config.get_master_key(),
                                     dir=config.tempfile_dir()) as fd:
                 fd.write(data)
                 fd.save(tempfile)
