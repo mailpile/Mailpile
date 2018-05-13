@@ -1947,11 +1947,8 @@ class HelpSplash(Help):
         in_browser = False
         if http_worker:
             http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
-            if ((sys.platform[:3] in ('dar', 'win') or os.getenv('DISPLAY'))
-                    and self.session.config.prefs.open_in_browser):
-                if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
-                    in_browser = True
-                    time.sleep(2)
+            in_browser = True
+            time.sleep(2)
         else:
             http_url = ''
 
