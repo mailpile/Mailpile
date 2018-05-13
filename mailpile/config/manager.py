@@ -365,8 +365,8 @@ class ConfigManager(ConfigDict):
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
-            self.master_key = ''.join(keydata)
-            self._master_key_ondisk = self.master_key
+            self._master_key = [''.join(keydata)]
+            self._master_key_ondisk = self.get_master_key()
             self._master_key_passgen = self.passphrases['DEFAULT'].generation
             return True
         else:
@@ -475,9 +475,9 @@ class ConfigManager(ConfigDict):
         ## both config files!
 
         # Open event log
-        dec_key_func = lambda: self.master_key
+        dec_key_func = lambda: self.get_master_key()
         enc_key_func = lambda: (self.prefs.encrypt_events and
-                                self.master_key)
+                                self.get_master_key())
         self.event_log = EventLog(self.data_directory('event_log',
                                                       mode='rw', mkdir=True),
                                   dec_key_func, enc_key_func
@@ -527,6 +527,16 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._unlocked_save(*args, **kwargs)
 
+    def get_master_key(self):
+        if self._master_key[0] in self._master_key[1:]:
+            key = self._master_key[0]
+        elif self._master_key[1] in [self._master_key[0], self._master_key[2]]:
+            key = self._master_key[1]
+        else:
+            raise _raise("Failed to access master_key")
+        self._master_key = [key]*3
+        return key
+
     def _delete_old_master_keys(self, keyfile):
         """
         We keep old master key files around for up to 5 days, so users can
@@ -542,14 +552,14 @@ class ConfigManager(ConfigDict):
                 safe_remove(fn)
 
     def _save_master_key(self, keyfile):
-        if not self.master_key:
+        if not self.get_master_key():
             return False
 
         # We keep the master key in a file of its own...
         want_renamed_keyfile = None
         master_passphrase = self.passphrases['DEFAULT']
         if (self._master_key_passgen != master_passphrase.generation
-                or self._master_key_ondisk != self.master_key):
+                or self._master_key_ondisk != self.get_master_key()):
             if os.path.exists(keyfile):
                 want_renamed_keyfile = keyfile + ('.%x' % time.time())
 
@@ -578,7 +588,7 @@ class ConfigManager(ConfigDict):
         # FIXME: Create event and capture GnuPG state?
         mps = master_passphrase.stretched(salt)
         gpg = GnuPG(self, passphrase=mps)
-        status, encrypted_key = gpg.encrypt(self.master_key, tokeys=tokeys)
+        status, encrypted_key = gpg.encrypt(self.get_master_key(), tokeys=tokeys)
         if status == 0:
             if salt:
                 h, b = encrypted_key.replace('\r', '').split('\n\n', 1)
@@ -590,7 +600,7 @@ class ConfigManager(ConfigDict):
                 if want_renamed_keyfile:
                     os.rename(keyfile, want_renamed_keyfile)
                 os.rename(keyfile + '.new', keyfile)
-                self._master_key_ondisk = self.master_key
+                self._master_key_ondisk = self.get_master_key()
                 self._master_key_passgen = master_passphrase.generation
 
                 # Delete any old key backups we have laying around
@@ -652,9 +662,9 @@ class ConfigManager(ConfigDict):
                          for i in range(0, len(config_bytes), 4096))
 
         from mailpile.crypto.streamer import EncryptingStreamer
-        if self.master_key and master_key_saved:
+        if self.get_master_key() and master_key_saved:
             subj = self.mailpile_path(self.conffile)
-            with EncryptingStreamer(self.master_key,
+            with EncryptingStreamer(self.get_master_key(),
                                     dir=self.tempfile_dir(),
                                     header_data={'subject': subj},
                                     name='Config') as fd:
@@ -766,10 +776,10 @@ class ConfigManager(ConfigDict):
 
     def load_pickle(self, pfn):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
-            if self.master_key:
+            if self.get_master_key():
                 from mailpile.crypto.streamer import DecryptingStreamer
                 with DecryptingStreamer(fd,
-                                        mep_key=self.master_key,
+                                        mep_key=self.get_master_key(),
                                         name='load_pickle(%s)' % pfn
                                         ) as streamer:
                     rv = cPickle.loads(streamer.read())
@@ -780,9 +790,9 @@ class ConfigManager(ConfigDict):
 
     def save_pickle(self, obj, pfn, encrypt=True):
         ppath = os.path.join(self.workdir, pfn)
-        if encrypt and self.master_key and self.prefs.encrypt_misc:
+        if encrypt and self.get_master_key() and self.prefs.encrypt_misc:
             from mailpile.crypto.streamer import EncryptingStreamer
-            with EncryptingStreamer(self.master_key,
+            with EncryptingStreamer(self.get_master_key(),
                                     dir=self.tempfile_dir(),
                                     header_data={'subject': pfn},
                                     name='save_pickle') as fd:
@@ -1007,9 +1017,9 @@ class ConfigManager(ConfigDict):
             mbox.is_local = prefer_local
 
         # Always set these, they can't be pickled
-        mbox._decryption_key_func = lambda: self.master_key
+        mbox._decryption_key_func = lambda: self.get_master_key()
         mbox._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                             self.master_key)
+                                             self.get_master_key())
 
         # Finally, re-add to the cache
         self.cache_mailbox(session, pfn, mbx_id, mbox)
@@ -1032,9 +1042,9 @@ class ConfigManager(ConfigDict):
                     path = os.path.join(path, os.path.basename(name))
 
             mbx = wervd.MailpileMailbox(path)
-            mbx._decryption_key_func = lambda: self.master_key
+            mbx._decryption_key_func = lambda: self.get_master_key()
             mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                                self.master_key)
+                                                self.get_master_key())
             return FilePath(path), mbx
 
     def open_local_mailbox(self, session):

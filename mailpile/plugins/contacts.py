@@ -1020,7 +1020,7 @@ def ProfileVCard(parent):
             config.event_log.log_event(event)
 
         def _create_new_key(self, vcard, keytype):
-            passphrase = okay_random(20, self.session.config.master_key
+            passphrase = okay_random(20, self.session.config.get_master_key()
                                      ).lower()
             passphrase = '-'.join([passphrase[i:i+4] for i in
                                    range(0, len(passphrase), 4)])
