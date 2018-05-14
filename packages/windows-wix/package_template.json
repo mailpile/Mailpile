@@ -8,14 +8,14 @@
   "manufacturer": "Mailpile ehf.",
   "product_icon": "mailpile_logo.ico",
   "icons": [
-	"assets\\mailpile_logo.ico"
+	"{mailpile}\\packages\\windows-wix\\assets\\mailpile_logo.ico"
   ],
   "ui": {
     "flavor": "WixUI_InstallDir",
     "variables": {
-      "WixUILicenseRtf": "assets\\LicenseText.rtf",
-      "WixUIDialogBmp": "assets\\WixUIDialog.bmp",
-      "WixUIBannerBmp": "assets\\WixUIBanner.bmp"
+      "WixUILicenseRtf": "{mailpile}\\packages\\windows-wix\\assets\\LicenseText.rtf",
+      "WixUIDialogBmp": "{mailpile}\\packages\\windows-wix\\assets\\WixUIDialog.bmp",
+      "WixUIBannerBmp": "{mailpile}\\packages\\windows-wix\\assets\\WixUIBanner.bmp"
     }
   },
   "groups": {
