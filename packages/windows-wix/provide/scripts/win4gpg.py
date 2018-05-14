@@ -1,24 +1,25 @@
 import textwrap
 import os
 
-def bind( build ):
-    
-    @build.provide( 'gpg' )
-    def provide_gpg( build, keyword ):
+
+def bind(build):
+
+    @build.provide('gpg')
+    def provide_gpg(build, keyword):
         '''
         install GPG in a temporary location and use mkportable to create a
         portable GPG for the build. Requires ADMIN and that gpg4win *is not*
         installed.
         '''
-        build.depend( 'root' )
-        dep_path = build.invoke( 'path', keyword )
+        build.depend('root')
+        dep_path = build.invoke('path', keyword)
 
-        util = build.depend( 'util' )
-        
-        build.depend( 'python27' )
-        gpg_installer = build.cache().resource( 'gpg' )
+        util = build.depend('util')
 
-        gpg_ini = textwrap.dedent( '''
+        build.depend('python27')
+        gpg_installer = build.cache().resource('gpg')
+
+        gpg_ini = textwrap.dedent('''
             [gpg4win]
                 inst_gpgol = false
                 inst_gpgex = false
@@ -33,7 +34,7 @@ def bind( build ):
 
         # Use the built python to elevate if needed
         # https://stackoverflow.com/questions/130763/request-uac-elevation-from-within-a-python-script
-        build_template = textwrap.dedent( '''
+        build_template = textwrap.dedent('''
             #!/usr/bin/python
             import sys
             import ctypes
@@ -110,36 +111,36 @@ def bind( build ):
                 sock.close()
             ''')
 
-        def script_escape( value ):
+        def script_escape(value):
             '''
             Escape text literals for generated script
             '''
-            
-            return value.replace( '\\', '\\\\' )
 
-        os.mkdir( dep_path )
+            return value.replace('\\', '\\\\')
+
+        os.mkdir(dep_path)
 
         with util.temporary_scope() as scope:
             tmp_path = scope.named_dir()
             uninstaller = os.path.join(tmp_path, "gpg4win-uninstall.exe")
             mkportable = os.path.join(tmp_path, "bin\\mkportable.exe")
-            
-            script_vars = { 'installer_path': script_escape( gpg_installer ),
-                            'uninstaller_path': script_escape( uninstaller ),
-                            'mkportable_path': script_escape( mkportable ),
-                            'build': script_escape( dep_path ),
-                            'target': script_escape( tmp_path ) }
-            
+
+            script_vars = {'installer_path': script_escape(gpg_installer),
+                           'uninstaller_path': script_escape(uninstaller),
+                           'mkportable_path': script_escape(mkportable),
+                           'build': script_escape(dep_path),
+                           'target': script_escape(tmp_path)}
+
             with scope.named_file() as ini_file:
-                ini_file.write( gpg_ini.encode() )
-                script_vars[ 'config' ] = script_escape( ini_file.name )
+                ini_file.write(gpg_ini.encode())
+                script_vars['config'] = script_escape(ini_file.name)
 
             with scope.named_file() as build_script:
-                build_script.write( build_template.format( **script_vars ).encode() )
+                build_script.write(
+                    build_template.format(**script_vars).encode())
                 #print build_template.format( **script_vars )
                 script_path = build_script.name
 
-            build.invoke( 'python', script_path )
-                                                        
-        return dep_path
+            build.invoke('python', script_path)
 
+        return dep_path

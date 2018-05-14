@@ -7,129 +7,130 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class TemporaryScope( object ):
-        '''
-        Context for tracking multiple temporary files.
 
-        Principly combats nested contexts:
+class TemporaryScope(object):
+    '''
+    Context for tracking multiple temporary files.
 
-            with tempfile() as x:
-                with tempfile() as y:
-                    with tempdir() as z:
-                        with tempsomething as q:
-                            ...
-        translates to:
-        
-            with TemporaryScope() as context:
+    Principly combats nested contexts:
 
-                with context.named_file(...) as x:
-                    ...
+        with tempfile() as x:
+            with tempfile() as y:
+                with tempdir() as z:
+                    with tempsomething as q:
+                        ...
+    translates to:
 
-                with context.named_file(...) as Y:
-                    ...
+        with TemporaryScope() as context:
 
-                z = context.named_dir(...):
-                    ...
+            with context.named_file(...) as x:
+                ...
 
-        so that named resouces may be sequentially constructed and automatically
-        cleaned up.
-        '''
+            with context.named_file(...) as Y:
+                ...
 
-        def __init__( self, deleter ):
-            self.deleter = deleter
+            z = context.named_dir(...):
+                ...
 
-        def __enter__( self ):
-            self.paths = []
-            return self
+    so that named resouces may be sequentially constructed and automatically
+    cleaned up.
+    '''
 
-        def __exit__( self, *ignored ):
-            for path in self.paths:
-                self.deleter( path )
+    def __init__(self, deleter):
+        self.deleter = deleter
 
-            del self.paths
+    def __enter__(self):
+        self.paths = []
+        return self
 
-        def named_file( self, *args, **kwargs ):
-            kwargs['delete'] = False
-            result = tempfile.NamedTemporaryFile( *args, **kwargs )
-            self.paths.append( result.name )
-            return result
+    def __exit__(self, *ignored):
+        for path in self.paths:
+            self.deleter(path)
 
-        def named_dir( self, *args, **kwargs ):
-            result = tempfile.mkdtemp( *args, **kwargs )
-            self.paths.append( result )
-            return result
+        del self.paths
 
-class Util( object ):
+    def named_file(self, *args, **kwargs):
+        kwargs['delete'] = False
+        result = tempfile.NamedTemporaryFile(*args, **kwargs)
+        self.paths.append(result.name)
+        return result
+
+    def named_dir(self, *args, **kwargs):
+        result = tempfile.mkdtemp(*args, **kwargs)
+        self.paths.append(result)
+        return result
+
+
+class Util(object):
     '''
     Utility functions for builds
     '''
 
     @staticmethod
-    def rmtree( path ):
+    def rmtree(path):
         '''
         Remove an entire directory tree rm -rf style, logging any errors
         '''
-        
-        def log_error( func, path, exc_info ):
-            logger.error("Unable perform action {}: {} {}".format( msi_path, func, path ),
-                          exec_info = exc_info )
-        if os.path.isdir( path ):
-            shutil.rmtree( path, ignore_errors = True, onerror = log_error )
+
+        def log_error(func, path, exc_info):
+            logger.error("Unable perform action {}: {} {}".format(msi_path, func, path),
+                         exec_info=exc_info)
+        if os.path.isdir(path):
+            shutil.rmtree(path, ignore_errors=True, onerror=log_error)
         else:
             try:
-                os.unlink( path )
+                os.unlink(path)
             except:
-                log_error( 'os.unlink', path, sys.exc_info() )
+                log_error('os.unlink', path, sys.exc_info())
 
     @classmethod
     def temporary_scope(cls):
         '''
         Create a temporary scope that uses rmtree as deleter
         '''
-        
+
         return TemporaryScope(cls.rmtree)
 
     @staticmethod
-    def publish_exes( build, path ):
+    def publish_exes(build, path):
         '''
         Publish all exes found on the path
         '''
-        
-        for exe in glob.glob( os.path.join( path, '*.exe' ) ):
-            cmd = os.path.basename( exe ).split('.')[0]
-            build.publish( cmd, exe )
 
+        for exe in glob.glob(os.path.join(path, '*.exe')):
+            cmd = os.path.basename(exe).split('.')[0]
+            build.publish(cmd, exe)
 
     @staticmethod
     @contextlib.contextmanager
-    def tempdir( *args, **kwargs ):
+    def tempdir(*args, **kwargs):
         '''
         Temporary directory context: tempdir is deleted at exit.
         returns temp dir absolute path
         '''
-        
-        path = tempfile.mkdtemp( *args, **kwargs )
+
+        path = tempfile.mkdtemp(*args, **kwargs)
         try:
             yield path
         finally:
-            rmtree_log_error( path )
+            rmtree_log_error(path)
 
     @staticmethod
     @contextlib.contextmanager
-    def pushdir( path ):
+    def pushdir(path):
         '''
         Pushdir as a context manager. Restores previous working directory on exit.
         '''
-        cwd = os.path.abspath( os.getcwd() )
-        os.chdir( path )
+        cwd = os.path.abspath(os.getcwd())
+        os.chdir(path)
         try:
             yield
         finally:
-            os.chdir( cwd )
-    
+            os.chdir(cwd)
 
-def bind( build ):
 
-    @build.provide( 'util' )
-    def provide_util( build, keyword ):
+def bind(build):
+
+    @build.provide('util')
+    def provide_util(build, keyword):
         return Util
