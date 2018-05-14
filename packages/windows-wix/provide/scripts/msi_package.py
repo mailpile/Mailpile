@@ -58,7 +58,8 @@ def bind( build ):
                         'mailpile',
                         'gui-o-matic',
                         'python27',
-                        'gpg')
+                        'gpg',
+                        'version')
 
         content_paths = { key: build.depend( key ) for key in content_keys }
 
@@ -92,8 +93,10 @@ def bind( build ):
 
         build.invoke( 'candle', wix_config_path + '.wxs',
                       '-out', os.path.join( dep_path, 'mailpile.wixobj' ))
+        
         for lang in build.config( 'package_cultures' ):
-            msi_name = 'mailpile-{}.msi'.format( lang )
+            msi_name = 'mailpile-{}-{}.msi'.format( content_paths['version'],
+                                                    lang )
             build.log().info( "Building msi for culture: " + lang )
             build.invoke( 'light',
                           '-ext', 'WixUIExtension',

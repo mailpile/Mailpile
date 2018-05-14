@@ -1,6 +1,6 @@
 {
   "languages": "1033", 
-  "version": "0.0.0", 
+  "version": "{version}", 
   "installer_version": "100", 
   "product_id": "19671260-92a2-437d-bb3a-d47e91e3cf23",
   "codepage": "1252", 
