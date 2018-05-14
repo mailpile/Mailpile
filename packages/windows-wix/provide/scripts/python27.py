@@ -1,9 +1,10 @@
 import os.path
 import glob
+import subprocess
 
-def bind( build ):
+def bind( framework ):
 
-    @build.provide( 'python27' )
+    @framework.provide( 'python27' )
     def provide_python27( build, keyword ):
         '''
         provide python27 prepared for mailpile
@@ -17,6 +18,28 @@ def bind( build ):
 
         util = build.depend( 'util' )
         util.publish_exes( build, dep_path )
+
+        # Rebrand with resource hacker--very finicky
+        # https://www.askvg.com/tutorial-all-about-resource-hacker-in-a-brief-tutorial/
+        #
+        mailpile_dir = build.depend( 'mailpile' )
+        assets_dir = os.path.join( mailpile_dir, 'packages\\windows-wix\\assets' )
+        resource_hacker = os.path.join( build.depend( 'resource_hacker' ),
+                                        'ResourceHacker.exe' )
+        for exe in ('python.exe', 'pythonw.exe'):
+            exe_path = os.path.join( dep_path, exe )
+            update_path = os.path.join( dep_path, exe.replace('.','-mailpile.') )
+            cmd = ('-addoverwrite',
+                   exe_path, ',',
+                   update_path, ',',
+                   os.path.join( assets_dir, 'mailpile_logo.ico' ), ',',
+                   'ICONGROUP', ',',
+                   '1', ',',
+                   '0')
+            build.invoke('ResourceHacker', *cmd)
+            build.publish( exe.split('.')[0],
+                           framework.Invoker( build, update_path ) )
+            util.rmtree( exe_path )
 
         # TODO: Prune unwanted files--either via features or manual delete.
 
@@ -35,15 +58,11 @@ def bind( build ):
         # Use pip to install dependencies
         # TODO: Cache/statically version packages.
         #
-        mailpile_dir = build.depend( 'mailpile' )
         pip_deps = os.path.join( mailpile_dir, 'requirements.txt' )
         build.invoke( 'python', '-m', 'pip', 'install', '-r', pip_deps )
 
         # TODO: import requirements from gui-o-matic
         #
         build.invoke( 'python', '-m', 'pip', 'install', 'pywin32' )
-        
-        # TODO: Rebrand with resource hacker
-        #
 
         return dep_path

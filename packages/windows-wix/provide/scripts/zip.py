@@ -3,7 +3,7 @@ import zipfile
 
 def bind( build ):
 
-    @build.provide( 'wix', 'tor', 'lessmsi' )
+    @build.provide( 'wix', 'tor', 'lessmsi', 'openssl', 'resource_hacker' )
     def provide_zip( build, keyword ):
         '''
         Inflate zip files into the build path

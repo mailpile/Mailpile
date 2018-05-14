@@ -4,6 +4,7 @@ import tempfile
 import argparse
 import datetime
 import logging
+import json
 
 logger = logging.getLogger( __name__ )
         
@@ -20,11 +21,11 @@ class Build( object ):
         mostly a pythonic function call.
         '''
 
-        def __init__( self, exe, method = subprocess.check_output ):
+        def __init__( self, build, exe, method = subprocess.check_output ):
             '''
             Configure the execution target and invocation method.
             '''
-            
+            self.build = build
             self.exe = exe
             self.method = method
 
@@ -35,7 +36,7 @@ class Build( object ):
             '''
             
             cmdline = (self.exe,) + tuple(args)
-            logger.debug( "Running command line: {}".format( cmdline ) )
+            self.build.log().debug( "Running command line: {}".format( cmdline ) )
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             with tempfile.TemporaryFile( 'ab+' ) as error_file:
@@ -47,7 +48,8 @@ class Build( object ):
                 except subprocess.CalledProcessError as e:
                     error_file.seek( 0 )
                     error_text = error_file.read()
-                    logger.critical( "stderr from exception:\n" + error_text )
+                    self.build.log().critical( "stderr from exception:\n" + error_text )
+                    self.build.log().critical( "stdout from exception:\n" + e.output )
                     e.stderr = error_text
                     raise
 
@@ -65,10 +67,10 @@ class Build( object ):
             self._build = build
             self._built = {}
             self._cmds = {}
-            self._log = logger #TODO: Proxy things for clarity
             self._config = config
             self._cache = cache
             self._cleanup = []
+            self._log = [ logger ] #TODO: Proxy things for clarity
 
         def cache( self ):
             '''
@@ -82,7 +84,7 @@ class Build( object ):
             API for accessing the logger for this build.
             '''
 
-            return self._log
+            return self._log[ -1 ]
         
         def depend( self, keyword ):
             '''
@@ -94,9 +96,12 @@ class Build( object ):
                 return self._built[ keyword ]
             except KeyError:
                 self.log().info( "Inflating dependency {}".format( keyword ) )
+                log_name = '{}.{}@{}'.format( __name__, keyword, len( self._log ) ) 
+                self._log.append( logging.getLogger( log_name ) )
                 provider = self._build._providers[ keyword ]
                 result = provider( self, keyword )
                 self._built[ keyword ] = result
+                self._log.pop()
                 return result
 
         def cleanup( self, action ):
@@ -113,7 +118,7 @@ class Build( object ):
             '''
             
             if not callable( invoker ):
-                invoker = self._build.Invoker( invoker )
+                invoker = self._build.Invoker( self, invoker )
             self.log().debug( 'registering invokable {}'.format( keyword ) )
             self._cmds[ keyword ] = invoker
 
@@ -198,27 +203,31 @@ class Build( object ):
         '''
         return self.Context( self, cache, config )
 
-    def parser( self ):
+    def parser( self, parser = None ):
         '''
         Create an argument parser for this build
         '''
-        parser = argparse.ArgumentParser()
-        for keyword, doc in self._options():
-            parser.add_argument('--' + keyword, help=doc)
+        parser = parser or argparse.ArgumentParser()
+        for keyword, doc in self._defaults.items():
+            parser.add_argument('--config_' + keyword.replace('-','_'),
+                                help=repr(doc(keyword)))
         return parser
     
-    def parse( self, *args, **kwargs ):
+    def parse_config( self, args ):
         '''
         create a context from argv
         '''
-        args = self.parser().parse_args( *args, **kwargs )
-        def resolve( value ):
-            try:
-                return json.loads( value )
-            except:
-                return value
-
-        config = {key: resolve(getattr(key, args)) for key in dir(args)}
-        resources = cache.SemanticCache.load( 'resources.json' )
-        return self.context( resources, config )
+        config = {}
+        for key in self._defaults.keys():
+            test = 'config_' + key.replace( '-', '_' )
+            value = getattr( args, test )
+            if value is not None:
+                try:
+                    value = json.loads( value )
+                except:
+                    pass
+                
+                config[key]=value
+                
+        return config
             

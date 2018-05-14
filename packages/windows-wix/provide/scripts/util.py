@@ -81,8 +81,6 @@ class Util( object ):
             except:
                 log_error( 'os.unlink', path, sys.exc_info() )
 
-                import glob
-
     @classmethod
     def temporary_scope(cls):
         '''

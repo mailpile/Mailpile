@@ -4,8 +4,8 @@ def bind( build ):
 
     @build.default_config( 'mailpile', 'gui-o-matic' )
     def config_gui_o_matic( keyword ):
-        return { 'commit': {'gui-o-matic':'winapi', 'mailpile':'windows-packaging'}[keyword],
-                   'repo': 'https://github.com/AlexanderHaase/{}'.format(keyword) }
+        return { 'commit': 'master',
+                   'repo': 'https://github.com/mailpile/{}'.format(keyword) }
 
     @build.provide( 'mailpile', 'gui-o-matic' )
     def provide_checkout( build, keyword ):

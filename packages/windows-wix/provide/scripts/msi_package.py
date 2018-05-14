@@ -41,6 +41,10 @@ def bind( build ):
     def config_package_jsons( keyword ):
         return os.path.join( lib_dir, keyword + '.json' )
 
+    @build.default_config( 'package_cultures' )
+    def config_package_lang( keyword ):
+        return ['en-us']
+
     @build.provide( 'package' )
     def provide_msi( build, keyword ):
 
@@ -88,9 +92,13 @@ def bind( build ):
 
         build.invoke( 'candle', wix_config_path + '.wxs',
                       '-out', os.path.join( dep_path, 'mailpile.wixobj' ))
-        build.invoke( 'light',
-                      '-ext', 'WixUIExtension',
-                      '-ext', 'WixUtilExtension',
-                      wix_config_path + '.wixobj',
-                      '-out', os.path.join( dep_path, 'mailpile.msi' ))
+        for lang in build.config( 'package_cultures' ):
+            msi_name = 'mailpile-{}.msi'.format( lang )
+            build.log().info( "Building msi for culture: " + lang )
+            build.invoke( 'light',
+                          '-ext', 'WixUIExtension',
+                          '-ext', 'WixUtilExtension',
+                          '-cultures:' + lang, 
+                          wix_config_path + '.wixobj',
+                          '-out', os.path.join( dep_path, msi_name ))
         return dep_path
