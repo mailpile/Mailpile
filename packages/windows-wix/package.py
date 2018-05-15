@@ -112,6 +112,11 @@ class WixConfig( object ):
                    Id = 'DiskPrompt',
                    Value = 'Mailpile {version} Media [1]'.format( **self.config ))
 
+        xml_append(self.product, 'MajorUpgrade',
+                   AllowDowngrades = 'no',
+                   DowngradeErrorMessage = "Downgrades not supported!",
+                   AllowSameVersionUpgrades = 'no')
+                   
         self.logical_root( Id = 'TARGETDIR',
                            Name = 'SourceDir' )
         
@@ -287,9 +292,17 @@ class WixConfig( object ):
 
         # Kill GPG Agent if this MSI is installed.
         #
+        xml_append( self.product, 'SetProperty',
+                    Id = 'WixQuietExecCmdLine',
+                    Sequence = 'execute',
+                    Before = 'GPGAgent.TaskKill',
+                    Value = '"[WindowsFolder]\\System32\\taskkill.exe" /F /IM gpg-agent.exe' )
+
+        '''
         xml_append( self.product, 'Property',
                     Id = 'WixQuietExecCmdLine',
                     Value = '"[WindowsFolder]\\System32\\taskkill.exe" /F /IM gpg-agent.exe' )
+        '''
         
         xml_append( self.product, 'CustomAction',
                     Id = 'GPGAgent.TaskKill',

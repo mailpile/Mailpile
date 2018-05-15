@@ -70,6 +70,10 @@
     "tor": {
       "root": "{tor}",
       "uuid": "b44d81df-26c5-468b-b9fe-348a9fd0d606"
+    },
+    "openssl": {
+      "root": "{openssl}",
+      "uuid": "827d52f4-62be-40c6-8fcf-42297fd99f79"
     }
   }
 }

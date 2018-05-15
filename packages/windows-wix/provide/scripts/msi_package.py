@@ -61,10 +61,19 @@ def bind(build):
                         'mailpile',
                         'gui-o-matic',
                         'python27',
+                        'openssl',
                         'gpg',
                         'version')
 
         content_paths = {key: build.depend(key) for key in content_keys}
+
+        # pre-cache mailpile
+        build.invoke('python',
+                     os.path.join(content_paths['mailpile'],
+                                  'packages\\windows-wix\\bin\\with-mailpile-env.py'),
+                     os.path.join(content_paths['mailpile'],
+                                  'shared-data\\mailpile-gui\\mailpile-gui.py'),
+                     '--compile')
 
         tool_keys = ('wix',
                      'sign_tree')

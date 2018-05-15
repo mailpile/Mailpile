@@ -4,9 +4,9 @@ import glob
 import contextlib
 import shutil
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
-
 
 class TemporaryScope(object):
     '''
@@ -73,8 +73,8 @@ class Util(object):
         '''
 
         def log_error(func, path, exc_info):
-            logger.error("Unable perform action {}: {} {}".format(msi_path, func, path),
-                         exec_info=exc_info)
+            logger.error("Unable perform action {}: {} {}".format(path, func, path),
+                         exc_info=exc_info)
         if os.path.isdir(path):
             shutil.rmtree(path, ignore_errors=True, onerror=log_error)
         else:

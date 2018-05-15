@@ -22,12 +22,17 @@ Producing a package has minimal requirements:
   - mailpile checked out
   - administrator privileges
 
-To produce a package, run mailpile/packages/windows-wix/provide.py. It will
-output a directory called 'package' in the current working directory. The
-msi is located in 'package/package/mailpile.msi'.
+To produce a package, go to the 'mailpile/packages/windows-wix/' directory and
+run `python provide -i provide.json`. It will output a directory called
+'package' in the current working directory. The msi is located in
+'package/mailpile-<version>-<culture>.msi'.
 
-Note: This is a first draft--there's a lot of work in progress on customized
-packaging and improving automation. See TODO.md.
+To customize the build, view options by running `python provide -h`. Most can
+also be passed via a configuration json--see 'provide.json' as an example. It
+is also possible to output partial products by adding multiple targets to the
+'export' configuration.
+
+Note: work in progress on customization and improving automation. See TODO.md.
 
 ## Integration points ##
 
@@ -76,8 +81,9 @@ a dependency name with a url and sha1 sub-entry:
 
 ```
 
-The cache.py utility is helpful for constructing and/or manipulating resources
-files. Note that resources can only be single files.
+The `provide/cache.py` utility is helpful for constructing and/or manipulating
+resources files. See help for the utility for more info. Note that resources
+can only be single files.
 
 Internally the build system uses dependency names to interact with resources.
 As long as the rest of the build steps are uneffected, it's possible to change
@@ -120,38 +126,51 @@ dependency:
 
 # Register this build script as a provider of multiple dependencies
 #
-@Build.provide( 'dependency1', 'dependency2' )
-def provide_example( build, keyword, dep_path ):
+def bind( framework ):
     '''
-    Build script example
-
-    :build: build context
-    :keyword: dependency name we're being asked to build
-    :dep_path: suggested output path in the build directory
+    bind the script to a build framework--maybe we'll need multiple build
+    recipies at some point.
     '''
+    
+    @framework.provide('dependency1', 'dependency2')
+    def provide_example(build, keyword):
+        '''
+        Build script example
 
-    # Depend on another build script's output
-    # (and optionally get the path to that output)
-    #
-    external_dep = build.depend( 'external_dep' )
+        :build: build context
+        :keyword: dependency name we're being asked to build
+        :dep_path: suggested output path in the build directory
+        '''
 
-    # use a function provided by a build script
-    #
-    build.invoke( 'function_from_external_dep', dep_path )
-
-    # provide a function for other build scripts
-    #
-    def example_function( *args, **kwargs ):
-        # Log events using standard python logging semantics
+        # Depend on another build script's output
+        # (and optionally get the path to that output)
         #
-        build.log.debug( "called with {} {}".format( args, kwargs ) )
+        external_dep = build.depend('external_dep')
 
-    build.publish( keyword + '_func', example_function ) 
+        # 'root'--the build root, is a _very_ common depenendency. It also
+        # publishes the 'path' command that can be used to discover output
+        # paths for build products.
+        #
+        build.require('root')
 
-    # Return the path to the built dependency.
-    # Return None if there are no resultant artifacts(i.e. just publishing)
-    #
-    return dep_path
+        # use a function provided by another build script
+        #
+        dep_path = build.invoke('path', keyword)
+        build.invoke('function_from_external_dep', dep_path)
+
+        # provide a function for other build scripts
+        #
+        def example_function(*args, **kwargs):
+            # Log events using standard python logging semantics
+            #
+            build.log().debug("called with {} {}".format(args, kwargs))
+
+        build.publish(keyword + '_func', example_function) 
+
+        # Return the path to the built dependency.
+        # Return None if there are no resultant artifacts(i.e. just publishing)
+        #
+        return dep_path
 ```
 
 There are already build scripts to handle several general cases:
@@ -164,8 +183,12 @@ their registration:
 
 ```python
 
-@Build.provide( 'dependency1', 'dependency2', 'my_new_dependency' )
+def bind(framework):
 
+    # ... #
+    @framework.provide('dependency1', 'dependency2', 'my_new_dependency')
+    def function body(build, keyword):
+        # ... #
 ```
 
 There are also examples for working with MSIs and exes.
@@ -180,15 +203,17 @@ key-value store. Build scripts can query configuration via the build context:
 
 ```python
 
-@Build.provide( 'example_dep')
-def provide_config_example( build, keyword, dep_path ):
+def bind(framework):
 
-    try:
-        value = build.config( 'example-key' )
-    except KeyError:
-        value = { 'default': ['to','some','definition'] }
+    @framework.provide('example_dep')
+    def provide_config_example(build, keyword):
 
-    # ....
+        try:
+            value = build.config('example-key')
+        except KeyError:
+            value = {'default': ['to','some','definition']}
+
+        # ....
 
 ```
 
@@ -201,13 +226,15 @@ to produce a value. They are registered via decorator, just like build scripts:
 
 ```python
 
-@Build.default_config( 'repo_a', 'repo_b' )
-def config_repo_defaults( keyword ):
-    '''
-    Provide the default url and commit to checkout for a repo
-    '''
-    return { 'url': 'https://github.com/ExampleAccount/{}'.format( keyword ),
-             'commit': 'master' }
+def bind(framework):
+
+    @framework.default_config('repo_a', 'repo_b')
+    def config_repo_defaults(keyword):
+        '''
+        Provide the default url and commit to checkout for a repo
+        '''
+        return {'url': 'https://github.com/ExampleAccount/{}'.format(keyword),
+                'commit': 'master' }
 
 
 ```

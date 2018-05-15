@@ -45,6 +45,10 @@ def bind(framework):
             util.rmtree(exe_path)
 
         # TODO: Prune unwanted files--either via features or manual delete.
+        #
+        for item in ('tcl','Lib\\test'):
+            build.log().info("Removing directory '{}'".format(item))
+            util.rmtree(os.path.join(dep_path,item))
 
         # Manually bootstrap pip.
         # https://stackoverflow.com/questions/36132350/install-python-wheel-file-without-using-pip
