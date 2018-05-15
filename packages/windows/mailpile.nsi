@@ -51,28 +51,30 @@ Section "install" InstallationInfo
     
 #   Install Python. Option /a prevents registry and start menu changes
 #   which could conflict with another Python installation.
-    ExecWait '"msiexec" /qb- /a "$INSTDIR\PythonDistFiles\python-2.7.14.msi" \
+    nsExec::ExecToLog '"msiexec" /qb- /a \
+                                "$INSTDIR\PythonDistFiles\${PYTHON_FILE}" \
                                 TARGETDIR="$INSTDIR\Python27"'
                                 
 #   Use ensurepip to install pip and setuptools (packaged with Python).
-    ExecWait '"$INSTDIR\Python27\python" -m ensurepip --upgrade'
+    nsExec::ExecToLog  '"$INSTDIR\Python27\python" -m ensurepip --upgrade'
     
 #   Make sure pypiwin32 is installed even if its not in requirements file.                                              
-    ExecWait '"$INSTDIR\Python27\python" -m pip install pypiwin32 --no-deps \
+    nsExec::ExecToLog '"$INSTDIR\Python27\python" \
+                                -m pip install pypiwin32 --no-deps \
                                 --log "$INSTDIR\Python27\install.txt" \
                                 --no-index -f "$INSTDIR\PythonDistFiles"' 
 
 #   Use pip to install the packages listed in the requirements file.
-    ExecWait '"$INSTDIR\Python27\python" -m pip install --no-deps \
+    nsExec::ExecToLog '"$INSTDIR\Python27\python" -m pip install --no-deps \
                                 --log "$INSTDIR\Python27\install.txt" \
                                 -r "$INSTDIR\requirements-with-deps.txt" \
                                 --no-index -f "$INSTDIR\PythonDistFiles"' 
     
 #   List packages and check dependencies (mostly for debugging purposes)
-    ExecWait '"$INSTDIR\Python27\python" -m pip list \
-                --log "$INSTDIR\Python27\list.txt"'  
-    ExecWait '"$INSTDIR\Python27\python" -m pip check \
-                --log "$INSTDIR\Python27\check.txt"'  
+    nsExec::ExecToLog '"$INSTDIR\Python27\python" -m pip list \
+                        --log "$INSTDIR\Python27\list.txt"'  
+    nsExec::ExecToLog '"$INSTDIR\Python27\python" -m pip check \
+                        --log "$INSTDIR\Python27\check.txt"'  
     
     WriteRegStr HKCU "Software\Mailpile" "" "$INSTDIR"
 
