@@ -88,6 +88,10 @@ CONFIG_RULES = {
         'weak_crypto_max_age': (
                _('Accept weak crypto in messages older than this (unix time)'),
                                                                   int,      0),
+        'encrypted_block_html': (_('Never display HTML from encrypted mail'),
+                                                                   bool, True),
+        'encrypted_block_web': (_('Never fetch web content from encrypted mail'),
+                                                                   bool, True),
         'gpg_use_agent':   (_('Use the local GnuPG agent'), bool,       False),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),

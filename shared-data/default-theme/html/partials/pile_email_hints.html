@@ -6,7 +6,9 @@
       <span class="icon icon-news"></span>
       {{_("This message has HTML formatted content.")}}
       {{_("For security reasons, Mailpile will by default only display plain text.")}}
+    {% if allow_html %}
       {{_("You can change display modes by clicking the icons to the right of the Subject line.")}}
+    {% endif %}
     </p><p>
       <a data-variable="web.email_html_hint" data-remove="email-html-hint"
          class="ok-got-it">
