@@ -85,6 +85,9 @@ CONFIG_RULES = {
         'web_content':     (_('Download content from the web'),
                             ["off", "anon", "on"],                  "unknown"),
         'html5_sandbox':   (_('Use HTML5 sandboxes'), bool,              True),
+        'weak_crypto_max_age': (
+               _('Accept weak crypto in messages older than this (unix time)'),
+                                                                  int,      0),
         'gpg_use_agent':   (_('Use the local GnuPG agent'), bool,       False),
         'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
