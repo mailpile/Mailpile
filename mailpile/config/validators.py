@@ -2,7 +2,11 @@ import os
 import socket
 import re
 
-import win_inet_pton
+try:
+    import win_inet_pton
+except:
+    pass
+
 from urlparse import urlparse
 
 from mailpile.i18n import gettext as _
