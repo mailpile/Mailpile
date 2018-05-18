@@ -1320,7 +1320,8 @@ class ConfigPrint(Command):
                             rv[key] = '{ ..(%s).. }' % rv[key]['host']
                         else:
                             rv[key] = '{ ... }'
-                elif sanitize and key.lower()[:4] in ('pass', 'secr'):
+                elif (sanitize
+                        and key.lower()[:4] in ('pass', 'secr', 'obfu'):
                     rv[key] = '(SUPPRESSED)'
             return rv
         return data
