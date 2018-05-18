@@ -365,7 +365,8 @@ class ConfigManager(ConfigDict):
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
-            self._master_key = [''.join(keydata)]
+            # Prefix each key with a unique character to prevent optimization
+            self._master_key = [i + ''.join(keydata) for i in ('1', '2', '3')]
             self._master_key_ondisk = self.get_master_key()
             self._master_key_passgen = self.passphrases['DEFAULT'].generation
             return True
@@ -528,13 +529,14 @@ class ConfigManager(ConfigDict):
             self._unlocked_save(*args, **kwargs)
 
     def get_master_key(self):
-        if self._master_key[0] in self._master_key[1:]:
-            key = self._master_key[0]
-        elif self._master_key[1] in [self._master_key[0], self._master_key[2]]:
-            key = self._master_key[1]
+        if self._master_key[0][:1] in [self._master_key[1][1:], self._master_key[2][1:]]:
+            key = self._master_key[0][1:]
+        elif self._master_key[1] in [self._master_key[0][1:], self._master_key[2][1:]]:
+            key = self._master_key[1][1:]
         else:
             raise _raise("Failed to access master_key")
-        self._master_key = [key]*3
+        # Prefix each key with a unique character to prevent optimization
+        self._master_key = [i + key for i in ('1', '2', '3')]
         return key
 
     def _delete_old_master_keys(self, keyfile):
