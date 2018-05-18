@@ -133,10 +133,10 @@
       <p>
         <a href="#" class="shutdown-mailpile">
           <button class="button-warning" style="width: 175px; text-align: left;">
-            <span class="icon icon-logout"></span> {{_("Shut Down")}}
+            <span class="icon icon-logout"></span> {{_("Shutdown")}}
           </button>
         </a> &nbsp;
-        {{_("Shut Down Mailpile")}}
+        {{_("Shutdown Mailpile")}}
       </p>
     </div>
   </div>
@@ -147,7 +147,7 @@
 
   $('a.shutdown-mailpile').click(function(ev) {
     if (confirm(
-        "{{_('Are you sure you want to shut down Mailpile?')|escapejs}}")) {
+        "{{_('Are you sure you want to shutdown Mailpile?')|escapejs}}")) {
       Mailpile.API.quitquitquit_post({}, function() {
         Mailpile.API._notify_dead(
           'user', "{{_('Shutting down ...')|escapejs}}", true);

@@ -20,6 +20,7 @@ import webbrowser
 import mailpile.util
 import mailpile.postinglist
 import mailpile.security as security
+import mailpile.platforms
 from mailpile.commands import *
 from mailpile.config.validators import WebRootCheck
 from mailpile.crypto.gpgi import GnuPG
@@ -1320,7 +1321,8 @@ class ConfigPrint(Command):
                             rv[key] = '{ ..(%s).. }' % rv[key]['host']
                         else:
                             rv[key] = '{ ... }'
-                elif sanitize and key.lower()[:4] in ('pass', 'secr'):
+                elif (sanitize
+                        and key.lower()[:4] in ('pass', 'secr', 'obfu')):
                     rv[key] = '(SUPPRESSED)'
             return rv
         return data
@@ -1725,7 +1727,7 @@ class IdleQuit(Command):
         self.started = time.time()
         config.cron_worker.add_task('idlequit', self.timeout / 5, self.check)
         return self._success(
-            _('Will shut down if idle for over %s seconds') % self.timeout,
+            _('Will shutdown if idle for over %s seconds') % self.timeout,
             {'timeout': self.timeout})
 
 
@@ -1987,7 +1989,7 @@ class HelpSplash(Help):
         in_browser = False
         if http_worker:
             http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
-            if ((sys.platform[:3] in ('dar', 'win') or os.getenv('DISPLAY'))
+            if (mailpile.platforms.InDesktopEnvironment()
                     and self.session.config.prefs.open_in_browser):
                 if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
                     in_browser = True

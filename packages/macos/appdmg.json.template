@@ -1,0 +1,14 @@
+{
+  "title": "Mailpile",
+  "background": "BACKGROUND",
+  "window": { "width": 400, "height": 313 },
+  "contents": [
+    { "x": 300, "y": 160, "type": "link", "path": "/Applications" },
+    { "x": 80, "y": 160, "type": "file", "path": "APP", "name": "Mailpile.app" }
+  ],
+  "format": "ULFO",
+  "code-sign": { 
+    "signing-identity": "DMG_SIGNING_IDENTITY"
+  }
+}
+

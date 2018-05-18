@@ -10,6 +10,7 @@
 %}{%  if not from
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
 %}{%  endif
+%}{%  set allow_html = (message and message.crypto and ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_html))
 %}{%  macro msg_url(msg_mid)
 %}{%    set m_metadata = result.data.metadata.get(msg_mid)
 %}{%    if m_metadata and m_metadata.urls.editing:
@@ -256,7 +257,7 @@
                 data-crypto_color="{{ unsigned.color }}"
                 data-crypto_message="{{ unsigned.message }}"></span>
         </h3>
-        {%- if message.html_parts|length > 0 %}
+        {%- if allow_html and message.html_parts|length > 0 %}
         <ul class="display-modes">
           <li><a title="{{ _('Display HTML formatted message content') }}"
                  class="message-show-html">

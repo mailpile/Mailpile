@@ -1,5 +1,7 @@
 <div id="message-{{mid}}" class="pile-message {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{mid}}">
   {%- set from = metadata.from %}
+  {%- set allow_html = ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_html) %}
+  {%- set allow_images = ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_web) %}
   {%- set encryption_status = [] %}
   {%- set signature_status = [] %}
   {%- set special_text_parts = [] %}
@@ -100,7 +102,7 @@
       {%- endif %}
     </div>
     {%- endfor %}
-    {%- for part in message.html_parts %}
+    {%- if allow_html %}{%- for part in message.html_parts %}
     <div id="html-part-{{ mid }}-{{ loop.index }}"
          class="pile-message-html-part hide">
       {{ msg_crypto(part, loop.first) }}
@@ -108,7 +110,7 @@
         <i class="noframe">{{ _("HTML rendering requires Javascript, sorry!") }}</i>
       </div>
     </div>
-    {%- endfor %}
+    {%- endfor %}{%- endif %}
   {%- else %}
     {%- if message.crypto.encryption.status in ("lockedkey", "missingkey", "error") %}
       {%- set failed_crypto = message.crypto.encryption %}
@@ -201,12 +203,16 @@
   </ul>
 </div>
 <script>
+<!-- allow_html={{ allow_html }}, allow_images={{ allow_images }} -->
 $(document).ready(function() {
   Mailpile.Message.AnalyzeMessageInline('{{mid}}');
   $('#message-{{mid}}').data('html', {{ message.html_parts|json|safe }});
-  {%- if message.html_parts|length > 0 and
+  {%- if allow_html and
+         message.html_parts|length > 0 and
          from.get('html-policy', 'none') != 'none' %}
-    Mailpile.Message.ShowHTML('{{mid}}', '{{from["html-policy"]}}');
+    Mailpile.Message.ShowHTML(
+      '{{mid}}', '{{from["html-policy"]}}',
+      {% if allow_images %}true{% else %}false{% endif %});
   {%- endif %}
 });
 </script>

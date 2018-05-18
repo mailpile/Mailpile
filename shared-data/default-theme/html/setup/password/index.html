@@ -1,5 +1,5 @@
 {% extends "layouts/auth.html" %}
-{% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
+{% block title %}{{_("Mailpile Password")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
 
 <div id="setup-passphrase" class="setup-box setup-box-medium add-top half-bottom animated fadeIn">
@@ -31,7 +31,7 @@
 
     {% if result.need_password %}
       {{ csrf_field|safe }}
-      <h3 class="text-center">{{_("Change your password")}}</h3>
+      <h3 class="text-center">{{_("Change your Mailpile Password")}}</h3>
       <span id="validation-passphrase">
         <label class="validation-message" {% if result.incorrect %}style="color: #f00;"{% endif %}>{{_("Authenticate")}}</label>
         <span class="validation-message"></span>
@@ -40,23 +40,23 @@
       {% if result.incorrect %}
                placeholder="{{_("Password incorrect! Try again...")}}"
       {% else %}
-               placeholder="{{_("your current password")}}"
+               placeholder="{{_("Your current Mailpile Password")}}"
       {% endif %}
                type="password" name="existing">
       </span>
       <a id="generate" class="clickable" title="{{ _("Click to generate new secure password") }}">
         <label class="validation-message">
-          {{_("Choose a new password")}}
+          {{_("Your new Mailpile Password")}}
           &nbsp;&nbsp; <span class="icon icon-robot"></span>
         </label>
       </a>
     {% else %}
-      <h3 class="text-center">
-        {{_("Choose a password")}}
+      <h3 class="text-center" style="margin-bottom: 10px;">
+        {{_("Choose your Mailpile Password")}}
       </h3>
       <p class="text-center about">
-        {{_("Your password should be something really hard to guess but memorable.")}}<br>
-        {{_("This password will be used to unlock your Mailpile.")}}
+        {{_("Your Mailpile Password should be something really hard to guess but memorable.")}}<br>
+        {{_("This password will be used to unlock your Mailpile settings, keys and accounts.")}}
       </p>
     {% endif %}
 
@@ -83,7 +83,7 @@
                placeholder="{{ suggestion }}">
       </span>
       <span id="validation-passphrase_confirm">
-        <label class="validation-message">{{_("Confirm your password")}}</label>
+        <label class="validation-message">{{_("Confirm your Mailpile Password")}}</label>
         <input id="input-setup-passphrase_confirm" class="medium center"
                type="password" name="password2"
                autocorrect="off" autocapitalize="off" class="center"
@@ -91,7 +91,7 @@
       </span>
 
       <button id="btn-setup-passphrase" class="button-primary"
-              type="submit">{{_("Set Password")}}</button>
+              type="submit">{{_("Set Mailpile Password")}}</button>
 
     {% if result.need_password %}
       <a style="position: absolute; opacity: 0.6; margin-top: 5px" href="/">

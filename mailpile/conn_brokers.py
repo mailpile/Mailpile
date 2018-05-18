@@ -353,11 +353,15 @@ class TcpConnectionBroker(BaseConnectionBroker):
         #        INCOMING_INTERNET capability.
 
     def _describe(self, context, conn):
-        (host, port) = conn.getpeername()[:2]
-        if host.lower() in self.LOCAL_NETWORKS:
-            context.on_localnet = True
-        else:
-            context.on_internet = True
+        try:
+            (host, port) = conn.getpeername()[:2]
+            if host.lower() in self.LOCAL_NETWORKS:
+                context.on_localnet = True
+            else:
+                context.on_internet = True
+        except TypeError:
+            # conn.getpeername() may return None
+            pass
         context.encryption = None
         return conn
 

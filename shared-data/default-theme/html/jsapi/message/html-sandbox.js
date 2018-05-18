@@ -196,7 +196,7 @@ Mailpile.Message.SetHTMLPolicy = function(mid, old_policy, new_policy) {
 };
 
 
-Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
+Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy, allow_images) {
 
   var $iframe_html = (
     '<iframe id="message-iframe-' + part_id + '" seamless');
@@ -265,13 +265,13 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
   // DOMPurify to rewrite image references to go through our proxy,
   // as per the code above.
   var changes = 0;
-  Mailpile.Message.AddDOMPurifyHooks(policy == 'images',
+  Mailpile.Message.AddDOMPurifyHooks(allow_images && (policy == 'images'),
                                      function() { changes += 1 });
   $iframe.attr('srcdoc', DOMPurify.sanitize(html_data, {
     WHOLE_DOCUMENT: true,
   }));
 
-  if (changes > 0 && policy != 'images') {
+  if (allow_images && (changes > 0) && (policy != 'images')) {
     $msg_details = $part.closest('.has-mid').find('.message-details');
     $msg_details.find('.html-image-question').remove();
     $msg_details.append($(
@@ -315,7 +315,7 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy) {
 };
 
 
-Mailpile.Message.ShowHTML = function(mid, policy) {
+Mailpile.Message.ShowHTML = function(mid, policy, allow_images) {
   // HTML Parts Exist
   var $msg = $('#message-' + mid);
   var html_data = $msg.data('html');
@@ -336,7 +336,8 @@ Mailpile.Message.ShowHTML = function(mid, policy) {
         var part_id = mid + '-' + (1 + parseInt(i));
         var $part = $('#html-part-' + part_id);
         if ($part.find('.noframe').length > 0) {
-          Mailpile.Message.SandboxHTML(part_id, $part, html_data[i].data, policy);
+          Mailpile.Message.SandboxHTML(
+            part_id, $part, html_data[i].data, policy, allow_images);
           $part.find('.noframe').remove();
         }
       }

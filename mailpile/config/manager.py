@@ -22,6 +22,7 @@ try:
 except ImportError:
     AppDirs = None
 
+import mailpile.platforms
 from mailpile.command_cache import CommandCache
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.crypto.gpgi import GnuPG
@@ -90,19 +91,8 @@ class ConfigManager(ConfigDict):
             if os.path.exists(workdir) and os.path.isdir(workdir):
                 return workdir
 
-        basedir = None
-        if sys.platform.startswith('win'):
-            # Obey Windows conventions (more or less?)
-            basedir = os.getenv('APPDATA', os.path.expanduser('~'))
-        elif sys.platform.startswith('darwin'):
-            # Obey Mac OS X conventions
-            basedir = os.path.expanduser('~/Library/Application Support')
-        else:
-            # Assume other platforms are Unixy
-            basedir = os.getenv('XDG_DATA_HOME',
-                                os.path.expanduser('~/.local/share'))
-
-        return os.path.join(basedir, 'Mailpile', profile)
+        return os.path.join(
+            mailpile.platforms.GetAppDataDirectory(), 'Mailpile', profile)
 
     @classmethod
     def DEFAULT_SHARED_DATADIR(self):
@@ -670,26 +660,34 @@ class ConfigManager(ConfigDict):
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=900)
-        if sys.platform.startswith('win'):
+        if mailpile.platforms.RenameCannotOverwrite():
             try:
+                # We only do this if we have to; we would rather just
+                # use rename() as it's (more) atomic.
                 os.remove(self.conffile)
-            except WindowsError:
+            except (OSError, IOError):
                 pass
         os.rename(newfile, self.conffile)
 
-        if not mailpile.util.QUITTING:
-            # Enable translations
-            mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
+        # If we are shutting down, just stop here.
+        if mailpile.util.QUITTING:
+            return
 
-            # Recreate VFS root in case new things have been configured
-            self.vfs_root.rescan()
+        # Enable translations
+        mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
 
-            # Prepare workers
-            self.prepare_workers(daemons=self.daemons_started())
-            delay = 1
-            for mail_source in self.mail_sources.values():
-                mail_source.wake_up(after=delay)
-                delay += 2
+        # Recreate VFS root in case new things have been configured
+        self.vfs_root.rescan()
+
+        # Notify workers that things have changed. We do this before
+        # the prepare_workers() below, because we only want to notify
+        # workers that were already running.
+        self._unlocked_notify_workers_config_changed()
+
+        # Prepare any new workers
+        self.prepare_workers(daemons=self.daemons_started(), changed=True)
+
+        # Invalidate command cache contents that depend on the config
         self.command_cache.mark_dirty([u'!config'])
 
     def _find_mail_source(self, mbx_id, path=None):
@@ -1314,7 +1312,7 @@ class ConfigManager(ConfigDict):
         return ((which or config.save_worker)
                 not in (None, config.dumb_worker))
 
-    def get_mail_source(config, src_id, start=False):
+    def get_mail_source(config, src_id, start=False, changed=False):
         ms_thread = config.mail_sources.get(src_id)
         if (ms_thread and not ms_thread.isAlive()):
             ms_thread = None
@@ -1325,9 +1323,11 @@ class ConfigManager(ConfigDict):
             if start:
                 config.mail_sources[src_id] = ms_thread
                 ms_thread.start()
+                if changed:
+                    ms_thread.wake_up()
         return ms_thread
 
-    def _unlocked_prepare_workers(config, session=None,
+    def _unlocked_prepare_workers(config, session=None, changed=False,
                                   daemons=False, httpd_spec=None):
 
         # Set our background UI to something that can log.
@@ -1348,9 +1348,7 @@ class ConfigManager(ConfigDict):
                               config.sys.http_path or '')
             if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 try:
-                    if sys.platform.startswith('win'):
-                        # On Windows config.http_worker does not detect
-                        # port reuse, so do this kludgy test.
+                    if mailpile.platforms.NeedExplicitPortCheck():
                         try:
                             socket.socket().connect((sspec[0],sspec[1]))
                             port_in_use = True
@@ -1376,7 +1374,7 @@ class ConfigManager(ConfigDict):
         if daemons:
             for src_id in config.sources.keys():
                 try:
-                    config.get_mail_source(src_id, start=True)
+                    config.get_mail_source(src_id, start=True, changed=changed)
                 except (ValueError, KeyError):
                     pass
 
@@ -1475,6 +1473,14 @@ class ConfigManager(ConfigDict):
             for job, (i, f) in PluginManager.SLOW_PERIODIC_JOBS.iteritems():
                 config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
+    def _unlocked_get_all_workers(config):
+        return (config.mail_sources.values() +
+                config.other_workers +
+                [config.http_worker,
+                 config.slow_worker,
+                 config.scan_worker,
+                 config.cron_worker])
+
     def stop_workers(config):
         try:
             self.index_check.release()
@@ -1482,12 +1488,7 @@ class ConfigManager(ConfigDict):
             pass
 
         with config._lock:
-            worker_list = (config.mail_sources.values() +
-                           config.other_workers +
-                           [config.http_worker,
-                            config.slow_worker,
-                            config.scan_worker,
-                            config.cron_worker])
+            worker_list = config._unlocked_get_all_workers()
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
@@ -1519,6 +1520,12 @@ class ConfigManager(ConfigDict):
         if config.sys.debug:
             # Hooray!
             print 'All stopped!'
+
+    def _unlocked_notify_workers_config_changed(config):
+        worker_list = config._unlocked_get_all_workers()
+        for worker in worker_list:
+            if hasattr(worker, 'notify_config_changed'):
+                worker.notify_config_changed()
 
 
 ##############################################################################
