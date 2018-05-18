@@ -1321,7 +1321,7 @@ class ConfigPrint(Command):
                         else:
                             rv[key] = '{ ... }'
                 elif (sanitize
-                        and key.lower()[:4] in ('pass', 'secr', 'obfu'):
+                        and key.lower()[:4] in ('pass', 'secr', 'obfu')):
                     rv[key] = '(SUPPRESSED)'
             return rv
         return data
