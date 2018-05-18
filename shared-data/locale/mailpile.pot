@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mailpile VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-05-04 11:55+0200\n"
+"POT-Creation-Date: 2018-05-18 11:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,18 +18,22 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #: mailpile/app.py:114
+msgid "Mailpile is unconfigured, please run `setup` or visit the web UI."
+msgstr ""
+
+#: mailpile/app.py:120
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
 msgstr ""
 
-#: mailpile/app.py:179
+#: mailpile/app.py:185
 msgid "Ran interactive shell"
 msgstr ""
 
-#: mailpile/app.py:193
+#: mailpile/app.py:199
 msgid "Did nothing much for a while"
 msgstr ""
 
-#: mailpile/app.py:213 mailpile/plugins/core.py:59
+#: mailpile/app.py:219 mailpile/plugins/core.py:60
 msgid "Failed to decrypt configuration, please log in!"
 msgstr ""
 
@@ -437,7 +441,7 @@ msgstr ""
 msgid "Collapsing conversations..."
 msgstr ""
 
-#: mailpile/security.py:48 mailpile/plugins/core.py:760
+#: mailpile/security.py:48 mailpile/plugins/core.py:761
 msgid "Insufficient free disk space"
 msgstr ""
 
@@ -967,25 +971,25 @@ msgstr ""
 msgid "Allow fallback to direct conns"
 msgstr ""
 
-#: mailpile/config/defaults.py:71 mailpile/config/defaults.py:178
-#: mailpile/config/defaults.py:199
+#: mailpile/config/defaults.py:71 mailpile/config/defaults.py:185
+#: mailpile/config/defaults.py:206
 msgid "User name"
 msgstr ""
 
-#: mailpile/config/defaults.py:72 mailpile/config/defaults.py:179
-#: mailpile/config/defaults.py:200
+#: mailpile/config/defaults.py:72 mailpile/config/defaults.py:186
+#: mailpile/config/defaults.py:207
 #: shared-data/default-theme/html/settings/index.html:65
 #: shared-data/default-theme/html/settings/recipes.html:22
 msgid "Password"
 msgstr ""
 
-#: mailpile/config/defaults.py:73 mailpile/config/defaults.py:182
-#: mailpile/config/defaults.py:202
+#: mailpile/config/defaults.py:73 mailpile/config/defaults.py:189
+#: mailpile/config/defaults.py:209
 msgid "Host"
 msgstr ""
 
-#: mailpile/config/defaults.py:74 mailpile/config/defaults.py:183
-#: mailpile/config/defaults.py:203
+#: mailpile/config/defaults.py:74 mailpile/config/defaults.py:190
+#: mailpile/config/defaults.py:210
 #: shared-data/default-theme/html/settings/recipes.html:26
 msgid "Port"
 msgstr ""
@@ -1025,431 +1029,443 @@ msgstr ""
 msgid "Use HTML5 sandboxes"
 msgstr ""
 
-#: mailpile/config/defaults.py:88
+#: mailpile/config/defaults.py:89
+msgid "Accept weak crypto in messages older than this (unix time)"
+msgstr ""
+
+#: mailpile/config/defaults.py:91
+msgid "Never display HTML from encrypted mail"
+msgstr ""
+
+#: mailpile/config/defaults.py:93
+msgid "Never fetch web content from encrypted mail"
+msgstr ""
+
+#: mailpile/config/defaults.py:95
 #: shared-data/default-theme/html/settings/preferences.html:155
 msgid "Use the local GnuPG agent"
 msgstr ""
 
-#: mailpile/config/defaults.py:89
+#: mailpile/config/defaults.py:96
 msgid "Inline PGP signatures or attached"
 msgstr ""
 
-#: mailpile/config/defaults.py:91
+#: mailpile/config/defaults.py:98
 msgid "Encrypt local data to ..."
 msgstr ""
 
-#: mailpile/config/defaults.py:92
+#: mailpile/config/defaults.py:99
 msgid "Enable e-mail based public key distribution"
 msgstr ""
 
-#: mailpile/config/defaults.py:94
+#: mailpile/config/defaults.py:101
 #: shared-data/default-theme/html/settings/preferences.html:156
 msgid "Wrap keys and signatures in helpful HTML"
 msgstr ""
 
-#: mailpile/config/defaults.py:96
+#: mailpile/config/defaults.py:103
 msgid "Key Trust Model"
 msgstr ""
 
-#: mailpile/config/defaults.py:97
+#: mailpile/config/defaults.py:104
 msgid "Minimum number of signatures required"
 msgstr ""
 
-#: mailpile/config/defaults.py:99
+#: mailpile/config/defaults.py:106
 msgid "Window of time (days) to evaluate trust"
 msgstr ""
 
-#: mailpile/config/defaults.py:101
+#: mailpile/config/defaults.py:108
 msgid "Signed ratio (%) above which we expect sigs"
 msgstr ""
 
-#: mailpile/config/defaults.py:103
+#: mailpile/config/defaults.py:110
 msgid "Ratio of key use (%) above which we trust key"
 msgstr ""
 
-#: mailpile/config/defaults.py:105
+#: mailpile/config/defaults.py:112
 msgid "Consider key new below this ratio (%) of sigs"
 msgstr ""
 
-#: mailpile/config/defaults.py:108
+#: mailpile/config/defaults.py:115
 msgid "Advertise PGP preferences in a header?"
 msgstr ""
 
-#: mailpile/config/defaults.py:111
+#: mailpile/config/defaults.py:118
 msgid "Default encryption policy for outgoing mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:113
+#: mailpile/config/defaults.py:120
 msgid "Use inline PGP when possible"
 msgstr ""
 
-#: mailpile/config/defaults.py:114
+#: mailpile/config/defaults.py:121
 msgid "Encrypt subjects by default"
 msgstr ""
 
-#: mailpile/config/defaults.py:115
+#: mailpile/config/defaults.py:122
 msgid "Default sort order"
 msgstr ""
 
-#: mailpile/config/defaults.py:116
+#: mailpile/config/defaults.py:123
 msgid "Key to use to scramble the index"
 msgstr ""
 
-#: mailpile/config/defaults.py:117
+#: mailpile/config/defaults.py:124
 msgid "Make encrypted content searchable"
 msgstr ""
 
-#: mailpile/config/defaults.py:119
+#: mailpile/config/defaults.py:126
 msgid "Encrypt locally stored mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:120
+#: mailpile/config/defaults.py:127
 msgid "Encrypt the local search index"
 msgstr ""
 
-#: mailpile/config/defaults.py:121
+#: mailpile/config/defaults.py:128
 msgid "Encrypt the contact database"
 msgstr ""
 
-#: mailpile/config/defaults.py:122
+#: mailpile/config/defaults.py:129
 msgid "Encrypt the event log"
 msgstr ""
 
-#: mailpile/config/defaults.py:123
+#: mailpile/config/defaults.py:130
 msgid "Encrypt misc. local data"
 msgstr ""
 
-#: mailpile/config/defaults.py:124
+#: mailpile/config/defaults.py:131
 msgid "Allow permanent deletion of e-mails"
 msgstr ""
 
-#: mailpile/config/defaults.py:130
+#: mailpile/config/defaults.py:137
 msgid "Command run before rescanning"
 msgstr ""
 
-#: mailpile/config/defaults.py:131
+#: mailpile/config/defaults.py:138
 msgid "Default outgoing e-mail address"
 msgstr ""
 
-#: mailpile/config/defaults.py:132 mailpile/config/defaults.py:136
+#: mailpile/config/defaults.py:139 mailpile/config/defaults.py:143
 msgid "Default outgoing mail route"
 msgstr ""
 
-#: mailpile/config/defaults.py:133
+#: mailpile/config/defaults.py:140
 msgid "Target line length, <40 disables reflow"
 msgstr ""
 
-#: mailpile/config/defaults.py:135
+#: mailpile/config/defaults.py:142
 msgid "Always BCC self on outgoing mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:137
+#: mailpile/config/defaults.py:144
 #: shared-data/default-theme/html/settings/preferences.html:108
 msgid "User interface language"
 msgstr ""
 
-#: mailpile/config/defaults.py:138
+#: mailpile/config/defaults.py:145
 msgid "vCard import/export settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:139
+#: mailpile/config/defaults.py:146
 msgid "vCard import settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:140
+#: mailpile/config/defaults.py:147
 msgid "vCard export settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:141
+#: mailpile/config/defaults.py:148
 msgid "vCard context helper settings"
 msgstr ""
 
-#: mailpile/config/defaults.py:144
+#: mailpile/config/defaults.py:151
 msgid "Web Interface Preferences"
 msgstr ""
 
-#: mailpile/config/defaults.py:145
+#: mailpile/config/defaults.py:152
 #: shared-data/default-theme/html/settings/preferences.html:118
 msgid "Enable keyboard short-cuts"
 msgstr ""
 
-#: mailpile/config/defaults.py:146
+#: mailpile/config/defaults.py:153
 #: shared-data/default-theme/html/settings/preferences.html:148
 msgid "Enable developer-only features"
 msgstr ""
 
-#: mailpile/config/defaults.py:147
+#: mailpile/config/defaults.py:154
 msgid "User completed setup experience"
 msgstr ""
 
-#: mailpile/config/defaults.py:148
+#: mailpile/config/defaults.py:155
 msgid "Display density of interface"
 msgstr ""
 
-#: mailpile/config/defaults.py:149
+#: mailpile/config/defaults.py:156
 msgid "Quote replies to messages"
 msgstr ""
 
-#: mailpile/config/defaults.py:150
+#: mailpile/config/defaults.py:157
 msgid "Nag user to backup their key"
 msgstr ""
 
-#: mailpile/config/defaults.py:151
+#: mailpile/config/defaults.py:158
 msgid "Collapsed subtags in sidebar"
 msgstr ""
 
-#: mailpile/config/defaults.py:152
+#: mailpile/config/defaults.py:159
 #: shared-data/default-theme/html/settings/preferences.html:119
 msgid "Display donate link in topbar?"
 msgstr ""
 
-#: mailpile/config/defaults.py:153
+#: mailpile/config/defaults.py:160
 msgid "Display HTML hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:154
+#: mailpile/config/defaults.py:161
 msgid "Display crypto hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:155
+#: mailpile/config/defaults.py:162
 msgid "Display reply hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:156
+#: mailpile/config/defaults.py:163
 msgid "Display tagging hints?"
 msgstr ""
 
-#: mailpile/config/defaults.py:157
+#: mailpile/config/defaults.py:164
 msgid "Display release notes?"
 msgstr ""
 
-#: mailpile/config/defaults.py:159
+#: mailpile/config/defaults.py:166
 msgid "Credentials allowed to access Mailpile"
 msgstr ""
 
-#: mailpile/config/defaults.py:160
+#: mailpile/config/defaults.py:167
 msgid "Salted and hashed password"
 msgstr ""
 
-#: mailpile/config/defaults.py:162
+#: mailpile/config/defaults.py:169
 msgid "Secrets the user wants saved"
 msgstr ""
 
-#: mailpile/config/defaults.py:163
+#: mailpile/config/defaults.py:170
 msgid "A secret"
 msgstr ""
 
-#: mailpile/config/defaults.py:164
+#: mailpile/config/defaults.py:171
 msgid "Security policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:168
+#: mailpile/config/defaults.py:175
 msgid "Settings for TLS certificate validation"
 msgstr ""
 
-#: mailpile/config/defaults.py:169
+#: mailpile/config/defaults.py:176
 msgid "Server hostname:port"
 msgstr ""
 
-#: mailpile/config/defaults.py:170
+#: mailpile/config/defaults.py:177
 msgid "SHA256 of acceptable certs"
 msgstr ""
 
-#: mailpile/config/defaults.py:171
+#: mailpile/config/defaults.py:178
 msgid "Use web certificate authorities"
 msgstr ""
 
-#: mailpile/config/defaults.py:173
+#: mailpile/config/defaults.py:180
 msgid "Outgoing message routes"
 msgstr ""
 
-#: mailpile/config/defaults.py:174
+#: mailpile/config/defaults.py:181
 #: shared-data/default-theme/html/settings/recipes.html:18
 msgid "Route name"
 msgstr ""
 
-#: mailpile/config/defaults.py:175
+#: mailpile/config/defaults.py:182
 msgid "Messaging protocol"
 msgstr ""
 
-#: mailpile/config/defaults.py:180 mailpile/config/defaults.py:201
+#: mailpile/config/defaults.py:187 mailpile/config/defaults.py:208
 msgid "Authentication scheme"
 msgstr ""
 
-#: mailpile/config/defaults.py:181
+#: mailpile/config/defaults.py:188
 #: shared-data/default-theme/html/profiles/account-form.html:459
 msgid "Shell command"
 msgstr ""
 
-#: mailpile/config/defaults.py:185
+#: mailpile/config/defaults.py:192
 msgid "Incoming message sources"
 msgstr ""
 
-#: mailpile/config/defaults.py:186
+#: mailpile/config/defaults.py:193
 msgid "Source name"
 msgstr ""
 
-#: mailpile/config/defaults.py:187
+#: mailpile/config/defaults.py:194
 msgid "Profile this source belongs to"
 msgstr ""
 
-#: mailpile/config/defaults.py:188
+#: mailpile/config/defaults.py:195
 msgid "Is this mail source enabled?"
 msgstr ""
 
-#: mailpile/config/defaults.py:189
+#: mailpile/config/defaults.py:196
 msgid "Mail source protocol"
 msgstr ""
 
-#: mailpile/config/defaults.py:196
+#: mailpile/config/defaults.py:203
 msgid "Shell command run before syncing"
 msgstr ""
 
-#: mailpile/config/defaults.py:197
+#: mailpile/config/defaults.py:204
 msgid "Shell command run after syncing"
 msgstr ""
 
-#: mailpile/config/defaults.py:198
+#: mailpile/config/defaults.py:205
 msgid "How frequently to check for mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:204
+#: mailpile/config/defaults.py:211
 msgid "Keep server connections alive"
 msgstr ""
 
-#: mailpile/config/defaults.py:205
+#: mailpile/config/defaults.py:212
 msgid "Mailbox discovery policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:206
+#: mailpile/config/defaults.py:213
 msgid "Paths to watch for new mailboxes"
 msgstr ""
 
-#: mailpile/config/defaults.py:207
+#: mailpile/config/defaults.py:214
 msgid "Default mailbox policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:210
+#: mailpile/config/defaults.py:217
 msgid "Copy mail to a local mailbox?"
 msgstr ""
 
-#: mailpile/config/defaults.py:211
+#: mailpile/config/defaults.py:218
 msgid "Parent tag for mailbox tags"
 msgstr ""
 
-#: mailpile/config/defaults.py:212
+#: mailpile/config/defaults.py:219
 msgid "Guess which local tags match"
 msgstr ""
 
-#: mailpile/config/defaults.py:213
+#: mailpile/config/defaults.py:220
 msgid "Create a tag for each mailbox?"
 msgstr ""
 
-#: mailpile/config/defaults.py:214
+#: mailpile/config/defaults.py:221
 msgid "Make tags visible by default?"
 msgstr ""
 
-#: mailpile/config/defaults.py:215
+#: mailpile/config/defaults.py:222
 msgid "Is a potential source of new mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:216 mailpile/config/defaults.py:228
+#: mailpile/config/defaults.py:223 mailpile/config/defaults.py:235
 msgid "Tags applied to messages"
 msgstr ""
 
-#: mailpile/config/defaults.py:217
+#: mailpile/config/defaults.py:224
 msgid "Max mailboxes to add"
 msgstr ""
 
-#: mailpile/config/defaults.py:219
+#: mailpile/config/defaults.py:226
 msgid "Mailboxes"
 msgstr ""
 
-#: mailpile/config/defaults.py:220
+#: mailpile/config/defaults.py:227
 msgid "The name of this mailbox"
 msgstr ""
 
-#: mailpile/config/defaults.py:221
+#: mailpile/config/defaults.py:228
 msgid "Mailbox source path"
 msgstr ""
 
-#: mailpile/config/defaults.py:222
+#: mailpile/config/defaults.py:229
 msgid "Mailbox policy"
 msgstr ""
 
-#: mailpile/config/defaults.py:225
+#: mailpile/config/defaults.py:232
 msgid "Local mailbox path"
 msgstr ""
 
-#: mailpile/config/defaults.py:226
+#: mailpile/config/defaults.py:233
 msgid "Is a source of new mail"
 msgstr ""
 
-#: mailpile/config/defaults.py:227
+#: mailpile/config/defaults.py:234
 msgid "A tag representing this mailbox"
 msgstr ""
 
-#: mailpile/config/manager.py:224
+#: mailpile/config/manager.py:214
 #, python-format
 msgid "Creating: %s"
 msgstr ""
 
-#: mailpile/config/manager.py:234
+#: mailpile/config/manager.py:224
 msgid "Another Mailpile or program is using the profile directory"
 msgstr ""
 
-#: mailpile/config/manager.py:292
+#: mailpile/config/manager.py:282
 #, python-format
 msgid "Invalid (%s): section %s does not exist"
 msgstr ""
 
-#: mailpile/config/manager.py:303
+#: mailpile/config/manager.py:293
 #, python-format
 msgid "Invalid (%s): section %s, variable %s=%s"
 msgstr ""
 
-#: mailpile/config/manager.py:520
+#: mailpile/config/manager.py:510
 #, python-format
 msgid "Loading plugin: %s"
 msgstr ""
 
-#: mailpile/config/manager.py:522
+#: mailpile/config/manager.py:512
 msgid "Processing manifests"
 msgstr ""
 
-#: mailpile/config/manager.py:808
+#: mailpile/config/manager.py:800
 #, python-format
 msgid "No such mailbox: %s"
 msgstr ""
 
-#: mailpile/config/manager.py:980
+#: mailpile/config/manager.py:972
 #, python-format
 msgid "%s: Updating: %s"
 msgstr ""
 
-#: mailpile/config/manager.py:998
+#: mailpile/config/manager.py:990
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
 msgstr ""
 
-#: mailpile/config/manager.py:1084
+#: mailpile/config/manager.py:1076
 msgid "Please enter your password"
 msgstr ""
 
-#: mailpile/config/manager.py:1105 mailpile/plugins/contacts.py:825
+#: mailpile/config/manager.py:1097 mailpile/plugins/contacts.py:825
 msgid "Sent using Mailpile, Free Software from www.mailpile.is"
 msgstr ""
 
-#: mailpile/config/manager.py:1157
+#: mailpile/config/manager.py:1149
 #, python-format
 msgid "Route %s for %s does not exist."
 msgstr ""
 
-#: mailpile/config/manager.py:1308
+#: mailpile/config/manager.py:1300
 msgid "Parent paths are not allowed"
 msgstr ""
 
-#: mailpile/config/manager.py:1374
+#: mailpile/config/manager.py:1364
 #, python-format
 msgid "Port %s:%s in use by another Mailpile or program"
 msgstr ""
@@ -1504,153 +1520,153 @@ msgstr ""
 msgid "Not a GPG key ID or fingerprint"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:42
+#: mailpile/crypto/gpgi.py:41
 msgid "RSA"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:43
+#: mailpile/crypto/gpgi.py:42
 msgid "RSA (encrypt only)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:44
+#: mailpile/crypto/gpgi.py:43
 msgid "RSA (sign only)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:45
+#: mailpile/crypto/gpgi.py:44
 msgid "ElGamal (encrypt only)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:46
+#: mailpile/crypto/gpgi.py:45
 msgid "DSA"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:47
+#: mailpile/crypto/gpgi.py:46
 msgid "ElGamal (encrypt/sign) [COMPROMISED]"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:48
+#: mailpile/crypto/gpgi.py:47
 msgid "EdDSA"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:49 mailpile/plugins/motd.py:167
+#: mailpile/crypto/gpgi.py:48 mailpile/plugins/motd.py:167
 #: mailpile/www/jinjaextensions.py:337 mailpile/www/jinjaextensions.py:407
 #: mailpile/www/jinjaextensions.py:496
 msgid "Unknown"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:535
+#: mailpile/crypto/gpgi.py:548
 msgid "Your PGP key is needed for decrypting."
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:537
+#: mailpile/crypto/gpgi.py:550
 msgid "Your PGP key is needed for signing."
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:539
+#: mailpile/crypto/gpgi.py:552
 msgid "Unlock your encryption key"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:561
+#: mailpile/crypto/gpgi.py:574
 msgid "Checking GnuPG version"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:576
+#: mailpile/crypto/gpgi.py:589
 msgid "Checking GnuPG home directory"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:585
+#: mailpile/crypto/gpgi.py:598
 msgid "Checking GnuPG availability"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:762
+#: mailpile/crypto/gpgi.py:775
 #, python-format
 msgid "Fetching GnuPG public key list (selectors=%s)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:791
+#: mailpile/crypto/gpgi.py:804
 #, python-format
 msgid "Fetching GnuPG secret key list (selectors=%s)"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:820
+#: mailpile/crypto/gpgi.py:833
 msgid "Importing key to GnuPG key chain"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:898
+#: mailpile/crypto/gpgi.py:912
 #, python-format
 msgid "Decrypting %d bytes of data"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1174
+#: mailpile/crypto/gpgi.py:1189
 #, python-format
 msgid "Checking signature in %d bytes of data"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1194
+#: mailpile/crypto/gpgi.py:1210
 #, python-format
 msgid "Encrypting %d bytes of data to %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1198
+#: mailpile/crypto/gpgi.py:1214
 #, python-format
 msgid "Encrypting %d bytes of data with password"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1243
+#: mailpile/crypto/gpgi.py:1259
 #, python-format
 msgid "Signing %d bytes of data with %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1244 mailpile/crypto/gpgi.py:1257
+#: mailpile/crypto/gpgi.py:1260 mailpile/crypto/gpgi.py:1273
 msgid "default"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1256
+#: mailpile/crypto/gpgi.py:1272
 #, python-format
 msgid "Signing key %s with %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1269
+#: mailpile/crypto/gpgi.py:1285
 #, python-format
 msgid "Downloading key %s from key servers"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1284
+#: mailpile/crypto/gpgi.py:1300
 #, python-format
 msgid "Searching for key for %s in key servers"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1327
+#: mailpile/crypto/gpgi.py:1343
 #, python-format
 msgid "Exporting keys %s from keychain"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1461
+#: mailpile/crypto/gpgi.py:1477
 #, python-format
 msgid "Keys missing for %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1465
+#: mailpile/crypto/gpgi.py:1481
 #, python-format
 msgid "Keys ambiguous for %s"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1647
+#: mailpile/crypto/gpgi.py:1663
 #, python-format
 msgid "Creating a %(bits)s bit GnuPG key"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1666
+#: mailpile/crypto/gpgi.py:1682
 #, python-format
 msgid "Waiting to generate a %d bit GnuPG key.bits"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1670
+#: mailpile/crypto/gpgi.py:1686
 #, python-format
 msgid "Generating new %d bit PGP key.bits"
 msgstr ""
 
-#: mailpile/crypto/gpgi.py:1717
+#: mailpile/crypto/gpgi.py:1733
 #, python-format
 msgid "Unable to create a %(bits)s bit key, wrong GnuPG version"
 msgstr ""
@@ -1660,15 +1676,15 @@ msgstr ""
 msgid "Decrypted: %s"
 msgstr ""
 
-#: mailpile/crypto/mime.py:399
+#: mailpile/crypto/mime.py:406
 msgid "Subject unavailable"
 msgstr ""
 
-#: mailpile/crypto/mime.py:703
+#: mailpile/crypto/mime.py:710
 msgid "Failed to sign message!"
 msgstr ""
 
-#: mailpile/crypto/mime.py:767
+#: mailpile/crypto/mime.py:774
 msgid "Failed to encrypt message!"
 msgstr ""
 
@@ -1703,7 +1719,7 @@ msgstr ""
 msgid "Nothing is wrong"
 msgstr ""
 
-#: mailpile/mail_source/__init__.py:211 mailpile/plugins/core.py:84
+#: mailpile/mail_source/__init__.py:211 mailpile/plugins/core.py:85
 #, python-format
 msgid "Insufficient free space in %s"
 msgstr ""
@@ -1742,7 +1758,7 @@ msgstr ""
 msgid "Unchanged"
 msgstr ""
 
-#: mailpile/mail_source/__init__.py:352 mailpile/plugins/core.py:1866
+#: mailpile/mail_source/__init__.py:352 mailpile/plugins/core.py:1868
 #: mailpile/www/jinjaextensions.py:349 mailpile/www/jinjaextensions.py:544
 #: shared-data/default-theme/html/jsapi/ui/notifications.js:347
 msgid "Error"
@@ -1794,7 +1810,7 @@ msgstr ""
 msgid "Unnamed"
 msgstr ""
 
-#: mailpile/mail_source/__init__.py:744 mailpile/plugins/core.py:342
+#: mailpile/mail_source/__init__.py:744 mailpile/plugins/core.py:343
 msgid "Aborted"
 msgstr ""
 
@@ -1841,8 +1857,8 @@ msgstr ""
 msgid "Shutdown"
 msgstr ""
 
-#: mailpile/mail_source/__init__.py:1111 mailpile/plugins/core.py:152
-#: mailpile/plugins/core.py:1524
+#: mailpile/mail_source/__init__.py:1111 mailpile/plugins/core.py:153
+#: mailpile/plugins/core.py:1526
 msgid "User aborted"
 msgstr ""
 
@@ -1996,45 +2012,45 @@ msgstr ""
 msgid "%s is too large to be a mailbox ID"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:324
+#: mailpile/mailutils/emails.py:326
 #, python-format
 msgid "Unknown crypto policy: %s"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:648 mailpile/mailutils/emails.py:726
-#: mailpile/mailutils/emails.py:990 mailpile/mailutils/emails.py:1000
+#: mailpile/mailutils/emails.py:650 mailpile/mailutils/emails.py:728
+#: mailpile/mailutils/emails.py:999 mailpile/mailutils/emails.py:1009
 msgid "Message or mailbox is read-only."
 msgstr ""
 
-#: mailpile/mailutils/emails.py:921
+#: mailpile/mailutils/emails.py:930
 msgid "Message not found?"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1046
+#: mailpile/mailutils/emails.py:1055
 #, python-format
 msgid "Extracted attachment %s"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1059
+#: mailpile/mailutils/emails.py:1068
 #, python-format
 msgid "Wrote preview to: %s"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1061
+#: mailpile/mailutils/emails.py:1070
 msgid "Failed to generate thumbnail"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1082
+#: mailpile/mailutils/emails.py:1091
 #, python-format
 msgid "Wrote attachment to: %s"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1087
+#: mailpile/mailutils/emails.py:1096
 #, python-format
 msgid "No attachments found for: %s"
 msgstr ""
 
-#: mailpile/mailutils/emails.py:1265
+#: mailpile/mailutils/emails.py:1274
 msgid "[Binary data suppressed]\n"
 msgstr ""
 
@@ -2422,320 +2438,320 @@ msgstr ""
 msgid "Choosing from address"
 msgstr ""
 
-#: mailpile/plugins/core.py:55
+#: mailpile/plugins/core.py:56
 msgid "Loaded metadata index"
 msgstr ""
 
-#: mailpile/plugins/core.py:57
+#: mailpile/plugins/core.py:58
 msgid "Failed to load metadata index"
 msgstr ""
 
-#: mailpile/plugins/core.py:96
+#: mailpile/plugins/core.py:97
 msgid "Rescanned vCards"
 msgstr ""
 
-#: mailpile/plugins/core.py:102
+#: mailpile/plugins/core.py:103
 msgid "Rescanned mailboxes"
 msgstr ""
 
-#: mailpile/plugins/core.py:123
+#: mailpile/plugins/core.py:124
 #, python-format
 msgid "Failed to reindex: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:130
+#: mailpile/plugins/core.py:131
 #, python-format
 msgid "Indexed %d messages"
 msgstr ""
 
-#: mailpile/plugins/core.py:136
+#: mailpile/plugins/core.py:137
 msgid "Rescan already in progress"
 msgstr ""
 
-#: mailpile/plugins/core.py:149
+#: mailpile/plugins/core.py:150
 msgid "Rescanned vCards and mailboxes"
 msgstr ""
 
-#: mailpile/plugins/core.py:164 mailpile/plugins/core.py:241
-#: mailpile/plugins/core.py:300
+#: mailpile/plugins/core.py:165 mailpile/plugins/core.py:242
+#: mailpile/plugins/core.py:301
 #, python-format
 msgid "Rescanning: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:185
+#: mailpile/plugins/core.py:186
 #, python-format
 msgid "Running: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:211
+#: mailpile/plugins/core.py:212
 #, python-format
 msgid "Rescan command returned %d"
 msgstr ""
 
-#: mailpile/plugins/core.py:219
+#: mailpile/plugins/core.py:220
 msgid "Aborting rescan command"
 msgstr ""
 
-#: mailpile/plugins/core.py:265
+#: mailpile/plugins/core.py:266
 #, python-format
 msgid "Rescanning: %s %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:281
+#: mailpile/plugins/core.py:282
 #, python-format
 msgid "Failed to rescan: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:312
+#: mailpile/plugins/core.py:313
 msgid "Nothing changed"
 msgstr ""
 
-#: mailpile/plugins/core.py:340
+#: mailpile/plugins/core.py:341
 msgid "Optimized search engine"
 msgstr ""
 
-#: mailpile/plugins/core.py:382
+#: mailpile/plugins/core.py:383
 msgid "Could not delete all messages"
 msgstr ""
 
-#: mailpile/plugins/core.py:384
+#: mailpile/plugins/core.py:385
 #, python-format
 msgid "Deleted %d messages"
 msgstr ""
 
-#: mailpile/plugins/core.py:425 shared-data/mailpile-gui/mailpile-gui.py:241
+#: mailpile/plugins/core.py:426 shared-data/mailpile-gui/mailpile-gui.py:243
 msgid "Launching Mailpile"
 msgstr ""
 
-#: mailpile/plugins/core.py:461
+#: mailpile/plugins/core.py:462
 #, python-format
 msgid "Moved the web server to %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:464
+#: mailpile/plugins/core.py:465
 #, python-format
 msgid "Started the web server on %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:467
+#: mailpile/plugins/core.py:468
 msgid "Failed to start the web server"
 msgstr ""
 
-#: mailpile/plugins/core.py:497
+#: mailpile/plugins/core.py:498
 msgid "Performed shutdown tasks"
 msgstr ""
 
-#: mailpile/plugins/core.py:512
+#: mailpile/plugins/core.py:513
 #, python-format
 msgid "Wrote PID to %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:532
+#: mailpile/plugins/core.py:533
 msgid "Rendered the page"
 msgstr ""
 
-#: mailpile/plugins/core.py:559 mailpile/plugins/core.py:567
-#: mailpile/plugins/core.py:574 mailpile/plugins/core.py:580
-#: mailpile/plugins/core.py:589 mailpile/plugins/core.py:883
+#: mailpile/plugins/core.py:560 mailpile/plugins/core.py:568
+#: mailpile/plugins/core.py:575 mailpile/plugins/core.py:581
+#: mailpile/plugins/core.py:590 mailpile/plugins/core.py:884
 msgid "Nothing Found"
 msgstr ""
 
-#: mailpile/plugins/core.py:673
+#: mailpile/plugins/core.py:674
 msgid "Listed events, threads, and locks"
 msgstr ""
 
-#: mailpile/plugins/core.py:731
+#: mailpile/plugins/core.py:732
 msgid "Displayed CRON schedule"
 msgstr ""
 
-#: mailpile/plugins/core.py:767
+#: mailpile/plugins/core.py:768
 msgid "Your Mailpile is read-only!"
 msgstr ""
 
-#: mailpile/plugins/core.py:800
+#: mailpile/plugins/core.py:801
 msgid "We are healthy!"
 msgstr ""
 
-#: mailpile/plugins/core.py:825
+#: mailpile/plugins/core.py:826
 msgid "(no output)"
 msgstr ""
 
-#: mailpile/plugins/core.py:851 mailpile/plugins/eventlog.py:210
+#: mailpile/plugins/core.py:852 mailpile/plugins/eventlog.py:210
 #: shared-data/contrib/hacks/hacks.py:95
 msgid "That was fun!"
 msgstr ""
 
-#: mailpile/plugins/core.py:852
+#: mailpile/plugins/core.py:853
 #, python-format
 msgid "%s returned: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:930
+#: mailpile/plugins/core.py:931
 #, python-format
 msgid "Network error: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:936
+#: mailpile/plugins/core.py:937
 #, python-format
 msgid "Failed to list: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:957
+#: mailpile/plugins/core.py:958
 #, python-format
 msgid "Listed %d files or directories"
 msgstr ""
 
-#: mailpile/plugins/core.py:980
+#: mailpile/plugins/core.py:981
 #, python-format
 msgid "Failed to change directories: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1005
+#: mailpile/plugins/core.py:1006
 #, python-format
 msgid "That file already exists: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1023
+#: mailpile/plugins/core.py:1024
 #, python-format
 msgid "Dumped to %s: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1026
+#: mailpile/plugins/core.py:1027
 #, python-format
 msgid "Dumped: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1044
+#: mailpile/plugins/core.py:1045
 msgid "Listed available translations"
 msgstr ""
 
-#: mailpile/plugins/core.py:1087
+#: mailpile/plugins/core.py:1088
 msgid "WARNING: Any changes will be overwritten on login"
 msgstr ""
 
-#: mailpile/plugins/core.py:1108
+#: mailpile/plugins/core.py:1109
 #, python-format
 msgid "Invalid section or variable: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1126 mailpile/plugins/core.py:1211
-#: mailpile/plugins/core.py:1267
+#: mailpile/plugins/core.py:1127 mailpile/plugins/core.py:1212
+#: mailpile/plugins/core.py:1268
 msgid "I refuse to change the master key!"
 msgstr ""
 
-#: mailpile/plugins/core.py:1168 mailpile/plugins/core.py:1228
+#: mailpile/plugins/core.py:1169 mailpile/plugins/core.py:1229
 msgid "Updated your settings"
 msgstr ""
 
-#: mailpile/plugins/core.py:1281
+#: mailpile/plugins/core.py:1282
 msgid "Reset to default values"
 msgstr ""
 
-#: mailpile/plugins/core.py:1371
+#: mailpile/plugins/core.py:1373
 msgid "Invalid keys"
 msgstr ""
 
-#: mailpile/plugins/core.py:1378
+#: mailpile/plugins/core.py:1380
 msgid "Displayed settings"
 msgstr ""
 
-#: mailpile/plugins/core.py:1459
+#: mailpile/plugins/core.py:1461
 #, python-format
 msgid "Account not found: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1515
+#: mailpile/plugins/core.py:1517
 msgid "Too many files"
 msgstr ""
 
-#: mailpile/plugins/core.py:1518
+#: mailpile/plugins/core.py:1520
 #, python-format
 msgid "Failed to read: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1521
+#: mailpile/plugins/core.py:1523
 #, python-format
 msgid "Not a mailbox: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1532
+#: mailpile/plugins/core.py:1534
 msgid "Add and configure mailboxes"
 msgstr ""
 
-#: mailpile/plugins/core.py:1579
+#: mailpile/plugins/core.py:1581
 #, python-format
 msgid "Configured %d mailboxes"
 msgstr ""
 
-#: mailpile/plugins/core.py:1584
+#: mailpile/plugins/core.py:1586
 msgid "Nothing was added"
 msgstr ""
 
-#: mailpile/plugins/core.py:1610
+#: mailpile/plugins/core.py:1612
 #, python-format
 msgid "Set output mode to: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1708 mailpile/plugins/core.py:1765
+#: mailpile/plugins/core.py:1710 mailpile/plugins/core.py:1767
 msgid "Shutting down..."
 msgstr ""
 
-#: mailpile/plugins/core.py:1728
+#: mailpile/plugins/core.py:1730
 #, python-format
 msgid "Will shutdown if idle for over %s seconds"
 msgstr ""
 
-#: mailpile/plugins/core.py:1787
+#: mailpile/plugins/core.py:1789
 #, python-format
 msgid "The Web interface address is: %s"
 msgstr ""
 
-#: mailpile/plugins/core.py:1790
+#: mailpile/plugins/core.py:1792
 msgid "The Web interface is disabled, type `www` to turn it on."
 msgstr ""
 
-#: mailpile/plugins/core.py:1796
+#: mailpile/plugins/core.py:1798
 msgid "Type `help` for instructions or `quit` to quit."
 msgstr ""
 
-#: mailpile/plugins/core.py:1798
+#: mailpile/plugins/core.py:1800
 msgid "Long running operations can be aborted by pressing: <CTRL-C>"
 msgstr ""
 
-#: mailpile/plugins/core.py:1801
+#: mailpile/plugins/core.py:1803
 #, python-format
 msgid "You can log in using the `%s` command."
 msgstr ""
 
-#: mailpile/plugins/core.py:1804
+#: mailpile/plugins/core.py:1806
 msgid "Check your web browser!"
 msgstr ""
 
-#: mailpile/plugins/core.py:1823
+#: mailpile/plugins/core.py:1825
 msgid "Commands:"
 msgstr ""
 
-#: mailpile/plugins/core.py:1857
+#: mailpile/plugins/core.py:1859
 msgid "Tags:  (use a tag as a command to display tagged messages)"
 msgstr ""
 
-#: mailpile/plugins/core.py:1895 mailpile/plugins/core.py:1923
+#: mailpile/plugins/core.py:1897 mailpile/plugins/core.py:1925
 msgid "Displayed help"
 msgstr ""
 
-#: mailpile/plugins/core.py:1900
+#: mailpile/plugins/core.py:1902
 msgid "Unknown command"
 msgstr ""
 
-#: mailpile/plugins/core.py:1956
+#: mailpile/plugins/core.py:1958
 msgid "(subsection)"
 msgstr ""
 
-#: mailpile/plugins/core.py:1973
+#: mailpile/plugins/core.py:1975
 msgid "Displayed variables"
 msgstr ""
 
-#: mailpile/plugins/core.py:1998
+#: mailpile/plugins/core.py:2000
 msgid "Displayed welcome message"
 msgstr ""
 
@@ -3132,7 +3148,7 @@ msgid "Unsupported URL for message of the day: %s"
 msgstr ""
 
 #: mailpile/plugins/motd.py:92 mailpile/plugins/motd.py:109
-#: mailpile/plugins/motd.py:137 mailpile/plugins/motd.py:167
+#: mailpile/plugins/motd.py:136 mailpile/plugins/motd.py:167
 #: shared-data/default-theme/html/settings/privacy.html:179
 msgid "Message Of The Day"
 msgstr ""
@@ -3141,7 +3157,7 @@ msgstr ""
 msgid "Loaded"
 msgstr ""
 
-#: mailpile/plugins/motd.py:137
+#: mailpile/plugins/motd.py:136
 msgid "Updated"
 msgstr ""
 
@@ -4463,7 +4479,7 @@ msgstr ""
 
 #: shared-data/default-theme/html/contacts/add/index.html:2
 #: shared-data/default-theme/html/jsapi/templates/modal-contact-add.html:6
-#: shared-data/default-theme/html/partials/search_item.html:89
+#: shared-data/default-theme/html/partials/search_item.html:90
 #: shared-data/default-theme/html/partials/thread_message.html:152
 #: shared-data/default-theme/html/partials/thread_metadata.html:17
 #: shared-data/default-theme/html/partials/tools_contacts.html:43
@@ -4508,7 +4524,7 @@ msgstr ""
 #: shared-data/default-theme/html/contacts/view/index.html:2
 #: shared-data/default-theme/html/contacts/view/index.html:9
 #: shared-data/default-theme/html/jsapi/crypto/find.js:28
-#: shared-data/default-theme/html/partials/search_item.html:167
+#: shared-data/default-theme/html/partials/search_item.html:168
 msgid "No Name"
 msgstr ""
 
@@ -4653,8 +4669,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:131
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:133
-#: shared-data/default-theme/html/partials/search_item.html:148
-#: shared-data/default-theme/html/partials/search_item.html:166
+#: shared-data/default-theme/html/partials/search_item.html:149
+#: shared-data/default-theme/html/partials/search_item.html:167
 msgid "unknown"
 msgstr ""
 
@@ -5611,7 +5627,7 @@ msgid "No, thanks!"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/message/tooltips.js:58
-#: shared-data/default-theme/html/partials/search_item.html:197
+#: shared-data/default-theme/html/partials/search_item.html:198
 msgid "Download"
 msgstr ""
 
@@ -6605,8 +6621,8 @@ msgid "You can help."
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:79
-#: shared-data/default-theme/html/partials/pile_email_hints.html:13
-#: shared-data/default-theme/html/partials/pile_email_hints.html:27
+#: shared-data/default-theme/html/partials/pile_email_hints.html:15
+#: shared-data/default-theme/html/partials/pile_email_hints.html:29
 msgid "OK, got it"
 msgstr ""
 
@@ -6622,8 +6638,8 @@ msgstr ""
 #: shared-data/default-theme/html/partials/compose.html:13
 #: shared-data/default-theme/html/partials/compose.html:105
 #: shared-data/default-theme/html/partials/pile_compose.html:18
-#: shared-data/default-theme/html/partials/search_item.html:146
-#: shared-data/default-theme/html/partials/search_item.html:163
+#: shared-data/default-theme/html/partials/search_item.html:147
+#: shared-data/default-theme/html/partials/search_item.html:164
 #: shared-data/default-theme/html/partials/thread_metadata.html:63
 #: shared-data/default-theme/html/partials/thread_metadata.html:67
 #: shared-data/default-theme/html/partials/thread_metadata.html:68
@@ -6656,9 +6672,9 @@ msgstr ""
 #: shared-data/default-theme/html/partials/compose.html:31
 #: shared-data/default-theme/html/partials/pile_compose.html:43
 #: shared-data/default-theme/html/partials/pile_compose.html:46
-#: shared-data/default-theme/html/partials/search_item.html:144
-#: shared-data/default-theme/html/partials/search_item.html:161
-#: shared-data/default-theme/html/partials/search_item.html:247
+#: shared-data/default-theme/html/partials/search_item.html:145
+#: shared-data/default-theme/html/partials/search_item.html:162
+#: shared-data/default-theme/html/partials/search_item.html:248
 #: shared-data/default-theme/html/partials/thread_metadata.html:98
 msgid "Subject"
 msgstr ""
@@ -6828,9 +6844,9 @@ msgid "Don't Use This Key"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:20
-#: shared-data/default-theme/html/partials/search_item.html:75
-#: shared-data/default-theme/html/partials/search_item.html:145
-#: shared-data/default-theme/html/partials/search_item.html:162
+#: shared-data/default-theme/html/partials/search_item.html:76
+#: shared-data/default-theme/html/partials/search_item.html:146
+#: shared-data/default-theme/html/partials/search_item.html:163
 #: shared-data/default-theme/html/partials/thread_metadata.html:4
 #: shared-data/default-theme/html/partials/thread_metadata.html:7
 msgid "From"
@@ -6960,51 +6976,51 @@ msgstr ""
 msgid "For security reasons, Mailpile will by default only display plain text."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_email_hints.html:9
+#: shared-data/default-theme/html/partials/pile_email_hints.html:10
 msgid ""
 "You can change display modes by clicking the icons to the right of the "
 "Subject line."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_email_hints.html:21
+#: shared-data/default-theme/html/partials/pile_email_hints.html:23
 msgid ""
 "Usually when you reply to a message, all participants in the conversation"
 " will be sent a copy of your reply."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_email_hints.html:23
+#: shared-data/default-theme/html/partials/pile_email_hints.html:25
 msgid ""
 "If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:97
+#: shared-data/default-theme/html/partials/pile_message.html:99
 #: shared-data/default-theme/html/partials/thread_message.html:86
 msgid "Unknown Text Part"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:108
+#: shared-data/default-theme/html/partials/pile_message.html:110
 msgid "HTML rendering requires Javascript, sorry!"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:117
+#: shared-data/default-theme/html/partials/pile_message.html:119
 #: shared-data/default-theme/html/partials/thread_message.html:96
 msgid "Message content is empty"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:130
-#: shared-data/default-theme/html/partials/pile_message.html:158
+#: shared-data/default-theme/html/partials/pile_message.html:132
+#: shared-data/default-theme/html/partials/pile_message.html:160
 #: shared-data/default-theme/html/partials/thread_message.html:108
 #: shared-data/default-theme/html/partials/thread_message.html:120
 msgid "Untitled"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:199
+#: shared-data/default-theme/html/partials/pile_message.html:201
 #: shared-data/default-theme/html/partials/thread_message.html:157
 msgid "Reply"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/pile_message.html:200
+#: shared-data/default-theme/html/partials/pile_message.html:202
 #: shared-data/default-theme/html/partials/thread_message.html:159
 msgid "Forward"
 msgstr ""
@@ -7017,59 +7033,59 @@ msgstr ""
 msgid "Show entire conversation"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:38
+#: shared-data/default-theme/html/partials/search_item.html:39
 msgid "View e-mail from this mailing list"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:44
+#: shared-data/default-theme/html/partials/search_item.html:45
 msgid "Search for e-mail from:"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:54
+#: shared-data/default-theme/html/partials/search_item.html:55
 msgid "Previous Conversation"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:60
+#: shared-data/default-theme/html/partials/search_item.html:61
 msgid "Close"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:63
+#: shared-data/default-theme/html/partials/search_item.html:64
 msgid "Next Conversation"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:92
+#: shared-data/default-theme/html/partials/search_item.html:93
 msgid "Private Reply"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:226
+#: shared-data/default-theme/html/partials/search_item.html:227
 msgid "Oops, no attachments found!"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:227
+#: shared-data/default-theme/html/partials/search_item.html:228
 msgid "A bug?"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:228
+#: shared-data/default-theme/html/partials/search_item.html:229
 msgid "Click to view the message."
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:261
+#: shared-data/default-theme/html/partials/search_item.html:262
 msgid "Display HTML formatted message content"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:265
+#: shared-data/default-theme/html/partials/search_item.html:266
 msgid "Display plain-text message content"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:283
+#: shared-data/default-theme/html/partials/search_item.html:284
 msgid "Switch to full conversation view"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:286
+#: shared-data/default-theme/html/partials/search_item.html:287
 msgid "Display message source code"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/search_item.html:289
+#: shared-data/default-theme/html/partials/search_item.html:290
 msgid "Display technical message data as JSON"
 msgstr ""
 
@@ -7193,15 +7209,11 @@ msgstr ""
 msgid "View:"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/thread_metadata.html:104
-msgid "HTML"
-msgstr ""
-
-#: shared-data/default-theme/html/partials/thread_metadata.html:106
+#: shared-data/default-theme/html/partials/thread_metadata.html:103
 msgid "JSON"
 msgstr ""
 
-#: shared-data/default-theme/html/partials/thread_metadata.html:107
+#: shared-data/default-theme/html/partials/thread_metadata.html:104
 msgid "Raw Source"
 msgstr ""
 
@@ -9182,15 +9194,15 @@ msgstr ""
 msgid "Quit GUI"
 msgstr ""
 
-#: shared-data/mailpile-gui/mailpile-gui.py:232
+#: shared-data/mailpile-gui/mailpile-gui.py:234
 msgid "Connecting to Mailpile"
 msgstr ""
 
-#: shared-data/mailpile-gui/mailpile-gui.py:234
+#: shared-data/mailpile-gui/mailpile-gui.py:236
 msgid "Failed to connect to Mailpile!"
 msgstr ""
 
-#: shared-data/mailpile-gui/mailpile-gui.py:243
+#: shared-data/mailpile-gui/mailpile-gui.py:245
 msgid "Failed to launch Mailpile!"
 msgstr ""
 
