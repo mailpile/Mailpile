@@ -357,10 +357,10 @@ class SetupMagic(Command):
             #   import math
             #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
             #
-            session.config._master_key = [i + okay_random(12 * 4,
-                                                    '%s' % session.config,
-                                                    '%s' % self.session,
-                                                    '%s' % self.data) for i in ('1', '2', '3')]
+            session.config.set_master_key(okay_random(12 * 4,
+                                          '%s' % session.config,
+                                          '%s' % self.session,
+                                          '%s' % self.data))
             if self._idx() and self._idx().INDEX:
                 session.ui.warning(_('Unable to obfuscate search index '
                                      'without losing data. Not indexing '

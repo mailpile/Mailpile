@@ -365,8 +365,7 @@ class ConfigManager(ConfigDict):
 
         if keydata:
             self.passphrases['DEFAULT'].copy(passphrase)
-            # Prefix each key with a unique character to prevent optimization
-            self._master_key = [i + ''.join(keydata) for i in ('1', '2', '3')]
+            self.set_master_key(''.join(keydata))
             self._master_key_ondisk = self.get_master_key()
             self._master_key_passgen = self.passphrases['DEFAULT'].generation
             return True
@@ -535,9 +534,12 @@ class ConfigManager(ConfigDict):
             key = self._master_key[1][1:]
         else:
             raise _raise("Failed to access master_key")
+        self.set_master_key(key)
+        return key
+
+    def set_master_key(self, key):
         # Prefix each key with a unique character to prevent optimization
         self._master_key = [i + key for i in ('1', '2', '3')]
-        return key
 
     def _delete_old_master_keys(self, keyfile):
         """
