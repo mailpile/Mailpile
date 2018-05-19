@@ -40,6 +40,7 @@ import traceback
 from datetime import datetime
 from tempfile import NamedTemporaryFile
 
+import mailpile.platforms
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.gpgi import GPG_BINARY
@@ -73,12 +74,13 @@ BLANK_LINE_RE = re.compile('^\s*$')
 PREFERRED_FORMAT = 'v2:%s' % PREFERRED_CIPHER
 DETECTED_OBSOLETE_FORMATS = set([])
 
+OPENSSL_COMMAND = mailpile.platforms.GetDefaultOpenSSLCommand()
 
+# FIXME: Why does Windows require this? Move to mailpile.platforms when
+#        we understand the underlying issue.
 if sys.platform.startswith("win"):
-    OPENSSL_COMMAND = 'OpenSSL\\bin\\openssl.exe'
     FILTER_MD5 = True
 else:
-    OPENSSL_COMMAND = "openssl"
     FILTER_MD5 = False
 
 

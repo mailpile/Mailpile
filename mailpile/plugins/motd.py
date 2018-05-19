@@ -132,9 +132,9 @@ class MessageOfTheDay(Command):
                 motd['_is_new'] = False
                 if (not old_motd
                         or old_motd.get("timestamp") != motd.get("timestamp")):
-                    config.save_pickle(motd, 'last_motd', encrypt=False)
                     motd['_is_new'] = True
                     message = '%s: %s' % (_('Message Of The Day'), _('Updated'))
+                config.save_pickle(motd, 'last_motd', encrypt=False)
             except (IOError, OSError, ValueError):
                 pass
 
