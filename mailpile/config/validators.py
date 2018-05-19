@@ -4,7 +4,7 @@ import re
 
 try:
     import win_inet_pton
-except:
+except ImportError:
     pass
 
 from urlparse import urlparse
