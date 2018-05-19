@@ -15,4 +15,4 @@ pgpdump
 pillow
 pbr
 fasteners
-win_inet_pton
+win_inet_pton; sys_platform == 'win32'
