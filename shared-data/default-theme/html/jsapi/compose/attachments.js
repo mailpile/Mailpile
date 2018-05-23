@@ -177,7 +177,6 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
 	else {
 	  var progress = "Processing Upload...";
 	}
-        //$('.attachment-progress-bar').html(progressBar);
 	Mailpile.notification({status: 'info', message: progress, event_id: "Upload-" + file.id });
       },
       FileUploaded: function(up, file, response) {
@@ -187,7 +186,6 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
           var new_mid = response_json.result.message_ids[0];
 
           //console.log(file);
-          //$('.attachment-progress-bar').empty();
 	  Mailpile.notification({status: 'info', message: "Finished uploading " + file.name, event_id: "Upload-" + file.id, flags: "c" });
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
@@ -205,7 +203,6 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
         Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
-	//$('.attachment-progress-bar').empty();
 	Mailpile.notification({status: 'error', message: "Failed to upload " + file.name, event_id: "Upload-" + file.id });
         Mailpile.Composer.Attachments.Uploader.uploading -= 1;
         if (Mailpile.Composer.Attachments.Uploader.uploading < 1) {
