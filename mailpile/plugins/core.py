@@ -1123,7 +1123,7 @@ class ConfigSet(Command):
                 fb = security.forbid_config_change(config, path)
                 if fb:
                     return self._error(fb)
-                elif path == 'master_key' and config.master_key:
+                elif path == 'master_key' and config.get_master_key():
                     return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
@@ -1132,7 +1132,7 @@ class ConfigSet(Command):
             updated = {}
             for path, value in ops:
                 if not force:
-                    if path == 'master_key' and config.master_key:
+                    if path == 'master_key' and config.get_master_key():
                         raise ValueError('Need --force to change master key.')
                     if path == 'sys.http_no_auth':
                         raise ValueError('Need --force to change auth policy.')
@@ -1208,7 +1208,7 @@ class ConfigAdd(Command):
             fb = security.forbid_config_change(config, path)
             if fb:
                 return self._error(fb)
-            elif path == 'master_key' and config.master_key:
+            elif path == 'master_key' and config.get_master_key():
                 return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
@@ -1264,7 +1264,7 @@ class ConfigUnset(Command):
             fb = security.forbid_config_change(config, v)
             if fb:
                 return self._error(fb)
-            elif v == 'master_key' and config.master_key:
+            elif v == 'master_key' and config.get_master_key():
                 return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD

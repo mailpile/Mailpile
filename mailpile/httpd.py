@@ -551,7 +551,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
 
         # This hash includes the index ofuscation master key, which means
         # it should be very strongly unguessable.
-        self.secret = okay_random(64, session.config.master_key)
+        self.secret = okay_random(64, session.config.get_master_key())
 
         # Generate a new unguessable session cookie name on startup
         while not self.session_cookie:
