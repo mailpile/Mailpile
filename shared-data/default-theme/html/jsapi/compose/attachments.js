@@ -171,8 +171,14 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
       },
       UploadProgress: function(up, file) {
         $('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
-        var progressBar = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
-        $('.attachment-progress-bar').html(progressBar);
+	if (file.percent < 100) {
+          var progress = "<progress value="+file.percent+" max='100'></progress> "+file.percent+"%";
+	}
+	else {
+	  var progress = "Processing Upload...";
+	}
+        //$('.attachment-progress-bar').html(progressBar);
+	Mailpile.notification({status: 'info', message: progress, event_id: "Upload-" + file.id });
       },
       FileUploaded: function(up, file, response) {
         if (response.status == 200) {
@@ -181,7 +187,8 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
           var new_mid = response_json.result.message_ids[0];
 
           //console.log(file);
-          $('.attachment-progress-bar').empty();
+          //$('.attachment-progress-bar').empty();
+	  Mailpile.notification({status: 'info', message: "Finished uploading " + file.name, event_id: "Upload-" + file.id, flags: "c" });
           Mailpile.Composer.Attachments.UpdatePreviews(response_json.result.data.messages[new_mid].attachments, settings.mid, file);
 
         } else {
@@ -198,6 +205,8 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
         Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
+	//$('.attachment-progress-bar').empty();
+	Mailpile.notification({status: 'error', message: "Failed to upload " + file.name, event_id: "Upload-" + file.id });
         Mailpile.Composer.Attachments.Uploader.uploading -= 1;
         if (Mailpile.Composer.Attachments.Uploader.uploading < 1) {
           $('#form-compose-' + settings.mid + ' button.compose-action'
