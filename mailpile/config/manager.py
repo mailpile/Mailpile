@@ -154,8 +154,10 @@ class ConfigManager(ConfigDict):
 
         # If the master key changes, we update the file on save, otherwise
         # the file is untouched. So we keep track of things here.
+        self._master_key = ''
         self._master_key_ondisk = None
         self._master_key_passgen = -1
+        self.detected_memory_corruption = False
 
         # Make sure we have a silent background session
         self.background = Session(self)
@@ -518,18 +520,31 @@ class ConfigManager(ConfigDict):
             self._unlocked_save(*args, **kwargs)
 
     def get_master_key(self):
-        if self._master_key[0][:1] in [self._master_key[1][1:], self._master_key[2][1:]]:
-            key = self._master_key[0][1:]
-        elif self._master_key[1] in [self._master_key[0][1:], self._master_key[2][1:]]:
-            key = self._master_key[1][1:]
+        if not self._master_key:
+            return ''
+
+        k1, k2, k3 = (k[1:] for k in self._master_key)
+        if k1 == k2 == k3:
+            # This is the only result we like!
+            return k1
         else:
-            raise _raise("Failed to access master_key")
-        self.set_master_key(key)
-        return key
+            # Hard fail into read-only lockdown. The periodic health
+            # check will notify the user we are broken.
+            self.detected_memory_corruption = True
+
+        # Try and recover; best 2 out of 3.
+        if k1 in (k2, k3):
+            return self.set_master_key(k1)
+        if k2 in (k1, k3):
+            return self.set_master_key(k2)
+
+        mailpile.util.QUITTING = True
+        raise IOError("Failed to access master_key")
 
     def set_master_key(self, key):
         # Prefix each key with a unique character to prevent optimization
         self._master_key = [i + key for i in ('1', '2', '3')]
+        return key
 
     def _delete_old_master_keys(self, keyfile):
         """
@@ -1251,6 +1266,8 @@ class ConfigManager(ConfigDict):
 
     def need_more_disk_space(self, required=0, nodefault=False, ratio=1.0):
         """Returns a path where we need more disk space, None if all is ok."""
+        if self.detected_memory_corruption:
+            return '/'
         if not (nodefault and required):
             required = ratio * max(required, self.sys.minfree_mb * 1024 * 1024)
         for path in (self.workdir, ):

@@ -755,6 +755,20 @@ class HealthCheck(Command):
             self.event.data['healthy'] = True
             HealthCheck.health_event = self.event
 
+        # Cancel any obsolete HealthCheck events we find
+        if self.session.config.event_log:
+            for ev in self.session.config.event_log.events():
+                if (ev.source == self.event.source and
+                        ev.event_id != self.event.event_id):
+                    ev.flags = ev.COMPLETE
+                    self.session.config.event_log.log_event(ev)
+
+    @classmethod
+    def _mem_check(cls, session, config):
+        if config.detected_memory_corruption:
+            return _('Memory corruption detected') + '!'
+        return False
+
     @classmethod
     def _disk_check(cls, session, config):
         if config.need_more_disk_space():
@@ -783,6 +797,7 @@ class HealthCheck(Command):
 
         now_healthy = True
         for crit, name, check in ((True, 'disk', cls._disk_check),
+                                  (True, 'memcheck', cls._mem_check),
                                   (True, 'readonly', cls._readonly_check)):
              message = check(session, config)
              if message:
