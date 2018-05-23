@@ -76,7 +76,7 @@ class hintsCommand(Command):
         # Show the user how dragging and dropping tags or messages works
         # after 7 days.
         ('dragging', 7, 365,
-            _('Learn how dragging and dropping tags works.'),
+            _('Learn how dragging and dropping tags works'),
             '/page/hints/dragging-tags.html'),
 
         # Introduce Gravatar integration after 10 days, and yearly repetition.
