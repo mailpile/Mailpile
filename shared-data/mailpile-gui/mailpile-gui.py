@@ -220,19 +220,20 @@ def LocateMailpile():
     """
     Locate mailpile's root script, searching upward from our script location
     """
-    directory = os.path.abspath( __file__ )
+    directory = APPDIR
 
     while True:
-        scripts_path = os.path.join( directory, 'scripts' )
-        mailpile_path = os.path.join( scripts_path, 'mailpile' )
-        if os.path.exists( mailpile_path ):
+        scripts_path = os.path.join(directory, 'scripts')
+        mailpile_path = os.path.join(scripts_path, 'mailpile')
+        if os.path.exists(mailpile_path):
             return mailpile_path
 
-        parts = os.path.split( directory )
+        parts = os.path.split(directory)
         if parts[0] == directory:
             raise IOError( "Cannot locate scripts/mailpile!" )
         else:
-            directory = parts[ 0 ]
+            directory = parts[0]
+
 
 def MailpileInvocation():
     """
@@ -244,21 +245,22 @@ def MailpileInvocation():
     common_opts = [
         '--set="prefs.open_in_browser = false"',
         '--gui=%PORT% ' ]
-    
+
     if os.name == 'nt':
-        parts.append('"{}"'.format( sys.executable ))
-        parts.append('"{}"'.format( LocateMailpile() ))
-        parts.extend( common_opts )
+        parts.append('"{}"'.format(sys.executable))
+        parts.append('"{}"'.format(LocateMailpile()))
+        parts.extend(common_opts)
         parts.append('--www=')
         parts.append('--wait')
     else:
         # FIXME: This should launch a screen session using the
         #        same concepts as multipile's mailpile-admin.
-        parts.append('screen -S mailpile -d -m "{}"'.format( LocateMailpile() ))
-        parts.extend( common_opts )
-        parts.append( '--interact' )
+        parts.append('screen -S mailpile -d -m "{}"'.format(LocateMailpile()))
+        parts.extend(common_opts)
+        parts.append('--interact')
 
-    return ' '.join( parts )    
+    return ' '.join(parts)
+
 
 def GenerateBootstrap(state):
     """
