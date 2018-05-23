@@ -289,7 +289,7 @@ class GnuPGRecordParser:
             "authenticate": "A" in line["capabilities"],
         }
         line["disabled"] = "D" in line["capabilities"]
-	line["revoked"] = "r" in line["validity"]
+        line["revoked"] = "r" in line["validity"]
 
         self._parse_dates(line)
 
@@ -579,8 +579,8 @@ class GnuPG:
         """Returns a tuple representing the GnuPG version number."""
         global GPG_VERSIONS
         if update or not GPG_VERSIONS.get(self.gpgbinary):
-            vertext = self.version().strip().split()[-1]
-            version = tuple(int(v) for v in vertext.split('.'))
+            match = re.search( "(\d+).(\d+).(\d+)", self.version() )
+            version = tuple(int(v) for v in match.groups())
             GPG_VERSIONS[self.gpgbinary] = version
         return GPG_VERSIONS[self.gpgbinary]
 
@@ -1539,6 +1539,8 @@ class GnuPGExpectScript(threading.Thread):
     DESCRIPTION = 'GnuPG Expect Script'
     RUNNING_STATES = [STARTUP, START_GPG]
 
+    DEFAULT_TIMEOUT = 60 # Infinite wait isn't desirable
+
     def __init__(self, gnupg,
                  sps=None, event=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)
@@ -1593,7 +1595,7 @@ class GnuPGExpectScript(threading.Thread):
 
     def expect_exact(self, proc, exp, timeout=None):
         from mailpile.util import RunTimed, TimedOut
-        timeout = timeout if (timeout and timeout > 0) else 5
+        timeout = timeout if (timeout and timeout > 0) else self.DEFAULT_TIMEOUT
         timebox = [timeout]
         self.before = ''
         try:

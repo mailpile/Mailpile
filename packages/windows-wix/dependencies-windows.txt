@@ -1,0 +1,2 @@
+pywin32
+pil
