@@ -1044,6 +1044,7 @@ class CleanText:
     """
     FS = ':/.\'\"\\'
     CRLF = '\r\n'
+    HTML = '<>&"\''
     WHITESPACE = '\r\n\t '
     NONALNUM = ''.join([chr(c) for c in (set(range(32, 127)) -
                                          set(range(ord('0'), ord('9') + 1)) -
