@@ -43,7 +43,7 @@ class MailIndex(BaseIndex):
     MIN_ITEMS_PER_DUPLICATE = 10    # Limits number of duplicated MSG_MIDs.
     ITEM_COUNT_OFFSET = 5000        # Puts lower bound on limits.
     # Appends start with a comment including this so they can be counted.
-    APPEND_MARK = '-----APPENDED DATA-----'
+    APPEND_MARK = '-----APPENDED SECTION-----'
     
     MAX_CACHE_ENTRIES = 2500
     CAPABILITIES = set([
