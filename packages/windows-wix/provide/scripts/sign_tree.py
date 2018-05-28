@@ -47,12 +47,13 @@ def bind(build):
                 '''
                 if is_signable(path):
                     build.log().info("Signing '{}'".format(path))
-                    build.invoke('signtool',
+                    build.invoke('signtool', 'sign',
                                  '/f', key,
                                  '/p', password,
                                  '/tr', build.config('timestamp_server'),
-                                 '/tf', 'sha512',
-                                 '/fd', 'sha512')
+                                 '/td', 'sha512',
+                                 '/fd', 'sha512',
+                                 path)
 
             # TODO: publish a recursive scanner.
             def sign_tree(path):
