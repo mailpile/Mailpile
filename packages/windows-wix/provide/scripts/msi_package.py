@@ -42,14 +42,23 @@ def bind(build):
 
     @build.default_config('package_template', 'package_uuid_db')
     def config_package_jsons(keyword):
+        '''
+        json configuration files for packaging
+        '''
         return os.path.join(lib_dir, keyword + '.json')
 
     @build.default_config('package_cultures')
     def config_package_lang(keyword):
+        '''
+        Wix 'cultures' for which to produce packages.
+        '''
         return ['en-us']
 
     @build.provide('package')
     def provide_msi(build, keyword):
+        '''
+        Build an MSI with all the mailpile dependencies
+        '''
 
         build.depend('root')
         dep_path = build.invoke('path', keyword)
@@ -80,9 +89,13 @@ def bind(build):
 
         tool_paths = {key: build.depend(key) for key in tool_keys}
 
-        for path in content_paths:
+        # sign binary content
+        #
+        for path in content_paths.values():
             build.invoke('sign_tree', path)
 
+        # create the template for building the wix config
+        #
         with open(build.config('package_template'), 'r') as handle:
             package_template = json.load(handle)
             package_config = format_pod(package_template, **content_paths)
@@ -104,6 +117,8 @@ def bind(build):
         wix_config_path = os.path.join(dep_path, 'mailpile')
         wix.save(wix_config_path)
 
+        # Package everything using WIX
+        #
         build.invoke('candle', wix_config_path + '.wxs',
                      '-out', os.path.join(dep_path, 'mailpile.wixobj'))
 
@@ -117,4 +132,9 @@ def bind(build):
                          '-cultures:' + lang,
                          wix_config_path + '.wixobj',
                          '-out', os.path.join(dep_path, msi_name))
+
+        # Sign the generated files
+        #
+        build.invoke('sign_tree', dep_path)
+        
         return dep_path

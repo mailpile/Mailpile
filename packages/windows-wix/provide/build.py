@@ -5,6 +5,7 @@ import argparse
 import datetime
 import logging
 import json
+import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ class Build(object):
         self._defaults = {}
         self._options = {}
 
-    def provide(self, *keywords):
+    def provide(self, *keywords, **extra):
         '''
         decorator that registers a provider for a keyword
         '''
@@ -187,7 +188,7 @@ class Build(object):
             return provider
         return decorator
 
-    def default_config(self, *keywords):
+    def default_config(self, *keywords, **extra):
         '''
         decorator that registers a provider for a default configuration
         '''
@@ -197,6 +198,12 @@ class Build(object):
                 self._defaults[keyword] = callback
             return callback
         return decorator
+
+    def define_config(self, keyword, doc):
+        '''
+        Configuration value without default.
+        '''
+        self._options[keyword] = doc
 
     def context(self, cache, config={}):
         '''
@@ -209,9 +216,20 @@ class Build(object):
         Create an argument parser for this build
         '''
         parser = parser or argparse.ArgumentParser()
-        for keyword, doc in self._defaults.items():
+        for keyword, func in self._defaults.items():
+            help_str = repr(func(keyword))
+            if func.__doc__:
+                desc = func.__doc__.strip()
+                if not desc.endswith('.'):
+                    desc += '.'
+                help_str = '{} Default: {}'.format(desc, help_str)
+                
             parser.add_argument('--config_' + keyword.replace('-', '_'),
-                                help=repr(doc(keyword)))
+                                help=help_str)
+
+        for keyword, desc in self._options.items():                   
+            parser.add_argument('--config_' + keyword.replace('-', '_'),
+                                help=desc)
         return parser
 
     def parse_config(self, args):
@@ -219,7 +237,7 @@ class Build(object):
         create a context from argv
         '''
         config = {}
-        for key in self._defaults.keys():
+        for key in itertools.chain(self._defaults.keys(), self._options.keys()):
             test = 'config_' + key.replace('-', '_')
             value = getattr(args, test)
             if value is not None:
