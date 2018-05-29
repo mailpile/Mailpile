@@ -15,7 +15,10 @@ def bind(framework):
     @framework.default_config('bootstrap')
     def config_bootstrap(keyword):
         '''
-        Empty config--don't do anything by default.
+        Inner configuration JSON for a fully bootstrapped build. All options
+        passed here are forwarded to the checked out build. The bootstrap env
+        will inherit this build's cache directory and log level. A second log
+        file will be created for this build.
         '''
         
         return None
