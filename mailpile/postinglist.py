@@ -135,7 +135,7 @@ class PostingListContainer(object):
             return
 
         t = [time.time()]
-        encryption_key = self.config.master_key
+        encryption_key = self.config.get_master_key()
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
             # Optimizing for fast loads, so deletion only happens on save.
@@ -318,7 +318,7 @@ class NewPostingList(object):
         return strhash(word, cls.HASH_LEN,
                        obfuscate=((config.prefs.obfuscate_index or
                                    config.prefs.encrypt_index) and
-                                  config.master_key))
+                                  config.get_master_key()))
 
 
 ##############################################################################
@@ -442,7 +442,7 @@ class OldPostingList(object):
         return strhash(word, cls.HASH_LEN,
                        obfuscate=((config.prefs.obfuscate_index or
                                    config.prefs.encrypt_index) and
-                                  config.master_key))
+                                  config.get_master_key()))
 
     @classmethod
     def SaveFile(cls, session, prefix):
@@ -544,7 +544,7 @@ class OldPostingList(object):
                                                                  outfile))
                 if output:
                     if self.config.prefs.encrypt_index:
-                        encryption_key = self.config.master_key
+                        encryption_key = self.config.get_master_key()
                         with EncryptingStreamer(encryption_key,
                                                 delimited=True,
                                                 dir=self.config.tempfile_dir(),

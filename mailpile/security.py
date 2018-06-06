@@ -25,6 +25,7 @@ DISABLE_LOCKDOWN = False
 
 def _lockdown(config):
     if DISABLE_LOCKDOWN: return False
+    if config.detected_memory_corruption: return 99  # FIXME: Breaks demos?
     lockdown = config.sys.lockdown or 0
     try:
         return int(lockdown)
@@ -66,6 +67,14 @@ def _lockdown_config(config):
     return False
 
 
+def _lockdown_quit(config):
+    if DISABLE_LOCKDOWN: return False
+    # The user is always allowed to quit, except in demo mode.
+    if _lockdown(config) < 0:
+        return _('In lockdown, doing nothing.')
+    return False
+
+
 def _lockdown_basic(config):
     if DISABLE_LOCKDOWN: return False
     return _lockdown_config(config) or in_disk_lockdown(config)
@@ -90,7 +99,7 @@ CC_COMPOSE_EMAIL      = [_lockdown_strict]
 CC_CPU_INTENSIVE      = [_lockdown_basic]
 CC_LIST_PRIVATE_DATA  = [_lockdown_minimal]
 CC_TAG_EMAIL          = [_lockdown_strict]
-CC_QUIT               = [_lockdown_minimal]
+CC_QUIT               = [_lockdown_quit]
 CC_WEB_TERMINAL       = [_lockdown_config]
 
 CC_CONFIG_MAP = {

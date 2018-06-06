@@ -6362,6 +6362,7 @@ body {
   margin-top: 62px;
 }
 #content-tools {
+  position: relative;
   z-index: 10;
 }
 /* Copyright Footer Navigation */

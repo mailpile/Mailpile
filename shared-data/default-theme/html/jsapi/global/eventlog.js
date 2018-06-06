@@ -65,7 +65,7 @@ EventLog.poll = function() {
     since: EventLog.last_ts,
     gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
     wait: 30,
-    _timeout: 31000
+    _timeout: (Mailpile.ajax_timeout * 3)
   });
 };
 

@@ -6,15 +6,19 @@ Mailpile.Message.Tooltips.Crypto = function($content) {
       title: false,
       text: function(event, api) {
         var keyinfo = $(this).data('crypto_keyinfo');
-        var html = ('<div>' +
-          '<h4 class="' + $(this).data('crypto_color') + '">' +
-          '  <span class="' + $(this).data('crypto_icon') + '"></span>' +
-             $(this).attr('title') +
-          '</h4>');
+        var html = ('<div><h4 class="'
+          + $(this).data('crypto_color') + '">'
+          + '  <span class="'
+          +      _.escape($(this).data('crypto_icon')) + '"></span>'
+          + _.escape($(this).attr('title'))
+          + '</h4>');
         html += '<p>' + $(this).data('crypto_message') + '</p>';
         if (keyinfo) {
           keyinfo = keyinfo.substring(keyinfo.length - 16);
-          html += '<p><a href="javascript:Mailpile.UI.Modals.CryptoFindKeys({query: \'' + keyinfo + '\'})"><small>KEY ID: ' + keyinfo + '</small></a></p>';
+          html += ('<p>'
+            + '<a href="javascript:Mailpile.UI.Modals.CryptoFindKeys({query: \''
+            + _.escape(keyinfo) + '\'})"><small>KEY ID: '
+            + _.escape(keyinfo) + '</small></a></p>');
         }
         html += '</div>';
         return html;
@@ -52,10 +56,13 @@ Mailpile.Message.Tooltips.Attachments = function($content) {
       text: function(event, api) {
         var $e = $(this);
         console.log($e);
-        var html = '';
-        html += $e.attr('title')
-        if ($e.data('description')) html += '<small>' + $e.data('description') + '</small>';
-        html += '<small>{{_("Download")|escapejs}} ' + $e.data('size') + '</small>';
+        var html = _.escape($e.attr('title'));
+        if ($e.data('description')) html += ('<small>'
+          + _.escape($e.data('description'))
+          + '</small>');
+        html += ('<small>{{_("Download")|escapejs}} '
+          + _.escape($e.data('size'))
+          + '</small>');
         return html;
       }
     },

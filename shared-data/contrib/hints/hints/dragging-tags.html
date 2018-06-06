@@ -1,0 +1,25 @@
+{% extends "layouts/" + render_mode + "-tall.html" %}
+{% block title %}{{_("Dragging and dropping tags")}}{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <h1><span class="icon-tag"></span>
+    {{_("Dragging and dropping tags")}}
+  </h1>
+  <p>
+    {{_("You can drag and drop tags or messages to add or change tags.")}}<br>
+    {{_("The rules are:")}}
+  </p>
+  <ul class="list" style="margin-left: 2em; list-style: disc;">
+    <li>{{_("If you drag a message from a search result view onto a tag, any searched tags are removed from the message and the tag you drop the message on is added.")}}</li>
+    <li>{{_("If you drag a tag from the sidebar onto a message, the tag is added to the message.")}}
+            {{_("No tags are removed.")}}</li>
+  </ul>
+  <p>{{_("For example:")}}<br></p>
+  <ul class="list" style="margin-left: 2em; list-style: disc;">
+    <li>{{_("If you're looking at the search 'in:inbox in:job', which is the intersection of messages in both Inbox and Job, dragging a message onto the Trash tag will remove both Inbox and Job tags and add the Trash tag.")}}</li>
+    <li>{{_("If you're looking at the search 'in:inbox', dragging a School tag from the sidebar to a message will add the School tag to the message, while also leaving it in the Inbox.")}}</li>
+  </ul>
+
+</div>
+{% endblock %}
