@@ -85,6 +85,7 @@ IMAP_TOKEN = re.compile('("[^"]*"'
 # These are mailbox names we avoid downloading (by default)
 BLACKLISTED_MAILBOXES = (
     'drafts',
+    'chats',
     '[gmail]/important',
     '[gmail]/starred',
     'openpgp_keys'
