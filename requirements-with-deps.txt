@@ -20,3 +20,4 @@ pyasn1
 pycparser
 fasteners
 monotonic
+stem>=1.4

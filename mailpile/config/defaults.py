@@ -69,7 +69,7 @@ CONFIG_RULES = {
         'proxy':         p(_('Proxy settings'), False, {
             'protocol':  p(_('Proxy protocol'),
                            ["tor", "tor-risky", "socks5", "socks4", "http",
-                            "none", "unknown"], 'unknown'),
+                            "none", "system", "unknown"], "system"),
             'fallback':  p(_('Allow fallback to direct conns'), bool, False),
             'username':   (_('User name'), str, ''),
             'password':   (_('Password'), str, ''),
@@ -78,6 +78,16 @@ CONFIG_RULES = {
             'no_proxy':  p(_('List of hosts to avoid proxying'), str,
                            'localhost, 127.0.0.1, ::1')
         }),
+        'tor': p(_('Tor settings'), False, {
+            'binary':    p(_('Override the default Tor binary path'),
+                           'file', None),
+            'systemwide':p(_('Use shared system-wide Tor (not our own)'),
+                                                                   bool, True),
+            'socks_host':p(_('Socks host'), str, ''),
+            'socks_port':p(_('Socks Port'), int, 0),
+            'ctrl_port': p(_('Control Port'), int, 0),
+            'ctrl_auth': p(_('Control Password'), str, '')
+        })
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),

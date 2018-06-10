@@ -70,6 +70,15 @@
         {{_("When sending and receiving mail, or downloading from the web:")}}
       </p>
       <div class="basic-settings">
+    {% if config.sys.proxy.protocol not in ("tor", "tor-risky", "system", "unknown") %}
+        <input name="sys.proxy.protocol" type="radio" value="{{config.sys.proxy.protocol}}" checked>
+        <span class="checkbox">
+          {{_("Custom proxy setting (%(proto)s on %(host)s:%(port)s)",
+              proto=config.sys.proxy.protocol,
+              host=config.sys.proxy.host,
+              port=config.sys.proxy.port)}}
+        </span><br>
+    {% else %}
         <input name="sys.proxy.protocol" type="radio" value="tor"
                {%- if config.sys.proxy.protocol in ("tor", "unknown") %} checked{% endif %}>
         <span class="checkbox">
@@ -81,11 +90,6 @@
                {%- if config.sys.proxy.protocol == "tor-risky" %} checked{% endif %}>
         <span class="checkbox">
           {{_("Prefer anonymous Tor networking for all connections.")}}
-        </span><br>
-    {% if config.sys.proxy.protocol not in ("tor", "tor-risky", "unknown") %}
-        <input name="sys.proxy.protocol" type="radio" value="{{config.sys.proxy.protocol}}" checked>
-        <span class="checkbox">
-          {{_("Custom proxy setting (%(proto)s)", proto=config.sys.proxy.protocol)}}
         </span><br>
     {% endif %}
         <input name="sys.proxy.protocol" type="radio" value="none">
@@ -134,10 +138,15 @@
     {% else %}
       <p>
         {{_("Tor is currently disabled.")}}
-        {{_("To enable Tor, click the button below.")}}
-        {{_("You need to have already installed and enabled the Tor service on your computer.")}}
+     {% if not platforms.BINARIES.Tor %}
       </p>
       <p>
+        {{_("The Tor application could not be found on your system, please install it!")}}
+      </p>
+     {% else %}
+        {{_("To enable Tor, click the button below.")}}
+      </p>
+      <p style="padding: 1em;">
         <script type="text/javascript">
           function enable_tor(ev) {
             ev.preventDefault();
@@ -145,11 +154,11 @@
             $('#enable-tor-working').show();
             $('#enable-tor-result').html('');
             Mailpile.API.setup_tor_post({
-              _timeout: (Mailpile.ajax_timeout * 30)
+              _timeout: (Mailpile.ajax_timeout * 30),
             }, function(result) {
               $('#enable-tor-working').hide();
               $('#enable-tor').show();
-              $('#enable-tor-result').html(result.message);
+              $('#enable-tor-result').html('<br><br>' + result.message);
               if (result.status == "success") {
                 document.location.href = document.location.href + '?ui_tor=ok';
               }
@@ -163,6 +172,7 @@
         <button id="enable-tor">{{_("Enable Tor")}}</button>
         &nbsp; <i id="enable-tor-result"></i>
       </p>
+     {% endif %}
       <p>
         {{_("Without Tor, Mailpile can not prevent service providers and network operators from monitoring or tracking your IP address and communications.")}}
       </p>
