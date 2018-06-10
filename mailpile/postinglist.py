@@ -158,7 +158,7 @@ class PostingListContainer(object):
                                         dir=self.config.tempfile_dir(),
                                         header_data={'subject': subj},
                                         name='PLC/%s' % self.sig) as fd:
-                    fd.write(output)
+                    fd.write(output.encode('utf-8'))
                     fd.save(outfile)
             else:
                 with open(outfile, 'wb') as fd:
@@ -549,7 +549,7 @@ class OldPostingList(object):
                                                 delimited=True,
                                                 dir=self.config.tempfile_dir(),
                                                 name='PostingList') as efd:
-                            efd.write(output)
+                            efd.write(output.encode('utf-8'))
                             efd.save(outfile, mode=mode)
                     else:
                         with open(outfile, mode) as fd:
