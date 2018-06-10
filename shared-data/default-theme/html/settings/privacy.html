@@ -7,6 +7,9 @@
 {% block title %}{{_("Security and Privacy Settings")}}{% endblock %}
 
 {% block content %}
+{%- set unconfigured = "unknown" in (config.prefs.motd_url,
+                                     config.prefs.web_content) -%}
+
 <div class="content-normal settings-page">
  <form method="POST"
 {% if ui_from_profiles %}
@@ -21,9 +24,9 @@
     <span class="page-title-text">{{_("Security and Privacy Settings")}}</span>
   </h1>
 
-  <div class="notices">
-  {% if "unknown" in (config.prefs.motd_url, config.prefs.web_content) %}
-    <p style="text-align: center">
+  <div class="notices" style="margin: 10px 0;">
+  {% if unconfigured %}
+    <p style="text-align: center;">
       <span class="icon icon-lightbulb"></span>
       {{_("Please review and save your settings.")}}
       {{_("Some features may not be enabled until you have saved.")}}
@@ -319,10 +322,12 @@
       <p class="risks">
         <span class="icon icon-dislike"></span>
         {{_("Encryption makes it harder to migrate your data to another e-mail client, slows things down and may increase the odds of data loss.")}}
-        {{_("Losing your encryption key becomes equivalent to losing all your mail.")}}
+        {{_("Losing your encryption key becomes equivalent to losing the data.")}}
+      {%- if not unconfigured %}
         <br>
         <a href="{{ U('/backup/download/?csrf=') }}{{ csrf_token }}">
           {{ _("Download a backup of current settings and keys.") }}</a>
+      {%- endif %}
       </p>
       <p class="risks">
         <span class="icon icon-key"></span>
@@ -333,119 +338,142 @@
       </p>
     </div>
     <div class="settings">
-
+      {# We don't bother new users with this, they will be prompted to
+       # enable deletion later, once they've tried the app for a while.
+       #}
+      {%- if not unconfigured %}
+      <input name="prefs.allow_deletion" type="radio" value="false"
+             {%- if not config.prefs.allow_deletion %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
       <input name="prefs.allow_deletion" type="radio" value="true"
             {%- if config.prefs.allow_deletion %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.allow_deletion" type="radio" value="false"
-             {%- if not config.prefs.allow_deletion %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Allow deletion of e-mail from servers and mailboxes")}}
+      &nbsp; - &nbsp; {{_("Allow deletion of e-mail from servers and mailboxes.")}}
       <br style="margin-bottom: 0.75em;">
+      {%- endif %}
 
 {# FIXME: Make this work!
+      <input name="prefs.backup_to_web" type="radio" value="false"
+             {%- if not config.prefs.backup_to_web %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
       <input name="prefs.backup_to_web" type="radio" value="true"
             {%- if config.prefs.backup_to_web %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.backup_to_web" type="radio" value="false"
-             {%- if not config.prefs.backup_to_web %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Backup settings and keys to mobile web app")}}
+      &nbsp; - &nbsp; {{_("Backup settings and keys to mobile web app")}}
       <span title="{{_('Recommended setting')}}"
             class="icon default icon-star"></span>
       <br>
 
       {% set bte_on = (config.prefs.backup_to_email not in (False, None, '-', '')) %}
+      <input name="prefs.backup_to_email" type="radio" value="-"
+             {%- if not bte_on %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
       <input name="prefs.backup_to_email" type="radio"
              value="{{ config.prefs.backup_to_email }}"
              {%- if bte_on %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.backup_to_email" type="radio" value="-"
-             {%- if not bte_on %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Backup settings and keys to e-mail")-}}
+      &nbsp; - &nbsp; {{_("Backup settings and keys to e-mail")-}}
         <span id="backup_email"{% if not bte_on %} class="hide"{% endif %}>: 
         <b>{{ config.prefs.backup_to_email }}</b></span>
       <br style="margin-bottom: 0.75em;">
 #}
 
-{# We only display this on first setup, because changing it later is likely
- # to badly mess things up. Power users will want this though.
- #}
-{% if ui_from_profiles %}
-      <input name="sys.gpg_home" type="radio" value="{Blank}"
-            {%- if not config.sys.gpg_home %} checked{% endif %}>
-      <span class="checkbox">{{_("On")}}</span>
-      <input name="sys.gpg_home" type="radio" value="{{ config.sys.gpg_home or config.workdir }}"
-             {%- if config.sys.gpg_home %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Use shared GnuPG keychain for PGP encryption keys")}}
-      <span title="{{_('Recommended setting')}}"
-            class="icon default icon-star"></span>
-      <br style="margin-bottom: 0.75em;">
-{% endif %}
-
-      <input name="prefs.encrypt_mail" type="radio" value="true"
-            {%- if config.prefs.encrypt_mail %} checked{% endif %}>
-      <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.encrypt_mail" type="radio" value="false"
-             {%- if not config.prefs.encrypt_mail %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Encrypt locally stored e-mail.")}}
-      <span title="{{_('Recommended setting')}}"
-            class="icon default icon-star"></span>
-      <br>
-
-      <input name="prefs.encrypt_vcards" type="radio" value="true"
+      <input name="prefs.encrypt_vcards" type="radio" value="false" class="crypto"
+             {%- if not config.prefs.encrypt_vcards %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
+      <input name="prefs.encrypt_vcards" type="radio" value="true" class="crypto"
             {%- if config.prefs.encrypt_vcards %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.encrypt_vcards" type="radio" value="false"
-             {%- if not config.prefs.encrypt_vcards %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Encrypt the contact database.")}}
-      <span title="{{_('Recommended setting')}}"
+      &nbsp; - &nbsp; {{_("Encrypt the contact database.")}}
+      <span title="{{_('Recommended setting')}}: {{_('On')}}"
             class="icon default icon-star"></span>
       <br>
 
-      <input name="prefs.encrypt_events" type="radio" value="true"
+      <input name="prefs.encrypt_events" type="radio" value="false" class="crypto"
+             {%- if not config.prefs.encrypt_events %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
+      <input name="prefs.encrypt_events" type="radio" value="true" class="crypto"
             {%- if config.prefs.encrypt_events %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.encrypt_events" type="radio" value="false"
-             {%- if not config.prefs.encrypt_events %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Encrypt the system event log.")}}
-      <span title="{{_('Recommended setting')}}"
+      &nbsp; - &nbsp; {{_("Encrypt the system event log.")}}
+      <span title="{{_('Recommended setting')}}: {{_('On')}}"
             class="icon default icon-star"></span>
       <br>
 
-      <input name="prefs.encrypt_misc" type="radio" value="true"
+      <input name="prefs.encrypt_misc" type="radio" value="false" class="crypto"
+             {%- if not config.prefs.encrypt_misc %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
+      <input name="prefs.encrypt_misc" type="radio" value="true" class="crypto"
             {%- if config.prefs.encrypt_misc %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.encrypt_misc" type="radio" value="false"
-             {%- if not config.prefs.encrypt_misc %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Encrypt other (miscellaneous) data.")}}
-      <span title="{{_('Recommended setting')}}"
+      &nbsp; - &nbsp; {{_("Encrypt other (miscellaneous) data.")}}
+      <span title="{{_('Recommended setting')}}: {{_('On')}}"
             class="icon default icon-star"></span>
       <br>
 
-      <input name="prefs.encrypt_index" type="radio" value="true"
+      <input name="prefs.encrypt_mail" type="radio" value="false" class="crypto"
+             {%- if not config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
+      <input name="prefs.encrypt_mail" type="radio" value="true" class="crypto"
+            {%- if config.prefs.encrypt_mail %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      &nbsp; - &nbsp; {{_("Encrypt locally stored e-mail.")}}
+      <br>
+
+      <input name="prefs.encrypt_index" type="radio" value="false" class="crypto"
+             {%- if not config.prefs.encrypt_index %} checked{% endif %}>
+      <span class="checkbox">{{_("Off")}}</span>
+      <input name="prefs.encrypt_index" type="radio" value="true" class="crypto"
             {%- if config.prefs.encrypt_index %} checked{% endif %}>
       <span class="checkbox">{{_("On")}}</span>
-      <input name="prefs.encrypt_index" type="radio" value="false"
-             {%- if not config.prefs.encrypt_index %} checked{% endif %}>
-      <span class="checkbox">{{_("Off")}}</span> &nbsp; - &nbsp;
-      {{_("Strongly encrypt the local search index (slow).")}}
+      &nbsp; - &nbsp; {{_("Strongly encrypt the local search index (slow).")}}
+      <br style="margin-bottom: 0.75em;">
+
+      {%- set shared = (not unconfigured) and (not config.sys.gpg_home) %}
+      {%- set private_gpghome = (config.sys.gpg_home or config.workdir) %}
+      <input name="sys.gpg_home" type="radio" class="gpghome"
+             value="{{ private_gpghome }}"
+             {%- if not shared %} checked{% endif %}>
+      <span title="GNUPGHOME={{ private_gpghome }}"
+            class="checkbox">{{_("Off")}}</span>
+      <input name="sys.gpg_home" type="radio" class="gpghome"
+             value="{Blank}"
+             {%- if shared %} checked{% endif %}>
+      <span class="checkbox">{{_("On")}}</span>
+      &nbsp; - &nbsp; {{_("Use shared GnuPG keychain for PGP encryption keys.")}}
       <br>
 
       <br>
       <b>{{_("Notes:")}}</b>
+      {%- set crypto_note = _("Changing encryption settings will only affect data created or edited from now on.") %}
       <ul class="notes">
-        <li>{{_("Changing encryption settings will only affect data created or edited from now on.")}}</li>
-        <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
-        <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
+      {%- if not unconfigured %}
+        <li>{{ crypto_note }}</li>
         <li>{{_("Backups are protected by the same password and encryption as the configuration.")}}</li>
+      {%- endif %}
+        <li>{{_("The configuration is always kept encrypted, because it may contain passwords.")}}</li>
+        <li>{{_("The search index is always at least partially encrypted because it is so sensitive.")}}</li>
       </ul>
+
+      {%- if not unconfigured %}
+      <script type="text/javascript">
+        $(document).ready(function() {
+          $('input.gpghome').click(function(ev) {
+            return confirm(
+              '{{ _("WARNING")|escapejs }}:\n  * ' +
+              '{{ _("Changing GnuPG keychains may prevent decryption of old e-mail!")|escapejs }}\n' +
+              '\n' +
+              '{{ _("You will need to manually copy your PGP keys from one keychain to the other.")|escapejs }}');
+          });
+          $('input.crypto').click(function(ev) {
+            alert(
+              '{{ _("WARNING")|escapejs }}:\n  * ' +
+              '{{ crypto_note|escapejs }}');
+          });
+        });
+      </script>
+      {%- endif %}
+
     </div>
     <br clear="both">
   </div>
