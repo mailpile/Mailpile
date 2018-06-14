@@ -218,21 +218,36 @@ def GenerateConfig(state):
 
 def LocateMailpile():
     """
-    Locate mailpile's root script, searching upward from our script location
+    Locate the main mailpile launcher script
     """
+    # Locate mailpile's root script, searching upward from our script
+    # location. We do this BEFORE checking the system PATH, to increase
+    # our odds of finding a mailpile script from the same bundle as this
+    # particualr mailpile-gui.py (there might be more than one?).
     directory = APPDIR
-
     while True:
-        scripts_path = os.path.join(directory, 'scripts')
-        mailpile_path = os.path.join(scripts_path, 'mailpile')
-        if os.path.exists(mailpile_path):
-            return mailpile_path
+        for sub in ('scripts', 'bin'):
+            mailpile_path = os.path.join(directory, sub, 'mailpile')
+            if os.path.exists(mailpile_path):
+                return mailpile_path
 
         parts = os.path.split(directory)
         if parts[0] == directory:
-            raise IOError( "Cannot locate scripts/mailpile!" )
+            break
         else:
             directory = parts[0]
+
+    # Finally, check if the Mailpile script is on the system PATH.
+    # Note: Turns out os.defpath and $PATH are not the same thing.
+    for directory in (
+            os.getenv('PATH', '').split(os.pathsep) +
+            os.defpath.split(os.pathsep)):
+        if directory:
+            mailpile_path = os.path.join(directory, 'mailpile')
+            if os.path.exists(mailpile_path):
+                return mailpile_path
+
+    raise OSError('Cannot locate mailpile launcher script!')
 
 
 def MailpileInvocation():
@@ -243,7 +258,7 @@ def MailpileInvocation():
     """
     parts = []
     common_opts = [
-        '--set="prefs.open_in_browser = false"',
+        '--set="prefs.open_in_browser=false"',
         '--gui=%PORT% ' ]
 
     if os.name == 'nt':
