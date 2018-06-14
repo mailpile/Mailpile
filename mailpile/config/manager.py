@@ -1457,6 +1457,13 @@ class ConfigManager(ConfigDict):
                             lambda: rsc.run(slowly=True, cron=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
+            def metadata_index_saver():
+                config.save_worker.add_unique_task(
+                    config.background, 'save_metadata_index',
+                    lambda: config.index.save_changes())
+            config.cron_worker.add_task('save_metadata_index', 900,
+                                        metadata_index_saver)
+
             def search_history_saver():
                 config.save_worker.add_unique_task(
                     config.background, 'save_search_history',
