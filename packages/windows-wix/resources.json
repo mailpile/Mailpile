@@ -1,6 +1,6 @@
 {
   "tor": {
-    "url": "https://www.torproject.org/dist/torbrowser/7.5.3/tor-win32-0.3.2.10.zip", 
+    "url": "https://www.torproject.org/dist/torbrowser/7.5.5/tor-win32-0.3.2.10.zip", 
     "sha1": "b87e37dc7932893528518fa88972057c6e99f302"
   }, 
   "gpg": {
@@ -13,7 +13,7 @@
   }, 
   "resource_hacker": {
     "url": "http://www.angusj.com/resourcehacker/resource_hacker.zip", 
-    "sha1": "26dc840d99b60987381a2f8c254a5754182ba486"
+    "sha1": "2dcf31777c15292b81f28a839edf5771c5501dee"
   }, 
   "lessmsi": {
     "url": "https://github.com/activescott/lessmsi/releases/download/v1.6.1/lessmsi-v1.6.1.zip", 
