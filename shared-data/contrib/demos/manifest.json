@@ -189,9 +189,6 @@
         "pre": [],
         "post": []
     },
-    "threads": [
-        "MyWorker"
-    ],
     # List method names to be called after plugin is loaded or before its unloaded
     "lifecycle": {
         "startup": ["on_plugin_start"],
