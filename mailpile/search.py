@@ -44,7 +44,7 @@ class MailIndex(BaseIndex):
     ITEM_COUNT_OFFSET = 5000        # Puts lower bound on limits.
     # Appends start with a comment including this so they can be counted.
     APPEND_MARK = '-----APPENDED SECTION-----'
-    
+
     MAX_CACHE_ENTRIES = 2500
     CAPABILITIES = set([
         BaseIndex.CAN_SEARCH,
@@ -264,17 +264,17 @@ class MailIndex(BaseIndex):
             if old_emails_saved == total and not mods:
                 # Nothing to do...
                 return
-                
-            max_incremental_saves = ( index_items + self.ITEM_COUNT_OFFSET
+
+            max_incremental_saves = (index_items + self.ITEM_COUNT_OFFSET
                                     ) / self.MIN_ITEMS_PER_INCREMENT
             max_saved_lines = index_items + (
                                       index_items + self.ITEM_COUNT_OFFSET
                                     ) / self.MIN_ITEMS_PER_DUPLICATE
-                                    
-            if not os.path.isfile(self.config.mailindex_file()) or (
-                    ( self._saved_changes > max_incremental_saves 
-                        or self._saved_lines > max_saved_lines )
-                    and not mailpile.util.QUITTING):                   
+
+            if (not os.path.isfile(self.config.mailindex_file())
+                    or ((self._saved_changes > max_incremental_saves
+                           or self._saved_lines > max_saved_lines)
+                        and not mailpile.util.QUITTING):
                 # Write a new metadata index file.
                 return self.save(session=session)
 
@@ -291,13 +291,15 @@ class MailIndex(BaseIndex):
 
             # Unlocked, try to write this out, prepending append mark comment.
 
-            data = self._maybe_encrypt(''.join(['#' + self.APPEND_MARK + '\n']
-                        + emails + [self.INDEX[pos] + '\n' for pos in mods]))
+            data = self._maybe_encrypt(''.join(
+                ['#' + self.APPEND_MARK + '\n']
+                + emails
+                + [self.INDEX[pos] + '\n' for pos in mods]))
             with open(self.config.mailindex_file(), 'a') as fd:
                 fd.write(data)
                 self._saved_changes += 1
                 self._saved_lines += total - old_emails_saved + len(mods)
-                
+
             if session:
                 session.ui.mark(_("Saved metadata index changes"))
         except:
@@ -342,7 +344,7 @@ class MailIndex(BaseIndex):
             os.rename(newfile, idxfile)
 
             self._saved_changes = 0
-            self._saved_lines = email_counter + index_counter            
+            self._saved_lines = email_counter + index_counter
             if session:
                 session.ui.mark(_("Saved metadata index"))
         except:

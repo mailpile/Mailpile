@@ -1461,15 +1461,15 @@ class ConfigManager(ConfigDict):
                 config.save_worker.add_unique_task(
                     config.background, 'save_metadata_index',
                     lambda: config.index.save_changes())
-            config.cron_worker.add_task('save_metadata_index', 900,
-                                        metadata_index_saver)
+            config.cron_worker.add_task(
+                'save_metadata_index', 900, metadata_index_saver)
 
             def search_history_saver():
                 config.save_worker.add_unique_task(
                     config.background, 'save_search_history',
                     lambda: config.search_history.save(config))
-            config.cron_worker.add_task('save_search_history', 900,
-                                        search_history_saver)
+            config.cron_worker.add_task(
+                'save_search_history', 900, search_history_saver)
 
             def refresh_command_cache():
                 config.scan_worker.add_unique_task(
@@ -1477,8 +1477,8 @@ class ConfigManager(ConfigDict):
                     lambda: config.command_cache.refresh(
                         event_log=config.event_log),
                     first=True)
-            config.cron_worker.add_task('refresh_command_cache', 5,
-                                        refresh_command_cache)
+            config.cron_worker.add_task(
+                'refresh_command_cache', 5, refresh_command_cache)
 
             from mailpile.postinglist import GlobalPostingList
             from mailpile.plugins.core import HealthCheck
