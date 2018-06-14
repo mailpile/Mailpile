@@ -50,7 +50,7 @@ class Build(object):
                 except subprocess.CalledProcessError as e:
                     error_file.seek(0)
                     error_text = error_file.read()
-                    self.build.log().critical("stderr from exception:\n" + error_text)
+                    self.build.log().critical("stderr from exception:\n" + error_text.decode())
                     self.build.log().critical("stdout from exception:\n" + e.output)
                     e.stderr = error_text
                     raise

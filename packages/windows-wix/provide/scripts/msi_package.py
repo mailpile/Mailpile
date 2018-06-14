@@ -92,7 +92,8 @@ def bind(build):
         # sign binary content
         #
         for path in content_paths.values():
-            build.invoke('sign_tree', path)
+            if os.path.exists(path):
+                build.invoke('sign_tree', path)
 
         # create the template for building the wix config
         #

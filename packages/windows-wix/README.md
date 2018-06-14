@@ -21,6 +21,9 @@ Producing a package has minimal requirements:
   - git installed
   - mailpile checked out
   - administrator privileges
+  - Optional software signing requirements:
+      - a pkcs12 certificate suitable for software signing
+      - the software signing portion of the windows sdk (~50MB)
 
 To produce a package, go to the 'mailpile/packages/windows-wix/' directory and
 run `python provide -i provide.json`. It will output a directory called
@@ -33,6 +36,40 @@ is also possible to output partial products by adding multiple targets to the
 'export' configuration.
 
 Note: work in progress on customization and improving automation. See TODO.md.
+
+### Software Signing ###
+
+Software signing is an entirely optional build step. If not configured, the
+build will succeed, but produce several warnings that it was not able to sign
+the contents. While functional, an unsigned build does not provide authenticity
+assurances.
+
+Software signing uses `signtool.exe` to sign recognized file types prior to
+packaging, as well as the output package itself. Since Microsoft doesn't provide
+a portable/stand-alone download for signtool, anyone wanting to sign a mailpile
+package must install the relevant part of the windows sdk. The install feature
+"Windows SDK Signing Tools for Desktop Apps" should be enough on it's own.
+
+The packaging script will attempt to detect `signtool.exe` in it's default
+install location. This can be checked by inspecting the help output from
+`python provide -h`: If the default for `--config_signtool` is `signtool.exe`,
+provide was not able to locate signtool on the local machine, and expects it
+to exist on the system path. The location of `signtool.exe` can also be defined
+by manually setting this parameter.
+
+Actually signing software components requires a pkcs12 PKI certificate capable
+of software signing. A self-signed cert can be made following these intsructions
+https://stackoverflow.com/questions/9428335/make-your-own-certificate-for-signing-files
+
+Alternately, a software signing certifacte can be sourced. Note that Microsoft
+only includes select few roots of trust by default--any other CA, no matter how
+valid, will not be validated a vanila windows install. Check the list carefully!
+
+With a certificate in hand, the `--config_signing_key` and
+`--config_signing_passwd` options can be set to enable software signing. Both
+are required as it is assumed the key is stored in an encrypted state.
+Additionally, the signing timestamp server can be configured--see
+`python provide -h` for full details.
 
 ## Integration points ##
 
