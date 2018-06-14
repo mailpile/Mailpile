@@ -274,7 +274,7 @@ class MailIndex(BaseIndex):
             if (not os.path.isfile(self.config.mailindex_file())
                     or ((self._saved_changes > max_incremental_saves
                            or self._saved_lines > max_saved_lines)
-                        and not mailpile.util.QUITTING):
+                        and not mailpile.util.QUITTING)):
                 # Write a new metadata index file.
                 return self.save(session=session)
 
