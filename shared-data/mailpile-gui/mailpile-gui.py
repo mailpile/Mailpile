@@ -26,17 +26,19 @@ import subprocess
 import threading
 from cStringIO import StringIO
 
+from mailpile.config.base import ConfigDict
 from mailpile.config.defaults import CONFIG_RULES
-from mailpile.config.manager import ConfigManager
+from mailpile.config.paths import DEFAULT_WORKDIR, DEFAULT_SHARED_DATADIR
+from mailpile.config.paths import LOCK_PATHS
 from mailpile.i18n import ActivateTranslation
 from mailpile.i18n import gettext as _
-from mailpile.plugins.gui import GetUserSecret
+from mailpile.security import GetUserSecret
 
 
 APPDIR = os.path.abspath(os.path.dirname(__file__))
 if not os.path.exists(os.path.join(APPDIR, 'media', 'splash.jpg')):
     APPDIR = os.path.abspath(os.path.join(
-        ConfigManager.DEFAULT_SHARED_DATADIR(), 'mailpile-gui'))
+        DEFAULT_SHARED_DATADIR(), 'mailpile-gui'))
 
 MEDIA_PATH = os.path.join(APPDIR, 'media')
 ICONS_PATH = os.path.join(APPDIR, 'icons-%(theme)s')
@@ -168,14 +170,15 @@ def BASIC_GUI_CONFIGURATION(state):
 class MailpileState(object):
     def __init__(self):
         self.base_url = 'http://localhost:33411/'
+        self.workdir = DEFAULT_WORKDIR()
+        self.secret = GetUserSecret(self.workdir)
         self.pub_config = None
         self.is_running = None
-        self.secret = ''
 
     def check_if_running(self):
         # FIXME: This is rather slow. We should refactor upstream to speed
         #        up or include our own custom parser if that is infeasible.
-        wd_lock_path = ConfigManager.LOCK_PATHS()[1]
+        wd_lock_path = LOCK_PATHS()[1]
         wd_lock = fasteners.InterProcessLock(wd_lock_path)
         try:
             if wd_lock.acquire(blocking=False):
@@ -187,10 +190,11 @@ class MailpileState(object):
             return False
 
     def _load_public_config(self):
-        self.pub_config = ConfigManager(rules=CONFIG_RULES)
+        self.pub_config = ConfigDict(_rules=CONFIG_RULES)
         try:
-            self.pub_config.load(None, public_only=True)
-            self.secret = GetUserSecret(self.pub_config)
+            conffile = os.path.join(self.workdir, 'mailpile.rc')
+            with open(conffile) as fd:
+                self.pub_config.parse_config(None, fd.read(), source=conffile)
             self.base_url = 'http://%s:%s%s/' % (
                 self.pub_config.sys.http_host,
                 self.pub_config.sys.http_port,

@@ -75,3 +75,13 @@ def GetAppDataDirectory():
         # Assume other platforms are Unixy
         return os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share'))
 
+
+def RestrictReadAccess(path):
+    """
+    Restrict access to a file or directory so only the user can read it.
+    """
+    # FIXME: Windows code goes here!
+    if os.path.isdir(path):
+        os.chmod(path, 0700)
+    else:
+        os.chmod(path, 0600)

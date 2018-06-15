@@ -46,6 +46,8 @@ import mailpile.util
 import mailpile.vfs
 
 from mailpile.config.base import *
+from mailpile.config.paths import DEFAULT_WORKDIR, DEFAULT_SHARED_DATADIR
+from mailpile.config.paths import LOCK_PATHS
 from mailpile.config.defaults import APPVER
 from mailpile.config.detect import socks
 from mailpile.www.jinjaloader import MailpileJinjaLoader
@@ -63,82 +65,15 @@ class ConfigManager(ConfigDict):
     the settings themselves, as well as global objects like the index and
     references to any background worker threads.
     """
-    @classmethod
-    def DEFAULT_WORKDIR(self):
-        # The Mailpile environment variable trumps everything
-        workdir = os.getenv('MAILPILE_HOME')
-        if workdir:
-            return workdir
-
-        # Which profile?
-        profile = os.getenv('MAILPILE_PROFILE', 'default')
-
-        # Check if we have a legacy setup we need to preserve
-        workdir = self.LEGACY_DEFAULT_WORKDIR(profile)
-        if not AppDirs or (os.path.exists(workdir) and os.path.isdir(workdir)):
-            return workdir
-
-        # Use platform-specific defaults
-        # via https://github.com/ActiveState/appdirs
-        dirs = AppDirs("Mailpile", "Mailpile ehf")
-        return os.path.join(dirs.user_data_dir, profile)
-
-    @classmethod
-    def LEGACY_DEFAULT_WORKDIR(self, profile):
-        if profile == 'default':
-            # Backwards compatibility: If the old ~/.mailpile exists, use it.
-            workdir = os.path.expanduser('~/.mailpile')
-            if os.path.exists(workdir) and os.path.isdir(workdir):
-                return workdir
-
-        return os.path.join(
-            mailpile.platforms.GetAppDataDirectory(), 'Mailpile', profile)
-
-    @classmethod
-    def DEFAULT_SHARED_DATADIR(self):
-        # IMPORTANT: This code is duplicated in mailpile-admin.py.
-        #            If it needs changing please change both places!
-        env_share = os.getenv('MAILPILE_SHARED')
-        if env_share is not None:
-            return env_share
-
-        # Check if we are running in a virtual env
-        # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
-        # We must also check that we are installed in the virtual env,
-        # not just that we are running in a virtual env.
-        if (hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix')) and __file__.startswith(sys.prefix):
-            return os.path.join(sys.prefix, 'share', 'mailpile')
-
-        # Check if we've been installed to /usr/local (or equivalent)
-        usr_local = os.path.join(sys.prefix, 'local')
-        if __file__.startswith(usr_local):
-            return os.path.join(usr_local, 'share', 'mailpile')
-
-        # Check if we are in /usr/ (sys.prefix)
-        if __file__.startswith(sys.prefix):
-            return os.path.join(sys.prefix, 'share', 'mailpile')
-
-        # Else assume dev mode, source tree layout
-        return os.path.join(
-            os.path.dirname(__file__), '..', '..', 'shared-data')
-
-    @classmethod
-    def LOCK_PATHS(cls, workdir=None):
-        if workdir is None:
-            workdir = cls.DEFAULT_WORKDIR()
-        return (
-            os.path.join(workdir, 'public-lock'),
-            os.path.join(workdir, 'workdir-lock'))
-
     def __init__(self, workdir=None, shareddatadir=None, rules={}):
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
-        self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
+        self.workdir = os.path.abspath(workdir or DEFAULT_WORKDIR())
         self.gnupghome = None
         mailpile.vfs.register_alias('/Mailpile', self.workdir)
 
         self.shareddatadir = os.path.abspath(shareddatadir or
-                                             self.DEFAULT_SHARED_DATADIR())
+                                             DEFAULT_SHARED_DATADIR())
         mailpile.vfs.register_alias('/Share', self.shareddatadir)
 
         self.vfs_root = MailpileVfsRoot(self)
@@ -149,7 +84,7 @@ class ConfigManager(ConfigDict):
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
 
         # Process lock files are not actually created until the first acquire()
-        self.lock_pubconf, self.lock_workdir = self.LOCK_PATHS(self.workdir)
+        self.lock_pubconf, self.lock_workdir = LOCK_PATHS(self.workdir)
         self.lock_pubconf = fasteners.InterProcessLock(self.lock_pubconf)
 
         # If the master key changes, we update the file on save, otherwise
@@ -215,6 +150,7 @@ class ConfigManager(ConfigDict):
             if session:
                 session.ui.notify(_('Creating: %s') % self.workdir)
             os.makedirs(self.workdir, mode=0700)
+            mailpile.platforms.RestrictReadAccess(self.workdir)
 
         # Once acquired, lock_workdir is only released by process termination.
         if not isinstance(self.lock_workdir, fasteners.InterProcessLock):
@@ -226,77 +162,6 @@ class ConfigManager(ConfigDict):
                     session.ui.error(_('Another Mailpile or program is'
                                        ' using the profile directory'))
                 sys.exit(1)
-
-    def parse_config(self, session, data, source='internal'):
-        """
-        Parse a config file fragment. Invalid data will be ignored, but will
-        generate warnings in the session UI. Returns True on a clean parse,
-        False if any of the settings were bogus.
-
-        >>> cfg.parse_config(session, '[config/sys]\\nfd_cache_size = 123\\n')
-        True
-        >>> cfg.sys.fd_cache_size
-        123
-
-        >>> cfg.parse_config(session, '[config/bogus]\\nblabla = bla\\n')
-        False
-        >>> [l[1] for l in session.ui.log_buffer if 'bogus' in l[1]][0]
-        'Invalid (internal): section config/bogus does not exist'
-
-        >>> cfg.parse_config(session, '[config/sys]\\nhistory_length = 321\\n'
-        ...                                          'bogus_variable = 456\\n')
-        False
-        >>> cfg.sys.history_length
-        321
-        >>> [l[1] for l in session.ui.log_buffer if 'bogus_var' in l[1]][0]
-        u'Invalid (internal): section config/sys, ...
-
-        >>> cfg.parse_config(session, '[config/tags/a]\\nname = TagName\\n')
-        True
-        >>> cfg.tags['a']._key
-        'a'
-        >>> cfg.tags['a'].name
-        u'TagName'
-        """
-        parser = CommentedEscapedConfigParser()
-        parser.readfp(io.BytesIO(str(data)))
-
-        def item_sorter(i):
-            try:
-                return (int(i[0], 36), i[1])
-            except (ValueError, IndexError, KeyError, TypeError):
-                return i
-
-        all_okay = True
-        for section in parser.sections():
-            okay = True
-            cfgpath = section.split(':')[0].split('/')[1:]
-            cfg = self
-            added_parts = []
-            for part in cfgpath:
-                if cfg.fmt_key(part) in cfg.keys():
-                    cfg = cfg[part]
-                elif '_any' in cfg.rules:
-                    cfg[part] = {}
-                    cfg = cfg[part]
-                else:
-                    if session:
-                        msg = _('Invalid (%s): section %s does not '
-                                'exist') % (source, section)
-                        session.ui.warning(msg)
-                    all_okay = okay = False
-            items = parser.items(section) if okay else []
-            items.sort(key=item_sorter)
-            for var, val in items:
-                try:
-                    cfg[var] = val
-                except (ValueError, KeyError, IndexError):
-                    if session:
-                        msg = _(u'Invalid (%s): section %s, variable %s=%s'
-                                ) % (source, section, var, val)
-                        session.ui.warning(msg)
-                    all_okay = okay = False
-        return all_okay
 
     def load(self, session, *args, **kwargs):
         from mailpile.plugins.core import Rescan
@@ -427,6 +292,7 @@ class ConfigManager(ConfigDict):
                 return
 
             if os.path.exists(self.conf_key):
+                mailpile.platforms.RestrictReadAccess(self.conf_key)
                 self.load_master_key(self.passphrases['DEFAULT'],
                                      _raise=IOError)
             self._load_config_lines(self.conffile, prv_lines)
@@ -612,6 +478,7 @@ class ConfigManager(ConfigDict):
             try:
                 with open(keyfile + '.new', 'wb') as fd:
                     fd.write(encrypted_key)
+                mailpile.platforms.RestrictReadAccess(keyfile + '.new')
                 if want_renamed_keyfile:
                     os.rename(keyfile, want_renamed_keyfile)
                 os.rename(keyfile + '.new', keyfile)
@@ -1183,11 +1050,6 @@ class ConfigManager(ConfigDict):
         else:
             raise ValueError(_("Route %s for %s does not exist."
                                ) % (routeid, frm))
-
-    @classmethod
-    def getLocaleDirectory(self):
-        """Get the gettext translation object, no matter where our CWD is"""
-        return os.path.join(self.DEFAULT_SHARED_DATADIR(), "locale")
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """

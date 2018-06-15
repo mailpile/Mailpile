@@ -17,11 +17,30 @@ import time
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
+import mailpile.platforms
 
 DISABLE_LOCKDOWN = False
 
-##[ These are the sys.lockdown restrictions ]#################################
 
+##[ This is a secret only user owning Mailpile could know ]###################
+
+def GetUserSecret(workdir):
+    """Return a secret that only this Unix user could know."""
+    secret_file = os.path.join(workdir, 'mailpile.sec')
+    try:
+        return open(secret_file).read().strip()
+    except (OSError, IOError):
+        pass
+
+    # FIXME: Does this work reasonably on Windows? Does chmod do anything?
+    random_secret = okay_random(64, __file__)
+    with open(secret_file, 'w') as fd:
+        fd.write(random_secret)
+    mailpile.platforms.RestrictReadAccess(secret_file)
+    return random_secret
+
+
+##[ These are the sys.lockdown restrictions ]#################################
 
 def _lockdown(config):
     if DISABLE_LOCKDOWN: return False
