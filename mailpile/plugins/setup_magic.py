@@ -22,7 +22,7 @@ from mailpile.plugins.contacts import ListProfiles
 from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.motd import MOTD_URL_TOR_ONLY_NO_MARS
 from mailpile.plugins.setup_magic_ispdb import STATIC_ISPDB
-from mailpile.plugins.tags import AddTag
+from mailpile.plugins.tags import AddTag, GetTags
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import SignatureInfo, EncryptionInfo
 from mailpile.eventlog import Event
@@ -54,6 +54,7 @@ class SetupMagic(Command):
             'icon': 'icon-new',
             'label_color': '03-gray-dark',
             'name': _('New'),
+            'default' : 'unread',
         },
         'Inbox': {
             'type': 'inbox',
@@ -63,6 +64,7 @@ class SetupMagic(Command):
             'label_color': '06-blue',
             'notify_new': True,
             'name': _('Inbox'),
+            'default': 'inbox',
         },
         'Blank': {
             'type': 'blank',
@@ -84,6 +86,7 @@ class SetupMagic(Command):
             'icon': 'icon-compose',
             'label_color': '03-gray-dark',
             'name': _('Drafts'),
+            'default': 'drafts',
         },
         'Outbox': {
             'type': 'outbox',
@@ -95,6 +98,7 @@ class SetupMagic(Command):
             'icon': 'icon-outbox',
             'label_color': '06-blue',
             'name': _('Outbox'),
+            'default': 'outbox',
         },
         'Sent': {
             'type': 'sent',
@@ -105,6 +109,7 @@ class SetupMagic(Command):
             'icon': 'icon-sent',
             'label_color': '03-gray-dark',
             'name': _('Sent'),
+            'default': 'sent',
         },
         'Spam': {
             'slug': 'spam',
@@ -117,7 +122,8 @@ class SetupMagic(Command):
             'name': _('Spam'),
             'auto_after': 30,
             'auto_action': '-spam +trash',
-            'auto_tag': 'fancy'
+            'auto_tag': 'fancy',
+            'default': 'spam',
         },
         'MaybeSpam': {
             'display': 'invisible',
@@ -142,6 +148,7 @@ class SetupMagic(Command):
             'auto_after': 91,
             'auto_action': '!delete',
             'name': _('Trash'),
+            'default': 'trash',
         },
         # These are magical tags that perform searches and show
         # messages in contextual views.
@@ -163,6 +170,7 @@ class SetupMagic(Command):
             'name': _('Photos'),
             'display_order': 1002,
             '_filters': ['att:jpg is:personal'],
+            'default': 'photos',
         },
         'Documents': {
             'type': 'search',
@@ -173,6 +181,7 @@ class SetupMagic(Command):
             'name': _('Documents'),
             'display_order': 1003,
             '_filters': ['has:document is:personal'],
+            'default': 'documents',
         },
         # These are placeholder tags that perform searches - these are
         # generally to be avoided as they break the user expectation of
@@ -186,6 +195,7 @@ class SetupMagic(Command):
             'search_terms': 'all:mail',
             'name': _('All Mail'),
             'display_order': 1100,
+            'default': 'all',
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
@@ -1143,6 +1153,125 @@ class SetupPassword(TestableWebbable):
         return self._success(_('Welcome to Mailpile!'), results)
 
 
+class ResetTags(TestableWebbable):
+    SYNOPSIS = (None, None, 'reset/tags', None)
+    HTTP_CALLABLE = ('GET', )
+
+    def setup_command(self, session):
+        tags = session.config.tags
+
+        for key in tags:
+            current_tag = tags[key]
+            if 'default' in current_tag:
+                default = current_tag.default
+
+                if default == 'unread':
+                    current_tag.type = 'unread'
+                    current_tag.label = False
+                    current_tag.display = 'invisible'
+                    current_tag.icon = 'icon-new'
+                    current_tag.label_color = '03-gray-dark'
+                    current_tag.name = _('New')
+
+                if default == 'inbox':
+                    current_tag.type = 'inbox'
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 2
+                    current_tag.icon = 'icon-inbox'
+                    current_tag.label_color = '06-blue'
+                    current_tag.notify_new = True
+                    current_tag.name = _('Inbox')
+
+                if default == 'drafts':
+                    current_tag.type = 'drafts'
+                    current_tag.flag_editable = True
+                    current_tag.flag_msg_only = True
+                    current_tag.flag_allow_add =  False
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 1
+                    current_tag.template = 'drafts'
+                    current_tag.icon = 'icon-compose'
+                    current_tag.label_color = '03-gray-dark'
+                    current_tag.name = _('Drafts')
+
+                if default == 'outbox':
+                    current_tag.type = 'outbox'
+                    current_tag.flag_msg_only = True
+                    current_tag.flag_allow_add = False
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 3
+                    current_tag.template = 'outbox'
+                    current_tag.icon = 'icon-outbox'
+                    current_tag.label_color = '06-blue'
+                    current_tag.name = _('Outbox')
+
+                if default == 'sent':
+                    current_tag.type = 'sent'
+                    current_tag.flag_msg_only = True
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 4
+                    current_tag.template = 'sent'
+                    current_tag.icon = 'icon-sent'
+                    current_tag.label_color = '03-gray-dark'
+                    current_tag.name = _('Sent')
+
+                if default == 'spam':
+                    current_tag.slug = 'spam'
+                    current_tag.type = 'spam'
+                    current_tag.flag_hides = True
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 5
+                    current_tag.icon = 'icon-spam'
+                    current_tag.label_color = '10-orange'
+                    current_tag.name = _('Spam')
+                    current_tag.auto_after = 30
+                    current_tag.auto_action = '-spam +trash'
+                    current_tag.auto_tag = 'fancy'
+
+                if default == 'trash':
+                    current_tag.slug = 'trash'
+                    current_tag.type = 'trash'
+                    current_tag.flag_hides = True
+                    current_tag.display = 'priority'
+                    current_tag.display_order = 6
+                    current_tag.template = 'trash'
+                    current_tag.icon = 'icon-trash'
+                    current_tag.label_color = '13-brown'
+                    current_tag.auto_after = 91
+                    current_tag.auto_action = '!delete'
+                    current_tag.name = _('Trash')
+
+                if default == 'photos':
+                    current_tag.type = 'search'
+                    current_tag.icon = 'icon-photos'
+                    current_tag.label = False
+                    current_tag.label_color = '08-green'
+                    current_tag.template = 'photos'
+                    current_tag.name = _('Photos')
+                    current_tag.display_order = 1002
+
+                if default == 'documents':
+                    current_tag.type = 'search'
+                    current_tag.icon = 'icon-document'
+                    current_tag.label = False
+                    current_tag.label_color = '06-blue'
+                    current_tag.template = 'atts'
+                    current_tag.name = _('Documents')
+                    current_tag.display_order = 1003
+
+                if default == 'all':
+                    current_tag.type = 'search'
+                    current_tag.icon = 'icon-logo'
+                    current_tag.label = False
+                    current_tag.label_color = '06-blue'
+                    current_tag.name = _('All Mail')
+                    current_tag.display_order = 1100
+
+        session.config.save()
+
+        return self._success(_('Tags were successfully reset.'))
+
+
 class SetupTestRoute(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/test_route', None)
 
@@ -1366,6 +1495,7 @@ _plugins.register_commands(SetupMagic,
                            SetupWelcome,
                            CreatePassword,
                            SetupPassword,
+                           ResetTags,
                            SetupTestRoute,
                            SetupTor,
                            Setup)

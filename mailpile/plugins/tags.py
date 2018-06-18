@@ -35,6 +35,10 @@ _plugins.register_config_section('tags', ["Tags", {
         'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags
         'trash', 'spam'                               # junk mail tags
     ], 'tag'],
+    'default': ['Default tag type', [
+        'unread', 'inbox', 'drafts', 'outbox', 'sent',
+        'spam', 'trash', 'photos', 'documents', 'all'
+    ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', 'bool', False],
     'flag_editable': ['Mark tagged messages as editable?', 'bool', False],
     'flag_msg_only': ['Never apply to entire conversations', 'bool', False],
