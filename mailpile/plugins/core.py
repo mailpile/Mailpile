@@ -20,6 +20,7 @@ import webbrowser
 import mailpile.util
 import mailpile.postinglist
 import mailpile.security as security
+import mailpile.platforms
 from mailpile.commands import *
 from mailpile.config.validators import WebRootCheck
 from mailpile.crypto.gpgi import GnuPG
@@ -754,6 +755,20 @@ class HealthCheck(Command):
             self.event.data['healthy'] = True
             HealthCheck.health_event = self.event
 
+        # Cancel any obsolete HealthCheck events we find
+        if self.session.config.event_log:
+            for ev in self.session.config.event_log.events():
+                if (ev.source == self.event.source and
+                        ev.event_id != self.event.event_id):
+                    ev.flags = ev.COMPLETE
+                    self.session.config.event_log.log_event(ev)
+
+    @classmethod
+    def _mem_check(cls, session, config):
+        if config.detected_memory_corruption:
+            return _('Memory corruption detected') + '!'
+        return False
+
     @classmethod
     def _disk_check(cls, session, config):
         if config.need_more_disk_space():
@@ -782,6 +797,7 @@ class HealthCheck(Command):
 
         now_healthy = True
         for crit, name, check in ((True, 'disk', cls._disk_check),
+                                  (True, 'memcheck', cls._mem_check),
                                   (True, 'readonly', cls._readonly_check)):
              message = check(session, config)
              if message:
@@ -1122,7 +1138,7 @@ class ConfigSet(Command):
                 fb = security.forbid_config_change(config, path)
                 if fb:
                     return self._error(fb)
-                elif path == 'master_key' and config.master_key:
+                elif path == 'master_key' and config.get_master_key():
                     return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
@@ -1131,7 +1147,7 @@ class ConfigSet(Command):
             updated = {}
             for path, value in ops:
                 if not force:
-                    if path == 'master_key' and config.master_key:
+                    if path == 'master_key' and config.get_master_key():
                         raise ValueError('Need --force to change master key.')
                     if path == 'sys.http_no_auth':
                         raise ValueError('Need --force to change auth policy.')
@@ -1207,7 +1223,7 @@ class ConfigAdd(Command):
             fb = security.forbid_config_change(config, path)
             if fb:
                 return self._error(fb)
-            elif path == 'master_key' and config.master_key:
+            elif path == 'master_key' and config.get_master_key():
                 return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
@@ -1263,7 +1279,7 @@ class ConfigUnset(Command):
             fb = security.forbid_config_change(config, v)
             if fb:
                 return self._error(fb)
-            elif v == 'master_key' and config.master_key:
+            elif v == 'master_key' and config.get_master_key():
                 return self._error(_('I refuse to change the master key!'))
 
         # We don't have transactions really, but making sure the HTTPD
@@ -1320,7 +1336,8 @@ class ConfigPrint(Command):
                             rv[key] = '{ ..(%s).. }' % rv[key]['host']
                         else:
                             rv[key] = '{ ... }'
-                elif sanitize and key.lower()[:4] in ('pass', 'secr'):
+                elif (sanitize
+                        and key.lower()[:4] in ('pass', 'secr', 'obfu')):
                     rv[key] = '(SUPPRESSED)'
             return rv
         return data
@@ -1987,7 +2004,7 @@ class HelpSplash(Help):
         in_browser = False
         if http_worker:
             http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
-            if ((sys.platform[:3] in ('dar', 'win') or os.getenv('DISPLAY'))
+            if (mailpile.platforms.InDesktopEnvironment()
                     and self.session.config.prefs.open_in_browser):
                 if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
                     in_browser = True

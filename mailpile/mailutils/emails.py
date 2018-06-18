@@ -90,7 +90,8 @@ def ClearParseCache(cache_id=None, pgpmime=False, full=False):
 
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
-                     pgpmime='all', config=None, event=None):
+                     pgpmime='all', config=None, event=None,
+                     allow_weak_crypto=False):
     global GLOBAL_PARSE_CACHE
     if not GnuPG:
         pgpmime = False
@@ -117,9 +118,10 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             return GnuPG(config, *args, **kwargs)
 
         unwrap_attachments = ('all' in pgpmime or 'att' in pgpmime)
-        UnwrapMimeCrypto(message, protocols={
-            'openpgp': MakeGnuPG
-        }, unwrap_attachments=unwrap_attachments)
+        UnwrapMimeCrypto(message,
+            protocols={'openpgp': MakeGnuPG},
+            unwrap_attachments=unwrap_attachments,
+            require_MDC=(not allow_weak_crypto))
 
     else:
         try:
@@ -852,11 +854,18 @@ class Email(object):
             return None
 
     def _get_parsed_msg(self, pgpmime, update_cache=False):
-        return ParseMessage(self.get_file, cache_id=self.get_cache_id(),
-                                           update_cache=update_cache,
-                                           pgpmime=pgpmime,
-                                           config=self.config,
-                                           event=GetThreadEvent())
+        weak_crypto_max_age = self.config.prefs.weak_crypto_max_age
+        allow_weak_crypto = False
+        if weak_crypto_max_age > 0:
+            ts = int(self.get_msg_info(self.index.MSG_DATE) or '0', 36)
+            allow_weak_crypto = (ts < weak_crypto_max_age)
+        return ParseMessage(self.get_file,
+            cache_id=self.get_cache_id(),
+            update_cache=update_cache,
+            pgpmime=pgpmime,
+            config=self.config,
+            allow_weak_crypto=allow_weak_crypto,
+            event=GetThreadEvent())
 
     def _update_crypto_state(self):
         if not (self.config.tags and
@@ -1096,7 +1105,7 @@ class Email(object):
     def get_message_tree(self, want=None, tree=None, pgpmime='default'):
         msg = self.get_msg(pgpmime=pgpmime)
         want = list(want) if (want is not None) else None
-        tree = tree or {}
+        tree = tree or {'_cleaned': []}
         tree['id'] = self.get_msg_info(self.index.MSG_ID)
 
         if want is not None:
@@ -1200,17 +1209,24 @@ class Email(object):
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
+                filename_org = safe_decode_hdr(hdr=part.get_filename() or '')
+                filename = CleanText(filename_org,
+                                     banned=(CleanText.HTML +
+                                             CleanText.CRLF + '\\/'),
+                                     replace='_').clean
                 att = {
                     'mimetype': mimetype,
                     'count': count,
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': safe_decode_hdr(hdr=part.get_filename() or ''),
+                    'filename': filename,
                     'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)
                 tree['attachments'].append(att)
+                if filename_org != filename:
+                    tree['_cleaned'].append('att: %s' % att['aid'])
 
         if want is None or 'text_parts' in want:
             if tree.get('html_parts') and not tree.get('text_parts'):

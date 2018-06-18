@@ -811,9 +811,9 @@ class MailpileVCard(SimpleVCard):
 
     def configure_encryption(self, config):
         if config:
-            dec = lambda: config.master_key
+            dec = lambda: config.get_master_key()
             enc = lambda: (config.prefs.encrypt_vcards and
-                           config.master_key)
+                           config.get_master_key())
             self.config = config
         else:
             enc = dec = lambda: None
@@ -1266,7 +1266,7 @@ class VCardStore(dict):
 
         try:
             prfs = self.config.prefs
-            key_func = lambda: self.config.master_key
+            key_func = lambda: self.config.get_master_key()
             paths = [(fn, os.path.join(self.vcard_dir, fn))
                      for fn in os.listdir(self.vcard_dir)
                      if fn.endswith('.vcf')]

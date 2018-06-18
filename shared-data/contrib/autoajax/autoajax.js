@@ -221,6 +221,7 @@ update_using_jhtml = function(original_url, callback, error_callback,
                                  document.title);
         return $.ajax({
             url: Mailpile.API.jhtml_url(original_url, 'content'),
+            timeout: Mailpile.ajax_timeout,
             type: 'GET',
             success: function(data) {
                 if (!nohistory)

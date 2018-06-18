@@ -7,6 +7,7 @@
 {% block title %}{{_("Settings & Tools")}}{% endblock %}
 
 {% block content %}
+{%- set plugin_settings = get_ui_elements('settings', state) %}
 <div class="content-normal settings-page">
 
   <h1 class="page-title-data mobile-hide">
@@ -41,16 +42,16 @@
         </a> &nbsp;
         {{_("Plugins and Addons")}}
       </p>
-{# FIXME: Make this work!
+{%- for elem in plugin_settings %}
       <p>
-        <a href="{{ U('/settings/remote-access.html') }}">
+        <a href="{{ U(elem.url) }}" title="{{ elem.description }}">
           <button style="width: 175px; text-align: left;">
-            <span class="icon icon-force-graph"></span> {{_("Remote Access")}}
+            <span class="icon icon-{{ elem.icon }}"></span> {{elem.text}}
           </button>
         </a> &nbsp;
-        {{_("Mobile and Remote Access to Mailpile")}}
+        {{elem.text}}
       </p>
-#}
+{%- endfor %}
       <p>
         <a href="{{ U('/settings/privacy.html') }}">
           <button style="width: 175px; text-align: left;">

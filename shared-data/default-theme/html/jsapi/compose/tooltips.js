@@ -6,10 +6,10 @@ Mailpile.Composer.Tooltips.Signature = function() {
       title: false,
       text: function(event, api) {
         $(this).find('text').removeClass('hide');
-        var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html().replace(' hide', '') + '</h4>\
-          <p>' + $(this).attr('title') + '</p>\
-          </div>';
+        var html = ('<div><h4 class="'
+          + _.escape($(this).data('crypto_color')) + '">'
+          + _.escape($(this).html().replace(' hide', '')) + '</h4><p>'
+          + _.escape($(this).attr('title')) + '</p></div>');
         return html;
       }
     },  
@@ -45,10 +45,10 @@ Mailpile.Composer.Tooltips.Encryption = function() {
     content: {
       title: false,
       text: function(event, api) {
-        var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html().replace(' hide', '') + '</h4>\
-          <p>' + $(this).attr('title') + '</p>\
-          </div>';
+        var html = ('<div><h4 class="'
+          + _.escape($(this).data('crypto_color')) + '">'
+          + _.escape($(this).html().replace(' hide', '')) + '</h4><p>'
+          + _.escape($(this).attr('title')) + '</p></div>');
         return html;
       }
     },

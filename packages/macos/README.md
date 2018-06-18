@@ -49,8 +49,8 @@ Before executing the package scripts, ensure that the following statements are t
 ### Packaging Mailpile
 Packaging Mailpile is a three step process.
 
-1. Execute `./build.sh` in the directory which contains build.sh. This outputs ~/build/Mailpile.app
-2. Execute `export DMG_SIGNING_IDENTITY=4P78A94863` after replacing 4P78A94863 with your Developer Certificate's ID.
+1. Execute `export DMG_SIGNING_IDENTITY=4P78A94863` after replacing 4P78A94863 with your Developer Certificate's ID.
+2. Execute `./build.sh` in the directory which contains build.sh. This outputs ~/build/Mailpile.app
 3. Execute `./package.sh` in the directory which contains package.sh. This outputs ~/build/Mailpile.dmg.
 
 You might want to run ~/build/Mailpile.app to test the build before shipping ~/build/Mailpile.dmg.

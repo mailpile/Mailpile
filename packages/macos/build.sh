@@ -75,6 +75,8 @@ cp configurator.sh "$BUILD_DIR/gui-o-mac-tic/share/configurator.sh"
 #Project Name (PROJECT_NAME) - The name of the current project.
 #WRAPPER_NAME - Specifies the filename, including the appropriate extension, of the product bundle.
 #
+perl -pi -e "s/32325SM62E/$DMG_SIGNING_IDENTITY/g" \
+	"$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj/project.pbxproj"
 xcodebuild -project "$BUILD_DIR/gui-o-mac-tic/GUI-o-Mac-tic.xcodeproj" \
 	EXECUTABLE_NAME=Mailpile \
 	PRODUCT_BUNDLE_IDENTIFIER=is.mailpile.gui-o-mac-tic.mailpile \

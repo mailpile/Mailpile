@@ -145,7 +145,7 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
 
 
 def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
-                     unwrap_attachments=True, depth=0):
+                     unwrap_attachments=True, require_MDC=True, depth=0):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -204,6 +204,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              pei=part.encryption_info,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
+                             require_MDC=require_MDC,
                              depth = depth + 1 )
 
         except (IOError, OSError, ValueError, IndexError, KeyError):
@@ -215,8 +216,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
         try:
             preamble, payload = part.get_payload()
 
-            (part.signature_info, part.encryption_info, decrypted
-             ) = crypto_cls().decrypt(payload.as_string())
+            (part.signature_info, part.encryption_info, decrypted) = (
+                crypto_cls().decrypt(
+                    payload.as_string(), require_MDC=require_MDC))
         except (IOError, OSError, ValueError, IndexError, KeyError):
             part.encryption_info = EncryptionInfo()
             part.encryption_info["status"] = "error"
@@ -262,6 +264,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              pei=part.encryption_info,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
+                             require_MDC=require_MDC,
                              depth = depth + 1 )
 
     # If we are still multipart after the above shenanigans (perhaps due
@@ -274,6 +277,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              pei=part.encryption_info,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
+                             require_MDC=require_MDC,
                              depth = depth + 1 )
 
     elif disposition.startswith('attachment'):
@@ -292,8 +296,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
             # are encrypted and signed, and files that are signed only.
             payload = part.get_payload( None, True )
             try:
-                (part.signature_info, part.encryption_info, decrypted
-                 ) = crypto_cls().decrypt(payload)
+                (part.signature_info, part.encryption_info, decrypted) = (
+                    crypto_cls().decrypt(
+                        payload, require_MDC=require_MDC))
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.encryption_info = EncryptionInfo()
                 part.encryption_info["status"] = "error"
@@ -321,6 +326,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                                  pei=part.encryption_info,
                                  charsets=charsets,
                                  unwrap_attachments=unwrap_attachments,
+                                 require_MDC=require_MDC,
                                  depth = depth + 1 )
             else:
                 # FIXME: Best action for unsuccessful attachment processing?
@@ -332,6 +338,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                                      psi=psi,
                                      pei=pei,
                                      charsets=charsets,
+                                     require_MDC=require_MDC,
                                      depth = depth + 1 )
 
     else:
@@ -350,7 +357,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
 
 def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
-                                charsets=None, depth=0):
+                                charsets=None, require_MDC=True, depth=0):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -365,7 +372,7 @@ def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
         if (payload.startswith(crypto.ARMOR_BEGIN_ENCRYPTED) and
                 payload.endswith(crypto.ARMOR_END_ENCRYPTED)):
             try:
-                si, ei, text = crypto.decrypt(payload)
+                si, ei, text = crypto.decrypt(payload, require_MDC=require_MDC)
                 _update_text_payload(part, text, charsets=charsets)
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 ei = EncryptionInfo()

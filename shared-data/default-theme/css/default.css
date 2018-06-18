@@ -6362,6 +6362,7 @@ body {
   margin-top: 62px;
 }
 #content-tools {
+  position: relative;
   z-index: 10;
 }
 /* Copyright Footer Navigation */
@@ -6948,7 +6949,7 @@ div.notification-bubble span.action {
   padding: 0;
 }
 .topbar-actions {
-  min-width: 775px;
+  min-width: 630px;
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
@@ -9551,6 +9552,10 @@ a.modal-tag-color-option:hover {
 }
 /* =============== Tablet Style =============== */
 @media only screen and (max-width: 1020px) {
+  .tablet-hide {
+    display: none !important;
+  }
+
   /* Shrink the sidebar a bit, but keep it. */
   #sidebar {
     width: 180px;
