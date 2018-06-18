@@ -195,6 +195,13 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
         '<span class="icon-settings"></span></a>');
     });
 
+    // Add Reset Button
+    $elem.before(
+      '<a style="float: left" href="#" id="button-reset-tags"' +
+      ' title="{{_("Factory Reset")}}">' +
+      '<span class="icon icon-code"></span>' +
+      '<span class="text">{{_("Factory Reset")}}</span></a>');
+
     // Update Edit Button
     $elem.data('state', 'editing');
     $elem.find('span.icon').removeClass('icon-settings').addClass('icon-checkmark');
@@ -209,10 +216,13 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
     // Update Cursor Make Links Work
     $('.sidebar-sortable li').removeClass('is-editing');
 
-    // Show Notification / Remove Settings Button
+    // Show Notification 
     $('a.sidebar-tag .notification').show();
     $('li.sidebar-tag .sidebar-tag-expand').show();
+
+    // Remove Settings Button and Reset Button
     $('.sidebar-tag-settings').remove();
+    $('#button-reset-tags').remove();
 
     // Hide tags that are normally hidden
     $('li.sidebar-tag.should-hide').slideUp();

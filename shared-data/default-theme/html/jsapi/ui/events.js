@@ -26,6 +26,15 @@ $(document).on('click', '#button-modal-add-tag', function(e) {
   Mailpile.UI.Modals.TagAddProcess($(this).data('location'));
 });
 
+$(document).on('click', '#button-reset-tags', function(e) {
+  e.preventDefault();
+  var answer = confirm("Are you sure you want to reset tags?");
+  if (answer == true) {
+    Mailpile.API.reset_tags_get({}, function(result) {});
+    var elem = $('#button-sidebar-organize');
+    Mailpile.UI.Sidebar.OrganizeToggle(elem);
+  }
+});
 
 $(document).on('click', '.hide-donate-page', function(e) {
   Mailpile.API.settings_set_post({ 'web.donate_visibility': 'False' }, function(e) {
