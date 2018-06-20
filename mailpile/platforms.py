@@ -15,21 +15,12 @@ def _assert_file_exists(path):
 
 
 def GetDefaultGnuPGCommand():
-    # FIXME: Detect if we are running from a package, use bundled binaries.
-    if sys.platform.startswith('win'):
-        return _assert_file_exists('GnuPG\\gpg.exe')
-    else:
-        return 'gpg'
+    return 'gpg'
 
 
 def GetDefaultOpenSSLCommand():
-    # FIXME: Detect if we are running from a package, use bundled binaries.
-    if sys.platform.startswith('win'):
-        # FIXME: This should maybe be a bit smarter?
-        return _assert_file_exists('OpenSSL\\bin\\openssl.exe')
-    else:
-        # Rely on the PATH to find the way
-        return 'openssl'
+    # Rely on the PATH to find the way
+    return 'openssl'
 
 
 def GetDefaultTorPath():
