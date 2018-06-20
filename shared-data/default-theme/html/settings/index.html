@@ -100,7 +100,7 @@
         {{_("Backup Your Settings and Keys")}}
       </p>
       <p>
-        <a class="auto-modal auto-modal-sticky" href="{{ U('/crypto/tls/getcert/') }}">
+        <a class="auto-modal auto-modal-sticky" href="{{ config.sys.http_path }}{{ U('/crypto/tls/getcert/') }}">
           <button style="width: 175px; text-align: left;">
             <span class="icon icon-links"></span> {{_("TLS Certs")}}
           </button>
