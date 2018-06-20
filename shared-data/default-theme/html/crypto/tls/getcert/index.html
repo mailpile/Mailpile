@@ -22,7 +22,7 @@
  </p>
 {%- endif %}
 
- <form action="{{ U("/crypto/tls/getcert/") }}" method="POST">
+ <form action="{{ config.sys.http_path }}{{ U("/crypto/tls/getcert/") }}" method="POST">
   {{ csrf_field|safe }}
 
 {%- for host in state.query_args.host %}
