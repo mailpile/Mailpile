@@ -7,6 +7,7 @@ from mailpile.mail_source.local import LocalMailSource
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
+from mailpile.vfs import FilePath
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -59,24 +60,24 @@ def migrate_routes(session):
 
 def migrate_mailboxes(session):
     config = session.config
+    fpath = FilePath()
 
-    # FIXME: This should be using mailpile.vfs.FilePath
     # FIXME: Link new mail sources to a profile... any profile?
 
     def _common_path(paths):
-        common_head, junk = os.path.split(paths[0])
+        common_head, junk = fpath.split(paths[0])
         for path in paths:
-            head, junk = os.path.split(path)
+            head, junk = fpath.split(path)
             while (common_head and common_head != '/' and
                    head and head != '/' and
                    head != common_head):
                 # First we try shortening the target path...
                 while head and head != '/' and head != common_head:
-                    head, junk = os.path.split(head)
+                    head, junk = fpath.split(head)
                 # If that failed, lop one off the common path and try again
                 if head != common_head:
-                    common_head, junk = os.path.split(common_head)
-                    head, junk = os.path.split(path)
+                    common_head, junk = fpath.split(common_head)
+                    head, junk = fpath.split(path)
         return common_head
 
     mailboxes = []

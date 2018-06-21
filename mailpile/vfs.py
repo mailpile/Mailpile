@@ -124,6 +124,44 @@ class FilePath(object):
                                 *[FilePath(fp).raw_fp for fp in fpaths])
         return FilePath(binary_fp=joined, flags=FilePath(fpaths[-1]).flags)
 
+    def split(self, p):
+        """Splits a pathname"""
+        d, p = splitdrive(p)
+        i = len(p)
+        while i and p[i-1] not in '/\\':
+            i = i - 1
+        head, tail = p[:i], p[i:]
+        head2 = head
+        while head2 and head2[-1] in '/\\':
+            head2 = head2[:-1]
+        head = head2 or head
+        return d + head, tail
+
+    def splitdrive(self, p):
+        """Splits a pathname into a UNC sharepoint"""
+        sep = "\\"
+        altsep = "/"
+        if len(p) > 1:
+        normp = p.replace(altsep, sep)
+        if (normp[0:2] == sep*2) and (normp[2:3] != sep):
+            # is a UNC path:
+            # vvvvvvvvvvvvvvvvvvvv drive letter or UNC path
+            # \\machine\mountpoint\directory\etc\...
+            #           directory ^^^^^^^^^^^^^^^
+            index = normp.find(sep, 2)
+            if index == -1:
+                return '', p
+            index2 = normp.find(sep, index + 1)
+            # a UNC path can't have two slashes in a row
+            # (after the initial two)
+            if index2 == index + 1:
+                return '', p
+            if index2 == -1:
+                index2 = len(p)
+            return p[:index2], p[index2:]
+        if normp[1] == ':':
+            return p[:2], p[2:]
+    return '', p
 
 class MailpileVfsBase(object):
     """
