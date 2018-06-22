@@ -157,6 +157,10 @@ class PluginManager(object):
     def loadable(self):
         return self.BUILTIN[:] + self.RENAMED.keys() + self.DISCOVERED.keys()
 
+    def loadable_early(self):
+        return [k for k, (n, m) in self.DISCOVERED.iteritems()
+                if not m.get('require_login', True)]
+
     def _import(self, full_name, full_path):
         # create parents as necessary
         parents = full_name.split('.')[2:] # skip mailpile.plugins
@@ -325,6 +329,10 @@ class PluginManager(object):
                                   cls.SYNOPSIS_ARGS or cls.SYNOPSIS[3]])
 
             self.register_commands(cls)
+
+        # Register worker threads
+        for thr in manifest_path('threads'):
+            self.register_worker(self._get_class(full_name, thr))
 
         # Register mailboxes
         package = str(full_name)
@@ -762,6 +770,7 @@ class PluginManager(object):
 
     # These are the elements that exist at the moment
     UI_ELEMENTS = {
+        'settings': [],
         'activities': [],
         'display_modes': [],
         'display_refiners': [],

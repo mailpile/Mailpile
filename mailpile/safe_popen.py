@@ -27,6 +27,8 @@ import sys
 import thread
 import threading
 
+import mailpile.platforms
+
 
 Unsafe_Popen = subprocess.Popen
 PIPE = subprocess.PIPE
@@ -96,7 +98,9 @@ class Safe_Popen(Unsafe_Popen):
         #    1. Prevent file descriptor leaks from causing deadlocks
         #    2. Prevent signals from propagating
         #
-        if sys.platform.startswith('win'):
+        if mailpile.platforms.WindowsPopenSemantics():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP  # 2.
             if (stdin is not None or
                     stdout is not None or

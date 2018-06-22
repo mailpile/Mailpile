@@ -73,6 +73,12 @@ class hintsCommand(Command):
 	    _('Rearrange your sidebar to organize how you see your e-mail'),
 	    '/page/hints/organize-sidebar.html'),
 
+        # Show the user how dragging and dropping tags or messages works
+        # after 7 days.
+        ('dragging', 7, 365,
+            _('Learn how dragging and dropping tags works'),
+            '/page/hints/dragging-tags.html'),
+
         # Introduce Gravatar integration after 10 days, and yearly repetition.
         # Remind of the privacy implications
         ('gravatar', 10, 365,

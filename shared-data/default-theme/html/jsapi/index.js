@@ -34,12 +34,13 @@ Mailpile = {
     { title: '{{_("Previous page of results")|escapejs}}', keys: "h",  callback: function(e) { $('#pile-previous').eq(0).trigger('click'); }},
     { title: '{{_("Next page of results")|escapejs}}', keys: "l",      callback: function(e) { $('#pile-next').eq(0).trigger('click'); }},
     { title: '{{_("Open e-mail for reading")|escapejs}}', keys: "o",   callback: function(e) { Mailpile.open_or_close_selected_thread(); }},
-    { title: '{{_("Go to Inbox")|escapejs}}',         keys: "g i",     callback: function(e) { Mailpile.go("/in/inbox/"); }},
     { title: '{{_("Go to Drafts")|escapejs}}',        keys: "g d",     callback: function(e) { Mailpile.go("/in/drafts/"); }},
+    { title: '{{_("Go to Inbox")|escapejs}}',         keys: "g i",     callback: function(e) { Mailpile.go("/in/inbox/"); }},
     { title: '{{_("Go to Outbox")|escapejs}}',        keys: "g o",     callback: function(e) { Mailpile.go("/in/outbox/"); }},
     { title: '{{_("Go to Sent")|escapejs}}',          keys: "g s",     callback: function(e) { Mailpile.go("/in/sent/"); }},
     { title: '{{_("Go to Spam")|escapejs}}',          keys: "g j",     callback: function(e) { Mailpile.go("/in/spam/"); }},
     { title: '{{_("Go to Trash")|escapejs}}',         keys: "g t",     callback: function(e) { Mailpile.go("/in/trash/"); }},
+    { title: '{{_("Go to All Mail")|escapejs}}',      keys: "g a",     callback: function(e) { Mailpile.go("/in/all-mail/"); }},
     { title: '{{_("Follow search hint")|escapejs}}',  keys: "g h",     callback: function(e) { Mailpile.go($('.bulk-actions-hints a').eq(0).attr('href')); }},
     { title: '{{_("Reply to e-mail")|escapejs}}',     keys: "r",       callback: function(e) { Mailpile.keybinding_reply(); }},
     { title: '{{_("Reply to many e-mails at once")|escapejs}}',
@@ -60,7 +61,7 @@ Mailpile = {
     { title: '{{_("Deselect all")|escapejs}}',        keys: "* n",     callback: function(e) { Mailpile.bulk_action_select_none(); }},
     { title: '{{_("Dismiss all notifications")|escapejs}}',
                                                       keys: "_",       callback: function(e) { $('a.notifications-close-all').eq(0).trigger('click'); }},
-    { title: '{{_("Account List")|escapejs}}',        keys: "g a",     callback: function(e) { Mailpile.go("/profiles/"); }},
+    { title: '{{_("Account List")|escapejs}}',        keys: "g h",     callback: function(e) { Mailpile.go("/profiles/"); }},
     { title: '{{_("Security and Privacy Settings")|escapejs}}',
                                                       keys: "g p",     callback: function(e) { Mailpile.go("/settings/privacy.html"); }},
     // Assign hot-keys to the contextual actions (Edit, New, Attachments, ...)
@@ -100,6 +101,7 @@ Mailpile = {
     }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
+  ajax_timeout: {{config.sys.ajax_timeout}},
   commands:      [],
   graphselected: [],
   defaults: {
@@ -249,7 +251,7 @@ Mailpile.API = {
   _action: function(base_url, command, data, method, callback) {
     // Output format, timeout...
     var output = '';
-    var timeout = 10000;
+    var timeout = Mailpile.ajax_timeout;
     var error_callback = undefined;
     if (data._output) {
       output = data._output;

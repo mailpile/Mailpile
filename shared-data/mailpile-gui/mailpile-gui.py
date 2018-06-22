@@ -64,11 +64,11 @@ def BASIC_GUI_CONFIGURATION(state):
         "app_icon": "image:logo",
         "images": {
             "logo":       os.path.join(MEDIA_PATH, 'logo-color.png'),
-            "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.svg'),
-            "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.svg'),
-            "logged-out": os.path.join(MEDIA_PATH, 'lock-closed.svg'),
-            "ra-on":      os.path.join(MEDIA_PATH, 'remote-access-on.svg'),
-            "ra-off":     os.path.join(MEDIA_PATH, 'remote-access-off.svg'),
+            "new-setup":  os.path.join(MEDIA_PATH, 'new-setup.png'),
+            "logged-in":  os.path.join(MEDIA_PATH, 'lock-open.png'),
+            "logged-out": os.path.join(MEDIA_PATH, 'lock-closed.png'),
+            "ra-on":      os.path.join(MEDIA_PATH, 'remote-access-on.png'),
+            "ra-off":     os.path.join(MEDIA_PATH, 'remote-access-off.png'),
             "startup":    os.path.join(ICONS_PATH, 'startup.png'),
             "normal":     os.path.join(ICONS_PATH, 'normal.png'),
             "attention":  os.path.join(ICONS_PATH, 'attention.png'),
@@ -86,15 +86,21 @@ def BASIC_GUI_CONFIGURATION(state):
             "splash": {
                 "points": 16
             },
-            "notification": {
+            "buttons": {
+                "points": 16
+            },
+            "notification_title": {
+                "points": 1,
+            },
+            "notification_details": {
                 "italic": True
             }
         },
         "main_window": {
             "show": False,
             "close_quits": False,
-            "width": 550,
-            "height": 330,
+            "width": 540,
+            "height": 300,
             "background": MAILPILE_HOME_IMAGE,
             "initial_notification": '',
             "status_displays": [{
@@ -107,22 +113,18 @@ def BASIC_GUI_CONFIGURATION(state):
                 "icon": "image:logged-out",
                 "title": _("You are not logged in"),
             },{
-                "id": "remote-access",
-                "icon": "image:ra-off",
-                "title": _("Remote access is disabled"),
-                "details": _(
-                    "Enable remote access if you would like to access\n"
-                    "Mailpile from your phone or another computer.")
+                "id": "notification",
+                "title": ""
             }],
             "action_items": [{
                 "id": "open",
                 "position": "first",
-                "label": _("Open in Web Browser"),
+                "label": _("Open Webmail"),
                 "op": "show_url",
                 "args": [mailpile_home]
             },{
                 "id": "quit_button",
-                "label": _("Quit GUI"),
+                "label": _("Quit"),
                 "position": "last",
                 "op": "quit"}]},
         "indicator": {
@@ -194,6 +196,8 @@ class MailpileState(object):
                 self.pub_config.sys.http_port,
                 self.pub_config.sys.http_path)
         except:
+            import traceback
+            traceback.print_exc()
             self.pub_config = None
 
     def discover(self, argv):
@@ -210,6 +214,67 @@ def GenerateConfig(state):
     """Generate the basic gui-o-matic window configuration."""
     config = BASIC_GUI_CONFIGURATION(state)
     return json.dumps(config, indent=2)
+
+
+def LocateMailpile():
+    """
+    Locate the main mailpile launcher script
+    """
+    # Locate mailpile's root script, searching upward from our script
+    # location. We do this BEFORE checking the system PATH, to increase
+    # our odds of finding a mailpile script from the same bundle as this
+    # particualr mailpile-gui.py (there might be more than one?).
+    directory = APPDIR
+    while True:
+        for sub in ('scripts', 'bin'):
+            mailpile_path = os.path.join(directory, sub, 'mailpile')
+            if os.path.exists(mailpile_path):
+                return mailpile_path
+
+        parts = os.path.split(directory)
+        if parts[0] == directory:
+            break
+        else:
+            directory = parts[0]
+
+    # Finally, check if the Mailpile script is on the system PATH.
+    # Note: Turns out os.defpath and $PATH are not the same thing.
+    for directory in (
+            os.getenv('PATH', '').split(os.pathsep) +
+            os.defpath.split(os.pathsep)):
+        if directory:
+            mailpile_path = os.path.join(directory, 'mailpile')
+            if os.path.exists(mailpile_path):
+                return mailpile_path
+
+    raise OSError('Cannot locate mailpile launcher script!')
+
+
+def MailpileInvocation():
+    """
+    Return an appropriately formated string for invoking mailpile.
+
+    Really this is a container for platform specific behavior
+    """
+    parts = []
+    common_opts = [
+        '--set="prefs.open_in_browser=false"',
+        '--gui=%PORT% ' ]
+
+    if os.name == 'nt':
+        parts.append('"{}"'.format(sys.executable))
+        parts.append('"{}"'.format(LocateMailpile()))
+        parts.extend(common_opts)
+        parts.append('--www=')
+        parts.append('--wait')
+    else:
+        # FIXME: This should launch a screen session using the
+        #        same concepts as multipile's mailpile-admin.
+        parts.append('screen -S mailpile -d -m "{}"'.format(LocateMailpile()))
+        parts.extend(common_opts)
+        parts.append('--interact')
+
+    return ' '.join(parts)
 
 
 def GenerateBootstrap(state):
@@ -239,12 +304,7 @@ def GenerateBootstrap(state):
                 SPLASH_SCREEN(state, _("Launching Mailpile"))),
             "set_next_error_message %s" % json.dumps({
                 'message': _("Failed to launch Mailpile!")}),
-            "OK LISTEN TCP: " + (
-                # FIXME: This should launch a screen session using the
-                #        same concepts as multipile's mailpile-admin.
-                'screen -S mailpile -d -m mailpile'
-                ' --set="prefs.open_in_browser = false" '
-                ' --gui=%PORT% --interact')]
+            "OK LISTEN TCP: " + MailpileInvocation() ]
 
     return '\n'.join(bootstrap)
 
@@ -282,7 +342,8 @@ def Main(argv):
         MakePopenUnsafe()
 
         from gui_o_matic.control import GUIPipeControl
-        GUIPipeControl(StringIO('\n'.join(script) + '\n')).bootstrap()
+        gpc = GUIPipeControl(StringIO('\n'.join(script) + '\n'))
+        gpc.bootstrap(dry_run=('--compile' in argv))
 
 
 if __name__ == "__main__":

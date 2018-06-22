@@ -100,9 +100,6 @@
   </ul>
   <ul class="clearfix">
     <li>{{_("View:")}}</li>
-    {% if message.html_parts %}
-    <li><a href="#" class="message-toggle-html" data-mid="{{mid}}" data-state="plain">{{_("HTML")}}</a></li>
-    {% endif %}
     <li><a href="{{ U('/thread/=', mid, '/as.json') }}" target="_blank">{{_("JSON")}}</a></li>
     <li><a href="{{ U('/message/raw/=', mid, '/as.text') }}" target="_blank">{{_("Raw Source")}}</a></li>
   </ul>

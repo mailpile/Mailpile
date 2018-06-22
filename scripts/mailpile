@@ -8,8 +8,7 @@ mailpile_root = os.path.dirname(     # Mailpile root
     )
 )
 
-# sys.path.append(mailpile_root) # *** DEBUG - coexist with deb installed MP
-sys.path = [mailpile_root] + sys.path
+sys.path.append(mailpile_root)
 
 from mailpile.app import Main
 Main(sys.argv[1:])

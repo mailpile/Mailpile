@@ -8,12 +8,6 @@
 {% include("../img/logo-name.svg") %}
 </div>
 
-<!--
-<div id="login-messages" class="animated text-center">
-Decrypting Index, Messages, and Contacts
-</div>
--->
-
 <div id="login-vault-lock" class="vault-lock-outer animated">
   <div class="vault-lock-inner animated">
     <div class="vault-lock icon-lock-closed animated"></div>
@@ -21,13 +15,13 @@ Decrypting Index, Messages, and Contacts
 </div>
 
 <div id="login-details" class="animated">
-  <div class="form-text">{{_("To Log In Please Enter")}}</div>
+  <div class="form-text">{{_("Log In With Your")}}</div>
   <form method="POST"
         {# Avoid adding the action if it is not needed, as it strips off
            the query string which tells us where to redirect back to. #}
         {% if state.command_url != "/auth/login/" %}action="{{config.sys.http_path}}/auth/login/"{% endif %}
         id="form-login" class="form-login clearfix animated">
-    <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="{{_("Your Passphrase")}}">
+    <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Mailpile Password")}}" placeholder="{{_("Mailpile Password")}}">
     <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
   {% if status_message == 'error' %}
@@ -42,7 +36,18 @@ Decrypting Index, Messages, and Contacts
   <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
   {% endif %}
   {% if status_message == 'logout' %}
-  <div class="logged-out-message">{{_("You Have Been Logged Out!")}}</div>
+  <div class="logged-out-message animated bounceIn">
+    {{_("You Have Been Logged Out!")}}
+  </div>
+  <div class="still-running">
+    <span class="icon icon-settings bigger"></span>
+    <span class="icon icon-settings"></span>
+    <span class="icon icon-settings smaller"></span>
+    <i><b>{{_("Note")}}:</b>
+      {{_("Mailpile is still running and processing your e-mail in the background.")}}
+      {{_("To disable Mailpile completely, press the Shutdown button on the settings page or in the desktop application window.")}}
+    </i>
+  </div>
   {% endif %}
 </div>
 

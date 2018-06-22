@@ -135,7 +135,7 @@ class PostingListContainer(object):
             return
 
         t = [time.time()]
-        encryption_key = self.config.master_key
+        encryption_key = self.config.get_master_key()
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
             # Optimizing for fast loads, so deletion only happens on save.
@@ -158,7 +158,7 @@ class PostingListContainer(object):
                                         dir=self.config.tempfile_dir(),
                                         header_data={'subject': subj},
                                         name='PLC/%s' % self.sig) as fd:
-                    fd.write(output)
+                    fd.write(output.encode('utf-8'))
                     fd.save(outfile)
             else:
                 with open(outfile, 'wb') as fd:
@@ -318,7 +318,7 @@ class NewPostingList(object):
         return strhash(word, cls.HASH_LEN,
                        obfuscate=((config.prefs.obfuscate_index or
                                    config.prefs.encrypt_index) and
-                                  config.master_key))
+                                  config.get_master_key()))
 
 
 ##############################################################################
@@ -442,7 +442,7 @@ class OldPostingList(object):
         return strhash(word, cls.HASH_LEN,
                        obfuscate=((config.prefs.obfuscate_index or
                                    config.prefs.encrypt_index) and
-                                  config.master_key))
+                                  config.get_master_key()))
 
     @classmethod
     def SaveFile(cls, session, prefix):
@@ -544,12 +544,12 @@ class OldPostingList(object):
                                                                  outfile))
                 if output:
                     if self.config.prefs.encrypt_index:
-                        encryption_key = self.config.master_key
+                        encryption_key = self.config.get_master_key()
                         with EncryptingStreamer(encryption_key,
                                                 delimited=True,
                                                 dir=self.config.tempfile_dir(),
                                                 name='PostingList') as efd:
-                            efd.write(output)
+                            efd.write(output.encode('utf-8'))
                             efd.save(outfile, mode=mode)
                     else:
                         with open(outfile, mode) as fd:

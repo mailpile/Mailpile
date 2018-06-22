@@ -9,6 +9,7 @@ import gzip
 import mimetypes
 import os
 import random
+import select
 import socket
 import SocketServer
 import time
@@ -540,7 +541,15 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.session = session
         self.sessions = {}
         self.session_cookie = None
+
+        # Duplicates from SocketServer.py, so our overrides work
+        self.__is_shut_down = threading.Event()
+        self.__shutdown_request = False
+
+        # This lets us create new HTTPDs withut waiting for this one to
+        # completely shut down.
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         # We set a large sending buffer to avoid blocking, because the GIL and
         # scheduling interact badly when we have busy background jobs.
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 128 * 1024)
@@ -551,11 +560,36 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
 
         # This hash includes the index ofuscation master key, which means
         # it should be very strongly unguessable.
-        self.secret = okay_random(64, session.config.master_key)
+        self.secret = okay_random(64, session.config.get_master_key())
 
         # Generate a new unguessable session cookie name on startup
         while not self.session_cookie:
             self.session_cookie = okay_random(12, self.secret)
+
+    def serve_forever(self, poll_interval=0.5, tick_func=None):
+        """
+        Override SocketServer.serve_forever to allow other things to happen.
+        """
+        self.__is_shut_down.clear()
+        try:
+            while not (self.__shutdown_request or mailpile.util.QUITTING):
+                # FIXME: Let's add a global FD to interrupt this, so we can
+                #        be more responsive AND lengthen our timeouts.
+                r, w, e = SocketServer._eintr_retry(
+                    select.select, [self], [], [], poll_interval)
+                if self in r:
+                    self._handle_request_noblock()
+                elif not (mailpile.util.QUITTING or tick_func is None):
+                    tick_func(self)
+        finally:
+            self.__shutdown_request = False
+            self.__is_shut_down.set()
+
+    def shutdown(self, join=True):
+        self.__shutdown_request = True
+        if join and (self.__is_shut_down is not None):
+            self.__is_shut_down.wait()
+            self.__is_shut_down = None
 
     def make_session_id(self, request):
         """Generate an unguessable and unauthenticated new session ID."""
@@ -584,10 +618,15 @@ class HttpWorker(threading.Thread):
         self.daemon = True
         self.session = session
 
+
+    def idle_tick(self, httpd):
+        pass
+
     def run(self):
         while self.httpd is not None:
             try:
-                self.httpd.serve_forever()
+                self.httpd.serve_forever(
+                    poll_interval=1.0, tick_func=self.idle_tick)
             except KeyboardInterrupt:
                 return
             except socket.error:
@@ -599,6 +638,9 @@ class HttpWorker(threading.Thread):
 
     def quit(self, join=False):
         if self.httpd:
-            self.httpd.server_close()
-            self.httpd.shutdown()
+            try:
+                self.httpd.server_close()
+            except (OSError, IOError):
+                pass
+            self.httpd.shutdown(join=join)
         self.httpd = None

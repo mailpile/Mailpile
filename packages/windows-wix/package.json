@@ -1,0 +1,75 @@
+{
+  "languages": "1033", 
+  "version": "0.0.0", 
+  "installer_version": "100", 
+  "product_id": "19671260-92a2-437d-bb3a-d47e91e3cf23",
+  "codepage": "1252", 
+  "product_code": "4685a239-2c80-4f51-8476-791316d2df3d", 
+  "manufacturer": "Mailpile ehf.",
+  "product_icon": "mailpile_logo.ico",
+  "icons": [
+	"assets\\mailpile_logo.ico"
+  ],
+  "ui": {
+    "flavor": "WixUI_InstallDir",
+    "variables": {
+      "WixUILicenseRtf": "assets\\LicenseText.rtf",
+      "WixUIDialogBmp": "assets\\WixUIDialog.bmp",
+      "WixUIBannerBmp": "assets\\WixUIBanner.bmp"
+    }
+  },
+  "groups": {
+    "python": {
+      "ignore": [
+        ".*\\.py(?:c|o)$", 
+        ".*\\.git.*"
+      ], 
+      "root": ".\\tmp8wzuv8\\Python27", 
+      "uuid": "06dfe53e-01c3-4cd0-b6b6-1983f217692f"
+    }, 
+    "platform-scripts": {
+      "ignore": [
+        ".*\\.py(?:c|o)$", 
+        ".*\\.git.*", 
+        ".*\\.msi$"
+      ], 
+      "shortcuts": {
+        "bin\\launch-mailpile.bat": {
+          "Description": "GUI for Mailpile Email Client", 
+          "Id": "MailpileGUI", 
+          "WorkingDirectory": "MailpileClient", 
+          "Name": "Mailpile GUI",
+          "Show": "minimized",
+          "Icon": "mailpile_logo.ico"
+        }
+      }, 
+      "root": "c:\\Users\\ededa\\Documents\\Mailpile\\packages\\windows-wix\\bin", 
+      "uuid": "0540bc0b-a521-4488-812a-1c430ef1d8b3"
+    }, 
+    "gpg": {
+      "ignore": [], 
+      "root": ".\\tmp8wzuv8\\gpg", 
+      "uuid": "a8014bc6-5282-4d7a-a46d-3b0d53519914"
+    },
+    "mailpile": {
+      "ignore": [
+        ".*\\.git.*", 
+        ".*\\.msi$", 
+        ".*packages\\\\windows.*"
+      ], 
+      "root": ".\\tmp8wzuv8\\Mailpile", 
+      "uuid": "62e900bd-7f53-4746-8ef9-f8d93848e89d"
+    }, 
+    "gui-o-matic": {
+      "ignore": [
+        ".*\\.git.*"
+      ], 
+      "root": ".\\tmp8wzuv8\\gui-o-matic", 
+      "uuid": "0465f2d6-becc-4279-82af-b6d23c6bf033"
+    },
+    "tor": {
+      "root": ".\\tmp8wzuv8\\tor",
+      "uuid": "b44d81df-26c5-468b-b9fe-348a9fd0d606"
+    }
+  }
+}

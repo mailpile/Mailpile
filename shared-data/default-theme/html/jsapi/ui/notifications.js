@@ -422,7 +422,7 @@ EventLog.subscribe('.*HealthCheck', function(ev) {
   }
   else {
     ev.icon = 'icon-signature-unknown';
-    ev.timeout = 120000;
+    ev.timeout = 1200000;
   }
   Mailpile.notification(ev);
 });

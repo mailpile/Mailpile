@@ -31,9 +31,9 @@
             ><span class="link-icon icon-x"></span></a>
         </li>
   {%- if is_dev_version() %}{# FIXME ! #}
-        <li style="width: 10em; margin: 10px 0 -10px 0; white-space: nowrap;"
-            class="mobile-hide">
-          <a class="auto-modal" data-flags="" data-icon="icon-code"
+        <li style="margin: 10px 0 -10px 0"
+            class="tablet-hide mobile-hide">
+          <a class="auto-modal" style="width: unset" data-flags="" data-icon="icon-code"
              title="{{_('How to report bugs')}}"
              href="{{ U('/page/contribute/bugs.html') }}">{{_("Report Bugs")}}</a>
         </li>
@@ -61,12 +61,12 @@
         </li>
         {%- endfor -%}
 
-        <li class="{% if command == "profiles" %} navigation-on{% endif %} mobile-hide">
+        <li class="{% if command == "profiles" %} navigation-on{% endif %} tablet-hide mobile-hide">
           <a class="home" href="{{ U("/profiles/") }}" title="{{_("Home")}}"
             ><span class="link-icon icon-home"></span></a>
         </li>
         {%- if config.web.donate_visibility %}
-        <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %} mobile-hide">
+        <li class="{% if command == "page" and state.query_args.arg.0 == "contribute" %} navigation-on{% endif %} tablet-hide mobile-hide">
           <a class="donate auto-modal" data-flags="" data-icon="icon-code"
              href="{{ U("/page/contribute/") }}" title="{{_("Contribute")}}"
             ><span class="link-icon icon-donate"></span></a>

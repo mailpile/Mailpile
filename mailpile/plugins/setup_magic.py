@@ -338,7 +338,7 @@ class SetupMagic(Command):
     def make_master_key(self):
         session = self.session
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
-                and not session.config.master_key
+                and not session.config.get_master_key()
                 and not session.config.prefs.obfuscate_index):
             #
             # This secret is arguably the most critical bit of data in the
@@ -357,10 +357,10 @@ class SetupMagic(Command):
             #   import math
             #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
             #
-            session.config.master_key = okay_random(12 * 4,
-                                                    '%s' % session.config,
-                                                    '%s' % self.session,
-                                                    '%s' % self.data)
+            session.config.set_master_key(okay_random(12 * 4,
+                                          '%s' % session.config,
+                                          '%s' % self.session,
+                                          '%s' % self.data))
             if self._idx() and self._idx().INDEX:
                 session.ui.warning(_('Unable to obfuscate search index '
                                      'without losing data. Not indexing '
@@ -1290,7 +1290,7 @@ class Setup(SetupWelcome):
             ('language', lambda: config.prefs.language, SetupWelcome),
 
             # Stage 1: Basic security - a password
-            ('security', lambda: config.master_key, SetupPassword)
+            ('security', lambda: config.get_master_key(), SetupPassword)
         ]
 
     @classmethod

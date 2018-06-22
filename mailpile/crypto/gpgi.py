@@ -17,6 +17,7 @@ from email.parser import Parser
 from email.message import Message
 from threading import Thread
 
+import mailpile.platforms
 from mailpile.i18n import gettext
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
@@ -33,10 +34,8 @@ DEFAULT_KEYSERVER_OPTIONS = [
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
-GPG_BINARY = 'gpg'
+GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand()
 GPG_VERSIONS = {}
-if sys.platform.startswith('win'):
-    GPG_BINARY = 'GnuPG\\gpg.exe'
 BLOCKSIZE = 65536
 
 openpgp_algorithms = {1: _("RSA"),
@@ -82,7 +81,7 @@ class GnuPGEventUpdater:
         self._log_public(' '.join(args))
 
     def update_sent_passphrase(self):
-        self._log_public(_('Sent passphrase'))
+        self._log_public('Sent passphrase')
 
     def _parse_gpg_line(self, line):
         if line.startswith('[GNUPG:] '):
@@ -97,14 +96,17 @@ class GnuPGEventUpdater:
         self._parse_gpg_line(line)
 
     def update_return_code(self, code):
-        self._log_public(_('GnuPG returned %s') % code)
+        self._log_public('GnuPG returned %s' % code)
 
 
 class GnuPGResultParser:
     """
     Parse the GPG response into EncryptionInfo and SignatureInfo.
     """
-    def __init__(rp):
+    def __init__(rp, decrypt_requires_MDC=True, debug=None):
+        rp.decrypt_requires_MDC = decrypt_requires_MDC
+        rp.debug = debug or (lambda t: True)
+
         rp.signature_info = SignatureInfo()
         rp.signature_info["protocol"] = "openpgp"
 
@@ -117,6 +119,9 @@ class GnuPGResultParser:
         signature_info = rp.signature_info
         encryption_info = rp.encryption_info
         from mailpile.mailutils.emails import ExtractEmailAndName
+
+        # Belt & suspenders: work around some buggy GnuPG status codes
+        gpg_stderr = ''.join(retvals[1]["stderr"])
 
         # First pass, set some initial state.
         locked, missing = [], []
@@ -143,8 +148,13 @@ class GnuPGResultParser:
                         encryption_info.part_status = "error"
 
             elif keyword == "DECRYPTION_OKAY":
-                encryption_info.part_status = "decrypted"
-                rp.plaintext = "".join(retvals[1]["stdout"])
+                if (rp.decrypt_requires_MDC and
+                       'message was not integrity protected' in gpg_stderr):
+                    rp.debug('Message not integrity protected, failing.')
+                    encryption_info.part_status = "error"
+                else:
+                    encryption_info.part_status = "decrypted"
+                    rp.plaintext = "".join(retvals[1]["stdout"])
 
             elif keyword == "ENC_TO":
                 keylist = encryption_info.get("have_keys", [])
@@ -216,6 +226,9 @@ class GnuPGResultParser:
                 if signature_info.part_status == "unverified":
                     signature_info.part_status = "verified"
 
+        if encryption_info.part_status == "error":
+            rp.plaintext = ""
+
         return rp
 
 
@@ -276,7 +289,7 @@ class GnuPGRecordParser:
             "authenticate": "A" in line["capabilities"],
         }
         line["disabled"] = "D" in line["capabilities"]
-	line["revoked"] = "r" in line["validity"]
+        line["revoked"] = "r" in line["validity"]
 
         self._parse_dates(line)
 
@@ -566,8 +579,8 @@ class GnuPG:
         """Returns a tuple representing the GnuPG version number."""
         global GPG_VERSIONS
         if update or not GPG_VERSIONS.get(self.gpgbinary):
-            vertext = self.version().strip().split()[-1]
-            version = tuple(int(v) for v in vertext.split('.'))
+            match = re.search( "(\d+).(\d+).(\d+)", self.version() )
+            version = tuple(int(v) for v in match.groups())
             GPG_VERSIONS[self.gpgbinary] = version
         return GPG_VERSIONS[self.gpgbinary]
 
@@ -877,7 +890,8 @@ class GnuPG:
                 }
         return res
 
-    def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False):
+    def decrypt(self, data,
+            outputfd=None, passphrase=None, as_lines=False, require_MDC=True):
         """
         Note that this test will fail if you don't replace the recipient with
         one whose key you control.
@@ -924,7 +938,8 @@ class GnuPG:
             as_lines = retvals[1]["stdout"]
             retvals[1]["stdout"] = []
 
-        rp = GnuPGResultParser().parse(retvals)
+        rp = GnuPGResultParser(decrypt_requires_MDC=require_MDC,
+                               debug=self.debug).parse(retvals)
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
                 
@@ -1181,7 +1196,8 @@ class GnuPG:
                                  ) % len(data))
         ret, retvals = self.run(params, gpg_input=data, partial_read_ok=True)
 
-        return GnuPGResultParser().parse([None, retvals]).signature_info
+        rp = GnuPGResultParser(debug=self.debug)
+        return rp.parse([None, retvals]).signature_info
 
     def encrypt(self, data, tokeys=[], armor=True,
                             sign=False, fromkey=None, throw_keyids=False):
@@ -1529,6 +1545,8 @@ class GnuPGExpectScript(threading.Thread):
     DESCRIPTION = 'GnuPG Expect Script'
     RUNNING_STATES = [STARTUP, START_GPG]
 
+    DEFAULT_TIMEOUT = 60 # Infinite wait isn't desirable
+
     def __init__(self, gnupg,
                  sps=None, event=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)
@@ -1583,7 +1601,7 @@ class GnuPGExpectScript(threading.Thread):
 
     def expect_exact(self, proc, exp, timeout=None):
         from mailpile.util import RunTimed, TimedOut
-        timeout = timeout if (timeout and timeout > 0) else 5
+        timeout = timeout if (timeout and timeout > 0) else self.DEFAULT_TIMEOUT
         timebox = [timeout]
         self.before = ''
         try:

@@ -227,8 +227,8 @@ class MailIndex(BaseIndex):
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
 
-        if self.config.master_key:
-            with EncryptingStreamer(self.config.master_key,
+        if self.config.get_master_key():
+            with EncryptingStreamer(self.config.get_master_key(),
                                     delimited=True) as es:
                 es.write(data)
                 es.finish()
@@ -1290,8 +1290,11 @@ class MailIndex(BaseIndex):
                 emails = [e for e in emails if
                           (len(e) < 40) or ('+' not in e and '/' not in e)]
 
+                domains = [e.split('@')[-1] for e in emails]
+
                 keywords.extend(['%s:%s' % (t, key_lower) for t in words])
                 keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
+                keywords.extend(['%s:%s' % (d, key_lower) for d in domains])
                 keywords.extend(['%s:email' % e for e in emails])
 
         # Personal mail: not from lists or common robots?

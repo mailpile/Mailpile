@@ -15,6 +15,7 @@ class Plugins(mailpile.commands.Command):
     SYNOPSIS = (None, 'plugins', None, '[<plugins>]')
     ORDER = ('Config', 9)
     HTTP_CALLABLE = ('GET',)
+    CONFIG_REQUIRED = False
 
     def command(self):
         pm = self.session.config.plugins
@@ -55,7 +56,12 @@ class LoadPlugin(mailpile.commands.Command):
         for plugin in args:
             try:
                 # FIXME: This fails to update the ConfigManger
+                # FIXME: This fails to start workers
+                discovered = plugins.DISCOVERED
                 if plugins.load(plugin, process_manifest=True, config=config):
+                    if (plugin in discovered and not
+                            discovered[plugin][1].get('require_login', True)):
+                        config.sys.plugins_early.append(plugin)
                     config.sys.plugins.append(plugin)
                 else:
                     raise ValueError('Loading failed')
@@ -93,6 +99,8 @@ class DisablePlugin(mailpile.commands.Command):
         for plugin in args:
             while plugin in config.sys.plugins:
                 config.sys.plugins.remove(plugin)
+            while plugin in config.sys.plugins_early:
+                config.sys.plugins_early.remove(plugin)
 
         config.save()
         return self._success(_('Disabled plugins: %s (restart required)'

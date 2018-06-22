@@ -145,7 +145,7 @@
             $('#enable-tor-working').show();
             $('#enable-tor-result').html('');
             Mailpile.API.setup_tor_post({
-              _timeout: 300000
+              _timeout: (Mailpile.ajax_timeout * 30)
             }, function(result) {
               $('#enable-tor-working').hide();
               $('#enable-tor').show();
@@ -310,7 +310,7 @@
         {{_("Also keep in mind that the security of your data depends entirely on the strength of your password.")}}
         <br>
         <a href="{{ U('/setup/password/') }}">
-          {{ _("You can change your Mailpile password here.") }}</a>
+          {{ _("You can change your Mailpile Password here.") }}</a>
       </p>
     </div>
     <div class="settings">

@@ -7,6 +7,7 @@ import traceback
 
 import mailpile.util
 import mailpile.config.defaults
+import mailpile.platforms
 from mailpile.commands import COMMANDS, Command, Action
 from mailpile.config.manager import ConfigManager
 from mailpile.conn_brokers import DisableUnbrokeredConnections
@@ -16,6 +17,7 @@ from mailpile.plugins import PluginManager
 from mailpile.plugins.core import Help, HelpSplash, HealthCheck
 from mailpile.plugins.core import Load, Rescan, Quit
 from mailpile.plugins.motd import MessageOfTheDay
+from mailpile.plugins.setup_magic import Setup
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
@@ -107,6 +109,10 @@ def Interact(session):
         while not mailpile.util.QUITTING:
             try:
                 with session.ui.term:
+                    if Setup.Next(session.config, 'anything') != 'anything':
+                        session.ui.notify(
+                            _('Mailpile is unconfigured, please run `setup`'
+                              ' or visit the web UI.'))
                     session.ui.block()
                     opt = threaded_raw_input(prompt)
             except KeyboardInterrupt:
@@ -153,7 +159,7 @@ class InteractCommand(Command):
         session, config = self.session, self.session.config
 
         session.interactive = True
-        if sys.stdout.isatty() and sys.platform[:3] != "win":
+        if mailpile.platforms.TerminalSupportsAnsiColors():
             session.ui.term = ANSIColors()
 
         # Ensure we have a working GnuPG

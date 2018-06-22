@@ -25,6 +25,7 @@ DISABLE_LOCKDOWN = False
 
 def _lockdown(config):
     if DISABLE_LOCKDOWN: return False
+    if config.detected_memory_corruption: return 99  # FIXME: Breaks demos?
     lockdown = config.sys.lockdown or 0
     try:
         return int(lockdown)
@@ -66,6 +67,14 @@ def _lockdown_config(config):
     return False
 
 
+def _lockdown_quit(config):
+    if DISABLE_LOCKDOWN: return False
+    # The user is always allowed to quit, except in demo mode.
+    if _lockdown(config) < 0:
+        return _('In lockdown, doing nothing.')
+    return False
+
+
 def _lockdown_basic(config):
     if DISABLE_LOCKDOWN: return False
     return _lockdown_config(config) or in_disk_lockdown(config)
@@ -90,7 +99,7 @@ CC_COMPOSE_EMAIL      = [_lockdown_strict]
 CC_CPU_INTENSIVE      = [_lockdown_basic]
 CC_LIST_PRIVATE_DATA  = [_lockdown_minimal]
 CC_TAG_EMAIL          = [_lockdown_strict]
-CC_QUIT               = [_lockdown_minimal]
+CC_QUIT               = [_lockdown_quit]
 CC_WEB_TERMINAL       = [_lockdown_config]
 
 CC_CONFIG_MAP = {
@@ -410,6 +419,7 @@ class SecurePassphraseStorage(object):
 # implement and enforce our own policies here.
 #
 KNOWN_TLS_HOSTS = {}
+MAX_TLS_CERTS = 5
 
 
 def tls_sock_cert_sha256(sock=None, cert=None):
@@ -447,8 +457,16 @@ def tls_configure(sock, context, args, kwargs):
     hostname = None
     accept_certs = []
     if 'server_hostname' in kwargs:
-        hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
-        tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        try:
+            hostname = '%s:%s' % (kwargs['server_hostname'], sock.getpeername()[1])
+        except TypeError:
+            # sock.getpeername() may fail
+            hostname = '%s' % (kwargs.get('server_hostname'),)
+
+        if hostname:
+            tls_settings = KNOWN_TLS_HOSTS.get(md5_hex(hostname))
+        else:
+            tls_settings = None
 
         # These defaults allow us to do certificate TOFU
         if tls_settings is not None:
@@ -514,7 +532,8 @@ def tls_cert_tofu(wrapped, accept_certs, sname):
         KNOWN_TLS_HOSTS[skey].use_web_ca = (accept_certs is None)
     if cert not in KNOWN_TLS_HOSTS[skey].accept_certs:
         KNOWN_TLS_HOSTS[skey].accept_certs.append(cert)
-
+        while len(KNOWN_TLS_HOSTS[skey].accept_certs) > MAX_TLS_CERTS:
+            del KNOWN_TLS_HOSTS[skey].accept_certs[0]
 
 def tls_context_wrap_socket(org_wrap, context, sock, *args, **kwargs):
     args, kwargs, sname, accept_certs = tls_configure(sock, context, args, kwargs)

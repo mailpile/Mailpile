@@ -10,6 +10,8 @@ from mailpile.plugins import PluginManager
 from mailpile.security import SecurePassphraseStorage
 from mailpile.util import *
 
+GLOBAL_LOGIN_LOCK = CryptoLock()
+
 
 class UserSession(object):
     EXPIRE_AFTER = 7 * 24 * 3600
@@ -129,6 +131,7 @@ class Authenticate(Command):
     def _error(self, message, info=None, result=None):
         global LOGIN_FAILURES
         LOGIN_FAILURES.append(int(time.time()))
+        time.sleep(min(5, 0.1 + len(LOGIN_FAILURES) / 2))
         return Command._error(self, message,
                               info=info, result=self._result(result))
 
@@ -210,9 +213,10 @@ class Authenticate(Command):
 
         if self.data.get('_method', '') == 'POST':
             if 'pass' in self.data:
-                return self._do_login(self.data.get('user', [None])[0],
-                                      self.data['pass'][0],
-                                      redirect=True)
+                with GLOBAL_LOGIN_LOCK:
+                    return self._do_login(self.data.get('user', [None])[0],
+                                          self.data['pass'][0],
+                                          redirect=True)
 
         elif not self.data:
             password = self.session.ui.get_password(_('Your password: '))
