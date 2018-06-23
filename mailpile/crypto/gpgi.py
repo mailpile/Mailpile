@@ -914,16 +914,22 @@ class GnuPG:
             retvals = self.run(["--decrypt"], gpg_input=data,
                                               outputfd=outputfd,
                                               send_passphrase=True)
-            if retvals[0] == 0:
-                break
-            elif tries == 1:
-                # Uh, oh, failed! Probably the wrong passphrase. Parse the
-                # gpg output for the keyid and try again if we have it.
+            if tries == 1:
                 keyid = None
-                for msg in retvals[1]['status']:
-                    if (msg[0] == 'NEED_PASSPHRASE') and (passphrase is None):
+                for msg in reversed(retvals[1]['status']):
+                    # Reverse order so DECRYPTION_OKAY overrides KEY_CONSIDERED.
+                    # If decryption is not ok, look for good passphrase, retry.
+                    if  msg[0] == 'DECRYPTION_OKAY':
+                        break
+                    elif (msg[0] == 'NEED_PASSPHRASE') and (passphrase is None):
+                        # This message is output by gpg 1.4 but not 2.1.
                         if self.prepare_passphrase(msg[2], decrypting=True):
                             keyid = msg[2]
+                            break
+                    elif (msg[0] == 'KEY_CONSIDERED') and (passphrase is None):                       
+                        # This message is output by gpg 2.1 but not 1.4.
+                        if self.prepare_passphrase(msg[1], decrypting=True):
+                            keyid = msg[1]
                             break
                 if not keyid:
                     break
