@@ -743,13 +743,6 @@ class ConfigDict(RuledContainer(dict)):
         321
         >>> [l[1] for l in session.ui.log_buffer if 'bogus_var' in l[1]][0]
         u'Invalid (internal): section config/sys, ...
-
-        >>> cfg.parse_config(session, '[config/tags/a]\\nname = TagName\\n')
-        True
-        >>> cfg.tags['a']._key
-        'a'
-        >>> cfg.tags['a'].name
-        u'TagName'
         """
         parser = CommentedEscapedConfigParser()
         parser.readfp(io.BytesIO(str(data)))
@@ -801,6 +794,25 @@ class PathDict(ConfigDict):
 if __name__ == "__main__":
     import doctest
     import sys
+    import copy
+
+    import mailpile.config.defaults
+    import mailpile.ui
+
+    rules = copy.deepcopy(mailpile.config.defaults.CONFIG_RULES)
+    rules.update({
+        'nest1': ['Nest1', {
+            'nest2': ['Nest2', str, []],
+            'nest3': ['Nest3', {
+                'nest4': ['Nest4', str, []]
+            }, []],
+        }, {}]
+    })
+    cfg = ConfigDict(_rules=rules)
+    session = mailpile.ui.Session(cfg)
+    session.ui = mailpile.ui.SilentInteraction(cfg)
+    session.ui.block()
+
     result = doctest.testmod(optionflags=doctest.ELLIPSIS)
     print '%s' % (result, )
     if result.failed:
