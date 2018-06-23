@@ -200,6 +200,7 @@ class WaitCommand(Command):
 
 
 def Main(args):
+    mailpile.platforms.DetectBinaries()
     DisableUnbrokeredConnections()
 
     # Bootstrap translations until we've loaded everything else

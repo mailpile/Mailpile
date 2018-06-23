@@ -147,13 +147,15 @@ def ActivateTranslation(session, config, language, localedir=None):
     return trans
 
 
-def ListTranslations(config):
-    locales = config.getLocaleDirectory()
+def ListTranslations(config, localedir=None):
+    if not localedir:
+        import mailpile.config.paths
+        localedir = mailpile.config.paths.DEFAULT_LOCALE_DIRECTORY()
     languages = {
         'C': 'English (Mailpile default)'
     }
-    for lang in os.listdir(locales):
-        langdir = os.path.join(locales, lang, 'LC_MESSAGES')
+    for lang in os.listdir(localedir):
+        langdir = os.path.join(localedir, lang, 'LC_MESSAGES')
         if not os.path.exists(os.path.join(langdir, 'mailpile.mo')):
             continue
         try:
