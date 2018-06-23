@@ -32,13 +32,11 @@ def bind(framework):
             exe_path = os.path.join(dep_path, exe)
             update_path = os.path.join(
                 dep_path, exe.replace('.', '-mailpile.'))
-            cmd = ('-addoverwrite',
-                   exe_path, ',',
-                   update_path, ',',
-                   os.path.join(assets_dir, 'mailpile_logo.ico'), ',',
-                   'ICONGROUP', ',',
-                   '1', ',',
-                   '0')
+            cmd = ('-open', exe_path,
+                   '-save', update_path,
+                   '-action', 'addoverwrite',
+                   '-resource', os.path.join(assets_dir, 'mailpile_logo.ico'),
+                   '-mask', 'ICONGROUP,1,0')
             build.invoke('ResourceHacker', *cmd)
             build.publish(exe.split('.')[0],
                           framework.Invoker(build, update_path))
