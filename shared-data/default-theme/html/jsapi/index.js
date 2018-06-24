@@ -7,6 +7,10 @@ if (!window.console) window.console = {
   error: $.noop
 };
 
+// Common typos.
+True = true;
+False = false;
+
 
 // Mailpile global Javascript state and configuration /========================
 Mailpile = {
@@ -127,6 +131,7 @@ Mailpile = {
   urls: {
     message_draft : "{{ config.sys.http_path }}/message/draft/=",
     message_sent  : "{{ config.sys.http_path }}/thread/=",
+    thread        : "{{ config.sys.http_path }}/thread/=",
     tags          : "{{ config.sys.http_path }}/tags/"
   },
   plugins: [],

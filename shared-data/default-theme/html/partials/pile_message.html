@@ -1,4 +1,8 @@
 <div id="message-{{mid}}" class="pile-message {% for tid in metadata.tag_tids %}{% if result.data.tags[tid].slug == "new" %}{{result.data.tags[tid].slug}}{% endif %}{% endfor %}" data-mid="{{mid}}">
+  {%- set activities = (activities or []) + get_ui_elements('email_activities', state) -%}
+  {%- if thread|length > 1 %}
+    {%- do activities.extend(get_ui_elements('thread_activities', state)) %}
+  {%- endif %}
   {%- set from = metadata.from %}
   {%- set allow_html = ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_html) %}
   {%- set allow_images = ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_web) %}
@@ -196,11 +200,20 @@
       {%- endif %}
     </ul>
   </div>
-  <p class="message-actions-padding">&nbsp;</p>
-  <ul class="message-actions horizontal bottom left">
-    <li class="action"><a class="message-action-reply-all" href="#"><span class="icon-reply-all"></span> {{_("Reply")}}</a></li>
-    <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
-  </ul>
+  <div>
+    <p class="message-actions-padding">&nbsp;</p>
+    <ul class="message-actions horizontal bottom left">
+      <li class="action"><a class="message-action-reply-all" href="#"><span class="icon-reply-all"></span> {{_("Reply")}}</a></li>
+      <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
+      {%- for item in activities %}
+      <li class="action"><a class="message-action-{{ item.name }}"
+                            href="{{ item.url }}" title="{{ item.description }}">
+        <span class="icon-{{ item.icon }}"></span>
+        {% if loop.index < 3 %}{{_(item.text)}}{% endif %}
+      </a></li>
+      {%- endfor %}
+    </ul>
+  </div>
 </div>
 <script>
 <!-- allow_html={{ allow_html }}, allow_images={{ allow_images }} -->

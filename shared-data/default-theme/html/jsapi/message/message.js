@@ -142,7 +142,8 @@ $(document).on('click', '.message-action-unthread', function() {
 /* Message - Move a message to trash */
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).closest('.has-mid').data('mid');
-  Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
+  Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid},
+                        function() {
     Mailpile.go('/in/inbox/');
   });
 });

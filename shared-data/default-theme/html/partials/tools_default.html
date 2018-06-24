@@ -2,13 +2,8 @@
 {%- set display_refiners = (display_refiners or []) + get_ui_elements('display_refiners', state) -%}
 {%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', state) -%}
 {%- set selection_actions = (selection_actions or []) + get_ui_elements('selection_actions', state) -%}
-{%- if selection_initial_prompt %}
-  {%- set have_initial_prompt = True %}
-{%- else %}
-  {%- set selection_initial_prompt = _('Click item or checkbox to select') %}
-  {%- set have_initial_prompt = False %}
-{%- endif %}
-
+{%- set have_initial_prompt = selection_initial_prompt or False -%}
+{%- set selection_initial_prompt = selection_initial_prompt or _('Click item or checkbox to select') -%}
 {%- if (activities or display_refiners or display_modes or
         hard_coded_activities or
         have_initial_prompt or

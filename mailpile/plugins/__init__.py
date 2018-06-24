@@ -772,6 +772,8 @@ class PluginManager(object):
     UI_ELEMENTS = {
         'settings': [],
         'activities': [],
+        'email_activities': [],  # Activities on e-mails
+        'thread_activities': [], # Activities on e-mails in a thread
         'display_modes': [],
         'display_refiners': [],
         'selection_actions': []

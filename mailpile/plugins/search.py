@@ -441,6 +441,7 @@ class SearchResults(dict):
                 'end': start + min(num, len(results)-start),
                 'total': len(results),
             },
+            'search_order': session.order,
             'search_terms': session.searched,
             'index_capabilities': dict((c, True) for c in idx.CAPABILITIES),
             'tag_capabilities': {},

@@ -27,7 +27,7 @@
                   {%- if not nearby %} hide{% endif %}"
            title="{{tmeta.body.snippet}}
  - &lt;{{tmeta.from.address}}&gt; ({{tmeta.timestamp|friendly_time}}, {{tmeta.timestamp|friendly_datetime}})"
-           href="{{msg_url(this_mid + '/' + tmid)}}" data-noblank=1>
+           href="{{msg_url(tmid, this_mid)}}" data-noblank=1>
           <span class="thread-tree">{{ ascii }}</span>
           <span class="thread-info{% if not new_subject %} thread-simple{% endif %}">
             <span class="thread-avatar"><img src="{{ show_avatar(tfrom) }}"></span>
