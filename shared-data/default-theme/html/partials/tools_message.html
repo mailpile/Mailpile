@@ -1,36 +1,3 @@
-{%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', state) -%}
-<div id="thread-title" class="sub-navigation clearfix">
-  <div class="thread-draggable"></div>
-  <div class="thread-details">
-    <h1 class="half-top remove-bottom">{{ nice_subject(result.data.metadata[result.thread_ids[-1]].subject) }}</h1>
-    <ul class="horizontal remove-top half-bottom">
-      <li><a href="#"><span class="icon-inbox"></span> {{ result.data.metadata|length }} {{_("Messages")}}</a></li>
-      <li><a class="show-thread-people" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
-      <li><a class="show-thread-tags" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
-    </ul>
-  </div>
-
-{%- if display_modes %}
-  <ul class="right horizontal">
-    <li>{{ state.context }}</li>
-   {%- for elem in display_modes %}
-    <li class="btn-display-mode-{{elem.name}} {{elem.class}}
-        {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{elem.url|add_state_query_string(state, elem)|url_path_fix}}"
-         title="{{elem.description}}" class="{{elem.aclass}}">
-      {%- if elem.icon and '.' in elem.icon -%}
-        <img class="navigation-icon" src="{{ U(elem.icon) }}">
-      {%- elif elem.icon -%}
-        <span class="navigation-icon icon-{{elem.icon}}"></span>
-      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
-      </a>
-    </li>
-   {%- endfor %}
-   <script>
-    $(document).ready({{
-      ui_elements_setup('.btn-display-mode-%(name)s', display_modes)
-    }});
-  </script>
-  </ul>
-{% endif %}
-</div>
+{%- set activities = [] + get_ui_elements('email_activities', state) -%}
+{%- set selection_initial_prompt = "... FIXME ..." %}
+{%- include('partials/tools_default.html') -%}
