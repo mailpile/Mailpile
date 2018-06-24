@@ -660,7 +660,9 @@ class MailIndex(BaseIndex):
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
                       msg_from=None, msg_subject=None, msg_body=None,
-                      msg_to=None, msg_cc=None, msg_size=None, msg_tags=None):
+                      msg_to=None, msg_cc=None, msg_size=None,
+                      msg_tags=None, msg_replies=None,
+                      msg_parent_mid=None, msg_thread_mid=None):
         if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id is not None:
@@ -683,6 +685,23 @@ class MailIndex(BaseIndex):
             msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
         if msg_tags is not None:
             msg_info[self.MSG_TAGS] = ','.join(msg_tags or [])
+        if msg_replies is not None:
+            if len(msg_replies) > 1:
+                msg_info[self.MSG_REPLIES] = ','.join(msg_replies) + ','
+            else:
+                msg_info[self.MSG_REPLIES] = ''
+
+        if msg_parent_mid is not None or msg_thread_mid is not None:
+            if msg_thread_mid is None:
+                msg_thread_mid = msg_info[self.MSG_THREAD_MID].split('/')[0]
+            if msg_parent_mid is None:
+                msg_parent_mid = msg_info[self.MSG_THREAD_MID].split('/')[-1]
+            if msg_thread_mid != msg_parent_mid:
+                msg_info[self.MSG_THREAD_MID] = (
+                    '%s/%s' % (msg_thread_mid, msg_parent_mid))
+            else:
+                msg_info[self.MSG_THREAD_MID] = msg_thread_mid
+
         return msg_info
 
     def _extract_header_info(self, msg):
@@ -984,41 +1003,108 @@ class MailIndex(BaseIndex):
 
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
-    def unthread_message(self, msg_mid):
+    def unthread_message(self, msg_mid, new_subject=None):
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
-        par_idx_pos = int(msg_info[self.MSG_THREAD_MID].split('/')[0], 36)
 
-        if par_idx_pos == msg_idx_pos:
-            # Message is head of thread, chop head off!
-            thread = msg_info[self.MSG_REPLIES][:-1].split(',')
-            msg_info[self.MSG_REPLIES] = ''
-            if msg_mid in thread:
-                thread.remove(msg_mid)
-            # We can just pick any message to be the new "head" of
-            # the thread, the actual ordering happens elsewhere.
-            if thread and thread[0]:
-                head_mid = thread[0]
-                head_idx_pos = int(head_mid, 36)
-                head_info = self.get_msg_at_idx_pos(head_idx_pos)
-                head_info[self.MSG_REPLIES] = ','.join(thread) + ','
-                self.set_msg_at_idx_pos(head_idx_pos, head_info)
-                for msg_mid in thread:
-                    kid_idx_pos = int(thread[0], 36)
-                    kid_info = self.get_msg_at_idx_pos(head_idx_pos)
-                    kid_info[self.MSG_THREAD_MID] = head_mid
-                    kid.set_msg_at_idx_pos(head_idx_pos, head_info)
+        par_mid = msg_info[self.MSG_THREAD_MID].split('/')[-1]
+        thr_mid = msg_info[self.MSG_THREAD_MID].split('/')[0]
+        thr_idx_pos = int(thr_mid, 36)
+        thr_info = self.get_msg_at_idx_pos(thr_idx_pos)
+
+        thread = [t for t in thr_info[self.MSG_REPLIES][:-1].split(',') if t]
+
+        # Collect parent/children relationships
+        has_kids = {}
+        for t_mid in thread:
+            t_info = self.get_msg_at_idx_pos(int(t_mid, 36))
+            t_pmid = t_info[self.MSG_THREAD_MID].split('/')[-1]
+            has_kids[t_pmid] = has_kids.get(t_pmid, []) + [t_mid]
+
+        # Gather all descendants of a message
+        def _family(p_mid, hk):
+            family = [p_mid]
+            if p_mid in hk:
+                gather = copy.copy(hk[p_mid])
+                while gather:
+                    r_mid = gather.pop(0)
+                    if r_mid not in family:
+                        family.append(r_mid)
+                    if r_mid in hk:
+                        gather.extend([
+                            m for m in hk[r_mid]
+                            if m not in family and m not in gather])
+            return family
+
+        # Reparent all descendants of a message
+        def _reparent(p_mid, hk, new_subj=None):
+            new_thread = _family(p_mid, hk)
+            old_tmids = set([])
+            orphans = set([])
+
+            # Set up the new thread structure
+            for t_mid in new_thread:
+                t_idx_pos = int(t_mid, 36)
+                t_info = self.get_msg_at_idx_pos(t_idx_pos)
+
+                old_tmids.add(t_info[self.MSG_THREAD_MID].split('/')[0])
+                orphaning = [
+                    o for o in t_info[self.MSG_REPLIES].split(',')
+                    if o and o not in new_thread]
+                if orphaning:
+                    orphans |= set(orphaning)
+
+                if t_mid == p_mid:
+                    self.edit_msg_info(t_info,
+                        msg_subject=new_subj,
+                        msg_replies=new_thread,
+                        msg_parent_mid=p_mid,
+                        msg_thread_mid=p_mid)
+                else:
+                    self.edit_msg_info(t_info,
+                        msg_subject=new_subj,
+                        msg_replies=[],
+                        msg_thread_mid=p_mid)
+                self.set_msg_at_idx_pos(t_idx_pos, t_info)
+
+            # If we've left any messages without a thread marker, choose
+            # a new one and reparent.
+            orphans = sorted(list(orphans))
+            for o_mid in orphans:
+                o_idx_pos = int(o_mid, 36)
+                o_info = self.get_msg_at_idx_pos(o_idx_pos)
+                if o_mid == orphans[0]:
+                    self.edit_msg_info(o_info,
+                        msg_replies=orphans,
+                        msg_thread_mid=o_mid)
+                else:
+                    self.edit_msg_info(o_info, msg_thread_mid=orphans[0])
+                self.set_msg_at_idx_pos(o_idx_pos, o_info)
+
+            # If we've left an existing thread, clean its reply list.
+            old_tmids -= set(new_thread)
+            for ot_mid in old_tmids:
+                ot_idx_pos = int(ot_mid, 36)
+                ot_info = self.get_msg_at_idx_pos(ot_idx_pos)
+                self.edit_msg_info(ot_info, msg_replies=[
+                    rmid for rmid in ot_info[self.MSG_REPLIES].split(',')
+                    if rmid and (rmid not in new_thread)])
+                self.set_msg_at_idx_pos(ot_idx_pos, ot_info)
+
+        if par_mid == msg_mid:
+            # If we're reparenting the root of a thread, this actually means
+            # cut all our kids loose to their own threads.
+            for k_mid in has_kids.get(msg_mid, []):
+                _reparent(k_mid, has_kids)
+            msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
+            self.edit_msg_info(msg_info,
+                msg_subject=new_subject,
+                msg_thread_mid=msg_mid,
+                msg_parent_mid=msg_mid)
+            self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         else:
-            # Message is a reply, remove it from thread
-            par_info = self.get_msg_at_idx_pos(par_idx_pos)
-            thread = par_info[self.MSG_REPLIES][:-1].split(',')
-            if msg_mid in thread:
-                thread.remove(msg_mid)
-                par_info[self.MSG_REPLIES] = ','.join(thread) + ','
-                self.set_msg_at_idx_pos(par_idx_pos, par_info)
-
-        msg_info[self.MSG_THREAD_MID] = msg_mid
-        self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+            # Otherwise, cut ourselves and our kids loose.
+            _reparent(msg_mid, has_kids, new_subj=new_subject)
 
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
                     msg_to, msg_cc, msg_bytes, msg_subject, msg_body,
@@ -1056,7 +1142,7 @@ class MailIndex(BaseIndex):
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
             return msg_idx_pos, msg_info
 
-    def add_new_ghost(self, msg_id, trash=False):
+    def add_new_ghost(self, msg_id, trash=False, subject=None):
         tags = []
         if trash:
             tags = [t._key for t in self.config.get_tags(type='trash')]
@@ -1068,7 +1154,7 @@ class MailIndex(BaseIndex):
             [],  # msg_to
             [],  # msg_cc
             0,
-            _('(missing message)'),
+            subject or _('(missing message)'),
             self.MSG_BODY_GHOST,
             tags)
 

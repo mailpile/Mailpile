@@ -488,7 +488,8 @@ class Reply(RelativeCompose):
             del headers['cc']
 
         ref_ids = [t['headers_lc'].get('message-id') for t in trees]
-        ref_subjs = [t['headers_lc'].get('subject') for t in trees]
+        ref_subjs = [(t['summary'][4] or t['headers_lc'].get('subject'))
+                      for t in trees]
         msg_bodies = []
         for t in trees:
             # FIXME: Templates/settings for how we quote replies?
@@ -1038,25 +1039,39 @@ class UpdateAndSendit(Update):
 class UnThread(CompositionCommand):
     """Remove a message from a thread."""
     SYNOPSIS = (None, 'unthread', 'message/unthread', None)
-    HTTP_CALLABLE = ('POST', 'UPDATE')
-    HTTP_POST_VARS = {'mid': 'message-id'}
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'mid': 'message-id'}
+    HTTP_POST_VARS = {
+        'subject': 'Update the metadata subject as well'}
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
+
+        # On the CLI, anything after -- is the new metadata subject.
+        if '--' in args:
+            subject = ' '.join(args[(args.index('--')+1):])
+            args = args[:args.index('--')]
+        else:
+            subject = self.data.get('subject', [None])[0]
 
         # Message IDs can come from post data
-        args = list(self.args)
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
         emails = [self._actualize_ephemeral(i) for i in
                   self._choose_messages(args, allow_ephemeral=True)]
 
         if emails:
-            for email in emails:
-                idx.unthread_message(email.msg_mid())
-            self._background_save(index=True)
-            return self._return_search_results(
-                _('Unthreaded %d messages') % len(emails), emails)
+            if self.data.get('_method', 'POST') == 'POST':
+                for email in emails:
+                    idx.unthread_message(email.msg_mid(), new_subject=subject)
+                self._background_save(index=True)
+                return self._return_search_results(
+                    _('Unthreaded %d messages') % len(emails), emails)
+            else:
+                return self._return_search_results(
+                    _('Unthread %d messages') % len(emails), emails)
         else:
             return self._error(_('Nothing to do!'))
 
