@@ -9,6 +9,14 @@ except ImportError:
     AppDirs = None
 
 
+def _ensure_exists(path, mode=0700):
+    if not os.path.exists(path):
+        head, tail = os.path.split(path)
+        _ensure_exists(head)
+        os.mkdir(tail, mode)
+    return path
+
+
 def LEGACY_DEFAULT_WORKDIR(profile):
     if profile == 'default':
         # Backwards compatibility: If the old ~/.mailpile exists, use it.
@@ -24,7 +32,7 @@ def DEFAULT_WORKDIR():
     # The Mailpile environment variable trumps everything
     workdir = os.getenv('MAILPILE_HOME')
     if workdir:
-        return workdir
+        return _ensure_exists(workdir)
 
     # Which profile?
     profile = os.getenv('MAILPILE_PROFILE', 'default')
@@ -32,12 +40,12 @@ def DEFAULT_WORKDIR():
     # Check if we have a legacy setup we need to preserve
     workdir = LEGACY_DEFAULT_WORKDIR(profile)
     if not AppDirs or (os.path.exists(workdir) and os.path.isdir(workdir)):
-        return workdir
+        return _ensure_exists(workdir)
 
     # Use platform-specific defaults
     # via https://github.com/ActiveState/appdirs
     dirs = AppDirs("Mailpile", "Mailpile ehf")
-    return os.path.join(dirs.user_data_dir, profile)
+    return _ensure_exists(os.path.join(dirs.user_data_dir, profile))
 
 
 def DEFAULT_SHARED_DATADIR():
@@ -51,7 +59,8 @@ def DEFAULT_SHARED_DATADIR():
     # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
     # We must also check that we are installed in the virtual env,
     # not just that we are running in a virtual env.
-    if (hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix')) and __file__.startswith(sys.prefix):
+    if ((hasattr(sys, 'real_prefix') or hasattr(sys, 'base_prefix'))
+            and __file__.startswith(sys.prefix)):
         return os.path.join(sys.prefix, 'share', 'mailpile')
 
     # Check if we've been installed to /usr/local (or equivalent)

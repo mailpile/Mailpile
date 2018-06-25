@@ -33,8 +33,9 @@ if [ "$1" = "--keep" ]; then
 else
     rm -rf "$MAILPILE_HOME"
 fi
-mkdir -p "$MAILPILE_HOME"
-chmod 700 "$MAILPILE_HOME"
+
+#mkdir -p "$MAILPILE_HOME"
+#chmod 700 "$MAILPILE_HOME"
 
 if [ "$1" = "--cleanup" ]; then
     shift
