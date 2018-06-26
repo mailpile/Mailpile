@@ -1224,11 +1224,13 @@ class SetupTor(TestableWebbable):
 
     def auto_configure_tor(self, session):
         if session.config.tor_worker is not None:
-            hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
-            success, message = self._configure_tor(session, hostport,
-                                                   port_zero=True)
-            if success:
-                return message
+            if session.config.tor_worker.isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    return message
 
         if session.config.sys.tor.systemwide:
             hostport = ('127.0.0.1', 9050)
@@ -1237,13 +1239,13 @@ class SetupTor(TestableWebbable):
                 return message
 
         if session.config.tor_worker is None:
-            session.config.start_tor_worker().isReady(wait=True)
-            hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
-            time.sleep(0.2)
-            success, message = self._configure_tor(session, hostport,
-                                                   port_zero=True)
-            if success:
-                session.config.sys.tor.systemwide = False
+            if session.config.start_tor_worker().isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    session.config.sys.tor.systemwide = False
 
         return message
 

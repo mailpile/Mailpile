@@ -11,6 +11,7 @@ nose
 mock>=1.0.1
 pycrypto
 pyDNS
+PySocks
 pgpdump
 pillow
 pbr
