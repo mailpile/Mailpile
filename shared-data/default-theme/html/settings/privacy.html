@@ -64,8 +64,7 @@
     </div>
     <div class="settings">
     {% set proxy = {"tor": "Tor", "tor-risky": "Tor"}.get(config.sys.proxy.protocol, _("proxy")) %}
-    {% if config.sys.proxy.protocol not in ("none", "unknown") %}
-
+    {% if config.sys.proxy.protocol not in ("none", "unknown", "system") %}
       <p>
         {{_("When sending and receiving mail, or downloading from the web:")}}
       </p>
@@ -92,6 +91,10 @@
           {{_("Prefer anonymous Tor networking for all connections.")}}
         </span><br>
     {% endif %}
+        <input name="sys.proxy.protocol" type="radio" value="system">
+        <span class="checkbox">
+          {{_("Use shared operating system proxy settings.")}}
+        </span><br>
         <input name="sys.proxy.protocol" type="radio" value="none">
         <span class="checkbox">
           {{_("Do not use %(proxy)s.", proxy=proxy)}}
