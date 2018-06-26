@@ -94,7 +94,7 @@ class Tor(threading.Thread):
 
                 MakePopenUnsafe()
                 self.tor_process = stem.process.launch_tor_with_config(
-                    timeout=0,  # Required, otherwise signal.signal will raise
+                    timeout=None,  # Required or signal.signal will raise
                     tor_cmd=self.tor_binary,
                     config=tor_process_config,
                     init_msg_handler=self._log_line)
