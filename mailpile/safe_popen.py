@@ -37,6 +37,20 @@ SERIALIZE_POPEN_STRICT = True
 SERIALIZE_POPEN_ALWAYS = False
 SERIALIZE_POPEN_LOCK = threading.Lock()
 
+THREAD_LOCAL = threading.local()
+
+
+def PresetSafePopenArgs(**kwargs):
+    """
+    Make it possible to preset Popen arguments, for injecting tweaks into
+    third-party code. We do this using thread-local data, so as to avoid
+    the need for yet another lock.
+    """
+    if hasattr(THREAD_LOCAL, 'preset_args'):
+        THREAD_LOCAL.preset_args.append(kwargs)
+    else:
+        THREAD_LOCAL.preset_args = [kwargs]
+
 
 class Safe_Pipe(object):
     """
@@ -63,6 +77,12 @@ class Safe_Pipe(object):
 
 
 class Safe_Popen(Unsafe_Popen):
+    def _preset_args(self):
+        if hasattr(THREAD_LOCAL, 'preset_args') and THREAD_LOCAL.preset_args:
+            return THREAD_LOCAL.preset_args.pop(-1)
+        else:
+            return {}
+
     def __init__(self, args, bufsize=0,
                              executable=None,
                              stdin=None,
@@ -78,6 +98,19 @@ class Safe_Popen(Unsafe_Popen):
                              creationflags=None,
                              keep_open=None,
                              long_running=False):
+
+        # This lets us inject Popen args into libraries
+        preset = self._preset_args()
+        if preset: print 'PRESET[%s]: %s' % (args, preset)
+        cwd = preset.get('cwd', cwd)
+        env = preset.get('env', env)
+        stdin = preset.get('stdin', stdin)
+        stdour = preset.get('stdout', stdout)
+        stderr = preset.get('stderr', stderr)
+        bufsize = preset.get('bufsize', bufsize)
+        close_fds = preset.get('close_fds', close_fds)
+        executable = preset.get('executable', executable)
+        long_running = preset.get('long_running', long_running)
 
         # Set our default locking strategy
         self._SAFE_POPEN_hold_lock = SERIALIZE_POPEN_ALWAYS
@@ -194,6 +227,7 @@ def MakePopenUnsafe():
 
 
 def MakePopenSafe():
+    THREAD_LOCAL.preset_args = []
     subprocess.Popen = Safe_Popen
     return Safe_Popen
 

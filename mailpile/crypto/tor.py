@@ -11,7 +11,7 @@ import stem.control
 import mailpile.util
 from mailpile.eventlog import Event
 from mailpile.platforms import RandomListeningPort, GetDefaultTorPath
-from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
+from mailpile.safe_popen import PresetSafePopenArgs, MakePopenSafe
 from mailpile.util import okay_random
 
 
@@ -63,7 +63,10 @@ class Tor(threading.Thread):
         starts = 0
         while self.keep_looping and not mailpile.util.QUITTING:
             starts += 1
-            self._run_once()
+            try:
+                self._run_once()
+            except OSError:
+                pass
             for i in range(0, 5 * min(60, starts)):
                 if mailpile.util.QUITTING: break
                 time.sleep(0.2)
@@ -92,7 +95,7 @@ class Tor(threading.Thread):
                 self._log_line('Launching Tor (%s)' % self.tor_binary,
                                notify=True)
 
-                MakePopenUnsafe()
+                PresetSafePopenArgs(long_running=True)
                 self.tor_process = stem.process.launch_tor_with_config(
                     timeout=None,  # Required or signal.signal will raise
                     tor_cmd=self.tor_binary,
