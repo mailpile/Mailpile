@@ -138,3 +138,23 @@ def RestrictReadAccess(path):
         os.chmod(path, 0700)
     else:
         os.chmod(path, 0600)
+
+
+def RandomListeningPort(count=1, host='127.0.0.1'):
+    socks = []
+    ports = []
+    try:
+        import socket
+        for port in range(0, count):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((host, 0))
+            socks.append(sock)
+            ports.append(sock.getsockname()[1])
+        if count == 1:
+            return ports[0]
+        else:
+            return ports
+    finally:
+        for sock in socks:
+            sock.close()

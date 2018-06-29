@@ -366,14 +366,15 @@ class TcpConnectionBroker(BaseConnectionBroker):
         return conn
 
     def _in_no_proxy_list(self, address):
+        cfg_no_proxy = self.config().get_proxy_settings().get('no_proxy', '')
         no_proxy = (self.FIXED_NO_PROXY_LIST +
-                    [a.lower().strip()
-                     for a in self.config().sys.proxy.no_proxy.split(',')])
+                    [a.lower().strip() for a in cfg_no_proxy.split(',')])
         return (address[0].lower() in no_proxy)
 
     def _avoid(self, address):
-        if (self.config().sys.proxy.protocol not in  ('none', 'unknown')
-                and not self.config().sys.proxy.fallback
+        proxy_settings = self.config().get_proxy_settings()
+        if (proxy_settings['protocol'] not in  ('none', 'unknown', 'system')
+                and not proxy_settings.get('fallback', False)
                 and not self._in_no_proxy_list(address)):
             raise CapabilityFailure('Proxy fallback is disabled')
 
@@ -412,6 +413,11 @@ class SocksConnBroker(TcpConnectionBroker):
         'Connection refused': _('connection refused')
     }
 
+    def _describe(self, context, conn):
+        context.on_darknet = ('proxy (%s:%d)'
+            % (self.proxy_config['host'], self.proxy_config['port']))
+        return conn
+
     def __init__(self, *args, **kwargs):
         TcpConnectionBroker.__init__(self, *args, **kwargs)
         self.proxy_config = None
@@ -419,25 +425,24 @@ class SocksConnBroker(TcpConnectionBroker):
 
     def configure(self):
         BaseConnectionBroker.configure(self)
-        if self.config().sys.proxy.protocol in self.PROXY_TYPES:
-            self.proxy_config = self.config().sys.proxy
+        proxy_settings = self.config().get_proxy_settings()
+        if proxy_settings.get('protocol') in self.PROXY_TYPES:
+            self.proxy_config = proxy_settings
             self.supports = list(self.CONFIGURED)[:]
             self.typemap = {
                 'socks5': socks.PROXY_TYPE_SOCKS5,
                 'socks4': socks.PROXY_TYPE_SOCKS4,
-                'http': socks.PROXY_TYPE_HTTP,
                 'tor': socks.PROXY_TYPE_SOCKS5,       # For TorConnBroker
-                'tor-risky': socks.PROXY_TYPE_SOCKS5  # For TorConnBroker
-            }
+                'tor-risky': socks.PROXY_TYPE_SOCKS5, # For TorConnBroker
+                'http': socks.PROXY_TYPE_HTTP}
         else:
             self.proxy_config = None
             self.supports = []
 
     def _auth_args(self):
         return {
-            'username': self.proxy_config.username or None,
-            'password': self.proxy_config.username or None
-        }
+            'username': self.proxy_config.get('username') or None,
+            'password': self.proxy_config.get('password') or None}
 
     def _avoid(self, address):
         if self._in_no_proxy_list(address):
@@ -449,11 +454,11 @@ class SocksConnBroker(TcpConnectionBroker):
 
     def _conn(self, address, timeout=None, source_address=None, **kwargs):
         sock = socks.socksocket()
-        proxytype = self.typemap.get(self.proxy_config.protocol,
+        proxytype = self.typemap.get(self.proxy_config.get('protocol'),
                                      self.typemap[self.DEFAULT_PROTO])
         sock.setproxy(proxytype=proxytype,
-                      addr=self.proxy_config.host,
-                      port=int(self.proxy_config.port),
+                      addr=self.proxy_config.get('host'),
+                      port=int(self.proxy_config.get('port', 0)),
                       rdns=True,
                       **self._auth_args())
         if timeout and timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:

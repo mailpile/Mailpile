@@ -4,6 +4,7 @@ import os
 import random
 import socket
 import sys
+import time
 from urllib import urlencode
 from urllib2 import urlopen
 from lxml import objectify
@@ -1212,28 +1213,56 @@ class SetupTestRoute(TestableWebbable):
 
 class SetupTor(TestableWebbable):
     """Check for Tor and auto-configure if possible."""
-    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto]")
+    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto] [--shared]")
     HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'prefer_shared': 'If set, prefer a shared Tor instance'}
 
     @classmethod
     def autoconfig(cls, session):
         cls(session, arg=['--auto']).run()
 
-    def auto_configure_tor(self, session, hostport=None):
-        need_raw = [ConnBroker.OUTGOING_RAW]
-        hostport = hostport or ('127.0.0.1', 9050)
+    def auto_configure_tor(self, session):
+        if session.config.tor_worker is not None:
+            if session.config.tor_worker.isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    return message
+
+        if session.config.sys.tor.systemwide:
+            hostport = ('127.0.0.1', 9050)
+            success, message = self._configure_tor(session, hostport)
+            if success:
+                return message
+
+        if session.config.tor_worker is None:
+            if session.config.start_tor_worker().isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    session.config.sys.tor.systemwide = False
+
+        return message
+
+    def _configure_tor(self, session, hostport, port_zero=False):
         try:
-            with ConnBroker.context(need=need_raw) as context:
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW]) as ctx:
                 tor = socket.create_connection(hostport, timeout=10)
         except IOError:
-            return  _('Failed to connect to Tor on %s:%s. Is it installed?'
-                      ) % hostport
+            return (False,
+                _('Failed to connect to Tor on %s:%s. Is it installed?')
+                % hostport)
 
         # If that succeeded, we might have Tor!
         old_proto = session.config.sys.proxy.protocol
         session.config.sys.proxy.protocol = 'tor'
         session.config.sys.proxy.host = hostport[0]
-        session.config.sys.proxy.port = hostport[1]
+        session.config.sys.proxy.port = 0 if port_zero else hostport[1]
         session.config.sys.proxy.fallback = True
 
         # Configure connection broker, revert settings while we test
@@ -1248,12 +1277,12 @@ class SetupTor(TestableWebbable):
                                data=None, timeout=10).read()
                 safe_assert(motd.strip().endswith('}'))
             session.config.sys.proxy.protocol = 'tor'
-            message = _('Successfully configured and enabled Tor!')
+            return (True, _('Successfully configured and enabled Tor!'))
         except (IOError, AssertionError):
             ConnBroker.configure()
-            message = _('Failed to configure Tor on %s:%s. Is the network down?'
-                        ) % hostport
-        return message
+            return (False,
+                _('Failed to configure Tor on %s:%s. Is the network down?')
+                % hostport)
 
     def setup_command(self, session):
         if ("--auto" not in self.args
