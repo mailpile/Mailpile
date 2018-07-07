@@ -61,6 +61,7 @@ Depends: ${misc:Depends},
          python-imgsize,
          python-socksipychain,
          python-dns,
+         python-socks,
          python-pgpdump,
          python-pil
 Recommends: tor, wamerican-small, gnupg-curl
