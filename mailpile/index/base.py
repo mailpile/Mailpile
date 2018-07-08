@@ -109,6 +109,10 @@ class BaseIndex(MessageInfoConstants):
 
     ### Loading data: higher level methods #################################
 
+    def unique_mbox_ids(self, msg_info):
+        return set([
+            p[:MBX_ID_LEN] for p in msg_info[self.MSG_PTRS].split(',') if p])
+
     def enumerate_ptrs_mboxes_fds(self, msg_info):
         for msg_ptr in self._sorted_msg_ptrs(msg_info):
             msg_ptr = msg_ptr.strip()
