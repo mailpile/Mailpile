@@ -1238,7 +1238,7 @@ class GnuPG:
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
-             fromkey=None, armor=True, detatch=True, clearsign=False,
+             fromkey=None, armor=True, detach=True, clearsign=False,
              passphrase=None):
         """
         >>> g = GnuPG(None)
@@ -1250,7 +1250,7 @@ class GnuPG:
         if fromkey and passphrase is None:
             self.prepare_passphrase(fromkey, signing=True)
 
-        if detatch and not clearsign:
+        if detach and not clearsign:
             action = ["--detach-sign"]
         elif clearsign:
             action = ["--clearsign"]
