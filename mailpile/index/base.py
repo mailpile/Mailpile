@@ -3,6 +3,7 @@ import json
 import random
 import rfc822
 import time
+import traceback
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -121,6 +122,7 @@ class BaseIndex(MessageInfoConstants):
                 fd = mbox.get_file_by_ptr(msg_ptr)
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 if 'sources' in self.config.sys.debug:
+                    traceback.print_exc()
                     print 'WARNING: %s not found' % msg_ptr
             yield (msg_ptr, mbox, fd)
 

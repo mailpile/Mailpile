@@ -927,7 +927,7 @@ class Email(object):
                 self.msg_parsed = self._get_parsed_msg(pgpmime)
             result = self.msg_parsed
         if not result:
-            raise IndexError(_('Message not found?'))
+            raise IndexError(_('Message not found'))
         return result
 
     def is_thread(self):
