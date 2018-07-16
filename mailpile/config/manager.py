@@ -14,7 +14,7 @@ import traceback
 import ConfigParser
 import errno
 
-from urllib import quote, unquote
+from urllib import quote, unquote, getproxies
 from urlparse import urlparse
 
 try:
@@ -99,6 +99,7 @@ class ConfigManager(ConfigDict):
         self.background.ui = BackgroundInteraction(self)
 
         self.plugins = None
+        self.tor_worker = None
         self.http_worker = None
         self.dumb_worker = DumbWorker('Dumb worker', self.background)
         self.slow_worker = self.dumb_worker
@@ -580,6 +581,10 @@ class ConfigManager(ConfigDict):
 
         # Recreate VFS root in case new things have been configured
         self.vfs_root.rescan()
+
+        # Reconfigure the connection broker
+        from mailpile.conn_brokers import Master as ConnBroker
+        ConnBroker.configure()
 
         # Notify workers that things have changed. We do this before
         # the prepare_workers() below, because we only want to notify
@@ -1188,11 +1193,31 @@ class ConfigManager(ConfigDict):
 
         return idx
 
-    def get_tor_socket(self):
-        if socks:
-            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
-                                  'localhost', 9050, True)
-        return socks.socksocket
+    def get_proxy_settings(self):
+        if self.sys.proxy.protocol == 'system':
+            proxy_list = getproxies()
+            for proto in ('socks5', 'socks4', 'http'):
+                for url in proxy_list.values():
+                    if url.lower().startswith(proto+'://'):
+                        try:
+                            p, host, port = url.replace('/', '').split(':')
+                            return {
+                                'protocol': proto,
+                                'fallback': self.sys.proxy.fallback,
+                                'host': host,
+                                'port': int(port),
+                                'no_proxy': self.sys.proxy.no_proxy}
+                        except (ValueError, IndexError, KeyError):
+                            pass
+        elif self.sys.proxy.protocol in ('tor', 'tor-risky'):
+            if self.tor_worker is not None:
+                return {
+                    'protocol': self.sys.proxy.protocol,
+                    'fallback': self.sys.proxy.fallback,
+                    'host': '127.0.0.1',
+                    'port': self.tor_worker.socks_port,
+                    'no_proxy': self.sys.proxy.no_proxy}
+        return self.sys.proxy
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
@@ -1202,10 +1227,6 @@ class ConfigManager(ConfigDict):
         if not fpath:
             raise IOError(2, 'Not Found')
         return fpath, open(fpath, mode), mt
-
-    def prepare_workers(self, *args, **kwargs):
-        with self._lock:
-            return self._unlocked_prepare_workers(*args, **kwargs)
 
     def daemons_started(config, which=None):
         return ((which or config.save_worker)
@@ -1225,6 +1246,19 @@ class ConfigManager(ConfigDict):
                 if changed:
                     ms_thread.wake_up()
         return ms_thread
+
+    def start_tor_worker(config):
+        from mailpile.conn_brokers import Master as ConnBroker
+        from mailpile.crypto.tor import Tor
+        config.tor_worker = Tor(
+            config=config, session=config.background,
+            callbacks=[lambda c: ConnBroker.configure()])
+        config.tor_worker.start()
+        return config.tor_worker
+
+    def prepare_workers(self, *args, **kwargs):
+        with self._lock:
+            return self._unlocked_prepare_workers(*args, **kwargs)
 
     def _unlocked_prepare_workers(config, session=None, changed=False,
                                   daemons=False, httpd_spec=None):
@@ -1276,6 +1310,15 @@ class ConfigManager(ConfigDict):
                     config.get_mail_source(src_id, start=True, changed=changed)
                 except (ValueError, KeyError):
                     pass
+
+            should_launch_tor = ((not config.sys.tor.systemwide)
+                and (config.sys.proxy.protocol.startswith('tor')))
+            if config.tor_worker is None:
+                if should_launch_tor:
+                    config.start_tor_worker()
+            elif not should_launch_tor:
+                config.tor_worker.stop_tor()
+                config.tor_worker = None
 
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', config.background)
@@ -1383,6 +1426,7 @@ class ConfigManager(ConfigDict):
         return (config.mail_sources.values() +
                 config.other_workers +
                 [config.http_worker,
+                 config.tor_worker,
                  config.slow_worker,
                  config.scan_worker,
                  config.cron_worker])
@@ -1396,7 +1440,9 @@ class ConfigManager(ConfigDict):
         with config._lock:
             worker_list = config._unlocked_get_all_workers()
             config.other_workers = []
-            config.http_worker = config.cron_worker = None
+            config.tor_worker = None
+            config.http_worker = None
+            config.cron_worker = None
             config.slow_worker = config.dumb_worker
             config.scan_worker = config.dumb_worker
 

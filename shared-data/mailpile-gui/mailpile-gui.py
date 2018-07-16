@@ -201,8 +201,7 @@ class MailpileState(object):
                 self.pub_config.sys.http_path)
         except:
             import traceback
-            traceback.print_exc()
-            self.pub_config = None
+            sys.stderr.write(traceback.format_exc())
 
     def discover(self, argv):
         self._load_public_config()

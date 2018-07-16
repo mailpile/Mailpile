@@ -6,6 +6,7 @@ Jinja2
 spambayes>=1.1b1
 markupsafe
 pyDNS
+PySocks
 pgpdump
 pillow
 pbr
@@ -20,3 +21,4 @@ pyasn1
 pycparser
 fasteners
 monotonic
+stem>=1.4

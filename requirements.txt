@@ -7,7 +7,9 @@ Jinja2
 spambayes>=1.1b1
 markupsafe
 pyDNS
+PySocks
 pgpdump
 pillow
 pbr
 fasteners
+stem>=1.4

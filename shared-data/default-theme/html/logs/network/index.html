@@ -18,18 +18,19 @@
         <span class="icon icon-lightbulb"></span>
         {{_("Here you can see a log of recent network activity, both successful and failed attempts.")}}
       </p>
-{% if config.sys.proxy.protocol not in ("none", "unknown") %}
+{% set proxy_settings = config.get_proxy_settings() %}
+{% if proxy_settings.protocol not in ("none", "unknown") %}
       <p class="what">
         {{_("You have a proxy (%(proxy)s) configured at %(host)s:%(port)s.",
-            proxy=config.sys.proxy.protocol,
-            host=config.sys.proxy.host,
-            port=config.sys.proxy.port)}}
+            proxy=proxy_settings.protocol,
+            host=proxy_settings.host,
+            port=proxy_settings.port)}}
       </p>
-  {% if not config.sys.proxy.fallback %}
+  {% if not proxy_settings.fallback %}
       <p class="risks">
         <span class="icon icon-signature-unknown"></span>
         {{_("Proxy fallback is disabled, so if the proxy cannot connect to a given server, the connection will fail.")}}
-    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+    {% if proxy_settings.protocol in ("tor", "tor-risky") %}
         {{_("Some service providers block connections from Tor, so this may prevent you from accessing your mail or other data.")}}
     {% endif %}
       </p>
@@ -39,7 +40,7 @@
       </p>
   {% else %}
       <p class="risks">
-    {% if config.sys.proxy.protocol in ("tor", "tor-risky") %}
+    {% if proxy_settings.protocol in ("tor", "tor-risky") %}
         <span class="icon icon-privacy"></span>
         {{_("Fall-back is enabled, so a direct connection will be made if Tor cannot connect.")}}
         {{_("This may leak your IP address and allow monitoring of which servers you communicate with.")}}
@@ -48,14 +49,14 @@
     {% endif %}
       </p>
   {% endif %}
-  {% if config.sys.proxy.protocol == "tor-risky" %}
+  {% if proxy_settings.protocol == "tor-risky" %}
       <p class="risks">
         <span class="icon icon-privacy"></span>
         {{_("You are using Tor for unencrypted traffic.")}}
         {{_("This may allow exit-node operators to listen in or modify your communications.")}}
       </p>
   {% endif %}
-{% elif config.sys.proxy.protocol not in ("tor", "tor-risky") %}
+{% elif proxy_settings.protocol not in ("tor", "tor-risky") %}
       <p class="risks">
         <span class="icon icon-privacy"></span>
         {{_("You are not using Tor.")}}
