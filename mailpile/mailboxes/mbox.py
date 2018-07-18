@@ -35,6 +35,7 @@ class MailpileMailbox(mailbox.mbox):
         raise ValueError('Not an mbox: %s' % fn)
 
     def __init__(self, *args, **kwargs):
+        self._cs = {}
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
         self.is_local = False
@@ -61,7 +62,7 @@ class MailpileMailbox(mailbox.mbox):
     def describe_msg_by_ptr(self, msg_ptr):
         try:
             parts, start, length = self._parse_ptr(msg_ptr)
-            return _("message at bytes %d..%d") % (start, start+length)
+            return _("message at bytes %d..%d") % (start, start + length)
         except KeyError:
             return _("message not found in mailbox")
 
@@ -126,6 +127,8 @@ class MailpileMailbox(mailbox.mbox):
             fd.seek(0)
             self._next_key = 0
             self._toc = {}
+            self._cs = {}
+            data = ''
             start = None
             len_nl = 1
             while True:
@@ -135,15 +138,23 @@ class MailpileMailbox(mailbox.mbox):
                 if line.startswith('From '):
                     if start is not None:
                         len_nl = ('\r' == line[-2]) and 2 or 1
+                        cs4k = self.get_msg_cs4k(0, 0, data[:-len_nl])
                         self._toc[self._next_key] = (start, line_pos - len_nl)
+                        self._cs[cs4k] = self._next_key
+                        self._cs[self._next_key] = cs4k
                         self._next_key += 1
                     start = line_pos
+                    data = line
                 elif line == '':
                     if (start is not None) and (start != line_pos):
+                        cs4k = self.get_msg_cs4k(0, 0, data[:-len_nl])
                         self._toc[self._next_key] = (start, line_pos - len_nl)
+                        self._cs[cs4k] = self._next_key
+                        self._cs[self._next_key] = cs4k
                         self._next_key += 1
                     break
-
+                elif len(data) < (4096 + len_nl):
+                    data += line
             self._file = fd
             self._file_length = fd.tell()
             self._mtime = cur_mtime
@@ -193,7 +204,10 @@ class MailpileMailbox(mailbox.mbox):
         with self._lock:
             self._last_updated = time.time()
             try:
-                mailbox.mbox.flush(self, *args, **kwargs)
+                if kwargs.get('in_place', False):
+                    self._locked_flush_without_tempfile()
+                else:
+                    mailbox.mbox.flush(self, *args, **kwargs)
             except OSError:
                 if '_create_temporary' in traceback.format_exc():
                     self._locked_flush_without_tempfile()
@@ -229,40 +243,50 @@ class MailpileMailbox(mailbox.mbox):
                 self._index = MboxIndex(config, self, mbx_mid=mbx_mid)
         return self._index
 
-    def get_msg_cs(self, start, cs_size, max_length, chars=4):
+    def get_msg_cs(self, start, cs_size, max_length, chars=4, data=None):
         """Generate a checksum of a given length, ignoring Status headers."""
-        with self._lock:
+        if data is None:
             if start is None:
                 raise IOError('No data found (start=None)')
-            fd = self._file
-            fd.seek(start, 0)
-            firstKB = fd.read(min(cs_size, max_length))
-            if firstKB == '':
-                raise IOError('No data found at %s:%s' % (start, max_length))
-            return b64w(sha1b64(
-                re.sub(self.RE_STATUS, 'Status: ?', firstKB))[:chars])
+            with self._lock:
+                fd = self._file
+                fd.seek(start, 0)
+                data = fd.read(min(cs_size, max_length))
+                if data == '':
+                    raise IOError('No data found at %s:%s'
+                                  % (start, max_length))
+        elif len(data) >= cs_size:
+            data = data[:cs_size]
+        return b64w(sha1b64(
+            re.sub(self.RE_STATUS, 'Status: ?', data))[:chars])
 
-    def get_msg_cs4k(self, start, max_length):
+    def get_msg_cs4k(self, start, max_length, data=None):
         """A 48-bit (6*8) checksum of the first 4k of message data."""
-        return self.get_msg_cs(start, 4096, max_length, chars=8)
+        return self.get_msg_cs(start, 4096, max_length, chars=8, data=data)
 
-    def get_msg_cs80b(self, start, max_length):
+    def get_msg_cs80b(self, start, max_length, data=None):
         """A 24-bit (6*4) checksum of the first 80 bytes of message data."""
-        return self.get_msg_cs(start, 80, max_length)
+        return self.get_msg_cs(start, 80, max_length, data=data)
 
-    def get_msg_ptr(self, mboxid, toc_id):
+    def get_msg_ptr(self, mboxid, toc_id, data=None):
         with self._lock:
             msg_start = self._toc[toc_id][0]
             msg_size = self.get_msg_size(toc_id)
-            return '%s%s:%s:%s' % (mboxid,
-                                   b36(msg_start),
-                                   b36(msg_size),
-                                   self.get_msg_cs4k(msg_start, msg_size))
+            if (toc_id in self._cs) and (data is None):
+                msg_cs = self._cs[toc_id]
+            else:
+                msg_cs = self.get_msg_cs4k(msg_start, msg_size, data=data)
+            return '%s%s:%s:%s' % (
+                mboxid, b36(msg_start), b36(msg_size), msg_cs)
 
     def _parse_ptr(self, msg_ptr):
         parts = msg_ptr[MBX_ID_LEN:].split(':')
         start = int(parts[0], 36)
         length = int(parts[1], 36)
+        if len(parts) > 2:
+            if parts[2] in self._cs:
+                start, end = self._toc[self._cs[parts[2]]]
+                length = end - start
         return parts, start, length
 
     def _verify_ptr_checksums(self, msg_ptr, start, ignored_fd):
@@ -291,10 +315,6 @@ class MailpileMailbox(mailbox.mbox):
             starts.extend(sorted([
                 b for b, e in self.toc_values()
                 if length in (e-b, e-b+1) and b != pstart]))
-
-#       print 'TOC: %s' % self._toc
-#       print 'GAPS: %s' % [(b, e-b+1) for b, e in self._toc.values()]
-#       print 'STARTS(%s): %s@%s' % (msg_ptr, length, starts)
 
         # Yield up to max_locations positions
         for i, start in enumerate(starts[:max_locations]):
@@ -329,14 +349,17 @@ class MailpileMailbox(mailbox.mbox):
 
     def update(self, *args, **kwargs):
         with self._lock:
+            self._cs = {}  # FIXME
             return mailbox.mbox.update(self, *args, **kwargs)
 
     def discard(self, *args, **kwargs):
         with self._lock:
+            self._cs = {}  # FIXME
             return mailbox.mbox.discard(self, *args, **kwargs)
 
     def remove(self, *args, **kwargs):
         with self._lock:
+            self._cs = {}  # FIXME
             return mailbox.mbox.remove(self, *args, **kwargs)
 
     def get_file_by_ptr(self, msg_ptr, verifier=None, from_=False):
