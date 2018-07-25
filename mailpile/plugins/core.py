@@ -990,7 +990,8 @@ class ChangeDir(ListDir):
     def command(self, args=None):
         try:
             args = list((args is None) and self.args or args or [])
-            os.chdir(os.path.expanduser(args.pop(0).encode('utf-8')))
+            os.chdir(FilePath.unalias(
+                        os.path.expanduser(args.pop(0).encode('utf-8'))))
             return ListDir.command(self, args=['.'])
         except (OSError, IOError, UnicodeEncodeError), e:
             return self._error(_('Failed to change directories: %s') % e)
