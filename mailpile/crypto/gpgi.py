@@ -158,7 +158,7 @@ class GnuPGResultParser:
 
             elif keyword == "ENC_TO":
                 keylist = encryption_info.get("have_keys", [])
-                if data[0] not in keylist:
+                if data[1] not in keylist:
                     keylist.append(data[1].strip())
                 encryption_info["have_keys"] = list(set(keylist))
                 
