@@ -704,7 +704,7 @@ class ConfigManager(ConfigDict):
                     pfn += '-R'
         except (KeyError, TypeError):
             traceback.print_exc()
-            raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
+            raise NoSuchMailboxError(_('No such mailbox: %s') % mailbox_id)
         return mbx_id, src, FilePath(mfn), pfn
 
     def save_mailbox(self, session, pfn, mbox):
