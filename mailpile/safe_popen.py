@@ -78,6 +78,26 @@ class Safe_Popen(Unsafe_Popen):
                              creationflags=None,
                              keep_open=None,
                              long_running=False):
+        
+        self._internal_fds = []
+
+        # Windows-work around: Console Handles can't be inherited, so if no
+        # source is passed, simulate stdin as a closed pipe. Not ideal, but
+        # stops pythonw crashing.
+        #
+        # See: https://bugs.python.org/issue3905
+        #
+        if stdin is None:
+            stdin = open( os.devnull, 'r' )
+            self._internal_fds.append(stdin)
+
+        if stdout is None:
+            stdout = open( os.devnull, 'w' )
+            self._internal_fds.append(stdout)
+
+        if stderr is None:
+            stderr = open( os.devnull, 'w' )
+            self._internal_fds.append(stderr)
 
         # Set our default locking strategy
         self._SAFE_POPEN_hold_lock = SERIALIZE_POPEN_ALWAYS
@@ -182,6 +202,8 @@ class Safe_Popen(Unsafe_Popen):
         return rv
 
     def __del__(self):
+        for handle in self._internal_fds:
+            handle.close()
         if Unsafe_Popen is not None:
             Unsafe_Popen.__del__(self)
         self._SAFE_POPEN_unlock()
