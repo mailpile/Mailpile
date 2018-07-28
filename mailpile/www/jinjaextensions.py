@@ -741,7 +741,7 @@ class MailpileCommand(Extension):
         url = ''.join([unicode(p) for p in urlparts])
         if url[:1] in ('/', ):
             http_path = self.env.session.config.sys.http_path or ''
-            if not url.startswith(http_path):
+            if not url.startswith(http_path+'/'):
                 url = http_path + url
         return self._safe(url)
 
