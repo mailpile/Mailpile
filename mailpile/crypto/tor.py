@@ -4,6 +4,9 @@ import subprocess
 import threading
 import time
 import traceback
+import re
+import sys
+import os
 
 import stem.process
 import stem.control
@@ -14,6 +17,14 @@ from mailpile.platforms import RandomListeningPort, GetDefaultTorPath
 from mailpile.safe_popen import PresetSafePopenArgs, MakePopenSafe
 from mailpile.util import okay_random
 
+if 'pythonw' in sys.executable:
+    debug_target = open( os.devnull, 'w' )
+else:
+    debug_target = sys.stdout
+
+def debug( text ):
+    debug_target.write( text + '\n' )
+    debug_target.flush()
 
 # Version check for STEM >= 1.4
 assert(int(stem.__version__[0]) > 1 or
@@ -46,7 +57,7 @@ class Tor(threading.Thread):
             self.control_password = self.config.sys.tor.ctrl_auth
             self.tor_binary = tor_binary or self.config.sys.tor.binary or None
 
-        if socks_port is not None:
+        if socks_port is not None:        
             self.socks_port = socks_port
         if control_port is not None:
             self.control_port = control_port
@@ -99,7 +110,7 @@ class Tor(threading.Thread):
                 self.tor_process = stem.process.launch_tor_with_config(
                     timeout=None,  # Required or signal.signal will raise
                     tor_cmd=self.tor_binary,
-                    config=tor_process_config,
+                    config= tor_process_config,
                     init_msg_handler=self._log_line)
 
                 ctrl = stem.control.Controller.from_port(port=self.control_port)
@@ -142,8 +153,10 @@ class Tor(threading.Thread):
                 [self.tor_binary, '--hush', '--hash-password',
                 str(self.control_password)],
                 stdout=subprocess.PIPE, bufsize=1)
-            passhash = ''.join(hasher.stdout.readlines()).strip()
             hasher.wait()
+            expr = re.compile('([\d]{2}:[\w]{58})')
+            match = filter(None, map(expr.match, hasher.stdout))[0]
+            passhash= match.group(1)
             return passhash
         except:
             return None
@@ -155,7 +168,7 @@ class Tor(threading.Thread):
             else:
                 self.session.ui.debug(line)
         else:
-            print('%s' % line)
+            debug('%s' % line)
 
         log = self.event.data.get('log', [])
         log.append(line.strip())
@@ -235,14 +248,22 @@ if __name__ == "__main__":
     TEST_KEY = "RSA1024:MIICXQIBAAKBgQDQ/+aYFpSvZZ5Ce2cpsuJz1epCcY9n+HZx/bC/D7mqEXCdDB9W13FMuwwK9FvjjXdfJzkdJ1GEcppEzd69C5xPZo2k+klKDhMONYhGHcm+CGu+JWNbqrcInNfZageu1Hg8g5Kz2h+/xCmuqKLSxGwJGvIoYfZupyn3DaxGnZv/2QIDAQABAoGAYs13L9MM+1Yo2PkJrhbZIzWvhzW0O8ykAgOSeOBwP0v7VuMSNbWn5ERQzyTyA8Mu+ZbLU1LxIJIlB/3jHK/Odoe2kkPjjaeKKVXGM+NMefps/YPs8abql06YoWN6KshY0BYkzkmlF/Xxl4t+jjvDG9Fsx6kJV6LKRwm6BFVzUTkCQQD2ujGQs1I1fsuCCHZXcnyoLO/hJaJLoj3clCiYcWhnfdpgkv0+CdIYE+DPZNsiIfruQQYZzZjKtO2xx0fvqKuPAkEA2Nq46nR1L0ISJizSfTYkz+KXuV8kgkMxwzkZC6l+DAqf4qxjFcDOwrIw9f75N8DcveHLD4R/fyMaesW6SK8KFwJAZ4Om1/bkPt17tIqoW/gEpOp1mhiYBvOC0NC4V3z9OK5suKfy59xm8QMmBt1hsuhexycw0BKaUDGoqDXb0IkLsQJBANQaUsWXdMrtX90Q+CxaGfVvVyGL6qSyXmjpXxLmDBBxD+Ng42VyeYk7SuJBKreanw3mXHvoB+BtkEfHQCY5dq8CQQCofoToQr5mTrlomus6/ei22Ein/BS9s0YUPCOpMkZfSp/GaWyEH7QjxatM/LoaMRlH/Y/wGMEK8P05F9DGBtSP"
     t = Tor()
     try:
-        print "*** Starting Tor"
+        debug_target = open( sys.argv[1], 'w' )
+    except IndexError:
+        pass
+    try:
+        debug( "*** Starting Tor" )
         t.start()
         if t.isReady(wait=True):
-            print "*** Creating hidden services..."
+            debug( "*** Creating hidden services..." )
             key_type, key_content = TEST_KEY.split(':', 1)
             aor = t.launch_hidden_service({80: 80}, key_type, key_content)
             aor = t.launch_hidden_service(443)
 
-            raw_input("*** Hit enter to disable service and shutdown ***")
+            #raw_input("*** Hit enter to disable service and shutdown ***")
+            debug("waiting...")
+            time.sleep(5)
     finally:
+        debug("quiting!?!")
         t.quit()
+        debug("exiting!?!")
