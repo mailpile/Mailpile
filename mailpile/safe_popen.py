@@ -98,7 +98,7 @@ class Safe_Popen(Unsafe_Popen):
                              creationflags=None,
                              keep_open=None,
                              long_running=False):
-        
+
         self._internal_fds = []
 
         # Windows-work around: Console Handles can't be inherited, so if no
@@ -108,15 +108,15 @@ class Safe_Popen(Unsafe_Popen):
         # See: https://bugs.python.org/issue3905
         #
         if stdin is None:
-            stdin = open( os.devnull, 'r' )
+            stdin = open(os.devnull, 'r')
             self._internal_fds.append(stdin)
 
         if stdout is None:
-            stdout = open( os.devnull, 'w' )
+            stdout = open(os.devnull, 'w')
             self._internal_fds.append(stdout)
 
         if stderr is None:
-            stderr = open( os.devnull, 'w' )
+            stderr = open(os.devnull, 'w')
             self._internal_fds.append(stderr)
 
         # This lets us inject Popen args into libraries

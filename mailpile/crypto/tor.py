@@ -57,7 +57,7 @@ class Tor(threading.Thread):
             self.control_password = self.config.sys.tor.ctrl_auth
             self.tor_binary = tor_binary or self.config.sys.tor.binary or None
 
-        if socks_port is not None:        
+        if socks_port is not None:
             self.socks_port = socks_port
         if control_port is not None:
             self.control_port = control_port
@@ -156,7 +156,7 @@ class Tor(threading.Thread):
             hasher.wait()
             expr = re.compile('([\d]{2}:[\w]{58})')
             match = filter(None, map(expr.match, hasher.stdout))[0]
-            passhash= match.group(1)
+            passhash = match.group(1)
             return passhash
         except:
             return None
