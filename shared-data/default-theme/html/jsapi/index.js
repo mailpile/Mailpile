@@ -358,7 +358,7 @@ Mailpile.API = {
 
   U: function(original_url) {
     var prefix = "{{ config.sys.http_path }}";
-    if (original_url.indexOf(prefix) != 0) {
+    if (original_url.indexOf(prefix+'/') != 0) {
       return prefix + original_url;
     }
     return original_url;
