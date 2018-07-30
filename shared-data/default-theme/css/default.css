@@ -9555,7 +9555,6 @@ a.modal-tag-color-option:hover {
   .tablet-hide {
     display: none !important;
   }
-
   /* Shrink the sidebar a bit, but keep it. */
   #sidebar {
     width: 180px;
@@ -10108,17 +10107,13 @@ a.modal-tag-color-option:hover {
     margin-bottom: 0;
   }
   #notifications {
-    top: 0;
-    left: 36px;
-    right: 36px;
-    bottom: auto;
-    width: auto;
-    min-width: 50%;
-    max-width: 100%;
-    max-height: 95px;
+    bottom: 0;
+    left: 0px;
+    right: 0px;
+    top: auto;
+    width: 100%;
+    max-height: 73px;
     opacity: 0.95;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
   }
   div.notification-bubble {
     padding: 2px 5px;
