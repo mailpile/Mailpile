@@ -45,11 +45,13 @@ Mailpile.Search.init = function() {
   if (hashIndex != -1) {
     var target = document.location.href.substring(hashIndex+1);
     var $elem = $('#' + target + ', .' + target);
-    var top_pos = $elem.eq(0).position().top;
-    $elem.eq(0).focus();
-    setTimeout(function() {
-      $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
-    }, 50);
+    if ($elem.length > 0) {
+      var top_pos = $elem.eq(0).position().top;
+      $elem.eq(0).focus();
+      setTimeout(function() {
+        $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
+      }, 50);
+    }
   }
 
   EventLog.subscribe(".mail_source", function(ev) {
