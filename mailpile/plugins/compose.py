@@ -996,8 +996,11 @@ class Update(CompositionCommand):
                 if not Attach(session, data=self.data).command(emails=emails):
                     return self._error(_('Failed to attach files'))
 
-            for email, update_string in email_updates:
-                email.update_from_string(session, update_string, final=outbox)
+            try:
+                for email, update_string in email_updates:
+                    email.update_from_string(session, update_string, final=outbox)
+            except AttributeError:
+                return self._error(_('Cannot find message'))
 
             emails = [e for e, u in email_updates]
             message = _('%d message(s) updated') % len(email_updates)
