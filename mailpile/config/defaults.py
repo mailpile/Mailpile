@@ -22,7 +22,6 @@ from mailpile.config.base import KeyConfigRule as k
 _ = lambda string: string
 
 
-DEV_MODE = ('rc' in APPVER or 'dev' in APPVER or 'github' in APPVER)
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
@@ -163,7 +162,7 @@ CONFIG_RULES = {
     }),
     'web': (_("Web Interface Preferences"), False, {
         'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
-        'developer_mode':  (_('Enable developer-only features'), bool, DEV_MODE),
+        'developer_mode':  (_('Enable developer-only features'), bool, False),
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),
