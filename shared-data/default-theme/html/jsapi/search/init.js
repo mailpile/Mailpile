@@ -57,16 +57,18 @@ Mailpile.Search.init = function() {
   var hashIndex = document.location.href.indexOf('#');
   if (hashIndex != -1) {
     var target = document.location.href.substring(hashIndex+1);
-    if (target.indexOf('/') > -1) {
+    if (target.indexOf('/') != -1) {
       target = target.substring(0, target.indexOf('/'));
     }
-    var $elem = $('#' + target + ', .' + target);
-    if ($elem.length > 0) {
-      var top_pos = $elem.eq(0).position().top;
-      $elem.eq(0).focus();
-      setTimeout(function() {
-        $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
-      }, 50);
+    if (target) {
+      var $elem = $('#' + target + ', .' + target);
+      if ($elem.length > 0) {
+        var top_pos = $elem.eq(0).position().top;
+        $elem.eq(0).focus();
+        setTimeout(function() {
+          $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
+        }, 50);
+      }
     }
   }
 };
