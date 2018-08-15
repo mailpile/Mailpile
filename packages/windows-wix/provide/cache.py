@@ -170,7 +170,8 @@ class SemanticCache(object):
         '''
         Get the path to a resource by name, fetching it if neccessary.
         '''
-        return self.cache.resolve(**self.resources[name])
+        entry = self.resources[name]
+        return self.cache.resolve(url = entry['url'], sha1 = entry['sha1'])
 
     def insert(self, resources):
         '''
@@ -178,8 +179,15 @@ class SemanticCache(object):
 
         hash is computed on insert.
         '''
-        for key, url in resources.items():
+        for key, url, comment in resources.items():
             path, sha1 = self.cache.insert(url)
+            entry = {'url': url, 'sha1': sha1}
+            if comment:
+                entry['comment'] = comment
+            try:
+                self.resources[key].update(entry)
+            except KeyError:
+                self.resources[key] = entry
             self.resources[key] = {'url': url, 'sha1': sha1}
 
     def save(self, path, indent=2):
@@ -193,8 +201,8 @@ class SemanticCache(object):
         '''
         preload all resources.
         '''
-        for value in self.resources.values():
-            self.cache.resolve(**value)
+        for key in self.resources.key():
+            self.resource(key)
 
     @classmethod
     def load(cls, path, cache=None):
