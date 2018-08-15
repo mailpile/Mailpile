@@ -33,9 +33,10 @@ def bind(build):
         build.depend('git')
         util = build.depend('util')
 
+        build.log().info("copying local repo: '{}'".format(src))
         shutil.copytree(src, dst)
         with util.pushdir(dst):
-            build.invoke( 'git', 'clean', '-xdf' )
+            build.invoke('git', 'clean', '-xdf')
 
     def clone_remote_repo(build, config, dst):
         '''
@@ -44,6 +45,7 @@ def bind(build):
         build.depend('git')
         util = build.depend('util')
         
+        build.log().info("cloning remote repo: '{}'".format(config))        
         build.invoke('git', 'clone', config['repo'], dst, '--recursive')
         with util.pushdir(dst):
             build.invoke('git', 'checkout', config['commit'])
