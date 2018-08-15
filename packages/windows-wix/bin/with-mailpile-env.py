@@ -12,12 +12,12 @@ import sys
 import subprocess
 import argparse
 
-locate = ( ("Mailpile","mailpile"),
-           ("gpg","bin","gpg.exe"),
-           ("gpg","bin","gpg-agent.exe"),
-           ("gui-o-matic","gui_o_matic"),
-           ("tor","Tor","tor.exe"),
-           ("openssl","openssl.exe"))
+locate = (("Mailpile", "mailpile"),
+          ("gpg", "bin", "gpg.exe"),
+          ("gpg", "bin", "gpg-agent.exe"),
+          ("Mailpile", "submodules", "gui-o-matic", "gui_o_matic"),
+          ("tor", "Tor", "tor.exe"),
+          ("openssl", "openssl.exe"))
 
 def locate_parent( path_parts ):
 

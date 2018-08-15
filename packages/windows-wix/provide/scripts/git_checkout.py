@@ -3,15 +3,53 @@ import shutil
 
 def bind(build):
 
-    @build.default_config('mailpile', 'gui-o-matic')
-    def config_gui_o_matic(keyword):
+    def repo_root():
         '''
-        Configure git checkout url and commit/branch.
+        Find the root of the current checkout
         '''
-        return {'commit': 'master',
-                'repo': 'https://github.com/mailpile/{}'.format(keyword)}
+        repo_path = os.path.abspath(os.path.dirname(__file__))
+        while not os.path.exists(os.path.join(repo_path,'.git')):
+            parts = os.path.split(repo_path)
+            if parts[0] == repo_path:
+                raise ValueError("Cannot find root of git checkout!")
+            else:
+                repo_path = parts[0]
+        return repo_path
 
-    @build.provide('mailpile', 'gui-o-matic')
+    @build.default_config('mailpile')
+    def config_repo(keyword):
+        '''
+        Configure git checkout url and commit/branch. Either a json like
+        {"commit": "<hash or branch>", "repo": "<url>" } or path to local
+        checkout to copy.
+        '''
+        return repo_root() #{'commit': 'master',
+                #'repo': 'https://github.com/mailpile/{}'.format(keyword)}
+
+    def copy_local_repo(build, src, dst):
+        '''
+        Copy the repo from on disk
+        '''
+        build.depend('git')
+        util = build.depend('util')
+
+        shutil.copytree(src, dst)
+        with util.pushdir(dst):
+            build.invoke( 'git', 'clean', '-xdf' )
+
+    def clone_remote_repo(build, config, dst):
+        '''
+        clone the repo from a dict of 'repo' url and 'commit'
+        '''
+        build.depend('git')
+        util = build.depend('util')
+        
+        build.invoke('git', 'clone', config['repo'], dst, '--recursive')
+        with util.pushdir(dst):
+            build.invoke('git', 'checkout', config['commit'])
+            util.rmtree('.git')
+
+    @build.provide('mailpile')
     def provide_checkout(build, keyword):
         '''
         Checkout the specified git repository to the specified commit/branch and
@@ -22,33 +60,12 @@ def bind(build):
         dep_path = build.invoke('path', keyword)
         util = build.depend('util')
         config = build.config(keyword)
+        
+        if isinstance( config, str ):
+            checkout_method = copy_local_repo
+        else:
+            checkout_method = clone_remote_repo
 
-        build.invoke('git', 'clone', config['repo'], dep_path, '--recursive')
-        with util.pushdir(dep_path):
-            build.invoke('git', 'checkout', config['commit'])
-            util.rmtree('.git')
-
+        checkout_method(build, config, dep_path )
         return dep_path
 
-    def provide_copy(build, keyword):
-        '''
-        Copy the repo from on disk
-        '''
-        build.depend('git')
-        build.depend('root')
-        dep_path = build.invoke('path', keyword)
-        util = build.depend('util')
-
-        # find the root of this repo
-        repo_root = os.path.abspath(os.dirname(__file__))
-        while ! os.path.exists(os.path.join(repo_root,'.git')):
-            parts = os.path.split(repo_root)
-            if parts[0] == repo_path:
-                raise ValueError("Cannot find root of git checkout!")
-            else:
-                repo_path = parts[0]
-        shutil.copytree(repo_path, dep_path)
-        with util.pushdir(dep_path):
-            subprocess.check_call( ['git', 'clean', '-xdf'] )
-
-        return dep_path

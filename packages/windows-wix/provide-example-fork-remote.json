@@ -1,9 +1,5 @@
 {
   "export": {"package": ".\\package"},
-  "gui-o-matic": {
-    "commit": "master",
-    "repo": "https://github.com/AlexanderHaase/gui-o-matic"
-  },
   "mailpile": {
     "commit": "master",
     "repo": "https://github.com/AlexanderHaase/mailpile"

@@ -68,7 +68,6 @@ def bind(build):
 
         content_keys = ('tor',
                         'mailpile',
-                        'gui-o-matic',
                         'python27',
                         'openssl',
                         'gpg',

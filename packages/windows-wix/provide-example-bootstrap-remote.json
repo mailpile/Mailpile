@@ -1,0 +1,10 @@
+{
+  "bootstrap": {
+    "export": {"package": ".\\package"},
+    "package_cultures": ["fr-fr","en-us"]
+  },
+  "mailpile": {
+    "commit": "master",
+    "repo": "https://github.com/AlexanderHaase/mailpile"
+  }
+}
