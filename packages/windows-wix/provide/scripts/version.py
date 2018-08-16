@@ -8,6 +8,7 @@ def bind(framework):
 
         with util.pushdir(mailpile_dir):
             version = build.invoke('python', 'scripts\\version.py').strip()
-            build.log().info("Version string is: " + version)
+            version = version.split('~')
+            build.log().info("Version string is: {}".format(version))
 
-        return version
+        return version[0]

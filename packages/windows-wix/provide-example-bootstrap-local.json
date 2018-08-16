@@ -1,0 +1,6 @@
+{
+  "bootstrap": {
+    "export": {"package": ".\\package"},
+    "package_cultures": ["fr-fr","en-us"],
+  }
+}
