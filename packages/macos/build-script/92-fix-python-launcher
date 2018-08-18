@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+set -x
+
+# Fix Python's launcher to avoid the rocket ship icon shows when
+# launching python apps.
+#
+LSUIELEM="<key>LSUIElement</key><string>1</string>"
+perl -pi.bak -e \
+    "s|(\\s+)(<key>CFBundleDocumentTypes)|\\1$LSUIELEM\\2|" \
+    ./Cellar/python@$PYTHON_MAJOR_VERSION/*/Frame*/Python*/V*/C*/Res*/Python.app/Cont*/Info.plist
+
+
