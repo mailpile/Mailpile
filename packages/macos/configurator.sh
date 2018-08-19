@@ -1,6 +1,9 @@
 #!/bin/sh
 # This script shall returns a stage 1 configuration and one or more stage 2 commands.
 # Returns a stage 1 sample configuration.
-export PYTHONPATH="`pwd`/app/lib/python2.7/site-packages"
-export PATH="`pwd`/app/bin:$PATH"
-./app/bin/python app/share/mailpile/mailpile-gui/mailpile-gui.py --script
+cd "$(dirname "$0")"
+export PYTHONPATH="$(pwd)/app/opt/mailpile"
+export PATH="$(pwd)/app/bin:$PATH"
+exec ./app/bin/python \
+  ./app/opt/mailpile/shared-data/mailpile-gui/mailpile-gui.py \
+  --script --trust-os-path
