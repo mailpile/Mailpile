@@ -179,7 +179,7 @@ class BuildbotAPI(object):
 class BuildbotServer(object):
     COMMON_OPT_FLAGS = 'p:k:c:'
     COMMON_OPT_ARGS = [
-       'port=', 'config=', 'sh_binary=', 'script=',
+       'port=', 'runas=', 'config=', 'sh_binary=', 'script=',
        'pagekite=', 'pk_binary=', 'pk_kite=', 'pk_secret=']
 
     DEFAULT_CONFIG_FILE = '~/kite-runner.cfg'
@@ -209,6 +209,18 @@ class BuildbotServer(object):
                 args.append('--%s' % line.replace(' = ', '='))
         return self.parse_args(args)
 
+    def _set_uid_and_gid(self, identity):
+        import pwd
+        import grp
+        parts = identity.split(':')
+        pwnam = pwd.getpwnam(parts[0])
+        if len(parts) > 1:
+            uid, gid = pwnam.pw_uid, grp.getgrnam(parts[1]).gr_gid
+        else:
+            uid, gid = pwnam.pw_uid, pwnam.pw_gid
+        os.setgid(gid)
+        os.setuid(uid)
+
     def parse_with_common_args(self, args, opt_flags='', opt_args=[]):
         opts, args = getopt.getopt(
            args,
@@ -235,6 +247,9 @@ class BuildbotServer(object):
 
                 if opt in ('--pk_secret',):
                     self.pagekite_secret = arg.strip()
+
+                if opt in ('--runas',):
+                    self._set_uid_and_gid(arg)
 
                 if opt in ('-k', '--pagekite'):
                     self.pagekite_args = arg.strip()
