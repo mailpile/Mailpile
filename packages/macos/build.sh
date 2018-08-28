@@ -7,7 +7,7 @@ set -e
 export SOURCE_DIR=$(cd $(dirname "$0")/../..; pwd)
 
 # Target directories
-export BUILD_DIR=~/build
+export BUILD_DIR=${BUILD_DIR:-~/build}
 export ICONSET_DIR=$BUILD_DIR/AppIcon.appiconset
 export MAILPILE_BREW_ROOT="$BUILD_DIR/Mailpile.app/Contents/Resources/app"
 
