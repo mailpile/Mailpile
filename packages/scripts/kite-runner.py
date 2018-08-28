@@ -108,8 +108,17 @@ class PagekiteThread(threading.Thread):
         self.join()
 
 
+class BuildbotXMLRPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
+    def __init__(self, config, *args, **kwargs):
+        SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, *args, **kwargs)
+        self.config = config
+
+
 class BuildbotRequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
-    rpc_paths = ('/ScriptLauncher',)
+    def __init__(self, request, client_address, server):
+        self.rpc_paths = server.config.rpc_paths
+        SimpleXMLRPCServer.SimpleXMLRPCRequestHandler.__init__(
+            self, request, client_address, server)
 
 
 class BuildbotAPI(object):
@@ -179,7 +188,8 @@ class BuildbotAPI(object):
 class BuildbotServer(object):
     COMMON_OPT_FLAGS = 'p:k:c:'
     COMMON_OPT_ARGS = [
-       'port=', 'runas=', 'config=', 'sh_binary=', 'script=',
+       'port=', 'runas=', 'config=',
+       'xmlrpc_path=', 'sh_binary=', 'script=',
        'pagekite=', 'pk_binary=', 'pk_kite=', 'pk_secret=']
 
     DEFAULT_CONFIG_FILE = '~/kite-runner.cfg'
@@ -190,6 +200,7 @@ class BuildbotServer(object):
         self.port = self.DEFAULT_PORT
         self.api = BuildbotAPI(self)
         self.shell_binary = 'bash'
+        self.rpc_paths = ('/KiteRunner',)
         self.pagekite_binary = 'pagekite'
         self.pagekite_kite = ''
         self.pagekite_secret = ''
@@ -237,10 +248,14 @@ class BuildbotServer(object):
                     if not os.path.exists(self.shell_binary):
                         raise ArgumentError('Not found: ' + self.shell_binary)
 
+                if opt in ('--xmlrpc_path',):
+                    self.rpc_paths = (arg,)
+
                 if opt in ('--pk_binary',):
                     self.pagekite_binary = arg.strip()
                     if not os.path.exists(self.pagekite_binary):
-                        raise ArgumentError('Not found: ' + self.pagekite_binary)
+                        raise ArgumentError(
+                            'Not found: ' + self.pagekite_binary)
 
                 if opt in ('--pk_kite',):
                     self.pagekite_kite = arg.strip()
@@ -274,7 +289,8 @@ class BuildbotServer(object):
         return self
 
     def launch_xmlrpc_server(self):
-        rpc_server = SimpleXMLRPCServer.SimpleXMLRPCServer(
+        rpc_server = BuildbotXMLRPCServer(
+            self,
             ('localhost', self.port),
             requestHandler=BuildbotRequestHandler)
         rpc_server.register_introspection_functions()

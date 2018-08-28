@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>Label</key>
+<string>kiterunner.service</string>
+
+<key>ProgramArguments</key>
+<array>
+<string>/Users/buildbot/Mailpile/packages/scripts/kite-runner.py</string>
+<string>--config=/Users/buildbot/Mailpile/packages/scripts/kite-runner-mac.cfg</string>
+<string>--config=/Users/buildbot/kite-runner-secrets.cfg</string>
+</array>
+
+<key>KeepAlive</key>
+<true/>
+
+<key>RunAtLoad</key>
+<true/>
+</dict>
+</plist> 
