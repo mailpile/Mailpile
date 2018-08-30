@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+set -x
+
+[ "$SKIP_CLEANUP" = "" ] || exit 0
+
+# Pre-test, slim down: remove *.pyo and *.pyc files
+#
+cd "$MAILPILE_BREW_ROOT"
+find . -name *.pyc -or -name *.pyo -or -name *.a | xargs rm -f
+

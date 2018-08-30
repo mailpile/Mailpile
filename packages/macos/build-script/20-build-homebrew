@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+set -x
+
+[ "$SKIP_HOMEBREW" = "" ] || exit 0
+
+# Install Mailpile Dependencies from homebrew.
+#
+mkdir -p $MAILPILE_BREW_ROOT
+cd "$MAILPILE_BREW_ROOT"
+[ -e bin/brew ] || \
+    curl -kL https://github.com/Homebrew/brew/tarball/master \
+    | tar xz --strip 1
+echo
+brew update
+brew install openssl@$OPENSSL_VERSION
+brew link --force openssl@$OPENSSL_VERSION
+brew install \
+    libjpeg \
+    gnupg@$GNUPG_VERSION \
+    python@$PYTHON_MAJOR_VERSION \
+    tor
