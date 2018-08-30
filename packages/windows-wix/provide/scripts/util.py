@@ -3,6 +3,7 @@ import os.path
 import glob
 import contextlib
 import shutil
+import stat
 import logging
 import sys
 
@@ -72,11 +73,16 @@ class Util(object):
         Remove an entire directory tree rm -rf style, logging any errors
         '''
 
-        def log_error(func, path, exc_info):
-            logger.error("Unable perform action {}: {} {}".format(path, func, path),
+        def retry_log(func, path, exc_info):
+            try:
+                os.chmod(path, stat.S_IWUSR | stat.S_IRUSR)
+                func(path)
+            except:
+                logger.error("Unable perform action {}: {} {}".format(path, func, path),
                          exc_info=exc_info)
+                
         if os.path.isdir(path):
-            shutil.rmtree(path, ignore_errors=True, onerror=log_error)
+            shutil.rmtree(path, onerror=retry_log)
         else:
             try:
                 os.unlink(path)
