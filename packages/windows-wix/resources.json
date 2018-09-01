@@ -9,7 +9,7 @@
     "url": "https://www.mailpile.is/files/windows-deps/20180901/gpg4win-3.1.0.exe",
     "sha1": "fb9f39199d7b096d1397dad4aa0719de5ff05b31",
     "source": "https://files.gpg4win.org/gpg4win-3.1.0.exe",
-    "comment": "Long-standing windows GPG provider. URL has been stable."
+    "comment": "Long-standing windows GPG provider."
   },
   "openssl": {
     "url": "https://www.mailpile.is/files/windows-deps/20180901/openssl-1.0.2o-i386-win32.zip",
@@ -19,26 +19,26 @@
   },
   "resource_hacker": {
     "url": "https://www.mailpile.is/files/windows-deps/20180901/resource_hacker.zip",
-    "sha1": "2dcf31777c15292b81f28a839edf5771c5501dee",
+    "sha1": "a23837b4b326c04f9a36c4443538c0c7f932e8d3",
     "source": "http://www.angusj.com/resourcehacker/resource_hacker.zip",
-    "comment": "Official build from project. Project only provides one link for the current build--no history, so link has been volatile."
+    "comment": "Official build from project."
   },
   "lessmsi": {
     "url": "https://www.mailpile.is/files/windows-deps/20180901/lessmsi-v1.6.1.zip",
     "sha1": "233a464ba7a9ff9ed37964b516d9fa017ce442eb",
     "source": "https://github.com/activescott/lessmsi/releases/download/v1.6.1/lessmsi-v1.6.1.zip",
-    "comment": "Official build from lessmsi. Link has been stable."
+    "comment": "Official build from lessmsi."
   },
   "python27": {
     "url": "https://www.mailpile.is/files/windows-deps/20180901/python-2.7.14.msi",
     "sha1": "a84cb11bdae3e1cb76cf45aa96838d80b9dcd160",
     "source": "https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi",
-    "comment": "Official build from python. Link has been stable."
+    "comment": "Official build from python."
   },
   "wix": {
     "url": "https://www.mailpile.is/files/windows-deps/20180901/wix311-binaries.zip",
     "sha1": "79c2184c80a8b4c70f090ee25f709a056971ac80",
     "source": "https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip",
-    "comment": "Official build from wixtoolset. Link has been stable."
+    "comment": "Official build from wixtoolset."
   }
 }
