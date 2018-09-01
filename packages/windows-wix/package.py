@@ -26,6 +26,7 @@ import json
 import re
 import uuid
 import hashlib
+import functools
 
 import logging
 import logging.handlers
@@ -54,6 +55,20 @@ def xml_append( xml_parent, xml_element_type, **attrs ):
     xml_attrs( result, **attrs )
     return result
 
+def digest_path(path, algo = 'sha1'):
+    '''
+    Binary digest a file by path
+    '''
+    
+    with open(path, 'rb') as handle:
+        digest = getattr(hashlib, algo)()
+        generator = functools.partial(handle.read, 4096)
+                
+        for chunk in iter(generator, b''):
+            digest.update(chunk)
+                    
+        return digest
+
 
 class WixConfig( object ):
     '''
@@ -77,6 +92,8 @@ class WixConfig( object ):
         else:
             with open( uuids, 'r' ) as handle:
                 self.uuids = json.load( handle )
+
+        logger.info("Loaded {} uuids".format(len(uuids)))
                 
         self.root = ET.Element( 'Wix' )
         self.root.set( 'xmlns', 'http://schemas.microsoft.com/wix/2006/wi' )
@@ -335,7 +352,7 @@ class WixConfig( object ):
                                                   'Directory',
                                                   **attrs )
 
-    def uuid( self, path ):
+    def uuid( self, path, local_path = None ):
         '''
         get or create an appropriate uuid for the specified path.
 
@@ -346,13 +363,28 @@ class WixConfig( object ):
         # TODO: Use a digest of the input file to distinguish changes
         # (really, this looks more like a file registry, but one thing at a
         # time)
+        #
+        if local_path:
+            digest = digest_path(local_path).hexdigest()
+        else:
+            digest = '<no digest>'
 
+        # lookup cluster of digest: uuids pairs for this path
+        #
         try:
-            return self.uuids[ path ]
+            uuids = self.uuids[path]
         except KeyError:
-            guid = str( uuid.uuid4() )
-            logger.warn( "Creating new uuid for '{}': '{}'".format( path, guid ) )
-            self.uuids[ path ] = guid
+            uuids = {}
+            self.uuids[path] = uuids
+
+        # Lookup uuid by digest
+        #   
+        try:
+            return uuids[digest]
+        except KeyError:
+            guid = str(uuid.uuid4())
+            logger.warn("Creating new uuid for '{}': '{}' sha1 {}".format(path, guid, digest))
+            uuids[digest] = guid
             return guid
 
     def directory( self, path ):
@@ -452,7 +484,7 @@ class WixConfig( object ):
                 component_id = self.component_id( path )
                 component = xml_append( parent_dir, 'Component',
                                 Id = component_id,
-                                Guid = self.uuid( path ) )
+                                Guid = self.uuid( path, local_path ) )
                 
                 file = xml_append( component, 'File',
                                    Id = self.file_id( path ),

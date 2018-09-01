@@ -49,7 +49,6 @@ def bind(build):
         build.invoke('git', 'clone', config['repo'], dst, '--recursive')
         with util.pushdir(dst):
             build.invoke('git', 'checkout', config['commit'])
-            util.rmtree('.git')
 
     @build.provide('mailpile')
     def provide_checkout(build, keyword):
@@ -68,6 +67,8 @@ def bind(build):
         else:
             checkout_method = clone_remote_repo
 
-        checkout_method(build, config, dep_path )
+        checkout_method(build, config, dep_path)
+        with util.pushdir(dep_path):
+            util.rmtree('.git')
         return dep_path
 
