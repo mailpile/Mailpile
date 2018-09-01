@@ -5,11 +5,10 @@ set -x
 # Make symbolic links relative
 #
 if [ ! -e "$MAILPILE_BREW_ROOT"/bin/symlinks ]; then
-	brew install "$SYMLINKS_SRC"
-else
-    cd "$MAILPILE_BREW_ROOT"
+    brew install "$SYMLINKS_SRC"
 fi
 # This needs to run twice... just because
+cd "$MAILPILE_BREW_ROOT"
 ./bin/symlinks -s -c -r "$MAILPILE_BREW_ROOT"
 ./bin/symlinks -s -c -r "$MAILPILE_BREW_ROOT"
 
