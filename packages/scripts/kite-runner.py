@@ -94,6 +94,7 @@ class PagekiteThread(threading.Thread):
                     crash_count += 1
                     skip_loops = min(crash_count, 24) * 10
                     print('PageKite exited with status: %d' % rv)
+                time.sleep(0.5)
         self.reap()
 
     def reap(self):
