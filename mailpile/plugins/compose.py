@@ -997,6 +997,9 @@ class Update(CompositionCommand):
                     return self._error(_('Failed to attach files'))
 
             for email, update_string in email_updates:
+                if not email:
+                    return self._error(_('Cannot find message'))
+                    break
                 email.update_from_string(session, update_string, final=outbox)
 
             emails = [e for e, u in email_updates]
