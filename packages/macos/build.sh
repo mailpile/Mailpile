@@ -37,7 +37,12 @@ if [ $(echo "$OSX_MAJOR_VERSION  < 9" | bc) == 1 ]; then
    export CURL_CA_BUNDLE=/usr/share/curl/curl-ca-bundle.crt
 fi
 
-# Load user settings/overrides/credentials
+# Load user settings/overrides/credentials:
+#
+#    1. DMG_SIGNING_IDENTITY=... # Needed by GUI-o-Mac-Tic code signing
+#    2. KEYCHAIN_PASSWORD=...    #  - ditto -
+#    3. HOME=/Users/botuser      # Needed by Homebrew under launchd
+#
 [ -e ~/mailpile-build-settings ] && . ~/mailpile-build-settings
 
 # Unlock the MacOS keychain
