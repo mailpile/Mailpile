@@ -8,6 +8,10 @@ set -x
 #
 mkdir -p $MAILPILE_BREW_ROOT
 cd "$MAILPILE_BREW_ROOT"
+
+[ -e "$BUILD_DIR/Homebrew.git" ] && mv "$BUILD_DIR/Homebrew.git" .git
+[ -e "$BUILD_DIR/Homebrew.lib" ] && mv "$BUILD_DIR/Homebrew.lib" Library/Homebrew
+
 [ -e bin/brew ] || \
     curl -kL https://github.com/Homebrew/brew/tarball/master \
     | tar xz --strip 1
@@ -15,8 +19,12 @@ echo
 brew update
 brew install openssl@$OPENSSL_VERSION
 brew link --force openssl@$OPENSSL_VERSION
+brew install "$SYMLINKS_SRC"
 brew install \
     libjpeg \
     gnupg@$GNUPG_VERSION \
     python@$PYTHON_MAJOR_VERSION \
     tor
+
+mv .git "$BUILD_DIR/Homebrew.git"
+mv Library/Homebrew "$BUILD_DIR/Homebrew.lib"
