@@ -1,6 +1,5 @@
 #!/bin/sh
 cd "${0%/*}" # Sets current directory to Mailpile.app/Contents/Resources/app/bin/
 export PATH=`pwd`/:$PATH
-export MAILPILE_SHARED=`pwd`/../share/mailpile
 export SSL_CERT_FILE=`pwd`/../etc/openssl/cert.pem
-python ../opt/mailpile/mp "$@"
+exec python ../opt/mailpile/scripts/mailpile "$@"

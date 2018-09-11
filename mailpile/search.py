@@ -364,7 +364,8 @@ class MailIndex(BaseIndex):
                 if len(message) == self.MSG_FIELDS_V2:
                     self.MSGIDS[message[self.MSG_ID]] = offset
                     for msg_ptr in message[self.MSG_PTRS].split(','):
-                        self.PTRS[msg_ptr] = offset
+                        if msg_ptr:
+                            self.PTRS[msg_ptr] = offset
                 else:
                     session.ui.warning(_('Bogus line: %s') % line)
 
@@ -374,7 +375,7 @@ class MailIndex(BaseIndex):
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = [p for p in msg_info[self.MSG_PTRS].split(',')
-                    if p != msg_ptr]
+                    if p and p != msg_ptr]
 
         msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
@@ -444,6 +445,8 @@ class MailIndex(BaseIndex):
                 progress['running'] = False
                 if 'complete' in kwargs:
                     progress['complete'] = kwargs['complete']
+            if 'rescan' in session.config.sys.debug:
+                session.ui.debug(message)
             session.ui.mark(message)
             return code
 
@@ -1532,6 +1535,11 @@ class MailIndex(BaseIndex):
     def delete_msg_at_idx_pos(self, session, msg_idx, keep_msgid=False):
         info = self.get_msg_at_idx_pos(msg_idx)
 
+        # Remove from PTR index
+        for ptr in (p for p in info[self.MSG_PTRS].split(',') if p):
+            if ptr in self.PTRS:
+                del self.PTRS[ptr]
+
         # Most of the information just gets nuked.
         info[self.MSG_PTRS] = ''
         info[self.MSG_FROM] = ''
@@ -1552,6 +1560,8 @@ class MailIndex(BaseIndex):
             # If we don't keep the msgid, the message may reappear later
             # if it wasn't deleted from all source mailboxes. The caller
             # may request this if deletion is known to be incomplete.
+            if info[self.MSG_ID] in self.MSGIDS:
+                del self.MSGIDS[info[self.MSG_ID]]
             info[self.MSG_ID] = self._encode_msg_id('%s' % msg_idx)
 
         # Save changes...

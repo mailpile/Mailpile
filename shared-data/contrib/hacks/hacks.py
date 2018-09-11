@@ -113,7 +113,10 @@ class ViewMetadata(Hacks):
         cc = idx.expand_to_list(info, idx.MSG_CC)
         body = info[idx.MSG_BODY]
         if body[:1] == '{' and body[-1:] == '}':
-            body_info = json.loads(body)
+            try:
+                body_info = json.loads(body)
+            except:
+                body_info = body
         else:
             body_info = {'snippet': body}
         return {
@@ -136,7 +139,8 @@ class ViewMetadata(Hacks):
                 'to': to,
                 'cc': cc,
                 'ptrs': pptrs
-            }
+            },
+            'metadata_bytes': len(idx.INDEX[i])
         }
 
     def command(self):

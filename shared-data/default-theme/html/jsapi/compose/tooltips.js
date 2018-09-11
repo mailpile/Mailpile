@@ -8,7 +8,7 @@ Mailpile.Composer.Tooltips.Signature = function() {
         $(this).find('text').removeClass('hide');
         var html = ('<div><h4 class="'
           + _.escape($(this).data('crypto_color')) + '">'
-          + _.escape($(this).html().replace(' hide', '')) + '</h4><p>'
+          + $(this).html().replace(' hide', '') + '</h4><p>'
           + _.escape($(this).attr('title')) + '</p></div>');
         return html;
       }
@@ -47,7 +47,7 @@ Mailpile.Composer.Tooltips.Encryption = function() {
       text: function(event, api) {
         var html = ('<div><h4 class="'
           + _.escape($(this).data('crypto_color')) + '">'
-          + _.escape($(this).html().replace(' hide', '')) + '</h4><p>'
+          + $(this).html().replace(' hide', '') + '</h4><p>'
           + _.escape($(this).attr('title')) + '</p></div>');
         return html;
       }

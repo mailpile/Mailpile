@@ -137,7 +137,10 @@ Mailpile.Composer.SendMessage = function(send_btn) {
       done_working();
       if (action === 'send' && response.status === 'success') {
         if (post_send_url) {
-          Mailpile.go(post_send_url + "/" + mid);
+          if (post_send_url.indexOf('#') > -1) {
+            post_send_url = post_send_url.substring(0, post_send_url.indexOf('#'));
+          }
+          Mailpile.go(post_send_url + "/" + mid + '#pile-message-' + mid);
         }
         else {
           Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");

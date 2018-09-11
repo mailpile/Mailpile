@@ -3,6 +3,7 @@ import json
 import random
 import rfc822
 import time
+import traceback
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -109,32 +110,30 @@ class BaseIndex(MessageInfoConstants):
 
     ### Loading data: higher level methods #################################
 
+    def unique_mbox_ids(self, msg_info):
+        return set([
+            p[:MBX_ID_LEN] for p in msg_info[self.MSG_PTRS].split(',') if p])
+
     def enumerate_ptrs_mboxes_fds(self, msg_info):
         for msg_ptr in self._sorted_msg_ptrs(msg_info):
-            msg_ptr = msg_ptr.strip()
-            if not msg_ptr:
-                continue
-
             mbox = fd = None
             try:
                 mbox = self.open_mailbox_by_ptr(msg_ptr)
                 fd = mbox.get_file_by_ptr(msg_ptr)
             except (IOError, OSError, KeyError, ValueError, IndexError):
-                # FIXME: If this msg_ptr is wrong, should we fix things?
                 if 'sources' in self.config.sys.debug:
+                    traceback.print_exc()
                     print 'WARNING: %s not found' % msg_ptr
-
             yield (msg_ptr, mbox, fd)
-
 
     ### ... ################################################################
 
     def _sorted_msg_ptrs(self, msg_info):
-        ptrs = [p for p in msg_info[self.MSG_PTRS].split(',') if p]
+        ptrs = (p.strip() for p in msg_info[self.MSG_PTRS].split(','))
         # FIXME: Prefer local data? Prefer some mailbox types? Hmm.
         #        Doing this well would speed things up and ensure the
         #        `message/delete --keep` deduplication works nicely.
-        return ptrs
+        return sorted([p for p in ptrs if p])
 
     def _encode_msg_id(self, msg_id):
         """Normalize and hash a message ID for the metadata index"""
@@ -230,7 +229,7 @@ class BaseIndex(MessageInfoConstants):
             snippet = d['snippet']
             if snippet[:3] in self.MSG_BODY_MAGIC or snippet[:1] != '{':
                 return d['snippet']
-        return json.dumps(d)
+        return json.dumps(d, indent=None, separators=(',', ':'))
 
     @classmethod
     def set_body(self, msg_info, **kwargs):

@@ -81,7 +81,7 @@ class CryptoInfo(dict):
 
         parent = self.parent
         while parent is not None:
-            self.parent.bubbles.append(self)
+            parent.bubbles.append(self)
             parent = parent.parent
 
     def mix_bubbles(self):

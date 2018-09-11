@@ -219,7 +219,7 @@ def GenerateConfig(state):
     return json.dumps(config, indent=2)
 
 
-def LocateMailpile():
+def LocateMailpile(trust_os_path=False):
     """
     Locate the main mailpile launcher script
     """
@@ -228,7 +228,7 @@ def LocateMailpile():
     # our odds of finding a mailpile script from the same bundle as this
     # particualr mailpile-gui.py (there might be more than one?).
     directory = APPDIR
-    while True:
+    while not trust_os_path:
         for sub in ('scripts', 'bin'):
             mailpile_path = os.path.join(directory, sub, 'mailpile')
             if os.path.exists(mailpile_path):
@@ -253,7 +253,7 @@ def LocateMailpile():
     raise OSError('Cannot locate mailpile launcher script!')
 
 
-def MailpileInvocation():
+def MailpileInvocation(trust_os_path=False):
     """
     Return an appropriately formated string for invoking mailpile.
 
@@ -264,23 +264,24 @@ def MailpileInvocation():
         '--set="prefs.open_in_browser=false"',
         '--gui=%PORT% ' ]
 
+    mailpile_loc = LocateMailpile(trust_os_path=trust_os_path)
     if os.name == 'nt':
         parts.append('"{}"'.format(sys.executable))
-        parts.append('"{}"'.format(LocateMailpile()))
+        parts.append('"{}"'.format(mailpile_loc))
         parts.extend(common_opts)
         parts.append('--www=')
         parts.append('--wait')
     else:
         # FIXME: This should launch a screen session using the
         #        same concepts as multipile's mailpile-admin.
-        parts.append('screen -S mailpile -d -m "{}"'.format(LocateMailpile()))
+        parts.append('screen -S mailpile -d -m "{}"'.format(mailpile_loc))
         parts.extend(common_opts)
         parts.append('--interact')
 
     return ' '.join(parts)
 
 
-def GenerateBootstrap(state):
+def GenerateBootstrap(state, trust_os_path=False):
     """
     Generate the gui-o-matic bootstrap sequence.
 
@@ -307,13 +308,13 @@ def GenerateBootstrap(state):
                 SPLASH_SCREEN(state, _("Launching Mailpile"))),
             "set_next_error_message %s" % json.dumps({
                 'message': _("Failed to launch Mailpile!")}),
-            "OK LISTEN TCP: " + MailpileInvocation() ]
+            "OK LISTEN TCP: " + MailpileInvocation(trust_os_path) ]
 
     return '\n'.join(bootstrap)
 
 
 def Main(argv):
-    set_profile = set_home = False
+    set_profile = set_home = trust_os_path = False
     for arg in argv:
         if arg.startswith('--profile='):
             os.environ['MAILPILE_PROFILE'] = arg.split('=', 1)[-1]
@@ -325,6 +326,8 @@ def Main(argv):
             if 'MAILPILE_PROFILE' in os.environ:
                 del os.environ['MAILPILE_PROFILE']
             set_home = True
+        elif arg == '--trust-os-path':
+            trust_os_path = True
     if set_home and set_profile:
         raise ValueError('Please only use one of --home and --profile')
 
@@ -333,7 +336,7 @@ def Main(argv):
 
     script = [
         GenerateConfig(state),
-        GenerateBootstrap(state)]
+        GenerateBootstrap(state, trust_os_path=trust_os_path)]
 
     if '--script' in argv:
         print '\n'.join(script)

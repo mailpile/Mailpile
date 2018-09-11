@@ -19,10 +19,10 @@ from mailpile.config.base import CriticalConfigRule as X
 from mailpile.config.base import PublicConfigRule as p
 from mailpile.config.base import KeyConfigRule as k
 
+
 _ = lambda string: string
 
 
-DEV_MODE = ('rc' in APPVER or 'dev' in APPVER or 'github' in APPVER)
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
@@ -52,7 +52,7 @@ CONFIG_RULES = {
         'gpg_binary':    p(_('Override the default GPG binary path'),
                            'file', None),
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
-        'mailindex_file': (_('Metadata index file'), 'file',               ''),
+        'mailindex_file':   (_('Metadata index file'), 'file',             ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
         'mailbox':        [_('Mailboxes we index'), 'bin',                 []],
         'plugins_early': p(_('Plugins to load before login'),
@@ -92,7 +92,7 @@ CONFIG_RULES = {
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('Misc. data refresh frequency'), int,       900),
-        'open_in_browser':p(_('Open in browser on startup'), bool,       True),
+        'open_in_browser': p(_('Open in browser on startup'), bool,      True),
         'auto_mark_as_read':(_('Automatically mark e-mail as read'),
                                                                    bool, True),
         'web_content':     (_('Download content from the web'),
@@ -136,7 +136,7 @@ CONFIG_RULES = {
         'obfuscate_index':X(_('Key to use to scramble the index'), str,    ''),
         'index_encrypted':X(_('Make encrypted content searchable'),
                             bool, False),
-        'encrypt_mail':   X(_('Encrypt locally stored mail'), bool,      True),
+        'encrypt_mail':   X(_('Encrypt locally stored mail'), bool,     False),
         'encrypt_index':  X(_('Encrypt the local search index'), bool,  False),
         'encrypt_vcards': X(_('Encrypt the contact database'), bool,     True),
         'encrypt_events': X(_('Encrypt the event log'), bool,            True),
@@ -163,7 +163,7 @@ CONFIG_RULES = {
     }),
     'web': (_("Web Interface Preferences"), False, {
         'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
-        'developer_mode':  (_('Enable developer-only features'), bool, DEV_MODE),
+        'developer_mode':  (_('Enable developer-only features'), bool, False),
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),

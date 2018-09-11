@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+set -x
+
+# Some of the homebrew build stuff depends on a java compiler.
+if ! javac -version&>/dev/null ; then
+  echo "This script depends on javac"
+  echo "Please install version 10, or later, of the Java Developer Kit."
+  exit 1
+fi
+
+# The GUI-o-MacTic build fails without this
+if [ "$DMG_SIGNING_IDENTITY" = "" ]; then
+  echo "Please set the DMG_SIGNING_IDENTITY environment variable."
+  exit 1
+fi
+
+

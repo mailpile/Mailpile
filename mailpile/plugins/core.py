@@ -358,21 +358,49 @@ class DeleteMessages(Command):
             args.remove('--keep')
             keep += 1
 
-        deleted, failed, mailboxes = [], [], []
-        for msg_idx in self._choose_messages(args):
-            e = Email(idx, msg_idx)
-            del_ok, mboxes = e.delete_message(self.session,
-                                              flush=False, keep=keep)
-            mailboxes.extend(mboxes)
-            if del_ok:
-                deleted.append(msg_idx)
-            else:
-                failed.append(msg_idx)
+        # We group messages by mailbox and delete in batches. This should
+        # avoid loading all the mailboxes into RAM at once, which is a big
+        # deal on larger setups.
+        targets = [Email(idx, mi) for mi in self._choose_messages(args)]
+        msg_ptr_pairs = [
+            (e, e.index.unique_mbox_ids(e.get_msg_info())) for e in targets]
 
-        # This will actually delete from mboxes, etc.
-        for m in set(mailboxes):
-            with m:
-                m.flush()
+        if 'deletion' in self.session.config.sys.debug:
+            self.session.ui.debug('Targets: %s' % msg_ptr_pairs)
+
+        # Message are sorted so the ones present in the most mailboxes
+        # are listed first.
+        msg_ptr_pairs.sort(key=lambda mpp: (-len(mpp[1]), mpp[0]))
+
+        deleted, failed = [], []
+        while msg_ptr_pairs:
+            # Pick the largest set of mailboxes we have yet to delete from
+            mid_set = msg_ptr_pairs[0][1]
+
+            # Pick all the messages contained in this set of mailboxes
+            messages = [e for e, mids in msg_ptr_pairs
+                        if ((mid_set | mids) == mid_set)]
+
+            # Go delete them!
+            mailboxes = []
+            for e in messages:
+                msg_idx = e.msg_idx_pos
+                del_ok, mboxes = e.delete_message(self.session,
+                                                  flush=False, keep=keep)
+                mailboxes.extend(mboxes)
+                if del_ok:
+                    deleted.append(msg_idx)
+                else:
+                    failed.append(msg_idx)
+
+            # This will actually delete from mboxes, etc.
+            for m in set(mailboxes):
+                with m:
+                    m.flush()
+
+            # OK, these are done, reduce our target list
+            msg_ptr_pairs = [(e, mids) for e, mids in msg_ptr_pairs
+                             if ((mid_set | mids) != mid_set)]
 
         # FIXME: Trigger a background rescan of affected mailboxes, as
         #        the flush() above may have broken our pointers.
@@ -990,7 +1018,8 @@ class ChangeDir(ListDir):
     def command(self, args=None):
         try:
             args = list((args is None) and self.args or args or [])
-            os.chdir(os.path.expanduser(args.pop(0).encode('utf-8')))
+            os.chdir(FilePath.unalias(
+                        os.path.expanduser(args.pop(0).encode('utf-8'))))
             return ListDir.command(self, args=['.'])
         except (OSError, IOError, UnicodeEncodeError), e:
             return self._error(_('Failed to change directories: %s') % e)

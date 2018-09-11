@@ -170,17 +170,22 @@ class SemanticCache(object):
         '''
         Get the path to a resource by name, fetching it if neccessary.
         '''
-        return self.cache.resolve(**self.resources[name])
+        entry = self.resources[name]
+        return self.cache.resolve(url = entry['url'], sha1 = entry['sha1'])
 
-    def insert(self, resources):
+    def insert(self, key, url, comment = None):
         '''
-        insert one or more resources as name-url pairs.
-
-        hash is computed on insert.
+        insert a resource--hash is computed on insert.
         '''
-        for key, url in resources.items():
-            path, sha1 = self.cache.insert(url)
-            self.resources[key] = {'url': url, 'sha1': sha1}
+        path, sha1 = self.cache.insert(url)
+        entry = {'url': url, 'sha1': sha1}
+        if comment:
+            entry['comment'] = comment
+        try:
+            self.resources[key].update(entry)
+        except KeyError:
+            self.resources[key] = entry
+        self.resources[key] = {'url': url, 'sha1': sha1}
 
     def save(self, path, indent=2):
         '''
@@ -193,8 +198,8 @@ class SemanticCache(object):
         '''
         preload all resources.
         '''
-        for value in self.resources.values():
-            self.cache.resolve(**value)
+        for key in self.resources.key():
+            self.resource(key)
 
     @classmethod
     def load(cls, path, cache=None):
@@ -215,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--resource', type=str, help="file to lookup")
     parser.add_argument('-l', '--log-level', type=str, help="logging level")
     parser.add_argument('-i', '--insert', type=str,
-                        help="url to insert as {key:value}")
+                        help='url to insert as ["key", "url", "comment"]')
     parser.add_argument('-a', '--all', action='store_true',
                         help='fetch all resources')
     args = parser.parse_args()
@@ -226,7 +231,7 @@ if __name__ == '__main__':
     cache = SemanticCache.load(args.json, Cache(args.cache))
 
     if args.insert:
-        cache.insert(json.loads(args.insert))
+        cache.insert(*json.loads(args.insert))
         cache.save(args.json)
 
     if args.resource:

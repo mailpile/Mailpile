@@ -1,30 +1,44 @@
 {
   "tor": {
-    "url": "https://www.torproject.org/dist/torbrowser/7.5.5/tor-win32-0.3.2.10.zip", 
-    "sha1": "b87e37dc7932893528518fa88972057c6e99f302"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/tor-win32-0.3.3.7.zip",
+    "sha1": "f06efe990bbe3f4e434ef60f57f1c59e9a7808cd",
+    "source": "https://www.torproject.org/dist/torbrowser/7.5.6/tor-win32-0.3.3.7.zip",
+    "comment": "Official Tor project build."
+  },
   "gpg": {
-    "url": "https://files.gpg4win.org/gpg4win-3.1.0.exe", 
-    "sha1": "fb9f39199d7b096d1397dad4aa0719de5ff05b31"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/gpg4win-3.1.0.exe",
+    "sha1": "fb9f39199d7b096d1397dad4aa0719de5ff05b31",
+    "source": "https://files.gpg4win.org/gpg4win-3.1.0.exe",
+    "comment": "Long-standing windows GPG provider."
+  },
   "openssl": {
-    "url": "https://indy.fulgan.com/SSL/openssl-1.0.2o-i386-win32.zip", 
-    "sha1": "681c35bca5a505614755514495e2943b8f5ae0b7"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/openssl-1.0.2o-i386-win32.zip",
+    "sha1": "681c35bca5a505614755514495e2943b8f5ae0b7",
+    "source": "https://indy.fulgan.com/SSL/openssl-1.0.2o-i386-win32.zip",
+    "comment": "OpenSSL from a third-party maintainer. See list at https://wiki.openssl.org/index.php/Binaries"
+  },
   "resource_hacker": {
-    "url": "http://www.angusj.com/resourcehacker/resource_hacker.zip", 
-    "sha1": "2dcf31777c15292b81f28a839edf5771c5501dee"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/resource_hacker.zip",
+    "sha1": "a23837b4b326c04f9a36c4443538c0c7f932e8d3",
+    "source": "http://www.angusj.com/resourcehacker/resource_hacker.zip",
+    "comment": "Official build from project."
+  },
   "lessmsi": {
-    "url": "https://github.com/activescott/lessmsi/releases/download/v1.6.1/lessmsi-v1.6.1.zip", 
-    "sha1": "233a464ba7a9ff9ed37964b516d9fa017ce442eb"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/lessmsi-v1.6.1.zip",
+    "sha1": "233a464ba7a9ff9ed37964b516d9fa017ce442eb",
+    "source": "https://github.com/activescott/lessmsi/releases/download/v1.6.1/lessmsi-v1.6.1.zip",
+    "comment": "Official build from lessmsi."
+  },
   "python27": {
-    "url": "https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi", 
-    "sha1": "a84cb11bdae3e1cb76cf45aa96838d80b9dcd160"
-  }, 
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/python-2.7.14.msi",
+    "sha1": "a84cb11bdae3e1cb76cf45aa96838d80b9dcd160",
+    "source": "https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi",
+    "comment": "Official build from python."
+  },
   "wix": {
-    "url": "https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip", 
-    "sha1": "79c2184c80a8b4c70f090ee25f709a056971ac80"
+    "url": "https://www.mailpile.is/files/windows-deps/20180901/wix311-binaries.zip",
+    "sha1": "79c2184c80a8b4c70f090ee25f709a056971ac80",
+    "source": "https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip",
+    "comment": "Official build from wixtoolset."
   }
 }

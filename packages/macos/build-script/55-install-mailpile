@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+set -x
+
+[ "$SKIP_MAILPILE" = "" ] || exit 0
+
+# Install Mailpile
+cd "$SOURCE_DIR"
+rm -rf "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+mkdir "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+cp -va \
+    mailpile \
+    scripts \
+    shared-data \
+    "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+
+# Install wrapper so mailpile can launch with correcth path and python path
+cp -a packages/macos/mailpile "$BUILD_DIR/Mailpile.app/Contents/Resources/app/bin/"

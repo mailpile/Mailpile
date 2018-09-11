@@ -39,19 +39,6 @@ Mailpile.Search.init = function() {
   // Tooltips
   Mailpile.Search.Tooltips.MessageTags();
 
-  // Focus and scroll...
-  $('.pile-results .pile-message .subject a').eq(0).focus();
-  var hashIndex = document.location.href.indexOf('#');
-  if (hashIndex != -1) {
-    var target = document.location.href.substring(hashIndex+1);
-    var $elem = $('#' + target + ', .' + target);
-    var top_pos = $elem.eq(0).position().top;
-    $elem.eq(0).focus();
-    setTimeout(function() {
-      $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
-    }, 50);
-  }
-
   EventLog.subscribe(".mail_source", function(ev) {
     // Cutesy animation, just for fun
     if ((ev.data && ev.data.copying && ev.data.copying.running) ||
@@ -64,4 +51,24 @@ Mailpile.Search.init = function() {
       $("#logo-redmail").fadeIn(6000);
     }
   }, 'mail-source-subscription');
+
+  // Focus and scroll...
+  $('.pile-results .pile-message .subject a').eq(0).focus();
+  var hashIndex = document.location.href.indexOf('#');
+  if (hashIndex != -1) {
+    var target = document.location.href.substring(hashIndex+1);
+    if (target.indexOf('/') != -1) {
+      target = target.substring(0, target.indexOf('/'));
+    }
+    if (target) {
+      var $elem = $('#' + target + ', .' + target);
+      if ($elem.length > 0) {
+        var top_pos = $elem.eq(0).position().top;
+        $elem.eq(0).focus();
+        setTimeout(function() {
+          $('#content-view, #content-tall-view').animate({ scrollTop: top_pos }, 150);
+        }, 50);
+      }
+    }
+  }
 };

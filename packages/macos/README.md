@@ -17,7 +17,6 @@ The following lists the files contained within this directory. The packaging scr
 | **build.sh** 						| A script which builds Mailpile.app. |
 | configurator.sh 				| A script which is used by the built Mailpile.app, at runtime. It configures Mailpile.app's GUI. (Used by build.sh.)|
 | mailpile 						| A script which is used by the built Mailpile.app, at runtime. It sets environment variables and launches Mailpile. |
-| **package.sh** 				| A script which packages Mailpile.app (Mailpile.app is built by build.sh) into a signed .dmg file.|
 | README.md 						| This file. |
 
 ## Usage
@@ -30,8 +29,15 @@ The following software must be installed prior to running the packaging scripts.
 - Xcode 9.3 (or later) - Available in the App Store.
 - Command Line Tools for Xcode - Install them by executing `xcode-select --install` in Terminal.app.
 - JDK 10 (or later) - Available on [Oracle's website](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
+
+And either:
+
 - Node.js - Available on [nodejs.org](https://nodejs.org/en/). (Provides the following dependency, namely appdmg.)
 - appdmg - Install it by executing `npm install -g appdmg` in Terminal.app. (Make sure to add it's install target to *PATH*.)
+
+Or:
+
+- dmgbuild - Available from PyPI (pip install dmgbuild)
 
 ### Requirements
 An internet connection is required as the packaging scripts use [Homebrew](https://brew.sh) and git to fetch dependencies.
@@ -50,8 +56,7 @@ Before executing the package scripts, ensure that the following statements are t
 Packaging Mailpile is a three step process.
 
 1. Execute `export DMG_SIGNING_IDENTITY=4P78A94863` after replacing 4P78A94863 with your Developer Certificate's ID.
-2. Execute `./build.sh` in the directory which contains build.sh. This outputs ~/build/Mailpile.app
-3. Execute `./package.sh` in the directory which contains package.sh. This outputs ~/build/Mailpile.dmg.
+2. Execute `./build.sh` in the directory which contains build.sh. This outputs ~/build/Mailpile.app and ~/build/Mailpile.dmg.
 
 You might want to run ~/build/Mailpile.app to test the build before shipping ~/build/Mailpile.dmg.
 

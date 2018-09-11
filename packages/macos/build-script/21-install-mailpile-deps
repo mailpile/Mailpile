@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+set -x
+
+[ "$SKIP_PYTHON_DEPS" = "" ] || exit 0
+
+# Install Mailpile Python Dependencies with PIP. 
+#
+cd "$SOURCE_DIR"
+pip install -r requirements.txt --ignore-installed
+

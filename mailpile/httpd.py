@@ -571,6 +571,8 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         """
         Override SocketServer.serve_forever to allow other things to happen.
         """
+        if self.__is_shut_down is None:
+            return
         self.__is_shut_down.clear()
         try:
             while not (self.__shutdown_request or mailpile.util.QUITTING):
@@ -584,7 +586,8 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
                     tick_func(self)
         finally:
             self.__shutdown_request = False
-            self.__is_shut_down.set()
+            if self.__is_shut_down is not None:
+                self.__is_shut_down.set()
 
     def shutdown(self, join=True):
         self.__shutdown_request = True

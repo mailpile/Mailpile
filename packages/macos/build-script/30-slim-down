@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Note: We do this before installing Mailpile, to make sure we never
+#       accidentally delete part of the app itself. And we do this before
+#       the library fixup/cleanup scripts, to save cycles during build.
+#
+set -e
+set -x
+
+[ "$SKIP_CLEANUP" = "" ] || exit 0
+
+# Pre-test, slim down: remove *.pyo and *.pyc files
+#
+cd "$MAILPILE_BREW_ROOT"
+
+find . -name man          -type d | xargs rm -rf
+find . -name doc          -type d | xargs rm -rf
+find . -name gtk-doc      -type d | xargs rm -rf
+find . -name info         -type d | xargs rm -rf
+find . -name .brew        -type d | xargs rm -rf
+find . -name test         -type d | xargs rm -rf
+find . -name tests        -type d | xargs rm -rf
+find . -name examples     -type d | xargs rm -rf
+find . -name aclocal      -type d | xargs rm -rf
+find . -name pkgconfig    -type d | xargs rm -rf
+find . -name emacs        -type d | xargs rm -rf
+find . -name include      -type d | xargs rm -rf
+find . -name lib-tk       -type d | xargs rm -rf
+find . -name tkinter      -type d | xargs rm -rf
+find . -name lib2to3      -type d | xargs rm -rf
+find . -name Extras       -type d | xargs rm -rf
+find . -name sphinx-doc   -type d | xargs rm -rf
+
+find . -name \*.c         -type f | xargs rm -f
+find . -name \*.h         -type f | xargs rm -f
+find . -name \*.pyc       -type f | xargs rm -f
+find . -name \*.pyo       -type f | xargs rm -f
+find . -name \*.a         -type f | xargs rm -f
+find . -name .github      -type f | xargs rm -f
+find . -name .travis.yml  -type f | xargs rm -f
+find . -name TODO         -type f | xargs rm -f
+find . -name NEWS         -type f | xargs rm -f
+find . -name README       -type f | xargs rm -f
+
+rm -rf bin/sb_*py bin/tor-prompt bin/pbr docs etc/tor etc/pkcs11
+rm -rf Cellar/adns/*/bin/*
+rm -rf Cellar/gdbm/*/bin
+rm -rf Cellar/gettext/*/bin
+rm -rf Cellar/jpeg/9c/*/bin
+rm -rf Cellar/libtasn1/*/bin
+rm -rf Cellar/nettle/*/bin

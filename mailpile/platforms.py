@@ -46,15 +46,6 @@ def DetectBinaries(which=None, use_cache=True, preferred={}, _raise=None):
                 if binary in BINARIES:
                     del BINARIES[binary]
 
-    # FIXME: This is wrong, we should perform a smarter search of the
-    #        app bundle, both on Windows and MacOS - even flatpak or snap.
-    if sys.platform.startswith('win'):
-        if ('GnuPG' not in BINARIES) and ('GnuPG' not in preferred):
-            try:
-                BINARIES['GnuPG'] = _assert_file_exists('GnuPG\\gpg.exe')
-            except OSError:
-                pass
-
     if which:
         if _raise not in (None, False):
             if not BINARIES.get(which):

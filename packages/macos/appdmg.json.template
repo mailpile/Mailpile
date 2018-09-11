@@ -1,7 +1,11 @@
 {
   "title": "Mailpile",
   "background": "BACKGROUND",
-  "window": { "width": 400, "height": 313 },
+  "icon-size": "112pt",
+  "window": {
+    "position": {"x": 250, "y": 250},
+    "size": {"width": 440, "height": 320}
+  },
   "contents": [
     { "x": 300, "y": 160, "type": "link", "path": "/Applications" },
     { "x": 80, "y": 160, "type": "file", "path": "APP", "name": "Mailpile.app" }
