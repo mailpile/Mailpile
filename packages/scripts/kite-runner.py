@@ -77,6 +77,7 @@ class PagekiteThread(threading.Thread):
                         [c for c in command.split() if c],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
+                        env=self.server.subprocess_env(),
                         bufsize=0)
                     OutputEater(self.kid.stdout, self._handle_logline).start()
                     OutputEater(self.kid.stderr, self._handle_logline).start()
@@ -159,9 +160,11 @@ class BuildbotAPI(object):
                 raise ValueError('No such script')
             elif self.script_running is None:
                 kid = subprocess.Popen(
-                    [self.server.shell_binary, '-c', self.scripts[name]],
+                    [self.server.shell_binary, '-c',
+                     self.scripts[name].replace('\\', '\\\\\\\\')],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
+                    env=self.server.subprocess_env(),
                     bufsize=0)
                 sdata = [kid, name, time.time(), [], [], 0, 0]
                 self.script_running = sdata
@@ -190,7 +193,7 @@ class BuildbotServer(object):
     COMMON_OPT_FLAGS = 'p:k:c:'
     COMMON_OPT_ARGS = [
        'port=', 'runas=', 'config=',
-       'xmlrpc_path=', 'sh_binary=', 'script=',
+       'xmlrpc_path=', 'sh_binary=', 'script=', 'bin_path=',
        'pagekite=', 'pk_binary=', 'pk_kite=', 'pk_secret=']
 
     DEFAULT_CONFIG_FILE = '~/kite-runner.cfg'
@@ -202,6 +205,7 @@ class BuildbotServer(object):
         self.api = BuildbotAPI(self)
         self.shell_binary = 'bash'
         self.rpc_paths = ('/KiteRunner',)
+        self.bin_path = []
         self.pagekite_binary = 'pagekite'
         self.pagekite_kite = ''
         self.pagekite_secret = ''
@@ -233,6 +237,13 @@ class BuildbotServer(object):
         os.setgid(gid)
         os.setuid(uid)
 
+    def subprocess_env(self):
+        env = os.environ.copy()
+        env['PATH'] = os.getenv('PATH')
+        for path in self.bin_path:
+            env['PATH'] = '%s%s%s' % (path, os.pathsep, env['PATH'])
+        return env
+
     def parse_with_common_args(self, args, opt_flags='', opt_args=[]):
         opts, args = getopt.getopt(
            args,
@@ -243,6 +254,9 @@ class BuildbotServer(object):
             for opt, arg in opts:
                 if opt in ('-p', '--port'):
                     self.port = int(arg.strip())
+
+                if opt in ('--bin_path',):
+                    self.bin_path.append(arg)
 
                 if opt in ('--sh_binary',):
                     self.shell_binary = arg.strip()
