@@ -64,13 +64,19 @@ def macOS_build(mailpile_tree, repo, branch, clean_build):
     build_dir = os.path.expanduser('~/build-%s' % repo)
 
     if clean_build and os.path.exists(build_dir) and os.path.isdir(build_dir):
-        sub('echo', 'rm', '-rf', build_dir)
+        sub('rm', '-rf', build_dir)
 
     run('./build.sh', env={'BUILD_DIR': build_dir}, _raise=ValueError)
 
 
 def windows_build(mailpile_tree, repo, branch, clean_build):
     os.chdir(os.path.join(mailpile_tree, 'packages', 'windows-wix'))
+    build_dir = os.path.expanduser('~/build-%s' % repo)
+
+    if clean_build and os.path.exists(build_dir) and os.path.isdir(build_dir):
+        sub('bash', '-c', 'rm -rf "%s"' % build_dir)
+
+    run('python', 'provide', '-i', 'provide.json', _raise=ValueError)
 
 
 if __name__ == '__main__':

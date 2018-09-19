@@ -1,0 +1,65 @@
+#!/bin/bash
+set -e
+set -x
+
+cd "$(dirname "$0")/.."
+export APPDMG_TEMPLATE=appdmg.json.template
+export TARGET=$BUILD_DIR/Mailpile.dmg
+export ASSETS_DIR="$(pwd)"
+export BACKGROUND=$ASSETS_DIR/background/background.png
+export APP=$BUILD_DIR/Mailpile.app
+
+# Ensure dependencies are met.
+command -v appdmg >/dev/null 2>&1 || \
+  command -v dmgbuild >/dev/null 2>&1 || {
+    cat <<tac >&2
+
+This script depends on 'appdmg' or 'dmgbuild'.
+Neither were found on PATH; please ensure appdmg or dmgbuild are installed.
+For more information, see:
+   - https://github.com/LinusU/node-appdmg.
+   - https://dmgbuild.readthedocs.io
+
+Aborting.
+tac
+    exit 1
+}
+
+# Check if the ID of the key, to be used for signing, is set.
+if [ -z ${DMG_SIGNING_IDENTITY+x} ]
+then
+    cat <<tac
+
+The environment variable DMG_SIGNING_IDENTITY must be set to the ID of a
+certificate, which is located within Keychain Access.app, which is to be
+used to sign the .dmg.
+
+Example:
+
+   To use a cert with the common name 'Mac Developer: John Doe (4P78A94863)',
+   set DMG_SIGNING_IDENTITY to 4P78A94863.
+
+Aborting.
+tac
+    exit 1
+fi
+CODESIGN_ID=$(security find-identity \
+    |grep $DMG_SIGNING_IDENTITY \
+    |grep 'Developer ID Application' \
+    |awk '{print $2}' \
+    |head -1)
+
+export APPDMG_CONFIG="$(/usr/bin/mktemp -d)/appdmg.json"
+sed -e "s|DMG_SIGNING_IDENTITY|$DMG_SIGNING_IDENTITY|g;" \
+    -e "s|BACKGROUND|$BACKGROUND|g;" \
+    -e "s|APP|$APP|g" \
+    appdmg.json.template >"$APPDMG_CONFIG"
+
+[ -e "$TARGET" ] && mv -f "$TARGET" "$TARGET.old"
+command -v appdmg >/dev/null \
+ && appdmg "$APPDMG_CONFIG" "$TARGET" \
+ || (command -v dmgbuild >/dev/null \
+ &&  dmgbuild -s dmgbuild-settings.py Mailpile "$TARGET" \
+ &&  codesign --force --sign "$CODESIGN_ID" "$TARGET")
+
+rm -rf $(dirname "$APPDMG_CONFIG")
