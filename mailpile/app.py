@@ -145,7 +145,7 @@ def Interact(session):
             readline.write_history_file(session.config.history_file())
         else:
             safe_remove(session.config.history_file())
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, IOError):
         pass
 
 
