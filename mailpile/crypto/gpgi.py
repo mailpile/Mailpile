@@ -810,6 +810,9 @@ class GnuPG:
         # state when listing secret keys; it seems internally only the
         # public key is disabled. This makes it hard for us to reason about
         # which keys can actually be used, so we compensate...
+        # *** FIXME JackDca 2018-09-21 - Above behaviour not seen in 2.1.18 if
+        # --with-colons is used (but true for human-readable output) so this
+        # code could be deleted.
         list_keys = ["--fingerprint"]
         for fprint in set(secret_keys):
             list_keys += ["--list-keys", fprint]
