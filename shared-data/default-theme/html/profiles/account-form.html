@@ -714,7 +714,7 @@
                 name="security-pgp-key">
           <option value="!CREATE:RSA2048">{{_("Create a new 2048 bit RSA key")}}</option>
           <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new 3072 bit RSA key")}}</option>
-        {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret').result %}
+        {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret','--usable').result %}
         {%- for fingerprint in pgp_keys -%}
           {%- set key = pgp_keys[fingerprint] -%}
           {%- for uid in key.uids %}

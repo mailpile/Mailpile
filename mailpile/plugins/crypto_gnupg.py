@@ -400,14 +400,21 @@ class GPGKeyList(Command):
 
 
 class GPGKeyListSecret(Command):
-    """List Secret GPG Keys"""
+    """List secret GPG Keys, --usable omits disabled, revoked, expired."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist/secret',
-                'crypto/gpg/keylist/secret', '<address>')
+                                    'crypto/gpg/keylist/secret', '[--usable]')
     HTTP_CALLABLE = ('GET', )
 
     def command(self):
-        res = self._gnupg().list_secret_keys()
+    
+        all = self._gnupg().list_secret_keys()
+        if '--usable' in self.args:
+            res = {fprint : all[fprint] for fprint in all if not (
+                        all[fprint]['disabled'] or all[fprint]['revoked'] or
+                        all[fprint]['expired'])}
+        else:
+            res = all
         return self._success("Searched for secret keys", res)
 
 
