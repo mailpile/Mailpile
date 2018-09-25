@@ -62,7 +62,48 @@
     {%- endif %}
     </div>
   {%- endmacro %}
+  {%- set mailer_daemon = ('mailer-daemon@' in from.address) or ('MAILER-DAEMON@' in from.address) or ('postmaster@' in from.address) %}
+  {%- set risky_content = config.prefs.antiphishing and (metadata.flags.spam or mailer_daemon or message.trust.problem or (message.trust.warning and message.attachments)) and True %}
+  {%- set risky_links = config.prefs.antiphishing and (risky_content or message.trust.trust_unknown) and True %}
+  {%- macro risky_content_classes() %}
+    {%- if risky_content %} risky hide{% endif -%}
+  {%- endmacro %}
+  {%- macro msg_warning(reason, nolinks, noatts, actions) %}
+    <div style="border: 1px solid #c70; background: #ffb; margin: 8px 0 2px -10px; padding: 7px;"
+         class="message-content-warning">
+      <span style="float: left; color: #b60; margin: 10px 10px 0 5px; font-size: 18px;"
+            class="icon icon-signature-unknown"></span>
+      {{ reason -}}
+      {%- if nolinks and noatts and message.attachments %} {{_("Blocked attachments, replies, and links.")}}
+      {%- elif noatts and message.attachments %} {{_("Attachments and replies are blocked.")}}
+      {%- elif nolinks %} {{_("Links are blocked.")}}{%- endif %}
+      <div class="message-content-warning-actions" style="margin: 6px 0 0 0;">
+        {%- for act in actions %}{% if not act.hide %}
+          <a style="margin: 0 0.5em;" href="javascript:{{ act.act }}"><span class="icon icon-{{ act.icon }}" style="opacity: 0.7"></span> {{ act.msg }}</a>
+        {% endif %}{%- endfor %}
+      </div>
+    </div>
+  {%- endmacro %}
   <div class="pile-message-content">
+  {%- if config.prefs.antiphishing %}
+    {%- if metadata.flags.spam %}
+      {{- msg_warning("This message is probably spam.", True, True, [
+        {"icon": "not-spam", "msg": _("Remove from spam")},
+        {"icon": "attachment", "msg": _("Show risky content")},
+      ]) -}}
+    {%- elif message.trust.problem or (message.trust.warning and message.attachments) %}
+      {{- msg_warning((message.trust.problem or message.trust.warning) + ".", True, True, [
+        {"icon": "attachment", "act": "Mailpile.stuff();", "msg": _("Show risky content")},
+        {"icon": "spam", "msg": _("Send to spam")},
+      ]) -}}
+    {%- elif risky_content or risky_links %}
+      {{- msg_warning("This sender's reputation is unknown.", True, risky_content, [
+        {"icon": "groups", "msg": _("Add to contacts"), "hide": (mailer_daemon or metadata.flags.from_contact) and True or False },
+        {"icon": "attachment", "msg": _("Show risky content")},
+        {"icon": "spam", "msg": _("Send to spam")},
+      ]) -}}
+    {%- endif %}
+  {%- endif %}
   {%- if message.text_parts %}
     {%- set last_part = message.text_parts|length - 1 %}
     {%- for part in message.text_parts %}
@@ -70,7 +111,7 @@
       {%- if part.data|trim %}
         {{- msg_crypto(part, False) }}
         {%- autoescape false %}
-        {%- set part_text = part.data|nice_text|e|urlize|fix_urls(40, metadata.flags.spam) %}
+        {%- set part_text = part.data|nice_text|e|urlize|fix_urls(40, risky_links) %}
         {%- if part.type in ("text", "pgpsignedtext") %}
       <div class="message-part-text">{{ part_text|to_br }}</div>
         {%- elif part.type in ("pgptext",) %}
@@ -125,7 +166,7 @@
   {%- endif %}
   {%- if message.attachments %}
     <div class="pile-message-attachments">
-      <ul class="pile-message-attachments horizontal clearfix">
+      <ul class="pile-message-attachments horizontal clearfix{{ risky_content_classes() }}">
     {%- for att in message.attachments %}
         <li class="left">
       {# FIXME: Too ugly, for now. { msg_crypto(att, False) } #}
@@ -200,7 +241,7 @@
       {%- endif %}
     </ul>
   </div>
-  <div>
+  <div class="{{ risky_content_classes() }}">
     <p class="message-actions-padding">&nbsp;</p>
     <ul class="message-actions horizontal bottom left">
       <li class="action"><a class="message-action-reply-all" href="#"><span class="icon-reply-all"></span> {{_("Reply")}}</a></li>
