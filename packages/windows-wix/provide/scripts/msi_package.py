@@ -40,7 +40,7 @@ def format_pod(template, **kwargs):
 
 def bind(build):
 
-    @build.default_config('package_template', 'package_uuid_db')
+    @build.default_config('package_template')
     def config_package_jsons(keyword):
         '''
         json configuration files for packaging
@@ -103,19 +103,11 @@ def bind(build):
         with open(os.path.join(dep_path, 'mailpile.package.json'), 'w') as handle:
             json.dump(package_config, handle, indent=2)
 
-        uuid_db_path = build.config('package_uuid_db')
-
-        if not os.path.exists(uuid_db_path):
-            build.log.warning(
-                "Creating new uuid database '{}'".format(uuid_db_path))
-            with open(uuid_db_path, 'w') as handle:
-                json.dump({}, handle)
-
-        wix = package.WixConfig(package_config, uuid_db_path)
+        wix = package.WixConfig(package_config)
 
         # TODO: Split uuid and wix config saving
         wix_config_path = os.path.join(dep_path, 'mailpile')
-        wix.save(wix_config_path)
+        wix.save(wix_config_path + '.wxs')
 
         # Package everything using WIX
         #

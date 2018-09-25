@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 default_log = datetime.datetime.utcnow().strftime('provide-%Y%m%d-%H%M%S.log')
 parser.add_argument('-l', '--log_file', default=default_log,
                     help="Log file, default build-<isotime>.log")
-parser.add_argument('-v', '--log_level', default='DEBUG', help="Log level")
+parser.add_argument('-v', '--log_level', default='WARN', help="Log level")
 parser.add_argument('-i', '--input', help='input config file')
 parser.add_argument('-c', '--cache',
                     default=cache.Cache.default_cache_dir(),
