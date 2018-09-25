@@ -392,14 +392,14 @@ class GPGKeyListSecret(Command):
 
     def command(self):
     
-       all = self._gnupg().list_secret_keys()
+        all = self._gnupg().list_secret_keys()
         if '--usable' in self.args:
             res = {fprint : all[fprint] for fprint in all if not (
                         all[fprint]['disabled'] or all[fprint]['revoked'] or
                         all[fprint]['expired'])}
-       else:
+        else:
             res = all
-       return self._success("Searched for secret keys", res)
+        return self._success("Searched for secret keys", res)
 
 
 class GPGUsageStatistics(Search):
