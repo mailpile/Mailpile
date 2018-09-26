@@ -70,22 +70,28 @@ def extract_autocrypt_header(msg, to=None, optional_attrs=None):
     all_results = []
     for inb in msg.get_all("AutoCrypt"):
         res = parse_autocrypt_headervalue(inb, optional_attrs)
-        print("Res:", res)
         if res and (not to or res['addr'] == to):
             all_results.append(res)
 
     # Return parsed header iff we found exactly one.
     if len(all_results) == 1:
         return all_results[0]
-    elif len(all_results) > 1:
-        # TODO: Handle gossip here.
+    else:
         return {}
 
     # FIXME: The AutoCrypt spec talks about synthesizing headers from other
     #        details. That would make sense if AutoCrypt was our primary
     # mechanism, but we're not really there yet. Needs more thought.
 
-    return {}
+
+def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
+    all_results = []
+    for inb in msg.get_all("Autocrypt-Gossip"):
+        res = parse_autocrypt_headervalue(inb, optional_attrs)
+        if res and (not to or res['addr'] == to):
+            all_results.append(res)
+
+    return all_results
 
 
 ##[ Misc. AutoCrypt-related API commands ]####################################
@@ -149,6 +155,9 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                             autocrypt_header=None):
     autocrypt_header = autocrypt_header or extract_autocrypt_header(
         msg, to=sender_email, optional_attrs=( ))
+    gossip_headers = extract_autocrypt_gossip_headers(msg, to=sender_email)
+
+    print("Gossip headers: ", gossip_headers)
 
     db = get_AutoCrypt_DB(config)['state']
     if autocrypt_header:
@@ -385,6 +394,18 @@ class AutoCryptTxf(EmailTransform):
         if keydata:
             msg["Autocrypt"] = "addr=%s; prefer-encrypt=mutual; keydata=%s" % (sender, keydata)
             matched = True
+
+        # DO GOSSIP
+        db = get_AutoCrypt_DB(self.config)['state']
+        gossip_list = []
+        for rcpt in rcpts:
+            if rcpt in db:
+                print("rcpt %s is in db %s!" % (rcpt, db[rcpt]))
+                # sender_keyid = profile['vcard'].pgp_key
+                # data = gnupg.get_pubkey(sender_keyid)
+
+        if gossip_list:
+            msg["Autocrypt-Gossip"] = gossip_list
 
         return sender, rcpts, msg, matched, True
 
