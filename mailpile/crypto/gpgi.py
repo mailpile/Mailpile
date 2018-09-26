@@ -226,7 +226,8 @@ class GnuPGResultParser:
                 if signature_info.part_status == "unverified":
                     signature_info.part_status = "verified"
             elif (keyword == "DECRYPTION_INFO" and
-                     encryption_info.part_status == "decrypted"):
+                     encryption_info.part_status == "decrypted"
+                     and rp.decrypt_requires_MDC):
                 mdc_method = data[1].strip()
                 aead_algo = data[3].strip() if len(data) > 3 else 0
                 if not mdc_method and not aeadalgo:
