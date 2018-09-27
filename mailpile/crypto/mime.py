@@ -435,6 +435,11 @@ def ObscureAllRecipients(sender):
 
 
 # A dictionary for use with MimeWrapper's obscured_headers parameter,
+# that will obscure only what is required from the public header.
+OBSCURE_HEADERS_REQUIRED = {
+    'autocrypt-gossip': lambda t: None}
+
+# A dictionary for use with MimeWrapper's obscured_headers parameter,
 # that will obscure as much of the metadata from the public header as
 # possible without breaking compatibility.
 OBSCURE_HEADERS_MILD = {
@@ -444,7 +449,8 @@ OBSCURE_HEADERS_MILD = {
     'reply-to': ObscureSender,
     'to': ObscureNames,
     'cc': ObscureNames,
-    'user-agent': lambda t: None}
+    'user-agent': lambda t: None,
+    'autocrypt-gossip': lambda t: None}
 
 
 # A dictionary for use with MimeWrapper's obscured_headers parameter,
@@ -463,7 +469,8 @@ OBSCURE_HEADERS_EXTREME = {
     'in-reply-to': lambda t: None,
     'references': lambda t: None,
     'openpgp': lambda t: None,
-    'user-agent': lambda t: None}
+    'user-agent': lambda t: None,
+    'autocrypt-gossip': lambda t: None}
 
 
 ##[ Methods for encrypting and signing ]#######################################
@@ -484,7 +491,7 @@ class MimeWrapper:
 
     # By default, no headers are obscured. That's a user preference,
     # since there's a trade-off between privacy and compatibility.
-    OBSCURED_HEADERS = {}
+    OBSCURED_HEADERS = OBSCURE_HEADERS_REQUIRED
 
     def __init__(self, config,
                  event=None, cleaner=None,

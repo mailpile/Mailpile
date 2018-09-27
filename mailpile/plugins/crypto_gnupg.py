@@ -1,3 +1,4 @@
+import copy
 import datetime
 import re
 import time
@@ -16,7 +17,7 @@ from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
-from mailpile.crypto.mime import ObscureSubject
+from mailpile.crypto.mime import OBSCURE_HEADERS_REQUIRED, ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils.addresses import AddressHeaderParser
@@ -174,9 +175,10 @@ class CryptoTxf(EmailTransform):
             elif 'obscure_meta' in crypto_format:
                 obscured = OBSCURE_HEADERS_MILD
             elif self.config.prefs.encrypt_subject:
-                obscured = {'subject': ObscureSubject}
+                obscured = copy.copy(OBSCURE_HEADERS_REQUIRED)
+                obscured['subject'] = ObscureSubject
             else:
-                obscured = {}
+                obscured = OBSCURE_HEADERS_REQUIRED
 
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper

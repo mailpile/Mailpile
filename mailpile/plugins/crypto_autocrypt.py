@@ -411,4 +411,8 @@ class AutoCryptTxf(EmailTransform):
 
 _plugins.register_commands(AutoCryptSearch, AutoCryptForget, AutoCryptParse, AutoCryptPeers)
 _plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
-_plugins.register_outgoing_email_content_transform('550_autocrypt', AutoCryptTxf)
+
+# Note: we perform our transformations BEFORE the GnuPG transformations (prio 500),
+# so the memory hole transformation can take care of hiding the Autocrypt-Gossip
+# headers.
+_plugins.register_outgoing_email_content_transform('400_autocrypt', AutoCryptTxf)
