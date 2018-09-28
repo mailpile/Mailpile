@@ -47,7 +47,7 @@ def _get_creation_time(m):
             return datetime.datetime(1970, 1, 1, 00, 00, 00)
 
 
-def _get_keydata(data):
+def _get_keydata(data, include_subkeys=False):
     results = []
     try:
         if "-----BEGIN" in data:
@@ -84,8 +84,11 @@ def _get_keydata(data):
             import traceback
             traceback.print_exc()
 
-    # This will only return keys that have UIDs
-    return [k for k in results if k['uids']]
+    if include_subkeys:
+        return results
+    else:
+        # This will only return keys that have UIDs
+        return [k for k in results if k['uids']]
 
 
 class EmailKeyLookupHandler(LookupHandler, Search):
@@ -139,33 +142,39 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             attachments = email.get_message_tree(want=["attachments"]
                                                  )["attachments"]
             for part in attachments:
+                if len(keys) > 100:  # Just to set some limit...
+                    break
                 if _might_be_pgp_key(part["filename"], part["mimetype"]):
                     key = part["part"].get_payload(None, True)
-                    for keydata in _get_keydata(key):
+                    for keydata in _get_keydata(key, include_subkeys=False):
                         keys.append((keydata, key))
-                    if len(keys) > 5:  # Just to set some limit...
-                        break
             self.key_cache[messageid] = keys
         return keys
+
+
+def get_pgp_key_keywords(key_data):
+    kws = []
+    data = _get_keydata(key_data, include_subkeys=True)
+    if data:
+        kws += ['pgpkey:has']
+        for keydata in data:
+            for uid in keydata.get('uids', []):
+                if uid.get('email'):
+                    kws.append('%s:pgpkey' % uid['email'].lower())
+            fingerprint = keydata["fingerprint"].lower()
+            kws.append('%s:pgpkey' % fingerprint)
+            kws.append('%s:pgpkey' % fingerprint[-16:])
+    return kws
 
 
 def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader,
                                  body_info=None, **kwargs):
     kws = []
     if _might_be_pgp_key(filename, mimetype):
-        data = _get_keydata(part.get_payload(None, True))
-        for keydata in data:
-            for uid in keydata.get('uids', []):
-                if uid.get('email'):
-                    kws.append('%s:pgpkey' % uid['email'].lower())
-        if data:
+        new_kws = get_pgp_key_keywords(part.get_payload(None, True))
+        if new_kws:
             body_info['pgp_key'] = filename
-            kws += ['pgpkey:has']
-
-    # FIXME: If this is a PGP key, make all the key IDs searchable so
-    #        we can find this file again later! Searching by e-mail is lame.
-    #        This is issue #655 ?
-
+            kws += new_kws
     return kws
 
 
