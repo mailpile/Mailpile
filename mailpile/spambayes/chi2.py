@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math as _math
 import random
 
@@ -151,22 +152,19 @@ def main():
         h.add(h1)
         score.add(score1)
 
-    print "Result for random vectors of 50 probs, +", warp, "forced to", bias
+    print("Result for random vectors of 50 probs, + %s forced to %s" % ( warp, bias))
 
     # Should be uniformly distributed on all-random data.
-    print
-    print 'H',
-    h.display()
+    print()
+    print('H %s' % h.display())
 
     # Should be uniformly distributed on all-random data.
-    print
-    print 'S',
-    s.display()
+    print()
+    print('S %s' % s.display())
 
     # Distribution doesn't really matter.
-    print
-    print '(S-H+1)/2',
-    score.display()
+    print()
+    print('(S-H+1)/2 %s' % score.display())
 
 def showscore(ps, ln=_math.log, ln2=_math.log(2), frexp=_math.frexp):
     H = S = 1.0
@@ -186,15 +184,15 @@ def showscore(ps, ln=_math.log, ln2=_math.log(2), frexp=_math.frexp):
     n = len(ps)
     probS = chi2Q(-2*S, 2*n)
     probH = chi2Q(-2*H, 2*n)
-    print "P(chisq >= %10g | v=%3d) = %10g" % (-2*S, 2*n, probS)
-    print "P(chisq >= %10g | v=%3d) = %10g" % (-2*H, 2*n, probH)
+    print("P(chisq >= %10g | v=%3d) = %10g" % (-2*S, 2*n, probS))
+    print("P(chisq >= %10g | v=%3d) = %10g" % (-2*H, 2*n, probH))
 
     S = 1.0 - probS
     H = 1.0 - probH
     score = (S-H + 1.0) / 2.0
-    print "spam prob", S
-    print " ham prob", H
-    print "(S-H+1)/2", score
+    print("spam prob %s" % S)
+    print(" ham prob %s" % H)
+    print("(S-H+1)/2 %s" % score)
 
 if __name__ == '__main__':
     main()
