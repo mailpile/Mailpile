@@ -104,6 +104,7 @@ pytests:
 	@echo -n 'mailboxes/pop3   ' && python2.7 mailpile/mailboxes/pop3.py
 	@echo -n 'mail_source/imap ' && python2.7 mailpile/mail_source/imap.py
 	@echo -n 'crypto/aes_utils ' && python2.7 mailpile/crypto/aes_utils.py
+	@echo 'spambayes...        ' && python2.7 mailpile/spambayes/Tester.py
 	@echo 'crypto/streamer...'   && python2.7 mailpile/crypto/streamer.py
 	@echo
 
