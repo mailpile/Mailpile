@@ -23,7 +23,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
-from mailpile.crypto.autocrypt_utils import minimal_key
+from mailpile.crypto.autocrypt_utils import get_minimal_PGP_key
 
 
 _ = lambda s: s
@@ -1349,16 +1349,19 @@ class GnuPG:
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
 
-    def get_minimal_key(self, key_id = None, user_id = None, subkey_id = None):
+    def get_minimal_key(self, key_id=None, user_id=None, subkey_id=None):
         if key_id:
             selector = key_id    
         elif subkey_id:
             selector = subkey_id
         else:
             selector = user_id
-        key_all = self.export_pubkeys(selectors=[selector])
-        
-        return minimal_key(key_all, user_id = user_id, subkey_id = subkey_id)
+        key_full = self.export_pubkeys(selectors=[selector])
+        try:
+            return get_minimal_PGP_key(
+                 key_full, user_id=user_id, subkey_id=subkey_id)[0]
+        except (TypeError):
+            return None
 
     def export_pubkeys(self, selectors=None):
         self.event.running_gpg(_('Exporting keys %s from keychain'

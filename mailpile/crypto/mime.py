@@ -439,6 +439,7 @@ def ObscureAllRecipients(sender):
 OBSCURE_HEADERS_REQUIRED = {
     'autocrypt-gossip': lambda t: None}
 
+
 # A dictionary for use with MimeWrapper's obscured_headers parameter,
 # that will obscure as much of the metadata from the public header as
 # possible without breaking compatibility.

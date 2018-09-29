@@ -11,6 +11,7 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
+from mailpile.crypto.autocrypt_utils import *
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
@@ -23,75 +24,10 @@ from mailpile.mailutils.emails import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
+from mailpile.plugins.keylookup.email_keylookup import get_pgp_key_keywords
 from mailpile.util import sha1b64
 
 _plugins = PluginManager(builtin=__file__)
-
-
-##[ Begin borrowed code ... ]################################################
-#
-# Based on:
-#
-# https://github.com/mailencrypt/inbome/blob/master/src/inbome/parse.py
-
-def parse_autocrypt_headervalue(value, optional_attrs=[]):
-    result_dict = {}
-    for x in value.split(";"):
-        kv = x.split("=", 1)
-        name = kv[0].strip()
-        value = kv[1].strip()
-        if name == "addr":
-            result_dict["addr"] = value
-        elif name == "keydata":
-            keydata_base64 = "".join(value.split())
-            keydata = base64.b64decode(keydata_base64)
-            result_dict["keydata"] = keydata
-        elif name == "prefer-encrypted":
-            result_dict["prefer-encrypted"] = value
-
-    if "keydata" not in result_dict:
-        # found no keydata, ignoring header
-        return {}
-
-    if "addr" not in result_dict:
-        # found no e-mail address, ignoring header
-        return {}
-
-    if "prefer-encrypted" not in result_dict:
-        result_dict["prefer-encrypted"] = "nopreference"
-
-    if result_dict.get("prefer-encrypted") not in ("mutual", "nopreference"):
-        result_dict["prefer-encrypted"] = "nopreference"
-
-    return result_dict
-
-
-def extract_autocrypt_header(msg, to=None, optional_attrs=None):
-    all_results = []
-    for inb in msg.get_all("AutoCrypt"):
-        res = parse_autocrypt_headervalue(inb, optional_attrs)
-        if res and (not to or res['addr'] == to):
-            all_results.append(res)
-
-    # Return parsed header iff we found exactly one.
-    if len(all_results) == 1:
-        return all_results[0]
-    else:
-        return {}
-
-    # FIXME: The AutoCrypt spec talks about synthesizing headers from other
-    #        details. That would make sense if AutoCrypt was our primary
-    # mechanism, but we're not really there yet. Needs more thought.
-
-
-def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
-    all_results = []
-    for inb in msg.get_all("Autocrypt-Gossip"):
-        res = parse_autocrypt_headervalue(inb, optional_attrs)
-        if res and (not to or res['addr'] == to):
-            all_results.append(res)
-
-    return all_results
 
 
 ##[ Misc. AutoCrypt-related API commands ]####################################
@@ -331,7 +267,7 @@ class AutoCryptParse(Command):
 class AutoCryptPeers(Command):
     """List known AutoCrypt Peers and their state."""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/autocrypt/peers', 'crypto/autocrypt/peers')
+    SYNOPSIS = (None, 'crypto/autocrypt/peers', 'crypto/autocrypt/peers', None)
     HTTP_CALLABLE = ('POST', )
 
     def command(self):
@@ -343,12 +279,6 @@ class AutoCryptPeers(Command):
         return self._success(_("Found %d peers") % len(db), db)
 
 
-def extract_pgp_key_keywords(key_data):
-    # FIXME: pgpdump!
-    # FIXME: It's unclear what the goal was here.
-    return set([])
-
-
 def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
     keywords = set([])
 
@@ -358,14 +288,13 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
 
     if 'autocrypt' in msg:
         sender = ExtractEmails(msg['from'])[0]
-        autocrypt_header = extract_autocrypt_header(
-            msg, to=sender, optional_attrs=( ))
+        autocrypt_header = extract_autocrypt_header(msg, to=sender)
 
         if autocrypt_header:
             keywords.add('autocrypt:has')
-            key_data = autocrypt_header.get('key')
+            key_data = autocrypt_header.get('keydata')
             if key_data:
-                keywords |= extract_pgp_key_keywords(key_data)
+                keywords |= set(get_pgp_key_keywords(key_data))
 
             AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender,
                                     autocrypt_header=autocrypt_header)
