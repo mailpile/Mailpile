@@ -55,6 +55,16 @@ def threaded_raw_input(prompt):
     return o[0]
 
 
+def write_readline_history(session):
+    try:
+        if session.config.sys.history_length > 0:
+            readline.write_history_file(session.config.history_file())
+        else:
+            safe_remove(session.config.history_file())
+    except (OSError, AttributeError, IOError):
+        pass
+
+
 def CatchUnixSignals(session):
     def quit_app(sig, stack):
         Quit(session, 'quit').run()
@@ -140,13 +150,7 @@ def Interact(session):
     finally:
         session.ui.unblock(force=True)
 
-    try:
-        if session.config.sys.history_length > 0:
-            readline.write_history_file(session.config.history_file())
-        else:
-            safe_remove(session.config.history_file())
-    except (OSError, AttributeError, IOError):
-        pass
+    write_readline_history(session)
 
 
 class InteractCommand(Command):
@@ -270,8 +274,7 @@ def Main(args):
         traceback.print_exc()
 
     finally:
-        if readline is not None:
-            readline.write_history_file(session.config.history_file())
+        write_readline_history(session)
 
         # Make everything in the background quit ASAP...
         mailpile.util.LAST_USER_ACTIVITY = 0
