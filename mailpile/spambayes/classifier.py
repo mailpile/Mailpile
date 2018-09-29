@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import generators
+from __future__ import print_function
 
 # An implementation of a Bayes-like spam classifier.
 #
@@ -47,7 +48,12 @@ import re
 import os
 import sys
 import socket
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    # Python3
+    from urllib import request as urllib2
+
 from email import message_from_string
 
 DOMAIN_AND_PORT_RE = re.compile(r"([^:/\\]+)(:([\d]+))?")
@@ -575,7 +581,7 @@ class Classifier:
         if not os.path.exists(dir):
             # Create the directory.
             if options["globals", "verbose"]:
-                print >> sys.stderr, "Creating URL cache directory"
+                print("Creating URL cache directory", file=sys.stderr)
             os.makedirs(dir)
 
         self.urlCorpus = ExpiryFileCorpus(age, FileMessageFactory(),
@@ -593,13 +599,13 @@ class Classifier:
                 # Something went wrong loading it (bad pickle,
                 # probably).  Start afresh.
                 if options["globals", "verbose"]:
-                    print >> sys.stderr, "Bad URL pickle, using new."
+                    print("Bad URL pickle, using new.", file=sys.stderr)
                 self.bad_urls = {"url:non_resolving": (),
                                  "url:non_html": (),
                                  "url:unknown_error": ()}
         else:
             if options["globals", "verbose"]:
-                print "URL caches don't exist: creating"
+                print("URL caches don't exist: creating")
             self.bad_urls = {"url:non_resolving": (),
                         "url:non_html": (),
                         "url:unknown_error": ()}
@@ -610,7 +616,7 @@ class Classifier:
                 # Something went wrong loading it (bad pickle,
                 # probably).  Start afresh.
                 if options["globals", "verbose"]:
-                    print >> sys.stderr, "Bad HHTP error pickle, using new."
+                    print("Bad HHTP error pickle, using new.", file=sys.stderr)
                 self.http_error_urls = {}
         else:
             self.http_error_urls = {}
@@ -692,9 +698,9 @@ class Classifier:
                 pass
             try:
                 if options["globals", "verbose"]:
-                    print >> sys.stderr, "Slurping", url
+                    print("Slurping %s" % url, file=sys.stderr)
                 f = urllib2.urlopen("%s://%s" % (proto, url))
-            except (urllib2.URLError, socket.error), details:
+            except (urllib2.URLError, socket.error) as details:
                 mo = HTTP_ERROR_RE.match(str(details))
                 if mo:
                     self.http_error_urls[url] = "url:http_" + mo.group(1)
