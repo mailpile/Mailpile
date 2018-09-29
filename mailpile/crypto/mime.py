@@ -483,7 +483,7 @@ class MimeWrapper:
     # important user-visible headers.
     WRAPPED_HEADERS = ('subject', 'from', 'to', 'cc', 'date', 'user-agent',
                        'sender', 'reply-to', 'in-reply-to', 'references',
-                       'openpgp', 'autocrypt')
+                       'openpgp')
 
     # Force-displayed headers; if these headers get obscured, add a
     # visible part that shows them to the user in legacy clients.
