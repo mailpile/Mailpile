@@ -25,7 +25,7 @@ RUN apt-get update && \
   python-jinja2 python-lockfile python-lxml python-markupsafe \
   python-mock python-nose python-olefile python-pbr python-pgpdump \
   python-pil python-selenium python-setuptools python-webencodings \
-  python-socksipychain spambayes xdg-utils
+  python-socksipychain python-lockfile xdg-utils
 
 RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian

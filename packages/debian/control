@@ -9,7 +9,6 @@ Build-Depends: debhelper (>= 9),
 # requirements.txt
                python-lxml,
                python-jinja2,
-               spambayes,
                python-markupsafe,
                python-dns,
                python-pgpdump,
@@ -50,6 +49,9 @@ Homepage: https://www.mailpile.is/
 Package: mailpile
 Architecture: all
 Depends: ${misc:Depends},
+         ${python:Depends},
+         python-lxml,
+         python-jinja2,
          wordlist,
          gnupg,
          dirmngr,
