@@ -3,6 +3,7 @@ import time
 import copy
 from pgpdump.utils import PgpdumpException
 
+from mailpile.crypto.autocrypt_utils import *
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler
@@ -139,6 +140,16 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
+
+            # First we check the Autocrypt headers
+            msg = email.get_msg(pgpmime='all')
+            for ach in ([extract_autocrypt_header(msg)] +
+                        extract_autocrypt_gossip_headers(msg)):
+                if 'keydata' in ach:
+                    for keydata in _get_keydata(ach['keydata']):
+                        keys.append((keydata, ach['keydata']))
+
+            # Then go looking at the attachments
             attachments = email.get_message_tree(want=["attachments"]
                                                  )["attachments"]
             for part in attachments:
