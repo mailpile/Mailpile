@@ -114,7 +114,7 @@ CONFIG_RULES = {
         'gpg_html_wrap':   (_('Wrap keys and signatures in helpful HTML'),
                             bool, True),
         'antiphishing':    (_("Enable experimental anti-phishing heuristics "),
-                                                                   bool, True),
+                                                                  bool, False),
         'key_trust':       (_("Key Trust Model"), False, {
             'threshold':    (_('Minimum number of signatures required'),
                              int, 5),
