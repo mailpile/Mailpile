@@ -1,4 +1,4 @@
-from spambayes.Options import options
+from mailpile.spambayes.Options import options
 
 class Test:
     # Pass a classifier instance (an instance of Bayes).
@@ -141,8 +141,8 @@ class _Example:
         return iter(self.words)
 
 _easy_test = """
-    >>> from spambayes.classifier import Bayes
-    >>> from spambayes.Options import options
+    >>> from mailpile.spambayes.classifier import Bayes
+    >>> from mailpile.spambayes.Options import options
     >>> options["Categorization", "ham_cutoff"] = options["Categorization", "spam_cutoff"] = 0.5
 
     >>> good1 = _Example('', ['a', 'b', 'c'])
