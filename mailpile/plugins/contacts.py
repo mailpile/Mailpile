@@ -1144,11 +1144,10 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
-            'security-use-autocrypt': False,
             'security-always-sign': False,
             'security-always-encrypt': False,
-            'security-always-encrypt': False,
-            'security-attach-keys': True,  # FIXME: Autocrypt changes this
+            'security-use-autocrypt': True,
+            'security-attach-keys': False,
             'security-prefer-inline': False,
             'security-prefer-pgpmime': False,
             'security-obscure-metadata': False,

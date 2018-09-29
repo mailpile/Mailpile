@@ -713,7 +713,7 @@
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
           <option value="!CREATE:RSA2048">{{_("Create a new 2048 bit RSA key")}}</option>
-          <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new 3072 bit RSA key")}}</option>
+          <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new Autocrypt compatible key (3072 bit RSA)")}}</option>
         {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret','--usable').result %}
         {%- for fingerprint in pgp_keys -%}
           {%- set key = pgp_keys[fingerprint] -%}
@@ -792,8 +792,8 @@
           </span>
         </div>
 {% endif %}
-        <div style="margin-top: 0.7em"
-             class="more-crypto {% if not result['security-openpgp-header-encrypt'] %}hide{% endif %}">
+        <div style="margin-top: 0.7em" class="more-crypto hide"></div>
+        <div class="more-crypto {% if not result['security-openpgp-header-encrypt'] %}hide{% endif %}">
           <input type="checkbox" name="security-openpgp-header-encrypt" value="yes"
                  onchange='javascript:_fpa.exclude(this, "security-openpgp-header-none");_fpa.require(this, "security-openpgp-header-sign");'
                  {% if result['security-openpgp-header-encrypt'] %}checked{% endif %}>
@@ -817,22 +817,20 @@
             {{_("Signal a preference for un-signed, un-encrypted mail")}}
           </span>
         </div>
-{# FIXME - make this work!
-        <div style="margin-top: 0.7em"
-             class="more-crypto {% if not result['security-use-autocrypt'] %}hide{% endif %}">
+        <div style="margin-top: 0.7em" class="more-crypto hide"></div>
+        <div class="more-crypto {% if not result['security-use-autocrypt'] %}hide{% endif %}">
           <input type="checkbox" name="security-use-autocrypt" value="yes"
                  onchange='javascript:_fpa.exclude(this, "security-attach-keys");'
                  {% if result['security-use-autocrypt'] %}checked{% endif %}>
           <span class="checkbox">
-            {{_("Use AutoCrypt headers to share encryption keys")}}
-          </span><br>
+            {{_("Use Autocrypt headers to exchange encryption keys")}}
+          </span>
         </div>
-#}
         <div class="more-crypto {% if not result['security-attach-keys'] %}hide{% endif %}">
           <input type="checkbox" name="security-attach-keys" value="yes"
                  {% if result['security-attach-keys'] %}checked{% endif %}>
           <span class="checkbox">
-            {{_("Automatically attach encryption keys to outgoing mail")}}
+            {{_("Use attachments to exchange encryption keys")}}
           </span>
         </div>
 {# FIXME - make this work!
