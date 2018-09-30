@@ -28,7 +28,7 @@ except NameError:
 __all__ = ['options', '_']
 
 # Grab the stuff from the core options class.
-from spambayes.OptionsClass import *
+from mailpile.spambayes.OptionsClass import *
 
 # A little magic.  We'd like to use ZODB as the default storage,
 # because we've had so many problems with bsddb, and we'd like to swap

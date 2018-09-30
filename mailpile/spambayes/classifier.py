@@ -61,9 +61,9 @@ HTTP_ERROR_RE = re.compile(r"HTTP Error ([\d]+)")
 URL_KEY_RE = re.compile(r"[\W]")
 # XXX ---- ends ----
 
-from spambayes.Options import options
-from spambayes.chi2 import chi2Q
-from spambayes.safepickle import pickle_read, pickle_write
+from mailpile.spambayes.Options import options
+from mailpile.spambayes.chi2 import chi2Q
+from mailpile.spambayes.safepickle import pickle_read, pickle_write
 
 LN2 = math.log(2)       # used frequently by chi-combining
 
