@@ -17,7 +17,6 @@
         "/page/hints/gravatar.html": {"file": "hints/gravatar.html"},
         "/page/hints/organize-sidebar.html": {"file": "hints/organize-sidebar.html"},
         "/page/hints/spam.html": {"file": "hints/spam.html"},
-        "/page/hints/spambayes.html": {"file": "hints/spambayes.html"},
         "/page/hints/keyboard-shortcuts.html": {"file": "hints/keyboard-shortcuts.html"},
         "/page/hints/autotagging.html": {"file": "hints/autotagging.html"},
         "/page/hints/dragging-tags.html": {"file": "hints/dragging-tags.html"}
