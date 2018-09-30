@@ -10,7 +10,7 @@ except ImportError:
 
 import lockfile
 
-from spambayes.Options import options
+from mailpile.spambayes.Options import options
 
 def pickle_read(filename):
     """Read pickle file contents with a lock."""
