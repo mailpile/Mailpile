@@ -267,65 +267,6 @@ defaults = {
      BOOLEAN, RESTORE),
   ),
 
-  # These options are all experimental; it seemed better to put them into
-  # their own category than have several interdependant experimental options.
-  # If this capability is removed, the entire section can go.
-  "URLRetriever" : (
-    ("x-slurp_urls", _("Tokenize text content at the end of URLs"), False,
-     _("""(EXPERIMENTAL) If this option is enabled, when a message normally
-     scores in the 'unsure' range, and has fewer tokens than the maximum
-     looked at, and contains URLs, then the text at those URLs is obtained
-     and tokenized.  If those tokens result in the message moving to a
-     score outside the 'unsure' range, then they are added to the
-     tokens for the message.  This should be particularly effective
-     for messages that contain only a single URL and no other text."""),
-     BOOLEAN, RESTORE),
-
-    ("x-cache_expiry_days", _("Number of days to store URLs in cache"), 7,
-     _("""(EXPERIMENTAL) This is the number of days that local cached copies
-     of the text at the URLs will be stored for."""),
-     INTEGER, RESTORE),
-
-    ("x-cache_directory", _("URL Cache Directory"), "url-cache",
-     _("""(EXPERIMENTAL) So that SpamBayes doesn't need to retrieve the same
-     URL over and over again, it stores local copies of the text at the
-     end of the URL.  This is the directory that will be used for those
-     copies."""),
-     PATH, RESTORE),
-
-    ("x-only_slurp_base", _("Retrieve base url"), False,
-     _("""(EXPERIMENTAL) To try and speed things up, and to avoid following
-     unique URLS, if this option is enabled, SpamBayes will convert the URL
-     to as basic a form it we can.  All directory information is removed
-     and the domain is reduced to the two (or three for those with a
-     country TLD) top-most elements.  For example,
-         http://www.massey.ac.nz/~tameyer/index.html?you=me
-     would become
-         http://massey.ac.nz
-     and
-         http://id.example.com
-     would become http://example.com
-
-     This should have two beneficial effects:
-      o It's unlikely that any information could be contained in this 'base'
-        url that could identify the user (unless they have a *lot* of domains).
-      o Many urls (both spam and ham) will strip down into the same 'base' url.
-        Since we have a limited form of caching, this means that a lot fewer
-        urls will have to be retrieved.
-     However, this does mean that if the 'base' url is hammy and the full is
-     spammy, or vice-versa, that the slurp will give back the wrong information.
-     Whether or not this is the case would have to be determined by testing.
-     """),
-     BOOLEAN, RESTORE),
-
-    ("x-web_prefix", _("Prefix for tokens from web pages"), "",
-     _("""(EXPERIMENTAL) It may be that what is hammy/spammy for you in email
-     isn't from webpages.  You can then set this option (to "web:", for
-     example), and effectively create an independent (sub)database for
-     tokens derived from parsing web pages."""),
-     r"[\S]+", RESTORE),
-  ),
-
   # These options control how a message is categorized
   "Categorization" : (
     # spam_cutoff and ham_cutoff are used in Python slice sense:

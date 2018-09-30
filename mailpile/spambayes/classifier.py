@@ -40,34 +40,11 @@ from __future__ import print_function
 
 import math
 
-# XXX At time of writing, these are only necessary for the
-# XXX experimental url retrieving/slurping code.  If that
-# XXX gets ripped out, either rip these out, or run
-# XXX PyChecker over the code.
-import re
-import os
-import sys
-import socket
-try:
-    import urllib2
-except ImportError:
-    # Python3
-    from urllib import request as urllib2
-
-from email import message_from_string
-
-DOMAIN_AND_PORT_RE = re.compile(r"([^:/\\]+)(:([\d]+))?")
-HTTP_ERROR_RE = re.compile(r"HTTP Error ([\d]+)")
-URL_KEY_RE = re.compile(r"[\W]")
-# XXX ---- ends ----
-
 from mailpile.spambayes.Options import options
 from mailpile.spambayes.chi2 import chi2Q
 from mailpile.spambayes.safepickle import pickle_read, pickle_write
 
 LN2 = math.log(2)       # used frequently by chi-combining
-
-slurp_wordstream = None
 
 PICKLE_VERSION = 5
 
@@ -213,36 +190,8 @@ class Classifier:
         else:
             return prob
 
-    def slurping_spamprob(self, wordstream, evidence=False):
-        """Do the standard chi-squared spamprob, but if the evidence
-        leaves the score in the unsure range, and we have fewer tokens
-        than max_discriminators, also generate tokens from the text
-        obtained by following http URLs in the message."""
-        h_cut = options["Categorization", "ham_cutoff"]
-        s_cut = options["Categorization", "spam_cutoff"]
-
-        # Get the raw score.
-        prob, clues = self.chi2_spamprob(wordstream, True)
-
-        # If necessary, enhance it with the tokens from whatever is
-        # at the URL's destination.
-        if len(clues) < options["Classifier", "max_discriminators"] and \
-           prob > h_cut and prob < s_cut and slurp_wordstream:
-            slurp_tokens = list(self._generate_slurp())
-            slurp_tokens.extend([w for (w, _p) in clues])
-            sprob, sclues = self.chi2_spamprob(slurp_tokens, True)
-            if sprob < h_cut or sprob > s_cut:
-                prob = sprob
-                clues = sclues
-        if evidence:
-            return prob, clues
-        return prob
-
     if options["Classifier", "use_chi_squared_combining"]:
-        if options["URLRetriever", "x-slurp_urls"]:
-            spamprob = slurping_spamprob
-        else:
-            spamprob = chi2_spamprob
+        spamprob = chi2_spamprob
 
     def learn(self, wordstream, is_spam):
         """Teach the classifier by example.
@@ -253,8 +202,6 @@ class Classifier:
         """
         if options["Classifier", "use_bigrams"]:
             wordstream = self._enhance_wordstream(wordstream)
-        if options["URLRetriever", "x-slurp_urls"]:
-            wordstream = self._add_slurped(wordstream)
         self._add_msg(wordstream, is_spam)
 
     def unlearn(self, wordstream, is_spam):
@@ -264,8 +211,6 @@ class Classifier:
         """
         if options["Classifier", "use_bigrams"]:
             wordstream = self._enhance_wordstream(wordstream)
-        if options["URLRetriever", "x-slurp_urls"]:
-            wordstream = self._add_slurped(wordstream)
         self._remove_msg(wordstream, is_spam)
 
     def probability(self, record):
@@ -530,261 +475,6 @@ class Classifier:
                 # _getclues().
                 yield "bi:%s %s" % (last, token)
             last = token
-
-    def _generate_slurp(self):
-        # We don't want to do this recursively and check URLs
-        # on webpages, so we have this little cheat.
-        if not hasattr(self, "setup_done"):
-            self.setup()
-            self.setup_done = True
-        if not hasattr(self, "do_slurp") or self.do_slurp:
-            if slurp_wordstream:
-                self.do_slurp = False
-
-                tokens = self.slurp(*slurp_wordstream)
-                self.do_slurp = True
-                self._save_caches()
-                return tokens
-        return []
-
-    def setup(self):
-        # Can't import this at the top because it's circular.
-        # XXX Someone smarter than me, please figure out the right
-        # XXX way to do this.
-        from spambayes.FileCorpus import ExpiryFileCorpus, FileMessageFactory
-
-        username = options["globals", "proxy_username"]
-        password = options["globals", "proxy_password"]
-        server = options["globals", "proxy_server"]
-        if server.find(":") != -1:
-            server, port = server.split(':', 1)
-        else:
-            port = 8080
-        if server:
-            # Build a new opener that uses a proxy requiring authorization
-            proxy_support = urllib2.ProxyHandler({"http" : \
-                                                  "http://%s:%s@%s:%d" % \
-                                                  (username, password,
-                                                   server, port)})
-            opener = urllib2.build_opener(proxy_support,
-                                          urllib2.HTTPHandler)
-        else:
-            # Build a new opener without any proxy information.
-            opener = urllib2.build_opener(urllib2.HTTPHandler)
-
-        # Install it
-        urllib2.install_opener(opener)
-
-        # Setup the cache for retrieved urls
-        age = options["URLRetriever", "x-cache_expiry_days"]*24*60*60
-        dir = options["URLRetriever", "x-cache_directory"]
-        if not os.path.exists(dir):
-            # Create the directory.
-            if options["globals", "verbose"]:
-                print("Creating URL cache directory", file=sys.stderr)
-            os.makedirs(dir)
-
-        self.urlCorpus = ExpiryFileCorpus(age, FileMessageFactory(),
-                                          dir, cacheSize=20)
-        # Kill any old information in the cache
-        self.urlCorpus.removeExpiredMessages()
-
-        # Setup caches for unretrievable urls
-        self.bad_url_cache_name = os.path.join(dir, "bad_urls.pck")
-        self.http_error_cache_name = os.path.join(dir, "http_error_urls.pck")
-        if os.path.exists(self.bad_url_cache_name):
-            try:
-                self.bad_urls = pickle_read(self.bad_url_cache_name)
-            except (IOError, ValueError):
-                # Something went wrong loading it (bad pickle,
-                # probably).  Start afresh.
-                if options["globals", "verbose"]:
-                    print("Bad URL pickle, using new.", file=sys.stderr)
-                self.bad_urls = {"url:non_resolving": (),
-                                 "url:non_html": (),
-                                 "url:unknown_error": ()}
-        else:
-            if options["globals", "verbose"]:
-                print("URL caches don't exist: creating")
-            self.bad_urls = {"url:non_resolving": (),
-                        "url:non_html": (),
-                        "url:unknown_error": ()}
-        if os.path.exists(self.http_error_cache_name):
-            try:
-                self.http_error_urls = pickle_read(self.http_error_cache_name)
-            except (IOError, ValueError):
-                # Something went wrong loading it (bad pickle,
-                # probably).  Start afresh.
-                if options["globals", "verbose"]:
-                    print("Bad HHTP error pickle, using new.", file=sys.stderr)
-                self.http_error_urls = {}
-        else:
-            self.http_error_urls = {}
-
-    def _save_caches(self):
-        # XXX Note that these caches are never refreshed, which might not
-        # XXX be a good thing long-term (if a previously invalid URL
-        # XXX becomes valid, for example).
-        for name, data in [(self.bad_url_cache_name, self.bad_urls),
-                           (self.http_error_cache_name, self.http_error_urls),]:
-            pickle_write(name, data)
-
-    def slurp(self, proto, url):
-        # We generate these tokens:
-        #  url:non_resolving
-        #  url:non_html
-        #  url:http_XXX (for each type of http error encounted,
-        #                for example 404, 403, ...)
-        # And tokenise the received page (but we do not slurp this).
-        # Actually, the special url: tokens barely showed up in my testing,
-        # although I would have thought that they would more - this might
-        # be due to an error, although they do turn up on occasion.  In
-        # any case, we have to do the test, so generating an extra token
-        # doesn't cost us anything apart from another entry in the db, and
-        # it's only two entries, plus one for each type of http error
-        # encountered, so it's pretty neglible.
-        # If there is no content in the URL, then just return immediately.
-        # "http://)" will trigger this.
-        if not url:
-            return ["url:non_resolving"]
-        
-        from spambayes.tokenizer import Tokenizer
-
-        if options["URLRetriever", "x-only_slurp_base"]:
-            url = self._base_url(url)
-
-        # Check the unretrievable caches
-        for err in self.bad_urls.keys():
-            if url in self.bad_urls[err]:
-                return [err]
-        if self.http_error_urls.has_key(url):
-            return self.http_error_urls[url]
-
-        # We check if the url will resolve first
-        mo = DOMAIN_AND_PORT_RE.match(url)
-        domain = mo.group(1)
-        if mo.group(3) is None:
-            port = 80
-        else:
-            port = mo.group(3)
-        try:
-            _unused = socket.getaddrinfo(domain, port)
-        except socket.error:
-            self.bad_urls["url:non_resolving"] += (url,)
-            return ["url:non_resolving"]
-
-        # If the message is in our cache, then we can just skip over
-        # retrieving it from the network, and get it from there, instead.
-        url_key = URL_KEY_RE.sub('_', url)
-        cached_message = self.urlCorpus.get(url_key)
-
-        if cached_message is None:
-            # We're going to ignore everything that isn't text/html,
-            # so we might as well not bother retrieving anything with
-            # these extensions.
-            parts = url.split('.')
-            if parts[-1] in ('jpg', 'gif', 'png', 'css', 'js'):
-                self.bad_urls["url:non_html"] += (url,)
-                return ["url:non_html"]
-
-            # Waiting for the default timeout period slows everything
-            # down far too much, so try and reduce it for just this
-            # call (this will only work with Python 2.3 and above).
-            try:
-                timeout = socket.getdefaulttimeout()
-                socket.setdefaulttimeout(5)
-            except AttributeError:
-                # Probably Python 2.2.
-                pass
-            try:
-                if options["globals", "verbose"]:
-                    print("Slurping %s" % url, file=sys.stderr)
-                f = urllib2.urlopen("%s://%s" % (proto, url))
-            except (urllib2.URLError, socket.error) as details:
-                mo = HTTP_ERROR_RE.match(str(details))
-                if mo:
-                    self.http_error_urls[url] = "url:http_" + mo.group(1)
-                    return ["url:http_" + mo.group(1)]
-                self.bad_urls["url:unknown_error"] += (url,)
-                return ["url:unknown_error"]
-            # Restore the timeout
-            try:
-                socket.setdefaulttimeout(timeout)
-            except AttributeError:
-                # Probably Python 2.2.
-                pass
-
-            try:
-                # Anything that isn't text/html is ignored
-                content_type = f.info().get('content-type')
-                if content_type is None or \
-                   not content_type.startswith("text/html"):
-                    self.bad_urls["url:non_html"] += (url,)
-                    return ["url:non_html"]
-
-                page = f.read()
-                headers = str(f.info())
-                f.close()
-            except socket.error:
-                # This is probably a temporary error, like a timeout.
-                # For now, just bail out.
-                return []
-            
-            fake_message_string = headers + "\r\n" + page
-
-            # Retrieving the same messages over and over again will tire
-            # us out, so we store them in our own wee cache.
-            message = self.urlCorpus.makeMessage(url_key,
-                                                 fake_message_string)
-            self.urlCorpus.addMessage(message)
-        else:
-            fake_message_string = cached_message.as_string()
-
-        msg = message_from_string(fake_message_string)
-
-        # We don't want to do full header tokenising, as this is
-        # optimised for messages, not webpages, so we just do the
-        # basic stuff.
-        bht = options["Tokenizer", "basic_header_tokenize"]
-        bhto = options["Tokenizer", "basic_header_tokenize_only"]
-        options["Tokenizer", "basic_header_tokenize"] = True
-        options["Tokenizer", "basic_header_tokenize_only"] = True
-
-        tokens = Tokenizer().tokenize(msg)
-        pf = options["URLRetriever", "x-web_prefix"]
-        tokens = ["%s%s" % (pf, tok) for tok in tokens]
-
-        # Undo the changes
-        options["Tokenizer", "basic_header_tokenize"] = bht
-        options["Tokenizer", "basic_header_tokenize_only"] = bhto
-        return tokens
-
-    def _base_url(self, url):
-        # To try and speed things up, and to avoid following
-        # unique URLS, we convert the URL to as basic a form
-        # as we can - so http://www.massey.ac.nz/~tameyer/index.html?you=me
-        # would become http://massey.ac.nz and http://id.example.com
-        # would become http://example.com
-        url += '/'
-        domain = url.split('/', 1)[0]
-        parts = domain.split('.')
-        if len(parts) > 2:
-            base_domain = parts[-2] + '.' + parts[-1]
-            if len(parts[-1]) < 3:
-                base_domain = parts[-3] + '.' + base_domain
-        else:
-            base_domain = domain
-        return base_domain
-
-    def _add_slurped(self, wordstream):
-        """Add tokens generated by 'slurping' (i.e. tokenizing
-        the text at the web pages pointed to by URLs in messages)
-        to the wordstream."""
-        for token in wordstream:
-            yield token
-        slurped_tokens = self._generate_slurp()
-        for token in slurped_tokens:
-            yield token
 
     def _wordinfokeys(self):
         return self.wordinfo.keys()
