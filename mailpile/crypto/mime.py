@@ -118,7 +118,8 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
 
     # Original MIME headers must go, whether we're replacing them or not.
     for hdr in [k for k in part.keys() if k.lower().startswith('content-')]:
-        del part[hdr]
+        while hdr in part:
+            del part[hdr]
 
     # If we're keeping the non-MIME old headers, make copies now before
     # they get deleted below.
@@ -133,7 +134,8 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
                 part.add_header('X-%s-%s' % (keep_old_headers, h), v)
 
     for h in newpart.keys():
-        del part[h]
+        while h in part:
+            del part[h]
 
     copied = set([])
     for h, v in newpart.items():
@@ -244,7 +246,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                     data = email.parser.Parser().parsestr(
                         pl[0].get_payload(), headersonly=True)
                     for h in data.keys():
-                        if h in part:
+                        while h in part:
                             del part[h]
                         part[h] = data[h]
                         hdrs.add(h)
@@ -563,35 +565,41 @@ class MimeWrapper:
     def prepare_wrap(self, msg):
         obscured = self.obscured_headers
         wrapped = self.wrapped_headers
-        oo = {}
 
-        # FIXME: Pretty sure this doesn't do the right thing if there
-        #        are multiple headers with the same name.
+        obscured_set = set([])
+        to_delete = {}
+        for (h, header_value) in msg.items():
+            if not header_value:
+                continue
 
-        for h in msg.keys():
             hl = h.lower()
-
-            if not hl.startswith('content-') and not hl.startswith('mime-'):
+            if hl == 'mime-version':
+                to_delete[h] = True
+            elif not hl.startswith('content-'):
                 if hl in obscured:
-                    oh = obscured[hl](msg[h])
-                    oo[h] = msg[h]
+                    obscured_set.add(h)
+                    oh = obscured[hl](header_value)
                     if oh:
-                        self.container[h] = oh
+                        self.container.add_header(h, oh)
                 else:
-                    self.container[h] = msg[h]
+                    self.container.add_header(h, header_value)
                 if hl not in wrapped and hl not in obscured:
-                    del msg[h]
-            elif hl == 'mime-version':
+                    to_delete[h] = True
+
+        for h in to_delete:
+            while h in msg:
                 del msg[h]
 
         if hasattr(msg, 'signature_info'):
             self.container.signature_info = msg.signature_info
             self.container.encryption_info = msg.encryption_info
 
-        return self.force_display_headers(msg, oo)
+        return self.force_display_headers(msg, obscured_set)
 
-    def force_display_headers(self, msg, headers):
-        if not [k for k in headers.keys()
+    def force_display_headers(self, msg, obscured_set):
+        # If we aren't changing the structure of the message (adding a
+        # force-display part), we can just wrap the original and be done.
+        if not [k for k in obscured_set
                 if k.lower() in self.FORCE_DISPLAY_HEADERS]:
             return msg
 
@@ -611,19 +619,19 @@ class MimeWrapper:
             self.cleaner(header_display)
             self.cleaner(msg)
 
-        # FIXME: Pretty sure this doesn't do the right thing if there
-        #        are multiple headers with the same name.
-        #
         # NOTE: The copying happens at the end here, because we need the
         #       cleaner (on msg) to have run first.
-        #
         display_headers = []
-        for h in msg.keys():
+        to_delete = {}
+        for h, v in msg.items():
             hl = h.lower()
             if not hl.startswith('content-') and not hl.startswith('mime-'):
-                container[h] = msg[h]
-                if hl in self.FORCE_DISPLAY_HEADERS and h in headers:
-                    display_headers.append('%s: %s' % (h, msg[h]))
+                container.add_header(h, v)
+                if hl in self.FORCE_DISPLAY_HEADERS and h in obscured_set:
+                    display_headers.append('%s: %s' % (h, v))
+                to_delete[h] = True
+        for h in to_delete:
+            while h in msg:
                 del msg[h]
 
         header_display.set_payload('\r\n'.join(reversed(display_headers)))
