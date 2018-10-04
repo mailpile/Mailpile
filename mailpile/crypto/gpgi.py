@@ -10,6 +10,7 @@ import threading
 import traceback
 import select
 import pgpdump
+import pgpdump.utils
 import base64
 import quopri
 from datetime import datetime
@@ -1355,19 +1356,23 @@ class GnuPG:
             selector = subkey_id
         else:
             selector = user_id
-        key_full = self.export_pubkeys(selectors=[selector])
+        key_full = self.export_pubkeys(
+            extra_args=['--export-options', 'export-minimal'],
+            selectors=[selector])
         try:
             return get_minimal_PGP_key(
                  key_full, user_id=user_id, subkey_id=subkey_id)[0]
+        except (pgpdump.utils.PgpdumpException):
+            return key_full
         except (TypeError):
             return None
 
-    def export_pubkeys(self, selectors=None):
+    def export_pubkeys(self, selectors=None, extra_args=[]):
         self.event.running_gpg(_('Exporting keys %s from keychain'
                                  ) % (selectors,))
-        retvals = self.run(['--armor',
-                            '--export'] + (selectors or [])
-                            )[1]["stdout"]
+        retvals = self.run((extra_args or []) +
+                           ['--armor', '--export'] +
+                           (selectors or []))[1]["stdout"]
         return "".join(retvals)
 
     def export_privkeys(self, selectors=None):
