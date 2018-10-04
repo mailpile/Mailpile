@@ -65,18 +65,7 @@ class AutoCryptRecord(dict):
         self['prefer-encrypted'] = prefer_encrypted
 
     def should_encrypt(self):
-        #
-        # Note: This differs from the AutoCrypt recommendations in that,
-        #       we've added a counter which lets us further slow things
-        #       down and reduce false-start encryption.
-        #
-        # FIXME: Does that break the simplicity of the mental model? Bad idea?
-        #
-        if self['prefer-encrypted'] and self['count'] > 1:
-            return True
-        if self['prefer-encrypted'] is None and self['count'] > 5:
-            return True
-        return False
+        return (self['prefer-encrypted'] == 'mutual')
 
     def save_to(self, db):
         db[self['to']] = [self[k] for k in self.INIT_ORDER]
@@ -89,11 +78,10 @@ class AutoCryptRecord(dict):
 
 def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                             autocrypt_header=None):
-    autocrypt_header = autocrypt_header or extract_autocrypt_header(
-        msg, to=sender_email, optional_attrs=( ))
+    autocrypt_header = (
+        autocrypt_header or
+        extract_autocrypt_header(msg, to=sender_email))
     gossip_headers = extract_autocrypt_gossip_headers(msg, to=sender_email)
-
-    print("Gossip headers: ", gossip_headers)
 
     db = get_AutoCrypt_DB(config)['state']
     if autocrypt_header:
@@ -146,17 +134,15 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                 # This allows the keyword extractor to use the data, at
                 # the expense of things seeming more exciting than they
                 # really are when run manually.
-                return AutoCryptRecord(to,
-                                       key=key, ts=ts, prefer_encrypted=pe,
-                                       mid=mid)
+                return AutoCryptRecord(
+                     to, key=key, ts=ts, prefer_encrypted=pe, mid=mid)
 
         except (TypeError, KeyError):
             pass
 
         # Create a new record, yay!
-        record = AutoCryptRecord(to,
-                                 key=key, ts_message_date=ts,
-                                 prefer_encrypted=pe, mid=mid)
+        record = AutoCryptRecord(
+            to, key=key, ts_message_date=ts, prefer_encrypted=pe, mid=mid)
 
         return record.save_to(db)
 
@@ -281,9 +267,6 @@ class AutoCryptPeers(Command):
 
 def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
     keywords = set([])
-
-    # We always tell the search index about AutoCrypt messages and keys,
-    # whether "the experiment" is enabled by the user or not.
     config = index.config
 
     if 'autocrypt' in msg:
@@ -291,6 +274,7 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
         autocrypt_header = extract_autocrypt_header(msg, to=sender)
 
         if autocrypt_header:
+            keywords.add('pgp:has')
             keywords.add('autocrypt:has')
             key_data = autocrypt_header.get('keydata')
             if key_data:
@@ -307,41 +291,69 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
 class AutoCryptTxf(EmailTransform):
     """
     This is an outgoing email content transform for adding autocrypt headers.
+
+    Note: This transform relies on Memory Hole code elsewhere to correctly obscure
+    the Gossip headers. Priorities must be set accordingly.
     """
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
         matched = False
-        keydata = None
-        sender_keyid = None
+        keydata = mutual = sender_keyid = None
 
         gnupg = GnuPG(self.config, event=GetThreadEvent())
         profile = self._get_sender_profile(sender, kwargs)
-        if profile['vcard'] is not None:
-            sender_keyid = profile['vcard'].pgp_key
-            data = gnupg.get_pubkey(sender_keyid)
-            keydata = base64.b64encode(data)
+        vcard = profile['vcard']
+        if vcard is not None:
+            crypto_format = vcard.crypto_format
+            sender_keyid = vcard.pgp_key
+            if sender_keyid and 'autocrypt' in crypto_format:
+                key_binary = gnupg.get_minimal_key(key_id=sender_keyid)
 
-        if keydata:
-            msg["Autocrypt"] = "addr=%s; prefer-encrypt=mutual; keydata=%s" % (sender, keydata)
-            matched = True
+            if key_binary:
+                mutual = 'E' in crypto_format.split('+')[0].split(':')[-1]
+                msg["Autocrypt"] = make_autocrypt_header(
+                    sender, key_binary, prefer_encrypt_mutual=mutual)
 
-        # DO GOSSIP
-        db = get_AutoCrypt_DB(self.config)['state']
-        gossip_list = []
-        for rcpt in rcpts:
-            if rcpt in db:
-                print("rcpt %s is in db %s!" % (rcpt, db[rcpt]))
-                # sender_keyid = profile['vcard'].pgp_key
-                # data = gnupg.get_pubkey(sender_keyid)
+                if 'encrypt' in msg.get('Encryption', '').lower():
+                    gossip_list = []
+                    for rcpt in rcpts:
+                        try:
+                            # This *should* always succeed: if we are encrypting,
+                            # then the key we encrypt to should already be in
+                            # the keychain.
+                            if '#' in rcpt:
+                                rcpt, rcpt_keyid = rcpt.split('#')
+                            else:
+                                # This happens when composing in the CLI.
+                                rcpt_keyid = rcpt
+                            if (rcpt != sender) and rcpt_keyid:
+                                print 'SEARCHING FOR KEY: %s=%s' % (rcpt, rcpt_keyid)
+                                kb = gnupg.get_minimal_key(key_id=rcpt_keyid)
+                                if kb:
+                                    print 'KEY FOUND!'
+                                    gossip_list.append(make_autocrypt_header(
+                                        rcpt, kb, prefix='Autocrypt-Gossip'))
+                        except (ValueError, IndexError):
+                            print 'UH OH, NO KEYID: %s' % rcpt
+                            pass
+                    if len(gossip_list) > 1:
+                        # No point gossiping peoples keys back to them alone.
+                        for hdr in gossip_list:
+                            msg.add_header('Autocrypt-Gossip', hdr)
 
-        if gossip_list:
-            msg["Autocrypt-Gossip"] = gossip_list
+                matched = True
 
         return sender, rcpts, msg, matched, True
 
-_plugins.register_commands(AutoCryptSearch, AutoCryptForget, AutoCryptParse, AutoCryptPeers)
-_plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
 
-# Note: we perform our transformations BEFORE the GnuPG transformations (prio 500),
-# so the memory hole transformation can take care of hiding the Autocrypt-Gossip
-# headers.
-_plugins.register_outgoing_email_content_transform('400_autocrypt', AutoCryptTxf)
+_plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
+_plugins.register_commands(
+    AutoCryptSearch,
+    AutoCryptForget,
+    AutoCryptParse,
+    AutoCryptPeers)
+
+# Note: we perform our transformations BEFORE the GnuPG transformations
+# (prio 500), so the memory hole transformation can take care of hiding
+# the Autocrypt-Gossip headers.
+_plugins.register_outgoing_email_content_transform(
+    '400_autocrypt', AutoCryptTxf)

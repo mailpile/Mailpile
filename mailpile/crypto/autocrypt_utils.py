@@ -85,6 +85,17 @@ def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
     return all_results
 
 
+def make_autocrypt_header(addr, binary_key,
+                          prefer_encrypt_mutual=False, prefix='Autocrypt'):
+    prefix = '%s: ' % prefix
+    pem = ' prefer-encrypt=mutual;' if prefer_encrypt_mutual else ''
+    hdr = '%saddr=%s;%s keydata=' % (prefix, addr, pem)
+    for c in base64.b64encode(binary_key).strip():
+        if (len(hdr) % 78) == 0: hdr += ' '
+        hdr += c
+    return hdr[len(prefix):]
+
+
 def get_minimal_PGP_key(keydata,
                         user_id=None, subkey_id=None, binary_out=False):
     """
