@@ -823,8 +823,9 @@
                  onchange='javascript:_fpa.exclude(this, "security-attach-keys");'
                  {% if result['security-use-autocrypt'] %}checked{% endif %}>
           <span class="checkbox">
-            {{_("Use Autocrypt headers to exchange encryption keys")}}
+            {{_("Use Autocrypt to exchange encryption keys")}}
           </span>
+          - <a target=_blank href='https://autocrypt.org/'><i>{{_("learn more")}}</i></a>
         </div>
         <div class="more-crypto {% if not result['security-attach-keys'] %}hide{% endif %}">
           <input type="checkbox" name="security-attach-keys" value="yes"
