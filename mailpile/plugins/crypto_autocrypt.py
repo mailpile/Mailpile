@@ -50,11 +50,11 @@ def get_AutoCrypt_DB(config):
 
 
 class AutoCryptRecord(dict):
-    INIT_ORDER = ('key', 'ts-message-date', 'prefer-encrypted',
+    INIT_ORDER = ('key', 'ts-message-date', 'prefer-encrypt',
                   'count', 'mid', 'ts-last-seen')
 
     def __init__(self, to,
-                 key=None, ts_message_date=None, prefer_encrypted=None,
+                 key=None, ts_message_date=None, prefer_encrypt=None,
                  count=1, mid=None, ts_last_seen=None):
         self['to'] = to
         self['ts-message-date'] = ts_message_date or int(time.time())
@@ -62,10 +62,10 @@ class AutoCryptRecord(dict):
         self['key'] = key  # Signature of key data (not key itself)
         self['mid'] = mid  # MID of most recent message with this key.
         self['count'] = count  # How many times have we seen this key?
-        self['prefer-encrypted'] = prefer_encrypted
+        self['prefer-encrypt'] = prefer_encrypt
 
     def should_encrypt(self):
-        return (self['prefer-encrypted'] == 'mutual')
+        return (self['prefer-encrypt'] == 'mutual')
 
     def save_to(self, db):
         db[self['to']] = [self[k] for k in self.INIT_ORDER]
@@ -98,7 +98,7 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
         # the key fingerprint here, as we would still like to detect and
         # capture updates when subkeys change.
         key = sha1b64(key_data).strip()
-        pe = autocrypt_header.get('prefer-encrypted')
+        pe = autocrypt_header.get('prefer-encrypt')
 
         try:
             existing = AutoCryptRecord.Load(db, to)
@@ -111,7 +111,7 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                 if existing['ts-last-seen'] < ts:
                     existing['ts-last-seen'] = ts
                     existing['mid'] = mid
-                    existing['prefer-encrypted'] = pe
+                    existing['prefer-encrypt'] = pe
 
                 # If it's old and provides us with an earlier date for
                 # the "origin" of this key, make note of that as well.
@@ -135,14 +135,14 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                 # the expense of things seeming more exciting than they
                 # really are when run manually.
                 return AutoCryptRecord(
-                     to, key=key, ts=ts, prefer_encrypted=pe, mid=mid)
+                     to, key=key, ts=ts, prefer_encrypt=pe, mid=mid)
 
         except (TypeError, KeyError):
             pass
 
         # Create a new record, yay!
         record = AutoCryptRecord(
-            to, key=key, ts_message_date=ts, prefer_encrypted=pe, mid=mid)
+            to, key=key, ts_message_date=ts, prefer_encrypt=pe, mid=mid)
 
         return record.save_to(db)
 
@@ -297,7 +297,7 @@ class AutoCryptTxf(EmailTransform):
     """
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
         matched = False
-        keydata = mutual = sender_keyid = None
+        keydata = mutual = sender_keyid = key_binary = None
 
         gnupg = GnuPG(self.config, event=GetThreadEvent())
         profile = self._get_sender_profile(sender, kwargs)
@@ -326,14 +326,11 @@ class AutoCryptTxf(EmailTransform):
                                 # This happens when composing in the CLI.
                                 rcpt_keyid = rcpt
                             if (rcpt != sender) and rcpt_keyid:
-                                print 'SEARCHING FOR KEY: %s=%s' % (rcpt, rcpt_keyid)
                                 kb = gnupg.get_minimal_key(key_id=rcpt_keyid)
                                 if kb:
-                                    print 'KEY FOUND!'
                                     gossip_list.append(make_autocrypt_header(
                                         rcpt, kb, prefix='Autocrypt-Gossip'))
                         except (ValueError, IndexError):
-                            print 'UH OH, NO KEYID: %s' % rcpt
                             pass
                     if len(gossip_list) > 1:
                         # No point gossiping peoples keys back to them alone.

@@ -27,15 +27,15 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
             kv = x.split("=", 1)
             name = kv[0].strip()
             value = kv[1].strip()
-            if name in ("addr", "prefer-encrypted"):
-                result_dict["addr"] = value
+            if name in ("addr", "prefer-encrypt"):
+                result_dict[name] = value
             elif name == "keydata":
                 keydata_base64 = "".join(value.split())
                 keydata = base64.b64decode(keydata_base64)
                 result_dict[name] = keydata
             elif name[:1] == '_':
                 if optional_attrs and name in optional_attrs:
-                    result_dict["addr"] = value
+                    result_dict[name] = value
             else:
                 # Unknown value detected, refuse to parse any further
                 return {}
@@ -50,9 +50,9 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
         # found no e-mail address, ignoring header
         return {}
 
-    if result_dict.get("prefer-encrypted") not in ("mutual", None):
-        # Invalid prefer-encrypted value
-        return {}
+    if result_dict.get("prefer-encrypt") not in ("mutual", None):
+        # Invalid prefer-encrypt value; treat as nopreference
+        del result_dict['prefer-encrypt']
 
     return result_dict
 
