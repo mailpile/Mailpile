@@ -1,17 +1,15 @@
 import datetime
 import time
 import copy
-from pgpdump.utils import PgpdumpException
 
 from mailpile.crypto.autocrypt_utils import *
+from mailpile.crypto.keydata import get_keydata
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 from mailpile.plugins.search import Search
 from mailpile.mailutils.emails import Email
-
-import pgpdump
 
 
 _ = lambda t: t
@@ -35,71 +33,6 @@ def _might_be_pgp_key(filename, mimetype):
             (filename.lower().split('.')[-1] in PGP_KEY_SUFFIXES and
              'encrypted' not in filename and
              'signature' not in filename))
-
-
-def _get_creation_time(m):
-    """Compatibility shim, for differing versions of pgpdump"""
-    try:
-        return m.creation_time
-    except AttributeError:
-        try:
-            return m.datetime
-        except AttributeError:
-            return datetime.datetime(1970, 1, 1, 00, 00, 00)
-
-
-def _get_keydata(data, include_subkeys=False, autocrypt_header=None):
-    results = []
-    try:
-        if "-----BEGIN" in data:
-            ak = pgpdump.AsciiData(data)
-        else:
-            ak = pgpdump.BinaryData(data)
-        packets = list(ak.packets())
-    except (TypeError, IndexError, PgpdumpException):
-        return []
-
-    if autocrypt_header:
-        # The autocrypt spec tells us that the visible addr= attribute
-        # overrides whatever is on the key itself, so we synthesize a
-        # fake UID here so strict e-mail matches don't break Autocrypt.
-        default_uids = [{
-            'comment': 'Autocrypt',
-            'email': autocrypt_header['addr']}]
-    else:
-        default_uids = []
-
-    now = time.time()
-    for m in packets:
-        try:
-            if isinstance(m, pgpdump.packet.PublicKeyPacket):
-                size = str(int(1.024 *
-                               round(len('%x' % (m.modulus or 0)) / 0.256)))
-                validity = ('e'
-                            if (0 < (int(m.expiration_time or 0)) < now)
-                            else '')
-                results.append({
-                    "fingerprint": m.fingerprint,
-                    "created": _get_creation_time(m),
-                    "validity": validity,
-                    "keytype_name": (m.pub_algorithm or '').split()[0],
-                    "keysize": size,
-                    "uids": default_uids,
-                })
-            if isinstance(m, pgpdump.packet.UserIDPacket) and results:
-                # FIXME: This used to happen with results=[], does that imply
-                #        UIDs sometimes come before the PublicKeyPacket?
-                results[-1]["uids"].append({"name": m.user_name,
-                                            "email": m.user_email})
-        except (TypeError, AttributeError, KeyError, IndexError, NameError):
-            import traceback
-            traceback.print_exc()
-
-    if include_subkeys:
-        return results
-    else:
-        # This will only return keys that have UIDs
-        return [k for k in results if k['uids']]
 
 
 class EmailKeyLookupHandler(LookupHandler, Search):
@@ -168,7 +101,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                     break
                 if _might_be_pgp_key(part["filename"], part["mimetype"]):
                     key = part["part"].get_payload(None, True)
-                    for keydata in _get_keydata(key, include_subkeys=False):
+                    for keydata in get_keydata(key, include_subkeys=False):
                         keys.append((keydata, key))
             self.key_cache[messageid] = keys
         return keys
@@ -176,14 +109,14 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
 def get_pgp_key_keywords(key_data):
     kws = []
-    data = _get_keydata(key_data, include_subkeys=True)
-    if data:
-        kws += ['pgpkey:has']
+    if _might_be_pgp_key(filename, mimetype):
+        data = get_keydata(part.get_payload(None, True), include_subkeys=True)
         for keydata in data:
             for uid in keydata.get('uids', []):
                 if uid.get('email'):
                     kws.append('%s:pgpkey' % uid['email'].lower())
             fingerprint = keydata["fingerprint"].lower()
+            kws.append('pgpkey:has')
             kws.append('%s:pgpkey' % fingerprint)
             kws.append('%s:pgpkey' % fingerprint[-16:])
     return kws

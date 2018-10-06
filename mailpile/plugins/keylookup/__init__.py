@@ -11,7 +11,7 @@ from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-__all__ = ['email_keylookup', 'nicknym', 'dnspka']
+__all__ = ['email_keylookup', 'nicknym', 'dnspka', 'wkd']
 
 KEY_LOOKUP_HANDLERS = []
 
@@ -510,3 +510,4 @@ register_crypto_key_lookup_handler(KeyserverLookupHandler)
 # things happy enough with the circular dependencies...
 from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
 from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
+from mailpile.plugins.keylookup.wkd import WKDLookupHandler
