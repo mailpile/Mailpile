@@ -46,34 +46,40 @@ _ = lambda t: t
 class WKDLookupHandler(LookupHandler):
     NAME = _("Web Key Directory")
     TIMEOUT = 10
-    PRIORITY = 200
+    PRIORITY = 50  # WKD is better than keyservers and better than DNS
+    PRIVACY_FRIENDLY = True  # These lookups can go over Tor
+    SCORE = 5
 
     def __init__(self, *args, **kwargs):
         LookupHandler.__init__(self, *args, **kwargs)
         self.key_cache = { }
 
     def _score(self, key):
-        return (12, _('Found key in Web Key Directory'))
+        return (self.SCORE, _('Found key in Web Key Directory'))
 
     def _lookup(self, address, strict_email_match=True):
         local, _, domain = address.partition("@")
-        local_part_encoded = _zbase_encode(hashlib.sha1(local.lower().encode('utf-8')).digest())
-        url = "https://%s/.well-known/openpgpkey/hu/%s" % (domain, local_part_encoded)
+        local_part_encoded = _zbase_encode(
+            hashlib.sha1(local.lower().encode('utf-8')).digest())
 
-        with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):
-            try:
+        url = ("https://%s/.well-known/openpgpkey/hu/%s"
+               % (domain, local_part_encoded))
+
+        # This fails A LOT, so just swallow the most common errors.
+        try:
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
                 r = urllib2.urlopen(url)
-            except urllib2.HTTPError as e:
-                if e.code == 404:
-                    return { }
-                raise
+        except urllib2.URLError:
+            # This gets thrown on TLS key mismatch
+            return {}
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                return {}
+            raise
 
         result = r.read()
-
         keydata = get_keydata(result)[0]
-
         self.key_cache[keydata["fingerprint"]] = result
-
         return {keydata["fingerprint"]: keydata}
 
     def _getkey(self, keydata):

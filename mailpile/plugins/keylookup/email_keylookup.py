@@ -40,6 +40,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     PRIORITY = 5
     TIMEOUT = 25  # 5 seconds per message we are willing to parse
     LOCAL = True
+    PRIVACY_FRIENDLY = True
+    SCORE = 1
 
     def __init__(self, session, *args, **kwargs):
         LookupHandler.__init__(self, session, *args, **kwargs)
@@ -50,7 +52,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         _PRUNE_GLOBAL_KEY_CACHE()
 
     def _score(self, key):
-        return (1, _('Found key in local e-mail'))
+        return (self.SCORE, _('Found key in local e-mail'))
 
     def _lookup(self, address, strict_email_match=False):
         results = {}
@@ -107,10 +109,11 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         return keys
 
 
-def get_pgp_key_keywords(key_data):
+def get_pgp_key_keywords(data):
     kws = []
-    if _might_be_pgp_key(filename, mimetype):
-        data = get_keydata(part.get_payload(None, True), include_subkeys=True)
+    if data:
+        data = get_keydata(data, include_subkeys=True)
+    if data:
         for keydata in data:
             for uid in keydata.get('uids', []):
                 if uid.get('email'):
