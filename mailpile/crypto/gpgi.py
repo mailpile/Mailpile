@@ -1361,7 +1361,8 @@ class GnuPG:
             selectors=[selector])
         try:
             return get_minimal_PGP_key(
-                 key_full, user_id=user_id, subkey_id=subkey_id)[0]
+                 key_full, user_id=user_id, subkey_id=subkey_id,
+                 binary_out=True)[0]
         except (pgpdump.utils.PgpdumpException):
             return key_full
         except (TypeError):

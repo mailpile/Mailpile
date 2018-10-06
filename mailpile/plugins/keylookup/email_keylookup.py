@@ -48,7 +48,7 @@ def _get_creation_time(m):
             return datetime.datetime(1970, 1, 1, 00, 00, 00)
 
 
-def _get_keydata(data, include_subkeys=False):
+def _get_keydata(data, include_subkeys=False, autocrypt_header=None):
     results = []
     try:
         if "-----BEGIN" in data:
@@ -58,6 +58,16 @@ def _get_keydata(data, include_subkeys=False):
         packets = list(ak.packets())
     except (TypeError, IndexError, PgpdumpException):
         return []
+
+    if autocrypt_header:
+        # The autocrypt spec tells us that the visible addr= attribute
+        # overrides whatever is on the key itself, so we synthesize a
+        # fake UID here so strict e-mail matches don't break Autocrypt.
+        default_uids = [{
+            'comment': 'Autocrypt',
+            'email': autocrypt_header['addr']}]
+    else:
+        default_uids = []
 
     now = time.time()
     for m in packets:
@@ -74,7 +84,7 @@ def _get_keydata(data, include_subkeys=False):
                     "validity": validity,
                     "keytype_name": (m.pub_algorithm or '').split()[0],
                     "keysize": size,
-                    "uids": [],
+                    "uids": default_uids,
                 })
             if isinstance(m, pgpdump.packet.UserIDPacket) and results:
                 # FIXME: This used to happen with results=[], does that imply
@@ -146,7 +156,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for ach in ([extract_autocrypt_header(msg)] +
                         extract_autocrypt_gossip_headers(msg)):
                 if 'keydata' in ach:
-                    for keydata in _get_keydata(ach['keydata']):
+                    for keydata in _get_keydata(ach['keydata'],
+                                                autocrypt_header=ach):
                         keys.append((keydata, ach['keydata']))
 
             # Then go looking at the attachments

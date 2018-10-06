@@ -306,7 +306,8 @@ class AutoCryptTxf(EmailTransform):
             crypto_format = vcard.crypto_format
             sender_keyid = vcard.pgp_key
             if sender_keyid and 'autocrypt' in crypto_format:
-                key_binary = gnupg.get_minimal_key(key_id=sender_keyid)
+                key_binary = gnupg.get_minimal_key(key_id=sender_keyid,
+                                                   user_id=sender)
 
             if key_binary:
                 mutual = 'E' in crypto_format.split('+')[0].split(':')[-1]
@@ -326,7 +327,8 @@ class AutoCryptTxf(EmailTransform):
                                 # This happens when composing in the CLI.
                                 rcpt_keyid = rcpt
                             if (rcpt != sender) and rcpt_keyid:
-                                kb = gnupg.get_minimal_key(key_id=rcpt_keyid)
+                                kb = gnupg.get_minimal_key(key_id=rcpt_keyid,
+                                                           user_id=rcpt)
                                 if kb:
                                     gossip_list.append(make_autocrypt_header(
                                         rcpt, kb, prefix='Autocrypt-Gossip'))
