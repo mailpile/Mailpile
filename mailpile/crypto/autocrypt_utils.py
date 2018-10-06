@@ -4,17 +4,16 @@
 
 import base64
 import datetime
+import os
 import pgpdump
+import struct
 import time
 
 
-##[ Begin borrowed code ... ]################################################
-#
-# Based on:
-#
-# https://github.com/mailencrypt/inbome/blob/master/src/inbome/parse.py
-
 def parse_autocrypt_headervalue(value, optional_attrs=None):
+    # Based on:
+    #
+    # https://github.com/mailencrypt/inbome/blob/master/src/inbome/parse.py
     """
     Parse an AutoCrypt header. Will return an empty dict if parsing fails.
 
@@ -94,6 +93,28 @@ def make_autocrypt_header(addr, binary_key,
         if (len(hdr) % 78) == 0: hdr += ' '
         hdr += c
     return hdr[len(prefix):]
+
+
+def generate_autocrypt_setup_code():
+    """
+    Generate a passphrase/setup-code compliant with Autocrypt Level 1.
+
+    From the spec: An Autocrypt Level 1 MUA MUST generate a Setup Code as
+    UTF-8 string of 36 numeric characters, divided into nine blocks of four,
+    separated by dashes. The dashes are part of the secret code and there
+    are no spaces. This format holds about 119 bits of entropy. It is
+    designed to be unambiguous, pronounceable, script-independent (Chinese,
+    Cyrillic etc.), easily input on a mobile device and split into blocks
+    that are easily kept in short term memory.
+    """
+    random_data = os.urandom(16)  # 16 bytes = 128 bits of entropy
+    ints = struct.unpack('>4I', random_data)
+    ival = ints[0] + (ints[1] << 32) + (ints[2] << 64) + (ints[3] << 96)
+    blocks = []
+    while len(blocks) < 9:
+        blocks.append('%4.4d' % (ival % 10000))
+        ival //= 10000
+    return '-'.join(blocks)
 
 
 def get_minimal_PGP_key(keydata,
