@@ -712,8 +712,7 @@
         <select class='fpa-pgp-key' style="width: 100%"
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
-          <option value="!CREATE:RSA2048">{{_("Create a new 2048 bit RSA key")}}</option>
-          <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new Autocrypt compatible key (3072 bit RSA)")}}</option>
+          <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new Autocrypt Level 1 compatible key (3072 bit RSA PGP)")}}</option>
         {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret','--usable').result %}
         {%- for fingerprint in pgp_keys -%}
           {%- set key = pgp_keys[fingerprint] -%}
@@ -728,6 +727,7 @@
           {%- endfor %}
         {%- endfor %}
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
+          <option value="!CREATE:RSA2048">{{_("Create a new 2048 bit RSA key")}}</option>
           <option {% if not result['security-pgp-key'] %}selected {% endif -%}
                   value="">{{_("Disable encryption for this account")}}</option>
         </select>
