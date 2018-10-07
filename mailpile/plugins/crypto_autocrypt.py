@@ -317,6 +317,8 @@ class AutoCryptTxf(EmailTransform):
                 if 'encrypt' in msg.get('Encryption', '').lower():
                     gossip_list = []
                     for rcpt in rcpts:
+                        # FIXME: Check if any of the recipients are in the BCC
+                        #        header; omit their keys if so?
                         try:
                             # This *should* always succeed: if we are encrypting,
                             # then the key we encrypt to should already be in
