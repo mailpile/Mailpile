@@ -159,7 +159,10 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         cpolicy = default[-2]
         cformat = default[-1]
         if should_encrypt and ('encrypt' not in cpolicy):
-            cpolicy = 'openpgp-encrypt'
+            if 'sign' in cpolicy or 'best-effort' == cpolicy:
+                cpolicy = 'sign-encrypt'
+            else:
+                cpolicy = 'encrypt'
 
         # Try and merge all the user policies into one. This may lead
         # to conflicts which cannot be resolved.
