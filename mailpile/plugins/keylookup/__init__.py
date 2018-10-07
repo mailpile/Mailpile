@@ -70,13 +70,13 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         bits = int(key_info["keysize"])
         score = bits // 1024
 
-        if bits >= 4096: 
+        if bits >= 4096:
           key_strength = _('Encryption key is very strong')
-        elif bits >= 3072: 
+        elif bits >= 3072:
           key_strength = _('Encryption key is strong')
         elif bits >= 2048:
           key_strength = _('Encryption key is good')
-        else: 
+        else:
           key_strength = _('Encryption key is weak')
 
         key_info['scores']['Encryption key strength'] = [score, key_strength]
@@ -238,7 +238,7 @@ class KeyLookup(Command):
                                     event=self.event,
                                     allowremote=allowremote)
         return self._success(_n('Found %d encryption key',
-                                'Found %d encryption keys', 
+                                'Found %d encryption keys',
                                 len(result)) % len(result),
                              result=result)
 
@@ -430,10 +430,11 @@ class LookupHandler:
     def lookup(self, address, strict_email_match=False, get=None):
         all_keys = self._lookup(address, strict_email_match=strict_email_match)
         keys = {}
+        if get is not None:
+            get = [unicode(g).upper() for g in get]
         for key_id, key_info in all_keys.iteritems():
-            fprint = key_info.get('fingerprint', '')
+            fprint = unicode(key_info.get('fingerprint', '')).upper()
             if (get is None) or (fprint and fprint in get):
-
                 score, reason = self._score(key_info)
                 if 'validity' in key_info:
                     vscore, vreason = _score_validity(key_info['validity'])
@@ -489,9 +490,6 @@ class KeychainLookupHandler(LookupHandler):
                             results[key_id][k] = key_info[k]
         return results
 
-    def _getkey(self, key):
-        pass
-
 
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
@@ -505,6 +503,13 @@ class KeyserverLookupHandler(LookupHandler):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
     def _lookup(self, address, strict_email_match=False):
+        # FIXME: We should probably just contact the keyservers directly.
+        #
+        # Queries look like this:
+        #
+        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
+        #        search=EMAIL&op=index&fingerprint=on&options=mr
+        #
         results = self._gnupg().search_key(address)
         if strict_email_match:
             for key in results.keys():
@@ -515,6 +520,13 @@ class KeyserverLookupHandler(LookupHandler):
         return results
 
     def _getkey(self, key):
+        # FIXME: We should probably just contact the keyservers directly.
+        #
+        # Key downloads look like this:
+        #
+        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
+        #        search=0xFINGERPRINT&op=get&options=mr
+        #
         return self._gnupg().recv_key(key['fingerprint'])
 
 

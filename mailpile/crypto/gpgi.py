@@ -1299,6 +1299,8 @@ class GnuPG:
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
                  keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        if not keyid[:2] == '0x':
+            keyid = '0x%s' % keyid
         self.event.running_gpg(_('Downloading key %s from key servers'
                                  ) % (keyid))
         for keyserver in keyservers:
@@ -1311,22 +1313,9 @@ class GnuPG:
                 break
         return self._parse_import(retvals[1]["status"])
 
-    def search_key(self, term,
-                   keyservers=DEFAULT_KEYSERVERS,
-                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
-        self.event.running_gpg(_('Searching for key for %s in key servers'
-                                 ) % (term))
-        for keyserver in keyservers:
-            cmd = ['--keyserver', keyserver,
-                   '--fingerprint',
-                   '--search-key', self._escape_hex_keyid_term(term)]
-            for opt in keyserver_options:
-                cmd[2:2] = ['--keyserver-options', opt]
-            retvals = self.run(cmd)
-            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
-                break
+    def parse_hpk_response(self, lines):
         results = {}
-        lines = [x.strip().split(":") for x in retvals[1]["stdout"]]
+        lines = [x.strip().split(":") for x in lines]
         curpub = None
         for line in lines:
             if line[0] == "info":
@@ -1352,6 +1341,22 @@ class GnuPG:
                                                 "email": email,
                                                 "comment": comment})
         return results
+
+    def search_key(self, term,
+                   keyservers=DEFAULT_KEYSERVERS,
+                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        self.event.running_gpg(_('Searching for key for %s in key servers'
+                                 ) % (term))
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--fingerprint',
+                   '--search-key', self._escape_hex_keyid_term(term)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
+        return self.parse_hpk_response(retvals[1]["stdout"])
 
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
