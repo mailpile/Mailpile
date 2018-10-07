@@ -383,7 +383,7 @@ class Email(object):
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
                msg_subject=None, msg_text='', msg_references=None,
-               msg_id=None, msg_atts=None,
+               msg_id=None, msg_atts=None, msg_headers=None,
                save=True, ephemeral_mid='not-saved', append_sig=True,
                use_default_from=True):
         msg = MIMEMultipart(boundary=MakeBoundary())
@@ -443,6 +443,9 @@ class Email(object):
             tp.encryption_info = EncryptionInfo(parent=mei)
             msg.attach(tp)
             del tp['MIME-Version']
+
+        for k, v in (msg_headers or []):
+            msg[k] = v
 
         if msg_atts:
             for att in msg_atts:
