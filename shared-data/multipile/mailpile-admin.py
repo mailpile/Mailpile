@@ -29,6 +29,7 @@ DEFAULT_CONFIG_SECTION = 'Multipile'
 MAILPILE_PIDS_PATH = "/var/lib/mailpile/pids"
 APACHE_DEFAULT_WEBROOT = "/mailpile"
 APACHE_REWRITEMAP_PATH = "/var/lib/mailpile/apache/usermap.txt"
+APACHE_SUDOERS_PATH = "/etc/sudoers.d/mailpile-apache"
 
 
 MAILPILE_STOP_SCRIPT = [
@@ -52,12 +53,15 @@ MAILPILE_START_SCRIPT = [
         ' "--pid=%(pidfile)s"'
         ' --interact']
 
+MAILPILE_LAUNCH_SCRIPT = [
+    'sudo %(mailpile-launcher)s %(user)s %(idlequit)s']
+
 MAILPILE_DELETE_SCRIPT = [
-    'rm -rf ~/.local/share/Mailpile/default']
+    'rm -rf ~%(user)s/.local/share/Mailpile/default']
 
 
 CONFIGURE_APACHE_SCRIPT = [
-    '"%(packager)s" install screen expect',
+    '"%(packager)s" install screen sudo',
     '"%(a2enmod)s" headers rewrite proxy proxy_http cgi',
     'mkdir -p /var/lib/mailpile/apache/ /var/lib/mailpile/pids/',
     'touch /var/lib/mailpile/apache/usermap.txt',
@@ -70,20 +74,6 @@ FIX_PERMS_SCRIPT = [
     'chown -R %(apache-user)s:%(apache-group)s /var/lib/mailpile/apache',
     'chmod go+rwxt /var/lib/mailpile/pids',]
 
-RUN_AS_EXPECT_SCRIPT = """\
-    spawn su -l %(user)s
-    expect assword {
-        send "%(password)s\\n"
-    }
-    expect {
-        incorrect   exit
-        failure     exit
-        timeout     exit
-        "\\\\$"
-    }
-    send "exec %(command)s\\n"
-    expect heat_death_of_universe
-"""
 
 # This is the Apache config template
 APACHE_CONFIG_TEMPLATE = """\
@@ -126,6 +116,12 @@ RewriteMap mailpile_u2hp "txt:%(rewritemap)s"
     Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT" env=nocache
 </Directory>
 """
+
+# This is what allows Apache to launch Mailpile on behalf of other users.
+APACHE_SUDOERS_TEMPLATE = """\
+www-data\tALL = NOPASSWD: %(mailpile-launcher)s
+"""
+
 
 # This is needed to ensure that we run mailpile-admin with the
 # right python interpreter
@@ -182,7 +178,10 @@ def app_arguments():
         help='List running Mailpiles')
     ga.add_argument(
         '--start', action='store_true',
-        help='Launch Mailpile in a screen session')
+        help='Launch new Mailpile in a screen session')
+    ga.add_argument(
+        '--launch', action='store_true',
+        help='Launch exiting Mailpile in a screen session')
     ga.add_argument(
         '--stop', action='store_true',
         help='Stop a running Mailpile')
@@ -196,21 +195,22 @@ def app_arguments():
         '--generate-apache-config', action='store_true',
         help='Print the apache config')
     ga.add_argument(
+        '--generate-apache-sudoers', action='store_true',
+        help='Print the apache sudoers config')
+    ga.add_argument(
         '--generate-apache-rewritemap', action='store_true',
         help='Prints an empty rewritemap file')
 
     app_arguments_config_arg(ap)
     ap.add_argument('--force', action='store_true',
         help='With --stop, will kill -9 a running Mailpile')
-    ap.add_argument('--password', default=None,
-        help='For testing (with --user), do not use!')
     ap.add_argument('--user', default=None,
         help='Choose user, for use with --stop and --start')
     ap.add_argument('--port', default=None,
         help='Choose port, for use with --stop and --start')
     ap.add_argument('--host', default='localhost',
         help='Choose host, for use with --stop and --start')
-    ap.add_argument('--idlequit', default=2592000,  # 30 days
+    ap.add_argument('--idlequit', default=(7*24*3600),
         help='Mailpile shutdown after idling this many seconds')
     ap.add_argument('--webroot', default=APACHE_DEFAULT_WEBROOT,
         help='Parent web directory for Mailpile instances')
@@ -222,6 +222,8 @@ def app_arguments():
         help='Location of Mailpile theme files')
     ap.add_argument('--multipile-www', default=None,
         help='Location of Mailpile/Multipile files')
+    ap.add_argument('--apache-sudoers', default=APACHE_SUDOERS_PATH,
+        help='Sudoers config: path to Mailpile/Apache sudoers file')
     ap.add_argument('--rewritemap', default=APACHE_REWRITEMAP_PATH,
         help='Apache config: path to rewrite-map file')
     ap.add_argument('--discover', action='store_true',
@@ -242,8 +244,7 @@ def app_arguments():
         help='Apache config: Apache process unix group')
     ap.add_argument('--apache-confs', default=None,
         help='Apache config: /etc/apache2/conf-available/ ?')
-#   ap.add_argument('--use-htaccess', action='store_true',
-#       help='Rewrite a .htaccess file instead of using a rewritemap')
+
     return ap
 
 
@@ -286,7 +287,8 @@ def parse_arguments_and_config(app_args,
 def _parse_ps():
     ps = subprocess.Popen(['ps', 'auxw'], stdout=subprocess.PIPE)
     ps_re = re.compile('^(\S+)\s+(\d+)\s+\S+\s+\S+\s+\S+\s+(\S+)'
-                       '.*\s(python2 .*/mp|mailpile)(?:\s+|$)')
+                       '.*\s(?:(?:python[\d\.]*|pypy) +)?'
+                       '(?:\S+/)?(mailpile)(?:\s+|$)')
     for line in ps.communicate()[0].splitlines():
         m = re.match(ps_re, line)
         if m:
@@ -383,7 +385,10 @@ def get_os_settings(args):
         'apache-confs': args.apache_confs or '/etc/apache2/conf-available',
         'webroot': args.webroot,
         'rewritemap': args.rewritemap,
+        'apache-sudoers': args.apache_sudoers,
         'mailpile': args.mailpile or find_mailpile_executable(),
+        'mailpile-launcher': os.path.join(mp_share,
+                                          'multipile', 'mailpile-launcher.py'),
         'mailpile-admin': os.path.realpath(sys.argv[0]),
         'mailpile-theme': (args.mailpile_theme
                            or os.path.join(mp_share, 'default-theme')),
@@ -408,6 +413,7 @@ def get_user_settings(args, user=None, mailpiles=None):
     return {
         'user': user,
         'mailpile': settings['mailpile'],
+        'mailpile-launcher': settings['mailpile-launcher'],
         'host': '127.0.0.1',
         'port': port,
         'path': ('%s/%s/' % (args.webroot, user)).replace('//', '/'),
@@ -535,22 +541,21 @@ def save_rewritemap(args, os_settings, mailpiles):
 
 
 def parse_usermap(args, os_settings, mailpiles=None):
-#   if args.use_htaccess:
-#       return parse_htaccess(args, os_settings, mailpiles=mailpiles)
-#   else:
-        return parse_rewritemap(args, os_settings, mailpiles=mailpiles)
+    return parse_rewritemap(args, os_settings, mailpiles=mailpiles)
 
 
 def save_usermap(args, os_settings, mailpiles):
-#   if args.use_htaccess:
-#       return save_htaccess(args, os_settings, mailpiles)
-#   else:
-        return save_rewritemap(args, os_settings, mailpiles)
+    return save_rewritemap(args, os_settings, mailpiles)
 
 
 def save_cgi(os_settings):
     with open(os.path.join(os_settings['multipile-www'], 'admin.cgi'), 'w') as fd:
         fd.write(CGI_SCRIPT_TEMPLATE % os_settings)
+
+
+def save_apache_sudoers(os_settings):
+    with open(os_settings['apache-sudoers'], 'w') as fd:
+        fd.write(APACHE_SUDOERS_TEMPLATE % os_settings)
 
 
 def run_script(args, settings, script):
@@ -590,15 +595,17 @@ def list_mailpiles(args):
         else:
             url = 'http://%s:%s/' % (host, port)
         print fmt % (
-            user, pid or '', rss or '',
+            user, pid or '?', rss or '',
             'apache' if in_usermap else 'direct', port, url)
 
 def generate_apache_rewritemap(app_args, args):
     print(APACHE_REWRITEMAP_TEMPLATE % {'rewriterules': ''})
 
+def generate_apache_sudoers(app_args, args):
+    print(APACHE_SUDOERS_TEMPLATE % get_os_settings(args))
+
 def generate_apache_config(app_args, args):
-    os_settings = get_os_settings(args)
-    print (APACHE_CONFIG_TEMPLATE % os_settings)
+    print (APACHE_CONFIG_TEMPLATE % get_os_settings(args))
 
 def configure_apache(app_args, args):
     if os.getuid() == 0:
@@ -609,33 +616,11 @@ def configure_apache(app_args, args):
 
         run_script(args, os_settings, CONFIGURE_APACHE_SCRIPT)
         save_cgi(os_settings)
+        save_apache_sudoers(os_settings)
         save_usermap(args, os_settings, _get_mailpiles(args))
         run_script(args, os_settings, FIX_PERMS_SCRIPT)
     else:
         usage(app_args, 'Please run this as root!')
-
-
-def run_as_user(user, password, command):
-    script = subprocess.Popen(['expect', '-'],
-                              stdin=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
-    expects = RUN_AS_EXPECT_SCRIPT % _escaped({
-        'user': user, 'password': password, 'command': command
-    })
-    return script.communicate(input=expects)
-
-
-def run_user_command_or_script(args, user_settings, command_args, script):
-    if args.user:
-        command = '"%s" %s' % (
-            _escape(os.path.realpath(sys.argv[0])), command_args)
-        if args.password:
-            print '%s%s' % run_as_user(args.user, args.password, command)
-            return
-        script = ['sudo -u "%(user)s" -- ' + command]
-
-    run_script(args, user_settings, script)
 
 
 def start_mailpile(app_args, args):
@@ -650,11 +635,7 @@ def start_mailpile(app_args, args):
             _escape(os_settings['mailpile-admin']),
             _escape(user_settings['port']),
             _escape(user_settings['host']))
-        if args.password:
-            print '%s%s' % run_as_user(args.user, args.password, command)
-            script = None
-        else:
-            script = ['sudo -u "%(user)s" -- ' + command]
+        script = ['sudo -iHu "%(user)s" -- ' + command]
     else:
         script = MAILPILE_START_SCRIPT
 
@@ -668,10 +649,15 @@ def start_mailpile(app_args, args):
                                user_settings['port'],
                                False, None, None)
         save_usermap(args, os_settings, mailpiles)
-        # FIXME: If/when run_script raises exceptions, this call should
-        #        be try/except wrapped to not be considered critical, as
-        #        we expect some chmods to fail when not run as root.
         run_script(args, os_settings, FIX_PERMS_SCRIPT)
+
+
+def launch_mailpile(app_args, args):
+    assert(args.user)
+    os_settings = get_os_settings(args)
+    mailpiles = parse_usermap(args, os_settings)
+    user_settings = get_user_settings(args, user=args.user, mailpiles=mailpiles)
+    run_script(args, user_settings, MAILPILE_LAUNCH_SCRIPT)
 
 
 def stop_mailpile(app_args, args):
@@ -683,8 +669,7 @@ def stop_mailpile(app_args, args):
     if args.force:
         script += MAILPILE_FORCE_STOP_SCRIPT
 
-    run_user_command_or_script(
-        args, user_settings, '--stop', script)
+    run_script(args, user_settings, script)
 
 
 def delete_mailpile(app_args, args):
@@ -694,8 +679,7 @@ def delete_mailpile(app_args, args):
     if not args.force:
         usage(app_args, 'This command is scary, use --force if sure', code=0)
 
-    run_user_command_or_script(
-        args, user_settings, '--delete --force', MAILPILE_DELETE_SCRIPT)
+    run_script(args, user_settings, MAILPILE_DELETE_SCRIPT)
 
 
 def main():
@@ -711,11 +695,17 @@ def main():
     elif parsed_args.generate_apache_config:
         generate_apache_config(app_args, parsed_args)
 
+    elif parsed_args.generate_apache_sudoers:
+        generate_apache_sudoers(app_args, parsed_args)
+
     elif parsed_args.generate_apache_rewritemap:
         generate_apache_rewritemap(app_args, parsed_args)
 
     elif parsed_args.start:
         start_mailpile(app_args, parsed_args)
+
+    elif parsed_args.launch:
+        launch_mailpile(app_args, parsed_args)
 
     elif parsed_args.stop:
         stop_mailpile(app_args, parsed_args)
@@ -729,16 +719,14 @@ def handle_cgi_post():
     parse_config(app_args)
     try:
         request = cgi.FieldStorage()
-        username = request.getfirst('username')
-        password = request.getfirst('password')
+        username = request.getfirst('username').split('@')[0]
 
         # Sanity checks; these will raise on invalid/missing username
-        assert(username and password)
+        assert(username)
         pwd.getpwnam(username)
 
         # Generate argument and settings objects for use below
-        parsed_args = app_args.parse_args([
-            '--start', '--user', username, '--password', password])
+        parsed_args = app_args.parse_args(['--launch', '--user', username])
         settings = get_os_settings(parsed_args)
 
         # Send headers now, so output doesn't confuse Apache
@@ -747,11 +735,11 @@ def handle_cgi_post():
         print
 
         # Launch Mailpile?
-        rv = start_mailpile(app_args, parsed_args)
+        rv = launch_mailpile(app_args, parsed_args)
 
         time.sleep(5)
     except:
-        parsed_args = app_args.parse_args(['--start'])
+        parsed_args = app_args.parse_args(['--launch'])
         settings = get_os_settings(parsed_args)
         print 'Location: %s/?error=yes' % settings['webroot']
         print 'Expires: 0'
