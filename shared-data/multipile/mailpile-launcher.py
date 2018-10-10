@@ -4,7 +4,7 @@ DOC="""\
 This is a script to launch Mailpile as a specific user.
 The user must already have Mailpile configured.
 
-Usage: mailpile-launcher.py USERNAME [IDLE-QUIT-SECONDS]
+Usage: mailpile-launcher.py USERNAME IDLE-QUIT-SECONDS URL
 
 """
 import os
@@ -26,13 +26,13 @@ def usage(code, msg=''):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) not in (2, 3):
+    if len(sys.argv) != 4:
         usage(1)
 
-    # Quit after 7 days idle, by default.
-    idlequit = int(sys.argv[2]) if (len(sys.argv) == 3) else 7*24*3600
-
     mailpile_user = sys.argv[1]
+    idlequit = int(sys.argv[2])
+    url = sys.argv[3]
+
     if not mailpile_user or mailpile_user == 'root':
         usage(2, "Please specify a (non-root) user to launch Mailpile.")
     mailpile_user = pwd.getpwnam(mailpile_user)
@@ -57,5 +57,5 @@ if __name__ == '__main__':
             ['/bin/su',
              '-', mailpile_user.pw_name, '-c',
              ('screen -S mailpile -d -m '
-              'mailpile --idlequit=%d --pid=%s/%s.pid --interact'
-              ) % (idlequit, MAILPILE_PIDS_PATH, mailpile_user.pw_name)])
+              'mailpile --idlequit=%d --pid=%s/%s.pid --www=%s --interact'
+              ) % (idlequit, MAILPILE_PIDS_PATH, mailpile_user.pw_name, url)])
