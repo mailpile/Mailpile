@@ -79,7 +79,7 @@ Q. I had already run Mailpile manually, how to I migrate to Multipile?
    1. Install Multipile: `apt install mailpile-apache2`
    2. Launch your personal Mailpile, leave it running
    3. Run `sudo mailpile-admin.py --list`, your Mailpile *should* be listed
-   4. If so, run `sudo mailpile-admin.py --discover --generate-apache-usermap`
+   4. If so, run `sudo mailpile-admin.py --discover --configure-apache-usermap`
    5. In your Mailpile CLI, run `www http://127.0.0.1:PORT/mailpile/USER/`,
       with PORT and USER matching the values shown in step 2 above. Careful, the
       trailing slash IS important.
