@@ -9,6 +9,7 @@ Usage: mailpile-launcher.py USERNAME IDLE-QUIT-SECONDS URL
 """
 import os
 import pwd
+import re
 import sys
 from fasteners import InterProcessLock
 
@@ -35,9 +36,13 @@ if __name__ == '__main__':
 
     if not mailpile_user or mailpile_user == 'root':
         usage(2, "Please specify a (non-root) user to launch Mailpile.")
+    if not re.match(r'^[a-zA-Z0-9\._-]+$', mailpile_user):
+        usage(2, "That is a strange looking username.")
     mailpile_user = pwd.getpwnam(mailpile_user)
     if not mailpile_user:
         usage(2, "Please specify a (non-root) user to launch Mailpile.")
+    if not re.match(r'^[a-zA-Z0-9\.:/]+$', url):
+        usage(2, "That is a strange looking URL.")
 
     mailpile_home = MAILPILE_HOME_PATH % mailpile_user.pw_dir
     if not os.path.exists(mailpile_home):
