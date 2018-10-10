@@ -7,8 +7,8 @@ Mailpile installation.
 ### Requirements and Prerequisites
 
    * Mailpile, Apache 2+, sudo and screen
-   * Each user who wants to use Mailpile exists as a Unix user
-   * You really should configure server to TLS-encrypt all connections!
+   * Each user who wants to use Mailpile, exists as a Unix user
+   * You *really* should configure your server to use TLS-encryption!
 
 
 ### How does it work?
@@ -73,4 +73,17 @@ A. Your admin probably needs to run: `mailpile-admin.py --start --user YOU`
 
 Q. Why not nginx or some other better web-server?  
 A. Nobody has contributed the necessary recipies yet! Please do!
+
+Q. I had already run Mailpile manually, how to I migrate to Multipile?
+
+   1. Install Multipile: `apt install mailpile-apache2`
+   2. Launch your personal Mailpile, leave it running
+   3. Run `sudo mailpile-admin.py --list`, your Mailpile *should* be listed
+   4. If so, run `sudo mailpile-admin.py --discover --generate-apache-usermap`
+   5. In your Mailpile CLI, run `www http://127.0.0.1:PORT/mailpile/USER/`,
+      with PORT and USER matching the values shown in step 2 above. Careful, the
+      trailing slash IS important.
+
+Q. Can't I just edit the usermap (rewritemap) by hand?  
+A. Sure! It should be here: `/var/lib/mailpile/apache/usermap.txt`
 
