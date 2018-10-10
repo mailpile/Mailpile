@@ -1,4 +1,8 @@
 #!/usr/bin/python
+#
+# IMPORTANT: This script runs as root and is invoked by the web server via sudo.
+#            So it's pretty security-sensitive: simple is better than clever!
+#
 DOC="""\
 
 This is a script to launch Mailpile as a specific user.
@@ -59,8 +63,7 @@ if __name__ == '__main__':
         # the lockfile and will be able to take over.
         os.chown(mp_lockfile, mailpile_user.pw_uid, mailpile_user.pw_gid)
         os.execv('/bin/su',
-            ['/bin/su',
-             '-', mailpile_user.pw_name, '-c',
-             ('screen -S mailpile -d -m '
-              'mailpile --idlequit=%d --pid=%s/%s.pid --www=%s --interact'
-              ) % (idlequit, MAILPILE_PIDS_PATH, mailpile_user.pw_name, url)])
+            ['/bin/su', '-', mailpile_user.pw_name, '-c', (
+                'screen -S mailpile -d -m '
+                'mailpile --idlequit=%d --pid=%s/%s.pid --www=%s --interact'
+                ) % (idlequit, MAILPILE_PIDS_PATH, mailpile_user.pw_name, url)])
