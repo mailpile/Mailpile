@@ -244,7 +244,11 @@ class SharedImapConn(threading.Thread):
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
         elif self._selected:
-            self._conn.close()
+            try:
+                self._conn.close()
+            except IMAP4.error:
+                # This happens if we haven't previously selected a mailbox
+                pass
         rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
