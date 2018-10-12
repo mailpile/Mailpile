@@ -86,6 +86,7 @@ IMAP_TOKEN = re.compile('("[^"]*"'
 BLACKLISTED_MAILBOXES = (
     'drafts',
     'chats',
+    '[gmail]/all mail',
     '[gmail]/important',
     '[gmail]/starred',
     'openpgp_keys'
