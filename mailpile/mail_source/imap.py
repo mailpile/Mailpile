@@ -89,8 +89,8 @@ BLACKLISTED_MAILBOXES = (
     '[gmail]/all mail',
     '[gmail]/important',
     '[gmail]/starred',
-    'openpgp_keys'
-)
+    'openpgp_keys')
+
 
 class IMAP_IOError(IOError):
     pass
@@ -786,9 +786,10 @@ class ImapMailSource(BaseMailSource):
                     ok, data = self._imap(conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
-                    flags = [f.lower() for f in flags]
-                    self.source._cache_flags(path, flags)
-                    results.append('/' + self.source._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        flags = [f.lower() for f in flags]
+                        self.source._cache_flags(path, flags)
+                        results.append('/' + self.source._fmt_path(path))
             return results
 
         def getflags_(self, fp, cfg):
@@ -1000,6 +1001,13 @@ class ImapMailSource(BaseMailSource):
         else:
             return 'inherit'
 
+    def _sorted_mailboxes(self):
+        # This allows changes to BLACKLISTED_MAILBOXES to have an effect
+        # even if peoples' configs say otherwise.
+        return [
+            m for m in BaseMailSource._sorted_mailboxes(self)
+            if m.name.lower() not in BLACKLISTED_MAILBOXES]
+
     def _msg_key_order(self, key):
         return [int(k, 36) for k in key.split('.')]
 
@@ -1079,10 +1087,11 @@ class ImapMailSource(BaseMailSource):
                 (flags, sep, path), data[:3] = data[:3], []
                 flags = [f.lower() for f in flags]
                 if '\\noselect' not in flags:
-                    # We cache the flags for this mailbox, they may tell
-                    # use useful things about what kind of mailbox it is.
-                    self._cache_flags(path, flags)
-                    mboxes.append(self._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        # We cache the flags for this mailbox, they may tell
+                        # use useful things about what kind of mailbox it is.
+                        self._cache_flags(path, flags)
+                        mboxes.append(self._fmt_path(path))
                 if '\\haschildren' in flags:
                     subtrees.append('%s%s' % (path, sep))
                 if len(mboxes) > max_mailboxes:
