@@ -1043,6 +1043,7 @@ class ImapMailSource(BaseMailSource):
         try:
             paths = (paths or self.my_config.discovery.paths)[:]
             max_mailboxes = self.my_config.discovery.max_mailboxes
+            mailbox_count = len(config.sys.mailbox)
             existing = self._existing_mailboxes()
             mailboxes = []
 
@@ -1051,8 +1052,8 @@ class ImapMailSource(BaseMailSource):
                     mailboxes += self._walk_mailbox_path(raw_conn, str(p))
 
             discovered = [mbx for mbx in mailboxes if mbx not in existing]
-            if len(discovered) > max_mailboxes - len(existing):
-                discovered = discovered[:max_mailboxes - len(existing)]
+            if discovered and len(discovered) > max_mailboxes - mailbox_count:
+                discovered = discovered[:max_mailboxes - mailbox_count]
                 self.on_event_discovery_toomany()
 
             self.set_event_discovery_state('adding')
