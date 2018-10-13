@@ -3,10 +3,7 @@
 from __future__ import print_function
 import sys
 import os
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+from six.moves import cPickle as pickle
 
 import lockfile
 
