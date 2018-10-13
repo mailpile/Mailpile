@@ -82,17 +82,8 @@ import os
 import shutil
 from tempfile import TemporaryFile
 
-try:
-    import cStringIO as StringIO
-except ImportError:
-    # This is python3
-    try:
-        import StringIO
-    except ImportError:
-        import io as StringIO
-
-    xrange = range
-
+from six.moves import cStringIO as StringIO
+from six.moves import range
 
 import re
 import locale
@@ -779,7 +770,7 @@ class OptionsClass(object):
 
     def display(self, add_comments=False):
         '''Display options in a config file form.'''
-        output = StringIO.StringIO()
+        output = StringIO()
         keys = self._options.keys()
         keys.sort()
         currentSection = None
@@ -805,7 +796,7 @@ class OptionsClass(object):
         # Given that the Options class is no longer as nice looking
         # as it once was, this returns all the information, i.e.
         # the doc, default values, and so on
-        output = StringIO.StringIO()
+        output = StringIO()
 
         # when section and option are both specified, this
         # is nothing more than a call to as_nice_string
