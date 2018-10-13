@@ -91,8 +91,9 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for ach in ([extract_autocrypt_header(msg)] +
                         extract_autocrypt_gossip_headers(msg)):
                 if 'keydata' in ach:
-                    for keydata in _get_keydata(ach['keydata'],
-                                                autocrypt_header=ach):
+                    for keydata in get_keydata(ach['keydata'],
+                                               autocrypt_header=ach,
+                                               include_subkeys=False):
                         keys.append((keydata, ach['keydata']))
 
             # Then go looking at the attachments

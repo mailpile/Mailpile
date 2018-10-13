@@ -143,7 +143,7 @@ def lookup_crypto_keys(session, address,
             if not allowremote and not h.LOCAL:
                 continue
 
-            if found_keys and not h.PRIVACY_FRIENDLY and not origins:
+            if found_keys and (not h.PRIVACY_FRIENDLY) and (not origins):
                 # We only try the privacy-hostile methods if we haven't
                 # found any keys (unless origins were specified).
                 if not ungotten:
@@ -222,21 +222,28 @@ class KeyLookup(Command):
     HTTP_QUERY_VARS = {
         'email': 'The address to find a encryption key for (strict)',
         'address': 'The nick or address to find a encryption key for (fuzzy)',
-        'allowremote': 'Whether to permit remote key lookups (defaults to true)'
-    }
+        'allowremote': 'Whether to permit remote key lookups (default=Yes)',
+        'origins': 'Specify which origins to check (or * for all)'}
 
     def command(self):
         if len(self.args) > 1:
             allowremote = self.args.pop()
         else:
-            allowremote = self.data.get('allowremote', True)
+            allowremote = self.data.get('allowremote', ['Y'])[0]
+            if allowremote.lower()[:1] in ('n', 'f'):
+                allowremote = False
+
+        origins = self.data.get('origins')
+        if '*' in (origins or []):
+            origins = [h.NAME for h in KEY_LOOKUP_HANDLERS]
 
         email = " ".join(self.data.get('email', []))
         address = " ".join(self.data.get('address', self.args))
         result = lookup_crypto_keys(self.session, email or address,
                                     strict_email_match=email,
                                     event=self.event,
-                                    allowremote=allowremote)
+                                    allowremote=allowremote,
+                                    origins=origins)
         return self._success(_n('Found %d encryption key',
                                 'Found %d encryption keys',
                                 len(result)) % len(result),

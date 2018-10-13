@@ -28,11 +28,11 @@ def get_keydata(data, include_subkeys=False, autocrypt_header=None):
         # The autocrypt spec tells us that the visible addr= attribute
         # overrides whatever is on the key itself, so we synthesize a
         # fake UID here so strict e-mail matches don't break Autocrypt.
-        default_uids = [{
+        ac_uid = {
             'comment': 'Autocrypt',
-            'email': autocrypt_header['addr']}]
+            'email': autocrypt_header['addr']}
     else:
-        default_uids = []
+        ac_uid = None
 
     now = time.time()
     for m in packets:
@@ -49,7 +49,7 @@ def get_keydata(data, include_subkeys=False, autocrypt_header=None):
                     "validity": validity,
                     "keytype_name": (m.pub_algorithm or '').split()[0],
                     "keysize": size,
-                    "uids": default_uids,
+                    "uids": []
                 })
             if isinstance(m, pgpdump.packet.UserIDPacket) and results:
                 # FIXME: This used to happen with results=[], does that imply
@@ -60,8 +60,20 @@ def get_keydata(data, include_subkeys=False, autocrypt_header=None):
             import traceback
             traceback.print_exc()
 
-    if include_subkeys:
-        return results
-    else:
+    if not include_subkeys:
         # This will only return keys that have UIDs
-        return [k for k in results if k['uids']]
+        results = [k for k in results if k['uids']]
+
+    # Ensure that all the keys we're returning have the Autocrypt UID,
+    # if they have UIDs at all.
+    if ac_uid is not None:
+        for k in results:
+            found = 0
+            for u in k['uids']:
+                if u['email'] == ac_uid['email']:
+                    u['comment'] = u.get('comment', '') + '(Autocrypt)'
+                    found += 1
+            if k['uids'] and not found:
+                k['uids'] += [ac_uid]
+
+    return results
