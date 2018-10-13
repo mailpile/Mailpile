@@ -5,13 +5,13 @@ import sys
 import os
 from six.moves import cPickle as pickle
 
-import lockfile
+import fasteners
 
 from mailpile.spambayes.Options import options
 
 def pickle_read(filename):
     """Read pickle file contents with a lock."""
-    lock = lockfile.FileLock(filename)
+    lock = fastener.InterProcessLock(filename)
     lock.acquire(timeout=20)
     try:
         return pickle.load(open(filename, 'rb'))
@@ -21,7 +21,7 @@ def pickle_read(filename):
 def pickle_write(filename, value, protocol=0):
     '''Store value as a pickle without creating corruption'''
 
-    lock = lockfile.FileLock(filename)
+    lock = fastener.InterProcessLock(filename)
     lock.acquire(timeout=20)
 
     try:
