@@ -17,4 +17,3 @@ pbr
 fasteners
 win_inet_pton; sys_platform == 'win32'
 stem>=1.4
-lockfile

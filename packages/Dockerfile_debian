@@ -22,10 +22,10 @@ RUN apt-get update && \
   libjs-list.js libjs-mousetrap libjs-moxie libjs-plupload libjs-qtip2 \
   libjs-rebar libjs-select2.js libjs-typeahead.js libjs-underscore \
   node-less node-uglify python-all python-bs4 python-dns python-funcsigs \
-  python-jinja2 python-lockfile python-lxml python-markupsafe \
+  python-jinja2 python-lxml python-markupsafe \
   python-mock python-nose python-olefile python-pbr python-pgpdump \
   python-pil python-selenium python-setuptools python-webencodings \
-  python-socksipychain python-lockfile xdg-utils
+  python-socksipychain xdg-utils
 
 RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian
