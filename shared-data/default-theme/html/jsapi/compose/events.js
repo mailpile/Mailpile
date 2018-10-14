@@ -100,6 +100,13 @@ Mailpile.Composer.SendMessage = function(send_btn) {
   var post_send_url = $send_btn.closest('.has-url').data('url');
   var form_data = $('#form-compose-' + mid).serialize();
 
+  // Warn the user if he's trying to go against his own security policies,
+  // let him abort... or not.
+  if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
+    if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
+                 '{{_("Click OK to send the message anyway.")|escapejs}}')) return;
+  }
+
   if (action === 'send') {
 	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  = 'success';
@@ -117,13 +124,6 @@ Mailpile.Composer.SendMessage = function(send_btn) {
 	  var action_status  = 'success';
 	  var action_message = 'Your reply was sent';
     var done_working = Mailpile.notify_working("{{_('Preparing to send...')|escapejs}}", 100);
-  }
-
-  // Warn the user if he's trying to go against his own security policies,
-  // let him abort... or not.
-  if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
-    if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
-                 '{{_("Click OK to send the message anyway.")|escapejs}}')) return;
   }
 
   // FIXME: Use Mailpile.API instead of this.

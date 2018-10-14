@@ -21,6 +21,8 @@ class DNSPKALookupHandler(LookupHandler):
     NAME = _("DNS PKA records")
     TIMEOUT = 10
     PRIORITY = 100
+    PRIVACY_FRIENDLY = False  # Bypasses Tor, currently.
+    SCORE = 3
 
     def __init__(self, *args, **kwargs):
         LookupHandler.__init__(self, *args, **kwargs)
@@ -30,7 +32,7 @@ class DNSPKALookupHandler(LookupHandler):
         self.req = DNS.Request(qtype="TXT")
 
     def _score(self, key):
-        return (9, _('Found key in DNS PKA'))
+        return (self.SCORE, _('Found key in DNS PKA'))
 
     def _lookup(self, address, strict_email_match=True):
         """
@@ -74,9 +76,7 @@ class DNSPKALookupHandler(LookupHandler):
             "pkaver": pkaver}}
 
     def _getkey(self, key):
-        if key["fingerprint"] and not key["url"]:
-            res = self._gnupg().recv_key(key["fingerprint"])
-        elif key["url"]:
+        if key["url"] and key["url"][:6].lower() in ('http:/', 'https:'):
             with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):
                 r = urllib2.urlopen(key["url"])
             result = r.readlines()
@@ -91,8 +91,10 @@ class DNSPKALookupHandler(LookupHandler):
             result = "".join(result[start:end])
             res = self._gnupg().import_keys(result)
             return res
+        elif key["fingerprint"]:
+            res = self._gnupg().recv_key(key["fingerprint"])
         else:
-            raise ValueError("Need a fingerprint or a URL")
+            raise ValueError("Need a fingerprint or a URL. key=%s" % key)
 
 
 _ = gettext

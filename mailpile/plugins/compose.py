@@ -518,13 +518,23 @@ class Reply(RelativeCompose):
             fmt = _('Composing a reply from %(from)s to %(to)s')
         session.ui.debug(fmt % headers)
 
+        extra_headers = []
+        for tree in trees:
+            try:
+                if 'decrypted' in tree['crypto']['encryption']['status']:
+                    extra_headers.append(('x-mp-internal-should-encrypt', 'Y'))
+                    extra_headers.append(('Encryption', 'openpgp-sign-encrypt'))
+                    break
+            except KeyError:
+                pass
+
         if cid:
             # FIXME: Instead, we should use placeholders in the template
             #        and insert the quoted bits in the right place (or
             #        nowhere if the template doesn't want them).
             msg_bodies[:0] = [cls._get_canned(idx, cid)]
 
-        return (Email.Create(idx, local_id, lmbox,
+        email = Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
                              msg_subject=cls.prefix_subject(
                                  ref_subjs[-1], 'Re:', cls._RE_REGEXP),
@@ -532,10 +542,13 @@ class Reply(RelativeCompose):
                              msg_to=headers.get('to', []),
                              msg_cc=headers.get('cc', []),
                              msg_references=[i for i in ref_ids if i],
+                             msg_headers=extra_headers,
                              msg_id=msgid,
                              save=(not ephemeral),
-                             ephemeral_mid=ephemeral and ephemeral[0]),
-                ephemeral)
+                             ephemeral_mid=ephemeral and ephemeral[0])
+
+
+        return (email, ephemeral)
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()

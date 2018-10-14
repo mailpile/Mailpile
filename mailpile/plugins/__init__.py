@@ -27,7 +27,7 @@ __all__ = [
     'setup_magic', 'oauth', 'exporters', 'plugins', 'motd', 'backups',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_libravatar',
     'vcard_mork', 'html_magic', 'migrate', 'smtp_server', 'crypto_policy',
-    'keylookup', 'webterminal'
+    'keylookup', 'webterminal', 'crypto_autocrypt'
 ]
 PLUGINS = __all__
 

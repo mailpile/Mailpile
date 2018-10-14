@@ -1,3 +1,4 @@
+import copy
 import datetime
 import re
 import time
@@ -16,7 +17,7 @@ from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
-from mailpile.crypto.mime import ObscureSubject
+from mailpile.crypto.mime import OBSCURE_HEADERS_REQUIRED, ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils.addresses import AddressHeaderParser
@@ -24,7 +25,6 @@ from mailpile.mailutils.emails import Email, MakeContentID, ClearParseCache
 from mailpile.plugins import PluginManager, EmailTransform
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
-from mailpile.crypto.autocrypt_utils import make_autocrypt_header
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -97,20 +97,6 @@ class ContentTxf(EmailTransform):
             msg["OpenPGP"] = ("id=%s; preference=%s"
                               % (sender_keyid, preference))
 
-        # Inject Autocrypt header if required.
-        try:
-            autocrypt_accounts = profile['vcard'].get(
-                            'x-mailpile-autocrypt-accounts').value
-        except:
-            autocrypt_accounts = None
-            
-        if autocrypt_accounts:
-            gnupg = gnupg or GnuPG(self.config, event=GetThreadEvent())       
-            autocrypt_header = make_autocrypt_header(gnupg, autocrypt_accounts,
-                                                sender, sender_keyid, rcpts)
-            if autocrypt_header:
-                msg["Autocrypt"] = autocrypt_header
-     
         if ('attach-pgp-pubkey' in msg and
                 msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
             gnupg = gnupg or GnuPG(self.config, event=GetThreadEvent())
@@ -174,9 +160,10 @@ class CryptoTxf(EmailTransform):
             elif 'obscure_meta' in crypto_format:
                 obscured = OBSCURE_HEADERS_MILD
             elif self.config.prefs.encrypt_subject:
-                obscured = {'subject': ObscureSubject}
+                obscured = copy.copy(OBSCURE_HEADERS_REQUIRED)
+                obscured['subject'] = ObscureSubject
             else:
-                obscured = {}
+                obscured = OBSCURE_HEADERS_REQUIRED
 
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper

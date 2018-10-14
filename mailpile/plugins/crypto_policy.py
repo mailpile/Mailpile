@@ -69,7 +69,9 @@ class CryptoPolicy(CryptoPolicyBaseAction):
     SYNOPSIS = (None, 'crypto_policy', 'crypto_policy', '[<emailaddresses>]')
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ('GET',)
-    HTTP_QUERY_VARS = {'email': 'e-mail addresses'}
+    HTTP_QUERY_VARS = {
+        'email': 'e-mail addresses',
+        'should-encrypt': 'Assume a base-line policy of wanting encryption'}
 
     @classmethod
     def ShouldAttachKey(cls, config, vcards=None, emails=None, ttl=90):
@@ -142,7 +144,7 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         return float(len(crypto)) / len(recent)
 
     @classmethod
-    def crypto_policy(cls, session, idx, emails):
+    def crypto_policy(cls, session, idx, emails, should_encrypt=False):
         config = session.config
         for i in range(0, len(emails)):
             if '<' in emails[i]:
@@ -156,6 +158,11 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                                               'best-effort', 'send_keys')
         cpolicy = default[-2]
         cformat = default[-1]
+        if should_encrypt and ('encrypt' not in cpolicy):
+            if 'sign' in cpolicy or 'best-effort' == cpolicy:
+                cpolicy = 'sign-encrypt'
+            else:
+                cpolicy = 'encrypt'
 
         # Try and merge all the user policies into one. This may lead
         # to conflicts which cannot be resolved.
@@ -249,10 +256,12 @@ class CryptoPolicy(CryptoPolicyBaseAction):
 
     def command(self):
         emails = list(self.args) + self.data.get('email', [])
+        should_encrypt = self.data.get('should-encrypt', False)
         if len(emails) < 1:
             return self._error('Please provide at least one email address!')
 
-        result = self.crypto_policy(self.session, self._idx(), emails)
+        result = self.crypto_policy(self.session, self._idx(), emails,
+                                    should_encrypt=should_encrypt)
         return self._success(result['reason'], result=result)
 
 

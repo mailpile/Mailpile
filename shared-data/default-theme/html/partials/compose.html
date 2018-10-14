@@ -1,5 +1,6 @@
 <div class="thread-reply" id="message-{{mid}}" data-mid="{{mid}}">
-  <form id="form-compose-{{mid}}" class="form-compose clearfix" data-mid="{{mid}}">
+  <form id="form-compose-{{mid}}" class="form-compose clearfix" data-mid="{{mid}}"
+        data-should-encrypt="{{ 'Y' if ('x-mp-internal-should-encrypt' in editing_strings.headers) else 'N' }}">
     {{ csrf_field|safe }}
     <div id="compose-details-{{mid}}" class="{% if command == "view" %}hide{% endif %}" data-mid="{{mid}}">
       <div class="compose-headers">
