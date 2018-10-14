@@ -908,7 +908,7 @@ class GnuPG:
         Note that this test will fail if you don't replace the recipient with
         one whose key you control.
         >>> g = GnuPG(None)
-        >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
+        >>> ct = g.encrypt("Hello, World", tokeys=["08A650B8E2CBC1B02297915DC65626EED13C70DA"])[1]
         >>> g.decrypt(ct)["text"]
         'Hello, World'
         """
@@ -1214,7 +1214,7 @@ class GnuPG:
                             sign=False, fromkey=None, throw_keyids=False):
         """
         >>> g = GnuPG(None)
-        >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
+        >>> g.encrypt("Hello, World", tokeys=["08A650B8E2CBC1B02297915DC65626EED13C70DA"])[0]
         0
         """
         if tokeys:
