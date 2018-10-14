@@ -118,7 +118,7 @@ class CryptoInfo(dict):
 
 class EncryptionInfo(CryptoInfo):
     """Contains information about the encryption status of a MIME part"""
-    KEYS = (CryptoInfo.KEYS + ["have_keys", "missing_keys", "locked_keys"])
+    KEYS = (CryptoInfo.KEYS + ["have_keys", "missing_keys", "locked_keys", "session_key"])
     STATUSES = (CryptoInfo.STATUSES +
                 ["mixed-decrypted", "decrypted",
                  "mixed-missingkey", "missingkey",

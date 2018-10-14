@@ -199,6 +199,9 @@ class GnuPGResultParser:
                 while keyid in encryption_info["have_keys"]:
                     encryption_info["have_keys"].remove(keyid)
 
+            elif keyword == "SESSION_KEY":
+                encryption_info["session_key"] = data[1].strip()
+
             elif keyword == "VALIDSIG":
                 # FIXME: Determine trust level, between new, unverified,
                 #        verified, untrusted.
@@ -923,9 +926,9 @@ class GnuPG:
 
         self.event.running_gpg(_('Decrypting %d bytes of data') % len(data))
         for tries in (1, 2):
-            retvals = self.run(["--decrypt"], gpg_input=data,
-                                              outputfd=outputfd,
-                                              send_passphrase=True)
+            retvals = self.run(["--decrypt", "--show-session-key"],
+                               gpg_input=data, outputfd=outputfd,
+                               send_passphrase=True)
             if tries == 1:
                 keyid = None
                 for msg in reversed(retvals[1]['status']):
