@@ -16,9 +16,12 @@ class MessageInfoConstants(object):
     MSG_TAGS = 10
     MSG_REPLIES = 11
     MSG_THREAD_MID = 12
+    MSG_SESSION_KEY = 13
 
     MSG_FIELDS_V1 = 11
     MSG_FIELDS_V2 = 13
+    MSG_FIELDS_V3 = 14
+    MSG_FIELDS_LATEST = MSG_FIELDS_V3
 
     MSG_BODY_LAZY = '{L}'
     MSG_BODY_GHOST = '{G}'
@@ -27,7 +30,7 @@ class MessageInfoConstants(object):
     MSG_BODY_MAGIC = (MSG_BODY_LAZY, MSG_BODY_GHOST, MSG_BODY_DELETED)
 
     BOGUS_METADATA = [None, '', None, '0', '(no sender)', '', '', '0',
-                      '(not in index)', '', '', '', '-1']
+                      '(not in index)', '', '', '', '-1', '']
 
 
 if __name__ == '__main__':

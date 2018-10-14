@@ -127,16 +127,20 @@ class MailIndex(BaseIndex):
                     words = line.split('\t')
 
                     # Migration: converting old metadata into new!
-                    if len(words) != self.MSG_FIELDS_V2:
+                    if len(words) != self.MSG_FIELDS_LATEST:
 
                         # V1 -> V2 adds MSG_CC and MSG_KB
                         if len(words) == self.MSG_FIELDS_V1:
                             words[self.MSG_CC:self.MSG_CC] = ['']
                             words[self.MSG_KB:self.MSG_KB] = ['0']
 
-                        # Add V2 -> V3 here, etc. etc.
-
+                        # V2 -> V3 adds MSG_SESSION_KEY
                         if len(words) == self.MSG_FIELDS_V2:
+                            words[self.MSG_SESSION_KEY:self.MSG_SESSION_KEY] = ['']
+
+                        # Add V3 -> V4 here, etc. etc.
+
+                        if len(words) == self.MSG_FIELDS_V3:
                             line = '\t'.join(words)
                         else:
                             bogus = True
@@ -361,7 +365,7 @@ class MailIndex(BaseIndex):
         with self._lock:
             for offset in range(0, len(self.INDEX)):
                 message = self.l2m(self.INDEX[offset])
-                if len(message) == self.MSG_FIELDS_V2:
+                if len(message) == self.MSG_FIELDS_LATEST:
                     self.MSGIDS[message[self.MSG_ID]] = offset
                     for msg_ptr in message[self.MSG_PTRS].split(','):
                         if msg_ptr:
@@ -665,7 +669,8 @@ class MailIndex(BaseIndex):
                       msg_from=None, msg_subject=None, msg_body=None,
                       msg_to=None, msg_cc=None, msg_size=None,
                       msg_tags=None, msg_replies=None,
-                      msg_parent_mid=None, msg_thread_mid=None):
+                      msg_parent_mid=None, msg_thread_mid=None,
+                      msg_session_key=None):
         if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id is not None:
@@ -704,6 +709,9 @@ class MailIndex(BaseIndex):
                     '%s/%s' % (msg_thread_mid, msg_parent_mid))
             else:
                 msg_info[self.MSG_THREAD_MID] = msg_thread_mid
+
+        if msg_session_key is not None:
+            msg_info[self.MSG_SESSION_KEY] = msg_session_key
 
         return msg_info
 
@@ -1564,6 +1572,7 @@ class MailIndex(BaseIndex):
         info[self.MSG_KB] = 0
         info[self.MSG_SUBJECT] = ''
         info[self.MSG_BODY] = self.MSG_BODY_DELETED
+        info[self.MSG_SESSION_KEY] = ''
 
         # The timestamp we keep partially intact, to not completely break
         # ordering within theads. This may not really be necessary.
