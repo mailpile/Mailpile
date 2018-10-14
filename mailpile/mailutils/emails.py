@@ -1445,9 +1445,15 @@ class Email(object):
                 elif part['type'] == 'pgpend':
                     pgpdata.append(part)
 
+                    try:
+                        # TODO: should use metadata index instead
+                        session_key = tree['crypto']['encryption']['session_key']
+                    except KeyError:
+                        session_key = None
+
                     data = ''.join([p['data'] for p in pgpdata])
                     gpg = GnuPG(self.config, event=event)
-                    si, ei, text = gpg.decrypt(data)
+                    si, ei, text = gpg.decrypt(data, session_key=session_key)
 
                     # FIXME: If the data is binary, we should provide some
                     #        sort of download link or maybe leave the PGP

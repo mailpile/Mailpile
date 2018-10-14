@@ -905,8 +905,8 @@ class GnuPG:
                 }
         return res
 
-    def decrypt(self, data,
-            outputfd=None, passphrase=None, as_lines=False, require_MDC=True):
+    def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False,
+                require_MDC=True, session_key=None):
         """
         Note that this test will fail if you don't replace the recipient with
         one whose key you control.
@@ -925,9 +925,14 @@ class GnuPG:
             self.prepare_passphrase(GnuPG.LAST_KEY_USED, decrypting=True)
 
         self.event.running_gpg(_('Decrypting %d bytes of data') % len(data))
+
+        args = ["--decrypt", "--show-session-key"]
+
+        if session_key:
+            args.extend(["--override-session-key", session_key])
+
         for tries in (1, 2):
-            retvals = self.run(["--decrypt", "--show-session-key"],
-                               gpg_input=data, outputfd=outputfd,
+            retvals = self.run(args, gpg_input=data, outputfd=outputfd,
                                send_passphrase=True)
             if tries == 1:
                 keyid = None
