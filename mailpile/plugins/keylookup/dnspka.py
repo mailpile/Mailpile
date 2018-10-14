@@ -1,3 +1,13 @@
+# Note, this code is not used by default, because:
+#
+#   1. DNS is almost entirely insecure and not private
+#   2. Our current code-base cannot route DNS lookups over Tor
+#   3. Nobody uses this. Even Werner himself has an obsolete key in DNS.
+#   4. Web Key Directory solves the same problem, properly.
+#
+# The code is left here in the repo as a historic oddity; a resource for
+# people to explore and learn.
+
 try:
     import DNS
 except:
