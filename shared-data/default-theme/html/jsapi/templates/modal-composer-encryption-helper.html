@@ -85,6 +85,11 @@
               class="modal-send-unencrypted button-info left">
         <span class="icon-lock-open"></span> {{_("Send Unencrypted")}}
       </button>
+      <span style="display: inline-block; float: left; margin: 7px 0 0 15px;">
+        <input type="checkbox" id="keylookup_check_all">
+        <span title="{{_('Tick this box to keep searching, even after keys have been found in preferred locations.')}}"
+              class="checkbox">{{_("Search All Sources")}}</span>
+      </span>
       <button onclick="javascript:Mailpile.UI.hide_modal();"
               class="modal-retry-encryption button-primary right"
               data-mid="<%= mid %>">

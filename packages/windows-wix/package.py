@@ -55,21 +55,6 @@ def xml_append( xml_parent, xml_element_type, **attrs ):
     xml_attrs( result, **attrs )
     return result
 
-def digest_path(path, algo = 'sha1'):
-    '''
-    Binary digest a file by path
-    '''
-    
-    with open(path, 'rb') as handle:
-        digest = getattr(hashlib, algo)()
-        generator = functools.partial(handle.read, 4096)
-                
-        for chunk in iter(generator, b''):
-            digest.update(chunk)
-                    
-        return digest
-
-
 class WixConfig( object ):
     '''
     A mailpile-specific wix file generator.
@@ -82,18 +67,10 @@ class WixConfig( object ):
     might change, assume anywhere a UUID is required, it must be archived.
     '''
 
-    def __init__( self, config, uuids ):
+    def __init__( self, config ):
         self.config = config
         self.dirs = {}
         self.logical = {}
-        
-        if isinstance( uuids, dict ):
-            self.uuids = uuids
-        else:
-            with open( uuids, 'r' ) as handle:
-                self.uuids = json.load( handle )
-
-        logger.info("Loaded {} uuids".format(len(uuids)))
                 
         self.root = ET.Element( 'Wix' )
         self.root.set( 'xmlns', 'http://schemas.microsoft.com/wix/2006/wi' )
@@ -356,36 +333,58 @@ class WixConfig( object ):
         '''
         get or create an appropriate uuid for the specified path.
 
-        :mask: path portion to ignore(portablility)
+        Use UUIDv5 to create namespace/sha1 based uuids(see uuid RFC for
+        background about UUID v5). Namespaces are organized as follows:
+
+            product_id -> path -> binary contents of file
+
+        The first is easy:
+
+            root_namespace = self.config['product_id']
+            path_namespace = uuid.uuid5(root_namespace, path)
+
+        Sadly, uuid.uuid5() doesn't support generators, so we cannot write:
+
+            with open(localpath, 'rb') as handle:
+                guid = uuid.uuid5(path_namespace, handle)
+
+        Instead, we do the work ourselves:
+        
+            with open(localpath, 'rb') as handle:
+                digest = hashlib.sha1()
+                digest.update(path_namespace.bytes)
+                generator = functools.partial(handle.read, 4096)
+                        
+                for chunk in iter(generator, b''):
+                    digest.update(chunk)
+
+                guid = uuid.UUID(bytes = digest.digest()[:16], version = 5)
+
+        Where the last line overwrites the appropriate uuid version bits.
+
         :path: path for uuid lookup
+        :local path: file to digest.
         '''
 
-        # TODO: Use a digest of the input file to distinguish changes
-        # (really, this looks more like a file registry, but one thing at a
-        # time)
-        #
+        root_namespace = uuid.UUID(self.config['product_id'])
+        path_namespace = uuid.uuid5(root_namespace, path.encode())
+
         if local_path:
-            digest = digest_path(local_path).hexdigest()
+            with open(local_path, 'rb') as handle:
+                digest = hashlib.sha1()
+                digest.update(path_namespace.bytes)
+                generator = functools.partial(handle.read, 4096)
+
+                for chunk in iter(generator, b''):
+                    digest.update(chunk)
+
+                guid = uuid.UUID(bytes = digest.digest()[:16], version = 5)
         else:
-            digest = '<no digest>'
+            guid = path_namespace
 
-        # lookup cluster of digest: uuids pairs for this path
-        #
-        try:
-            uuids = self.uuids[path]
-        except KeyError:
-            uuids = {}
-            self.uuids[path] = uuids
 
-        # Lookup uuid by digest
-        #   
-        try:
-            return uuids[digest]
-        except KeyError:
-            guid = str(uuid.uuid4())
-            logger.warn("Creating new uuid for '{}': '{}' sha1 {}".format(path, guid, digest))
-            uuids[digest] = guid
-            return guid
+        logger.debug("Using guid {} for path '{}'".format(guid, path))
+        return str(guid)
 
     def directory( self, path ):
         '''
@@ -514,13 +513,10 @@ class WixConfig( object ):
         
 
     def save( self, path, indent = 2 ):
-        with open( path + '.uuid.json', 'w' ) as handle:
-            json.dump( self.uuids, handle, indent = indent, sort_keys = True )
-
         dense = ET.tostring( self.root, encoding='utf-8' )
         reparsed = minidom.parseString( dense )
         pretty = reparsed.toprettyxml( indent = ' ' * indent, encoding = 'utf-8' ) 
-        with open( path + '.wxs', 'wb' ) as handle:
+        with open( path, 'wb' ) as handle:
             handle.write( pretty )
 
 

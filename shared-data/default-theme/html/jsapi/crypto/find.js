@@ -2,69 +2,70 @@
 
 
 Mailpile.Crypto.Find.KeysResult = function(data, options) {
-
   var items_hidden = '';
 
   _.each(data.result, function(key) {
+    // Loop through UIDs for match to Query
+    var uid = _.findWhere(key.uids, {email: options.query});
+    var avatar   = '{{ U("/static/img/avatar-default.png") }}';
 
-    if (!$('#item-encryption-key-' + key.fingerprint).length) {
-
-      // Loop through UIDs for match to Query
-      var uid = _.findWhere(key.uids, {email: options.query});
-      var avatar   = '{{ U("/static/img/avatar-default.png") }}';
-
-      // Try to find Avatar
-      if (uid) {
-        var contact  = _.findWhere(key.vcards, {address: uid.email});
-        if (contact) {
-          if (contact.photo) {
-            avatar = contact.photo;
-          }
-        }
-      } else {
-
-        // UID Featured Item
-        var uid = {
-          name: '{{_("No Name")|escapejs}}',
-          email: '{{_("No Email")|escapejs}}'
-        };
-
-        if (key.uids[0].name) {
-          uid.name = key.uids[0].name;
-        }
-        if (key.uids[0].email) {
-          uid.email = key.uids[0].email;
-        }
-        if (key.uids[0].comment) {
-          uid.comment = key.uids[0].comment;
+    // Try to find Avatar
+    if (uid) {
+      var contact  = _.findWhere(key.vcards, {address: uid.email});
+      if (contact) {
+        if (contact.photo) {
+          avatar = contact.photo;
         }
       }
+    } else {
+      // UID Featured Item
+      var uid = {
+        name: '{{_("No Name")|escapejs}}',
+        email: '{{_("No Email")|escapejs}}'
+      };
 
-      // Key Score
-      var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
+      if (key.uids[0].name) {
+        uid.name = key.uids[0].name;
+      }
+      if (key.uids[0].email) {
+        uid.email = key.uids[0].email;
+      }
+      if (key.uids[0].comment) {
+        uid.comment = key.uids[0].comment;
+      }
+    }
 
-      // Show View
-      var item_data = _.extend({ score_color: score_color,
-                                 avatar: avatar,
-                                 uid: uid,
-                                 address: options.query,
-                                 action: options.action }, key);
-      var item_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
-      var item_html = item_template(item_data);
+    // Key Score
+    var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
 
-      // Only show results with positive score (hide others)
+    // Show View
+    var item_data = _.extend({ score_color: score_color,
+                               avatar: avatar,
+                               uid: uid,
+                               address: options.query,
+                               action: options.action }, key);
+    var item_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
+    var item_html = item_template(item_data);
+
+    // Only show results with positive score (hide others)
+    var $elem = $('#item-encryption-key-' + key.fingerprint);
+    if ($elem.length) {
+      $elem.replaceWith(item_html);
+    }
+    else {
       if (key.score_stars > 0) {
         $(options.container).find('.result').append(item_html);
-      } else {
+      }
+      else {
         $(options.container).find('.result-hidden-keys').append(item_html);
       }
-
-      // Set Lookup State (data model)
-      var key_data = {fingerprints: key.fingerprint,
-                      address: options.query,
-                      origins: key.origins };
-      Mailpile.crypto_keylookup.push(key_data);
     }
+
+    // Set Lookup State (data model)
+    var key_data = {fingerprints: key.fingerprint,
+                    address: options.query,
+                    origins: key.origins };
+    Mailpile.crypto_keylookup.push(key_data);
   });
 
   var $container = $(options.container);
@@ -139,8 +140,8 @@ Mailpile.Crypto.Find.Keys = function(options) {
 
   var args = {}
   args[(options.strict ? "email" : "address")] = options.query;
+  if ($('#keylookup_check_all').is(':checked')) args['origins'] = '*';
   Mailpile.API.async_crypto_keylookup_get(args, function(data, ev) {
-
     // Render each result found
     if (data.result) Mailpile.Crypto.Find.KeysResult(data, options);
 

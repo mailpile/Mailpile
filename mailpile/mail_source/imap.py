@@ -86,10 +86,11 @@ IMAP_TOKEN = re.compile('("[^"]*"'
 BLACKLISTED_MAILBOXES = (
     'drafts',
     'chats',
+    '[gmail]/all mail',
     '[gmail]/important',
     '[gmail]/starred',
-    'openpgp_keys'
-)
+    'openpgp_keys')
+
 
 class IMAP_IOError(IOError):
     pass
@@ -243,7 +244,11 @@ class SharedImapConn(threading.Thread):
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
         elif self._selected:
-            self._conn.close()
+            try:
+                self._conn.close()
+            except IMAP4.error:
+                # This happens if we haven't previously selected a mailbox
+                pass
         rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
@@ -785,9 +790,10 @@ class ImapMailSource(BaseMailSource):
                     ok, data = self._imap(conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
-                    flags = [f.lower() for f in flags]
-                    self.source._cache_flags(path, flags)
-                    results.append('/' + self.source._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        flags = [f.lower() for f in flags]
+                        self.source._cache_flags(path, flags)
+                        results.append('/' + self.source._fmt_path(path))
             return results
 
         def getflags_(self, fp, cfg):
@@ -999,6 +1005,13 @@ class ImapMailSource(BaseMailSource):
         else:
             return 'inherit'
 
+    def _sorted_mailboxes(self):
+        # This allows changes to BLACKLISTED_MAILBOXES to have an effect
+        # even if peoples' configs say otherwise.
+        return [
+            m for m in BaseMailSource._sorted_mailboxes(self)
+            if m.name.lower() not in BLACKLISTED_MAILBOXES]
+
     def _msg_key_order(self, key):
         return [int(k, 36) for k in key.split('.')]
 
@@ -1034,6 +1047,7 @@ class ImapMailSource(BaseMailSource):
         try:
             paths = (paths or self.my_config.discovery.paths)[:]
             max_mailboxes = self.my_config.discovery.max_mailboxes
+            mailbox_count = len(config.sys.mailbox)
             existing = self._existing_mailboxes()
             mailboxes = []
 
@@ -1042,8 +1056,8 @@ class ImapMailSource(BaseMailSource):
                     mailboxes += self._walk_mailbox_path(raw_conn, str(p))
 
             discovered = [mbx for mbx in mailboxes if mbx not in existing]
-            if len(discovered) > max_mailboxes - len(existing):
-                discovered = discovered[:max_mailboxes - len(existing)]
+            if discovered and len(discovered) > max_mailboxes - mailbox_count:
+                discovered = discovered[:max_mailboxes - mailbox_count]
                 self.on_event_discovery_toomany()
 
             self.set_event_discovery_state('adding')
@@ -1078,10 +1092,11 @@ class ImapMailSource(BaseMailSource):
                 (flags, sep, path), data[:3] = data[:3], []
                 flags = [f.lower() for f in flags]
                 if '\\noselect' not in flags:
-                    # We cache the flags for this mailbox, they may tell
-                    # use useful things about what kind of mailbox it is.
-                    self._cache_flags(path, flags)
-                    mboxes.append(self._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        # We cache the flags for this mailbox, they may tell
+                        # use useful things about what kind of mailbox it is.
+                        self._cache_flags(path, flags)
+                        mboxes.append(self._fmt_path(path))
                 if '\\haschildren' in flags:
                     subtrees.append('%s%s' % (path, sep))
                 if len(mboxes) > max_mailboxes:

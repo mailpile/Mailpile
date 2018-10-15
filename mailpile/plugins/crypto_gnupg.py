@@ -1,3 +1,4 @@
+import copy
 import datetime
 import re
 import time
@@ -16,7 +17,7 @@ from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto, MessageAsString
 from mailpile.crypto.mime import OBSCURE_HEADERS_MILD, OBSCURE_HEADERS_EXTREME
-from mailpile.crypto.mime import ObscureSubject
+from mailpile.crypto.mime import OBSCURE_HEADERS_REQUIRED, ObscureSubject
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils.addresses import AddressHeaderParser
@@ -52,6 +53,7 @@ class ContentTxf(EmailTransform):
             "key": keydata}
 
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
+        # *** msg is email.mime.multipart.MIMEMultipart
         matched = False
         gnupg = None
         sender_keyid = None
@@ -158,9 +160,10 @@ class CryptoTxf(EmailTransform):
             elif 'obscure_meta' in crypto_format:
                 obscured = OBSCURE_HEADERS_MILD
             elif self.config.prefs.encrypt_subject:
-                obscured = {'subject': ObscureSubject}
+                obscured = copy.copy(OBSCURE_HEADERS_REQUIRED)
+                obscured['subject'] = ObscureSubject
             else:
-                obscured = {}
+                obscured = OBSCURE_HEADERS_REQUIRED
 
             if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
                 wrapper = OpenPGPMimeSignEncryptWrapper
@@ -384,14 +387,21 @@ class GPGKeyList(Command):
 
 
 class GPGKeyListSecret(Command):
-    """List Secret GPG Keys"""
+    """List secret GPG Keys, --usable omits disabled, revoked, expired."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist/secret',
-                'crypto/gpg/keylist/secret', '<address>')
+                                    'crypto/gpg/keylist/secret', '[--usable]')
     HTTP_CALLABLE = ('GET', )
 
     def command(self):
-        res = self._gnupg().list_secret_keys()
+    
+        all = self._gnupg().list_secret_keys()
+        if '--usable' in self.args:
+            res = {fprint : all[fprint] for fprint in all if not (
+                        all[fprint]['disabled'] or all[fprint]['revoked'] or
+                        all[fprint]['expired'])}
+        else:
+            res = all
         return self._success("Searched for secret keys", res)
 
 

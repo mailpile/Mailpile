@@ -14,7 +14,7 @@ from mailpile.mailutils.addresses import AddressHeaderParser
 from mailpile.mailutils.emails import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
-from mailpile.security import evaluate_signature_key_trust
+from mailpile.security import evaluate_sender_trust
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
@@ -149,6 +149,9 @@ class SearchResults(dict):
         if sender_vcard:
             if sender_vcard.kind == 'profile':
                 expl['flags']['from_me'] = True
+            else:
+                expl['flags']['from_contact'] = True
+
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
         for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:
@@ -300,7 +303,7 @@ class SearchResults(dict):
         return thread
 
     WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
-                     'editing_strings', 'crypto', '_cleaned')
+                     'editing_strings', 'crypto', '_cleaned', 'trust')
     PRUNE_MSG_TREE = ('headers', )  # Added by editing_strings
 
     def _prune_msg_tree(self, tree):
@@ -368,8 +371,8 @@ class SearchResults(dict):
             problem = _('Failed process message crypto (decrypt, etc).')
             email.evaluate_pgp(tree, decrypt=True)
 
-            problem = _("Failed to evalute key trust")
-            evaluate_signature_key_trust(self.session.config, email, tree)
+            problem = _("Failed to evalute sender trust")
+            evaluate_sender_trust(self.session.config, email, tree)
 
             editing_strings = tree.get('editing_strings')
             if editing_strings:

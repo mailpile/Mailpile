@@ -11,7 +11,7 @@ from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-__all__ = ['email_keylookup', 'nicknym', 'dnspka']
+__all__ = ['email_keylookup', 'nicknym', 'wkd']  # Disabled: dnspka
 
 KEY_LOOKUP_HANDLERS = []
 
@@ -21,7 +21,8 @@ KEY_LOOKUP_HANDLERS = []
 def register_crypto_key_lookup_handler(handler):
     if handler not in KEY_LOOKUP_HANDLERS:
         KEY_LOOKUP_HANDLERS.append(handler)
-    KEY_LOOKUP_HANDLERS.sort(key=lambda h: (h.LOCAL and 0 or 1, h.PRIORITY))
+    KEY_LOOKUP_HANDLERS.sort(
+        key=lambda h: (0 if h.LOCAL else 1, h.PRIORITY, -h.SCORE))
 
 
 def _score_validity(validity, local=False):
@@ -69,13 +70,13 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         bits = int(key_info["keysize"])
         score = bits // 1024
 
-        if bits >= 4096: 
+        if bits >= 4096:
           key_strength = _('Encryption key is very strong')
-        elif bits >= 3072: 
+        elif bits >= 3072:
           key_strength = _('Encryption key is strong')
         elif bits >= 2048:
           key_strength = _('Encryption key is good')
-        else: 
+        else:
           key_strength = _('Encryption key is weak')
 
         key_info['scores']['Encryption key strength'] = [score, key_strength]
@@ -142,6 +143,12 @@ def lookup_crypto_keys(session, address,
             if not allowremote and not h.LOCAL:
                 continue
 
+            if found_keys and (not h.PRIVACY_FRIENDLY) and (not origins):
+                # We only try the privacy-hostile methods if we haven't
+                # found any keys (unless origins were specified).
+                if not ungotten:
+                    continue
+
             if event:
                 ordered_keys.sort(key=lambda k: -k["score"])
                 event.message = _('Searching for encryption keys in: %s'
@@ -162,8 +169,9 @@ def lookup_crypto_keys(session, address,
                                strict_email_match=strict_email_match,
                                get=(wanted if (get is not None) else None))
             ungotten[:] = wanted
-        except (TimedOut, IOError, KeyError, ValueError, TypeError,
-                AttributeError):
+        except KeyboardInterrupt:
+            raise
+        except:
             if session.config.sys.debug:
                 traceback.print_exc()
             results = {}
@@ -214,23 +222,30 @@ class KeyLookup(Command):
     HTTP_QUERY_VARS = {
         'email': 'The address to find a encryption key for (strict)',
         'address': 'The nick or address to find a encryption key for (fuzzy)',
-        'allowremote': 'Whether to permit remote key lookups (defaults to true)'
-    }
+        'allowremote': 'Whether to permit remote key lookups (default=Yes)',
+        'origins': 'Specify which origins to check (or * for all)'}
 
     def command(self):
         if len(self.args) > 1:
             allowremote = self.args.pop()
         else:
-            allowremote = self.data.get('allowremote', True)
+            allowremote = self.data.get('allowremote', ['Y'])[0]
+            if allowremote.lower()[:1] in ('n', 'f'):
+                allowremote = False
+
+        origins = self.data.get('origins')
+        if '*' in (origins or []):
+            origins = [h.NAME for h in KEY_LOOKUP_HANDLERS]
 
         email = " ".join(self.data.get('email', []))
         address = " ".join(self.data.get('address', self.args))
         result = lookup_crypto_keys(self.session, email or address,
                                     strict_email_match=email,
                                     event=self.event,
-                                    allowremote=allowremote)
+                                    allowremote=allowremote,
+                                    origins=origins)
         return self._success(_n('Found %d encryption key',
-                                'Found %d encryption keys', 
+                                'Found %d encryption keys',
                                 len(result)) % len(result),
                              result=result)
 
@@ -308,7 +323,8 @@ class KeyTofu(Command):
 
     def command(self):
         emails = set(list(self.args)) | set(self.data.get('email', []))
-        safe_assert(emails)
+        if not emails:
+            return self._success('Nothing Happened')
 
         idx = self._idx()
         gnupg = self._gnupg(dry_run=True)
@@ -375,8 +391,8 @@ class KeyTofu(Command):
             ClearParseCache(pgpmime=True)
 
         # i18n note: Not translating things here, since messages are not
-        #            generally use-facing and we want to reduce load on our
-        #            translators.
+        #            generally user-facing and we want to reduce load on
+        #            our translators.
         return self._success('Evaluated key TOFU', result={
             'missing_keys': missing,
             'imported_keys': imported,
@@ -394,7 +410,9 @@ class LookupHandler:
     NAME = "NONE"
     TIMEOUT = 2
     PRIORITY = 10000
+    PRIVACY_FRIENDLY = False
     LOCAL = False
+    SCORE = 0
 
     def __init__(self, session, known_keys_list):
         self.session = session
@@ -419,10 +437,11 @@ class LookupHandler:
     def lookup(self, address, strict_email_match=False, get=None):
         all_keys = self._lookup(address, strict_email_match=strict_email_match)
         keys = {}
+        if get is not None:
+            get = [unicode(g).upper() for g in get]
         for key_id, key_info in all_keys.iteritems():
-            fprint = key_info.get('fingerprint', '')
+            fprint = unicode(key_info.get('fingerprint', '')).upper()
             if (get is None) or (fprint and fprint in get):
-
                 score, reason = self._score(key_info)
                 if 'validity' in key_info:
                     vscore, vreason = _score_validity(key_info['validity'])
@@ -450,10 +469,12 @@ class LookupHandler:
 class KeychainLookupHandler(LookupHandler):
     NAME = "GnuPG keychain"
     LOCAL = True
+    PRIVACY_FRIENDLY = True
     PRIORITY = 0
+    SCORE = 8
 
     def _score(self, key):
-        return (1, _('Found encryption key in keychain'))
+        return (self.SCORE, _('Found encryption key in keychain'))
 
     def _getkey(self, key):
         return False  # Already on keychain
@@ -476,20 +497,26 @@ class KeychainLookupHandler(LookupHandler):
                             results[key_id][k] = key_info[k]
         return results
 
-    def _getkey(self, key):
-        pass
-
 
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
     TIMEOUT = 20  # We know these are slow...
+    PRIVACY_FRIENDLY = False
     PRIORITY = 200
+    SCORE = 1
 
     def _score(self, key):
-        return (1, _('Found encryption key in keyserver'))
+        return (self.SCORE, _('Found encryption key in keyserver'))
 
     def _lookup(self, address, strict_email_match=False):
+        # FIXME: We should probably just contact the keyservers directly.
+        #
+        # Queries look like this:
+        #
+        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
+        #        search=EMAIL&op=index&fingerprint=on&options=mr
+        #
         results = self._gnupg().search_key(address)
         if strict_email_match:
             for key in results.keys():
@@ -500,6 +527,13 @@ class KeyserverLookupHandler(LookupHandler):
         return results
 
     def _getkey(self, key):
+        # FIXME: We should probably just contact the keyservers directly.
+        #
+        # Key downloads look like this:
+        #
+        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
+        #        search=0xFINGERPRINT&op=get&options=mr
+        #
         return self._gnupg().recv_key(key['fingerprint'])
 
 
@@ -509,4 +543,5 @@ register_crypto_key_lookup_handler(KeyserverLookupHandler)
 # We do this down here, as that seems to make the Python module loader
 # things happy enough with the circular dependencies...
 from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
-from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
+from mailpile.plugins.keylookup.wkd import WKDLookupHandler
+# Disabled: from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler

@@ -1320,8 +1320,12 @@ class MailIndex(BaseIndex):
                 #       add a 'crypto:has' keyword which we check for below
                 #       before performing further processing.
                 for kwe in _plugins.get_text_kw_extractors():
-                    keywords.extend(kwe(self, msg, ctype, textpart,
-                                        body_info=body_info))
+                    try:
+                        keywords.extend(kwe(self, msg, ctype, textpart,
+                                            body_info=body_info))
+                    except:
+                        if session.config.sys.debug:
+                            traceback.print_exc()
 
                 if ctype == 'text/plain':
                     snippet_text += ''.join(lines).strip() + '\n'
@@ -1329,9 +1333,13 @@ class MailIndex(BaseIndex):
                     snippet_html += textpart.strip() + '\n'
 
             for extract in _plugins.get_data_kw_extractors():
-                keywords.extend(extract(self, msg, ctype, att, part,
-                                        lambda: _loader(part),
-                                        body_info=body_info))
+                try:
+                    keywords.extend(extract(self, msg, ctype, att, part,
+                                            lambda: _loader(part),
+                                            body_info=body_info))
+                except:
+                    if session.config.sys.debug:
+                        traceback.print_exc()
 
             if not ctype.startswith('multipart/'):
                 parts.append(pinfo)
@@ -1361,8 +1369,12 @@ class MailIndex(BaseIndex):
                 for text in [t['data'] for t in tree['text_parts']]:
                     keywords.extend(re.findall(WORD_REGEXP, text.lower()))
                     for kwe in _plugins.get_text_kw_extractors():
-                        keywords.extend(kwe(self, msg, 'text/plain', text,
-                                            body_info=body_info))
+                        try:
+                            keywords.extend(kwe(self, msg, 'text/plain', text,
+                                                body_info=body_info))
+                        except:
+                            if session.config.sys.debug:
+                                traceback.print_exc()
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,
@@ -1443,8 +1455,12 @@ class MailIndex(BaseIndex):
                 keywords.append('%s:missing' % key)
 
         for extract in _plugins.get_meta_kw_extractors():
-            keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
-                                    body_info=body_info))
+            try:
+                keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
+                                        body_info=body_info))
+            except:
+                if session.config.sys.debug:
+                    traceback.print_exc()
 
         # FIXME: If we have a good snippet from the HTML part, it is likely
         #        to be more relevant due to the unfortunate habit of some

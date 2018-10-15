@@ -51,6 +51,7 @@ class OAuth2(TestableWebbable):
         'username': 'User name',
         'code': 'Authorization code',
         'error': 'Error code',
+        'scope': 'OAuth2 scope (ignored)',
         'state': 'State token'
     }
     HARD_CODED_OAUTH2 = {
