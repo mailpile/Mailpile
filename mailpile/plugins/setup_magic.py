@@ -120,12 +120,6 @@ class SetupMagic(Command):
             'auto_action': '-spam +trash',
             'auto_tag': 'fancy'
         },
-        'MaybeSpam': {
-            'display': 'invisible',
-            'icon': 'icon-spam',
-            'label_color': '10-orange',
-            'name': _('MaybeSpam'),
-        },
         'Ham': {
             'type': 'ham',
             'display': 'invisible',
@@ -310,7 +304,6 @@ class SetupMagic(Command):
                 len(session.config.prefs.autotag) == 0):
             session.config.prefs.autotag.append({
                 'match_tag': 'spam',
-                'unsure_tag': 'maybespam',
                 'tagger': 'spambayes',
                 'trainer': 'spambayes'
             })

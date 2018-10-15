@@ -7,6 +7,7 @@ import mailpile.config.defaults
 import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import GnuPGBaseKeyGenerator, GnuPGKeyGenerator
+from mailpile.crypto.autocrypt_utils import generate_autocrypt_setup_code
 from mailpile.plugins import EmailTransform, PluginManager
 from mailpile.commands import Command, Action
 from mailpile.eventlog import Event
@@ -1020,10 +1021,7 @@ def ProfileVCard(parent):
             config.event_log.log_event(event)
 
         def _create_new_key(self, vcard, keytype):
-            passphrase = okay_random(20, self.session.config.get_master_key()
-                                     ).lower()
-            passphrase = '-'.join([passphrase[i:i+4] for i in
-                                   range(0, len(passphrase), 4)])
+            passphrase = generate_autocrypt_setup_code()
             random_uid = vcard.random_uid
             bits = int(keytype.replace('RSA', ''))
             key_args = {
@@ -1144,11 +1142,10 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
-            'security-use-autocrypt': False,
             'security-always-sign': False,
             'security-always-encrypt': False,
-            'security-always-encrypt': False,
-            'security-attach-keys': True,  # FIXME: Autocrypt changes this
+            'security-use-autocrypt': True,
+            'security-attach-keys': False,
             'security-prefer-inline': False,
             'security-prefer-pgpmime': False,
             'security-obscure-metadata': False,

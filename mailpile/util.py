@@ -71,10 +71,12 @@ STOPLIST = set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'that', 'the', 'this', 'td', 'to', 'tr',
                 'was', 'we', 'were', 'you'])
 
-BORING_HEADERS = ('received', 'received-spf', 'date',
+BORING_HEADERS = ('received', 'received-spf', 'date', 'autocrypt',
                   'content-type', 'content-disposition', 'mime-version',
                   'list-archive', 'list-help', 'list-unsubscribe',
-                  'dkim-signature', 'domainkey-signature')
+                  'dkim-signature', 'domainkey-signature',
+                  'arc-message-signature', 'arc-seal',
+                  'arc-authentication-results', 'authentication-results')
 
 # For the spam classifier, if these headers are missing a special
 # note is made of that in the message keywords.

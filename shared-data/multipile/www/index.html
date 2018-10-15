@@ -69,34 +69,35 @@ Decrypting Index, Messages, and Contacts
   <form method="POST" action='admin.cgi'
         id="form-login" class="clearfix animated">
    <div class='form-login'>
-    <input id="login-username" type="text" name="username"
-           autocomplete="off" tabindex=1 alt="Unix Username"
-           placeholder="Unix Username">
-   </div>
-   <div class='form-login'>
-    <input id="login-passphrase" type="password" name="password"
-           autocomplete="off" tabindex=2 alt="Unix Password"
-           placeholder="Unix Password">
+    <input id="login-passphrase" type="text" name="username"
+           autocomplete="off" tabindex=1 alt="username"
+           placeholder="username">
     <button type="submit" class="submit">
-      <span class="icon-checkmark"></span>
+      <span class="icon-arrow-right"></span>
     </button>
    </div>
   </form>
 
-  <div class="logged-out-message not-running" style="margin-top: 50x;">
+  <div class="logged-out-message not-running" style="margin-top: 50x">
     <p>Your Mailpile may not be running</p>
-    <div style='font-weight: normal;'>
-      To launch the app please enter your account details above or use a terminal (ssh) to start Mailpile manually.
-      <noscript>
-        <br>
-        <br><b>WARNING</b>
+    <p style='font-weight: normal; text-align: left;'>
+      To launch the app, input your username or e-mail.
+    </p>
+    <p style='font-weight: normal; text-align: left;'>
+      <b>Note:</b> If you have never used Mailpile on this machine
+      before, the administrator (you?) may first need to
+      <a target=_blank style="color: white;"
+         href="https://github.com/mailpile/Mailpile/tree/master/shared-data/multipile">
+      activate it for this account (click for details)</a>.
+    </p>
+    <noscript>
+      <p>
+        <b>WARNING</b>
         <br>You have Javascript disabled. This breaks things!
-      </noscript>
-    </div>
+      </p>
+    </noscript>
   </div>
-<!--
-  <div class="logged-out-message animated bounceIn"></div>
--->
+
 </div>
 
 <script>
@@ -108,7 +109,7 @@ $(document).ready(function() {
   $('#login-left').height(height);
   $('#login-right').height(height);
 
-  $('#login-username').focus();
+  $('#login-passphrase').focus();
 });
 
 // Login Form is submitted

@@ -8,7 +8,11 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
   });
   // Ask the back-end for updated address-book info and an aggregate
   // recommended crypto policy.
-  Mailpile.API.crypto_policy_get({email: emails}, function(response) {
+  var cp_args = {email: emails};
+  if ($('form#form-compose-' + mid).data('should-encrypt') == 'Y') {
+    cp_args['should-encrypt'] = 'Y';
+  };
+  Mailpile.API.crypto_policy_get(cp_args, function(response) {
     var r = response.result;
 
     // Update attach key (or not) state

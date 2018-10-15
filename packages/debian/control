@@ -80,8 +80,7 @@ Depends: ${misc:Depends},
          python,
          screen,
          net-tools,
-         sudo,
-         expect
+         sudo
 Description: multi-user mailpile web server
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
  privacy features. Mailpile places great emphasis on providing a clean, elegant
@@ -90,6 +89,8 @@ Description: multi-user mailpile web server
  .
  This package configures Apache with "Multipile", a thin wrapper that allows
  system users to launch their Mailpile by logging in on the web interface.
+ .
+ Details: https://github.com/mailpile/Mailpile/tree/master/shared-data/multipile
 
 Package: mailpile-desktop
 Architecture: all

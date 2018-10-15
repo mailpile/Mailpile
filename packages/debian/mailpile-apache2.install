@@ -1,3 +1,4 @@
+mailpile-apache etc/sudoers.d
 mailpile-apache.conf etc/mailpile
 shared-data/multipile/multipile.rc.sample etc/mailpile
 shared-data/multipile usr/share/mailpile

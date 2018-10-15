@@ -200,7 +200,11 @@ class AddressHeaderParser(list):
         def uq(m):
             cs, how, data = m.group(1), m.group(2), m.group(3)
             if how in ('b', 'B'):
-                return base64.b64decode(data).decode(cs)
+                try:
+                    return base64.b64decode(''.join(data.split())+'===').decode(cs)
+                except TypeError:
+                    print 'FAILED TO B64DECODE: %s' % data
+                    return data
             else:
                 return quopri.decodestring(data, header=True).decode(cs)
 
