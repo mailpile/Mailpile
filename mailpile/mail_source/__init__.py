@@ -776,17 +776,37 @@ class BaseMailSource(threading.Thread):
             if policy != 'move':
                 return
 
+            # Messages we have downloaded are candidates for deletion.
             downloaded = list(set(src.keys()) & set(loc.source_map.keys()))
             downloaded.sort(key=self._msg_key_order)
 
-            should = _('Should delete %d messages') % len(downloaded)
+            # If prefs.deletion_ratio is less than 1.0, leave the most
+            # recent messages on the server (so other clients have a
+            # chance to see them too).
+            #
+            # FIXME: This is a hack. It would be better to check the
+            #        timestamps of the messages and always leave on the
+            #        server for a fixed, configurable amount of time.
+            #
+            if config.prefs.deletion_ratio < 1.0:
+                random_ratio = random.random() * config.prefs.deletion_ratio
+                cutoff = int(max(
+                    random_ratio * len(downloaded),
+                    # Jitter. Without this, the last message never gets deleted:
+                    random.randint(-10, 1)))
+            else:
+                cutoff = len(downloaded)
+
+            should = _('Should delete %d messages') % cutoff
             if 'sources' in config.sys.debug and downloaded:
                 session.ui.debug(should)
 
             if config.prefs.allow_deletion:
                 try:
                     for i, key in enumerate(downloaded):
-                        progress['deleting'] = '%d/%d' % (i+1, len(downloaded))
+                        if i >= cutoff:
+                            break
+                        progress['deleting'] = '%d/%d' % (i+1, cutoff)
                         src.remove(key)
                     src.flush()
                 except:
