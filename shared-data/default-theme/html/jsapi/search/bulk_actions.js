@@ -83,7 +83,8 @@ Mailpile.show_related_search_link = function($context, selected) {
         subjects: [],
         lists: [],
         emails: [],
-        froms: []};
+        froms: [],
+        extras: ''};
 
       var date_start = '';
       var date_end = '';
@@ -103,6 +104,11 @@ Mailpile.show_related_search_link = function($context, selected) {
         var ts = $msg.find('td.date').data('ts');
         if (!date_start || (ts < date_start)) date_start = ts;
         if (!date_end || (ts > date_end)) date_end = ts;
+
+        // FIXME: Add more special cases
+        if (from == 'notifications@github.com') {
+          data.extras = $msg.find('td.from').data('fn');
+        }
       });
 
       var d4s = new Date((date_start - (24 * 3600 * 14)) * 1000);
