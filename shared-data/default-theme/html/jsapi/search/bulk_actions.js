@@ -40,7 +40,7 @@ Mailpile.bulk_actions_update_ui = function() {
       }
       else {
         message += $context.find('#bulk-actions-message').data('bulk_selected');
-        if (selected.length == 1) Mailpile.show_message_hints($context, selected);
+        Mailpile.show_related_search_link($context, selected);
       }
       $context.find('#bulk-actions-message').addClass('mobile-hide').html(message);
       $context.find('.sub-navigation').addClass('mobile-hide');
@@ -69,11 +69,76 @@ Mailpile.bulk_actions_update_ui = function() {
 
 
 Mailpile.hide_message_hints = function($context) {
-  $context.find('div.bulk-actions-hints').html('');
+  $context.find('div.bulk-actions-hints').html('').on('click', undefined);
 };
 
 
-Mailpile.show_message_hints = function($context, selected) {
+Mailpile.show_related_search_link = function($context, selected) {
+  if (selected && (selected.length < 4) && (selected[0] != '!all')) {
+    $context.find('div.bulk-actions-hints').html(
+      '<a><span class="icon-search"></span>' +
+      ' {{_("Search for Similar E-mail")}}</a>').off('click').on('click',
+    function() {
+      var data = {
+        subjects: [],
+        lists: [],
+        emails: [],
+        froms: []};
+
+      var date_start = '';
+      var date_end = '';
+
+      $.each(selected, function(i, mid) {
+        var $msg = $('tr.pile-message-' + mid);
+        var from = $msg.find('td.from').data('address');
+        data.subjects.push($msg.find('.subject a').html());
+        if (data.emails.indexOf(from) < 0) data.emails.push(from);
+        $.each($msg.data('to-cc').split(/ /), function(i, email) {
+          if (email && (data.emails.indexOf(email) < 0)) {
+            data.emails.push(email);
+          }
+        });
+        if (data.froms.indexOf(from) < 0) data.froms.push(from);
+        data.lists.push($msg.data('list'));
+        var ts = $msg.find('td.date').data('ts');
+        if (!date_start || (ts < date_start)) date_start = ts;
+        if (!date_end || (ts > date_end)) date_end = ts;
+      });
+
+      var d4s = new Date((date_start - (24 * 3600 * 14)) * 1000);
+      var d4e = new Date((date_end + (24 * 3600 * 14)) * 1000);
+      data.date_range_4wks = (
+        d4s.getFullYear() + '-' +
+        (d4s.getMonth()+1) + '-' +
+        d4s.getDate() + '..' +
+        d4e.getFullYear() + '-' +
+        (d4e.getMonth() + 1) + '-' +
+        d4e.getDate());
+
+      var d2s = new Date((date_start - (24 * 3600 * 7)) * 1000);
+      var d2e = new Date((date_end + (24 * 3600 * 7)) * 1000);
+      data.date_range_2wks = (
+        d2s.getFullYear() + '-' +
+        (d2s.getMonth()+1) + '-' +
+        d2s.getDate() + '..' +
+        d2e.getFullYear() + '-' +
+        (d2e.getMonth() + 1) + '-' +
+        d2e.getDate());
+
+      data.froms.sort();
+      data.lists.sort();
+      data.emails.sort();
+      data.subjects.sort();
+
+      Mailpile.API.with_template('modal-related-search', function(modal) {
+        Mailpile.UI.show_modal(modal(data));
+      });
+    });
+  }
+};
+
+
+Mailpile.DELETEMEshow_message_hints = function($context, selected) {
   $.each(selected, function(key, mid) {
     if (mid != '!all') {
       var $elem = $context.find('.pile-message-' + mid);
