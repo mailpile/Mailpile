@@ -36,6 +36,11 @@
     data-tids="{{ metadata.tag_tids|join(',')  }}"
 {%- if message %}
     data-url="{{ msg_url(this_mid, 0) }}"
+  {%- if message.headerprints %}
+    {% if message.headerprints.mua %}data-mua="{{ message.headerprints.mua }}"{% endif %}
+    data-mua-fingerprint="{{ message.headerprints.tools }}"
+    data-sender-fingerprint="{{ message.headerprints.sender }}"
+  {%- endif %}
 {%- endif %}
     data-state="normal"
     data-list="{{ metadata.body.list }}"

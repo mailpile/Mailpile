@@ -79,11 +79,41 @@ Mailpile.show_related_search_link = function($context, selected) {
       '<a><span class="icon-search"></span>' +
       ' {{_("Search for Similar E-mail")}}</a>').off('click').on('click',
     function() {
+      var stoplist = {{ ('%s' % stoplist|list)|safe }};
       var data = {
+        qq: function(p, t, cutoff) {
+          // Warning: This is the same as mailpile.utils.WORD_REGEXP
+          //          and they need to be kept in sync.
+          var qt = t.replace(
+            /[\s\!@#$%^&*\(\)_+=\{\}\[\]:\"|;`\'\\\<\>\?,\.\/\-]/g, ' '
+            ).split(/ +/
+            ).filter(function(w) {
+              return ((stoplist.indexOf(w.toLowerCase()) < 0) &&
+                      (w.length > 1))}
+            ).sort(function(a, b) {
+              return (a.length < b.length)}
+            ).slice(0, (cutoff || 3));
+          if (p && p.length) return p + ':' + qt.join(' ' + p + ':');
+          return qt.join(' ');
+        },
+        q: function(p, t, cutoff) {
+          t = t.split(/ +/
+            ).sort(function(a, b) {
+              return (a.length < b.length)}
+            ).slice(0, (cutoff || 3));
+          return p + ':' + t.join(' ' + p + ':');
+        },
+        trunc: function(s, len) {
+          if (s.length > (len-3)) return s.substring(0, (len-3)) + ' ...';
+          return s;
+        },
         subjects: [],
         lists: [],
         emails: [],
         froms: [],
+        muas: [],
+        hpts: [],
+        hpss: [],
         extras: ''};
 
       var date_start = '';
@@ -92,7 +122,9 @@ Mailpile.show_related_search_link = function($context, selected) {
       $.each(selected, function(i, mid) {
         var $msg = $('tr.pile-message-' + mid);
         var from = $msg.find('td.from').data('address');
-        data.subjects.push($msg.find('.subject a').html());
+        var subj = $msg.find('.message-subject').html();
+        if (!subj) subj = $msg.find('.subject a').html();
+        data.subjects.push(subj);
         if (data.emails.indexOf(from) < 0) data.emails.push(from);
         $.each($msg.data('to-cc').split(/ /), function(i, email) {
           if (email && (data.emails.indexOf(email) < 0)) {
@@ -101,6 +133,9 @@ Mailpile.show_related_search_link = function($context, selected) {
         });
         if (data.froms.indexOf(from) < 0) data.froms.push(from);
         data.lists.push($msg.data('list'));
+        data.muas.push($msg.data('mua'));
+        data.hpts.push($msg.data('mua-fingerprint'));
+        data.hpss.push($msg.data('sender-fingerprint'));
         var ts = $msg.find('td.date').data('ts');
         if (!date_start || (ts < date_start)) date_start = ts;
         if (!date_end || (ts > date_end)) date_end = ts;
