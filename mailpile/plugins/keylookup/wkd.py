@@ -103,7 +103,9 @@ class WKDLookupHandler(LookupHandler):
 
         return {keyinfo["fingerprint"]: keyinfo}
 
-    def _getkey(self, keyinfo):
+    def _getkey(self, email, keyinfo):
+        # FIXME: Consider cleaning up the key before we import it, to
+        #        get rid of signatures and UIDs we don't care about.
         data = self.key_cache.pop(keyinfo["fingerprint"])
         if data:
             return self._gnupg().import_keys(data)

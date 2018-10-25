@@ -465,7 +465,7 @@ class LookupHandler:
     def _score(self, key):
         raise NotImplemented("Subclass and override _score")
 
-    def _getkey(self, key):
+    def _getkey(self, email, key):
         raise NotImplemented("Subclass and override _getkey")
 
     def _gk_succeeded(self, result):
@@ -495,7 +495,7 @@ class LookupHandler:
 
                 if get is not None:
                     get.remove(fprint)
-                    if self._gk_succeeded(self._getkey(key_info)):
+                    if self._gk_succeeded(self._getkey(address, key_info)):
                         keys[key_id] = key_info
                 else:
                     keys[key_id] = key_info
@@ -622,15 +622,15 @@ class KeyserverLookupHandler(LookupHandler):
 
         return results
 
-    def _getkey_url(self, url_base, key):
+    def _getkey_url(self, url_base, email, key):
         fingerprint = '0x{}'.format(key['fingerprint'])
         params = {"search": fingerprint, "op": "get", "options": "mr"}
         return "{}?{}".format(url_base, urllib.urlencode(params))
 
-    def _getkey(self, key):
+    def _getkey(self, email, key):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
-            url = self._getkey_url(url_base, key)
+            url = self._getkey_url(url_base, email, key)
             if 'keyservers' in self.session.config.sys.debug:
                 self.session.ui.debug('Fetching: %s' % url)
             try:

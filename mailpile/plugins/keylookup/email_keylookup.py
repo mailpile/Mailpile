@@ -74,9 +74,11 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                 break
         return results
 
-    def _getkey(self, keyinfo):
+    def _getkey(self, email, keyinfo):
         data = self.key_cache.get(keyinfo.fingerprint)
         if data:
+            if keyinfo.autocrypt and email:
+                data = get_minimal_PGP_key(data, user_id=email)
             return self._gnupg().import_keys(data)
         else:
             raise ValueError("Key not found")
@@ -87,13 +89,17 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             email = Email(self._idx(), messageid)
 
             # First we check the Autocrypt headers
+            loop_count = 0
             msg = email.get_msg(pgpmime='all')
             for ach in ([extract_autocrypt_header(msg)] +
                         extract_autocrypt_gossip_headers(msg)):
+                loop_count += 1
                 if 'keydata' in ach:
                     for keyinfo in get_keyinfo(ach['keydata'],
                                                autocrypt_header=ach,
                                                key_info_class=MailpileKeyInfo):
+                        keyinfo.is_autocrypt = True
+                        keyinfo.is_gossip = (loop_count > 1)
                         keys.append((keyinfo, ach['keydata']))
 
             # Then go looking at the attachments

@@ -203,6 +203,8 @@ class MailpileKeyInfo(KeyInfo):
     KEYS = dict_merge(KeyInfo.KEYS, {
         'vcards':       (dict, None),
         'origins':      (list, None),
+        'is_autocrypt': (bool, False),
+        'is_gossip':    (bool, False),
         'scores':       (dict, None),
         'score_stars':  (int, 0),
         'score_reason': (unicode, None),
