@@ -86,22 +86,34 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
 
 
 def extract_autocrypt_header(msg, to=None, optional_attrs=None):
+    # Autocrypt requires there only be one From header
+    froms = msg.get_all("From") or []
+    if len(froms) != 1:
+        return {}
+
+    # Extract the from address for comparisons below. We compare the
+    # canonicalized versions, which is not the strictest interpretation
+    # of the spec, but feels like a reasonable balance here.
+    from mailpile.mailutils.addresses import AddressHeaderParser
+    from_addrs = AddressHeaderParser(froms[0])
+    if len(from_addrs) != 1:
+        return {}
+    from_addr = canonicalize_email(from_addrs[0].address)
+
     to = canonicalize_email(to) if to else None
     all_results = []
     for inb in (msg.get_all("Autocrypt") or []):
         res = parse_autocrypt_headervalue(inb, optional_attrs=optional_attrs)
-        if res and (not to or res['addr'] == to):
-            all_results.append(res)
+        if res:
+            if ((not to or canonicalize_email(res['addr']) == to) and
+                    (canonicalize_email(res['addr']) == from_addr)):
+                all_results.append(res)
 
     # Return parsed header iff we found exactly one.
     if len(all_results) == 1:
         return all_results[0]
     else:
         return {}
-
-    # FIXME: The AutoCrypt spec talks about synthesizing headers from other
-    #        details. That would make sense if AutoCrypt was our primary
-    # mechanism, but we're not really there yet. Needs more thought.
 
 
 def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
