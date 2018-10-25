@@ -316,12 +316,6 @@ class SetupMagic(Command):
             session.config.save()
             session.config.prepare_workers(session, daemons=want_daemons)
 
-        # Scan GnuPG keychain in background
-        from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
-        session.config.slow_worker.add_unique_task(
-            session, 'initialpgpkeyimport',
-            lambda: PGPKeysImportAsVCards(session).run())
-
         # Enable Tor in the background, if we have it...
         session.config.slow_worker.add_unique_task(
             session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))

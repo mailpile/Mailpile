@@ -1209,8 +1209,7 @@ class EditProfile(AddProfile):
     """Edit a profile"""
     SYNOPSIS = (None, None, 'profiles/edit', None)
     HTTP_QUERY_VARS = dict_merge(AddProfile.HTTP_QUERY_VARS, {
-        'rid': 'update by x-mailpile-rid',
-    })
+        'rid': 'update by x-mailpile-rid'})
 
     def _vcard_to_post_vars(self, vcard):
         cp = vcard.crypto_policy or ''
