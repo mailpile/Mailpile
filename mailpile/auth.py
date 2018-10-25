@@ -274,8 +274,7 @@ class SetPassphrase(Command):
         'id': 'KeyID or account name',
         'mailsource': 'Mail source ID',
         'mailroute': 'Mail route ID',
-        'is_locked': 'Assume key is locked'
-    }
+        'is_locked': 'Assume key is locked'}
     HTTP_POST_VARS = {
         'password': 'KeyID or account name',
         'policy-ttl': 'Combined policy and TTL',
@@ -283,8 +282,7 @@ class SetPassphrase(Command):
         'ttl': 'Seconds after which it expires, -1 = never',
         'update_mailsources': 'If true, update mail source settings',
         'update_mailroutes': 'If true, update mail route settings',
-        'redirect': 'URL to redirect to on success'
-    }
+        'redirect': 'URL to redirect to on success'}
 
     def _get_profiles(self):
         return self.session.config.vcards.find_vcards([], kinds=['profile'])

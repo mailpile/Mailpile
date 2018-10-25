@@ -962,7 +962,7 @@ def ProfileVCard(parent):
                         else:
                             disco.policy = 'move'
                         disco.local_copy = True
-                        disco.paths = ['']
+                        disco.paths = ['/']
                     else:
                         disco.policy = 'ignore'
                         disco.local_copy = False

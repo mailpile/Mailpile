@@ -260,8 +260,14 @@ class BaseMailSource(threading.Thread):
         self._interrupt = None
         batch = min(self._loop_count * 20, self.RESCAN_BATCH_SIZE)
         errors = rescanned = 0
-
         all_completed = True
+
+        if not self._check_interrupt():
+            self._state = 'Waiting... (disco)'
+            discovered = self.discover_mailboxes()
+        else:
+            discovered = 0
+
         ostate = self._state
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
@@ -360,11 +366,6 @@ class BaseMailSource(threading.Thread):
                 raise
 
         self._last_rescan_completed = all_completed
-        discovered = 0
-        if not self._check_interrupt():
-            self._state = 'Waiting... (disco)'
-            self._log_status(_('Checking for new mailboxes'))
-            discovered = self.discover_mailboxes()
 
         self._state = 'Done'
         status = []
@@ -392,12 +393,14 @@ class BaseMailSource(threading.Thread):
 
     def _sleep(self, seconds):
         enabled = self.my_config.enabled
+        if 'sources' in self.session.config.sys.debug:
+            self.session.ui.debug('Sleeping up to %d seconds...' % seconds)
         if self._sleeping is None:
             self._sleeping = seconds
             while (self.alive and
-                    self._sleeping > 0 and
+                    (self._sleeping > 0) and
                     self._sleeping_is_ok(seconds - self._sleeping) and
-                    enabled == self.my_config.enabled and
+                    (enabled == self.my_config.enabled) and
                     not mailpile.util.QUITTING):
                 time.sleep(min(1, self._sleeping))
                 self._sleeping -= 1
@@ -445,7 +448,9 @@ class BaseMailSource(threading.Thread):
         self.set_event_discovery_state(
             error='toomany',
             status=_('Too many mailboxes found! Raise limits to continue.'))
-        self._sleep(15)
+        # This is a loop to avoid being woken up by IDLE.
+        for i in range(0, 15):
+            self._sleep(2)
 
     def on_event_discovery_done(self, ostate):
         self.set_event_discovery_state('done')
@@ -457,7 +462,7 @@ class BaseMailSource(threading.Thread):
         try:
             existing = self._existing_mailboxes()
             max_mailboxes = self.my_config.discovery.max_mailboxes
-            max_mailboxes -= len(existing)
+            max_mailboxes -= len(self.my_config.mailbox)
             adding = []
             paths = [(p.encode('utf-8') if isinstance(p, unicode) else p)
                      for p in (paths or self.my_config.discovery.paths)]
@@ -480,7 +485,7 @@ class BaseMailSource(threading.Thread):
                     if self.is_mailbox(fn):
                         adding.append(fn)
                         is_mailbox = True
-                    if len(adding) > max_mailboxes:
+                    if len(adding) and (len(adding) > max_mailboxes):
                         break
 
                 if os.path.isdir(fn):
@@ -512,26 +517,31 @@ class BaseMailSource(threading.Thread):
                     # This may have been a bit of work, take a break.
                     play_nice_with_threads()
 
-                if len(adding) > max_mailboxes:
+                if len(adding) and (len(adding) > max_mailboxes):
                     break
 
-            if len(adding) > max_mailboxes:
+            if len(adding) and (len(adding) > max_mailboxes):
                 self.on_event_discovery_toomany()
-
-            self.set_event_discovery_state('adding')
-            play_nice_with_threads()
-            new = {}
-            for path in adding:
-                new[config.sys.mailbox.append(path)] = path
-            for mailbox_idx in new.keys():
-                mbx_cfg = self.take_over_mailbox(mailbox_idx, save=False)
-                if self._policy(mbx_cfg) != 'unknown':
-                    del new[mailbox_idx]
+                adding = adding[:max(0, max_mailboxes)]
 
             if adding:
+                self.set_event_discovery_state('adding')
+                play_nice_with_threads()
+                new = {}
+                for path in adding:
+                    new[config.sys.mailbox.append(path)] = path
+                for mailbox_idx in new.keys():
+                    mbx_cfg = self.take_over_mailbox(mailbox_idx, save=False)
+                    if self._policy(mbx_cfg) != 'unknown':
+                        del new[mailbox_idx]
+
                 self._save_config()
 
             return len(adding)
+        except:
+            if config.sys.debug:
+                self.session.ui.debug('%s' % traceback.format_exc())
+            raise
         finally:
             self.on_event_discovery_done(ostate)
 
@@ -1021,6 +1031,18 @@ class BaseMailSource(threading.Thread):
             else:
                 return 1
 
+        def have_invalid_auth():
+            conn_err = self.event.data.get('connection', {}).get('error')
+            if conn_err and conn_err[0] in ('oauth2', 'auth'):
+                if ((self._loop_count % 100 != 0)
+                        and self._summarize_auth() == conn_err[-1]):
+                    self.session.ui.debug('Auth unchanged, doing nothing')
+                    return True
+                else:
+                    self._log_status(_('Checking new credentials'),
+                                     clear_errors=True)
+            return False
+
         self._loop_count = 0
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
             self.event.data['enabled'] = self.my_config.enabled
@@ -1040,12 +1062,8 @@ class BaseMailSource(threading.Thread):
             if not self.session.config.index:
                 continue
 
-            conn_err = self.event.data.get('connection', {}).get('error')
-            if conn_err and conn_err[0] in ('oauth2', 'auth'):
-                if ((self._loop_count % 100 != 0)
-                        and self._summarize_auth() == conn_err[-1]):
-                    self.session.ui.debug('Auth unchanged, doing nothing')
-                    continue
+            if have_invalid_auth():
+                continue
 
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
@@ -1099,6 +1117,8 @@ class BaseMailSource(threading.Thread):
                     self._log_status(err_msg)
 
     def wake_up(self):
+        if 'wakeup' in self.session.config.sys.debug:
+            self.session.ui.debug('%s' % traceback.format_stack())
         self._sleeping = -1
 
     def notify_config_changed(self):
