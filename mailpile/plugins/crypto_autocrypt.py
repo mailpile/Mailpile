@@ -11,7 +11,7 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.commands import Command
-from mailpile.crypto.autocrypt_utils import *
+from mailpile.crypto.autocrypt import *
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
@@ -68,12 +68,12 @@ class AutoCryptRecord(dict):
         return (self['prefer-encrypt'] == 'mutual')
 
     def save_to(self, db):
-        db[self['to']] = [self[k] for k in self.INIT_ORDER]
+        db[canonicalize_email(self['to'])] = [self[k] for k in self.INIT_ORDER]
         return self
 
     @classmethod
     def Load(cls, db, to):
-        return cls(to, *db[to])
+        return cls(to, *db[canonicalize_email(to)])
 
 
 def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
@@ -90,8 +90,8 @@ def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
         mid = msg_mid
         key_data = autocrypt_header['keydata']
 
-        # Trying to save RAM: we don't store full keys, just hashes of
-        # them. When or if we actually decide to use the key it must
+        # Trying keep the DB Small: we don't store full keys, just hashes
+        # of them. When or if we actually decide to use the key it must
         # either be findable in e-mail (not deleted) or in a keychain.
         # Since AutoCrypt is opportunistic, missing some chances to encrypt
         # is by definition acceptable! We also deliberately do not use
@@ -182,7 +182,7 @@ class AutoCryptSearch(Command):
 
         db = get_AutoCrypt_DB(self.session.config)['state']
         results = dict((e, AutoCryptRecord.Load(db, e))
-                       for e in args if e in db)
+                       for e in args if canonicalize_email(e) in db)
 
         if results:
             return self._success(_("Found %d results") % len(results.keys()),
@@ -269,10 +269,12 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
     keywords = set([])
     config = index.config
 
-    if 'autocrypt' in msg:
+    mimetype = (msg.get_content_type() or '').lower()
+    if ('autocrypt' in msg
+            and mimetype not in AUTOCRYPT_IGNORE_MIMETYPES):
+
         sender = ExtractEmails(msg['from'])[0]
         autocrypt_header = extract_autocrypt_header(msg, to=sender)
-
         if autocrypt_header:
             keywords.add('pgp:has')
             keywords.add('autocrypt:has')

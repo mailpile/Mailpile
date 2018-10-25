@@ -7,7 +7,7 @@ import mailpile.config.defaults
 import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import GnuPGBaseKeyGenerator, GnuPGKeyGenerator
-from mailpile.crypto.autocrypt_utils import generate_autocrypt_setup_code
+from mailpile.crypto.autocrypt import generate_autocrypt_setup_code
 from mailpile.plugins import EmailTransform, PluginManager
 from mailpile.commands import Command, Action
 from mailpile.eventlog import Event

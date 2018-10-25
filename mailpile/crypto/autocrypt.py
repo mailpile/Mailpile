@@ -11,6 +11,32 @@ import struct
 import time
 
 
+AUTOCRYPT_IGNORE_MIMETYPES = ('multipart/report', )
+
+
+def canonicalize_email(address):
+    try:
+        localpart, domain = address.split('@')
+    except ValueError:
+        # Just return invalid e-mails unchanged, there is no sensible way
+        # to canonicalize such a thing.
+        return address
+
+    # FIXME: Ensure domain is ASCII, if not, punycode it
+    domain = domain.lower()
+
+    # FIXME: Ensure we're using the "empty locale"
+    localpart = localpart.lower()
+
+    # NOTE: We deliberately do not strip plussed parts or perform any other
+    #       normalization of the localpart beyond lowercasing. This is both
+    # to comply with the Autocrypt Level 1 spec, but also because being able
+    # to use plussed parts to allow differing cryptographic identities to
+    # share the same e-mail account is something power users like to do.
+
+    return '%s@%s' % (localpart, domain)
+
+
 def parse_autocrypt_headervalue(value, optional_attrs=None):
     # Based on:
     #
@@ -49,6 +75,8 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
     if "addr" not in result_dict:
         # found no e-mail address, ignoring header
         return {}
+    else:
+        result_dict["addr"] = canonicalize_email(result_dict["addr"])
 
     if result_dict.get("prefer-encrypt") not in ("mutual", None):
         # Invalid prefer-encrypt value; treat as nopreference
@@ -58,6 +86,7 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
 
 
 def extract_autocrypt_header(msg, to=None, optional_attrs=None):
+    to = canonicalize_email(to) if to else None
     all_results = []
     for inb in (msg.get_all("Autocrypt") or []):
         res = parse_autocrypt_headervalue(inb, optional_attrs=optional_attrs)
@@ -76,6 +105,7 @@ def extract_autocrypt_header(msg, to=None, optional_attrs=None):
 
 
 def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
+    to = canonicalize_email(to) if to else None
     all_results = []
     for inb in (msg.get_all("Autocrypt-Gossip") or []):
         res = parse_autocrypt_headervalue(inb, optional_attrs=optional_attrs)
@@ -166,6 +196,7 @@ def get_minimal_PGP_key(keydata,
     u_id_match = False
     s_key = None
     s_key_sig = None
+    user_id = canonicalize_email(user_id) if user_id else None
     now = datetime.datetime.utcfromtimestamp(time.time())
 
     if '-----BEGIN PGP PUBLIC KEY BLOCK-----' in keydata:
@@ -191,8 +222,8 @@ def get_minimal_PGP_key(keydata,
         elif packet.raw == 13:              # User ID Packet
             u_id_try = packet
             u_id_sig_try = None
-            u_id_try_match = not user_id or user_id in u_id_try.user
-            #**FIXME Autocrypt spec 5.1 requires E-mail address canonicalization
+            u_id_try_match = (
+                not user_id or (user_id == canonicalize_email(u_id_try.user)))
 
             # Accept a nonmatching u_id IFF no other u_id matches.
             if u_id_match and not u_id_try_match:
@@ -205,7 +236,7 @@ def get_minimal_PGP_key(keydata,
                     continue
                                             # User ID certification
                 elif packet.raw_sig_type in (0x10, 0x11, 0x12, 0x13, 0x1F):
-                    if (packet.key_id in pri_key.fingerprint and
+                    if (pri_key.fingerprint.endswith(packet.key_id) and
                             (not packet.expiration_time or
                                 packet.expiration_time > now) and
                             (not u_id_sig_try or
@@ -214,7 +245,7 @@ def get_minimal_PGP_key(keydata,
                         u_id_sig_try = packet
                                             # Certification revocation
                 elif packet.raw_sig_type == 0x30:
-                    if packet.key_id in pri_key.fingerprint:
+                    if pri_key.fingerprint.endswith(packet.key_id):
                         u_id_try = None
                         u_id_sig_try = None
 

@@ -26,7 +26,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
-from mailpile.crypto.autocrypt_utils import get_minimal_PGP_key
+from mailpile.crypto.autocrypt import get_minimal_PGP_key
 
 
 _ = lambda s: s

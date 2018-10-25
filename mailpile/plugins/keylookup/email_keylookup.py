@@ -2,7 +2,7 @@ import datetime
 import time
 import copy
 
-from mailpile.crypto.autocrypt_utils import *
+from mailpile.crypto.autocrypt import *
 from mailpile.crypto.keyinfo import get_keyinfo, MailpileKeyInfo
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
