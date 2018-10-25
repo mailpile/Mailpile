@@ -56,7 +56,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
     def _lookup(self, address, strict_email_match=False):
         results = {}
-        address = address.lower()
+        canon_address = canonicalize_email(address)
         terms = ['from:%s' % address, 'has:pgpkey', '+pgpkey:%s' % address]
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
@@ -64,7 +64,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for key_info, raw_key in self._get_message_keys(messageid):
                 if strict_email_match:
                     match = [u for u in key_info.uids
-                             if u.email.lower() == address]
+                             if canonicalize_email(u.email) == canon_address]
                     if not match:
                         continue
                 fp = key_info.fingerprint
@@ -77,7 +77,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _getkey(self, email, keyinfo):
         data = self.key_cache.get(keyinfo.fingerprint)
         if data:
-            if keyinfo.autocrypt and email:
+            if keyinfo.is_autocrypt and email:
                 data = get_minimal_PGP_key(data, user_id=email)
             return self._gnupg().import_keys(data)
         else:

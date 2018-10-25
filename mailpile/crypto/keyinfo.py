@@ -195,7 +195,6 @@ class KeyInfo(RestrictedDict):
                 name=uid.get("name", ""),
                 email=uid.get("email", ""),
                 comment=uid.get("comment", "")))
-        print '%s' % mki
         return mki
 
 
