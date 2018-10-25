@@ -1,3 +1,4 @@
+import copy
 import math
 import traceback
 import ssl
@@ -7,6 +8,7 @@ from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.keyinfo import KeyUID, MailpileKeyInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
@@ -59,7 +61,8 @@ def _update_scores(session, key_id, key_info, known_keys_list):
             score = 9
             reason = _('Encryption key has been imported')
 
-        key_info['scores']['Known encryption keys'] = [score, reason]
+        key_info.on_keychain = True
+        key_info.scores['Known encryption keys'] = [score, reason]
 
     # FIXME: For this to work better, we need a list of signing subkeys.
     #        However, if a match is found then that counts, so we use it.
@@ -69,10 +72,10 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         score = int(math.log(len(msgs) + 1, 2))
         if score:
             reason = _('Signature seen on %d messages') % len(msgs)
-            key_info['scores']['Used to sign e-mail'] = [score, reason]
+            key_info.scores['Used to sign e-mail'] = [score, reason]
 
-    if "keysize" in key_info:
-        bits = int(key_info["keysize"])
+    if key_info.keysize:
+        bits = int(key_info.keysize)
         score = bits // 1024
 
         if bits >= 4096:
@@ -80,56 +83,55 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         elif bits >= 3072:
           key_strength = _('Encryption key is strong')
         elif bits >= 2048:
-          key_strength = _('Encryption key is good')
+          key_strength = _('Encryption key is strong enough')
         else:
           key_strength = _('Encryption key is weak')
 
-        key_info['scores']['Encryption key strength'] = [score, key_strength]
+        key_info.scores['Encryption key strength'] = [score, key_strength]
 
-    key_info["score"] = sum([score for source, (score, reason)
-                             in key_info.get('scores', {}).iteritems()])
+    key_info.score = sum(score for source, (score, reason)
+                         in key_info.scores.iteritems())
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
-    key_info['score_reason'] = '%s' % reason
+    key_info.score_reason = '%s' % reason
 
-    log_score = math.log(3 * abs(key_info['score']), 3)
-    key_info['score_stars'] = (max(1, min(int(round(log_score)), 5))
-                               * (-1 if (key_info['score'] < 0) else 1))
+    log_score = math.log(3 * abs(key_info.score), 3)
+    key_info.score_stars = (max(1, min(int(round(log_score)), 5))
+                            * (-1 if (key_info['score'] < 0) else 1))
 
 
 def _normalize_key(session, key_info):
     """Make sure expected attributes are on all keys"""
-    if not key_info.get("uids"):
-        key_info["uids"] = [{"name": "", "email": "", "comment": ""}]
-    if key_info.get("vcards") is None:
-        key_info["vcards"] = {}
-    for uid in key_info["uids"]:
-        uid["name"] = uid.get("name", _('Anonymous'))
-        uid["email"] = e = uid.get("email", '')
-        uid["comment"] = uid.get("comment", '')
-        if e and e not in key_info["vcards"]:
+    if not key_info.uids:
+        key_info.uids.append(KeyUID())
+    for uid in key_info.uids:
+        uid.name = uid.name or _('Anonymous')
+        e = uid.email
+        if e and e not in key_info.vcards:
             vcard = session.config.vcards.get_vcard(e)
             if vcard:
-                ai = AddressInfo(e, uid["name"], vcard=vcard)
-                key_info["vcards"][e] = ai
-    for key, default in [('on_keychain', False),
-                         ('in_vcards', False),
-                         ('keysize', '0'),
-                         ('keytype_name', 'unknown'),
-                         ('created', '1970-01-01 00:00:00'),
-                         ('fingerprint', 'FINGERPRINT_IS_MISSING'),
-                         ('validity', '')]:
-        if key not in key_info:
-            key_info[key] = default
+                ai = AddressInfo(e, uid.name, vcard=vcard)
+                key_info.vcards[e] = ai
+
+
+def _mailpile_key_list(gpgi_key_list):
+    result = {}
+    for info in gpgi_key_list.values():
+        print 'GOT: %s' % info
+        mki = MailpileKeyInfo.FromGPGI(info)
+        result[mki.summary()] = mki
+        print 'MKI: %s' % mki.summary()
+    return result
 
 
 def lookup_crypto_keys(session, address,
                        event=None, strict_email_match=False, allowremote=True,
-                       origins=None, get=None):
-    known_keys_list = GnuPG(session and session.config or None).list_keys()
+                       origins=None, get=None, vcard=None, only_good=False):
     found_keys = {}
     ordered_keys = []
+    known_keys_list = _mailpile_key_list(
+        GnuPG(session and session.config or None).list_keys())
 
     if origins:
         handlers = [h for h in KEY_LOOKUP_HANDLERS
@@ -185,28 +187,24 @@ def lookup_crypto_keys(session, address,
                 traceback.print_exc()
             results = {}
 
+        # FIXME: This merging of info about keys is probably misguided.
         for key_id, key_info in results.iteritems():
             if key_id in found_keys:
-                old_scores = found_keys[key_id].get('scores', {})
-                old_uids = found_keys[key_id].get('uids', [])[:]
+                old_scores = found_keys[key_id].scores
+                old_uids = found_keys[key_id].uids
                 found_keys[key_id].update(key_info)
-                if 'scores' in found_keys[key_id]:
-                    found_keys[key_id]['scores'].update(old_scores)
-                    # No need for an else, as old_scores will be empty
+                found_keys[key_id].scores.update(old_scores)
 
                 # Merge in the old UIDs
-                uid_emails = [u['email'] for u in key_info.get('uids', [])]
-                if 'uids' not in found_keys[key_id]:
-                    found_keys[key_id]['uids'] = []
+                uid_emails = [u.email for u in key_info.uids]
                 for uid in old_uids:
-                    email = uid.get('email')
+                    email = uid.email
                     if email and email not in uid_emails:
-                        found_keys[key_id]['uids'].append(uid)
+                        found_keys[key_id].uids.append(uid)
             else:
                 found_keys[key_id] = key_info
-                found_keys[key_id]["origins"] = []
-            found_keys[key_id]["origins"].append(h.NAME)
-            
+            found_keys[key_id].origins.append(h.NAME)
+            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
             _normalize_key(session, found_keys[key_id])
             
             _update_scores(session, key_id, found_keys[key_id], known_keys_list)
@@ -227,7 +225,14 @@ def lookup_crypto_keys(session, address,
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
         ordered_keys[:] = found_keys.values()
-        ordered_keys.sort(key=lambda k: -k["score"])
+        ordered_keys.sort(key=lambda k: -k.score)
+
+    if only_good:
+        ordered_keys = [k for k in ordered_keys if k.score > 0]
+
+    if get and vcard and ordered_keys:
+        vcard.pgp_key = ordered_keys[0].fingerprint
+        vcard.save()
 
     if event:
         event.private_data = {"result": ordered_keys, "runningsearch": False}
@@ -299,10 +304,12 @@ class KeyImport(Command):
             origins = self.data.get('origins', [])
         safe_assert(address or fprints or origins)
 
-        result = lookup_crypto_keys(self.session, address,
-                                    get=[f.strip() for f in fprints],
-                                    origins=origins,
-                                    event=self.event)
+        result = lookup_crypto_keys(
+            self.session, address,
+            get=[f.strip() for f in fprints],
+            vcard=self.session.config.vcards.get_vcard(address),
+            origins=origins,
+            event=self.event)
 
         if len(result) > 0:
             # Update the VCards!
@@ -474,19 +481,18 @@ class LookupHandler:
         if get is not None:
             get = [unicode(g).upper() for g in get]
         for key_id, key_info in all_keys.iteritems():
-            fprint = unicode(key_info.get('fingerprint', '')).upper()
+            fprint = unicode(key_info.fingerprint).upper()
             if (get is None) or (fprint and fprint in get):
                 score, reason = self._score(key_info)
-                if 'validity' in key_info:
-                    vscore, vreason = _score_validity(key_info['validity'])
-                    if abs(vscore) > abs(score):
-                        reason = vreason
-                    score += vscore
+                vscore, vreason = _score_validity(key_info['validity'])
+                if abs(vscore) > abs(score):
+                    reason = vreason
+                score += vscore
 
-                key_info["score"] = score
-                key_info['scores'] = {
-                    self.NAME: [score, reason]
-                }
+                key_info.score = score
+                key_info.scores = {
+                    self.NAME: [score, reason]}
+
                 if get is not None:
                     get.remove(fprint)
                     if self._gk_succeeded(self._getkey(key_info)):
@@ -514,18 +520,14 @@ class KeychainLookupHandler(LookupHandler):
         address = address.lower()
         results = {}
         for key_id, key_info in self.known_keys.iteritems():
-            for uid in key_info.get('uids', []):
+            for uid in key_info.uids:
                 if not strict_email_match:
-                    match = (address in uid.get('name', '').lower() or
-                             address in uid.get('email', '').lower())
+                    match = (address in uid.name.lower() or
+                             address in uid.email.lower())
                 else:
-                    match = (address == uid.get('email', '').lower())
+                    match = (address == uid.email.lower())
                 if match:
-                    results[key_id] = {}
-                    for k in ('created', 'fingerprint', 'keysize',
-                              'key_name', 'uids'):
-                        if k in key_info:
-                            results[key_id][k] = key_info[k]
+                    results[key_id] = key_info
         return results
 
     def _getkey(self, key):
@@ -604,11 +606,11 @@ class KeyserverLookupHandler(LookupHandler):
             self.session.ui.debug('[%s] DATA: %s' % (self.NAME, raw_result[:200]))
         results = self._gnupg().parse_hpk_response(raw_result.split('\n'))
 
+        results = _mailpile_key_list(self._gnupg().search_key(address))
         if strict_email_match:
             for key in results.keys():
-                match = [
-                    u for u in results[key].get('uids', [])
-                    if u['email'].lower() == address]
+                match = [u for u in results[key].uids
+                         if u.email.lower() == address]
                 if not match:
                     if 'keyservers' in self.session.config.sys.debug:
                         self.session.ui.debug('[%s] No UID for %s, ignoring key'

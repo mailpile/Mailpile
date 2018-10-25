@@ -4,7 +4,7 @@ import urllib
 import urllib2
 
 from mailpile.conn_brokers import Master as ConnBroker
-from mailpile.crypto.keydata import get_keydata
+from mailpile.crypto.keyinfo import get_keyinfo, MailpileKeyInfo
 from mailpile.i18n import gettext
 from mailpile.plugins.keylookup import LookupHandler
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
@@ -94,17 +94,17 @@ class WKDLookupHandler(LookupHandler):
 
         if not error:
             result = r.read()
-            keydata = get_keydata(result)[0]
-            self.key_cache[keydata["fingerprint"]] = result
+            keyinfo = get_keyinfo(result, key_info_class=MailpileKeyInfo)[0]
+            self.key_cache[keyinfo["fingerprint"]] = result
         elif error in ('TLS', '404'):
             return {}  # Suppress these errors, they are common.
         else:
             raise ValueError(error)
 
-        return {keydata["fingerprint"]: keydata}
+        return {keyinfo["fingerprint"]: keyinfo}
 
-    def _getkey(self, keydata):
-        data = self.key_cache.pop(keydata["fingerprint"])
+    def _getkey(self, keyinfo):
+        data = self.key_cache.pop(keyinfo["fingerprint"])
         if data:
             return self._gnupg().import_keys(data)
         else:

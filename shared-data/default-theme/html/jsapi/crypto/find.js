@@ -35,6 +35,16 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       }
     }
 
+    // Make sure this attribute exists, default to False
+    if (!key.on_keychain) key.on_keychain = false;
+
+    // Readable creation date
+    cdate = new Date(key.created || 0);
+    key.created_date = (
+      cdate.getFullYear() + '-' +
+      (cdate.getMonth()+1) + '-' +
+      cdate.getDate());
+
     // Key Score
     var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
 
@@ -141,6 +151,7 @@ Mailpile.Crypto.Find.Keys = function(options) {
   var args = {}
   args[(options.strict ? "email" : "address")] = options.query;
   if ($('#keylookup_check_all').is(':checked')) args['origins'] = '*';
+  $('span.keylookup_check_all').hide();
   Mailpile.API.async_crypto_keylookup_get(args, function(data, ev) {
     // Render each result found
     if (data.result) Mailpile.Crypto.Find.KeysResult(data, options);

@@ -62,8 +62,12 @@ class RestrictedDict(dict):
             if item not in self.KEYS:
                 raise KeyError('Invalid key: %s' % item)
             if not isinstance(value, self.KEYS[item][0]):
-                raise TypeError('Bad type for %s: %s (want %s)'
-                                % (item, value, self.KEYS[item][0].__name__))
+                try:
+                    value = self.KEYS[item][0](value)
+                except (TypeError, ValueError):
+                    raise TypeError(
+                        'Bad type for %s: %s (want %s)'
+                        % (item, value, self.KEYS[item][0].__name__))
         dict.__setitem__(self, item, value)
 
     def __getitem__(self, item):
@@ -103,15 +107,19 @@ class KeyInfo(RestrictedDict):
         'uids':         (list, None),
         'subkeys':      (list, None),
         'is_subkey':    (bool, False),
+        'have_secret':  (bool, False),
         'on_keychain':  (bool, False)}
 
     expired = property(lambda k: time.time() > k.expires > 0)
 
-    is_usable = property(lambda k: k.validity in ('', '?') and not k.expired)
+    is_usable = property(lambda k: (k.validity in ('', '?', 'u')
+                                    and not k.expired))
 
-    can_encrypt = property(lambda k: 'e' in k.capabilities and k.is_usable)
+    can_encrypt = property(lambda k: ('e' in k.capabilities.lower()
+                                      and k.is_usable))
 
-    can_sign = property(lambda k: 's' in k.capabilities and k.is_usable)
+    can_sign = property(lambda k: ('s' in k.capabilities.lower()
+                                   and k.is_usable))
 
     def summary(self, full_fingerprint=False):
         """
@@ -153,14 +161,15 @@ class KeyInfo(RestrictedDict):
     def add_subkey_capabilities(keyinfo, now=None):
         """Make key "inherit" the capabilities of any un-expired subkeys."""
         now = now or time.time()
-        subkey_caps = set()
+        key_caps = set(c for c in keyinfo.capabilities
+                       if c in ('c', 'e', 's'))
+        combined_caps = set(c.upper() for c in key_caps)
         for subkey in keyinfo.subkeys:
             if not (0 < subkey.expires < now):
-                subkey_caps |= set(c for c in subkey.capabilities)
-        if subkey_caps:
-            keyinfo.capabilities = '%s+%s' % (
-                keyinfo.capabilities.split('+')[0],
-                ''.join(sorted(list(subkey_caps))))
+                combined_caps |= set(c.upper() for c in subkey.capabilities)
+        keyinfo.capabilities = '%s%s' % (
+            ''.join(sorted(list(key_caps))),
+            ''.join(sorted(list(combined_caps))))
 
     def synthesize_validity(keyinfo, now=None):
         """Synthesize key validity property."""
@@ -168,6 +177,26 @@ class KeyInfo(RestrictedDict):
         now = now or time.time()
         if 0 < keyinfo.expires < now and keyinfo.validity in ('', '?'):
             keyinfo.validity = 'e'
+
+    @classmethod
+    def FromGPGI(cls, gpgi_keyinfo):
+        mki = cls(
+            created=int(gpgi_keyinfo.get("creation_date_ts",
+                                         gpgi_keyinfo.get('created_ts', 0))),
+            expires=int(gpgi_keyinfo.get("expiration_date_ts", 0)),
+            capabilities=gpgi_keyinfo.get("capabilities", ""),
+            have_secret=gpgi_keyinfo.get("secret", False))
+        for k in ('fingerprint', 'validity', 'keytype_name'):
+            mki[k] = str(gpgi_keyinfo[k])
+        for k in ('keysize', ):
+            mki[k] = int(gpgi_keyinfo[k])
+        for uid in gpgi_keyinfo.get('uids', []):
+            mki.uids.append(KeyUID(
+                name=uid.get("name", ""),
+                email=uid.get("email", ""),
+                comment=uid.get("comment", "")))
+        print '%s' % mki
+        return mki
 
 
 class MailpileKeyInfo(KeyInfo):
@@ -211,6 +240,7 @@ def get_keyinfo(data, autocrypt_header=None,
     results = []
     last_uid = key_uid_class()  # Dummy
     last_key = key_info_class()  # Dummy
+    main_key_id = None
     for m in packets:
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
@@ -225,6 +255,7 @@ def get_keyinfo(data, autocrypt_header=None,
                     last_key.is_subkey = True
                     results[-1].subkeys.append(last_key)
                 else:
+                    main_key_id = m.key_id
                     results.append(last_key)
 
                 # Older pgpdumps may fail here and cause traceback noise, but
@@ -240,18 +271,20 @@ def get_keyinfo(data, autocrypt_header=None,
                 last_key.uids.append(last_uid)
 
             elif isinstance(m, pgpdump.packet.SignaturePacket) and results:
-                for s in m.subpackets:
-                    if s.subtype == 9:
-                        exp = _unixtime(m, seconds=get_int4(s.data, 0))
-                        if 0 < exp < last_key.expires or 0 == last_key.expires:
-                            last_key.expires = exp
-                    elif s.subtype == 27:
-                        caps = set(c for c in last_key.capabilities)
-                        for flag, c in ((0x01, 'c'), (0x02, 's'),
-                                        (0x0C, 'e'), (0x20, 'a')):
-                            if s.data[0] & flag:
-                                caps.add(c)
-                        last_key.capabilities = ''.join(caps)
+                # Note: We don't actually check the signature; we trust
+                #       GnuPG will if we decide to use this key.
+                if m.key_id == main_key_id:
+                    for s in m.subpackets:
+                        if s.subtype == 9:
+                            exp = _unixtime(m, seconds=get_int4(s.data, 0))
+                            last_key.expires = max(last_key.expires, exp)
+                        elif s.subtype == 27:
+                            caps = set(c for c in last_key.capabilities)
+                            for flag, c in ((0x01, 'c'), (0x02, 's'),
+                                            (0x0C, 'e'), (0x20, 'a')):
+                                if s.data[0] & flag:
+                                    caps.add(c)
+                            last_key.capabilities = ''.join(caps)
 
         except (TypeError, AttributeError, KeyError, IndexError, NameError):
             traceback.print_exc()

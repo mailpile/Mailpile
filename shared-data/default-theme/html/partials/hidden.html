@@ -107,7 +107,7 @@
         <strong>{{_("Details")}}</strong><br>
         {{_("Strength")}}: <%= keysize %><br>
         {{_("Algorithm")}}: <%= keytype_name %><br>
-        {{_("Created")}}: <%= created.split(' ')[0] %>
+        {{_("Created")}}: <%= created_date %>
       </div>
     </div>
     <div class="half-top clearfix">
@@ -175,7 +175,7 @@
     <span class="name"><%= name %></span>
     <span class="email"><span class="icon-inbox"></span> <%= email %></span>
     <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
-    <span class="created">{{_("Created")}} <%= created %></span>
+    <span class="created">{{_("Created")}} <%= created_date %></span>
     <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
     <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
   </li>

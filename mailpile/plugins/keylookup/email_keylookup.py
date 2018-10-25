@@ -3,7 +3,7 @@ import time
 import copy
 
 from mailpile.crypto.autocrypt_utils import *
-from mailpile.crypto.keydata import get_keydata
+from mailpile.crypto.keyinfo import get_keyinfo, MailpileKeyInfo
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler
@@ -63,19 +63,19 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         for messageid in session.results[:5]:
             for key_info, raw_key in self._get_message_keys(messageid):
                 if strict_email_match:
-                    match = [u for u in key_info.get('uids', [])
-                             if (u['email'] or '').lower() == address]
+                    match = [u for u in key_info.uids
+                             if u.email.lower() == address]
                     if not match:
                         continue
-                fp = key_info["fingerprint"]
+                fp = key_info.fingerprint
                 results[fp] = copy.copy(key_info)
                 self.key_cache[fp] = raw_key
             if len(results) > 5 or time.time() > deadline:
                 break
         return results
 
-    def _getkey(self, keydata):
-        data = self.key_cache.get(keydata["fingerprint"])
+    def _getkey(self, keyinfo):
+        data = self.key_cache.get(keyinfo.fingerprint)
         if data:
             return self._gnupg().import_keys(data)
         else:
@@ -91,10 +91,10 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             for ach in ([extract_autocrypt_header(msg)] +
                         extract_autocrypt_gossip_headers(msg)):
                 if 'keydata' in ach:
-                    for keydata in get_keydata(ach['keydata'],
+                    for keyinfo in get_keyinfo(ach['keydata'],
                                                autocrypt_header=ach,
-                                               include_subkeys=False):
-                        keys.append((keydata, ach['keydata']))
+                                               key_info_class=MailpileKeyInfo):
+                        keys.append((keyinfo, ach['keydata']))
 
             # Then go looking at the attachments
             attachments = email.get_message_tree(want=["attachments"]
@@ -104,25 +104,26 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                     break
                 if _might_be_pgp_key(part["filename"], part["mimetype"]):
                     key = part["part"].get_payload(None, True)
-                    for keydata in get_keydata(key, include_subkeys=False):
-                        keys.append((keydata, key))
+                    for keyinfo in get_keyinfo(key,
+                                               key_info_class=MailpileKeyInfo):
+                        keys.append((keyinfo, key))
             self.key_cache[messageid] = keys
         return keys
 
 
 def get_pgp_key_keywords(data):
     kws = []
-    if data:
-        data = get_keydata(data, include_subkeys=True)
-    if data:
-        for keydata in data:
-            for uid in keydata.get('uids', []):
-                if uid.get('email'):
-                    kws.append('%s:pgpkey' % uid['email'].lower())
-            fingerprint = keydata["fingerprint"].lower()
-            kws.append('pgpkey:has')
-            kws.append('%s:pgpkey' % fingerprint)
-            kws.append('%s:pgpkey' % fingerprint[-16:])
+    for keyinfo in get_keyinfo(data):
+        for uid in keyinfo.uids:
+            if uid.email:
+                kws.append('%s:pgpkey' % uid.email.lower())
+        fingerprint = keyinfo.fingerprint.lower()
+        kws.append('pgpkey:has')
+        kws.append('%s:pgpkey' % fingerprint)
+        kws.append('%s:pgpkey' % fingerprint[-16:])
+        for sk in keyinfo.subkeys:
+           kws.append('%s:pgpkey' % sk.fingerprint)
+           kws.append('%s:pgpkey' % sk.fingerprint[-16:])
     return kws
 
 

@@ -283,13 +283,13 @@ class GnuPGRecordParser:
     def _parse_dates(self, line):
         for ts in ('expiration_date', 'creation_date'):
             if line.get(ts) and '-' not in line[ts]:
+                line[ts+'_ts'] = line[ts]
                 try:
                     unixtime = int(line[ts])
                     if unixtime > 946684800:  # 2000-01-01
                         dt = datetime.fromtimestamp(unixtime)
                         line[ts] = dt.strftime('%Y-%m-%d')
                 except ValueError:
-                    line[ts+'_unparsed'] = line[ts]
                     line[ts] = '1970-01-01'
 
     def _parse_keydata(self, line):
@@ -1365,6 +1365,7 @@ class GnuPG:
                         validity += 'e'
                 results[curpub] = {
                     "created": datetime.fromtimestamp(int(line[4])),
+                    "created_ts": int(line[4]),
                     "keytype_name": _(openpgp_algorithms.get(int(line[2]),
                                                              'Unknown')),
                     "keysize": line[3],
