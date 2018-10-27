@@ -144,6 +144,10 @@ Mailpile.Crypto.Find.Keys = function(options) {
   Mailpile.API.async_crypto_keylookup_get(args, function(data, ev) {
     // Render each result found
     if (data.result) Mailpile.Crypto.Find.KeysResult(data, options);
+    if (data.progress) data.progress = ('{{_("Searching")|escapejs}}: ' +
+                                        data.progress.join(', ') +
+                                        ' ...');
+    $(options.container).find('.progress').show().html(data.message || data.progress || '');
 
     // Report progress...
     if (ev.flags != 'c') {
@@ -162,6 +166,7 @@ Mailpile.Crypto.Find.Keys = function(options) {
     // FIXME: Detecting errors does not work well, the backend needs to
     //        report better here.
     else if (data.result !== undefined) {
+      if (data.result && data.result.length) $(options.container).find('.progress').hide();
       console.log('Search done, no error');
       Mailpile.Crypto.Find.KeysDone(options);
     }

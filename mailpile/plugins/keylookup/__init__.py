@@ -132,6 +132,7 @@ def lookup_crypto_keys(session, address,
         handlers = KEY_LOOKUP_HANDLERS
 
     ungotten = get and get[:] or []
+    progress = [ ]
 
     for handler in handlers:
         if get and not ungotten:
@@ -149,11 +150,13 @@ def lookup_crypto_keys(session, address,
                 if not ungotten:
                     continue
 
+            progress.append(h.NAME)
             if event:
                 ordered_keys.sort(key=lambda k: -k["score"])
                 event.message = _('Searching for encryption keys in: %s'
                                   ) % _(h.NAME)
                 event.private_data = {"result": ordered_keys,
+                                      "progress": progress,
                                       "runningsearch": h.NAME}
                 session.config.event_log.log_event(event)
 
