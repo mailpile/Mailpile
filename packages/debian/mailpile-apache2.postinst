@@ -7,7 +7,7 @@ apache_install() {
     mkdir -p /etc/apache2/conf-available
 
     mkdir -p /var/lib/mailpile/apache
-    /usr/share/mailpile/multipile/mailpile-admin.py --generate-apache-rewritemap > /var/lib/mailpile/apache/usermap.txt
+    /usr/share/mailpile/multipile/mailpile-admin.py --configure-apache-usermap
     chown -R root:www-data /var/lib/mailpile/apache
     chmod -R 770 /var/lib/mailpile/apache
 

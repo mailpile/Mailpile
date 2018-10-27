@@ -19,10 +19,10 @@ from mailpile.config.base import CriticalConfigRule as X
 from mailpile.config.base import PublicConfigRule as p
 from mailpile.config.base import KeyConfigRule as k
 
+
 _ = lambda string: string
 
 
-DEV_MODE = ('rc' in APPVER or 'dev' in APPVER or 'github' in APPVER)
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
@@ -39,6 +39,7 @@ CONFIG_RULES = {
         'http_port':     p(_('Listening port for web UI'), int,         33411),
         'http_path':     p(_('HTTP path of web UI'), 'webroot',            ''),
         'http_no_auth':  X(_('Disable HTTP authentication'),      bool, False),
+        'ajax_timeout':   (_('AJAX Request timeout'), int,              10000),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
         'snippet_max':    (_('Max length of metadata snippets'), int,     275),
@@ -51,10 +52,12 @@ CONFIG_RULES = {
         'gpg_binary':    p(_('Override the default GPG binary path'),
                            'file', None),
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
-        'mailindex_file': (_('Metadata index file'), 'file',               ''),
+        'mailindex_file':   (_('Metadata index file'), 'file',             ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
         'mailbox':        [_('Mailboxes we index'), 'bin',                 []],
-        'plugins':        [_('Plugins to load on startup'),
+        'plugins_early': p(_('Plugins to load before login'),
+                           CONFIG_PLUGINS, []),
+        'plugins':        [_('Plugins to load after login'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
             'html_theme': [_('User interface theme'), 'dir', 'default-theme'],
@@ -66,7 +69,7 @@ CONFIG_RULES = {
         'proxy':         p(_('Proxy settings'), False, {
             'protocol':  p(_('Proxy protocol'),
                            ["tor", "tor-risky", "socks5", "socks4", "http",
-                            "none", "unknown"], 'unknown'),
+                            "none", "system", "unknown"], "system"),
             'fallback':  p(_('Allow fallback to direct conns'), bool, False),
             'username':   (_('User name'), str, ''),
             'password':   (_('Password'), str, ''),
@@ -75,12 +78,22 @@ CONFIG_RULES = {
             'no_proxy':  p(_('List of hosts to avoid proxying'), str,
                            'localhost, 127.0.0.1, ::1')
         }),
+        'tor': p(_('Tor settings'), False, {
+            'binary':    p(_('Override the default Tor binary path'),
+                           'file', None),
+            'systemwide':p(_('Use shared system-wide Tor (not our own)'),
+                                                                   bool, True),
+            'socks_host':p(_('Socks host'), str, ''),
+            'socks_port':p(_('Socks Port'), int, 0),
+            'ctrl_port': p(_('Control Port'), int, 0),
+            'ctrl_auth': p(_('Control Password'), str, '')
+        })
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('Misc. data refresh frequency'), int,       900),
-        'open_in_browser':p(_('Open in browser on startup'), bool,       True),
-        'auto_mark_as_read': p(_('Automatically mark e-mail as read'),
+        'open_in_browser': p(_('Open in browser on startup'), bool,      True),
+        'auto_mark_as_read':(_('Automatically mark e-mail as read'),
                                                                    bool, True),
         'web_content':     (_('Download content from the web'),
                             ["off", "anon", "on"],                  "unknown"),
@@ -100,11 +113,13 @@ CONFIG_RULES = {
                             bool, True),
         'gpg_html_wrap':   (_('Wrap keys and signatures in helpful HTML'),
                             bool, True),
+        'antiphishing':    (_("Enable experimental anti-phishing heuristics "),
+                                                                  bool, False),
         'key_trust':       (_("Key Trust Model"), False, {
             'threshold':    (_('Minimum number of signatures required'),
                              int, 5),
             'window_days':  (_('Window of time (days) to evaluate trust'),
-                             int, 90),
+                             int, 180),
             'sig_warn_pct': (_('Signed ratio (%) above which we expect sigs'),
                              int, 80),
             'key_trust_pct':(_('Ratio of key use (%) above which we trust key'),
@@ -123,13 +138,15 @@ CONFIG_RULES = {
         'obfuscate_index':X(_('Key to use to scramble the index'), str,    ''),
         'index_encrypted':X(_('Make encrypted content searchable'),
                             bool, False),
-        'encrypt_mail':   X(_('Encrypt locally stored mail'), bool,      True),
+        'encrypt_mail':   X(_('Encrypt locally stored mail'), bool,     False),
         'encrypt_index':  X(_('Encrypt the local search index'), bool,  False),
         'encrypt_vcards': X(_('Encrypt the contact database'), bool,     True),
         'encrypt_events': X(_('Encrypt the event log'), bool,            True),
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'allow_deletion': X(_('Allow permanent deletion of e-mails'),
                                                                   bool, False),
+        'deletion_ratio': X(_('Max fraction of source mail to delete per pass'),
+                                                                 float,  0.75),
 # FIXME:
 #       'backup_to_web':  X(_('Backup settings and keys to mobile web app'),
 #                                                                  bool, True),
@@ -150,7 +167,7 @@ CONFIG_RULES = {
     }),
     'web': (_("Web Interface Preferences"), False, {
         'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
-        'developer_mode':  (_('Enable developer-only features'), bool, DEV_MODE),
+        'developer_mode':  (_('Enable developer-only features'), bool, False),
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),

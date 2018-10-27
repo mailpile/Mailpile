@@ -113,36 +113,11 @@ $(document).on('click', '.message-action-spam', function() {
 });
 
 
-/* Message - Unthread a message from thread */
-$(document).on('click', '.message-action-unthread', function() {
-  var mid = $(this).closest('.has-mid').data('mid');
-  $.ajax({
-    url      : '{{ config.sys.http_path }}/api/0/message/unthread/',
-    type     : 'POST',
-    data     : {
-      csrf: Mailpile.csrf_token,
-      mid: mid
-    },
-    success  : function(response) {
-      if (response.status === 'success') {
-        var notification_data     = { url: Mailpile.urls.message_sent + mid + '/' };
-        var notification_template = Mailpile.safe_template($('#template-thread-notification-unthreaded').html());
-        var notification_html     = notification_template(notification_data);
-        $('#message-' + mid).removeClass('thread-snippet thread-message')
-                            .addClass('thread-notification')
-                            .html(notification_html);
-      } else {
-        Mailpile.notification(response);
-      }
-    }
-  });
-});
-
-
 /* Message - Move a message to trash */
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).closest('.has-mid').data('mid');
-  Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
+  Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid},
+                        function() {
     Mailpile.go('/in/inbox/');
   });
 });

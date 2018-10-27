@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+set -x
+
+[ "$SKIP_GUI_O_MAC_TIC" = "" ] || exit 0
+
+mkdir -p $ICONSET_DIR
+if [ ! -e "$ICONSET_DIR/Icon-1024.png" ]; then
+  export Icon1024="../icons/1024x1024.png"
+  sips -z 16 16     $Icon1024 --out $ICONSET_DIR/Icon-16.png
+  sips -z 32 32     $Icon1024 --out $ICONSET_DIR/Icon-32.png
+  sips -z 32 32     $Icon1024 --out $ICONSET_DIR/Icon-33.png
+  sips -z 64 64     $Icon1024 --out $ICONSET_DIR/Icon-64.png
+  sips -z 128 128   $Icon1024 --out $ICONSET_DIR/Icon-128.png
+  sips -z 256 256   $Icon1024 --out $ICONSET_DIR/Icon-256.png
+  sips -z 256 256   $Icon1024 --out $ICONSET_DIR/Icon-257.png
+  sips -z 512 512   $Icon1024 --out $ICONSET_DIR/Icon-512.png
+  sips -z 512 512   $Icon1024 --out $ICONSET_DIR/Icon-513.png
+  cp $Icon1024 $ICONSET_DIR/Icon-1024.png
+fi

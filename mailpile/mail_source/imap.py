@@ -39,6 +39,7 @@
 #
 #
 #
+import copy
 import imaplib
 import os
 import re
@@ -85,10 +86,12 @@ IMAP_TOKEN = re.compile('("[^"]*"'
 # These are mailbox names we avoid downloading (by default)
 BLACKLISTED_MAILBOXES = (
     'drafts',
+    'chats',
+    '[gmail]/all mail',
     '[gmail]/important',
     '[gmail]/starred',
-    'openpgp_keys'
-)
+    'openpgp_keys')
+
 
 class IMAP_IOError(IOError):
     pass
@@ -203,16 +206,16 @@ class SharedImapConn(threading.Thread):
             #
             except IMAP4.readonly:
                 if 'imap' in self.session.config.sys.debug:
-                    self.session.ui.debug(traceback.format_exc())
+                    self.session.ui.debug('%s' % traceback.format_exc())
                 raise IMAP_IOError('Readonly: %s(%s %s)' % (method, args, kwargs))
             except IMAP4.abort:
                 if 'imap' in self.session.config.sys.debug:
-                    self.session.ui.debug(traceback.format_exc())
+                    self.session.ui.debug('%s' % traceback.format_exc())
                 self._shutdown()
                 raise IMAP_IOError('Abort: %s(%s %s)' % (method, args, kwargs))
             except IMAP4.error:
                 if 'imap' in self.session.config.sys.debug:
-                    self.session.ui.debug(traceback.format_exc())
+                    self.session.ui.debug('%s' % traceback.format_exc())
                 raise IMAP_IOError('Error: %s(%s %s)' % (method, args, kwargs))
             except:
                 # Default is no-op, just re-raise the exception. This includes
@@ -242,7 +245,11 @@ class SharedImapConn(threading.Thread):
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
         elif self._selected:
-            self._conn.close()
+            try:
+                self._conn.close()
+            except IMAP4.error:
+                # This happens if we haven't previously selected a mailbox
+                pass
         rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
@@ -360,7 +367,7 @@ class SharedImapConn(threading.Thread):
                         raw_conn.noop()
         except:
             if 'imap' in self.session.config.sys.debug:
-                self.session.ui.debug(traceback.format_exc())
+                self.session.ui.debug('%s' % traceback.format_exc())
         finally:
             self.quit()
 
@@ -716,20 +723,20 @@ def _connect_imap(session, settings, event,
 
     except TimedOut:
         if 'imap' in session.config.sys.debug:
-            session.ui.debug(traceback.format_exc())
+            session.ui.debug('%s' % traceback.format_exc())
         ev['error'] = ['timeout', _('Connection timed out')]
     except (ssl.CertificateError, ssl.SSLError):
         if 'imap' in session.config.sys.debug:
-            session.ui.debug(traceback.format_exc())
+            session.ui.debug('%s' % traceback.format_exc())
         ev['error'] = ['tls', _('Failed to make a secure TLS connection'),
                        '%s:%s' % (settings.get('host'), settings.get('port'))]
     except (IMAP_IOError, IMAP4.error):
         if 'imap' in session.config.sys.debug:
-            session.ui.debug(traceback.format_exc())
+            session.ui.debug('%s' % traceback.format_exc())
         ev['error'] = ['protocol', _('An IMAP protocol error occurred')]
     except (IOError, AttributeError, socket.error):
         if 'imap' in session.config.sys.debug:
-            session.ui.debug(traceback.format_exc())
+            session.ui.debug('%s' % traceback.format_exc())
         ev['error'] = ['network', _('A network error occurred')]
 
     try:
@@ -784,9 +791,10 @@ class ImapMailSource(BaseMailSource):
                     ok, data = self._imap(conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
-                    flags = [f.lower() for f in flags]
-                    self.source._cache_flags(path, flags)
-                    results.append('/' + self.source._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        flags = [f.lower() for f in flags]
+                        self.source._cache_flags(path, flags)
+                        results.append('/' + self.source._fmt_path(path))
             return results
 
         def getflags_(self, fp, cfg):
@@ -998,6 +1006,13 @@ class ImapMailSource(BaseMailSource):
         else:
             return 'inherit'
 
+    def _sorted_mailboxes(self):
+        # This allows changes to BLACKLISTED_MAILBOXES to have an effect
+        # even if peoples' configs say otherwise.
+        return [
+            m for m in BaseMailSource._sorted_mailboxes(self)
+            if m.name.lower() not in BLACKLISTED_MAILBOXES]
+
     def _msg_key_order(self, key):
         return [int(k, 36) for k in key.split('.')]
 
@@ -1027,12 +1042,19 @@ class ImapMailSource(BaseMailSource):
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
+    def _fix_empty_discovery_path_bug(self):
+        if self.my_config.discovery.policy not in ('unknown', 'ignore'):
+            if not self.my_config.discovery.paths:
+                self.my_config.discovery.paths.append('/')
+
     def discover_mailboxes(self, paths=None):
         config = self.session.config
         ostate = self.on_event_discovery_starting()
+        self._fix_empty_discovery_path_bug()
         try:
-            paths = (paths or self.my_config.discovery.paths)[:]
+            paths = copy.copy(paths or self.my_config.discovery.paths)
             max_mailboxes = self.my_config.discovery.max_mailboxes
+            mailbox_count = len(self.my_config.mailbox)
             existing = self._existing_mailboxes()
             mailboxes = []
 
@@ -1041,9 +1063,10 @@ class ImapMailSource(BaseMailSource):
                     mailboxes += self._walk_mailbox_path(raw_conn, str(p))
 
             discovered = [mbx for mbx in mailboxes if mbx not in existing]
-            if len(discovered) > max_mailboxes - len(existing):
-                discovered = discovered[:max_mailboxes - len(existing)]
-                self.on_event_discovery_toomany()
+            if discovered and (len(discovered) > max_mailboxes - mailbox_count):
+                discovered = discovered[:max(0, max_mailboxes - mailbox_count)]
+                if self.on_event_discovery_toomany():
+                    return self.discover_mailboxes(paths=paths)
 
             self.set_event_discovery_state('adding')
             for path in discovered:
@@ -1051,6 +1074,10 @@ class ImapMailSource(BaseMailSource):
                 mbx = self.take_over_mailbox(idx)
 
             return len(discovered)
+        except:
+            if config.sys.debug:
+                self.session.ui.debug('%s' % traceback.format_exc())
+            raise
         finally:
             self.on_event_discovery_done(ostate)
 
@@ -1067,26 +1094,29 @@ class ImapMailSource(BaseMailSource):
         """
         mboxes = []
         subtrees = []
-        # We go over the maximum slightly here, so the calling code can
+        # We go well over the maximum here, so the calling code can detect
         # detect that we want to go over the limits and can ask the user
         # whether that's OK.
-        max_mailboxes = 5 + self.my_config.discovery.max_mailboxes
+        max_mailboxes = 5 + (2 * self.my_config.discovery.max_mailboxes)
+        if prefix == '/':
+            prefix = ''
         try:
             ok, data = self.timed_imap(conn.list, prefix, '%')
             while ok and len(data) >= 3:
                 (flags, sep, path), data[:3] = data[:3], []
                 flags = [f.lower() for f in flags]
                 if '\\noselect' not in flags:
-                    # We cache the flags for this mailbox, they may tell
-                    # use useful things about what kind of mailbox it is.
-                    self._cache_flags(path, flags)
-                    mboxes.append(self._fmt_path(path))
+                    if path.lower() not in BLACKLISTED_MAILBOXES:
+                        # We cache the flags for this mailbox, they may tell
+                        # use useful things about what kind of mailbox it is.
+                        self._cache_flags(path, flags)
+                        mboxes.append(self._fmt_path(path))
                 if '\\haschildren' in flags:
                     subtrees.append('%s%s' % (path, sep))
                 if len(mboxes) > max_mailboxes:
                     break
             for path in subtrees:
-                if len(mboxes) < max_mailboxes:
+                if len(mboxes) <= max_mailboxes:
                     mboxes.extend(self._walk_mailbox_path(conn, path))
         except self.CONN_ERRORS:
             pass

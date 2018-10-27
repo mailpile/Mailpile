@@ -11,6 +11,7 @@ from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
+from mailpile.security import GetUserSecret
 from mailpile.ui import Session
 from mailpile.util import *
 
@@ -22,11 +23,6 @@ _GUIS = {}
 def UpdateGUIState():
     for gui in _GUIS.values():
         gui.change_state()
-
-
-def GetUserSecret(config):
-    """Return a secret that only this Unix user could know."""
-    return 'FIXME12345'
 
 
 class GuiOMaticConnection(threading.Thread):
@@ -279,7 +275,7 @@ class ConnectToGuiOMatic(Command):
     def command(self):
         if self.data.get('_method'):
             secret, style, port = self.args
-            if secret != GetUserSecret(self.session.config):
+            if secret != GetUserSecret(self.session.config.workdir):
                 raise AccessError('Invalid User Secret')
         elif len(self.args) == 2:
             style, port = self.args

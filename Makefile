@@ -84,6 +84,7 @@ pytests:
 	@echo -n 'security         ' && python2.7 mailpile/security.py
 	@echo -n 'urlmap           ' && python2.7 mailpile/urlmap.py -nomap
 	@echo -n 'search           ' && python2.7 mailpile/search.py
+	@echo -n 'mailboxes.mbox   ' && python2.7 mailpile/mailboxes/mbox.py
 	@echo -n 'mailutils.safe   ' && python2.7 mailpile/mailutils/safe.py
 	@echo -n 'mailutils.addrs  ' && python2.7 mailpile/mailutils/addresses.py
 	@echo -n 'mailutils.emails ' && python2.7 mailpile/mailutils/emails.py

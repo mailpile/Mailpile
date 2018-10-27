@@ -100,6 +100,7 @@ class MailpileCommand(Extension):
         e.filters['thread_upside_down'] = s._thread_upside_down
         e.globals['fix_urls'] = s._fix_urls
         e.filters['fix_urls'] = s._fix_urls
+        e.globals['stoplist'] = STOPLIST
 
         # See utils.py for these functions:
         e.globals['elapsed_datetime'] = elapsed_datetime
@@ -741,7 +742,7 @@ class MailpileCommand(Extension):
         url = ''.join([unicode(p) for p in urlparts])
         if url[:1] in ('/', ):
             http_path = self.env.session.config.sys.http_path or ''
-            if not url.startswith(http_path):
+            if not url.startswith(http_path+'/'):
                 url = http_path + url
         return self._safe(url)
 

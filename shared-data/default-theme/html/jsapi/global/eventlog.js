@@ -65,7 +65,7 @@ EventLog.poll = function() {
     since: EventLog.last_ts,
     gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
     wait: 30,
-    _timeout: 31000
+    _timeout: (Mailpile.ajax_timeout * 3)
   });
 };
 
@@ -87,14 +87,14 @@ EventLog.invoke_callbacks = function(response) {
 
     for (i in EventLog.eventBindings) {
       var eventBinding = EventLog.eventBindings[i];
-
-      var binding = eventBinding.event;
-      var sourceMatched = !binding.source || ev.source.match(new RegExp(binding.source));
-      var eventIdMatched = !binding.event_id || (ev.event_id == binding.event_id);
-      var flagsMatched = !binding.flags || ev.flags.match(new RegExp(binding.flags));
-
-      if (sourceMatched && eventIdMatched && flagsMatched) {
-        eventBinding.callback(ev);
+      if (eventBinding !== undefined) {
+        var binding = eventBinding.event;
+        var sourceMatched = !binding.source || ev.source.match(new RegExp(binding.source));
+        var eventIdMatched = !binding.event_id || (ev.event_id == binding.event_id);
+        var flagsMatched = !binding.flags || ev.flags.match(new RegExp(binding.flags));
+        if (sourceMatched && eventIdMatched && flagsMatched) {
+          eventBinding.callback(ev);
+        }
       }
     }
 

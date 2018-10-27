@@ -26,6 +26,7 @@ from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
 
 import mailpile.commands
+import mailpile.platforms
 import mailpile.util
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -486,6 +487,8 @@ class UserInteraction:
                 emsg += "<h3>DATA:</h3><pre>%(data)s</pre>"
             if 'config' in error_info.get('data'):
                 del error_info['data']['config']
+            if 'platforms' in error_info.get('data'):
+                del error_info['data']['platforms']
         ei = {}
         for kw in ('error', 'details', 'traceback', 'source', 'data'):
             value = error_info.get(kw, '')
@@ -499,6 +502,7 @@ class UserInteraction:
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
         alldata['config'] = cfg
+        alldata['platforms'] = mailpile.platforms
         alldata.update(data)
         try:
             template = self._web_template(cfg, tpl_names)

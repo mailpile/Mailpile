@@ -15,9 +15,9 @@
         {% include("partials/tools_contacts.html") %}
       {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
         {% include("partials/tools_tags.html") %}
-      {% elif state.command_url in ("/settings/") %}
+      {% elif state.command_url in ("/settings/",) %}
         {% include("partials/tools_settings.html") %}
-      {% elif state.command_url == "/message/" %}
+      {% elif state.command_url in ("/message/",) %}
         {% include("partials/tools_message.html") %}
       {% else %}
         {% include("partials/tools_default.html") %}

@@ -383,7 +383,7 @@ class Email(object):
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
                msg_subject=None, msg_text='', msg_references=None,
-               msg_id=None, msg_atts=None,
+               msg_id=None, msg_atts=None, msg_headers=None,
                save=True, ephemeral_mid='not-saved', append_sig=True,
                use_default_from=True):
         msg = MIMEMultipart(boundary=MakeBoundary())
@@ -443,6 +443,9 @@ class Email(object):
             tp.encryption_info = EncryptionInfo(parent=mei)
             msg.attach(tp)
             del tp['MIME-Version']
+
+        for k, v in (msg_headers or []):
+            msg[k] = v
 
         if msg_atts:
             for att in msg_atts:
@@ -927,7 +930,7 @@ class Email(object):
                 self.msg_parsed = self._get_parsed_msg(pgpmime)
             result = self.msg_parsed
         if not result:
-            raise IndexError(_('Message not found?'))
+            raise IndexError(_('Message not found'))
         return result
 
     def is_thread(self):
@@ -1105,7 +1108,7 @@ class Email(object):
     def get_message_tree(self, want=None, tree=None, pgpmime='default'):
         msg = self.get_msg(pgpmime=pgpmime)
         want = list(want) if (want is not None) else None
-        tree = tree or {}
+        tree = tree or {'_cleaned': []}
         tree['id'] = self.get_msg_info(self.index.MSG_ID)
 
         if want is not None:
@@ -1136,6 +1139,9 @@ class Email(object):
                     if rid:
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
+
+        if (want is None or 'headerprints' in want):
+            tree['headerprints'] = self.get_headerprints()
 
         if (want is None or 'headers' in want) and 'headers' not in tree:
             tree['headers'] = {}
@@ -1209,17 +1215,24 @@ class Email(object):
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
+                filename_org = safe_decode_hdr(hdr=part.get_filename() or '')
+                filename = CleanText(filename_org,
+                                     banned=(CleanText.HTML +
+                                             CleanText.CRLF + '\\/'),
+                                     replace='_').clean
                 att = {
                     'mimetype': mimetype,
                     'count': count,
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': safe_decode_hdr(hdr=part.get_filename() or ''),
+                    'filename': filename,
                     'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)
                 tree['attachments'].append(att)
+                if filename_org != filename:
+                    tree['_cleaned'].append('att: %s' % att['aid'])
 
         if want is None or 'text_parts' in want:
             if tree.get('html_parts') and not tree.get('text_parts'):

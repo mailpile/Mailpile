@@ -2,6 +2,7 @@
   <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link rel="manifest" href="{{ U('/jsapi/pwa/manifest.json?ts=', version_identifier()) }}">
   <link rel="stylesheet" href="{{ U('/static/css/default.css?ts=', version_identifier()) }}" />
   <link rel="stylesheet" href="{{ U('/static/css/print.css?ts=', version_identifier()) }}" media="print" />
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}

@@ -3,8 +3,22 @@ This module tries to centralize most of the platform-specific code in use by
 Mailpile. If you find yourself checking which platform the app runs on, adding
 a function here instead is probably The Right Thing.
 """
+import copy
 import os
+import subprocess
 import sys
+
+
+# This is a cache of discovered binaries and their paths.
+BINARIES = {}
+
+
+# These are the binaries we want, and the test we use to detect whether
+# they are available/working.
+BINARIES_WANTED = {
+    'GnuPG':   ['gpg', '--version'],
+    'OpenSSL': ['openssl', 'version'],
+    'Tor':     ['tor', '--version']}
 
 
 def _assert_file_exists(path):
@@ -13,28 +27,49 @@ def _assert_file_exists(path):
     return path
 
 
+def DetectBinaries(which=None, use_cache=True, preferred={}, _raise=None):
+    global BINARIES
+    if which and use_cache and which in BINARIES:
+        return BINARIES[which]
 
-def GetDefaultGnuPGCommand():
-    # FIXME: Detect if we are running from a package, use bundled binaries.
-    if sys.platform.startswith('win'):
-        return _assert_file_exists('GnuPG\\gpg.exe')
-    else:
-        return 'gpg'
+    for binary, binary_test in BINARIES_WANTED.iteritems():
+        if (which is None) or (binary == which):
+            if preferred.get(binary):
+                binary_test = copy.copy(binary_test)
+                binary_test[0] = preferred[binary]
+            try:
+                p = subprocess.check_call(binary_test,
+                                          stderr=subprocess.PIPE,
+                                          stdout=subprocess.PIPE)
+                BINARIES[binary] = binary_test[0]
+            except (subprocess.CalledProcessError, OSError):
+                if binary in BINARIES:
+                    del BINARIES[binary]
+
+    if which:
+        if _raise not in (None, False):
+            if not BINARIES.get(which):
+                raise _raise('%s not found' % which)
+        return BINARIES.get(which)
+
+    elif _raise not in (None, False):
+        for binary, binary_test in BINARIES_WANTED.iteritems():
+            if not BINARIES.get(binary):
+                raise _raise('%s not found' % binary)
+
+    return BINARIES
 
 
-def GetDefaultOpenSSLCommand():
-    # FIXME: Detect if we are running from a package, use bundled binaries.
-    if sys.platform.startswith('win'):
-        # FIXME: This should maybe be a bit smarter?
-        return _assert_file_exists('OpenSSL\\bin\\openssl.exe')
-    else:
-        # Rely on the PATH to find the way
-        return 'openssl'
+def GetDefaultGnuPGCommand(_raise=OSError):
+    return DetectBinaries(which='GnuPG', _raise=_raise)
 
 
-def GetDefaultTorPath():
-    # FIXME: Detect if we are running from a package, use bundled binaries.
-    return 'tor'
+def GetDefaultOpenSSLCommand(_raise=OSError):
+    return DetectBinaries(which='OpenSSL', _raise=_raise)
+
+
+def GetDefaultTorPath(_raise=OSError):
+    return DetectBinaries(which='Tor', _raise=_raise)
 
 
 def InDesktopEnvironment():
@@ -84,3 +119,33 @@ def GetAppDataDirectory():
         # Assume other platforms are Unixy
         return os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share'))
 
+
+def RestrictReadAccess(path):
+    """
+    Restrict access to a file or directory so only the user can read it.
+    """
+    # FIXME: Windows code goes here!
+    if os.path.isdir(path):
+        os.chmod(path, 0700)
+    else:
+        os.chmod(path, 0600)
+
+
+def RandomListeningPort(count=1, host='127.0.0.1'):
+    socks = []
+    ports = []
+    try:
+        import socket
+        for port in range(0, count):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((host, 0))
+            socks.append(sock)
+            ports.append(sock.getsockname()[1])
+        if count == 1:
+            return ports[0]
+        else:
+            return ports
+    finally:
+        for sock in socks:
+            sock.close()

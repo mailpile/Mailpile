@@ -4,6 +4,7 @@ import os
 import random
 import socket
 import sys
+import time
 from urllib import urlencode
 from urllib2 import urlopen
 from lxml import objectify
@@ -118,12 +119,6 @@ class SetupMagic(Command):
             'auto_after': 30,
             'auto_action': '-spam +trash',
             'auto_tag': 'fancy'
-        },
-        'MaybeSpam': {
-            'display': 'invisible',
-            'icon': 'icon-spam',
-            'label_color': '10-orange',
-            'name': _('MaybeSpam'),
         },
         'Ham': {
             'type': 'ham',
@@ -309,7 +304,6 @@ class SetupMagic(Command):
                 len(session.config.prefs.autotag) == 0):
             session.config.prefs.autotag.append({
                 'match_tag': 'spam',
-                'unsure_tag': 'maybespam',
                 'tagger': 'spambayes',
                 'trainer': 'spambayes'
             })
@@ -322,12 +316,6 @@ class SetupMagic(Command):
             session.config.save()
             session.config.prepare_workers(session, daemons=want_daemons)
 
-        # Scan GnuPG keychain in background
-        from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
-        session.config.slow_worker.add_unique_task(
-            session, 'initialpgpkeyimport',
-            lambda: PGPKeysImportAsVCards(session).run())
-
         # Enable Tor in the background, if we have it...
         session.config.slow_worker.add_unique_task(
             session, 'tor-autoconfig', lambda: SetupTor.autoconfig(session))
@@ -338,7 +326,7 @@ class SetupMagic(Command):
     def make_master_key(self):
         session = self.session
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
-                and not session.config.master_key
+                and not session.config.get_master_key()
                 and not session.config.prefs.obfuscate_index):
             #
             # This secret is arguably the most critical bit of data in the
@@ -357,10 +345,10 @@ class SetupMagic(Command):
             #   import math
             #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
             #
-            session.config.master_key = okay_random(12 * 4,
-                                                    '%s' % session.config,
-                                                    '%s' % self.session,
-                                                    '%s' % self.data)
+            session.config.set_master_key(okay_random(12 * 4,
+                                          '%s' % session.config,
+                                          '%s' % self.session,
+                                          '%s' % self.data))
             if self._idx() and self._idx().INDEX:
                 session.ui.warning(_('Unable to obfuscate search index '
                                      'without losing data. Not indexing '
@@ -1212,28 +1200,56 @@ class SetupTestRoute(TestableWebbable):
 
 class SetupTor(TestableWebbable):
     """Check for Tor and auto-configure if possible."""
-    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto]")
+    SYNOPSIS = (None, 'setup/tor', 'setup/tor', "[--auto] [--shared]")
     HTTP_CALLABLE = ('POST',)
+    HTTP_POST_VARS = {
+        'prefer_shared': 'If set, prefer a shared Tor instance'}
 
     @classmethod
     def autoconfig(cls, session):
         cls(session, arg=['--auto']).run()
 
-    def auto_configure_tor(self, session, hostport=None):
-        need_raw = [ConnBroker.OUTGOING_RAW]
-        hostport = hostport or ('127.0.0.1', 9050)
+    def auto_configure_tor(self, session):
+        if session.config.tor_worker is not None:
+            if session.config.tor_worker.isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    return message
+
+        if session.config.sys.tor.systemwide:
+            hostport = ('127.0.0.1', 9050)
+            success, message = self._configure_tor(session, hostport)
+            if success:
+                return message
+
+        if session.config.tor_worker is None:
+            if session.config.start_tor_worker().isReady(wait=True):
+                time.sleep(0.1)
+                hostport = ('127.0.0.1', session.config.tor_worker.socks_port)
+                success, message = self._configure_tor(session, hostport,
+                                                       port_zero=True)
+                if success:
+                    session.config.sys.tor.systemwide = False
+
+        return message
+
+    def _configure_tor(self, session, hostport, port_zero=False):
         try:
-            with ConnBroker.context(need=need_raw) as context:
+            with ConnBroker.context(need=[ConnBroker.OUTGOING_RAW]) as ctx:
                 tor = socket.create_connection(hostport, timeout=10)
         except IOError:
-            return  _('Failed to connect to Tor on %s:%s. Is it installed?'
-                      ) % hostport
+            return (False,
+                _('Failed to connect to Tor on %s:%s. Is it installed?')
+                % hostport)
 
         # If that succeeded, we might have Tor!
         old_proto = session.config.sys.proxy.protocol
         session.config.sys.proxy.protocol = 'tor'
         session.config.sys.proxy.host = hostport[0]
-        session.config.sys.proxy.port = hostport[1]
+        session.config.sys.proxy.port = 0 if port_zero else hostport[1]
         session.config.sys.proxy.fallback = True
 
         # Configure connection broker, revert settings while we test
@@ -1248,12 +1264,12 @@ class SetupTor(TestableWebbable):
                                data=None, timeout=10).read()
                 safe_assert(motd.strip().endswith('}'))
             session.config.sys.proxy.protocol = 'tor'
-            message = _('Successfully configured and enabled Tor!')
+            return (True, _('Successfully configured and enabled Tor!'))
         except (IOError, AssertionError):
             ConnBroker.configure()
-            message = _('Failed to configure Tor on %s:%s. Is the network down?'
-                        ) % hostport
-        return message
+            return (False,
+                _('Failed to configure Tor on %s:%s. Is the network down?')
+                % hostport)
 
     def setup_command(self, session):
         if ("--auto" not in self.args
@@ -1290,7 +1306,7 @@ class Setup(SetupWelcome):
             ('language', lambda: config.prefs.language, SetupWelcome),
 
             # Stage 1: Basic security - a password
-            ('security', lambda: config.master_key, SetupPassword)
+            ('security', lambda: config.get_master_key(), SetupPassword)
         ]
 
     @classmethod

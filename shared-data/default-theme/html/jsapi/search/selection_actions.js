@@ -39,7 +39,6 @@ $(document).on('click', '.bulk-action-tag-op', function() {
     context: $context.find('.search-context').data('context')
   };
 
-  console.log('mode=' + $elem.data('mode'));
   if (op == "toggle") {
     if ($elem.data('mode') != 'untag') {
       args.add = tag;

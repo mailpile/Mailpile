@@ -10,6 +10,7 @@ import threading
 import traceback
 import select
 import pgpdump
+import pgpdump.utils
 import base64
 import quopri
 from datetime import datetime
@@ -23,6 +24,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
+from mailpile.crypto.autocrypt_utils import get_minimal_PGP_key
 
 
 _ = lambda s: s
@@ -158,10 +160,10 @@ class GnuPGResultParser:
 
             elif keyword == "ENC_TO":
                 keylist = encryption_info.get("have_keys", [])
-                if data[0] not in keylist:
+                if data[1] not in keylist:
                     keylist.append(data[1].strip())
                 encryption_info["have_keys"] = list(set(keylist))
-                
+
             elif keyword == "PLAINTEXT":
                 encryption_info.filename = data[3].strip()
 
@@ -178,7 +180,7 @@ class GnuPGResultParser:
                                                   and "unverified"
                                                   or "invalid")
                     rp.plaintext = "".join(retvals[1]["stdout"])
-                                                  
+
                 elif keyword == "ERRSIG":
                     signature_info.part_status = "error"
                     signature_info["keyinfo"] = data[1]
@@ -225,6 +227,13 @@ class GnuPGResultParser:
             elif keyword in ("TRUST_ULTIMATE", "TRUST_FULLY"):
                 if signature_info.part_status == "unverified":
                     signature_info.part_status = "verified"
+            elif (keyword == "DECRYPTION_INFO" and
+                     encryption_info.part_status == "decrypted"
+                     and rp.decrypt_requires_MDC):
+                mdc_method = data[1].strip()
+                aead_algo = data[3].strip() if len(data) > 3 else 0
+                if not mdc_method and not aeadalgo:
+                    encryption_info.part_status = "error"
 
         if encryption_info.part_status == "error":
             rp.plaintext = ""
@@ -289,7 +298,8 @@ class GnuPGRecordParser:
             "authenticate": "A" in line["capabilities"],
         }
         line["disabled"] = "D" in line["capabilities"]
-	line["revoked"] = "r" in line["validity"]
+        line["revoked"] = "r" in line["validity"]
+        line["expired"] = "e" in line["validity"]
 
         self._parse_dates(line)
 
@@ -579,8 +589,8 @@ class GnuPG:
         """Returns a tuple representing the GnuPG version number."""
         global GPG_VERSIONS
         if update or not GPG_VERSIONS.get(self.gpgbinary):
-            vertext = self.version().strip().split()[-1]
-            version = tuple(int(v) for v in vertext.split('.'))
+            match = re.search( "(\d+).(\d+).(\d+)", self.version() )
+            version = tuple(int(v) for v in match.groups())
             GPG_VERSIONS[self.gpgbinary] = version
         return GPG_VERSIONS[self.gpgbinary]
 
@@ -797,6 +807,7 @@ class GnuPG:
         list_keys = ["--fingerprint"]
         if selectors:
             for sel in selectors:
+                # FIXME - In 2.1.18 and 1.4.21 only one --list-keys is needed.
                 list_keys += ["--list-secret-keys", sel]
         else:
             list_keys += ["--list-secret-keys"]
@@ -806,18 +817,19 @@ class GnuPG:
         retvals = self.run(list_keys)
         secret_keys = self.parse_keylist(retvals[1]["stdout"])
 
-        # Another unfortunate thing GPG does, is it hides the disabled
+        # Another unfortunate thing GnuPG < 2.1 does, is it hides the disabled
         # state when listing secret keys; it seems internally only the
         # public key is disabled. This makes it hard for us to reason about
         # which keys can actually be used, so we compensate...
         list_keys = ["--fingerprint"]
         for fprint in set(secret_keys):
+            # FIXME - In both 2.1.18 and 1.4.21 only one --list-keys is needed.
             list_keys += ["--list-keys", fprint]
         retvals = self.run(list_keys)
         public_keys = self.parse_keylist(retvals[1]["stdout"])
         for fprint, info in public_keys.iteritems():
             if fprint in set(secret_keys):
-                for k in ("disabled", "revoked"):  # FIXME: Copy more?
+                for k in ("disabled", "revoked", "expired"):
                     secret_keys[fprint][k] = info[k]
 
         return secret_keys
@@ -914,16 +926,22 @@ class GnuPG:
             retvals = self.run(["--decrypt"], gpg_input=data,
                                               outputfd=outputfd,
                                               send_passphrase=True)
-            if retvals[0] == 0:
-                break
-            elif tries == 1:
-                # Uh, oh, failed! Probably the wrong passphrase. Parse the
-                # gpg output for the keyid and try again if we have it.
+            if tries == 1:
                 keyid = None
-                for msg in retvals[1]['status']:
-                    if (msg[0] == 'NEED_PASSPHRASE') and (passphrase is None):
+                for msg in reversed(retvals[1]['status']):
+                    # Reverse order so DECRYPTION_OKAY overrides KEY_CONSIDERED.
+                    # If decryption is not ok, look for good passphrase, retry.
+                    if  msg[0] == 'DECRYPTION_OKAY':
+                        break
+                    elif (msg[0] == 'NEED_PASSPHRASE') and (passphrase is None):
+                        # This message is output by gpg 1.4 but not 2.1.
                         if self.prepare_passphrase(msg[2], decrypting=True):
                             keyid = msg[2]
+                            break
+                    elif (msg[0] == 'KEY_CONSIDERED') and (passphrase is None):
+                        # This message is output by gpg 2.1 but not 1.4.
+                        if self.prepare_passphrase(msg[1], decrypting=True):
+                            keyid = msg[1]
                             break
                 if not keyid:
                     break
@@ -936,7 +954,7 @@ class GnuPG:
                                debug=self.debug).parse(retvals)
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
-                
+
     def base64_segment(self, dec_start, dec_end, skip, line_len, line_end = 2):
         """
         Given the start and end index of a desired segment of decoded data,
@@ -953,7 +971,7 @@ class GnuPG:
         enc_end +=   line_end*(enc_end/(line_len-line_end))
 
         return enc_start, enc_end, dec_skip
-        
+
     def pgp_packet_hdr_parse(self, header, prev_partial = False):
         """
         Parse the header of a PGP packet to get the packet type, header length,
@@ -970,7 +988,7 @@ class GnuPG:
             hdr[0] = 0              # Insert a dummy tag.
             hdr_len = 0
         is_partial = False
-        
+
         if prev_partial or (hdr[0] & 0xC0) == 0xC0:
             # New format packet
             ptag = hdr[0] & 0x3F
@@ -993,7 +1011,7 @@ class GnuPG:
                 # Could do extra testing here.
                 is_partial = True
                 body_len = 1 << (hdr[1] & 0x1F)
-                
+
         elif (hdr[0] & 0xC0) == 0x80:
             # Old format packet
             ptag = (hdr[0] & 0x3C) >> 2
@@ -1006,7 +1024,7 @@ class GnuPG:
                     body_len = (body_len << 8) + hdr[2]
                 if lengthtype > 1:
                     hdr_len = 5
-                    body_len = ( 
+                    body_len = (
                         (body_len << 16) + (hdr[3] << 8) + hdr[4] )
             else:
                 # Kludgy extra test for compressed packets w/ "unknown" length
@@ -1015,13 +1033,13 @@ class GnuPG:
                 if ptag != 8 or (hdr[1] < 1 or hdr[1] > 3):
                     return (-1, 0, 0, False)
                 hdr_len = 1
-                body_len = -1               
+                body_len = -1
         else:
             return (-1, 0, 0, False)
-        
+
         if hdr_len > len(header):
-            return (-1, 0, 0, False)    
-    
+            return (-1, 0, 0, False)
+
         return ptag, hdr_len, body_len, is_partial
 
 
@@ -1032,14 +1050,14 @@ class GnuPG:
         elements are based on RFC3156 content types with 'pgp-' stripped so
         they can be used in sniffers for other protocols, e.g. S/MIME.
         There are additional set elements 'armored' and 'unencrypted'.
-        
+
         This code should give no false negatives, but may give false positives.
         For efficient handling of encoded data, only small segments are decoded.
         Armored files are detected by their armor header alone.
         Non-armored data is detected by looking for a sequence of valid PGP
         packet headers.
         """
-     
+
         found = set()
         is_base64 = False
         is_quopri = False
@@ -1056,36 +1074,36 @@ class GnuPG:
         offset_enc = 0
         offset_dec = 0
         offset_packet = 0
-        
-        # Identify encoding and base64 line length.                                      
+
+        # Identify encoding and base64 line length.
         if encoding and encoding.lower() == 'base64':
-            line_len = data.find('\n') + 1          # Assume uniform length           
+            line_len = data.find('\n') + 1          # Assume uniform length
             if line_len < 0:
                 line_len = len(data)
             elif line_len > 1 and data[line_len-2] == '\r':
                 line_end = 2
             if line_len - line_end > 76:            # Maximum per RFC2045 6.8
-                return found 
+                return found
             enc_end = line_len
             try:
                 segment = base64.b64decode(data[enc_start:enc_end])
             except TypeError:
                 return found
             is_base64 = True
-                            
+
         elif encoding and encoding.lower() == 'quoted-printable':
             # Can't selectively decode quopri because encoded length is data
             # dependent due to escapes!  Just decode one medium length segment.
             # This is enough to contain the first few packets of a long file.
             try:
                 segment = quopri.decodestring(data[0:1500])
-            except TypeError:                         
+            except TypeError:
                 return found                # *** ? Docs don't list exceptions
             is_quopri = True
         else:
             line_len = len(data)
             segment = data                          # *** Shallow copy?
-                  
+
         if not segment:
             found = set()
         elif not (ord(segment[0]) & 0x80):
@@ -1093,17 +1111,17 @@ class GnuPG:
             found.add('armored')
             if segment.startswith(self.ARMOR_BEGIN_SIGNED):
                 # Clearsigned
-                found.add('unencrypted')                           
-                found.add('signature')                
+                found.add('unencrypted')
+                found.add('signature')
             elif segment.startswith(self.ARMOR_BEGIN_SIGNATURE):
                 # Detached signature
-                found.add('signature')                               
+                found.add('signature')
             elif segment.startswith(self.ARMOR_BEGIN_ENCRYPTED):
                 # PGP uses the same armor header for encrypted and signed only
                 # Fortunately gpg --decrypt handles both!
-                found.add('encrypted')           
+                found.add('encrypted')
             elif segment.startswith(self.ARMOR_BEGIN_PUB_KEY):
-                found.add('key')              
+                found.add('key')
             else:
                 found = set()
         else:
@@ -1111,12 +1129,12 @@ class GnuPG:
             while skip < len(segment) and body_len <> -1:
                 # Check this packet header.
                 prev_partial = partial
-                ptag, hdr_len, body_len, partial = ( 
-                    self.pgp_packet_hdr_parse(segment[skip:], prev_partial) )
-                    
+                ptag, hdr_len, body_len, partial = (
+                    self.pgp_packet_hdr_parse(segment[skip:], prev_partial))
+
                 if prev_partial or partial:
                     pass
-                elif ptag == 11:               
+                elif ptag == 11:
                     found.add('unencrypted')    # Literal Data
                 elif ptag ==  1:
                     found.add('encrypted')      # Encrypted Session Key
@@ -1140,26 +1158,25 @@ class GnuPG:
                     # This appears to be an interpretation of RFC4880 2.3.
                     # The compression prevents selective parsing of headers.
                     # So such packets are assumed to be signed messages.
-                    if dec_start == 0 and body_len == -1: 
+                    if dec_start == 0 and body_len == -1:
                         found.add('signature')
-                        found.add('unencrypted')                   
+                        found.add('unencrypted')
                 elif ptag < 0  or ptag > 19:
                     found = set()
                     return found
-                    
+
                 dec_start += hdr_len + body_len
-                skip = dec_start    
-                if is_base64 and body_len <> -1:    
-                    enc_start, enc_end, skip = self.base64_segment( dec_start, 
+                skip = dec_start
+                if is_base64 and body_len <> -1:
+                    enc_start, enc_end, skip = self.base64_segment(dec_start,
                                         dec_start + 6, 0, line_len, line_end )
                     segment = base64.b64decode(data[enc_start:enc_end])
- 
+
             if is_base64 and body_len <> -1 and skip <> len(segment):
                 # End of last packet does not match end of data.
                 found = set()
         return found
-    
-    
+
     def remove_armor(self, text):
         lines = text.strip().splitlines(True)
         if lines[0].startswith(self.ARMOR_BEGIN_SIGNED):
@@ -1232,7 +1249,7 @@ class GnuPG:
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
-             fromkey=None, armor=True, detatch=True, clearsign=False,
+             fromkey=None, armor=True, detach=True, clearsign=False,
              passphrase=None):
         """
         >>> g = GnuPG(None)
@@ -1244,7 +1261,7 @@ class GnuPG:
         if fromkey and passphrase is None:
             self.prepare_passphrase(fromkey, signing=True)
 
-        if detatch and not clearsign:
+        if detach and not clearsign:
             action = ["--detach-sign"]
         elif clearsign:
             action = ["--clearsign"]
@@ -1282,6 +1299,8 @@ class GnuPG:
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
                  keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        if not keyid[:2] == '0x':
+            keyid = '0x%s' % keyid
         self.event.running_gpg(_('Downloading key %s from key servers'
                                  ) % (keyid))
         for keyserver in keyservers:
@@ -1294,22 +1313,9 @@ class GnuPG:
                 break
         return self._parse_import(retvals[1]["status"])
 
-    def search_key(self, term,
-                   keyservers=DEFAULT_KEYSERVERS,
-                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
-        self.event.running_gpg(_('Searching for key for %s in key servers'
-                                 ) % (term))
-        for keyserver in keyservers:
-            cmd = ['--keyserver', keyserver,
-                   '--fingerprint',
-                   '--search-key', self._escape_hex_keyid_term(term)]
-            for opt in keyserver_options:
-                cmd[2:2] = ['--keyserver-options', opt]
-            retvals = self.run(cmd)
-            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
-                break
+    def parse_hpk_response(self, lines):
         results = {}
-        lines = [x.strip().split(":") for x in retvals[1]["stdout"]]
+        lines = [x.strip().split(":") for x in lines]
         curpub = None
         for line in lines:
             if line[0] == "info":
@@ -1336,15 +1342,50 @@ class GnuPG:
                                                 "comment": comment})
         return results
 
+    def search_key(self, term,
+                   keyservers=DEFAULT_KEYSERVERS,
+                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+        self.event.running_gpg(_('Searching for key for %s in key servers'
+                                 ) % (term))
+        for keyserver in keyservers:
+            cmd = ['--keyserver', keyserver,
+                   '--fingerprint',
+                   '--search-key', self._escape_hex_keyid_term(term)]
+            for opt in keyserver_options:
+                cmd[2:2] = ['--keyserver-options', opt]
+            retvals = self.run(cmd)
+            if 'unsupported' not in ''.join(retvals[1]["stdout"]):
+                break
+        return self.parse_hpk_response(retvals[1]["stdout"])
+
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
 
-    def export_pubkeys(self, selectors=None):
+    def get_minimal_key(self, key_id=None, user_id=None, subkey_id=None):
+        if key_id:
+            selector = key_id
+        elif subkey_id:
+            selector = subkey_id
+        else:
+            selector = user_id
+        key_full = self.export_pubkeys(
+            extra_args=['--export-options', 'export-minimal'],
+            selectors=[selector])
+        try:
+            return get_minimal_PGP_key(
+                 key_full, user_id=user_id, subkey_id=subkey_id,
+                 binary_out=True)[0]
+        except (pgpdump.utils.PgpdumpException):
+            return key_full
+        except (TypeError):
+            return None
+
+    def export_pubkeys(self, selectors=None, extra_args=[]):
         self.event.running_gpg(_('Exporting keys %s from keychain'
                                  ) % (selectors,))
-        retvals = self.run(['--armor',
-                            '--export'] + (selectors or [])
-                            )[1]["stdout"]
+        retvals = self.run((extra_args or []) +
+                           ['--armor', '--export'] +
+                           (selectors or []))[1]["stdout"]
         return "".join(retvals)
 
     def export_privkeys(self, selectors=None):
@@ -1539,6 +1580,8 @@ class GnuPGExpectScript(threading.Thread):
     DESCRIPTION = 'GnuPG Expect Script'
     RUNNING_STATES = [STARTUP, START_GPG]
 
+    DEFAULT_TIMEOUT = 60 # Infinite wait isn't desirable
+
     def __init__(self, gnupg,
                  sps=None, event=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)
@@ -1593,7 +1636,7 @@ class GnuPGExpectScript(threading.Thread):
 
     def expect_exact(self, proc, exp, timeout=None):
         from mailpile.util import RunTimed, TimedOut
-        timeout = timeout if (timeout and timeout > 0) else 5
+        timeout = timeout if (timeout and timeout > 0) else self.DEFAULT_TIMEOUT
         timebox = [timeout]
         self.before = ''
         try:

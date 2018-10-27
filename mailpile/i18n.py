@@ -98,23 +98,27 @@ class i18n_disabler:
 i18n_disabled = i18n_disabler()
 
 
-def ActivateTranslation(session, config, language):
+def ActivateTranslation(session, config, language, localedir=None):
     global ACTIVE_TRANSLATION, RECENTLY_TRANSLATED
 
     if not language:
         language = os.getenv('LANG', None)
 
+    if not localedir:
+        import mailpile.config.paths
+        localedir = mailpile.config.paths.DEFAULT_LOCALE_DIRECTORY()
+
     trans = None
     if language:
         try:
-            trans = translation("mailpile", config.getLocaleDirectory(),
+            trans = translation("mailpile", localedir,
                                 [language], codeset="utf-8")
         except IOError:
             if session and language[:2] != 'en':
                 session.ui.debug('Failed to load language %s' % language)
 
     if not trans:
-        trans = translation("mailpile", config.getLocaleDirectory(),
+        trans = translation("mailpile", localedir,
                             codeset='utf-8', fallback=True)
 
         if (session and language and language[:2] not in ('en', 'C', '')
@@ -143,13 +147,15 @@ def ActivateTranslation(session, config, language):
     return trans
 
 
-def ListTranslations(config):
-    locales = config.getLocaleDirectory()
+def ListTranslations(config, localedir=None):
+    if not localedir:
+        import mailpile.config.paths
+        localedir = mailpile.config.paths.DEFAULT_LOCALE_DIRECTORY()
     languages = {
         'C': 'English (Mailpile default)'
     }
-    for lang in os.listdir(locales):
-        langdir = os.path.join(locales, lang, 'LC_MESSAGES')
+    for lang in os.listdir(localedir):
+        langdir = os.path.join(localedir, lang, 'LC_MESSAGES')
         if not os.path.exists(os.path.join(langdir, 'mailpile.mo')):
             continue
         try:

@@ -38,7 +38,13 @@ _plugins = PluginManager()
 class MailIndex(BaseIndex):
     """This is a lazily parsing object representing a mailpile index."""
 
-    MAX_INCREMENTAL_SAVES = 25
+    # Parameters that set threshold to rewrite complete metadata index file.
+    MIN_ITEMS_PER_INCREMENT = 200   # Limits number of appends.
+    MIN_ITEMS_PER_DUPLICATE = 10    # Limits number of duplicated MSG_MIDs.
+    ITEM_COUNT_OFFSET = 5000        # Puts lower bound on limits.
+    # Appends start with a comment including this so they can be counted.
+    APPEND_MARK = '-----APPENDED SECTION-----'
+
     MAX_CACHE_ENTRIES = 2500
     CAPABILITIES = set([
         BaseIndex.CAN_SEARCH,
@@ -61,6 +67,7 @@ class MailIndex(BaseIndex):
         self.EMAILS_SAVED = 0
         self._scanned = {}
         self._saved_changes = 0
+        self._saved_lines = 0
         self._lock = SearchRLock()
         self._save_lock = SearchRLock()
         self._prepare_sorting()
@@ -101,7 +108,8 @@ class MailIndex(BaseIndex):
             for line in lines:
                 line = line.strip()
                 if line[:1] in ('#', ''):
-                    pass
+                    if self.APPEND_MARK in line:
+                        self._saved_changes += 1
                 elif line[:1] == '@':
                     try:
                         pos, email = line[1:].split('\t', 1)
@@ -111,6 +119,7 @@ class MailIndex(BaseIndex):
                         unquoted_email = unquote(email).decode('utf-8')
                         self.EMAILS[pos] = unquoted_email
                         self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
+                        self._saved_lines += 1
                     except (ValueError, IndexError, TypeError):
                         bogus_lines.append(line)
                 else:
@@ -141,6 +150,7 @@ class MailIndex(BaseIndex):
                                 session.ui.mark(
                                     _('Loading metadata index...') +
                                     ' %s' % len(self.INDEX))
+                            self._saved_lines += 1
                         except ValueError:
                             bogus = True
 
@@ -227,8 +237,8 @@ class MailIndex(BaseIndex):
                   if gpgr not in (None, '', '!CREATE', '!PASSWORD')
                   else None)
 
-        if self.config.master_key:
-            with EncryptingStreamer(self.config.master_key,
+        if self.config.get_master_key():
+            with EncryptingStreamer(self.config.get_master_key(),
                                     delimited=True) as es:
                 es.write(data)
                 es.finish()
@@ -249,13 +259,23 @@ class MailIndex(BaseIndex):
             with self._lock:
                 mods, self.MODIFIED = self.MODIFIED, set()
                 old_emails_saved, total = self.EMAILS_SAVED, len(self.EMAILS)
+                index_items = total + len(self.INDEX)
 
             if old_emails_saved == total and not mods:
                 # Nothing to do...
                 return
 
-            if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
-                # Too much to do!
+            max_incremental_saves = (index_items + self.ITEM_COUNT_OFFSET
+                                    ) / self.MIN_ITEMS_PER_INCREMENT
+            max_saved_lines = index_items + (
+                                      index_items + self.ITEM_COUNT_OFFSET
+                                    ) / self.MIN_ITEMS_PER_DUPLICATE
+
+            if (not os.path.isfile(self.config.mailindex_file())
+                    or ((self._saved_changes > max_incremental_saves
+                           or self._saved_lines > max_saved_lines)
+                        and not mailpile.util.QUITTING)):
+                # Write a new metadata index file.
                 return self.save(session=session)
 
             if session:
@@ -269,13 +289,16 @@ class MailIndex(BaseIndex):
                     emails.append('@%s\t%s\n' % (b36(eid), quoted_email))
                 self.EMAILS_SAVED = total
 
-            # Unlocked, try to write this out
+            # Unlocked, try to write this out, prepending append mark comment.
 
-            data = self._maybe_encrypt(
-                ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods]))
+            data = self._maybe_encrypt(''.join(
+                ['#' + self.APPEND_MARK + '\n']
+                + emails
+                + [self.INDEX[pos] + '\n' for pos in mods]))
             with open(self.config.mailindex_file(), 'a') as fd:
                 fd.write(data)
                 self._saved_changes += 1
+                self._saved_lines += total - old_emails_saved + len(mods)
 
             if session:
                 session.ui.mark(_("Saved metadata index changes"))
@@ -321,6 +344,7 @@ class MailIndex(BaseIndex):
             os.rename(newfile, idxfile)
 
             self._saved_changes = 0
+            self._saved_lines = email_counter + index_counter
             if session:
                 session.ui.mark(_("Saved metadata index"))
         except:
@@ -340,7 +364,8 @@ class MailIndex(BaseIndex):
                 if len(message) == self.MSG_FIELDS_V2:
                     self.MSGIDS[message[self.MSG_ID]] = offset
                     for msg_ptr in message[self.MSG_PTRS].split(','):
-                        self.PTRS[msg_ptr] = offset
+                        if msg_ptr:
+                            self.PTRS[msg_ptr] = offset
                 else:
                     session.ui.warning(_('Bogus line: %s') % line)
 
@@ -350,7 +375,7 @@ class MailIndex(BaseIndex):
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = [p for p in msg_info[self.MSG_PTRS].split(',')
-                    if p != msg_ptr]
+                    if p and p != msg_ptr]
 
         msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
@@ -420,6 +445,8 @@ class MailIndex(BaseIndex):
                 progress['running'] = False
                 if 'complete' in kwargs:
                     progress['complete'] = kwargs['complete']
+            if 'rescan' in session.config.sys.debug:
+                session.ui.debug(message)
             session.ui.mark(message)
             return code
 
@@ -636,7 +663,9 @@ class MailIndex(BaseIndex):
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
                       msg_from=None, msg_subject=None, msg_body=None,
-                      msg_to=None, msg_cc=None, msg_size=None, msg_tags=None):
+                      msg_to=None, msg_cc=None, msg_size=None,
+                      msg_tags=None, msg_replies=None,
+                      msg_parent_mid=None, msg_thread_mid=None):
         if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id is not None:
@@ -659,6 +688,23 @@ class MailIndex(BaseIndex):
             msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
         if msg_tags is not None:
             msg_info[self.MSG_TAGS] = ','.join(msg_tags or [])
+        if msg_replies is not None:
+            if len(msg_replies) > 1:
+                msg_info[self.MSG_REPLIES] = ','.join(msg_replies) + ','
+            else:
+                msg_info[self.MSG_REPLIES] = ''
+
+        if msg_parent_mid is not None or msg_thread_mid is not None:
+            if msg_thread_mid is None:
+                msg_thread_mid = msg_info[self.MSG_THREAD_MID].split('/')[0]
+            if msg_parent_mid is None:
+                msg_parent_mid = msg_info[self.MSG_THREAD_MID].split('/')[-1]
+            if msg_thread_mid != msg_parent_mid:
+                msg_info[self.MSG_THREAD_MID] = (
+                    '%s/%s' % (msg_thread_mid, msg_parent_mid))
+            else:
+                msg_info[self.MSG_THREAD_MID] = msg_thread_mid
+
         return msg_info
 
     def _extract_header_info(self, msg):
@@ -960,41 +1006,108 @@ class MailIndex(BaseIndex):
 
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
-    def unthread_message(self, msg_mid):
+    def unthread_message(self, msg_mid, new_subject=None):
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
-        par_idx_pos = int(msg_info[self.MSG_THREAD_MID].split('/')[0], 36)
 
-        if par_idx_pos == msg_idx_pos:
-            # Message is head of thread, chop head off!
-            thread = msg_info[self.MSG_REPLIES][:-1].split(',')
-            msg_info[self.MSG_REPLIES] = ''
-            if msg_mid in thread:
-                thread.remove(msg_mid)
-            # We can just pick any message to be the new "head" of
-            # the thread, the actual ordering happens elsewhere.
-            if thread and thread[0]:
-                head_mid = thread[0]
-                head_idx_pos = int(head_mid, 36)
-                head_info = self.get_msg_at_idx_pos(head_idx_pos)
-                head_info[self.MSG_REPLIES] = ','.join(thread) + ','
-                self.set_msg_at_idx_pos(head_idx_pos, head_info)
-                for msg_mid in thread:
-                    kid_idx_pos = int(thread[0], 36)
-                    kid_info = self.get_msg_at_idx_pos(head_idx_pos)
-                    kid_info[self.MSG_THREAD_MID] = head_mid
-                    kid.set_msg_at_idx_pos(head_idx_pos, head_info)
+        par_mid = msg_info[self.MSG_THREAD_MID].split('/')[-1]
+        thr_mid = msg_info[self.MSG_THREAD_MID].split('/')[0]
+        thr_idx_pos = int(thr_mid, 36)
+        thr_info = self.get_msg_at_idx_pos(thr_idx_pos)
+
+        thread = [t for t in thr_info[self.MSG_REPLIES][:-1].split(',') if t]
+
+        # Collect parent/children relationships
+        has_kids = {}
+        for t_mid in thread:
+            t_info = self.get_msg_at_idx_pos(int(t_mid, 36))
+            t_pmid = t_info[self.MSG_THREAD_MID].split('/')[-1]
+            has_kids[t_pmid] = has_kids.get(t_pmid, []) + [t_mid]
+
+        # Gather all descendants of a message
+        def _family(p_mid, hk):
+            family = [p_mid]
+            if p_mid in hk:
+                gather = copy.copy(hk[p_mid])
+                while gather:
+                    r_mid = gather.pop(0)
+                    if r_mid not in family:
+                        family.append(r_mid)
+                    if r_mid in hk:
+                        gather.extend([
+                            m for m in hk[r_mid]
+                            if m not in family and m not in gather])
+            return family
+
+        # Reparent all descendants of a message
+        def _reparent(p_mid, hk, new_subj=None):
+            new_thread = _family(p_mid, hk)
+            old_tmids = set([])
+            orphans = set([])
+
+            # Set up the new thread structure
+            for t_mid in new_thread:
+                t_idx_pos = int(t_mid, 36)
+                t_info = self.get_msg_at_idx_pos(t_idx_pos)
+
+                old_tmids.add(t_info[self.MSG_THREAD_MID].split('/')[0])
+                orphaning = [
+                    o for o in t_info[self.MSG_REPLIES].split(',')
+                    if o and o not in new_thread]
+                if orphaning:
+                    orphans |= set(orphaning)
+
+                if t_mid == p_mid:
+                    self.edit_msg_info(t_info,
+                        msg_subject=new_subj,
+                        msg_replies=new_thread,
+                        msg_parent_mid=p_mid,
+                        msg_thread_mid=p_mid)
+                else:
+                    self.edit_msg_info(t_info,
+                        msg_subject=new_subj,
+                        msg_replies=[],
+                        msg_thread_mid=p_mid)
+                self.set_msg_at_idx_pos(t_idx_pos, t_info)
+
+            # If we've left any messages without a thread marker, choose
+            # a new one and reparent.
+            orphans = sorted(list(orphans))
+            for o_mid in orphans:
+                o_idx_pos = int(o_mid, 36)
+                o_info = self.get_msg_at_idx_pos(o_idx_pos)
+                if o_mid == orphans[0]:
+                    self.edit_msg_info(o_info,
+                        msg_replies=orphans,
+                        msg_thread_mid=o_mid)
+                else:
+                    self.edit_msg_info(o_info, msg_thread_mid=orphans[0])
+                self.set_msg_at_idx_pos(o_idx_pos, o_info)
+
+            # If we've left an existing thread, clean its reply list.
+            old_tmids -= set(new_thread)
+            for ot_mid in old_tmids:
+                ot_idx_pos = int(ot_mid, 36)
+                ot_info = self.get_msg_at_idx_pos(ot_idx_pos)
+                self.edit_msg_info(ot_info, msg_replies=[
+                    rmid for rmid in ot_info[self.MSG_REPLIES].split(',')
+                    if rmid and (rmid not in new_thread)])
+                self.set_msg_at_idx_pos(ot_idx_pos, ot_info)
+
+        if par_mid == msg_mid:
+            # If we're reparenting the root of a thread, this actually means
+            # cut all our kids loose to their own threads.
+            for k_mid in has_kids.get(msg_mid, []):
+                _reparent(k_mid, has_kids)
+            msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
+            self.edit_msg_info(msg_info,
+                msg_subject=new_subject,
+                msg_thread_mid=msg_mid,
+                msg_parent_mid=msg_mid)
+            self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         else:
-            # Message is a reply, remove it from thread
-            par_info = self.get_msg_at_idx_pos(par_idx_pos)
-            thread = par_info[self.MSG_REPLIES][:-1].split(',')
-            if msg_mid in thread:
-                thread.remove(msg_mid)
-                par_info[self.MSG_REPLIES] = ','.join(thread) + ','
-                self.set_msg_at_idx_pos(par_idx_pos, par_info)
-
-        msg_info[self.MSG_THREAD_MID] = msg_mid
-        self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+            # Otherwise, cut ourselves and our kids loose.
+            _reparent(msg_mid, has_kids, new_subj=new_subject)
 
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
                     msg_to, msg_cc, msg_bytes, msg_subject, msg_body,
@@ -1032,7 +1145,7 @@ class MailIndex(BaseIndex):
             self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
             return msg_idx_pos, msg_info
 
-    def add_new_ghost(self, msg_id, trash=False):
+    def add_new_ghost(self, msg_id, trash=False, subject=None):
         tags = []
         if trash:
             tags = [t._key for t in self.config.get_tags(type='trash')]
@@ -1044,7 +1157,7 @@ class MailIndex(BaseIndex):
             [],  # msg_to
             [],  # msg_cc
             0,
-            _('(missing message)'),
+            subject or _('(missing message)'),
             self.MSG_BODY_GHOST,
             tags)
 
@@ -1207,8 +1320,12 @@ class MailIndex(BaseIndex):
                 #       add a 'crypto:has' keyword which we check for below
                 #       before performing further processing.
                 for kwe in _plugins.get_text_kw_extractors():
-                    keywords.extend(kwe(self, msg, ctype, textpart,
-                                        body_info=body_info))
+                    try:
+                        keywords.extend(kwe(self, msg, ctype, textpart,
+                                            body_info=body_info))
+                    except:
+                        if session.config.sys.debug:
+                            traceback.print_exc()
 
                 if ctype == 'text/plain':
                     snippet_text += ''.join(lines).strip() + '\n'
@@ -1216,9 +1333,13 @@ class MailIndex(BaseIndex):
                     snippet_html += textpart.strip() + '\n'
 
             for extract in _plugins.get_data_kw_extractors():
-                keywords.extend(extract(self, msg, ctype, att, part,
-                                        lambda: _loader(part),
-                                        body_info=body_info))
+                try:
+                    keywords.extend(extract(self, msg, ctype, att, part,
+                                            lambda: _loader(part),
+                                            body_info=body_info))
+                except:
+                    if session.config.sys.debug:
+                        traceback.print_exc()
 
             if not ctype.startswith('multipart/'):
                 parts.append(pinfo)
@@ -1248,8 +1369,12 @@ class MailIndex(BaseIndex):
                 for text in [t['data'] for t in tree['text_parts']]:
                     keywords.extend(re.findall(WORD_REGEXP, text.lower()))
                     for kwe in _plugins.get_text_kw_extractors():
-                        keywords.extend(kwe(self, msg, 'text/plain', text,
-                                            body_info=body_info))
+                        try:
+                            keywords.extend(kwe(self, msg, 'text/plain', text,
+                                                body_info=body_info))
+                        except:
+                            if session.config.sys.debug:
+                                traceback.print_exc()
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,
@@ -1330,8 +1455,12 @@ class MailIndex(BaseIndex):
                 keywords.append('%s:missing' % key)
 
         for extract in _plugins.get_meta_kw_extractors():
-            keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
-                                    body_info=body_info))
+            try:
+                keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
+                                        body_info=body_info))
+            except:
+                if session.config.sys.debug:
+                    traceback.print_exc()
 
         # FIXME: If we have a good snippet from the HTML part, it is likely
         #        to be more relevant due to the unfortunate habit of some
@@ -1422,6 +1551,11 @@ class MailIndex(BaseIndex):
     def delete_msg_at_idx_pos(self, session, msg_idx, keep_msgid=False):
         info = self.get_msg_at_idx_pos(msg_idx)
 
+        # Remove from PTR index
+        for ptr in (p for p in info[self.MSG_PTRS].split(',') if p):
+            if ptr in self.PTRS:
+                del self.PTRS[ptr]
+
         # Most of the information just gets nuked.
         info[self.MSG_PTRS] = ''
         info[self.MSG_FROM] = ''
@@ -1442,6 +1576,8 @@ class MailIndex(BaseIndex):
             # If we don't keep the msgid, the message may reappear later
             # if it wasn't deleted from all source mailboxes. The caller
             # may request this if deletion is known to be incomplete.
+            if info[self.MSG_ID] in self.MSGIDS:
+                del self.MSGIDS[info[self.MSG_ID]]
             info[self.MSG_ID] = self._encode_msg_id('%s' % msg_idx)
 
         # Save changes...

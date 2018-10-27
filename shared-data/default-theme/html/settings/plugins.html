@@ -31,6 +31,7 @@
   <a name="plugin-{{ pname }}"></a><div class="setting-group">
     {%- set ui = plugin.manifest.user_interface %}
     {%- set icon = (
+         (ui and ui.settings and ui.settings[0].icon) or
          (ui and ui.activities and ui.activities[0].icon) or
          (ui and ui.selection_actions and ui.selection_actions[0].icon) or
          (ui and ui.display_refiners and ui.display_refiners[0].icon) or
@@ -68,7 +69,7 @@
       </p>
       <p>
       {%- if plugin.loaded %}
-       {% if pname not in config.sys.plugins %}
+       {%- if pname not in config.sys.plugins %}
         <span class="right">
           <i>{{_("Plugin will be disabled on restart.")}}</i> &nbsp;
           <button class="button-warning plugin-restart">
@@ -76,13 +77,21 @@
             {{_("Restart Now")}}
           </button>
         </span>
-       {% else %}
+       {%- else %}
         <button class="button-primary right plugin-disable"
                 data-plugin="{{ pname }}">
           <span class="icon icon-x"></span>
           {{_("Disable:")}} {{ pname }}
         </button>
-       {% endif %}
+        {%- if plugin.manifest.user_interface and plugin.manifest.user_interface.settings %}
+        {%- set elem = plugin.manifest.user_interface.settings[0] %}
+        <a href="{{ U(elem.url) }}">
+          <button class="button-primary right" style="margin-right: 10px;">
+            <span class="icon icon-settings"></span> {{_("Settings")}}
+          </button>
+        </a>
+        {%- endif %}
+       {%- endif %}
       {%- else %}
         <button class="button-secondary right plugin-enable"
                 data-plugin="{{ pname }}">

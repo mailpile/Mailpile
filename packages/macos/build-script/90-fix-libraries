@@ -1,0 +1,54 @@
+#!/bin/bash
+set -e
+set -x
+
+# Make library paths relative
+#
+_readlink() {
+    FN="$1"
+    LN="$(readlink $1)"
+    while [ "$LN" != "" -a "$LN" != "$FN" ]; do
+        FN="$LN"
+        LN="$(readlink $1)"
+    done
+    echo "$FN"
+}
+_relpath() {
+    TARGET="$1"
+    SOURCE="$2"
+    cat <<tac |python
+import os, sys
+source, target = os.path.abspath('$SOURCE').split('/'), '$TARGET'.split('/')
+while target and source and target[0] == source[0]:
+    target.pop(0)
+    source.pop(0)
+print '/'.join(['..' for i in source] + target)
+tac
+}
+_fixup_lib_names() {
+    bin="$1"
+    typ="$2"
+    otool -L "$bin" |grep "$MAILPILE_BREW_ROOT" |while read lib JUNK; do
+        bin_path="$(_readlink "$bin")"
+        new=$(_relpath "$lib" $(dirname "$bin_path"))
+        chmod u+w "$bin" "$lib"
+        echo install_name_tool -change "$lib" "$typ/$new" "$bin_path"
+        install_name_tool -change "$lib" "$typ/$new" "$bin_path"
+        install_name_tool -id $(basename "$lib") "$lib"
+        chmod u-w "$bin" "$lib"
+    done
+}
+cd "$MAILPILE_BREW_ROOT/bin"
+for bin in *; do
+    _fixup_lib_names "$bin" "@executable_path"
+done
+
+cd "$MAILPILE_BREW_ROOT"
+(
+    find . -type f -name 'Python'
+    find Cellar opt -type f -name '*.dylib'
+    find Cellar opt -type f -name '*.so'
+) | while read bin; do
+    _fixup_lib_names "$bin" "@loader_path"
+done
+

@@ -2,7 +2,7 @@
 %}{%  set message_errors = (result.errors or {}).get(mid)
 %}{%  set metadata = result.data.metadata[mid]
 %}{%  set thread = result.data.threads[metadata.thread_mid]
-%}{%  set conversation_count = thread|length
+%}{%  set conversation_count = 0 if (state.context_url == '/message/' or ('flat' in result.search_order)) else thread|length
 %}{%  set cleartext = show_text_part_encryption('none')
 %}{%  set unsigned = show_text_part_signature('none')
 %}{%  set to_cc = metadata.to_aids + metadata.cc_aids
@@ -11,14 +11,18 @@
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
 %}{%  endif
 %}{%  set allow_html = (message and message.crypto and ((message.crypto.encryption.status == 'none') or not config.prefs.encrypted_block_html))
-%}{%  macro msg_url(msg_mid)
+%}{%  macro msg_url(msg_mid, context_mid)
 %}{%    set m_metadata = result.data.metadata.get(msg_mid)
-%}{%    if m_metadata and m_metadata.urls.editing:
-%}{{      m_metadata.urls.editing
+%}{%    if m_metadata and state.context_url == '/message/':
+%}{{      m_metadata.urls.thread + '#pile-message-' + msg_mid
+}}{%    elif m_metadata and m_metadata.urls.editing:
+%}{{      m_metadata.urls.editing + '#pile-message-' + msg_mid
 }}{%    elif True:
+%}{%      set v = (context_mid + '/' + msg_mid) if (context_mid) else msg_mid
 %}{{      U(add_state_query_string(state.command_url, state, {
              'url_args_remove': [['view','']],
-             'url_args_add': [['view', msg_mid]]}))
+             'url_args_add': [['view', v]]})
+           ) + '#pile-message-' + msg_mid
 }}{%    else:
 %}{{      m_metadata.urls.thread
 }}{%    endif
@@ -31,28 +35,22 @@
            {%- if metadata.flags.replied %} replied{% endif %}"
     data-tids="{{ metadata.tag_tids|join(',')  }}"
 {%- if message %}
-    data-url="{{ msg_url(this_mid) }}"
-{%- endif %}
-    data-state="normal"
-{%- if metadata.body and metadata.body.list and
-       ('list:' + metadata.body.list) not in state.query_args.q %}
-    data-context-hint="{{ _('View e-mail from this mailing list') }}"
-    data-context-icon="groups"
-    data-context-url="{{ U('/search/?q=list:', metadata.body.list) }}"
-{%- else %}
-  {%- if from and from.address and
-         ('from:' + from.address) not in state.query_args.q %}
-    data-context-hint="{{ _('Search for e-mail from:') }} {{metadata.from.fn}}"
-    data-context-icon="user"
-    data-context-url="{{ U('/search/?q=from:', from.address) }}"
+    data-url="{{ msg_url(this_mid, 0) }}"
+  {%- if message.headerprints %}
+    {% if message.headerprints.mua %}data-mua="{{ message.headerprints.mua }}"{% endif %}
+    data-mua-fingerprint="{{ message.headerprints.tools }}"
+    data-sender-fingerprint="{{ message.headerprints.sender }}"
   {%- endif %}
 {%- endif %}
+    data-state="normal"
+    data-list="{{ metadata.body.list }}"
+    data-to-cc="{% for cid in to_cc %}{{ result.data.addresses[cid].address }} {% endfor %}"
     data-mid="{{mid}}">
   <td class="draggable"></td>
 {% if message or message_errors %}
   <td class="message-nav">
   {%- if previous_mid %}
-    <a href="{{msg_url(previous_mid)}}" title="{{_('Previous Conversation')}}"
+    <a href="{{msg_url(previous_mid, 0)}}" title="{{_('Previous Conversation')}}"
        id="previous-message" data-noblank=1 data-keep-selection=1
        class="icon">&#x25B2;</a><br>
   {%- endif %}
@@ -61,7 +59,7 @@
        data-noblank=1 data-keep-selection=1 title="{{_('Close')}}"
        id="close-message"><span class='icon icon-circle-x'></span></a><br>
   {%- if next_mid %}
-    <a href="{{msg_url(next_mid)}}" title="{{_('Next Conversation')}}"
+    <a href="{{msg_url(next_mid, 0)}}" title="{{_('Next Conversation')}}"
        id="next-message" data-noblank=1 data-keep-selection=1
        class="icon">&#x25BC;</a><br>
   {%- endif %}
@@ -139,8 +137,8 @@
   </td>
  {%- if to_cc and display_recipients %}
   {%- set to1 = result.data.addresses[to_cc[0]] %}
-  <td class="to people">
-    <a href="{{ msg_url(mid) }}" data-noblank=1 data-keep-selection=1
+  <td class="to people" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
+    <a href="{{ msg_url(mid, 0) }}" data-noblank=1 data-keep-selection=1
        title="{% if display_attachments -%}
 {{ _("Subject") }}: {{ metadata.subject }}
 {% endif %}{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
@@ -156,8 +154,8 @@
       {% if to_cc|length > 1 %}<span class="rcpt-count">+{{ to_cc|length -1 }}</span>{% endif %}
     </a>
  {%- else %}
-  <td class="from people">
-    <a href="{{msg_url(mid)}}" data-noblank=1 data-keep-selection=1
+  <td class="from people" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
+    <a href="{{msg_url(mid, 0)}}" data-noblank=1 data-keep-selection=1
        title="{% if display_attachments -%}
 {{ _("Subject") }}: {{ metadata.subject }}
 {% endif %}{{_("From") }}: {{metadata.from.fn}} &lt;{{metadata.from.address}}&gt;
@@ -222,7 +220,7 @@
     {%- endfor %}
     {%- if not displayed_atts %}
     <a data-noblank=1 data-keep-selection=1
-       href="{{msg_url(mid)}}">
+       href="{{msg_url(mid, 0)}}">
       <i style="color: #bbb; margin: 0 0 0 5em;">
         {{_('Oops, no attachments found!')}}
         {{_('A bug?')}}
@@ -233,7 +231,7 @@
   {%- else %}
     <a class="item-subject" title="{{metadata.body.snippet}}"
        data-noblank=1 data-keep-selection=1
-       href="{{msg_url(mid)}}">{{ nice_subject(metadata.subject) }}</a>
+       href="{{msg_url(mid, 0)}}">{{ nice_subject(metadata.subject) }}</a>
   {%- endif %}
 {%- else %}
     <div class="message-container">
@@ -307,7 +305,7 @@
     {%- endif %}
 {%- endif %}
   </td>
-  <td class="date">
+  <td class="date" data-ts="{{ metadata.timestamp }}">
     <span title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">
       {{metadata.timestamp|elapsed_datetime}}
     </span>

@@ -55,6 +55,8 @@ RID_COUNTER_LOCK = threading.Lock()
 MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
 
+# Warning: this is duplicated in the javascript, grep for WORD_REGEXP
+#          to keep any changes in sync.
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;`\'\\\<\>\?,\.\/\-]{2,}')
 
@@ -71,10 +73,12 @@ STOPLIST = set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'that', 'the', 'this', 'td', 'to', 'tr',
                 'was', 'we', 'were', 'you'])
 
-BORING_HEADERS = ('received', 'received-spf', 'date',
+BORING_HEADERS = ('received', 'received-spf', 'date', 'autocrypt',
                   'content-type', 'content-disposition', 'mime-version',
                   'list-archive', 'list-help', 'list-unsubscribe',
-                  'dkim-signature', 'domainkey-signature')
+                  'dkim-signature', 'domainkey-signature',
+                  'arc-message-signature', 'arc-seal',
+                  'arc-authentication-results', 'authentication-results')
 
 # For the spam classifier, if these headers are missing a special
 # note is made of that in the message keywords.
@@ -727,7 +731,7 @@ def decrypt_and_parse_lines(fd, parser, config,
                             passphrase=None, gpgi=None,
                             _raise=IOError, error_cb=None):
     import mailpile.crypto.streamer as cstrm
-    symmetric_key = config and config.master_key or 'missing'
+    symmetric_key = config and config.get_master_key() or 'missing'
     passphrase_reader = (passphrase.get_reader()
                          if (passphrase is not None) else
                          (config.passphrases['DEFAULT'].get_reader()
@@ -1044,6 +1048,7 @@ class CleanText:
     """
     FS = ':/.\'\"\\'
     CRLF = '\r\n'
+    HTML = '<>&"\''
     WHITESPACE = '\r\n\t '
     NONALNUM = ''.join([chr(c) for c in (set(range(32, 127)) -
                                          set(range(ord('0'), ord('9') + 1)) -

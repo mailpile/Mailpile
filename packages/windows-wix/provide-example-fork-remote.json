@@ -1,0 +1,7 @@
+{
+  "export": {"package": ".\\package"},
+  "mailpile": {
+    "commit": "master",
+    "repo": "https://github.com/AlexanderHaase/mailpile"
+  }
+}

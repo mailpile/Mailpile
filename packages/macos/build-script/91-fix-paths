@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+set -x
+
+# Make symbolic links relative. This needs to run twice... just because.
+cd "$MAILPILE_BREW_ROOT"
+./bin/symlinks -s -c -r "$MAILPILE_BREW_ROOT"
+./bin/symlinks -s -c -r "$MAILPILE_BREW_ROOT"
+./bin/symlinks -d "$MAILPILE_BREW_ROOT"
+
+#
+# Fix brew's Python to not hardcode the full path
+#
+cd "$MAILPILE_BREW_ROOT"
+for target in /lib/python$PYTHON_VERSION/site-packages/sitecustomize.py \
+              /Cellar/python@$PYTHON_MAJOR_VERSION/$PYTHON_VERSION.*/Frameworks/Python.framework/Versions/$PYTHON_VERSION/lib/python$PYTHON_VERSION/_sysconfigdata.py \
+; do
+    perl -pi.bak -e \
+        "s|'$MAILPILE_BREW_ROOT|__file__.replace('$target', '') + '|g" \
+        .$target
+done
+

@@ -10,6 +10,10 @@ Mailpile.expire_canceled_notifictions = function() {
   }
 };
 
+Mailpile.pushy_notifications_area = function() {
+  return ($('#notifications-header').css('display') == 'none');
+};
+
 Mailpile.uncancel_notification = function(not_id) {
   delete Mailpile.local_storage['canceled-' + not_id];
 };
@@ -31,6 +35,11 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
         $(this).remove();
         if ($('.notification-bubble').length < 1) {
           $('.notifications-close-all span').hide();
+          $('#sidebar').css('bottom', '0px');
+        }
+        else if (Mailpile.pushy_notifications_area()) {
+          var $notif = $('#notifications');
+          $('#sidebar').css('bottom', $notif.height() + 'px');
         }
       });
     }
@@ -63,7 +72,8 @@ Mailpile.profile_edit = function(profile_id, section) {
 
 Mailpile.mailsource_login = function(mailsource_id, event_id) {
   var url = Mailpile.API.U(
-    '/settings/set/password/?mailsource=' + mailsource_id);
+    '/settings/set/password/?ui_force_login=1&ui_oneshot=1&mailsource='
+    + mailsource_id);
   Mailpile.auto_modal({
     url: url,
     title: '{{ _("Password Required") }}',
@@ -196,14 +206,19 @@ Mailpile.notification = function(result) {
   // DOM. Fixes a subtle memory leak (https://github.com/mailpile/Mailpile/issues/1931).
   var notification_html = notification_template(result).trim();
   if ($elem) {
-      $elem.replaceWith(notification_html);
+    $elem.replaceWith(notification_html);
   }
   else {
-      var bubbles = $('#notification-bubbles');
-      if (bubbles.children().length < 15) {
-          bubbles.prepend($(notification_html).slideDown('normal'));
-          $('.notifications-close-all span').show();
-      }
+    var bubbles = $('#notification-bubbles');
+    if (bubbles.children().length < 15) {
+      $('.notifications-close-all span').show();
+      bubbles.prepend($(notification_html).slideDown('normal', function() {
+        if (Mailpile.pushy_notifications_area()) {
+          var $notif = $('#notifications');
+          $('#sidebar').css('bottom', $notif.height() + 'px');
+        }
+      }));
+    }
   }
 
   // If Not Nagify, default
@@ -422,7 +437,7 @@ EventLog.subscribe('.*HealthCheck', function(ev) {
   }
   else {
     ev.icon = 'icon-signature-unknown';
-    ev.timeout = 120000;
+    ev.timeout = 1200000;
   }
   Mailpile.notification(ev);
 });

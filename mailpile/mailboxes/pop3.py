@@ -110,7 +110,7 @@ class POP3Mailbox(Mailbox):
                         raise AccessError()
                 else:
                     self._pop3.user(self.user)
-                    self._pop3.pass_(self.password)
+                    self._pop3.pass_(self.password.encode('utf-8'))
             except poplib.error_proto:
                 raise AccessError()
 

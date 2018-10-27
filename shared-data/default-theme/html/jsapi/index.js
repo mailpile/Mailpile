@@ -7,6 +7,10 @@ if (!window.console) window.console = {
   error: $.noop
 };
 
+// Common typos.
+True = true;
+False = false;
+
 
 // Mailpile global Javascript state and configuration /========================
 Mailpile = {
@@ -101,6 +105,7 @@ Mailpile = {
     }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week
+  ajax_timeout: {{config.sys.ajax_timeout}},
   commands:      [],
   graphselected: [],
   defaults: {
@@ -126,6 +131,7 @@ Mailpile = {
   urls: {
     message_draft : "{{ config.sys.http_path }}/message/draft/=",
     message_sent  : "{{ config.sys.http_path }}/thread/=",
+    thread        : "{{ config.sys.http_path }}/thread/=",
     tags          : "{{ config.sys.http_path }}/tags/"
   },
   plugins: [],
@@ -250,7 +256,7 @@ Mailpile.API = {
   _action: function(base_url, command, data, method, callback) {
     // Output format, timeout...
     var output = '';
-    var timeout = 10000;
+    var timeout = Mailpile.ajax_timeout;
     var error_callback = undefined;
     if (data._output) {
       output = data._output;
@@ -352,7 +358,7 @@ Mailpile.API = {
 
   U: function(original_url) {
     var prefix = "{{ config.sys.http_path }}";
-    if (original_url.indexOf(prefix) != 0) {
+    if (original_url.indexOf(prefix+'/') != 0) {
       return prefix + original_url;
     }
     return original_url;

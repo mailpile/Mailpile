@@ -151,13 +151,11 @@ Mailpile.auto_modal = function(params) {
       type: params.method,
       data: post_data,
       success: function(data) {
-        console.log("AM: Success!");
         clearTimeout(loadtimer);
         Mailpile.auto_modal_display(jhtml_url, params, modal, data);
       },
       error: function(xhr, status, error) {
         // FIXME: This is a bit lame...
-        console.log("AM: Error: " + status);
         clearTimeout(loadtimer);
         Mailpile.UI.hide_modal();
       }

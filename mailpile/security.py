@@ -17,14 +17,34 @@ import time
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
+import mailpile.platforms
 
 DISABLE_LOCKDOWN = False
 
-##[ These are the sys.lockdown restrictions ]#################################
 
+##[ This is a secret only user owning Mailpile could know ]###################
+
+def GetUserSecret(workdir):
+    """Return a secret that only this Unix user could know."""
+    secret_file = os.path.join(workdir, 'mailpile.sec')
+    try:
+        return open(secret_file).read().strip()
+    except (OSError, IOError):
+        pass
+
+    # FIXME: Does this work reasonably on Windows? Does chmod do anything?
+    random_secret = okay_random(64, __file__)
+    with open(secret_file, 'w') as fd:
+        fd.write(random_secret)
+    mailpile.platforms.RestrictReadAccess(secret_file)
+    return random_secret
+
+
+##[ These are the sys.lockdown restrictions ]#################################
 
 def _lockdown(config):
     if DISABLE_LOCKDOWN: return False
+    if config.detected_memory_corruption: return 99  # FIXME: Breaks demos?
     lockdown = config.sys.lockdown or 0
     try:
         return int(lockdown)
@@ -66,6 +86,14 @@ def _lockdown_config(config):
     return False
 
 
+def _lockdown_quit(config):
+    if DISABLE_LOCKDOWN: return False
+    # The user is always allowed to quit, except in demo mode.
+    if _lockdown(config) < 0:
+        return _('In lockdown, doing nothing.')
+    return False
+
+
 def _lockdown_basic(config):
     if DISABLE_LOCKDOWN: return False
     return _lockdown_config(config) or in_disk_lockdown(config)
@@ -90,7 +118,7 @@ CC_COMPOSE_EMAIL      = [_lockdown_strict]
 CC_CPU_INTENSIVE      = [_lockdown_basic]
 CC_LIST_PRIVATE_DATA  = [_lockdown_minimal]
 CC_TAG_EMAIL          = [_lockdown_strict]
-CC_QUIT               = [_lockdown_minimal]
+CC_QUIT               = [_lockdown_quit]
 CC_WEB_TERMINAL       = [_lockdown_config]
 
 CC_CONFIG_MAP = {
@@ -548,10 +576,10 @@ def tls_wrap_socket(org_wrap, sock, *args, **kwargs):
 
 ##[ Key Trust ]#############################################################
 
-def evaluate_signature_key_trust(config, email, tree):
+def evaluate_sender_trust(config, email, tree):
     """
     This uses historic data from the search engine to refine and expand
-    upon the states we get back from GnuPG.
+    upon the states we get back from GnuPG and attempt to detect forgeries.
 
     The new potential signature states are:
 
@@ -576,28 +604,55 @@ def evaluate_signature_key_trust(config, email, tree):
     if not sender:
         return
 
+    tree['trust'] = {}
+    trust = tree["trust"]
+
+    # If this mail didn't come from outside, skip all this.
+    # We don't vet ourselves for forgeries.
+    # FIXME: THIS IS INSECURE. We need to fix this mechanism globally.
+    message = email.get_msg()
+    if 'x-mp-internal-sender' in message:
+        trust["status"] = _("We trust ourselves")
+        return tree
+
+    # Calculate the default window we search for information. Don't include
+    # the same day as the message was received, to not be fooled by other
+    # junk that arrived the same day.
     days = config.prefs.key_trust.window_days
     msgts = long(email.get_msg_info(config.index.MSG_DATE), 36)
-    scope = ['dates:%d..%d' % (msgts - (days * 24 * 3600), msgts),
-             'from:%s' % sender]
+    end = msgts - (24 * 3600)
+    begin = end - (days * 24 * 3600)
+    scope = ['dates:%d..%d' % (begin, end), 'from:%s' % sender]
 
     messages_per_key = {}
+    trust['counts'] = messages_per_key
     def count(name, terms):
         if name not in messages_per_key:
+            # Note: using .as_set() will exclude spam and trash, which
+            #       is almsot certainly a good thing.
             msgs = config.index.search(config.background, scope + terms)
-            messages_per_key[name] = len(msgs)
+            messages_per_key[name] = len(msgs.as_set())
         return messages_per_key[name]
 
-    signed = lambda: count('signed', ['has:signature'])
-    if signed() < config.prefs.key_trust.threshold:
-        return
-
     total = lambda: count('total', [])
+    if total() < min(5, config.prefs.key_trust.threshold):
+        # If we have too few messages within our desired window, try
+        # expanding the window...
+        scope[1] = 'dates:1970..%d' % end
+        del messages_per_key['total']
+
+        # Still too few? Abort.
+        if total() < min(5, config.prefs.key_trust.threshold):
+            trust["trust_unknown"] = True
+            trust["warning"] = _("This sender's reputation is unknown")
+            return tree
+
+    signed = lambda: count('signed', ['has:signature'])
     swr = config.prefs.key_trust.sig_warn_pct / 100.0
     ktr = config.prefs.key_trust.key_trust_pct / 100.0
     knr = config.prefs.key_trust.key_new_pct / 100.0
 
-    def update_siginfo(si):
+    def update_siginfo(si, trust):
         stat = si["status"]
         keyid = si.get('keyinfo', '')[-16:].lower()
 
@@ -606,6 +661,15 @@ def evaluate_signature_key_trust(config, email, tree):
         # and warn the user if they're not present.
         if (stat == 'none') and (signed() > swr * total()):
             si["status"] = 'unsigned'
+            trust["missing_signature"] = True
+
+        # Compare email timestamp with the signature timestamp.
+        # If they differ by a great deal, treat the signature as
+        # invalid. This makes it much harder to copy old signed
+        # content (undetected) into new messages.
+        elif abs(msgts - si.get("timestamp", msgts)) > 7 * 24 * 3600:
+            si["status"] = 'invalid'
+            trust["invalid_signature"] = True
 
         # Signed by unverified key: Signal that we trust this key if
         # this is the key we've seen most of the time for this user.
@@ -614,6 +678,7 @@ def evaluate_signature_key_trust(config, email, tree):
                 ('unverified' in stat) and
                 (count(keyid, ['sig:%s' % keyid]) > ktr * signed())):
             si["status"] = stat.replace('unverified', 'signed')
+            trust["signed"] = True
 
         # Signed by a key we have seen very rarely for this user. Gently
         # warn the user that something unsual is going on.
@@ -622,19 +687,43 @@ def evaluate_signature_key_trust(config, email, tree):
                 (count(keyid, ['sig:%s' % keyid]) < knr * signed())):
             changed = "mixed-changed" if ("mixed" in stat) else "changed"
             si["status"] = changed
+            trust["key_changed"] = True
 
-        # FIXME: Compare email timestamp with the signature timestamp.
-        #        If they differ by a great deal, treat the signature as
-        # invalid? This would make it much harder to copy old signed
-        # content (undetected) into new messages.
+        else:
+            trust["%s_signature" % si["status"].replace("mixed-", "")] = True
 
-    if 'crypto' in tree:
-        update_siginfo(tree['crypto']['signature'])
+    if signed() >= config.prefs.key_trust.threshold:
+        if 'crypto' in tree:
+            update_siginfo(tree['crypto']['signature'], tree["trust"])
 
-    for skey in ('text_parts', 'html_parts', 'attachments'):
-        for i, part in enumerate(tree[skey]):
-            if 'crypto' in part:
-                update_siginfo(part['crypto']['signature'])
+        for skey in ('text_parts', 'html_parts', 'attachments'):
+            for i, part in enumerate(tree[skey]):
+                if 'crypto' in part:
+                    update_siginfo(part['crypto']['signature'], {})
+
+    if 'received' in message:
+        headerprints = email.get_headerprints()
+        term = 'hps:%s' % headerprints['sender']
+        hps = count(term, [term])
+        if hps < 2:
+            trust["mua_or_mta_changed"] = True
+
+    # Translate accumulated state into a "problem" if applicable
+    problem = "problem" if (total() > 20) else "warning"
+    if trust.get("invalid_signature") or trust.get("revoked_signature"):
+        trust[problem] = _("The digital signature is invalid")
+    elif trust.get("missing_signature"):
+        trust[problem] = _("This person usually signs their mail")
+    elif trust.get("key_changed"):
+        trust[problem] = _("This was signed by an unexpected key")
+    elif trust.get("expired_signature"):
+        trust[problem] = _("This was signed by an expired key")
+    elif trust.get("verified_signature") or trust.get("signed"):
+        trust["status"] = _("Good signature, we are happy")
+    elif trust.get("mua_or_mta_changed"):
+        trust["warning"] = _("This came from an unexpected source")
+    else:
+        trust["status"] = _("No problems detected.")
 
     return tree
 

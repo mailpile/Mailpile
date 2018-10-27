@@ -260,8 +260,14 @@ class BaseMailSource(threading.Thread):
         self._interrupt = None
         batch = min(self._loop_count * 20, self.RESCAN_BATCH_SIZE)
         errors = rescanned = 0
-
         all_completed = True
+
+        if not self._check_interrupt():
+            self._state = 'Waiting... (disco)'
+            discovered = self.discover_mailboxes()
+        else:
+            discovered = 0
+
         ostate = self._state
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
@@ -360,11 +366,6 @@ class BaseMailSource(threading.Thread):
                 raise
 
         self._last_rescan_completed = all_completed
-        discovered = 0
-        if not self._check_interrupt():
-            self._state = 'Waiting... (disco)'
-            self._log_status(_('Checking for new mailboxes'))
-            discovered = self.discover_mailboxes()
 
         self._state = 'Done'
         status = []
@@ -392,12 +393,14 @@ class BaseMailSource(threading.Thread):
 
     def _sleep(self, seconds):
         enabled = self.my_config.enabled
+        if 'sources' in self.session.config.sys.debug:
+            self.session.ui.debug('Sleeping up to %d seconds...' % seconds)
         if self._sleeping is None:
             self._sleeping = seconds
             while (self.alive and
-                    self._sleeping > 0 and
+                    (self._sleeping > 0) and
                     self._sleeping_is_ok(seconds - self._sleeping) and
-                    enabled == self.my_config.enabled and
+                    (enabled == self.my_config.enabled) and
                     not mailpile.util.QUITTING):
                 time.sleep(min(1, self._sleeping))
                 self._sleeping -= 1
@@ -445,7 +448,14 @@ class BaseMailSource(threading.Thread):
         self.set_event_discovery_state(
             error='toomany',
             status=_('Too many mailboxes found! Raise limits to continue.'))
-        self._sleep(15)
+
+        old_limit = self.my_config.discovery.max_mailboxes
+        for i in range(0, 15):
+            if old_limit == self.my_config.discovery.max_mailboxes:
+                self._sleep(2)
+            else:
+                return True
+        return False
 
     def on_event_discovery_done(self, ostate):
         self.set_event_discovery_state('done')
@@ -457,7 +467,7 @@ class BaseMailSource(threading.Thread):
         try:
             existing = self._existing_mailboxes()
             max_mailboxes = self.my_config.discovery.max_mailboxes
-            max_mailboxes -= len(existing)
+            max_mailboxes -= len(self.my_config.mailbox)
             adding = []
             paths = [(p.encode('utf-8') if isinstance(p, unicode) else p)
                      for p in (paths or self.my_config.discovery.paths)]
@@ -480,7 +490,7 @@ class BaseMailSource(threading.Thread):
                     if self.is_mailbox(fn):
                         adding.append(fn)
                         is_mailbox = True
-                    if len(adding) > max_mailboxes:
+                    if len(adding) and (len(adding) > max_mailboxes):
                         break
 
                 if os.path.isdir(fn):
@@ -512,26 +522,32 @@ class BaseMailSource(threading.Thread):
                     # This may have been a bit of work, take a break.
                     play_nice_with_threads()
 
-                if len(adding) > max_mailboxes:
+                if len(adding) and (len(adding) > max_mailboxes):
                     break
 
-            if len(adding) > max_mailboxes:
-                self.on_event_discovery_toomany()
-
-            self.set_event_discovery_state('adding')
-            play_nice_with_threads()
-            new = {}
-            for path in adding:
-                new[config.sys.mailbox.append(path)] = path
-            for mailbox_idx in new.keys():
-                mbx_cfg = self.take_over_mailbox(mailbox_idx, save=False)
-                if self._policy(mbx_cfg) != 'unknown':
-                    del new[mailbox_idx]
+            if len(adding) and (len(adding) > max_mailboxes):
+                if self.on_event_discovery_toomany():
+                    return self.discover_mailboxes(paths=paths)
+                adding = adding[:max(0, max_mailboxes)]
 
             if adding:
+                self.set_event_discovery_state('adding')
+                play_nice_with_threads()
+                new = {}
+                for path in adding:
+                    new[config.sys.mailbox.append(path)] = path
+                for mailbox_idx in new.keys():
+                    mbx_cfg = self.take_over_mailbox(mailbox_idx, save=False)
+                    if self._policy(mbx_cfg) != 'unknown':
+                        del new[mailbox_idx]
+
                 self._save_config()
 
             return len(adding)
+        except:
+            if config.sys.debug:
+                self.session.ui.debug('%s' % traceback.format_exc())
+            raise
         finally:
             self.on_event_discovery_done(ostate)
 
@@ -776,17 +792,37 @@ class BaseMailSource(threading.Thread):
             if policy != 'move':
                 return
 
+            # Messages we have downloaded are candidates for deletion.
             downloaded = list(set(src.keys()) & set(loc.source_map.keys()))
             downloaded.sort(key=self._msg_key_order)
 
-            should = _('Should delete %d messages') % len(downloaded)
+            # If prefs.deletion_ratio is less than 1.0, leave the most
+            # recent messages on the server (so other clients have a
+            # chance to see them too).
+            #
+            # FIXME: This is a hack. It would be better to check the
+            #        timestamps of the messages and always leave on the
+            #        server for a fixed, configurable amount of time.
+            #
+            if config.prefs.deletion_ratio < 1.0:
+                random_ratio = random.random() * config.prefs.deletion_ratio
+                cutoff = int(max(
+                    random_ratio * len(downloaded),
+                    # Jitter. Without this, the last message never gets deleted:
+                    random.randint(-10, 1)))
+            else:
+                cutoff = len(downloaded)
+
+            should = _('Should delete %d messages') % cutoff
             if 'sources' in config.sys.debug and downloaded:
                 session.ui.debug(should)
 
             if config.prefs.allow_deletion:
                 try:
                     for i, key in enumerate(downloaded):
-                        progress['deleting'] = '%d/%d' % (i+1, len(downloaded))
+                        if i >= cutoff:
+                            break
+                        progress['deleting'] = '%d/%d' % (i+1, cutoff)
                         src.remove(key)
                     src.flush()
                 except:
@@ -1001,6 +1037,18 @@ class BaseMailSource(threading.Thread):
             else:
                 return 1
 
+        def have_invalid_auth():
+            conn_err = self.event.data.get('connection', {}).get('error')
+            if conn_err and conn_err[0] in ('oauth2', 'auth'):
+                if ((self._loop_count % 100 != 0)
+                        and self._summarize_auth() == conn_err[-1]):
+                    self.session.ui.debug('Auth unchanged, doing nothing')
+                    return True
+                else:
+                    self._log_status(_('Checking new credentials'),
+                                     clear_errors=True)
+            return False
+
         self._loop_count = 0
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
             self.event.data['enabled'] = self.my_config.enabled
@@ -1020,12 +1068,8 @@ class BaseMailSource(threading.Thread):
             if not self.session.config.index:
                 continue
 
-            conn_err = self.event.data.get('connection', {}).get('error')
-            if conn_err and conn_err[0] in ('oauth2', 'auth'):
-                if ((self._loop_count % 100 != 0)
-                        and self._summarize_auth() == conn_err[-1]):
-                    self.session.ui.debug('Auth unchanged, doing nothing')
-                    continue
+            if have_invalid_auth():
+                continue
 
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
@@ -1079,6 +1123,8 @@ class BaseMailSource(threading.Thread):
                     self._log_status(err_msg)
 
     def wake_up(self):
+        if 'wakeup' in self.session.config.sys.debug:
+            self.session.ui.debug('%s' % traceback.format_stack())
         self._sleeping = -1
 
     def notify_config_changed(self):

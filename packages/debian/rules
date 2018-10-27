@@ -27,6 +27,9 @@ override_dh_auto_build:
 		--mailpile-theme /usr/share/mailpile/default-theme \
 		--multipile-www /usr/share/mailpile/multipile/www \
 		> mailpile-apache.conf
+	python shared-data/multipile/mailpile-admin.py --generate-apache-sudoers \
+		--mailpile-share /usr/share/mailpile \
+		> mailpile-apache
 
 	dh_auto_build
 

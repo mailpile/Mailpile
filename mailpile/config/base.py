@@ -264,7 +264,12 @@ def RuledContainer(pcls):
                             config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    self[key].as_config(config=config, _type=_type, _xtype=_xtype)
+                    if isinstance(self[key], (list,)):
+                        # If a list is marked public, we export all items
+                        self[key].as_config(config=config)
+                    else:
+                        self[key].as_config(
+                            config=config, _type=_type, _xtype=_xtype)
 
             return config
 
@@ -715,6 +720,70 @@ class ConfigDict(RuledContainer(dict)):
         for key in kwargs:
             self[key] = kwargs[key]
 
+    def parse_config(self, session, data, source='internal'):
+        """
+        Parse a config file fragment. Invalid data will be ignored, but will
+        generate warnings in the session UI. Returns True on a clean parse,
+        False if any of the settings were bogus.
+
+        >>> cfg.parse_config(session, '[config/sys]\\nfd_cache_size = 123\\n')
+        True
+        >>> cfg.sys.fd_cache_size
+        123
+
+        >>> cfg.parse_config(session, '[config/bogus]\\nblabla = bla\\n')
+        False
+        >>> [l[1] for l in session.ui.log_buffer if 'bogus' in l[1]][0]
+        'Invalid (internal): section config/bogus does not exist'
+
+        >>> cfg.parse_config(session, '[config/sys]\\nhistory_length = 321\\n'
+        ...                                          'bogus_variable = 456\\n')
+        False
+        >>> cfg.sys.history_length
+        321
+        >>> [l[1] for l in session.ui.log_buffer if 'bogus_var' in l[1]][0]
+        u'Invalid (internal): section config/sys, ...
+        """
+        parser = CommentedEscapedConfigParser()
+        parser.readfp(io.BytesIO(str(data)))
+
+        def item_sorter(i):
+            try:
+                return (int(i[0], 36), i[1])
+            except (ValueError, IndexError, KeyError, TypeError):
+                return i
+
+        all_okay = True
+        for section in parser.sections():
+            okay = True
+            cfgpath = section.split(':')[0].split('/')[1:]
+            cfg = self
+            added_parts = []
+            for part in cfgpath:
+                if cfg.fmt_key(part) in cfg.keys():
+                    cfg = cfg[part]
+                elif '_any' in cfg.rules:
+                    cfg[part] = {}
+                    cfg = cfg[part]
+                else:
+                    if session:
+                        msg = _('Invalid (%s): section %s does not '
+                                'exist') % (source, section)
+                        session.ui.warning(msg)
+                    all_okay = okay = False
+            items = parser.items(section) if okay else []
+            items.sort(key=item_sorter)
+            for var, val in items:
+                try:
+                    cfg[var] = val
+                except (ValueError, KeyError, IndexError):
+                    if session:
+                        msg = _(u'Invalid (%s): section %s, variable %s=%s'
+                                ) % (source, section, var, val)
+                        session.ui.warning(msg)
+                    all_okay = okay = False
+        return all_okay
+
 
 class PathDict(ConfigDict):
     _RULES = {
@@ -725,6 +794,25 @@ class PathDict(ConfigDict):
 if __name__ == "__main__":
     import doctest
     import sys
+    import copy
+
+    import mailpile.config.defaults
+    import mailpile.ui
+
+    rules = copy.deepcopy(mailpile.config.defaults.CONFIG_RULES)
+    rules.update({
+        'nest1': ['Nest1', {
+            'nest2': ['Nest2', str, []],
+            'nest3': ['Nest3', {
+                'nest4': ['Nest4', str, []]
+            }, []],
+        }, {}]
+    })
+    cfg = ConfigDict(_rules=rules)
+    session = mailpile.ui.Session(cfg)
+    session.ui = mailpile.ui.SilentInteraction(cfg)
+    session.ui.block()
+
     result = doctest.testmod(optionflags=doctest.ELLIPSIS)
     print '%s' % (result, )
     if result.failed:

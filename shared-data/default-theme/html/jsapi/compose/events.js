@@ -100,6 +100,13 @@ Mailpile.Composer.SendMessage = function(send_btn) {
   var post_send_url = $send_btn.closest('.has-url').data('url');
   var form_data = $('#form-compose-' + mid).serialize();
 
+  // Warn the user if he's trying to go against his own security policies,
+  // let him abort... or not.
+  if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
+    if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
+                 '{{_("Click OK to send the message anyway.")|escapejs}}')) return;
+  }
+
   if (action === 'send') {
 	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  = 'success';
@@ -119,13 +126,6 @@ Mailpile.Composer.SendMessage = function(send_btn) {
     var done_working = Mailpile.notify_working("{{_('Preparing to send...')|escapejs}}", 100);
   }
 
-  // Warn the user if he's trying to go against his own security policies,
-  // let him abort... or not.
-  if ((action != 'save') && $send_btn.data('crypto-state').match(/conflict/)) {
-    if (!confirm($send_btn.data('crypto-reason') + '\n\n' +
-                 '{{_("Click OK to send the message anyway.")|escapejs}}')) return;
-  }
-
   // FIXME: Use Mailpile.API instead of this.
 	$.ajax({
 		url			 : action_url,
@@ -137,7 +137,10 @@ Mailpile.Composer.SendMessage = function(send_btn) {
       done_working();
       if (action === 'send' && response.status === 'success') {
         if (post_send_url) {
-          Mailpile.go(post_send_url + "/" + mid);
+          if (post_send_url.indexOf('#') > -1) {
+            post_send_url = post_send_url.substring(0, post_send_url.indexOf('#'));
+          }
+          Mailpile.go(post_send_url + "/" + mid + '#pile-message-' + mid);
         }
         else {
           Mailpile.go(Mailpile.urls.message_sent + response.result.thread_ids[0] + "/");

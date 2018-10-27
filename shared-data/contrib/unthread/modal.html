@@ -1,0 +1,27 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+{%- set mid = state.query_args.q[0][1:] %}
+{%- set metadata = result.data.metadata[mid] %}
+<form method="POST" action="{{ U(state.command_url) }}">{{ csrf_field|safe }}
+  <input type="hidden" name="mid" value="{{ mid }}">
+  <h1>{{_("New Thread")}}</h1>
+  <p>
+    {{_("You are about to move the e-mail from {person} ({subject}) and any replies, to a new conversation."
+        ).format(person=metadata.from.fn, subject=metadata.subject)}}
+  </p>
+  <p style="text-align: center">
+    <b>{{ _("New Subject") }}:</b>
+    <input name="subject" style="width: 22em;" value="" placeholder="{{ metadata.subject }}">
+    <span style="opacity: 0.6;">({{ _("optional") }})</span>
+  </p>
+  <p>
+    {{_("These changes are purely local (visible to you only), but will allow you to search and tag these messages separately from others in the current thread.")}}
+    {{_("Changing the subject does not modify the original e-mail, but the new subject will be displayed in search result listings and proposed as a default when composing replies.")}}
+  </p>
+
+  <button class="button button-info" data-dismiss="modal"
+          type=cancel>{{_("Cancel")}}</button>
+  <button class="button button-primary submit-modal-unthread right"
+          type=submit>{{_("Move to a New Thread")}}</button>
+</form> 
+{% endblock %}
