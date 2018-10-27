@@ -1065,7 +1065,8 @@ class ImapMailSource(BaseMailSource):
             discovered = [mbx for mbx in mailboxes if mbx not in existing]
             if discovered and (len(discovered) > max_mailboxes - mailbox_count):
                 discovered = discovered[:max(0, max_mailboxes - mailbox_count)]
-                self.on_event_discovery_toomany()
+                if self.on_event_discovery_toomany():
+                    return self.discover_mailboxes(paths=paths)
 
             self.set_event_discovery_state('adding')
             for path in discovered:

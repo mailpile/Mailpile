@@ -448,9 +448,14 @@ class BaseMailSource(threading.Thread):
         self.set_event_discovery_state(
             error='toomany',
             status=_('Too many mailboxes found! Raise limits to continue.'))
-        # This is a loop to avoid being woken up by IDLE.
+
+        old_limit = self.my_config.discovery.max_mailboxes
         for i in range(0, 15):
-            self._sleep(2)
+            if old_limit == self.my_config.discovery.max_mailboxes:
+                self._sleep(2)
+            else:
+                return True
+        return False
 
     def on_event_discovery_done(self, ostate):
         self.set_event_discovery_state('done')
@@ -521,7 +526,8 @@ class BaseMailSource(threading.Thread):
                     break
 
             if len(adding) and (len(adding) > max_mailboxes):
-                self.on_event_discovery_toomany()
+                if self.on_event_discovery_toomany():
+                    return self.discover_mailboxes(paths=paths)
                 adding = adding[:max(0, max_mailboxes)]
 
             if adding:
