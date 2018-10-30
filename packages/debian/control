@@ -50,20 +50,23 @@ Homepage: https://www.mailpile.is/
 Package: mailpile
 Architecture: all
 Depends: ${misc:Depends},
-         ${python:Depends},
-         python-lxml,
-         python-jinja2,
-         spambayes,
          wordlist,
          gnupg,
-         python-markupsafe,
+         spambayes,
+         python (<< 2.8),
+         python (>= 2.7.5),
+         python-appdirs,
+         python-cryptography,
+         python-dns,
          python-fasteners,
          python-imgsize,
-         python-socksipychain,
-         python-dns,
+         python-jinja2,
+         python-lxml,
+         python-markupsafe,
          python-pgpdump,
-         python-pil
-Recommends: tor, wamerican-small, gnupg-curl
+         python-pil,
+         python-socksipychain
+Recommends: tor, pagekite, python-stem, wamerican-small, gnupg-curl
 Description: library and command-line interface for mailpile
  Mailpile is a modern, fast web-mail client with user-friendly encryption and
  privacy features. Mailpile places great emphasis on providing a clean, elegant
