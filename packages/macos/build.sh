@@ -5,6 +5,7 @@
 #
 set -e
 export SOURCE_DIR=$(cd $(dirname "$0")/../..; pwd)
+export HOME=$(cd ~; pwd)
 
 # Target directories
 export BUILD_DIR=${BUILD_DIR:-~/build}
