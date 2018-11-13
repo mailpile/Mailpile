@@ -16,9 +16,11 @@ BINARIES = {}
 # These are the binaries we want, and the test we use to detect whether
 # they are available/working.
 BINARIES_WANTED = {
-    'GnuPG':   ['gpg', '--version'],
-    'OpenSSL': ['openssl', 'version'],
-    'Tor':     ['tor', '--version']}
+    'GnuPG':    ['gpg', '--version'],
+    'GnuPG/dm': ['dirmngr', '--version'],
+    'GnuPG/ga': ['gpg-agent', '--version'],
+    'OpenSSL':  ['openssl', 'version'],
+    'Tor':      ['tor', '--version']}
 
 
 def _assert_file_exists(path):
@@ -42,6 +44,15 @@ def DetectBinaries(which=None, use_cache=True, preferred={}, _raise=None):
                                           stderr=subprocess.PIPE,
                                           stdout=subprocess.PIPE)
                 BINARIES[binary] = binary_test[0]
+                if (not os.path.dirname(BINARIES[binary])
+                        and not sys.platform.startswith('win')):
+                    try:
+                        path = subprocess.check_output(['which',
+                                                        BINARIES[binary]])
+                        if path:
+                            BINARIES[binary] = path.strip()
+                    except (subprocess.CalledProcessError, OSError):
+                        pass
             except (subprocess.CalledProcessError, OSError):
                 if binary in BINARIES:
                     del BINARIES[binary]

@@ -872,17 +872,20 @@ class GpgCommand(Command):
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
-        binary, rv = self._gnupg().gpgbinary, '(unknown)'
+        gnupg = self._gnupg()
+        gnupg_args = gnupg.common_args(interactive=True)
+        binary = gnupg.gpgbinary
+        rv = '(unknown)'
         with self.session.ui.term:
             try:
                 self.session.ui.block()
                 if (self.session.ui.interactive and
                         self.session.ui.render_mode == 'text'):
-                    rv = os.system(' '.join([binary] + args))
+                    rv = os.system(' '.join(gnupg_args + args))
                     stdout = None
                 else:
                     sp = subprocess.Popen(
-                        [binary] + ['--batch', '--no-tty'] + args,
+                        gnupg_args + ['--batch', '--no-tty'] + args,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         stdin=subprocess.PIPE)
                     (stdout, stderr) = sp.communicate(input='')

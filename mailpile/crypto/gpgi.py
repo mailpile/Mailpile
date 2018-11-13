@@ -613,7 +613,10 @@ class GnuPG:
 
         return self.available
 
-    def common_args(self, args=None, version=None, will_send_passphrase=False):
+    def common_args(self,
+                    args=None, version=None,
+                    will_send_passphrase=False,
+                    interactive=False):
         if args is None:
             args = []
         if version is None:
@@ -621,15 +624,23 @@ class GnuPG:
 
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
-        args.insert(1, "--with-colons")
-        args.insert(1, "--verbose")
-        args.insert(1, "--batch")
-        args.insert(1, "--enable-progress-filter")
 
         # Disable SHA1 in all things GnuPG
         args[1:1] = ["--personal-digest-preferences=SHA512",
                      "--digest-algo=SHA512",
                      "--cert-digest-algo=SHA512"]
+
+        if self.homedir:
+            args.insert(1, "--homedir=%s" % self.homedir)
+
+        if version > (2, 1, 11):
+            binaries = mailpile.platforms.DetectBinaries()
+            for which, setting in (('GnuPG/dm', 'dirmngr-program'),
+                                   ('GnuPG/ga', 'agent-program')):
+                if which in binaries:
+                    args.insert(1, "--%s=%s" % (setting, binaries[which]))
+                else:
+                    print 'wtf: %s not in %s' % (which, binaries)
 
         if (not self.use_agent) or will_send_passphrase:
             if version < (1, 5):
@@ -639,12 +650,14 @@ class GnuPG:
             else:
                 raise ImportError('Mailpile requires GnuPG 1.4.x or 2.1.12+ !')
 
-        if self.homedir:
-            args.insert(1, "--homedir=%s" % self.homedir)
-
-        args.insert(1, "--status-fd=2")
-        if will_send_passphrase:
-            args.insert(2, "--passphrase-fd=0")
+        if not interactive:
+            args.insert(1, "--with-colons")
+            args.insert(1, "--verbose")
+            args.insert(1, "--batch")
+            args.insert(1, "--enable-progress-filter")
+            args.insert(1, "--status-fd=2")
+            if will_send_passphrase:
+                args.insert(2, "--passphrase-fd=0")
 
         if self.dry_run:
             args.insert(1, "--dry-run")
@@ -1421,23 +1434,13 @@ class GnuPG:
 
     def chat(self, gpg_args, callback, *args, **kwargs):
         """This lets a callback have a chat with the GPG process..."""
-        gpg_args = [self.gpgbinary,
-                    "--utf8-strings",
-                    # Disable SHA1 in all things GnuPG
-                    "--personal-digest-preferences=SHA512",
-                    "--digest-algo=SHA512",
-                    "--cert-digest-algo=SHA512",
-                    # We're not a human!
-                    "--no-tty",
-                    "--command-fd=0",
-                    "--status-fd=1"] + (gpg_args or [])
-        if self.homedir:
-            gpg_args.insert(1, "--homedir=%s" % self.homedir)
-
-        if self.version_tuple() > (2, 1):
-            gpg_args.insert(2, "--pinentry-mode=loopback")
-        else:
-            gpg_args.insert(2, "--no-use-agent")
+        gpg_args = (
+            self.common_args(interactive=True, will_send_passphrase=True) + [
+                # We may be interactive, but we're not a human!
+                "--no-tty",
+                "--command-fd=0",
+                "--status-fd=1"
+            ] + (gpg_args or []))
 
         proc = None
         try:
