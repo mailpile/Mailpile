@@ -7,5 +7,9 @@ set -x
 # Install Mailpile Python Dependencies with PIP. 
 #
 cd "$SOURCE_DIR"
-pip install -r requirements.txt --ignore-installed
-
+if [ "$KEEP_BUNDLE" = "" ]; then
+    pip install -r requirements.txt --ignore-installed
+else
+    # This is the KEEP_BUNDLE mode; just add new things
+    pip install -r requirements.txt
+fi

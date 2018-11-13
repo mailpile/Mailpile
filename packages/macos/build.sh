@@ -3,12 +3,16 @@
 # This script will use Homebrew to build a complete environment for packacing
 # mailpile. This script is tested on macOS 10.13.4, with XCode 9.3.
 #
+# Note: In a couple of places, the $(cd FOO; pwd) construct is used to
+#       normalize paths. Without this we'd be chasing trailing slashes
+#       or other inconsistencies all over the place.
+#
 set -e
 export SOURCE_DIR=$(cd $(dirname "$0")/../..; pwd)
 export HOME=$(cd ~; pwd)
 
 # Target directories
-export BUILD_DIR=${BUILD_DIR:-~/build}
+export BUILD_DIR=$(cd ${BUILD_DIR:-~/build}; pwd)
 export ICONSET_DIR=$BUILD_DIR/AppIcon.appiconset
 export MAILPILE_BREW_ROOT="$BUILD_DIR/Mailpile.app/Contents/Resources/app"
 
@@ -28,8 +32,7 @@ export OPENSSL_VERSION=1.0
 export SYMLINKS_SRC="$SOURCE_DIR/packages/macos/brew/symlinks.rb"
 export KEYCHAIN=~/Library/Keychains/login.keychain
 
-# Use PeturIngi's GUI-o-Mac-Tic for now
-export GUI_O_MAC_TIC_REPO=https://github.com/peturingi/gui-o-mac-tic
+export GUI_O_MAC_TIC_REPO=https://github.com/mailpile/gui-o-mac-tic
 export GUI_O_MAC_TIC_BRANCH=master
 
 # See this mailing list post: http://curl.haxx.se/mail/archive-2013-10/0036.html
