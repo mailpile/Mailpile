@@ -169,6 +169,7 @@
   <script>
     var page_url = document.location.href;
     var ui_hint = 'ui_account_auth=1';
+    var ui_force_login = {{ 'true' if ui_force_login else 'false' }};
     if (page_url.indexOf(ui_hint) != -1) {
       ui_hint = '';
     }
@@ -197,6 +198,11 @@
           account.closest('li').css({'opacity': 1.0});
 
           var policy = account.data('policy');
+          if (ui_force_login) {
+            ui_force_login = false;
+            policy = 'force-login';
+          }
+
           if (policy) $('select#policy-ttl option[data-p='+ policy +']').hide();
           if (policy == 'protect') {
             $('select#policy-ttl option').hide();
@@ -253,6 +259,9 @@
         $('.result-title').slideUp();
         $('.ssp-ops').slideDown();
         $('input[type=password]').focus();
+{%- if ui_oneshot %}
+        $('.modal-header button.close').click();
+{%- endif %}
       }
     };
 

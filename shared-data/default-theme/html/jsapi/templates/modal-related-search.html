@@ -1,0 +1,112 @@
+<div class="modal-dialog">
+<form id="modal-related-search" class="standard"
+      method="GET" action="{{ U('/search/') }}">
+  <script type="text/javascript">
+    function q(prefix, val) {
+      return prefix + ':' + val.split(/ +/).join(' ' + prefix + ':');
+    }
+  </script>
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close button-info" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-search"></span>
+        {{_("Search for Similar E-mail")}}
+      </h4>
+    </div>
+    <div class="modal-body clearfix">
+      <div class="modal-basic-settings">
+        <p>
+          {{_("Select which common message attributes you would like to search for.")}}
+          {{_("The more attributes you select, the narrower the search.")}}
+        </p>
+        <ul class="left" style="margin-left: 1em; min-width: 40%;">
+          <% _.each(subjects, function(subject) { if (subject) { %><li>
+            <input type="checkbox" name="q" value="<%= qq('', subject, 3) %>">
+            <span class="checkbox">{{_("Subject")}}: <%= trunc(subject, 30) %></span>
+          </li><% }}); %>
+          <% _.each(froms, function(email, i) { if (email) { %><li>
+            <input type="checkbox" name="q" value="<%= q('from', email) %>"<% if (i==0) { %> checked<% } %>>
+            <span class="checkbox">{{_("From")}}: <%= email %></span>
+          </li><% }}); %>
+          <% _.each(emails, function(email) { if (email) { %><li>
+            <input type="checkbox" name="q" value="<%= q('email', email) %>">
+            <span class="checkbox">{{_("E-mail")}}: <%= email %></span>
+          </li><% }}); %>
+          <% _.each(lists, function(lst) { if (lst) { %><li>
+            <input type="checkbox" name="q" value="<%= q('list', lst) %>">
+            <span class="checkbox">{{_("Mailing list")}}: <%= lst %></span>
+          </li><% }}); %>
+{% if config.web.developer_mode %}
+          <% _.each(muas, function(mua) { if (mua) { %><li>
+            <input type="checkbox" name="q" value="<%= q('mua', mua, 1) %>">
+            <span class="checkbox">{{_("E-mail client")}}: <%= mua %></span>
+          </li><% }}); %>
+          <% _.each(hpts, function(hp) { if (hp) { %><li>
+            <input type="checkbox" name="q" value="<%= q('hpt', hp) %>">
+            <span class="checkbox" title="<%= hp %>">{{_("Message structure")}}</span>
+          </li><% }}); %>
+          <% _.each(hpss, function(hp) { if (hp) { %><li>
+            <input type="checkbox" name="q" value="<%= q('hps', hp) %>">
+            <span class="checkbox" title="<%= hp %>">{{_("Sender fingerprint")}}</span>
+          </li><% }}); %>
+{% endif %}
+        </ul>
+        <ul class="left" style="margin-left: 1em; color: #777;">
+          <li title="<%= date_range_2wks %>">
+            <input type="checkbox" name="q" value="dates:<%= date_range_2wks %>">
+            <span class="checkbox">
+              <span class="icon-clock"></span>
+              {{_("Similar dates")}}: &plusmn;1 {{_("week")}}
+            </span>
+          </li>
+          <li title="<%= date_range_4wks %>">
+            <input type="checkbox" name="q" value="dates:<%= date_range_4wks %>">
+            <span class="checkbox">
+              <span class="icon-clock"></span>
+              {{_("Similar dates")}}: &plusmn;2 {{_("weeks")}}
+            </span>
+          </li>
+          <li>
+            <input type="checkbox" name="q" value="has:image">
+            <span class="checkbox">
+              <span class="icon-photos"></span> {{_("Has an image")}}
+            </span>
+          </li>
+          <li>
+            <input type="checkbox" name="q" value="has:attachment">
+            <span class="checkbox">
+              <span class="icon-attachment"></span> {{_("Has an attachment")}}
+            </span>
+          </li>
+{% if config.web.developer_mode %}
+          <li>
+            <input type="checkbox" name="q" value="is:signed">
+            <span class="checkbox">
+              <span class="icon-checkmark"></span> {{_("Has a digital signature")}}
+            </span>
+          </li>
+          <li>
+            <input type="checkbox" name="q" value="is:encrypted">
+            <span class="checkbox">
+              <span class="icon-lock-closed"></span> {{_("Is encrypted")}}
+            </span>
+          </li>
+{% endif %}
+        </ul>
+        <br clear="both">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="right">
+        <button class="button-secondary right">
+          <span class="icon-search"></span>
+          {{_("Search")}}
+        </button>
+      </div>
+      <input class="right" style="margin: 0 1em;"
+             type=text name=q value="<%= extras %>"
+             placeholder="{{_("Additional search terms")}}">
+    </div>
+  </div>
+</form>
+</div>

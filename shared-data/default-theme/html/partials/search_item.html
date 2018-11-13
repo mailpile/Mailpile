@@ -36,21 +36,15 @@
     data-tids="{{ metadata.tag_tids|join(',')  }}"
 {%- if message %}
     data-url="{{ msg_url(this_mid, 0) }}"
-{%- endif %}
-    data-state="normal"
-{%- if metadata.body and metadata.body.list and
-       ('list:' + metadata.body.list) not in state.query_args.q %}
-    data-context-hint="{{ _('View e-mail from this mailing list') }}"
-    data-context-icon="groups"
-    data-context-url="{{ U('/search/?q=list:', metadata.body.list) }}"
-{%- else %}
-  {%- if from and from.address and
-         ('from:' + from.address) not in state.query_args.q %}
-    data-context-hint="{{ _('Search for e-mail from:') }} {{metadata.from.fn}}"
-    data-context-icon="user"
-    data-context-url="{{ U('/search/?q=from:', from.address) }}"
+  {%- if message.headerprints %}
+    {% if message.headerprints.mua %}data-mua="{{ message.headerprints.mua }}"{% endif %}
+    data-mua-fingerprint="{{ message.headerprints.tools }}"
+    data-sender-fingerprint="{{ message.headerprints.sender }}"
   {%- endif %}
 {%- endif %}
+    data-state="normal"
+    data-list="{{ metadata.body.list }}"
+    data-to-cc="{% for cid in to_cc %}{{ result.data.addresses[cid].address }} {% endfor %}"
     data-mid="{{mid}}">
   <td class="draggable"></td>
 {% if message or message_errors %}
@@ -143,7 +137,7 @@
   </td>
  {%- if to_cc and display_recipients %}
   {%- set to1 = result.data.addresses[to_cc[0]] %}
-  <td class="to people">
+  <td class="to people" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
     <a href="{{ msg_url(mid, 0) }}" data-noblank=1 data-keep-selection=1
        title="{% if display_attachments -%}
 {{ _("Subject") }}: {{ metadata.subject }}
@@ -160,7 +154,7 @@
       {% if to_cc|length > 1 %}<span class="rcpt-count">+{{ to_cc|length -1 }}</span>{% endif %}
     </a>
  {%- else %}
-  <td class="from people">
+  <td class="from people" data-fn="{{metadata.from.fn}}" data-address="{{metadata.from.address}}">
     <a href="{{msg_url(mid, 0)}}" data-noblank=1 data-keep-selection=1
        title="{% if display_attachments -%}
 {{ _("Subject") }}: {{ metadata.subject }}
@@ -311,7 +305,7 @@
     {%- endif %}
 {%- endif %}
   </td>
-  <td class="date">
+  <td class="date" data-ts="{{ metadata.timestamp }}">
     <span title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">
       {{metadata.timestamp|elapsed_datetime}}
     </span>

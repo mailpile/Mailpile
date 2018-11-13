@@ -245,13 +245,12 @@ def get_minimal_PGP_key(keydata,
                                             # Subkey Binding Signature
                 elif packet.raw_sig_type == 0x18:
                     packet.key_expire_time = None
-                    if (packet.key_id in pri_key.fingerprint and
+                    if (pri_key.fingerprint.endswith(packet.key_id) and
                             not packet.expiration_time or
                             packet.expiration_time >= now):
                         can_encrypt = True  # Assume encrypt if no flags.
                         for subpacket in packet.subpackets:
                             if subpacket.subtype == 9:  # Key expiration
-                                # pgpdump should provide this!!
                                 packet.key_expire_time = _exp_time(
                                     packet.creation_time, subpacket.data)
                             elif subpacket.subtype == 27:   # Key flags
@@ -261,7 +260,7 @@ def get_minimal_PGP_key(keydata,
                             s_key_sig_try = packet
                                             # Subkey revocation signature
                 elif packet.raw_sig_type == 0x28:
-                    if packet.key_id in pri_key.fingerprint:
+                    if pri_key.fingerprint.endswith(packet.key_id):
                         s_key_try = None
                         s_key_sig_try = None
 

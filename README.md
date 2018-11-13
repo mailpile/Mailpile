@@ -57,31 +57,30 @@ Please see our [download page](https://www.mailpile.is/download/) or read
 
 ## Credits and License ##
 
-Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
-it's neat, you should also check out PageKite: <https://pagekite.net/>.
-At some point Bjarni, that crafty fellow, convinced
-[Smári](<http://www.smarimccarthy.is/>) and
-[Brennan](https://brennannovak.com) to start working on the project as
-well.
+Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you
+think it's neat, you should also check out PageKite:
+<https://pagekite.net/>. [Smári](<http://www.smarimccarthy.is/>) and
+[Brennan](https://brennannovak.com) joined the team in 2013 and made
+this a real project (not just a toy search engine).
 
-The GMail guys get mad props for creating the best webmail service out
-there. Wishing the Free Software world had something like it is what
-inspired Bjarni to start working on Mailpile. Edward Snowden also gets
-mad props for inspiring us to try and make PGP usable for journalists
-and everday folks!
+The original GMail team deserve a mention for their inspiring work:
+wishing the Free Software world had something like GMail is what
+motivated Bjarni to start working on Mailpile. We would also like to
+thank Edward Snowden for inspiring us to try and make PGP usable for
+journalists and everday folks!
 
 Contributors:
 
 - Bjarni R. Einarsson (<http://bre.klaki.net/>)
 - Brennan Novak (<https://brennannovak.com/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
-- Lots more, run `git shortlog -s` for a list! (Or see the list
-  [on GitHub](https://github.com/pagekite/Mailpile/graphs/contributors).)
+- Lots more, run `git shortlog -s` for a list! (Or check
+  [GitHub](https://github.com/mailpile/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
 backers](https://www.mailpile.is/#community).
 
 This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation. See the file `COPYING.md`for details.
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation. See the file `COPYING.md`for details.
 

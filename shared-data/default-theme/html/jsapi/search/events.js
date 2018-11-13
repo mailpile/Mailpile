@@ -52,9 +52,8 @@ $(document).on('click', '#btn-pile-empty-search-web', function(e) {
 /* Save Search & Edit Tag */
 (function() {
   $(document).on('click', '.bulk-action-save_search', function(e) {
-    var template = 'modal-save-search';
-    var searchq = ($('#search-query').attr('value') + ' ');
-    Mailpile.API.with_template(template, function(modal) {
+    Mailpile.API.with_template('modal-save-search', function(modal) {
+      var searchq = ($('#search-query').val() + ' ');
       var mf = Mailpile.UI.show_modal(modal({ terms: searchq }));
       mf.find('#ss-search-terms').attr('value', searchq);
     });

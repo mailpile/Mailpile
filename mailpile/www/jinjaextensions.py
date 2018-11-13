@@ -100,6 +100,7 @@ class MailpileCommand(Extension):
         e.filters['thread_upside_down'] = s._thread_upside_down
         e.globals['fix_urls'] = s._fix_urls
         e.filters['fix_urls'] = s._fix_urls
+        e.globals['stoplist'] = STOPLIST
 
         # See utils.py for these functions:
         e.globals['elapsed_datetime'] = elapsed_datetime

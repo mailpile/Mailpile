@@ -7,15 +7,25 @@
 
 <key>ProgramArguments</key>
 <array>
-<string>/Users/buildbot/Mailpile/packages/scripts/kite-runner.py</string>
-<string>--config=/Users/buildbot/Mailpile/packages/scripts/kite-runner-mac.cfg</string>
-<string>--config=/Users/buildbot/kite-runner-secrets.cfg</string>
+  <string>/Users/buildbot/Mailpile/packages/scripts/kite-runner.py</string>
+  <string>--config=/Users/buildbot/Mailpile/packages/scripts/kite-runner-mac.cfg</string>
+  <string>--config=/Users/buildbot/kite-runner-secrets.cfg</string>
 </array>
+
+<key>EnvironmentVariables</key>
+<dict>
+  <key>HOME</key>
+  <string>/Users/buildbot</string>
+</dict>
+
+<key>SessionCreate</key>
+<true/>
 
 <key>KeepAlive</key>
 <true/>
 
 <key>RunAtLoad</key>
 <true/>
+
 </dict>
 </plist> 

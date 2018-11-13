@@ -132,6 +132,7 @@ def lookup_crypto_keys(session, address,
         handlers = KEY_LOOKUP_HANDLERS
 
     ungotten = get and get[:] or []
+    progress = [ ]
 
     for handler in handlers:
         if get and not ungotten:
@@ -149,11 +150,13 @@ def lookup_crypto_keys(session, address,
                 if not ungotten:
                     continue
 
+            progress.append(h.NAME)
             if event:
                 ordered_keys.sort(key=lambda k: -k["score"])
                 event.message = _('Searching for encryption keys in: %s'
                                   ) % _(h.NAME)
                 event.private_data = {"result": ordered_keys,
+                                      "progress": progress,
                                       "runningsearch": h.NAME}
                 session.config.event_log.log_event(event)
 
@@ -509,6 +512,13 @@ class KeyserverLookupHandler(LookupHandler):
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
+    def _allowed_by_config(self):
+        # FIXME: When direct keyserver contact works, change this.
+        config = self.session.config
+        return (
+            config.sys.proxy.protocol in ('none', 'unknown', 'system')
+            or config.sys.proxy.fallback)
+
     def _lookup(self, address, strict_email_match=False):
         # FIXME: We should probably just contact the keyservers directly.
         #
@@ -517,6 +527,9 @@ class KeyserverLookupHandler(LookupHandler):
         #    https://hkps.pool.sks-keyservers.net/pks/lookup?
         #        search=EMAIL&op=index&fingerprint=on&options=mr
         #
+        if not self._allowed_by_config():
+            return {}
+
         results = self._gnupg().search_key(address)
         if strict_email_match:
             for key in results.keys():
@@ -534,6 +547,8 @@ class KeyserverLookupHandler(LookupHandler):
         #    https://hkps.pool.sks-keyservers.net/pks/lookup?
         #        search=0xFINGERPRINT&op=get&options=mr
         #
+        if not self._allowed_by_config():
+            return {}
         return self._gnupg().recv_key(key['fingerprint'])
 
 

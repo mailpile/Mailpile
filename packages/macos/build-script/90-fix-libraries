@@ -38,8 +38,14 @@ _fixup_lib_names() {
         chmod u-w "$bin" "$lib"
     done
 }
+_remove_arch() {
+    lipo -output "$2".tmp -remove "$1" "$2" \
+        && mv -f "$2".tmp "$2" \
+        || rm -f "$2".tmp
+}
 cd "$MAILPILE_BREW_ROOT/bin"
 for bin in *; do
+#   _remove_arch i386 "$bin"
     _fixup_lib_names "$bin" "@executable_path"
 done
 
@@ -49,6 +55,7 @@ cd "$MAILPILE_BREW_ROOT"
     find Cellar opt -type f -name '*.dylib'
     find Cellar opt -type f -name '*.so'
 ) | while read bin; do
+#   _remove_arch i386 "$bin"
     _fixup_lib_names "$bin" "@loader_path"
 done
 

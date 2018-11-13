@@ -72,7 +72,8 @@ Mailpile.profile_edit = function(profile_id, section) {
 
 Mailpile.mailsource_login = function(mailsource_id, event_id) {
   var url = Mailpile.API.U(
-    '/settings/set/password/?mailsource=' + mailsource_id);
+    '/settings/set/password/?ui_force_login=1&ui_oneshot=1&mailsource='
+    + mailsource_id);
   Mailpile.auto_modal({
     url: url,
     title: '{{ _("Password Required") }}',
