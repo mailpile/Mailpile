@@ -545,6 +545,46 @@ class GnuPG:
         self.debug = (self._debug_all if (debug or DEBUG_GNUPG)
                       else self._debug_none)
 
+    def create_config_file(self, homedir_parent=None, overwrite=False):
+        # If we don't have an explicit location for this, abort.
+        if not self.homedir:
+            return
+
+        # If a homedir_parent is set, abort if the GnuPG homedir is not
+        # contained within it.
+        if (homedir_parent
+               and not self.homedir.startswith(homedir_parent)):
+            return
+
+        # Avoid overwriting an existing config
+        config = os.path.join(self.homedir, 'gpg.conf')
+        if os.path.exists(config) and not overwrite:
+            return
+
+        # Where do the GnuPG binaries live?  Are they .exe files?
+        binary_path = os.path.dirname(self.gpgbinary)
+        binary_suffix = '.exe' if ('win' in sys.platform) else ''
+
+        # Generate our configuration!
+        version = self.version_tuple()
+        vstring = '.'.join('%s' % i for i in version)
+        with open(config, 'w') as cfg:
+            cfg.write('# This is gpg.conf by Mailpile%s\n' %
+                      ' -- CHANGES WILL BE OVERWRITTEN!' if overwrite else '')
+            if version < (2, 0):
+                cfg.write('# Configured for: GnuPG %s\n' % vstring)
+
+            elif (2, 1) <= version < (3, 0):
+                cfg.write('# Configured for: GnuPG %s\n' % vstring)
+                cfg.write('dirmngr-program\t%s%s\n' % (
+                    os.path.join(binary_path, 'dirmngr'), binary_suffix))
+                cfg.write('agent-program\t%s%s\n' % (
+                    os.path.join(binary_path, 'gpg-agent'), binary_suffix))
+
+            else:
+                cfg.write('# Unsupported version (%s), not configured.\n'
+                          % vstring)
+
     def prepare_passphrase(self, keyid, signing=False, decrypting=False):
         """Query the Mailpile secrets for a usable passphrase."""
         def _use(kid, sps_reader):

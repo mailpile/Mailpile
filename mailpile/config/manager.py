@@ -517,8 +517,14 @@ class ConfigManager(ConfigDict):
         # But wait for 2 s max so other processes can't block Mailpile.
         try:
             locked = self.lock_pubconf.acquire(blocking=True, timeout=2)
+            # Create/update the mailpile.rc public config
             with open(pubfile, 'wb') as fd:
                 fd.write(self.as_config_bytes(_type='public'))
+
+            # Create/update our GnuPG configuration (maybe)
+            if self.sys.gpg_home:
+               GnuPG(self).create_config_file(
+                   homedir_parent=self.workdir, overwrite=True)
         finally:
             if locked:
                 self.lock_pubconf.release()
