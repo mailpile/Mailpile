@@ -714,12 +714,10 @@
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
           <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new Autocrypt Level 1 compatible key (3072 bit RSA PGP)")}}</option>
-        {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret','--usable').result %}
-        {%- set pgp_keys_list = pgp_keys|dictsort -%}
-        {%- set pgp_keys_list_bare = pgp_keys_list|map(attribute='1') -%}
-        {%- set pgp_keys_list_bare_sorted = pgp_keys_list_bare|sort(reverse=True, attribute='creation_date') -%}
-        
-        {%- for key in pgp_keys_list_bare_sorted -%}
+        {%- set pgp_keys = 
+             mailpile('crypto/gpg/keylist/secret','--usable').result.values() |
+                             sort(reverse=True, attribute='creation_date') -%}
+        {%- for key in pgp_keys -%}
           {%- set fingerprint = key['fingerprint'] -%}
           {%- for uid in key.uids %}
           <option value="{{fingerprint}}" data-uid="{{ uid.email }}"
