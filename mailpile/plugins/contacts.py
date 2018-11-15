@@ -1020,18 +1020,26 @@ def ProfileVCard(parent):
             event.data['keygen_finished'] = int(time.time())
             config.event_log.log_event(event)
 
-        def _create_new_key(self, vcard, keytype):
+        def _create_new_key(self, vcard, keytype_arg):
             passphrase = generate_autocrypt_setup_code()
             random_uid = vcard.random_uid
-            bits = int(keytype.replace('RSA', ''))
+
+            if keytype_arg[:3].upper() == 'RSA':
+                keytype = GnuPGBaseKeyGenerator.KEYTYPE_RSA
+                bits = int(keytype_arg[3:])
+            elif keytype_arg.upper() in ('ECC', 'ED25519', 'CURVE25519'):
+                keytype = GnuPGBaseKeyGenerator.KEYTYPE_CURVE25519
+                bits = None
+            else:
+                raise ValueError('Unknown keytype: %s' % keytype_arg)
+
             key_args = {
-                # FIXME: EC keys!
+                'keytype': keytype,
                 'bits': bits,
                 'name': vcard.fn,
                 'email': vcard.email,
                 'passphrase': passphrase,
-                'comment': ''
-            }
+                'comment': ''}
             event = Event(source=self,
                           flags=Event.INCOMPLETE,
                           data={'keygen_started': int(time.time()),

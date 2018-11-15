@@ -726,6 +726,7 @@
           </option>
           {%- endfor %}
         {%- endfor %}
+          <option value="!CREATE:CURVE25519">{{_("Create a new Elliptic Curve 25519 PGP key")}}</option>
           <option value="!CREATE:RSA4096">{{_("Create a new 4096 bit RSA key (slow)")}}</option>
           <option value="!CREATE:RSA2048">{{_("Create a new 2048 bit RSA key")}}</option>
           <option {% if not result['security-pgp-key'] %}selected {% endif -%}
