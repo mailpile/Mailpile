@@ -4,15 +4,22 @@ set -x
 
 [ "$SKIP_MAILPILE" = "" ] || exit 0
 
+TARGET="$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+
 # Install Mailpile
 cd "$SOURCE_DIR"
-rm -rf "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
-mkdir "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+rm -rf "$TARGET"
+mkdir "$TARGET"
 cp -va \
     mailpile \
     scripts \
     shared-data \
-    "$BUILD_DIR/Mailpile.app/Contents/Resources/app/opt/mailpile"
+    "$TARGET"
 
-# Install wrapper so mailpile can launch with correcth path and python path
+# These will have been compiled by the wrong python, if present,
+# so get rid of them.
+find "$TARGET" -name \*.pyc -type f | xargs rm -f
+find "$TARGET" -name \*.pyo -type f | xargs rm -f
+
+# Install wrapper so mailpile can launch with correct path and python path
 cp -a packages/macos/mailpile "$BUILD_DIR/Mailpile.app/Contents/Resources/app/bin/"

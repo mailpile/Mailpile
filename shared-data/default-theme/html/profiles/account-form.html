@@ -126,12 +126,13 @@
           var found = 0;
           $(pf + '.fpa-pgp-key option').each(function(i) {
             var uid = $(this).data('uid');
-            if (found == 0 && uid == email) {
-              $(this).prop('selected', true).removeClass('hide');
+            $(this).prop('selected', false);
+            if (uid == email) {
+              $(this).removeClass('hide');
+              if (found == 0) $(this).prop('selected', true);
               found = 1;
             }
             else {
-              $(this).prop('selected', false);
               if (uid) $(this).addClass('hide');
             }
             if (!found) {
@@ -713,9 +714,11 @@
                 onchange="javascript:_fpa.select(this, 'security-opt');"
                 name="security-pgp-key">
           <option value="!CREATE:RSA3072" class="fpa-pgp-key-default">{{_("Create a new Autocrypt Level 1 compatible key (3072 bit RSA PGP)")}}</option>
-        {%- set pgp_keys = mailpile('crypto/gpg/keylist/secret','--usable').result %}
-        {%- for fingerprint in pgp_keys -%}
-          {%- set key = pgp_keys[fingerprint] -%}
+        {%- set pgp_keys = 
+             mailpile('crypto/gpg/keylist/secret','--usable').result.values() |
+                             sort(reverse=True, attribute='creation_date') -%}
+        {%- for key in pgp_keys -%}
+          {%- set fingerprint = key['fingerprint'] -%}
           {%- for uid in key.uids %}
           <option value="{{fingerprint}}" data-uid="{{ uid.email }}"
                   {%- if (fingerprint == result['security-pgp-key']) and (uid.email == result.email) %} selected{% endif %}

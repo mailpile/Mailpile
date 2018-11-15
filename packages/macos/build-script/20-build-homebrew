@@ -2,6 +2,7 @@
 set -e
 set -x
 
+[ "$KEEP_BUNDLE" = "" ] || exit 0
 [ "$SKIP_HOMEBREW" = "" ] || exit 0
 
 # Install Mailpile Dependencies from homebrew.
@@ -9,22 +10,28 @@ set -x
 mkdir -p $MAILPILE_BREW_ROOT
 cd "$MAILPILE_BREW_ROOT"
 
-[ -e "$BUILD_DIR/Homebrew.git" ] && mv "$BUILD_DIR/Homebrew.git" .git
-[ -e "$BUILD_DIR/Homebrew.lib" ] && mv "$BUILD_DIR/Homebrew.lib" Library/Homebrew
+[ -e "$BUILD_DIR/Homebrew.git"  ] && mv "$BUILD_DIR/Homebrew.git" .git
+[ -e "$BUILD_DIR/Homebrew.lib"  ] && mv "$BUILD_DIR/Homebrew.lib" Library/Homebrew
+[ -e "$BUILD_DIR/Homebrew.taps" ] && mv "$BUILD_DIR/Homebrew.taps" Library/Taps
 
 [ -e bin/brew ] || \
     curl -kL https://github.com/Homebrew/brew/tarball/master \
     | tar xz --strip 1
 echo
 brew update
-brew install openssl@$OPENSSL_VERSION
+brew install openssl@$OPENSSL_VERSION \
+    || brew upgrade openssl@$OPENSSL_VERSION
 brew link --force openssl@$OPENSSL_VERSION
 brew install "$SYMLINKS_SRC"
-brew install \
+for p in \
     libjpeg \
     gnupg@$GNUPG_VERSION \
     python@$PYTHON_MAJOR_VERSION \
-    tor
+    tor \
+; do
+    brew install "$p" || brew upgrade "$p"
+done
 
-mv .git "$BUILD_DIR/Homebrew.git"
+mv .git             "$BUILD_DIR/Homebrew.git"
 mv Library/Homebrew "$BUILD_DIR/Homebrew.lib"
+mv Library/Taps     "$BUILD_DIR/Homebrew.taps"

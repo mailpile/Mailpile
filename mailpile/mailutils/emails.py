@@ -1140,6 +1140,9 @@ class Email(object):
                         convs.append(Email(self.index, int(rid, 36)
                                            ).get_msg_summary())
 
+        if (want is None or 'headerprints' in want):
+            tree['headerprints'] = self.get_headerprints()
+
         if (want is None or 'headers' in want) and 'headers' not in tree:
             tree['headers'] = {}
             for hdr in msg.keys():

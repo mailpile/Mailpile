@@ -2,6 +2,7 @@
 set -e
 set -x
 
+[ "$KEEP_BUNDLE" = "" ] || exit 0
 [ "$SKIP_GUI_O_MAC_TIC" = "" ] || exit 0
 
 mkdir -p $ICONSET_DIR

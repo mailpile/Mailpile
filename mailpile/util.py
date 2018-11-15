@@ -55,6 +55,8 @@ RID_COUNTER_LOCK = threading.Lock()
 MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
 
+# Warning: this is duplicated in the javascript, grep for WORD_REGEXP
+#          to keep any changes in sync.
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;`\'\\\<\>\?,\.\/\-]{2,}')
 

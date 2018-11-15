@@ -40,7 +40,7 @@ Mailpile.bulk_actions_update_ui = function() {
       }
       else {
         message += $context.find('#bulk-actions-message').data('bulk_selected');
-        if (selected.length == 1) Mailpile.show_message_hints($context, selected);
+        Mailpile.show_related_search_link($context, selected);
       }
       $context.find('#bulk-actions-message').addClass('mobile-hide').html(message);
       $context.find('.sub-navigation').addClass('mobile-hide');
@@ -69,11 +69,117 @@ Mailpile.bulk_actions_update_ui = function() {
 
 
 Mailpile.hide_message_hints = function($context) {
-  $context.find('div.bulk-actions-hints').html('');
+  $context.find('div.bulk-actions-hints').html('').on('click', undefined);
 };
 
 
-Mailpile.show_message_hints = function($context, selected) {
+Mailpile.show_related_search_link = function($context, selected) {
+  if (selected && (selected.length < 4) && (selected[0] != '!all')) {
+    $context.find('div.bulk-actions-hints').html(
+      '<a><span class="icon-search"></span>' +
+      ' {{_("Search for Similar E-mail")}}</a>').off('click').on('click',
+    function() {
+      var stoplist = {{ ('%s' % stoplist|list)|safe }};
+      var data = {
+        qq: function(p, t, cutoff) {
+          // Warning: This is the same as mailpile.utils.WORD_REGEXP
+          //          and they need to be kept in sync.
+          var qt = t.replace(
+            /[\s\!@#$%^&*\(\)_+=\{\}\[\]:\"|;`\'\\\<\>\?,\.\/\-]/g, ' '
+            ).split(/ +/
+            ).filter(function(w) {
+              return ((stoplist.indexOf(w.toLowerCase()) < 0) &&
+                      (w.length > 1))}
+            ).sort(function(a, b) {
+              return (a.length < b.length)}
+            ).slice(0, (cutoff || 3));
+          if (p && p.length) return p + ':' + qt.join(' ' + p + ':');
+          return qt.join(' ');
+        },
+        q: function(p, t, cutoff) {
+          t = t.split(/ +/
+            ).sort(function(a, b) {
+              return (a.length < b.length)}
+            ).slice(0, (cutoff || 3));
+          return p + ':' + t.join(' ' + p + ':');
+        },
+        trunc: function(s, len) {
+          if (s.length > (len-3)) return s.substring(0, (len-3)) + ' ...';
+          return s;
+        },
+        subjects: [],
+        lists: [],
+        emails: [],
+        froms: [],
+        muas: [],
+        hpts: [],
+        hpss: [],
+        extras: ''};
+
+      var date_start = '';
+      var date_end = '';
+
+      $.each(selected, function(i, mid) {
+        var $msg = $('tr.pile-message-' + mid);
+        var from = $msg.find('td.from').data('address');
+        var subj = $msg.find('.message-subject').html();
+        if (!subj) subj = $msg.find('.subject a').html();
+        data.subjects.push(subj);
+        if (data.emails.indexOf(from) < 0) data.emails.push(from);
+        $.each($msg.data('to-cc').split(/ /), function(i, email) {
+          if (email && (data.emails.indexOf(email) < 0)) {
+            data.emails.push(email);
+          }
+        });
+        if (data.froms.indexOf(from) < 0) data.froms.push(from);
+        data.lists.push($msg.data('list'));
+        data.muas.push($msg.data('mua'));
+        data.hpts.push($msg.data('mua-fingerprint'));
+        data.hpss.push($msg.data('sender-fingerprint'));
+        var ts = $msg.find('td.date').data('ts');
+        if (!date_start || (ts < date_start)) date_start = ts;
+        if (!date_end || (ts > date_end)) date_end = ts;
+
+        // FIXME: Add more special cases
+        if (from == 'notifications@github.com') {
+          data.extras = $msg.find('td.from').data('fn');
+        }
+      });
+
+      var d4s = new Date((date_start - (24 * 3600 * 14)) * 1000);
+      var d4e = new Date((date_end + (24 * 3600 * 14)) * 1000);
+      data.date_range_4wks = (
+        d4s.getFullYear() + '-' +
+        (d4s.getMonth()+1) + '-' +
+        d4s.getDate() + '..' +
+        d4e.getFullYear() + '-' +
+        (d4e.getMonth() + 1) + '-' +
+        d4e.getDate());
+
+      var d2s = new Date((date_start - (24 * 3600 * 7)) * 1000);
+      var d2e = new Date((date_end + (24 * 3600 * 7)) * 1000);
+      data.date_range_2wks = (
+        d2s.getFullYear() + '-' +
+        (d2s.getMonth()+1) + '-' +
+        d2s.getDate() + '..' +
+        d2e.getFullYear() + '-' +
+        (d2e.getMonth() + 1) + '-' +
+        d2e.getDate());
+
+      data.froms.sort();
+      data.lists.sort();
+      data.emails.sort();
+      data.subjects.sort();
+
+      Mailpile.API.with_template('modal-related-search', function(modal) {
+        Mailpile.UI.show_modal(modal(data));
+      });
+    });
+  }
+};
+
+
+Mailpile.DELETEMEshow_message_hints = function($context, selected) {
   $.each(selected, function(key, mid) {
     if (mid != '!all') {
       var $elem = $context.find('.pile-message-' + mid);

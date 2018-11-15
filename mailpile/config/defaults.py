@@ -1,4 +1,4 @@
-APPVER = "1.0.0rc3"
+APPVER = "1.0.0rc4"
 ABOUT = """\
 Mailpile.py              a tool             Copyright 2013-2018, Mailpile ehf
  v%8.0008s         for searching and               <https://www.mailpile.is/>
@@ -145,6 +145,8 @@ CONFIG_RULES = {
         'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'allow_deletion': X(_('Allow permanent deletion of e-mails'),
                                                                   bool, False),
+        'deletion_ratio': X(_('Max fraction of source mail to delete per pass'),
+                                                                 float,  0.75),
 # FIXME:
 #       'backup_to_web':  X(_('Backup settings and keys to mobile web app'),
 #                                                                  bool, True),
