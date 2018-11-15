@@ -876,12 +876,15 @@ class GpgCommand(Command):
         gnupg_args = gnupg.common_args(interactive=True)
         binary = gnupg.gpgbinary
         rv = '(unknown)'
+        def _shellquote(s):
+            return "'" + s.replace("'", "'\\''") + "'"
         with self.session.ui.term:
             try:
                 self.session.ui.block()
                 if (self.session.ui.interactive and
                         self.session.ui.render_mode == 'text'):
-                    rv = os.system(' '.join(gnupg_args + args))
+                    rv = os.system(' '.join(_shellquote(a)
+                                            for a in (gnupg_args + args)))
                     stdout = None
                 else:
                     sp = subprocess.Popen(
