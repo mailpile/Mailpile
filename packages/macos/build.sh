@@ -32,9 +32,6 @@ export OPENSSL_VERSION=1.0
 export SYMLINKS_SRC="$SOURCE_DIR/packages/macos/brew/symlinks.rb"
 export KEYCHAIN=~/Library/Keychains/login.keychain
 
-export GUI_O_MAC_TIC_REPO=https://github.com/mailpile/gui-o-mac-tic
-export GUI_O_MAC_TIC_BRANCH=master
-
 # See this mailing list post: http://curl.haxx.se/mail/archive-2013-10/0036.html
 export OSX_MAJOR_VERSION="$(sw_vers -productVersion | cut -d . -f 2)"
 if [ $(echo "$OSX_MAJOR_VERSION  < 9" | bc) == 1 ]; then
