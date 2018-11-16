@@ -22,7 +22,7 @@
       {% if tag.subtag_ids %}
       <a href="#" class="tag-card-subtags link-detail" data-tid="{{tag.tid}}">{{tag.subtag_ids|length}} {{_("Subtags")}}</a>
       {% endif %}
-      <a href="{{ config.sys.http_path }}/tags/edit.html?only={{tag.slug}}" class="link-detail right"><span class="icon-settings"></span> Settings</a>
+      <a href="{{ U('/tags/edit.html?only=', tag.slug) }}" class="link-detail right"><span class="icon-settings"></span> Settings</a>
     </div>
   </div>
 </div>

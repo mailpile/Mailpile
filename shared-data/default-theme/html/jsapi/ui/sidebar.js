@@ -191,7 +191,7 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
       $(this).append(
         '<a class="sidebar-tag-settings auto-modal auto-modal-reload"' +
         ' title="Edit: ' + slug + '"' +
-        ' href="/tags/edit.html?only='+slug+'">' +
+        ' href="' + Mailpile.API.U('/tags/edit.html?only=')+slug+'">' +
         '<span class="icon-settings"></span></a>');
     });
 
