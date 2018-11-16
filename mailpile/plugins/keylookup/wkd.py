@@ -1,4 +1,6 @@
 import hashlib
+import ssl
+import urllib
 import urllib2
 
 from mailpile.conn_brokers import Master as ConnBroker
@@ -50,6 +52,10 @@ class WKDLookupHandler(LookupHandler):
     PRIVACY_FRIENDLY = True  # These lookups can go over Tor
     SCORE = 5
 
+    URL_FORMATS = (
+        'https://openpgpkey.%(d)s/.well-known/%(d)s/openpgpkey/hu/%(l)s?%(q)s',
+        'https://%(d)s/.well-known/openpgpkey/hu/%(l)s?%(q)s')
+
     def __init__(self, *args, **kwargs):
         LookupHandler.__init__(self, *args, **kwargs)
         self.key_cache = { }
@@ -62,24 +68,39 @@ class WKDLookupHandler(LookupHandler):
         local_part_encoded = _zbase_encode(
             hashlib.sha1(local.lower().encode('utf-8')).digest())
 
-        url = ("https://%s/.well-known/openpgpkey/hu/%s"
-               % (domain, local_part_encoded))
+        error = None
+        for urlfmt in self.URL_FORMATS:
+            url = urlfmt % {
+                'd': domain,
+                'l': local_part_encoded,
+                'q': urllib.urlencode({'l': local})}
 
-        # This fails A LOT, so just swallow the most common errors.
-        try:
-            with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
-                r = urllib2.urlopen(url)
-        except urllib2.URLError:
-            # This gets thrown on TLS key mismatch
-            return {}
-        except urllib2.HTTPError as e:
-            if e.code == 404:
-                return {}
-            raise
+            try:
+                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
+                    r = urllib2.urlopen(url)
+                error = None
+                break
+            except (urllib2.URLError, ssl.CertificateError):
+                error = 'TLS'  # Wrong TLS keys are common. :-(
+            except urllib2.HTTPError as e:
+                if e.code == 404:
+                    error = '404'
+                    # Since we are testing openpgpkey.* first, if we actually get a
+                    # valid response back we should treat that as authoritative and
+                    # not waste cycles checking the bare domain too.
+                    break
+                else:
+                    error = str(e)
 
-        result = r.read()
-        keydata = get_keydata(result)[0]
-        self.key_cache[keydata["fingerprint"]] = result
+        if not error:
+            result = r.read()
+            keydata = get_keydata(result)[0]
+            self.key_cache[keydata["fingerprint"]] = result
+        elif error in ('TLS', '404'):
+            return {}  # Suppress these errors, they are common.
+        else:
+            raise ValueError(error)
+
         return {keydata["fingerprint"]: keydata}
 
     def _getkey(self, keydata):
