@@ -22,7 +22,6 @@ WORKDIR /home/mailpile
 USER mailpile
 
 VOLUME /home/mailpile/.local/share/Mailpile
-VOLUME /home/mailpile/.gnupg
 EXPOSE 33411
 
 CMD mailpile --www=0.0.0.0:33411/ --wait
