@@ -25,4 +25,4 @@ VOLUME /home/mailpile/.local/share/Mailpile
 VOLUME /home/mailpile/.gnupg
 EXPOSE 33411
 
-CMD service tor start; mailpile --www=0.0.0.0:33411/ --wait
+CMD mailpile --www=0.0.0.0:33411/ --wait
