@@ -2,6 +2,7 @@ import base64
 import datetime
 import re
 import time
+import traceback
 import urllib2
 from email import encoders
 from email.mime.base import MIMEBase
@@ -30,16 +31,16 @@ from mailpile.util import sha1b64
 _plugins = PluginManager(builtin=__file__)
 
 
-##[ Misc. AutoCrypt-related API commands ]####################################
+##[ Misc. Autocrypt-related API commands ]####################################
 
 
 # FIXME: This really should be a record store, not an in-memory dict
-def save_AutoCrypt_DB(config):
+def save_Autocrypt_DB(config):
     if config.autocrypt_db:
         config.save_pickle(config.autocrypt_db, 'autocrypt_db')
 
 
-def get_AutoCrypt_DB(config):
+def get_Autocrypt_DB(config):
     if not config.real_hasattr('autocrypt_db'):
         try:
             db = config.load_pickle('autocrypt_db')
@@ -49,117 +50,174 @@ def get_AutoCrypt_DB(config):
     return config.autocrypt_db
 
 
-class AutoCryptRecord(dict):
-    INIT_ORDER = ('key', 'ts-message-date', 'prefer-encrypt',
-                  'count', 'mid', 'ts-last-seen')
+class AutocryptRecord(object):
+    RATIO_MAX = 10000.0  # Force calculations to be floats
+    RATIO_INIT = 10000
+    RATIO_WINDOW = 100
+    INIT_ORDER = ('key_sig', 'autocrypt_ts', 'prefer_encrypt',
+                  'key_count', 'mid', 'last_seen_ts', 'seen_count',
+                  'imported_ts', 'key_ratio')
 
     def __init__(self, to,
-                 key=None, ts_message_date=None, prefer_encrypt=None,
-                 count=1, mid=None, ts_last_seen=None):
-        self['to'] = to
-        self['ts-message-date'] = ts_message_date or int(time.time())
-        self['ts-last-seen'] = ts_last_seen or self['ts-message-date']
-        self['key'] = key  # Signature of key data (not key itself)
-        self['mid'] = mid  # MID of most recent message with this key.
-        self['count'] = count  # How many times have we seen this key?
-        self['prefer-encrypt'] = prefer_encrypt
+                 key_sig=None, autocrypt_ts=None, prefer_encrypt=None,
+                 key_count=None, mid=None, last_seen_ts=None,
+                 seen_count=None, imported_ts=None, key_ratio=None):
+        if '@' not in to:
+            raise ValueError('To must be an e-mail address')
+        self.autocrypt_ts = int(key_sig and autocrypt_ts or 0)
+        self.prefer_encrypt = prefer_encrypt or ''
+        self.key_sig = key_sig or ''
+        self.key_count = int(key_count or (key_sig and 1) or 0)
+        self.to = to
+        self.mid = mid or ''
+        self.last_seen_ts = int(last_seen_ts or autocrypt_ts or time.time())
+        self.seen_count = int(seen_count or 1)
+        self.imported_ts = (imported_ts or 0)
+        self.key_ratio = (key_ratio or (self.RATIO_INIT if key_sig else 0))
+
+    def float_ratio(self):
+        return (self.key_ratio / self.RATIO_MAX)
+
+    def update_ratio(self, have_key=True):
+        window = float(min(self.seen_count, self.RATIO_WINDOW))
+        oratio = self.key_ratio
+        self.key_ratio = int(self.RATIO_MAX * (
+            ((self.key_ratio / self.RATIO_MAX) * (window-1) / window) +
+            ((1.0 if have_key else 0) / window)))
+        return (oratio != self.key_ratio)
 
     def should_encrypt(self):
-        return (self['prefer-encrypt'] == 'mutual')
+        return (
+            self.key_sig and
+            self.prefer_encrypt == 'mutual' and
+            self.autocrypt_ts == self.last_seen_ts)
+
+    def as_list(self):
+        return [self.__getattribute__(k) for k in self.INIT_ORDER]
+
+    def as_dict(self):
+        return dict(
+            (k, self.__getattribute__(k))
+            for k in (['to'] + list(self.INIT_ORDER)))
 
     def save_to(self, db):
-        db[canonicalize_email(self['to'])] = [self[k] for k in self.INIT_ORDER]
+        db[canonicalize_email(self.to)] = self.as_list()
         return self
 
     @classmethod
     def Load(cls, db, to):
-        return cls(to, *db[canonicalize_email(to)])
-
-
-def AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
-                            autocrypt_header=None):
-    autocrypt_header = (
-        autocrypt_header or
-        extract_autocrypt_header(msg, to=sender_email))
-    gossip_headers = extract_autocrypt_gossip_headers(msg, to=sender_email)
-
-    db = get_AutoCrypt_DB(config)['state']
-    if autocrypt_header:
-        ts = msg_ts
-        to = autocrypt_header['addr']
-        mid = msg_mid
-        key_data = autocrypt_header['keydata']
-
-        # Trying keep the DB Small: we don't store full keys, just hashes
-        # of them. When or if we actually decide to use the key it must
-        # either be findable in e-mail (not deleted) or in a keychain.
-        # Since AutoCrypt is opportunistic, missing some chances to encrypt
-        # is by definition acceptable! We also deliberately do not use
-        # the key fingerprint here, as we would still like to detect and
-        # capture updates when subkeys change.
-        key = sha1b64(key_data).strip()
-        pe = autocrypt_header.get('prefer-encrypt')
-
         try:
-            existing = AutoCryptRecord.Load(db, to)
-            if existing['key'] == key and existing['mid'] != mid:
-                # This is the same key! Count it.
-                existing['count'] += 1
-
-                # If and only if this header is newer than what we have on
-                # file: update some of our attributes.
-                if existing['ts-last-seen'] < ts:
-                    existing['ts-last-seen'] = ts
-                    existing['mid'] = mid
-                    existing['prefer-encrypt'] = pe
-
-                # If it's old and provides us with an earlier date for
-                # the "origin" of this key, make note of that as well.
-                elif existing['ts-message-date'] > ts:
-                    existing['ts-message-date'] = ts
-
-                # Add the raw key data (for use downstream), save, return.
-                return existing.save_to(db)
-
-            elif existing['ts-last-seen'] >= ts:
-                if existing['ts-message-date'] < ts:
-                    # FIXME: This is evidence sender has multiple clients
-                    # doing AutoCrypt at once. That's a problem! We might
-                    # want to make a note of this and do something about it.
-                    # This is a point to discuss with the AutoCrypt group.
-                    pass
-
-                # Header is older than what we already have on file, ignore!
-                # But... return the parsed record, even if this is a no-op.
-                # This allows the keyword extractor to use the data, at
-                # the expense of things seeming more exciting than they
-                # really are when run manually.
-                return AutoCryptRecord(
-                     to, key=key, ts=ts, prefer_encrypt=pe, mid=mid)
-
-        except (TypeError, KeyError):
-            pass
-
-        # Create a new record, yay!
-        record = AutoCryptRecord(
-            to, key=key, ts_message_date=ts, prefer_encrypt=pe, mid=mid)
-
-        return record.save_to(db)
-
-    # If we get this far, we have no valid AutoCrypt header (new or old).
-    # Remove address from our database to save resources. We don't care
-    # about the null states at the moment.
-    if sender_email in db:
-        del db[sender_email]
-        return False
-
-    return None
+            return cls(to, *db[canonicalize_email(to)])
+        except (AttributeError, TypeError):
+            raise KeyError('Not Found')
 
 
-##[ AutoCrypt debugging and API commands ]#####################################
+def Autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
+                            autocrypt_header=None, save_DB=False):
+    """
+    Process an e-mail, updating the Autocrypt state database as appropriate.
+    If the state database has changed, return the new state. Otherwise None.
+    """
+    db = get_Autocrypt_DB(config)['state']
+    changed = False
+    try:
+        existing = AutocryptRecord.Load(db, sender_email)
+    except KeyError:
+        existing = None
 
-class AutoCryptSearch(Command):
-    """Search for the AutoCrypt database."""
+    # Trying keep the DB Small: we don't store full keys, just hashes
+    # of them. When or if we actually decide to use the key it must
+    # either be findable in e-mail (not deleted) or in a keychain.
+    # Since Autocrypt is opportunistic, missing some chances to encrypt
+    # is by definition acceptable! We also deliberately do not use
+    # the key fingerprint here, as we would still like to detect and
+    # capture updates when subkeys or UIDs change.
+    try:
+        # Note: Fails if the sender_email doesn't match the addr= attribte.
+        autocrypt_header = (
+            autocrypt_header or
+            extract_autocrypt_header(msg, to=sender_email))
+
+        if autocrypt_header:
+            to = autocrypt_header['addr']
+            pe = autocrypt_header.get('prefer-encrypt')
+            key_data = autocrypt_header['keydata']
+            key_sig = sha1b64(key_data).strip()
+            # FIXME: Do we need to handle gossip headers here? If the way
+            #        we handle keys using keytofu and the search engine is
+            #        compatible with Autocrypt, then maybe no...?
+        else:
+            to = pe = key_data = key_sig = None
+
+        # Note: This algorithm differs from the update algorithm described in
+        #       the Autocrypt Level 1 spec, because we're also updating a
+        # counter that tells us how often we've seen a particular key.
+
+        # New entry or no-op; short circuit
+        if existing is None:
+            if key_sig:
+                existing = AutocryptRecord(to,
+                    key_sig=key_sig,
+                    autocrypt_ts=msg_ts,
+                    prefer_encrypt=pe,
+                    mid=msg_mid)
+                changed = True
+                return existing  # Will save in `finally` block
+            else:
+                return None
+
+        # Always update last-seen timestamp and seen counter
+        if existing.mid != msg_mid:
+            existing.seen_count += 1
+            changed = True
+        if existing.last_seen_ts < msg_ts:
+            existing.last_seen_ts = msg_ts
+            changed = True
+
+        # Same key: Update counts and policy/timestamp if newer
+        if existing.key_sig == key_sig:
+            if existing.mid != msg_mid:
+                if existing.autocrypt_ts < msg_ts:
+                    existing.autocrypt_ts = msg_ts
+                    existing.prefer_encrypt = pe
+                    existing.mid = msg_mid
+                existing.key_count += 1
+                changed = True
+
+        # Different key: If newer than what's on file, update
+        if key_sig and existing.autocrypt_ts < msg_ts:
+            existing.autocrypt_ts = msg_ts
+            existing.key_sig = key_sig
+            existing.mid = msg_mid
+            existing.prefer_encrypt = pe
+            existing.key_count = 1
+            existing.imported_ts = 0
+            changed = True
+
+        # Update our estimated ratio of how many mails have Autocrypt
+        if existing:
+            if existing.update_ratio(have_key=(key_sig is not None)):
+                changed = True
+
+        # If we made changes, return the current state. Else, None.
+        return (existing if changed else None)
+
+    except (TypeError, KeyError):
+        traceback.print_exc()
+        changed = False
+        return None
+
+    finally:
+        if changed and (existing is not None):
+            existing.save_to(db)
+            if save_DB:
+                save_Autocrypt_DB(config)
+
+
+##[ Autocrypt debugging and API commands ]#####################################
+
+class AutocryptSearch(Command):
+    """Search for the Autocrypt database."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/autocrypt/search', 'crypto/autocrypt/search', '<emails>')
     HTTP_CALLABLE = ('GET', )
@@ -169,8 +227,10 @@ class AutoCryptSearch(Command):
         def as_text(self):
             if self.result:
                 r = self.result
-                return '\n'.join(["%s: %s (%s)" % (
-                                      to, r[to], r[to].should_encrypt())
+                return '\n'.join(["%s: %s (should_encrypt=%s)" % (
+                                      to,
+                                      r[to].as_dict(),
+                                      r[to].should_encrypt())
                                   for to in sorted(r.keys())])
             else:
                 return _("No results")
@@ -180,8 +240,8 @@ class AutoCryptSearch(Command):
         for q in self.data.get('q', []):
             args.extend(q.split())
 
-        db = get_AutoCrypt_DB(self.session.config)['state']
-        results = dict((e, AutoCryptRecord.Load(db, e))
+        db = get_Autocrypt_DB(self.session.config)['state']
+        results = dict((e, AutocryptRecord.Load(db, e))
                        for e in args if canonicalize_email(e) in db)
 
         if results:
@@ -191,8 +251,8 @@ class AutoCryptSearch(Command):
             return self._error(_("Not found"), results)
 
 
-class AutoCryptForget(Command):
-    """Forget all AutoCrypt state for a list of e-mail address."""
+class AutocryptForget(Command):
+    """Forget all Autocrypt state for a list of e-mail address."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/autocrypt/forget', 'crypto/autocrypt/forget', '<emails>')
     HTTP_CALLABLE = ('POST', )
@@ -203,55 +263,48 @@ class AutoCryptForget(Command):
         args.extend(self.data.get('email', []))
 
         forgot = []
-        changes = 0
-        db = get_AutoCrypt_DB(self.session.config)['state']
+        db = get_Autocrypt_DB(self.session.config)['state']
         for e in args:
             if e in db:
-                changes += 1
                 del db[e]
                 forgot.append(e)
 
-        if changes:
-            save_AutoCrypt_DB(self.session.config)
-            return self._success(_("Forgot %d recipients") % changes, forgot)
+        if forgot:
+            save_Autocrypt_DB(self.session.config)
+            return self._success(_("Forgot %d recipients") % len(forgot),
+                                 forgot)
         else:
             return self._error(_("Not found"))
 
 
-class AutoCryptParse(Command):
-    """Parse the AutoCrypt header from a message (or messages)."""
+class AutocryptParse(Command):
+    """Parse the Autocrypt header from a message (or messages)."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/autocrypt/parse', 'crypto/autocrypt/parse', '<emails>')
     HTTP_CALLABLE = ('POST', )
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
-        args = list(self.args)
 
-        emails = [Email(idx, i) for i in self._choose_messages(args)]
-        db = get_AutoCrypt_DB(config)['state']
         updated = []
+        args = list(self.args)
+        for e in [Email(idx, i) for i in self._choose_messages(args)]: 
+            autocrypt_meta_kwe(
+                idx, e.msg_mid(), e.get_msg(), None,
+                int(e.get_msg_info(e.index.MSG_DATE), 36),
+                update_cb=lambda u, k: updated.append((u, k)),
+                save_DB=False)
 
-        for e in emails:
-            msg = e.get_msg()
-            if 'autocrypt' in msg:
-                sender = e.get_sender()
-                update = AutoCrypt_process_email(
-                    config, e.get_msg(), e.msg_mid(),
-                    int(e.get_msg_info(e.index.MSG_DATE), 36), sender)
-                if update is not None:
-                    # Note: update==False means an entry was removed, which
-                    #       is an interesting event!
-                    updated.append(sender)
-
+        updated = [(u[0].as_dict(), sorted(list(u[1])))
+                   for u in updated if u[0] is not None]
         if updated:
-            save_AutoCrypt_DB(config)
+            save_Autocrypt_DB(config)
 
         return self._success("Updated %d records" % len(updated), updated)
 
 
-class AutoCryptPeers(Command):
-    """List known AutoCrypt Peers and their state."""
+class AutocryptPeers(Command):
+    """List known Autocrypt Peers and their state."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/autocrypt/peers', 'crypto/autocrypt/peers', None)
     HTTP_CALLABLE = ('POST', )
@@ -260,21 +313,25 @@ class AutoCryptPeers(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
-        db = get_AutoCrypt_DB(config)['state']
+        db = get_Autocrypt_DB(config)['state']
 
         return self._success(_("Found %d peers") % len(db), db)
 
 
-def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
+def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts,
+                       body_info=None, update_cb=None, save_DB=True):
     keywords = set([])
     config = index.config
 
     mimetype = (msg.get_content_type() or '').lower()
-    if ('autocrypt' in msg
-            and mimetype not in AUTOCRYPT_IGNORE_MIMETYPES):
+    if mimetype not in AUTOCRYPT_IGNORE_MIMETYPES:
+        autocrypt_header = sender = None
 
-        sender = ExtractEmails(msg['from'])[0]
-        autocrypt_header = extract_autocrypt_header(msg, to=sender)
+        senders = ExtractEmails(msg['from'])  # FIXME: Shitty parser?
+        if len(senders) == 1:
+            sender = senders[0]
+            autocrypt_header = extract_autocrypt_header(msg, to=sender)
+
         if autocrypt_header:
             keywords.add('pgp:has')
             keywords.add('autocrypt:has')
@@ -282,15 +339,22 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts, body_info=None):
             if key_data:
                 keywords |= set(get_pgp_key_keywords(key_data))
 
-            AutoCrypt_process_email(config, msg, msg_mid, msg_ts, sender,
-                                    autocrypt_header=autocrypt_header)
+            for gh in extract_autocrypt_gossip_headers(msg):
+                key_data = gh.get('keydata')
+                if key_data:
+                    keywords.add('autocrypt-gossip:has')
+                    keywords |= set(get_pgp_key_keywords(key_data))
 
-            save_AutoCrypt_DB(config)
+        update = Autocrypt_process_email(config, msg, msg_mid, msg_ts, sender,
+                                         autocrypt_header=autocrypt_header,
+                                         save_DB=save_DB)
+        if update_cb is not None:
+            update_cb(update, keywords)
 
     return keywords
 
 
-class AutoCryptTxf(EmailTransform):
+class AutocryptTxf(EmailTransform):
     """
     This is an outgoing email content transform for adding autocrypt headers.
 
@@ -350,13 +414,13 @@ class AutoCryptTxf(EmailTransform):
 
 _plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
 _plugins.register_commands(
-    AutoCryptSearch,
-    AutoCryptForget,
-    AutoCryptParse,
-    AutoCryptPeers)
+    AutocryptSearch,
+    AutocryptForget,
+    AutocryptParse,
+    AutocryptPeers)
 
 # Note: we perform our transformations BEFORE the GnuPG transformations
 # (prio 500), so the memory hole transformation can take care of hiding
 # the Autocrypt-Gossip headers.
 _plugins.register_outgoing_email_content_transform(
-    '400_autocrypt', AutoCryptTxf)
+    '400_autocrypt', AutocryptTxf)
