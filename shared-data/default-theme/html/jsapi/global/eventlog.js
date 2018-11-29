@@ -63,11 +63,13 @@ EventLog.poll = function() {
   //
   //time for server to wait for new events
   var waittime = 30;
+  //extra time to account for processing time on backend
+  var buffer = 5;
   EventLog.request({
     since: EventLog.last_ts,
     gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
     wait: waittime,
-    _timeout: (waittime+1)*1000
+    _timeout: (waittime+buffer)*1000
   });
 };
 
