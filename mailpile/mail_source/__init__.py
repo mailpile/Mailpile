@@ -402,7 +402,7 @@ class BaseMailSource(threading.Thread):
                     self._sleeping_is_ok(seconds - self._sleeping) and
                     (enabled == self.my_config.enabled) and
                     not mailpile.util.QUITTING):
-                time.sleep(min(1, self._sleeping))
+                time.sleep(max(0, min(1, self._sleeping)))
                 self._sleeping -= 1
         self._sleeping = None
         play_nice_with_threads()
