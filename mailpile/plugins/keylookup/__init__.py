@@ -5,7 +5,7 @@ from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
-from mailpile.plugins import PluginManagerF
+from mailpile.plugins import PluginManager
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
