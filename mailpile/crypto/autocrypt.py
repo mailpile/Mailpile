@@ -1,8 +1,90 @@
 from __future__ import print_function
-# Copyright (C) 2018 Jack Dodds
+# Copyright (C) 2018 Jack Dodds & Mailpile ehf.
 # This code is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
+#
+"""
+This file contains low-level Autocrypt code: constants, parsing, etc.
 
+The higher level application logic (state database, persistance etc.) is
+mostly in mailpile.plugins.crypto_autocrypt, but inevitably some has
+leaked into mailpile.crypto.gpgi and mailpile.crypto.mime.
+
+Examples (and doctests):
+
+
+# Canonicalize e-mail addresses according to Autocrypt conventions
+>>> canonicalize_email('BrE@maILPile.is')
+'bre@mailpile.is'
+
+
+# Parse the Autocrypt header
+>>> ach = 'addr=bre@mailpile.is; _a=b; _c=d; keydata=aGVsbG8='
+>>> hv = parse_autocrypt_headervalue(ach, optional_attrs=['_a'])
+>>> hv['addr']
+'bre@mailpile.is'
+>>> hv['keydata']
+'hello'
+>>> hv['_a']
+'b'
+>>> hv.get('_c') is None
+True
+>>> hv.get('prefer-encrypt') is None
+True
+
+# Invalid autocrypt headers return {}
+>>> parse_autocrypt_headervalue('addr=bre@mailpile.is')
+{}
+>>> parse_autocrypt_headervalue('keydata=aGVsbG8=')
+{}
+>>> parse_autocrypt_headervalue('unknown=attribute; ' + ach)
+{}
+
+# Invalid prefer-encrypt values just get ignored
+>>> hv = parse_autocrypt_headervalue('prefer-encrypt=bogus; ' + ach)
+>>> hv.get('prefer-encrypt') is None
+True
+>>> hv = parse_autocrypt_headervalue('prefer-encrypt=mutual; ' + ach)
+>>> hv.get('prefer-encrypt') == 'mutual'
+True
+
+
+# Generate a valid Autocrypt header
+>>> make_autocrypt_header('bre@mailpile.is', 'hello', prefer_encrypt_mutual=True)
+'addr=bre@mailpile.is; prefer-encrypt=mutual; keydata=aGVsbG8='
+
+
+# Autocrypt setup-codes are used to secure our PGP keys
+>>> generate_autocrypt_setup_code(random_data='fake random garbage data')
+'1189-1868-6510-5211-5608-1629-1262-5635-4164'
+>>> len(generate_autocrypt_setup_code())
+44
+>>> generate_autocrypt_setup_code() != generate_autocrypt_setup_code()
+True
+
+
+# AutocryptRecommendations combine a key and a policy of what to do
+>>> ar = AutocryptRecommendation('disable')
+>>> ar.policy
+'disable'
+>>> ar.key_sig is None
+True
+
+# Combining recommendations for multiple parties has specific rules
+>>> ar2 = AutocryptRecommendation('encrypt', key_sig='12345')
+>>> AutocryptRecommendation.Synchronize(ar, ar2)
+'disable'
+>>> str(ar2)
+'disable'
+
+# Not just anything is a valid recommendation
+>>> ar2.policy = 'bogus'
+Traceback (most recent call last):
+   ...
+ValueError: Invalid Autocrypt policy: bogus
+
+
+"""
 import base64
 import datetime
 import os
@@ -138,7 +220,7 @@ def make_autocrypt_header(addr, binary_key,
     return hdr[len(prefix):]
 
 
-def generate_autocrypt_setup_code():
+def generate_autocrypt_setup_code(random_data=None):
     """
     Generate a passphrase/setup-code compliant with Autocrypt Level 1.
 
@@ -150,8 +232,8 @@ def generate_autocrypt_setup_code():
     Cyrillic etc.), easily input on a mobile device and split into blocks
     that are easily kept in short term memory.
     """
-    random_data = os.urandom(16)  # 16 bytes = 128 bits of entropy
-    ints = struct.unpack('>4I', random_data)
+    random_data = random_data or os.urandom(16)  # 16 bytes = 128 bits entropy
+    ints = struct.unpack('>4I', random_data[:16])
     ival = ints[0] + (ints[1] << 32) + (ints[2] << 64) + (ints[3] << 96)
     blocks = []
     while len(blocks) < 9:
@@ -337,44 +419,52 @@ def get_minimal_PGP_key(keydata,
     return newkey, u_id.user, s_key.key_id
 
 
+class AutocryptRecommendation(object):
+    DISABLE    = "disable"
+    DISCOURAGE = "discourage"
+    ENABLE     = "enable"
+    ENCRYPT    = "encrypt"
+
+    ORDERED_POLICIES = (DISABLE, DISCOURAGE, ENABLE, ENCRYPT)
+
+    def __init__(self, policy, key_sig=None):
+        self.key_sig = self._policy = None
+        self.set_recommendation(policy, key_sig)
+
+    def __str__(self):
+        if self.policy in (self.DISABLE,):
+            return self.policy
+        return "%s (key=%s)" % (self.policy, self.key_sig)
+
+    @classmethod
+    def Synchronize(cls, *recommendations):
+        """
+        This will synchronize a set of Autocrypt recommendations to whatever
+        the lowest common denomitor is, and then return that policy.
+        """
+        lowest_common_policy = cls.ORDERED_POLICIES[min(
+            cls.ORDERED_POLICIES.index(r.policy) for r in recommendations)]
+        for r in recommendations:
+            r.policy = lowest_common_policy
+        return lowest_common_policy
+
+    def set_recommendation(self, policy, key_sig=None):
+        if policy not in self.ORDERED_POLICIES:
+            raise ValueError('Invalid Autocrypt policy: %s' % policy)
+        if policy != self.DISABLE and key_sig is None and self.key_sig is None:
+            raise ValueError('Policy %s requires a key' % policy)
+        self._policy = policy
+        if key_sig is not None:
+            self.key_sig = key_sig
+
+    policy = property(lambda self: self._policy, set_recommendation)
+
+
 if __name__ == "__main__":
+    import sys
+    import doctest
 
-    import os
-
-    default_file = os.path.dirname(os.path.abspath(__file__))
-    default_file = os.path.abspath(default_file + '/../tests/data/pub.key')
-
-    print()
-    print('Default key file:', default_file)
-    print()
-
-    key_file_path = raw_input('Enter key file path or <Enter> for default: ')
-    if key_file_path == '':
-        key_file_path = default_file
-
-    user_id = raw_input('Enter email address: ')
-    if user_id == '':
-        user_id = None
-
-    subkey_id = raw_input('Enter subkey_id: ')
-    if subkey_id == '':
-        subkey_id = None
-
-    with open(key_file_path, 'r') as keyfile:
-        keydata = bytearray( keyfile.read() )
-
-    print('Key length:', len(keydata))
-
-    newkey, u, i = get_minimal_PGP_key(
-        keydata, user_id=user_id, subkey_id=subkey_id, binary_out=True)
-
-    print('User ID:', u)
-    print('Subkey ID:', i)
-    print('Minimal key length:', len(newkey))
-    key_file_path += '.min.gpg'
-    print('Minimal key output file:', key_file_path)
-
-    with open(key_file_path, 'w') as keyfile:
-        keyfile.write(newkey)
-
-    quit()
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS)
+    print('%s' % (results, ))
+    if results.failed:
+        sys.exit(1)

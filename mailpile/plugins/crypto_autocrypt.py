@@ -1,3 +1,52 @@
+# This file contains Autocrypt application logic: state database,
+# persistance, integration with Mailpile itself.
+#
+# Lower level code lives in mailpile.crypto.autocrypt, and some logic
+# has also leaked into mailpile.crypto.gpgi and mailpile.crypto.mime.
+#
+"""
+Usage examples and doctests for internal logic:
+
+>>> import time
+>>> state_db = {}
+>>> cfg = None
+>>> email = 'bre@mailpile.is'
+
+# Seed our fake state DB with some data, verify it's sane.
+>>> acr = AutocryptRecord(email, key_sig='123', prefer_encrypt='mutual')
+>>> (time.time() - acr.last_seen_ts) // 10
+0.0
+>>> (time.time() - acr.autocrypt_ts) // 10
+0.0
+>>> acr.float_ratio()  # Ratio of messages with Autocrypt?
+1.0
+>>> acr.save_to(state_db) is not None
+True
+>>> state_db[email][0]
+'123'
+>>> AutocryptRecord.Load(state_db, email).key_sig
+'123'
+
+# Unknown e-mails, give None as a recommendation.
+>>> str(autocrypt_recommendation(cfg,'foo@example.org', state_db=state_db))
+'None'
+
+# If prefer-encrypt is Mutual, we usually recommend encrypting...
+>>> str(autocrypt_recommendation(cfg, email, state_db=state_db))
+'encrypt (key=123)'
+
+# Recommendations change if we haven't seen any Autocrypt headers for
+# over 35 days or if we no longer have a key.
+>>> acr.autocrypt_ts -= (36 * 24 * 3600)
+>>> acr.save_to(state_db) and None
+>>> str(autocrypt_recommendation(cfg, email, state_db=state_db))
+'discourage (key=123)'
+>>> acr.key_sig = None
+>>> acr.save_to(state_db) and None
+>>> str(autocrypt_recommendation(cfg, email, state_db=state_db))
+'disable'
+
+"""
 import base64
 import datetime
 import re
@@ -28,11 +77,8 @@ from mailpile.plugins.search import Search
 from mailpile.plugins.keylookup.email_keylookup import get_pgp_key_keywords
 from mailpile.util import sha1b64
 
-_plugins = PluginManager(builtin=__file__)
 
-
-##[ Misc. Autocrypt-related API commands ]####################################
-
+##[ The Autocrypt State Database logic ]#####################################
 
 # FIXME: This really should be a record store, not an in-memory dict
 def save_Autocrypt_DB(config):
@@ -64,7 +110,7 @@ class AutocryptRecord(object):
                  seen_count=None, imported_ts=None, key_ratio=None):
         if '@' not in to:
             raise ValueError('To must be an e-mail address')
-        self.autocrypt_ts = int(key_sig and autocrypt_ts or 0)
+        self.autocrypt_ts = int(key_sig and (autocrypt_ts or time.time()) or 0)
         self.prefer_encrypt = prefer_encrypt or ''
         self.key_sig = key_sig or ''
         self.key_count = int(key_count or (key_sig and 1) or 0)
@@ -112,7 +158,7 @@ class AutocryptRecord(object):
             raise KeyError('Not Found')
 
 
-def Autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
+def autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                             autocrypt_header=None, save_DB=False):
     """
     Process an e-mail, updating the Autocrypt state database as appropriate.
@@ -214,7 +260,53 @@ def Autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
                 save_Autocrypt_DB(config)
 
 
-##[ Autocrypt debugging and API commands ]#####################################
+def autocrypt_recommendation(config, email, re_encrypted=False, state_db=None):
+    """
+    Returns an Autocrypt Level 1 recommendation for a given e-mail address.
+    If the e-mail is not in the Autocrypt database, returns None.
+    """
+    db = state_db or get_Autocrypt_DB(config)['state']
+    try:
+        acr = AutocryptRecord.Load(db, email)
+    except KeyError:
+        acr = None
+
+    # Not found in the Autocrypt DB, we have no opinion.
+    if not acr:
+        return None
+
+    # Notes:
+    #
+    #  - Checking whether keys are usable for encryption (expired, revoked)
+    #    is handled by mailpile.plugins.keylookup.KeyTofu; our Autocrypt
+    #    recommendations assume all that keys are usable.
+    #
+    #  - We are not handling Gossip here at all, but Gossip is handled
+    #    by Mailpile's fallback heuristics since Autocrypt Gossip headers
+    #    are considered as a source of keys to import when requested.
+    #
+    # This simplifies the logic somewhat.
+
+    # Determine if encryption is possible; short-circuit if not.
+    if not acr.key_sig:
+        return AutocryptRecommendation(AutocryptRecommendation.DISABLE)
+
+    # Phase 1: Preliminary recommendation
+    if acr.last_seen_ts - (35 * 24 * 3600) > acr.autocrypt_ts:
+        rec = AutocryptRecommendation.DISCOURAGE
+    else:
+        rec = AutocryptRecommendation.ENABLE
+
+    # Phase 2: Final recommendation
+    if re_encrypted or (
+            (rec == AutocryptRecommendation.ENABLE) and
+            ('mutual' == acr.prefer_encrypt)):
+        rec = AutocryptRecommendation.ENCRYPT
+
+    return AutocryptRecommendation(rec, key_sig=acr.key_sig)
+
+
+##[ Autocrypt integration and API commands ]###################################
 
 class AutocryptSearch(Command):
     """Search for the Autocrypt database."""
@@ -288,7 +380,7 @@ class AutocryptParse(Command):
 
         updated = []
         args = list(self.args)
-        for e in [Email(idx, i) for i in self._choose_messages(args)]: 
+        for e in [Email(idx, i) for i in self._choose_messages(args)]:
             autocrypt_meta_kwe(
                 idx, e.msg_mid(), e.get_msg(), None,
                 int(e.get_msg_info(e.index.MSG_DATE), 36),
@@ -320,6 +412,10 @@ class AutocryptPeers(Command):
 
 def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts,
                        body_info=None, update_cb=None, save_DB=True):
+    """
+    This extracts search keywords from the Autocrypt headers, and
+    updates the Autocrypt state database as a side-effect.
+    """
     keywords = set([])
     config = index.config
 
@@ -345,7 +441,7 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts,
                     keywords.add('autocrypt-gossip:has')
                     keywords |= set(get_pgp_key_keywords(key_data))
 
-        update = Autocrypt_process_email(config, msg, msg_mid, msg_ts, sender,
+        update = autocrypt_process_email(config, msg, msg_mid, msg_ts, sender,
                                          autocrypt_header=autocrypt_header,
                                          save_DB=save_DB)
         if update_cb is not None:
@@ -358,8 +454,8 @@ class AutocryptTxf(EmailTransform):
     """
     This is an outgoing email content transform for adding autocrypt headers.
 
-    Note: This transform relies on Memory Hole code elsewhere to correctly obscure
-    the Gossip headers. Priorities must be set accordingly.
+    Note: This transform relies on Memory Hole code elsewhere to correctly
+    obscure Gossip headers. Plugin/hook priorities must be set accordingly.
     """
     def TransformOutgoing(self, sender, rcpts, msg, **kwargs):
         matched = False
@@ -412,15 +508,27 @@ class AutocryptTxf(EmailTransform):
         return sender, rcpts, msg, matched, True
 
 
-_plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
-_plugins.register_commands(
-    AutocryptSearch,
-    AutocryptForget,
-    AutocryptParse,
-    AutocryptPeers)
+if __name__ == "__main__":
+    import sys
+    import doctest
 
-# Note: we perform our transformations BEFORE the GnuPG transformations
-# (prio 500), so the memory hole transformation can take care of hiding
-# the Autocrypt-Gossip headers.
-_plugins.register_outgoing_email_content_transform(
-    '400_autocrypt', AutocryptTxf)
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS)
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)
+
+else:
+    _plugins = PluginManager(builtin=__file__)
+
+    _plugins.register_meta_kw_extractor('autocrypt', autocrypt_meta_kwe)
+    _plugins.register_commands(
+        AutocryptSearch,
+        AutocryptForget,
+        AutocryptParse,
+        AutocryptPeers)
+
+    # Note: we perform our transformations BEFORE the GnuPG transformations
+    # (prio 500), so the memory hole transformation can take care of hiding
+    # the Autocrypt-Gossip headers.
+    _plugins.register_outgoing_email_content_transform(
+        '400_autocrypt', AutocryptTxf)
