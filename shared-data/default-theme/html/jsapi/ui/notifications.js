@@ -1,4 +1,4 @@
-/* Notifications - UI notification at top of window */
+* Notifications - UI notification at top of window */
 
 Mailpile.expire_canceled_notifictions = function() {
   var expired = new Date().getTime() - (3600 * 1000 * 16);
@@ -41,6 +41,10 @@ Mailpile.cancel_notification = function(not_id, $existing, replace, record) {
           var $notif = $('#notifications');
           $('#sidebar').css('bottom', $notif.height() + 'px');
         }
+	//suppress notifications to 4
+	if ($('.notification-bubble').length > 4){
+	  var $notif = $('#notifications');
+	  $('#sidebar').css('bottom',  4 + 'px');
       });
     }
   }
