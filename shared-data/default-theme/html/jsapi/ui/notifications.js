@@ -1,4 +1,4 @@
-* Notifications - UI notification at top of window */
+/* Notifications - UI notification at top of window */
 
 Mailpile.expire_canceled_notifictions = function() {
   var expired = new Date().getTime() - (3600 * 1000 * 16);
