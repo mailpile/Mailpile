@@ -39,11 +39,14 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
     if (!key.on_keychain) key.on_keychain = false;
 
     // Readable creation date
-    cdate = new Date(key.created || 0);
-    key.created_date = (
-      cdate.getFullYear() + '-' +
-      (cdate.getMonth()+1) + '-' +
-      cdate.getDate());
+    if (key.created && key.created > 0) {
+      cdate = new Date(key.created * 1000);
+      key.created_date = (
+        cdate.getFullYear() + '-' +
+        (cdate.getMonth()+1) + '-' +
+        cdate.getDate());
+    }
+    else key.created_date = '{{_("unknown")|escapejs}}';
 
     // Key Score
     var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);

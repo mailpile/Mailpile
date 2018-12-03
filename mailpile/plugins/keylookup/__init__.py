@@ -76,13 +76,17 @@ def _update_scores(session, key_id, key_info, known_keys_list):
 
     if key_info.keysize:
         bits = int(key_info.keysize)
-        score = bits // 1024
 
-        if bits >= 4096:
+        if key_info.keytype_name.startswith('Ed'):
+            score = bits // 64
+        else:
+            score = bits // 1024
+
+        if score >= 4:
           key_strength = _('Encryption key is very strong')
-        elif bits >= 3072:
+        elif score >= 3:
           key_strength = _('Encryption key is strong')
-        elif bits >= 2048:
+        elif score >= 2:
           key_strength = _('Encryption key is strong enough')
         else:
           key_strength = _('Encryption key is weak')
@@ -118,10 +122,8 @@ def _normalize_key(session, key_info):
 def _mailpile_key_list(gpgi_key_list):
     result = {}
     for info in gpgi_key_list.values():
-        print 'GOT: %s' % info
         mki = MailpileKeyInfo.FromGPGI(info)
         result[mki.summary()] = mki
-        print 'MKI: %s' % mki.summary()
     return result
 
 
@@ -381,6 +383,7 @@ class KeyTofu(Command):
                 else:
                     # FIXME: Should we remove the bad key from the vcard?
                     # FIXME: Should we blacklist the bad key?
+                    # FIXME: Should this trigger a notification, per. #1869?
                     missing.append(email)
                     status[email] = 'Obsolete key is on our key-chain'
             else:
@@ -412,6 +415,7 @@ class KeyTofu(Command):
                 strict_email_match=True,
                 event=self.event)
             if keys:
+                # FIXME: This should trigger a notification, per. #1869
                 imported[email] = keys
                 status[email] = 'Imported key!'
             else:

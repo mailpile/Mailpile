@@ -99,7 +99,7 @@ AUTOCRYPT_IGNORE_MIMETYPES = ('multipart/report', )
 def canonicalize_email(address):
     try:
         localpart, domain = address.split('@')
-    except ValueError:
+    except (ValueError, AttributeError):
         # Just return invalid e-mails unchanged, there is no sensible way
         # to canonicalize such a thing.
         return address

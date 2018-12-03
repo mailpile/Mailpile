@@ -474,7 +474,7 @@ class StreamWriter(Thread):
         return '%s(%s/%s)' % (Thread.__str__(self), self.name, self.state)
 
     def writeout(self, fd, output):
-        if isinstance(output, (str, unicode)):
+        if isinstance(output, (str, unicode, bytearray)):
             total = len(output)
             output = StringIO.StringIO(output)
         else:
@@ -740,7 +740,7 @@ class GnuPG:
             if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
-                self.debug('<<STDOUT<< %s' % gpg_input)
+                self.debug('<<STDOUT<< %s' % (gpg_input,))
                 StreamWriter('gpgi-output(%s)' % wtf,
                              proc.stdin, gpg_input,
                              partial_write_ok=partial_read_ok).join()
