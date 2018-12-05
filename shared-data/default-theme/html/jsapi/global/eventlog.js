@@ -259,3 +259,16 @@ $(document).ready(function () {
   }, false);
   window.setTimeout(EventLog.clear_old_events, EventLog.TIMEOUT_CHECK_OLD_EVENTS * 1000);
 });
+
+/* Notification - Undo */
+$(document).on('click', '.eventlog-undo', function() {
+  var event_id = $(this).data('event_id');
+  Mailpile.API.logs_events_undo_post({ event_id: event_id }, function(result) {
+    if (result.status === 'success') {
+      window.location.reload(true);
+    }
+    else {
+      alert("{{ _('Oops. Mailpile failed to complete your task.') }}");
+    }
+  });
+});
