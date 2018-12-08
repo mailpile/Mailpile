@@ -1,6 +1,7 @@
 import os
-import socket
+import platform
 import re
+import socket
 
 try:
     import win_inet_pton
@@ -193,13 +194,23 @@ def PathCheck(path):
         ...
     ValueError: File/directory does not exist: /no/such/path
     """
+    os = platform.system()
     if isinstance(path, unicode):
         path = path.encode('utf-8')
-    path = os.path.expanduser(path)
-    if not os.path.exists(path):
-        raise ValueError(_('File/directory does not exist: %s') % path)
+    if os == 'Windows':
+        path = os.path.expanduser(path)
+        if not os.path.exists(path):
+            raise ValueError(_('File/directory does not exist: %s') % path)
+    elif os == 'Linux':
+        path = os.path.expanduser(path)
+        if not os.path.exists(path):
+            raise ValueError(_('File/directory does not exist: %s') % path)
+    elif os == 'Darwin':
+        if not os.path.exists(path):
+            raise ValueError(_('File/directory does not exist: %s') % path)
+    else:
+        raise ValueError(_('Unkown type of Operating system: %s') % os)
     return os.path.abspath(path)
-
 
 def WebRootCheck(path):
     """
@@ -274,7 +285,8 @@ def NewPathCheck(path):
         ...
     ValueError: File/directory does not exist: /no/such/path
     """
-    PathCheck(os.path.dirname(path))
+    last_dir = os.path.dirname(path)
+    PathCheck(last_dir)
     return os.path.abspath(path)
 
 def UrlCheck(url):
