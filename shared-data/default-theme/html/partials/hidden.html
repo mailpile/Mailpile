@@ -124,8 +124,8 @@
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
-        <% if (on_keychain) { %>
-        <i>{{_("This key is on your key chain.")}}</i>
+        <% if (on_keychain && in_vcards) { %>
+        <i>{{_("This key is available for use.")}}</i>
 {#
         <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
           <option value="true" selected="selected">{{_("Use This Key")}}</option>
