@@ -209,12 +209,15 @@ def lookup_crypto_keys(session, address,
             # has been successfully imported to the keychain.
             if key_id in known_keys_list or get and key_id in get:
                 found_keys[key_id]['on_keychain'] = True
-                
+
+            # Check if key is already in the VCard for the specified address.
             if address in found_keys[key_id]['vcards']:
-                 for k in found_keys[key_id]['vcards'][address]['keys']:
-                    if k['fingerprint'] == key_id:
-                        found_keys[key_id]['in_vcards'] = True
-               
+                vcard = found_keys[key_id]['vcards'][address]
+                if 'keys' in vcard:
+                     for k in vcard['keys']:
+                         if k['fingerprint'] == key_id:
+                             found_keys[key_id]['in_vcards'] = True
+
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
         ordered_keys[:] = found_keys.values()
@@ -302,8 +305,8 @@ class KeyImport(Command):
             # a user id containing that address, so when it is imported to
             # VCards, the VCard for that address will list the key.
             # The 'in_vcards' attribute is relevant to the given address only.
-            k['in_vcards'] = True
-                                  
+            for k in result:
+                k['in_vcards'] = True
             # Previous crypto evaluations may now be out of date, so we
             # clear the cache so users can see results right away.
             ClearParseCache(pgpmime=True)
