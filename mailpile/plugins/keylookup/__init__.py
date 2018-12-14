@@ -1,6 +1,11 @@
 import math
 import traceback
+import ssl
+import urllib
+import urllib2
 from mailpile.commands import Command
+from mailpile.conn_brokers import Master as ConnBroker
+from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -513,51 +518,92 @@ class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
     TIMEOUT = 20  # We know these are slow...
-    PRIVACY_FRIENDLY = False
+    PRIVACY_FRIENDLY = True
     PRIORITY = 200
     SCORE = 1
+
+    # During testing, there were frequent HTTP gateway errors returned from
+    # hkps.pool.sks-keyservers.net so sks-keyservers.net was added too.
+    KEY_SERVER_BASE_URLS = [
+        "https://sks-keyservers.net/pks/lookup",
+        "https://hkps.pool.sks-keyservers.net/pks/lookup",
+    ]
+
+    SKS_CA_CERT_FILE = gpgi.__file__.replace('.pyc', '.py')
 
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
-    def _allowed_by_config(self):
-        # FIXME: When direct keyserver contact works, change this.
-        config = self.session.config
-        return (
-            config.sys.proxy.protocol in ('none', 'unknown', 'system')
-            or config.sys.proxy.fallback)
-
     def _lookup(self, address, strict_email_match=False):
-        # FIXME: We should probably just contact the keyservers directly.
-        #
-        # Queries look like this:
-        #
-        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
-        #        search=EMAIL&op=index&fingerprint=on&options=mr
-        #
-        if not self._allowed_by_config():
-            return {}
+        params = {
+            "search": address,
+            "op": "index",
+            "fingerprint": "on",
+            "options": "mr"
+        }
 
-        results = self._gnupg().search_key(address)
+        error = None
+        for url_base in self.KEY_SERVER_BASE_URLS:
+            url = "{}?{}".format(url_base, urllib.urlencode(params))
+            try:
+                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
+                    r = urllib2.urlopen(url, cafile=self.SKS_CA_CERT_FILE)
+                error = None
+                break
+            except urllib2.HTTPError as e:
+                error = str(e)
+                if e.code == 404:
+                    # If a server reports the key was not found, let's stop
+                    # because the servers are supposed to be in sync.
+                    break;
+            except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+                error = str(e)
+
+        if error:
+            if 'Error 404' in error:
+                return {}
+            raise ValueError(error)
+
+        results = self._gnupg().parse_hpk_response(r.read().split('\n'))
+
         if strict_email_match:
             for key in results.keys():
-                match = [u for u in results[key].get('uids', [])
-                         if u['email'].lower() == address]
+                match = [
+                    u for u in results[key].get('uids', [])
+                    if u['email'].lower() == address
+                ]
                 if not match:
                     del results[key]
+
         return results
 
     def _getkey(self, key):
-        # FIXME: We should probably just contact the keyservers directly.
-        #
-        # Key downloads look like this:
-        #
-        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
-        #        search=0xFINGERPRINT&op=get&options=mr
-        #
-        if not self._allowed_by_config():
-            return {}
-        return self._gnupg().recv_key(key['fingerprint'])
+        fingerprint = '0x{}'.format(key['fingerprint'])
+
+        params = {"search": fingerprint, "op": "get", "options": "mr"}
+
+        error = None
+        for url_base in self.KEY_SERVER_BASE_URLS:
+            url = "{}?{}".format(url_base, urllib.urlencode(params))
+            try:
+                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
+                    r = urllib2.urlopen(url, cafile=self.SKS_CA_CERT_FILE)
+                error = None
+                break
+            except urllib2.HTTPError as e:
+                error = e
+                if e.code == 404:
+                    # If a server reports the key was not found, let's stop
+                    # because the servers are supposed to be in sync.
+                    break;
+            except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+                error = e
+
+        if error:
+            raise ValueError(str(error))
+
+        key_data = r.read()
+        return self._gnupg().import_keys(key_data)
 
 
 register_crypto_key_lookup_handler(KeychainLookupHandler)
