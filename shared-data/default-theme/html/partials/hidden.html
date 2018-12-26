@@ -120,21 +120,30 @@
         <span class="icon-star <%= score_color %>"></span>
         <% } %>
         <% } else { %>
-        <span class="icon-signature-revoked <%= score_color %>"></span> <em>{{_("Don't use this key")}}</em>
+        <span class="icon-signature-revoked <%= score_color %>"></span>
+        <em>{{_("Don't use this key")}}</em>
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
         <% if (on_keychain && in_vcards) { %>
         <i>{{_("This key is available for use.")}}</i>
-{#
-        <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
-          <option value="true" selected="selected">{{_("Use This Key")}}</option>
-          <option value="false">{{_("Don't Use This Key")}}</option>
+        <select name="contact-key" class="crypto-key-policy"
+                data-email="<%= uid.email %>"
+                data-fingerprint="<%= fingerprint %>">
+          <option value="true"<% if (is_preferred && !is_pinned) { %> selected="selected"<% } %>>{{_("Use This Key")}}</option>
+          <option value="pin"<% if (is_preferred && is_pinned) { %> selected="selected"<% } %>>{{_("Pin and Use This Key")}}</option>
+          <option value="false"<% if (!is_preferred) { %> selected="selected"<% } %>>{{_("Don't Use This Key")}}</option>
         </select>
-#}
         <% } else { %>
-        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
-          <span class="icon-key"></span> {{_("Import Key")}}
+        <a href="#" class="crypto-key-import-pinned searchkey-result-details hide"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-star"></span> {{_("Pin and Use This Key")}}
+        </a> &nbsp;
+        <a href="#" class="crypto-key-import"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Use This Key")}}
         </a>
         <% } %>
       </div>

@@ -1022,6 +1022,11 @@ class MailpileVCard(SimpleVCard):
         lambda self, v: self._vcard_set('key',
             'data:application/x-pgp-fingerprint,' + v))
 
+    pgp_key_pinned = property(
+        lambda self: (
+            self._vcard_get('x-mailpile-pgpkey-pinned', '')[:1].lower() in ('t', 'y')),
+        lambda self, v: self._vcard_set('x-mailpile-pgpkey-pinned', v))
+
     pgp_key_shared = property(
         lambda self: self._vcard_get('x-mailpile-last-pgp-key-share'),
         lambda self, v: self._vcard_set('x-mailpile-last-pgp-key-share', v))

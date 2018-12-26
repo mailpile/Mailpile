@@ -12,10 +12,10 @@ Mailpile.Crypto.Import.Key = function(import_data) {
   $('#item-encryption-key-' + import_data.fingerprint).replaceWith(importing_html);
 
   // Lookup
-  var key_data = _.findWhere(Mailpile.crypto_keylookup,
-                             {fingerprints: import_data.fingerprint});
-
-  Mailpile.API.crypto_keyimport_post(key_data, function(result) {
+  var import_args = _.findWhere(Mailpile.crypto_keylookup,
+                                {fingerprints: import_data.fingerprint});
+  import_args.pinned = import_data.pinned;
+  Mailpile.API.crypto_keyimport_post(import_args, function(result) {
     if (result.status === 'success') {
       var key_result;
       for (var key in result.result) {
@@ -45,6 +45,62 @@ Mailpile.Crypto.Import.Key = function(import_data) {
       $events.trigger('keylookup:imported');
     }
   });
+};
+
+
+Mailpile.Crypto.Import.SetKeyPolicy = function(args) {
+  fpl = args.fingerprint.length
+  var key_id = ('... ' +
+     args.fingerprint.substring(fpl - 8, fpl - 4) + ' ' +
+     args.fingerprint.substring(fpl - 4));
+  if (args.policy == 'false') {
+    Mailpile.API.vcards_rmlines_post({
+      email: args.email,
+      name: ['key', 'x-mailpile-pgpkey-pinned']
+    }, function(result) {
+      if (result.status === 'success') {
+        result.icon = 'icon-x';
+        result.message = "{{_('Disabled Encryption Key: ')|escapejs}}" + key_id;
+      }
+      Mailpile.notification(result);
+    });
+  }
+  else {
+    Mailpile.API.vcards_addlines_post({
+      replace_all: true,
+      email: args.email,
+      name: 'key',
+      value: 'data:application/x-pgp-fingerprint,' + args.fingerprint 
+    }, function(result) {
+      if (result.status === 'success') {
+        if (args.policy == 'pin') {
+          Mailpile.API.vcards_addlines_post({
+            replace_all: true,
+            email: args.email,
+            name: 'x-mailpile-pgpkey-pinned',
+            value: true
+          }, function(result) {
+            if (result.status === 'success') {
+              result.icon = 'icon-star';
+              result.message = "{{_('Pinned Encryption Key: ')|escapejs}}" + key_id;
+            }
+            Mailpile.notification(result);
+          });
+        }
+        else Mailpile.API.vcards_rmlines_post({
+          email: args.email,
+          name: 'x-mailpile-pgpkey-pinned'
+        }, function(result) {
+          if (result.status === 'success') {
+            result.icon = 'icon-key';
+            result.message = "{{_('Using Encryption Key: ')|escapejs}}" + key_id;
+          }
+          Mailpile.notification(result);
+        });
+      }
+      else Mailpile.notification(result);
+    });
+  }
 };
 
 

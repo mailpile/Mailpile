@@ -61,7 +61,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
-            for key_info, raw_key in self._get_message_keys(messageid):
+            for key_info, raw_key in self._get_message_keys(
+                    messageid, autocrypt=False, autocrypt_gossip=True):
                 if strict_email_match:
                     match = [u for u in key_info.uids
                              if canonicalize_email(u.email) == canon_address]
@@ -78,12 +79,14 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         data = self.key_cache.get(keyinfo.fingerprint)
         if data:
             if keyinfo.is_autocrypt and email:
-                data = get_minimal_PGP_key(data, user_id=email)
+                data = get_minimal_PGP_key(data, user_id=email, binary_out=True)[0]
             return self._gnupg().import_keys(data)
         else:
             raise ValueError("Key not found")
 
-    def _get_message_keys(self, messageid):
+    def _get_message_keys(self, messageid,
+                          autocrypt=True, autocrypt_gossip=True,
+                          attachments=True):
         keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
@@ -91,8 +94,12 @@ class EmailKeyLookupHandler(LookupHandler, Search):
             # First we check the Autocrypt headers
             loop_count = 0
             msg = email.get_msg(pgpmime='all')
-            for ach in ([extract_autocrypt_header(msg)] +
-                        extract_autocrypt_gossip_headers(msg)):
+            ac_headers = []
+            if autocrypt:
+                ac_headers.append(extract_autocrypt_header(msg))
+            if autocrypt_gossip:
+                ac_headers.extend(extract_autocrypt_gossip_headers(msg))
+            for ach in ac_headers:
                 loop_count += 1
                 if 'keydata' in ach:
                     for keyinfo in get_keyinfo(ach['keydata'],
@@ -103,9 +110,11 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                         keys.append((keyinfo, ach['keydata']))
 
             # Then go looking at the attachments
-            attachments = email.get_message_tree(want=["attachments"]
-                                                 )["attachments"]
-            for part in attachments:
+            atts = []
+            if attachments:
+                atts.extend(email.get_message_tree(want=["attachments"]
+                                                   )["attachments"])
+            for part in atts:
                 if len(keys) > 100:  # Just to set some limit...
                     break
                 if _might_be_pgp_key(part["filename"], part["mimetype"]):

@@ -56,7 +56,8 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
                                avatar: avatar,
                                uid: uid,
                                address: options.query,
-                               action: options.action }, key);
+                               action: options.action,
+                               pinned: false }, key);
     var item_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
     var item_html = item_template(item_data);
 

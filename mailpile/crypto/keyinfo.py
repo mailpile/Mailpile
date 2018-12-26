@@ -129,7 +129,7 @@ class KeyInfo(RestrictedDict):
         Note: If summary ends with !, the key is invalid/unusable.
         """
         now = time.time()
-        emails = ','.join([u.email for u in self.uids if u.email])
+        emails = ','.join(sorted([u.email for u in self.uids if u.email]))
         return '%s%s%s/%s%s/%s%s' % (
             self.fingerprint[-(9999 if full_fingerprint else 16):],
             ('=%s' % emails) if emails else '',
@@ -204,6 +204,8 @@ class MailpileKeyInfo(KeyInfo):
         'origins':      (list, None),
         'is_autocrypt': (bool, False),
         'is_gossip':    (bool, False),
+        'is_preferred': (bool, False),
+        'is_pinned':    (bool, False),
         'scores':       (dict, None),
         'score_stars':  (int, 0),
         'score_reason': (unicode, None),

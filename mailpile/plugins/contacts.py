@@ -423,24 +423,46 @@ class VCardSet(VCardAddLines):
 
 class VCardRemoveLines(VCardCommand):
     """Remove lines from a VCard"""
-    SYNOPSIS = (None, 'vcards/rmlines', None, '<email> <line IDs>')
+    SYNOPSIS = (None, 'vcards/rmlines', 'vcards/rmlines', '<email> <line IDs>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
     COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
+    HTTP_POST_VARS = {
+        'email': 'update by e-mail',
+        'rid': 'update by x-mailpile-rid',
+        'name': 'Line names',
+        'line_id': 'Line IDs'}
 
     def command(self):
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
-        handle, line_ids = self.args[0], self.args[1:]
+        if self.args:
+            handle, names, line_ids = self.args[0], [], []
+            for arg in self.args[1:]:
+                try:
+                    line_ids.append('%d' % int(arg))
+                except ValueError:
+                    names.append(arg)
+        else:
+            handle = self.data.get('rid', self.data.get('email', [None]))[0]
+            if not handle:
+                raise ValueError('Must set rid or email to choose VCard')
+            names = self.data.get('name', [])
+            line_ids = self.data.get('line_id', [])
+            if not (names or line_ids):
+                raise ValueError('Must send a line name or line ID')
+
         vcard = config.vcards.get_vcard(handle)
         if not vcard:
             return self._error('%s not found: %s' % (self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
         removed = 0
         try:
-            removed = vcard.remove(*[int(li) for li in line_ids])
+            for lname in names:
+                line_ids.extend(ex._line_id for ex in vcard.get_all(lname))
+            removed += vcard.remove(*[int(li) for li in line_ids])
             vcard.save()
             return self._success(_("Removed %d lines") % removed,
                 result=self._vcard_list([vcard], simplify=True, info={

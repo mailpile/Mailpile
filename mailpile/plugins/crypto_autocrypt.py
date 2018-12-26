@@ -48,6 +48,7 @@ True
 
 """
 import base64
+import copy
 import datetime
 import re
 import time
@@ -74,7 +75,9 @@ from mailpile.mailutils.emails import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
+from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 from mailpile.plugins.keylookup.email_keylookup import get_pgp_key_keywords
+from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
 from mailpile.util import sha1b64
 
 
@@ -423,7 +426,7 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts,
     if mimetype not in AUTOCRYPT_IGNORE_MIMETYPES:
         autocrypt_header = sender = None
 
-        senders = ExtractEmails(msg['from'])  # FIXME: Shitty parser?
+        senders = ExtractEmails(msg['from'] or '')  # FIXME: Shitty parser?
         if len(senders) == 1:
             sender = senders[0]
             autocrypt_header = extract_autocrypt_header(msg, to=sender)
@@ -508,6 +511,47 @@ class AutocryptTxf(EmailTransform):
         return sender, rcpts, msg, matched, True
 
 
+class AutocryptKeyLookupHandler(EmailKeyLookupHandler):
+    NAME = _("Autocrypt")
+    PRIORITY = 4
+    TIMEOUT = 25  # 5 seconds per message we are willing to parse
+    LOCAL = True
+    PRIVACY_FRIENDLY = True
+    SCORE = 1
+
+    def __init__(self, session, *args, **kwargs):
+        EmailKeyLookupHandler.__init__(self, session, *args, **kwargs)
+
+    def _score(self, key):
+        return (self.SCORE, _('Found key using Autocrypt'))
+
+    def _lookup(self, address, strict_email_match=False):
+        results = {}
+        if not address:
+            return results
+
+        try:
+            db = get_Autocrypt_DB(self.session.config)['state']
+            acr = AutocryptRecord.Load(db, address)
+        except KeyError:
+            acr = None
+
+        if acr is None or not acr.key_sig or not acr.mid:
+            return results
+
+        # Note: Autocrypt gossip is handled by the normal e-mail lookups
+        canon_address = canonicalize_email(address)
+        for key_info, raw_key in self._get_message_keys(int(acr.mid, 36),
+                autocrypt=True, autocrypt_gossip=False, attachments=False):
+            key_sig = sha1b64(raw_key).strip()
+            if key_sig == acr.key_sig:
+                fp = key_info.fingerprint
+                results[fp] = copy.copy(key_info)
+                self.key_cache[fp] = raw_key
+
+        return results
+
+
 if __name__ == "__main__":
     import sys
     import doctest
@@ -526,6 +570,7 @@ else:
         AutocryptForget,
         AutocryptParse,
         AutocryptPeers)
+    register_crypto_key_lookup_handler(AutocryptKeyLookupHandler)
 
     # Note: we perform our transformations BEFORE the GnuPG transformations
     # (prio 500), so the memory hole transformation can take care of hiding
