@@ -58,12 +58,14 @@ def clean_html(html):
     return (SHARED_HTML_CLEANER.clean_html(html) if html else '')
 
 
-def extract_text_from_html(html):
+def extract_text_from_html(html, url_callback=None):
     try:
         # We compensate for some of the limitations of lxml...
         links, imgs = [], []
         def delink(m):
             url, txt = m.group(1), m.group(2).strip()
+            if url_callback is not None:
+                url_callback(url, txt)
             if txt[:4] in ('http', 'www.'):
                 return txt
             elif url.startswith('mailto:'):

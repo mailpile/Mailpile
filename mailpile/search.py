@@ -71,6 +71,7 @@ class MailIndex(BaseIndex):
         self._lock = SearchRLock()
         self._save_lock = SearchRLock()
         self._prepare_sorting()
+        self._url_re_cache = {}
 
     @classmethod
     def l2m(self, line):
@@ -1239,6 +1240,7 @@ class MailIndex(BaseIndex):
         payload = [None]
         textparts = 0
         parts = []
+        urls = []
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
@@ -1255,6 +1257,7 @@ class MailIndex(BaseIndex):
                 if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
                     ctype = 'text/html'
                 else:
+                    # FIXME: Search for URLs in the text part, add to urls list.
                     textparts += 1
                     pinfo = '%x::T' % len(payload[0])
 
@@ -1263,7 +1266,9 @@ class MailIndex(BaseIndex):
                 pinfo = '%x::H' % len(payload[0])
                 if len(payload[0]) > 3:
                     try:
-                        textpart = extract_text_from_html(payload[0])
+                        textpart = extract_text_from_html(
+                            payload[0],
+                            url_callback=lambda u, t: urls.append((u, t)))
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
                                              ) % (msg_mid, msg_id))
@@ -1346,6 +1351,25 @@ class MailIndex(BaseIndex):
 
             if not ctype.startswith('multipart/'):
                 parts.append(pinfo)
+
+        if urls:
+            att_urls = []
+            for (full_url, txt) in set(urls):
+                url = full_url.lower().split('/', 3)
+                if len(url) == 4 and url[0] in ('http:', 'https:'):
+                    keywords.append('%s:url' % url[2])
+                    for raw_re in session.config.prefs.attachment_urls:
+                        url_re = self._url_re_cache.get(raw_re)
+                        if url_re is None:
+                            url_re = re.compile(raw_re)
+                            self._url_re_cache[raw_re] = url_re
+                        if url_re.search(full_url):
+                            att_urls.append((full_url, txt))
+                            break
+            if att_urls:
+                body_info['att_urls'] = att_urls
+                keywords.append('attachment_url:has')
+                keywords.append('attachment:has')
 
         if len(parts) > 1:
             body_info['parts'] = parts
