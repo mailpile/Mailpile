@@ -359,6 +359,8 @@ class MailIndex(BaseIndex):
     def update_ptrs_and_msgids(self, session):
         session.ui.mark(_('Updating high level indexes'))
         with self._lock:
+            self.PTRS = {}
+            self.MSGIDS = {}
             for offset in range(0, len(self.INDEX)):
                 message = self.l2m(self.INDEX[offset])
                 if len(message) == self.MSG_FIELDS_V2:
@@ -382,7 +384,7 @@ class MailIndex(BaseIndex):
 
     def _update_location(self, session, msg_idx_pos, msg_ptr):
         if 'rescan' in session.config.sys.debug:
-            session.ui.debug('Moved? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
+            session.ui.debug('Duplicate? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')
@@ -469,11 +471,10 @@ class MailIndex(BaseIndex):
         if len(self.PTRS.keys()) == 0:
             self.update_ptrs_and_msgids(session)
 
-        existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         mbox_version = mbox.last_updated()
-        if messages_md5 == self._scanned.get(mailbox_idx, ''):
+        if lazy and messages_md5 == self._scanned.get(mailbox_idx, ''):
             return finito(0, _('%s: No new mail in: %s'
                                ) % (mailbox_idx, mailbox_fn),
                           complete=True)
@@ -491,15 +492,6 @@ class MailIndex(BaseIndex):
             'batch_size': stop_after or len(messages)
         })
 
-        # Figure out which messages exist at all (so we can remove
-        # stale pointers later on).
-        if not lazy:
-            for ui in range(0, len(messages)):
-                msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
-                existing_ptrs.add(msg_ptr)
-                if (ui % 317) == 0 and not deadline:
-                    play_nice_with_threads()
-
         added = updated = 0
         last_date = long(start_time)
         not_done_yet = 'NOT DONE YET'
@@ -508,9 +500,8 @@ class MailIndex(BaseIndex):
         for ui in range(0, len(messages)):
             play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
-                self.interrupt = None
-                return finito(-1, _('Rescan interrupted: %s'
-                                    ) % self.interrupt)
+                ir, self.interrupt = self.interrupt, None
+                return finito(-1, _('Rescan interrupted: %s') % ir)
             if stop_after and added >= stop_after:
                 messages_md5 = not_done_yet
                 break
@@ -557,12 +548,21 @@ class MailIndex(BaseIndex):
             updated += u
 
         if not lazy:
+            # Figure out which messages exist at all, and remove stale pointers.
+            # This happens last and in a locked section, because other threads may
+            # have added messages while we were busy with other things.
             with self._lock:
-                for msg_ptr in self.PTRS.keys():
-                    if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
-                            msg_ptr not in existing_ptrs):
-                        self._remove_location(session, msg_ptr)
-                        updated += 1
+                with mbox:
+                    existing_ptrs = set()
+                    for ui in range(0, len(messages)):
+                        msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
+                        existing_ptrs.add(msg_ptr)
+                    for msg_ptr in self.PTRS.keys():
+                        if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
+                                msg_ptr not in existing_ptrs):
+                            self._remove_location(session, msg_ptr)
+                            updated += 1
+
         progress.update({
             'added': added,
             'updated': updated,
@@ -598,8 +598,12 @@ class MailIndex(BaseIndex):
                        process_new=None, apply_tags=None, stop_after=None,
                        editable=False, event=None, progress=None,
                        lazy=False):
+        with self._lock:
+            # This is not actually a critical section, this is more of a belt and
+            # suspenders thing to encourage serialization of scanning processes.
+            msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
+
         added = updated = 0
-        msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
         last_date = last_date or long(time.time())
         progress = progress or self._get_scan_progress(mailbox_idx,
                                                        event=event)

@@ -915,8 +915,8 @@ class BaseMailSource(threading.Thread):
             progress['raised'] = True
             raise
         finally:
-            src.unlock()
             progress['running'] = False
+            src.unlock()
 
         maybe_delete_from_server(loc, src)
         return count
@@ -990,7 +990,7 @@ class BaseMailSource(threading.Thread):
             self._log_status(_('Updating search engine for %s'
                                ) % self._mailbox_name(path))
             # Wait for background message scans to complete...
-            config.scan_worker.do(session, 'Wait', lambda: 1)
+            config.scan_worker.do(session, 'Wait:%s' % path, lambda: 1)
 
             if 'rescans' in self.event.data:
                 self.event.data['rescans'][:-mailboxes] = []
