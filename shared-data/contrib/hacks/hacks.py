@@ -7,6 +7,7 @@ from urllib import urlencode, URLopener
 import mailpile.auth
 from mailpile.commands import Command
 from mailpile.conn_brokers import TcpConnectionBroker as TcpConnBroker
+from mailpile.index.search import CachedSearchResultSet
 from mailpile.mailutils.headerprint import *
 from mailpile.mailutils.emails import *
 from mailpile.mailutils import *
@@ -101,6 +102,7 @@ class ViewMetadata(Hacks):
 
     def _explain(self, i):
         idx, cfg = self._idx(), self.session.config
+        raw_info = idx.INDEX[i]
         info = idx.get_msg_at_idx_pos(i)
         ptags = [cfg.get_tag(t) or t
                  for t in info[idx.MSG_TAGS].split(',') if t]
@@ -140,12 +142,57 @@ class ViewMetadata(Hacks):
                 'cc': cc,
                 'ptrs': pptrs
             },
-            'metadata_bytes': len(idx.INDEX[i])
+            'metadata_raw': raw_info,
+            'metadata_bytes': len(raw_info)
         }
 
     def command(self):
         return self._success(_('Displayed raw metadata'),
             [self._explain(i) for i in self._choose_messages(self.args)])
+
+
+class EditMetadata(ViewMetadata):
+    """Edit the raw metadata for a message (DANGEROUS!)"""
+    SYNOPSIS = (None, 'hacks/metadata/edit', None, '[<message>] [--ptrs=...|--metadata=...]')
+    SPLIT_ARG = False
+
+    def _new_raw_data(self, op):
+        raw_data = op.split('=', 1)[-1].strip()
+        if op[0] == op[-1] == '"':
+            raw_data = json.loads(op)
+        return raw_data
+
+    def _edit(self, op, i):
+        idx, cfg = self._idx(), self.session.config
+        info = idx.get_msg_at_idx_pos(i)
+        orig = idx.INDEX[i]
+
+        try:
+            if op.startswith('metadata='):
+                idx.INDEX[i] = self._new_raw_data(op)
+                info = idx.get_msg_at_idx_pos(i)
+
+            elif op.startswith('ptrs='):
+                info[idx.MSG_PTRS] = self._new_raw_data(op)
+
+            else:
+                raise ValueError('Unknown edit op: %s' % op)
+
+            idx.set_msg_at_idx_pos(i, info)
+            idx.update_ptrs_and_msgids(self.session)
+            ClearParseCache(full=True)
+
+            return self._explain(i)
+
+        except:
+            idx.INDEX[i] = orig
+            raise
+
+    def command(self):
+        arg, op = (' '.join(self.args)).split('--')
+        args = arg.strip().split(' ')
+        return self._success(_('Edited raw metadata'),
+            [self._edit(op, i) for i in self._choose_messages(args)])
 
 
 class ViewKeywords(Hacks):
