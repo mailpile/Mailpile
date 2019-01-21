@@ -625,7 +625,11 @@ class ConfigManager(ConfigDict):
         if with_mail_source is True:
             mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
         elif with_mail_source is False:
-            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
+            if mail_source_locals:
+                mailboxes = [(i, p, s) for i, p, s in mailboxes
+                             if (not s) or (not s.enabled)]
+            else:
+                mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
         else:
             pass  # All mailboxes, with or without mail sources
 

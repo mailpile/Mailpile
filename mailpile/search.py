@@ -435,7 +435,7 @@ class MailIndex(BaseIndex):
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
                      process_new=None, apply_tags=None, editable=False,
                      stop_after=None, deadline=None, reverse=False, lazy=False,
-                     event=None):
+                     event=None, force=False):
         mailbox_idx = FormatMbxId(mailbox_idx)
         progress = self._get_scan_progress(mailbox_idx,
                                            event=event, reset=True)
@@ -474,7 +474,7 @@ class MailIndex(BaseIndex):
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         mbox_version = mbox.last_updated()
-        if lazy and messages_md5 == self._scanned.get(mailbox_idx, ''):
+        if (not force) and messages_md5 == self._scanned.get(mailbox_idx, ''):
             return finito(0, _('%s: No new mail in: %s'
                                ) % (mailbox_idx, mailbox_fn),
                           complete=True)
@@ -498,14 +498,15 @@ class MailIndex(BaseIndex):
         if reverse:
             messages.reverse()
         for ui in range(0, len(messages)):
-            play_nice_with_threads(weak=True)
+            if not force:
+                play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
                 ir, self.interrupt = self.interrupt, None
                 return finito(-1, _('Rescan interrupted: %s') % ir)
             if stop_after and added >= stop_after:
                 messages_md5 = not_done_yet
                 break
-            elif deadline and time.time() > start_time + deadline:
+            elif deadline and time.time() > deadline:
                 messages_md5 = not_done_yet
                 break
             elif mbox_version != mbox.last_updated():
@@ -517,7 +518,7 @@ class MailIndex(BaseIndex):
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
-                elif (ui % 129) == 0 and not deadline:
+                elif (ui % 129) == 0 and not force:
                     play_nice_with_threads()
                 if not lazy:
                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
@@ -562,13 +563,12 @@ class MailIndex(BaseIndex):
                                 msg_ptr not in existing_ptrs):
                             self._remove_location(session, msg_ptr)
                             updated += 1
+        if not force:
+            play_nice_with_threads()
 
         progress.update({
             'added': added,
-            'updated': updated,
-        })
-        if not deadline:
-            play_nice_with_threads()
+            'updated': updated})
 
         self._scanned[mailbox_idx] = messages_md5
         short_fn = '/'.join(mailbox_fn.split('/')[-2:])

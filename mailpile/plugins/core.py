@@ -132,16 +132,18 @@ class Rescan(Command):
                                  result={'messages': len(msg_idxs)})
 
         else:
-            # FIXME: Need a lock here?
+            deadline = (int(time.time() + 0.75 * config.prefs.rescan_interval)
+                        if cron else None)
             if 'rescan' in config._running:
                 return self._success(_('Rescan already in progress'))
             config._running['rescan'] = True
             try:
                 results = {}
                 results.update(self._rescan_vcards(session, 'vcards'))
-                if not cron:
-                    results.update(self._rescan_mailboxes(session,
-                                                          which='sources'))
+                results.update(self._rescan_mailboxes(session,
+                    deadline=deadline,
+                    which=('mailboxes' if cron else 'both'),
+                    force=(not cron)))
 
                 self.event.data.update(results)
                 self.session.config.event_log.log_event(self.event)
@@ -149,7 +151,7 @@ class Rescan(Command):
                     raise KeyboardInterrupt()
                 return self._success(_('Rescanned vCards and mailboxes'),
                                      result=results)
-            except (KeyboardInterrupt), e:
+            except KeyboardInterrupt:
                 return self._error(_('User aborted'), info=results)
             finally:
                 del config._running['rescan']
@@ -231,7 +233,7 @@ class Rescan(Command):
 #            finally:
 #                MakePopenSafe()
 
-    def _rescan_mailboxes(self, session, which='mailboxes'):
+    def _rescan_mailboxes(self, session, which='mailboxes', force=True, deadline=None):
         import mailpile.mail_source
         config = session.config
         idx = self._idx()
@@ -250,10 +252,14 @@ class Rescan(Command):
 
             msg_count = 1
             if which in ('both', 'mailboxes', 'editable'):
-                if which == 'editable':
-                    mailboxes = config.get_mailboxes(with_mail_source=True)
+                if only or which == 'editable':
+                    mailboxes = config.get_mailboxes()
                 else:
-                    mailboxes = config.get_mailboxes(with_mail_source=False)
+                    # This combination of arguments will ignore mailboxes linked to
+                    # active mail sources, but include the local caches of sources
+                    # that have been disabled.
+                    mailboxes = config.get_mailboxes(with_mail_source=False,
+                                                     mail_source_locals=True)
 
                 for fid, fpath, sc in mailboxes:
                     if mailpile.util.QUITTING:
@@ -265,16 +271,20 @@ class Rescan(Command):
                     try:
                         session.ui.mark(_('Rescanning: %s %s')
                                         % (fid, fpath))
+                        rescan_args = {
+                            'event': self.event,
+                            'deadline': deadline,
+                            'force': force}
                         if which == 'editable':
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
                                                      process_new=False,
                                                      editable=True,
-                                                     event=self.event)
+                                                     **rescan_args)
                         else:
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
-                                                     event=self.event)
+                                                     **rescan_args)
                     except ValueError:
                         self._ignore_exception()
                         count = -1
@@ -299,12 +309,12 @@ class Rescan(Command):
                                 ocount = msg_count
                                 break
                             session.ui.mark(_('Rescanning: %s') % (src, ))
-                            count = src.rescan_now(session)
+                            (messages, mailboxes) = src.rescan_now(session)
                         except ValueError:
-                            count = 0
-                        if count > 0:
-                            msg_count += count
-                            mbox_count += 1
+                            messages = 0
+                        if messages > 0:
+                            msg_count += messages
+                        mbox_count += mailboxes
                         session.ui.mark('\n')
                     if not session.ui.interactive:
                         break
