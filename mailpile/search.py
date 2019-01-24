@@ -553,16 +553,15 @@ class MailIndex(BaseIndex):
             # This happens last and in a locked section, because other threads may
             # have added messages while we were busy with other things.
             with self._lock:
-                with mbox:
-                    existing_ptrs = set()
-                    for ui in range(0, len(messages)):
-                        msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
-                        existing_ptrs.add(msg_ptr)
-                    for msg_ptr in self.PTRS.keys():
-                        if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
-                                msg_ptr not in existing_ptrs):
-                            self._remove_location(session, msg_ptr)
-                            updated += 1
+                existing_ptrs = set()
+                for ui in range(0, len(messages)):
+                    msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
+                    existing_ptrs.add(msg_ptr)
+                for msg_ptr in self.PTRS.keys():
+                    if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
+                            msg_ptr not in existing_ptrs):
+                        self._remove_location(session, msg_ptr)
+                        updated += 1
         if not force:
             play_nice_with_threads()
 

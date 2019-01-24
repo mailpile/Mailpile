@@ -891,10 +891,11 @@ class ConfigManager(ConfigDict):
         except KeyboardInterrupt:
             raise
         except IOError:
-            pass
+            mbox = None
         except:
             if self.sys.debug:
                 traceback.print_exc()
+            mbox = None
 
         if mbox is None:
             if session:
@@ -911,8 +912,8 @@ class ConfigManager(ConfigDict):
 
         # Always set these, they can't be pickled
         mbox._decryption_key_func = lambda: self.get_master_key()
-        mbox._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                             self.get_master_key())
+        mbox._encryption_key_func = lambda: (self.get_master_key() if
+                                             self.prefs.encrypt_mail else None)
 
         # Finally, re-add to the cache
         self.cache_mailbox(session, pfn, mbx_id, mbox)
@@ -936,8 +937,8 @@ class ConfigManager(ConfigDict):
 
             mbx = wervd.MailpileMailbox(path)
             mbx._decryption_key_func = lambda: self.get_master_key()
-            mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                                self.get_master_key())
+            mbx._encryption_key_func = lambda: (self.get_master_key() if
+                                                self.prefs.encrypt_mail else None)
             return FilePath(path), mbx
 
     def open_local_mailbox(self, session):
