@@ -104,6 +104,44 @@
       ]) -}}
     {%- endif %}
   {%- endif %}
+  {%- if message.vcal_parts %}
+    {% for event in message.vcal_parts %}
+    <div class="pile-message-vcal-event">
+        <h2><span class="icon icon-calendar"></span> {{event.summary}}</h2>
+        <div class="event-details">
+            <h3 class="header-name crypto-color-gray">Starts:</h3>
+            <span class="header-value" title="{{event.dtstart}}">
+                <span class="time">{{event.dtstart}}</span>
+            </span>
+            <h3 class="header-name crypto-color-gray">Ends:</h3>
+            <span class="header-value" title="{{event.dtend}}">
+                <span class="time">{{event.dtend}}</span>
+            </span>
+            <h3 class="header-name crypto-color-gray">
+              Organizer:
+            </h3>
+            <span class="header-value">
+              <span class="name"><span class="punct">"</span>{{event.organizer.cn}}<span class="punct">"</span></span>
+              <span class="email"><span class="punct">&lt;</span>{{event.organizer.email}}<span class="punct">&gt;</span></span>
+            </span>
+
+            <h3 class="header-name crypto-color-gray">
+              Attendees:
+            </h3>
+            <span class="header-value">
+                {% for att in event.attendees %}
+                <span class="name"><span class="punct">"</span>{{att.cn}}<span class="punct">"</span></span>
+                <span class="email"><span class="punct">&lt;</span>{{att.email}}<span class="punct">&gt;</span></span>
+                {% endfor %}
+            </span>
+
+        </div>
+
+        <div>{{event.description|to_br}}</div>
+    </div>
+    {% endfor %}
+  {%- endif %}
+
   {%- if message.text_parts %}
     {%- set last_part = message.text_parts|length - 1 %}
     {%- for part in message.text_parts %}
