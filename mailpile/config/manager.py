@@ -667,19 +667,26 @@ class ConfigManager(ConfigDict):
         except ValueError:
             return False
 
-    def load_pickle(self, pfn):
-        with open(os.path.join(self.workdir, pfn), 'rb') as fd:
-            if self.get_master_key():
+    def load_pickle(self, pfn, delete_if_corrupt=False):
+        pickle_path = os.path.join(self.workdir, pfn)
+        with open(pickle_path, 'rb') as fd:
+            master_key = self.get_master_key()
+            if master_key:
                 from mailpile.crypto.streamer import DecryptingStreamer
                 with DecryptingStreamer(fd,
-                                        mep_key=self.get_master_key(),
+                                        mep_key=master_key,
                                         name='load_pickle(%s)' % pfn
                                         ) as streamer:
-                    rv = cPickle.loads(streamer.read())
+                    data = streamer.read()
                     streamer.verify(_raise=IOError)
-                    return rv
             else:
-                return cPickle.loads(fd.read())
+                data = fd.read()
+        try:
+            return cPickle.loads(data)
+        except cPickle.UnpicklingError:
+            if delete_if_corrupt:
+                safe_remove(pickle_path)
+            raise IOError('Load/unpickle failed')
 
     def save_pickle(self, obj, pfn, encrypt=True):
         ppath = os.path.join(self.workdir, pfn)
@@ -881,7 +888,7 @@ class ConfigManager(ConfigDict):
                     return None
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                mbox = self.load_pickle(pfn)
+                mbox = self.load_pickle(pfn, delete_if_corrupt=True)
             if prefer_local and not mbox.is_local:
                 mbox = None
             else:
