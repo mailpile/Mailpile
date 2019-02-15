@@ -19,7 +19,8 @@ before filing issues about design choices or attempting to reorganize the code
 in any major way. The FAQ also contains a quick introduction Mailpile internals
 and debugging techniques.
 
-Also, have you seen [the main Mailpile website](https://www.mailpile.is/)?
+Also, have you seen [the main Mailpile website](https://www.mailpile.is/) and
+[the community Discourse](https://community.mailpile.is/categories)?
 
 
 #### Are you new to Mailpile and/or FOSS?
@@ -59,6 +60,9 @@ Also, have you seen [the main Mailpile website](https://www.mailpile.is/)?
 
 * The [Developer FAQ](DEV_FAQ.md) has a section on debugging techniques.
 
+* If it's not bug, but you still need help: [visit our Discourse support
+  forum](https://community.mailpile.is/c/support).
+
 
 #### Did you write a patch that fixes a bug?
 
@@ -92,6 +96,13 @@ All patches to Mailpile are reviewed by a human and our resources (time,
 people) are very limited. Cosmetic patches are no easier to review than other
 patches and we would rather focus our efforts on functional improvements to the
 software.
+
+
+#### Do you want help other users?
+
+Our [community Discourse](https://community.mailpile.is/categories) has a
+support forum and needs friendly people to help out and steer conversations
+in friendly and productive directions. Please join the conversation!
 
 
 #### Do you want to translate Mailpile to your language?
