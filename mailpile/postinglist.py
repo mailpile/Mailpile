@@ -85,15 +85,17 @@ class PostingListContainer(object):
     @classmethod
     def Load(cls, session, sig, uncached_cb=None):
         fn, sig = cls._GetFilenameAndSig(session.config, sig)
-        found = plc = None
+        plc = None
         with PLC_CACHE_LOCK:
             if sig in PLC_CACHE:
-                found = PLC_CACHE[sig][0] = int(time.time())
-            else:
-                PLC_CACHE[sig] = [int(time.time()), cls(session, sig)]
-            plc = PLC_CACHE[sig][1]
-        if uncached_cb and not found:
-            uncached_cb()
+                PLC_CACHE[sig][0] = int(time.time())
+                plc = PLC_CACHE[sig][1]
+        if plc is None:
+            plc = cls(session, sig)  # Unlocked: stalled loads would deadlock
+            with PLC_CACHE_LOCK:
+                PLC_CACHE[sig] = [int(time.time()), plc]
+            if uncached_cb:
+               uncached_cb()
         return plc
 
     def __init__(self, session, sig, fd=None):
