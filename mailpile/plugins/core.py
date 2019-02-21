@@ -676,17 +676,24 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
-             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
-             mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
-            ('mailpile.plugins.compose', 'GLOBAL_EDITING_LOCK',
-             mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
-            ('mailpile.plugins.contacts', 'GLOBAL_VCARD_LOCK',
-             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
-            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
-        ])
+            ('mailpile.plugins.compose',
+                 'GLOBAL_EDITING_LOCK',
+                 mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
+            ('mailpile.plugins.contacts',
+                 'GLOBAL_VCARD_LOCK',
+                 mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
+            ('mailpile.postinglist',
+                 'PLC_CACHE_LOCK',
+                 mailpile.postinglist.PLC_CACHE_LOCK.locked()),
+            ('mailpile.postinglist',
+                 'GLOBAL_POSTING_LOCK',
+                 mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
+            ('mailpile.postinglist',
+                 'GLOBAL_OPTIMIZE_LOCK',
+                 mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+            ('mailpile.postinglist',
+                 'GLOBAL_GPL_LOCK',
+                 mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned())])
 
         threads = threading.enumerate()
         for thread in threads:
