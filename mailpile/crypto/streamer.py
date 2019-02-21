@@ -75,6 +75,7 @@ PREFERRED_FORMAT = 'v2:%s' % PREFERRED_CIPHER
 DETECTED_OBSOLETE_FORMATS = set([])
 
 OPENSSL_COMMAND = mailpile.platforms.GetDefaultOpenSSLCommand()
+OPENSSL_MD_ALG = "md5"
 
 # FIXME: Why does Windows require this? Move to mailpile.platforms when
 #        we understand the underlying issue.
@@ -625,7 +626,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
         if self.encryptor:
             return None
         return [OPENSSL_COMMAND, "enc", "-e", "-a", "-%s" % self.cipher,
-                "-pass", "stdin", "-bufsize", "0"]
+                "-pass", "stdin", "-bufsize", "0", "-md", OPENSSL_MD_ALG]
 
     def _write_preamble(self):
         self.fd.write(self.BEGIN_DATA)
@@ -701,7 +702,7 @@ class DecryptingStreamer(InputCoprocess):
 
     def __init__(self, fd,
                  mep_key=None, gpg_pass=None, sha256=None, cipher=None,
-                 name=None, long_running=False, gpgi=None):
+                 name=None, long_running=False, gpgi=None, md_alg=None):
         self.expected_outer_sha256 = sha256
         self.expected_inner_sha256 = None
         self.expected_inner_md5sum = None
@@ -710,6 +711,7 @@ class DecryptingStreamer(InputCoprocess):
         self.inner_sha = hashlib.sha256()
         self.inner_md5 = hashlib.md5()
         self.cipher = self.PREFERRED_CIPHER or PREFERRED_CIPHER
+        self.md_alg = md_alg or OPENSSL_MD_ALG
         self.state = self.STATE_BEGIN
         self.buffered = ''
         self.mep_version = None
@@ -974,7 +976,7 @@ class DecryptingStreamer(InputCoprocess):
             else:
                 return self.gpgi.common_args()
         return [OPENSSL_COMMAND, "enc", "-d", "-a", "-%s" % self.cipher,
-                "-pass", "stdin"]
+                "-pass", "stdin", "-md", self.md_alg]
 
 
 class PartialDecryptingStreamer(DecryptingStreamer):
