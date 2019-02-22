@@ -96,7 +96,11 @@ class PostingListContainer(object):
                 PLC_CACHE[sig] = [int(time.time()), plc]
             if uncached_cb:
                uncached_cb()
-        return plc
+        # We return the cached version no matter what, in case a race above
+        # had us loading the same posting-list twice: we want to be sure
+        # calling code gets the shared object.
+        with PLC_CACHE_LOCK:
+            return PLC_CACHE[sig][1]
 
     def __init__(self, session, sig, fd=None):
         self.session = session
