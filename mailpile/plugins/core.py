@@ -73,8 +73,13 @@ class Rescan(Command):
         'which': '[full|vcards|vcards:<src>|both|mailboxes|sources|<msgs>]'
     }
 
+    def _progress(self, progress):
+         self.session.ui.mark(progress)
+         self.event.data["progress"].append((int(time.time()), progress))
+
     def command(self, slowly=False, cron=False):
         session, config, idx = self.session, self.session.config, self._idx()
+        self.event.data["progress"] = []
         args = list(self.args)
         if 'which' in self.data:
             args.extend(self.data['which'])
@@ -82,8 +87,7 @@ class Rescan(Command):
         # Abort if we are out of disk space
         full_path = config.need_more_disk_space()
         if full_path:
-            return self._error(_('Insufficient free space in %s'
-                                 ) % full_path)
+            return self._error(_('Insufficient free space in %s') % full_path)
 
         # Pretend we're idle, to make rescan go fast fast.
         if not slowly:
@@ -93,17 +97,16 @@ class Rescan(Command):
         if cron:
             self._run_rescan_command(session)
 
-        if args and args[0].lower().startswith('vcards'):
+        a0lower = (args and args[0] or '').lower()
+        if a0lower.startswith('vcards'):
             return self._success(_('Rescanned vCards'),
                                  result=self._rescan_vcards(session, args[0]))
-        elif args and (args[0].lower() in ('both', 'mailboxes', 'sources',
-                                           'editable') or
-                       args[0].lower().startswith('mailbox:')):
-            which = args[0].lower()
+        elif (a0lower in ('both', 'mailboxes', 'sources', 'editable')
+                or a0lower.startswith('mailbox:')):
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
-                                                               which=which))
-        elif args and args[0].lower() == 'full':
+                                                               which=a0lower))
+        elif a0lower == 'full':
             config.flush_mbox_cache(session, wait=True)
             args.pop(0)
 
@@ -115,9 +118,10 @@ class Rescan(Command):
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
                 try:
-                    session.ui.mark('Re-indexing %s' % e.msg_mid())
+                    self._progress('Re-indexing %s' % e.msg_mid())
                     idx.index_email(self.session, e)
                 except KeyboardInterrupt:
+                    self._progress('Interrupted')
                     raise
                 except:
                     self._ignore_exception()
@@ -132,26 +136,31 @@ class Rescan(Command):
                                  result={'messages': len(msg_idxs)})
 
         else:
-            # FIXME: Need a lock here?
+            deadline = (int(time.time() + 0.75 * config.prefs.rescan_interval)
+                        if cron else None)
             if 'rescan' in config._running:
                 return self._success(_('Rescan already in progress'))
             config._running['rescan'] = True
             try:
                 results = {}
                 results.update(self._rescan_vcards(session, 'vcards'))
-                if not cron:
-                    results.update(self._rescan_mailboxes(session,
-                                                          which='sources'))
+                results.update(self._rescan_mailboxes(session,
+                    deadline=deadline,
+                    which=('mailboxes' if cron else 'both'),
+                    force=(not cron and not slowly)))
 
                 self.event.data.update(results)
                 self.session.config.event_log.log_event(self.event)
                 if 'aborted' in results:
+                    self._progress('Aborted')
                     raise KeyboardInterrupt()
                 return self._success(_('Rescanned vCards and mailboxes'),
                                      result=results)
-            except (KeyboardInterrupt), e:
+            except KeyboardInterrupt:
+                self._progress('Interrupted')
                 return self._error(_('User aborted'), info=results)
             finally:
+                self._progress("Rescan complete")
                 del config._running['rescan']
 
     def _rescan_vcards(self, session, which):
@@ -162,7 +171,7 @@ class Rescan(Command):
         which_spec = which.split(':')
         importers = []
         try:
-            session.ui.mark(_('Rescanning: %s') % 'vcards')
+            self._progress(_('Rescanning: %s') % 'vcards')
             for importer in PluginManager.VCARD_IMPORTERS.values():
                 if (len(which_spec) > 1 and
                         which_spec[1] != importer.SHORT_NAME):
@@ -171,19 +180,26 @@ class Rescan(Command):
                 for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                     if cfg:
                         imp = importer(session, cfg)
+                        self._progress(_('Importing VCards from: %s') % imp)
                         imported += imp.import_vcards(session, config.vcards)
                     if mailpile.util.QUITTING:
-                        return {'vcards': imported, 'vcard_sources': importers,
-                                'aborted': True}
+                        return {
+                            'vcards': imported,
+                            'vcard_sources': importers,
+                            'aborted': True}
         except KeyboardInterrupt:
-            return {'vcards': imported, 'vcard_sources': importers,
-                    'aborted': True}
-        return {'vcards': imported, 'vcard_sources': importers}
+            return {
+                'vcards': imported,
+                'vcard_sources': importers,
+                'aborted': True}
+        return {
+            'vcards': imported,
+            'vcard_sources': importers}
 
     def _run_rescan_command(self, session, timeout=120):
         pre_command = session.config.prefs.rescan_command
         if pre_command and not mailpile.util.QUITTING:
-            session.ui.mark(_('Running: %s') % pre_command)
+            self._progress(_('Running: %s') % pre_command)
             if not ('|' in pre_command or
                     '&' in pre_command or
                     ';' in pre_command):
@@ -231,7 +247,7 @@ class Rescan(Command):
 #            finally:
 #                MakePopenSafe()
 
-    def _rescan_mailboxes(self, session, which='mailboxes'):
+    def _rescan_mailboxes(self, session, which='mailboxes', force=True, deadline=None):
         import mailpile.mail_source
         config = session.config
         idx = self._idx()
@@ -239,7 +255,7 @@ class Rescan(Command):
         mbox_count = 0
         rv = True
         try:
-            session.ui.mark(_('Rescanning: %s') % which)
+            self._progress(_('Rescanning: %s') % which)
 
             self._run_rescan_command(session)
             if which.startswith('mailbox:'):
@@ -250,10 +266,14 @@ class Rescan(Command):
 
             msg_count = 1
             if which in ('both', 'mailboxes', 'editable'):
-                if which == 'editable':
-                    mailboxes = config.get_mailboxes(with_mail_source=True)
+                if only or which == 'editable':
+                    mailboxes = config.get_mailboxes()
                 else:
-                    mailboxes = config.get_mailboxes(with_mail_source=False)
+                    # This combination of arguments will ignore mailboxes linked to
+                    # active mail sources, but include the local caches of sources
+                    # that have been disabled.
+                    mailboxes = config.get_mailboxes(with_mail_source=False,
+                                                     mail_source_locals=True)
 
                 for fid, fpath, sc in mailboxes:
                     if mailpile.util.QUITTING:
@@ -263,18 +283,21 @@ class Rescan(Command):
                     if only and (only != fpath) and (only != fid):
                         continue
                     try:
-                        session.ui.mark(_('Rescanning: %s %s')
-                                        % (fid, fpath))
+                        self._progress(_('Rescanning: %s %s') % (fid, fpath))
+                        rescan_args = {
+                            'event': self.event,
+                            'deadline': deadline,
+                            'force': force}
                         if which == 'editable':
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
                                                      process_new=False,
                                                      editable=True,
-                                                     event=self.event)
+                                                     **rescan_args)
                         else:
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
-                                                     event=self.event)
+                                                     **rescan_args)
                     except ValueError:
                         self._ignore_exception()
                         count = -1
@@ -298,23 +321,21 @@ class Rescan(Command):
                             if mailpile.util.QUITTING:
                                 ocount = msg_count
                                 break
-                            session.ui.mark(_('Rescanning: %s') % (src, ))
-                            count = src.rescan_now(session)
+                            self._progress(_('Rescanning: %s') % (src, ))
+                            (messages, mailboxes) = src.rescan_now(session)
                         except ValueError:
-                            count = 0
-                        if count > 0:
-                            msg_count += count
-                            mbox_count += 1
+                            messages = 0
+                        if messages > 0:
+                            msg_count += messages
+                        mbox_count += mailboxes
                         session.ui.mark('\n')
                     if not session.ui.interactive:
                         break
-
-            msg_count -= 1
-            session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-            return {'aborted': True,
-                    'messages': msg_count,
-                    'mailboxes': mbox_count}
+            return {
+                'aborted': True,
+                'messages': msg_count,
+                'mailboxes': mbox_count}
         finally:
             if msg_count:
                 session.ui.mark('\n')
@@ -322,8 +343,11 @@ class Rescan(Command):
                     self._background_save(index=True)
                 else:
                     self._background_save(index_full=True)
-        return {'messages': msg_count,
-                'mailboxes': mbox_count}
+            else:
+                self._progress(_('Nothing changed'))
+        return {
+            'messages': msg_count,
+            'mailboxes': mbox_count}
 
 
 class Optimize(Command):
@@ -652,17 +676,24 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
-             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
-            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
-             mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
-            ('mailpile.plugins.compose', 'GLOBAL_EDITING_LOCK',
-             mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
-            ('mailpile.plugins.contacts', 'GLOBAL_VCARD_LOCK',
-             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
-            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
-        ])
+            ('mailpile.plugins.compose',
+                 'GLOBAL_EDITING_LOCK',
+                 mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
+            ('mailpile.plugins.contacts',
+                 'GLOBAL_VCARD_LOCK',
+                 mailpile.plugins.contacts.GLOBAL_VCARD_LOCK._is_owned()),
+            ('mailpile.postinglist',
+                 'PLC_CACHE_LOCK',
+                 mailpile.postinglist.PLC_CACHE_LOCK.locked()),
+            ('mailpile.postinglist',
+                 'GLOBAL_POSTING_LOCK',
+                 mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
+            ('mailpile.postinglist',
+                 'GLOBAL_OPTIMIZE_LOCK',
+                 mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+            ('mailpile.postinglist',
+                 'GLOBAL_GPL_LOCK',
+                 mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned())])
 
         threads = threading.enumerate()
         for thread in threads:
@@ -872,17 +903,23 @@ class GpgCommand(Command):
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
-        binary, rv = self._gnupg().gpgbinary, '(unknown)'
+        gnupg = self._gnupg()
+        gnupg_args = gnupg.common_args(interactive=True)
+        binary = gnupg.gpgbinary
+        rv = '(unknown)'
+        def _shellquote(s):
+            return "'" + s.replace("'", "'\\''") + "'"
         with self.session.ui.term:
             try:
                 self.session.ui.block()
                 if (self.session.ui.interactive and
                         self.session.ui.render_mode == 'text'):
-                    rv = os.system(' '.join([binary] + args))
+                    rv = os.system(' '.join(_shellquote(a)
+                                            for a in (gnupg_args + args)))
                     stdout = None
                 else:
                     sp = subprocess.Popen(
-                        [binary] + ['--batch', '--no-tty'] + args,
+                        gnupg_args + ['--batch', '--no-tty'] + args,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         stdin=subprocess.PIPE)
                     (stdout, stderr) = sp.communicate(input='')

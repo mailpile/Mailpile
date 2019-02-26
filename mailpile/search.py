@@ -71,6 +71,7 @@ class MailIndex(BaseIndex):
         self._lock = SearchRLock()
         self._save_lock = SearchRLock()
         self._prepare_sorting()
+        self._url_re_cache = {}
 
     @classmethod
     def l2m(self, line):
@@ -359,6 +360,8 @@ class MailIndex(BaseIndex):
     def update_ptrs_and_msgids(self, session):
         session.ui.mark(_('Updating high level indexes'))
         with self._lock:
+            self.PTRS = {}
+            self.MSGIDS = {}
             for offset in range(0, len(self.INDEX)):
                 message = self.l2m(self.INDEX[offset])
                 if len(message) == self.MSG_FIELDS_V2:
@@ -382,7 +385,7 @@ class MailIndex(BaseIndex):
 
     def _update_location(self, session, msg_idx_pos, msg_ptr):
         if 'rescan' in session.config.sys.debug:
-            session.ui.debug('Moved? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
+            session.ui.debug('Duplicate? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')
@@ -433,7 +436,7 @@ class MailIndex(BaseIndex):
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
                      process_new=None, apply_tags=None, editable=False,
                      stop_after=None, deadline=None, reverse=False, lazy=False,
-                     event=None):
+                     event=None, force=False):
         mailbox_idx = FormatMbxId(mailbox_idx)
         progress = self._get_scan_progress(mailbox_idx,
                                            event=event, reset=True)
@@ -469,11 +472,10 @@ class MailIndex(BaseIndex):
         if len(self.PTRS.keys()) == 0:
             self.update_ptrs_and_msgids(session)
 
-        existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         mbox_version = mbox.last_updated()
-        if messages_md5 == self._scanned.get(mailbox_idx, ''):
+        if (not force) and messages_md5 == self._scanned.get(mailbox_idx, ''):
             return finito(0, _('%s: No new mail in: %s'
                                ) % (mailbox_idx, mailbox_fn),
                           complete=True)
@@ -491,30 +493,21 @@ class MailIndex(BaseIndex):
             'batch_size': stop_after or len(messages)
         })
 
-        # Figure out which messages exist at all (so we can remove
-        # stale pointers later on).
-        if not lazy:
-            for ui in range(0, len(messages)):
-                msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
-                existing_ptrs.add(msg_ptr)
-                if (ui % 317) == 0 and not deadline:
-                    play_nice_with_threads()
-
         added = updated = 0
         last_date = long(start_time)
         not_done_yet = 'NOT DONE YET'
         if reverse:
             messages.reverse()
         for ui in range(0, len(messages)):
-            play_nice_with_threads(weak=True)
+            if not force:
+                play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
-                self.interrupt = None
-                return finito(-1, _('Rescan interrupted: %s'
-                                    ) % self.interrupt)
+                ir, self.interrupt = self.interrupt, None
+                return finito(-1, _('Rescan interrupted: %s') % ir)
             if stop_after and added >= stop_after:
                 messages_md5 = not_done_yet
                 break
-            elif deadline and time.time() > start_time + deadline:
+            elif deadline and time.time() > deadline:
                 messages_md5 = not_done_yet
                 break
             elif mbox_version != mbox.last_updated():
@@ -526,7 +519,7 @@ class MailIndex(BaseIndex):
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
-                elif (ui % 129) == 0 and not deadline:
+                elif (ui % 129) == 0 and not force:
                     play_nice_with_threads()
                 if not lazy:
                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
@@ -557,18 +550,25 @@ class MailIndex(BaseIndex):
             updated += u
 
         if not lazy:
+            # Figure out which messages exist at all, and remove stale pointers.
+            # This happens last and in a locked section, because other threads may
+            # have added messages while we were busy with other things.
             with self._lock:
+                existing_ptrs = set()
+                for ui in range(0, len(messages)):
+                    msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
+                    existing_ptrs.add(msg_ptr)
                 for msg_ptr in self.PTRS.keys():
                     if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
                             msg_ptr not in existing_ptrs):
                         self._remove_location(session, msg_ptr)
                         updated += 1
+        if not force:
+            play_nice_with_threads()
+
         progress.update({
             'added': added,
-            'updated': updated,
-        })
-        if not deadline:
-            play_nice_with_threads()
+            'updated': updated})
 
         self._scanned[mailbox_idx] = messages_md5
         short_fn = '/'.join(mailbox_fn.split('/')[-2:])
@@ -598,8 +598,12 @@ class MailIndex(BaseIndex):
                        process_new=None, apply_tags=None, stop_after=None,
                        editable=False, event=None, progress=None,
                        lazy=False):
+        with self._lock:
+            # This is not actually a critical section, this is more of a belt and
+            # suspenders thing to encourage serialization of scanning processes.
+            msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
+
         added = updated = 0
-        msg_ptr = msg_ptr or mbox.get_msg_ptr(mailbox_idx, msg_mbox_idx)
         last_date = last_date or long(time.time())
         progress = progress or self._get_scan_progress(mailbox_idx,
                                                        event=event)
@@ -1236,6 +1240,7 @@ class MailIndex(BaseIndex):
         payload = [None]
         textparts = 0
         parts = []
+        urls = []
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
@@ -1252,6 +1257,7 @@ class MailIndex(BaseIndex):
                 if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
                     ctype = 'text/html'
                 else:
+                    # FIXME: Search for URLs in the text part, add to urls list.
                     textparts += 1
                     pinfo = '%x::T' % len(payload[0])
 
@@ -1260,7 +1266,9 @@ class MailIndex(BaseIndex):
                 pinfo = '%x::H' % len(payload[0])
                 if len(payload[0]) > 3:
                     try:
-                        textpart = extract_text_from_html(payload[0])
+                        textpart = extract_text_from_html(
+                            payload[0],
+                            url_callback=lambda u, t: urls.append((u, t)))
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
                                              ) % (msg_mid, msg_id))
@@ -1343,6 +1351,25 @@ class MailIndex(BaseIndex):
 
             if not ctype.startswith('multipart/'):
                 parts.append(pinfo)
+
+        if urls:
+            att_urls = []
+            for (full_url, txt) in set(urls):
+                url = full_url.lower().split('/', 3)
+                if len(url) == 4 and url[0] in ('http:', 'https:'):
+                    keywords.append('%s:url' % url[2])
+                    for raw_re in session.config.prefs.attachment_urls:
+                        url_re = self._url_re_cache.get(raw_re)
+                        if url_re is None:
+                            url_re = re.compile(raw_re)
+                            self._url_re_cache[raw_re] = url_re
+                        if url_re.search(full_url):
+                            att_urls.append((full_url, txt))
+                            break
+            if att_urls:
+                body_info['att_urls'] = att_urls
+                keywords.append('attachment_url:has')
+                keywords.append('attachment:has')
 
         if len(parts) > 1:
             body_info['parts'] = parts

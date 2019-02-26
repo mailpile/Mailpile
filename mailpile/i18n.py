@@ -114,7 +114,7 @@ def ActivateTranslation(session, config, language, localedir=None):
             trans = translation("mailpile", localedir,
                                 [language], codeset="utf-8")
         except IOError:
-            if session and language[:2] != 'en':
+            if session and language[:2] not in ('en', 'C'):
                 session.ui.debug('Failed to load language %s' % language)
 
     if not trans:

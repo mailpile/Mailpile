@@ -213,10 +213,24 @@
           {{ bp.filename }}
         {%- endif %}
         </span>
-        {% do displayed_atts.append(bp.filename) %}
+        {%- do displayed_atts.append(bp.filename) %}
       </a>
         {%- if not loop.last %}<br clear='both'>{% endif %}
       {% endif %}
+    {%- endfor %}
+    {%- for url_url, url_text in (metadata.body.att_urls or []) %}
+      {%- if displayed_atts %}<br clear='both'>{% endif %}
+      <a class="item-attachment" style="line-height: 18px;" {# FIXME! #}
+           title="{{_('Download from the web')}}" target=_blank
+           href="{{ url_url }}" data-noblank=1 data-keep-selection=1>
+        <span style="position: absolute; display: inline-block;">
+          <b style="font-family: monospace; margin: 0;">WWW</b>
+        </span>
+        <span style="color: #666; margin: 0 0 0 5em;">
+          {{- url_text -}}
+        </span>
+        {%- do displayed_atts.append(url_url) %}
+      </a>
     {%- endfor %}
     {%- if not displayed_atts %}
     <a data-noblank=1 data-keep-selection=1

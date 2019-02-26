@@ -98,6 +98,7 @@ CONFIG_RULES = {
         'web_content':     (_('Download content from the web'),
                             ["off", "anon", "on"],                  "unknown"),
         'html5_sandbox':   (_('Use HTML5 sandboxes'), bool,              True),
+        'attachment_urls': (_('URLs to treat as attachments (regex)'), str, []),
         'weak_crypto_max_age': (
                _('Accept weak crypto in messages older than this (unix time)'),
                                                                   int,      0),

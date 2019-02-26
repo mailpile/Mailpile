@@ -479,9 +479,6 @@ class KeychainLookupHandler(LookupHandler):
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keychain'))
 
-    def _getkey(self, key):
-        return False  # Already on keychain
-
     def _lookup(self, address, strict_email_match):
         address = address.lower()
         results = {}
@@ -499,6 +496,17 @@ class KeychainLookupHandler(LookupHandler):
                         if k in key_info:
                             results[key_id][k] = key_info[k]
         return results
+
+    def _getkey(self, key):
+        # Returns dict like those returned by KeyserverLookupHandler._getkey()
+        # and EmailKeyLookupHandler._getkey(). Even though the key is already
+        # on the keychain, this is needed so KeyImport will create VCard(s)
+        # from the key to indicate that it can be used for encrypting.
+
+        if key['fingerprint'] in self.known_keys:
+            return {'updated':[{'fingerprint':key['fingerprint']}]}
+        else:
+            return {}
 
 
 class KeyserverLookupHandler(LookupHandler):

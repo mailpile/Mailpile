@@ -108,6 +108,13 @@
     {%- set last_part = message.text_parts|length - 1 %}
     {%- for part in message.text_parts %}
     <div class="pile-message-text-part">
+      {%- if part.aid and config.web.developer_mode %}
+      <a href="{{ U('/message/download/get/=', mid, '/', part.aid, '/') }}"
+         title="{{_('Download')}}: {{ part.aid }}, {{ part.mimetype}}"
+         style="position: absolute; right: 0; opacity: 0.25;">
+        <span class="icon icon-download"></span>
+      </a>
+      {%- endif %}
       {%- if part.data|trim %}
         {{- msg_crypto(part, False) }}
         {%- autoescape false %}
@@ -151,6 +158,13 @@
     <div id="html-part-{{ mid }}-{{ loop.index }}"
          class="pile-message-html-part hide">
       {{ msg_crypto(part, loop.first) }}
+      {%- if part.aid and config.web.developer_mode %}
+      <a href="{{ U('/message/download/get/=', mid, '/', part.aid, '/') }}"
+         title="{{_('Download')}}: {{ part.aid }}, {{ part.mimetype}}"
+         style="position: absolute; right: 0; opacity: 0.25;">
+        <span class="icon icon-download"></span>
+      </a>
+      {%- endif %}
       <div class="message-part-html">
         <i class="noframe">{{ _("HTML rendering requires Javascript, sorry!") }}</i>
       </div>

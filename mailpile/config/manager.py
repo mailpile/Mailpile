@@ -625,7 +625,11 @@ class ConfigManager(ConfigDict):
         if with_mail_source is True:
             mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
         elif with_mail_source is False:
-            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
+            if mail_source_locals:
+                mailboxes = [(i, p, s) for i, p, s in mailboxes
+                             if (not s) or (not s.enabled)]
+            else:
+                mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
         else:
             pass  # All mailboxes, with or without mail sources
 
@@ -663,19 +667,26 @@ class ConfigManager(ConfigDict):
         except ValueError:
             return False
 
-    def load_pickle(self, pfn):
-        with open(os.path.join(self.workdir, pfn), 'rb') as fd:
-            if self.get_master_key():
+    def load_pickle(self, pfn, delete_if_corrupt=False):
+        pickle_path = os.path.join(self.workdir, pfn)
+        with open(pickle_path, 'rb') as fd:
+            master_key = self.get_master_key()
+            if master_key:
                 from mailpile.crypto.streamer import DecryptingStreamer
                 with DecryptingStreamer(fd,
-                                        mep_key=self.get_master_key(),
+                                        mep_key=master_key,
                                         name='load_pickle(%s)' % pfn
                                         ) as streamer:
-                    rv = cPickle.loads(streamer.read())
+                    data = streamer.read()
                     streamer.verify(_raise=IOError)
-                    return rv
             else:
-                return cPickle.loads(fd.read())
+                data = fd.read()
+        try:
+            return cPickle.loads(data)
+        except cPickle.UnpicklingError:
+            if delete_if_corrupt:
+                safe_remove(pickle_path)
+            raise IOError('Load/unpickle failed')
 
     def save_pickle(self, obj, pfn, encrypt=True):
         ppath = os.path.join(self.workdir, pfn)
@@ -877,7 +888,7 @@ class ConfigManager(ConfigDict):
                     return None
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                mbox = self.load_pickle(pfn)
+                mbox = self.load_pickle(pfn, delete_if_corrupt=True)
             if prefer_local and not mbox.is_local:
                 mbox = None
             else:
@@ -887,10 +898,11 @@ class ConfigManager(ConfigDict):
         except KeyboardInterrupt:
             raise
         except IOError:
-            pass
+            mbox = None
         except:
             if self.sys.debug:
                 traceback.print_exc()
+            mbox = None
 
         if mbox is None:
             if session:
@@ -907,8 +919,8 @@ class ConfigManager(ConfigDict):
 
         # Always set these, they can't be pickled
         mbox._decryption_key_func = lambda: self.get_master_key()
-        mbox._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                             self.get_master_key())
+        mbox._encryption_key_func = lambda: (self.get_master_key() if
+                                             self.prefs.encrypt_mail else None)
 
         # Finally, re-add to the cache
         self.cache_mailbox(session, pfn, mbx_id, mbox)
@@ -932,8 +944,8 @@ class ConfigManager(ConfigDict):
 
             mbx = wervd.MailpileMailbox(path)
             mbx._decryption_key_func = lambda: self.get_master_key()
-            mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                                self.get_master_key())
+            mbx._encryption_key_func = lambda: (self.get_master_key() if
+                                                self.prefs.encrypt_mail else None)
             return FilePath(path), mbx
 
     def open_local_mailbox(self, session):

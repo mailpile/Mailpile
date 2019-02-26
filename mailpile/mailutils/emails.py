@@ -1041,8 +1041,7 @@ class Email(object):
                 'count': count,
                 'length': len(payload),
                 'content-id': content_id,
-                'filename': pfn,
-            }
+                'filename': pfn}
             attributes['aid'] = self._attachment_aid(attributes)
             if pfn:
                 if '.' in pfn:
@@ -1174,8 +1173,7 @@ class Email(object):
         for part in msg.walk():
             crypto = {
                 'signature': part.signature_info,
-                'encryption': part.encryption_info,
-            }
+                'encryption': part.encryption_info}
 
             mimetype = (part.get_content_type() or 'text/plain').lower()
             if (mimetype.startswith('multipart/')
@@ -1200,8 +1198,10 @@ class Email(object):
                         tree['html_parts'].append({
                             'charset': charset,
                             'type': 'html',
-                            'data': clean_html(payload)
-                        })
+                            'data': clean_html(payload),
+                            'count': count,
+                            'mimetype': mimetype,
+                            'aid': 'part-%d' % count})
 
                 elif want is None or 'text_parts' in want:
                     if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
@@ -1210,9 +1210,8 @@ class Email(object):
                     # the message is HTML only and we want the code below
                     # to try and extract meaning from it.
                     if (start or payload.strip()) != '':
-                        text_parts = self.parse_text_part(payload, charset,
-                                                          crypto)
-                        tree['text_parts'].extend(text_parts)
+                        tree['text_parts'].extend(self.parse_text_part(
+                            payload, charset, crypto, mimetype, count))
 
             elif want is None or 'attachments' in want:
                 filename_org = safe_decode_hdr(hdr=part.get_filename() or '')
@@ -1227,8 +1226,7 @@ class Email(object):
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
                     'filename': filename,
-                    'crypto': crypto
-                }
+                    'crypto': crypto}
                 att['aid'] = self._attachment_aid(att)
                 tree['attachments'].append(att)
                 if filename_org != filename:
@@ -1238,9 +1236,8 @@ class Email(object):
             if tree.get('html_parts') and not tree.get('text_parts'):
                 html_part = tree['html_parts'][0]
                 payload = extract_text_from_html(html_part['data'])
-                text_parts = self.parse_text_part(payload,
-                                                  html_part['charset'],
-                                                  crypto)
+                text_parts = self.parse_text_part(
+                    payload, html_part['charset'], crypto, None, None)
                 tree['text_parts'].extend(text_parts)
 
         if self.is_editable():
@@ -1290,7 +1287,7 @@ class Email(object):
         charset = part.get_content_charset() or None
         return self.decode_text(GetTextPayload(part), charset=charset)
 
-    def parse_text_part(self, data, charset, crypto):
+    def parse_text_part(self, data, charset, crypto, mimetype, count):
         psi = crypto['signature']
         pei = crypto['encryption']
         current = {
@@ -1298,9 +1295,7 @@ class Email(object):
             'charset': charset,
             'crypto': {
                 'signature': SignatureInfo(parent=psi),
-                'encryption': EncryptionInfo(parent=pei)
-            }
-        }
+                'encryption': EncryptionInfo(parent=pei)}}
         parse = []
         block = 'body'
         clines = []
@@ -1326,10 +1321,11 @@ class Email(object):
                     'charset': charset,
                     'crypto': {
                         'signature': SignatureInfo(parent=psi),
-                        'encryption': EncryptionInfo(parent=pei)
-                    }
-                }
+                        'encryption': EncryptionInfo(parent=pei)}}
                 parse.append(current)
+                if len(parse) == 1 and count and mimetype:
+                    current['aid'] = 'part-%d' % count
+                    current['mimetype'] = mimetype
             current['data'] += line
             clines.append(line)
         return parse

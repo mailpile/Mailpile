@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+set -x
+
+CODESIGN_ID=$(security find-identity \
+    |grep $DMG_SIGNING_IDENTITY \
+    |grep 'Developer ID Application' \
+    |awk '{print $2}' \
+    |head -1)
+
+# Codesign all the homebrew'ed binaries.
+cd "$MAILPILE_BREW_ROOT"
+(
+    find . -type f -name 'Python'
+    find bin -type f |grep -v -e \.py
+    find Cellar opt -type f -name '*.dylib'
+    find Cellar opt -type f -name '*.so'
+) | while read bin; do
+    codesign -dvvvv  --force --sign "$CODESIGN_ID" "$bin"
+done
+
+codesign -dvvvv  --force --sign "$CODESIGN_ID" "$BUILD_DIR/Mailpile.app"

@@ -953,7 +953,7 @@ class ImapMailSource(BaseMailSource):
             return False
 
     def _check_keepalive(self):
-        alive_for = time.time() - self.logged_in_at
+        alive_for = time.time() - (self.logged_in_at or time.time())
         if (not self.my_config.keepalive) or alive_for > (12 * 3600):
             if ('IDLE' not in self.capabilities or
                     alive_for > self.my_config.interval):

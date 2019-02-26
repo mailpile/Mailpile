@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:stretch-slim
 
 ENV GID 33411
 ENV UID 33411
@@ -22,9 +22,6 @@ WORKDIR /home/mailpile
 USER mailpile
 
 VOLUME /home/mailpile/.local/share/Mailpile
-VOLUME /home/mailpile/.gnupg
 EXPOSE 33411
 
-ENTRYPOINT ["service tor start;","mailpile"]
-CMD ["--www=0.0.0.0:33411/","--wait"]
-
+CMD mailpile --www=0.0.0.0:33411/ --wait
