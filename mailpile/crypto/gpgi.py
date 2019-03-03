@@ -36,7 +36,7 @@ DEFAULT_KEYSERVER_OPTIONS = [
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
-GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand()
+GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand
 GPG_VERSIONS = {}
 BLOCKSIZE = 65536
 
@@ -526,7 +526,7 @@ class GnuPG:
         if self.config:
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
             self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
-            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY
+            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY()
             self.passphrases = self.config.passphrases
             self.passphrase = (passphrase if (passphrase is not None) else
                                self.passphrases['DEFAULT']).get_reader()
@@ -534,7 +534,7 @@ class GnuPG:
                               else self.config.prefs.gpg_use_agent)
         else:
             self.homedir = GNUPG_HOMEDIR
-            self.gpgbinary = GPG_BINARY
+            self.gpgbinary = GPG_BINARY()
             self.passphrases = None
             if passphrase:
                 self.passphrase = passphrase.get_reader()

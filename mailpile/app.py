@@ -204,7 +204,28 @@ class WaitCommand(Command):
 
 
 def Main(args):
-    mailpile.platforms.DetectBinaries()
+    try:
+        mailpile.platforms.DetectBinaries(_raise=OSError)
+    except OSError as e:
+        binary = str(e).split()[0]
+        sys.stderr.write("""
+Required binary missing or unusable: %s
+
+If you know where it is, or would like to skip this test and run Mailpile
+anyway, you can set one of the following environment variables:
+
+    MAILPILE_%s="/path/to/binary"
+or
+    MAILPILE_SKIP_BINARIES="%s"
+
+Note that skipping a binary check may cause the app to become unstable or
+fail in unexpected ways. If it breaks you get to keep both pieces!
+
+""" % (e, binary.upper(), binary))
+        sys.exit(1)
+
+    # Enable our connection broker, try to prevent badly behaved plugins from
+    # bypassing it.
     DisableUnbrokeredConnections()
 
     # Bootstrap translations until we've loaded everything else

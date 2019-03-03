@@ -43,7 +43,6 @@ from tempfile import NamedTemporaryFile
 import mailpile.platforms
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.crypto.gpgi import GPG_BINARY
 from mailpile.safe_popen import Popen, PIPE
 from mailpile.util import CryptoLock, safe_remove, safe_assert
 from mailpile.util import sha512b64 as genkey
@@ -74,7 +73,7 @@ BLANK_LINE_RE = re.compile('^\s*$')
 PREFERRED_FORMAT = 'v2:%s' % PREFERRED_CIPHER
 DETECTED_OBSOLETE_FORMATS = set([])
 
-OPENSSL_COMMAND = mailpile.platforms.GetDefaultOpenSSLCommand()
+OPENSSL_COMMAND = mailpile.platforms.GetDefaultOpenSSLCommand
 OPENSSL_MD_ALG = "md5"
 
 # FIXME: Why does Windows require this? Move to mailpile.platforms when
@@ -639,7 +638,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     def _mk_command(self):
         if self.encryptor:
             return None
-        return [OPENSSL_COMMAND, "enc", "-e", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND(), "enc", "-e", "-a", "-%s" % self.cipher,
                 "-pass", "stdin", "-bufsize", "0", "-md", OPENSSL_MD_ALG]
 
     def _write_preamble(self):
@@ -989,7 +988,7 @@ class DecryptingStreamer(InputCoprocess):
                 return self.gpgi.common_args(will_send_passphrase=True)
             else:
                 return self.gpgi.common_args()
-        return [OPENSSL_COMMAND, "enc", "-d", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND(), "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin", "-md", self.md_alg]
 
 
