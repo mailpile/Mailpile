@@ -55,6 +55,10 @@
         {
             "class": "CheckMailbox",
             "name": "hacks/chkmbx"
+        },
+        {
+            "class": "FakeSendingDates",
+            "name": "hacks/fakedates"
         }
     ]
 }
