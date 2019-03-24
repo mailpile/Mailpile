@@ -517,3 +517,43 @@ class CheckMailbox(Hacks):
         else:
             return self._success('Checked %d mailboxes' % len(results),
                                  result=results)
+
+
+_REAL_MAKEMESSAGEDATE = None
+
+class FakeSendingDates(Hacks):
+    """Fake the dates of outgoing messages"""
+    SYNOPSIS = (None, 'hacks/fakedates', None, ' [<minutes> --] <date>')
+
+    def command(self):
+        import subprocess
+        import mailpile.mailutils.emails
+
+        global _REAL_MAKEMESSAGEDATE
+        if _REAL_MAKEMESSAGEDATE is None:
+            _REAL_MAKEMESSAGEDATE = mailpile.mailutils.emails.MakeMessageDate
+
+        if self.args[1] == '--':
+            minutes = float(self.args[0])
+            args = self.args[2:]
+        else:
+            minutes = 5
+            args = self.args
+
+        faked_ts = int(subprocess.check_output(
+            ['date', '+%s', '--date', ' '.join(args)]
+            ).decode('utf-8').strip())
+
+        deadline = time.time() + (minutes * 60)
+
+        def _HackedMMD(ts=None):
+            if time.time() > deadline:
+                mailpile.mailutils.emails.MakeMessageDate = _REAL_MAKEMESSAGEDATE
+                return _REAL_MAKEMESSAGEDATE(ts=ts)
+            else:
+                return _REAL_MAKEMESSAGEDATE(ts=faked_ts)
+
+        mailpile.mailutils.emails.MakeMessageDate = _HackedMMD
+        return self._success(
+            'Dates will be faked as %s for the next %.1f minutes'
+                % (faked_ts, minutes))
