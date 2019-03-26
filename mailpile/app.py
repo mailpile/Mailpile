@@ -216,7 +216,7 @@ anyway, you can set one of the following environment variables:
 
     MAILPILE_%s="/path/to/binary"
 or
-    MAILPILE_SKIP_BINARIES="%s"
+    MAILPILE_IGNORE_BINARIES="%s"
 
 Note that skipping a binary check may cause the app to become unstable or
 fail in unexpected ways. If it breaks you get to keep both pieces!
