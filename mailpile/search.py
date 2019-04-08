@@ -1241,6 +1241,11 @@ class MailIndex(BaseIndex):
         textparts = 0
         parts = []
         urls = []
+        
+        RE_TEXT_LINKS= re.compile(
+            "(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?",
+            flags=re.DOTALL|re.IGNORECASE)
+        
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
@@ -1257,7 +1262,10 @@ class MailIndex(BaseIndex):
                 if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
                     ctype = 'text/html'
                 else:
-                    # FIXME: Search for URLs in the text part, add to urls list.
+                    
+                     m= re.match(RE_TEXT_LINKS,textpart)
+                     url,txt= m.groups(),m.group(1)
+                     urls.append((url,txt))
                     textparts += 1
                     pinfo = '%x::T' % len(payload[0])
 
