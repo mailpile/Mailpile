@@ -1258,6 +1258,11 @@ class MailIndex(BaseIndex):
                     ctype = 'text/html'
                 else:
                     # FIXME: Search for URLs in the text part, add to urls list.
+                    def findurl(textpart):
+	                    url_intext = re.findall('''http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]
+	                    |[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+''', textpart)
+	                    urls.append(url_intext)
+                    findurl(textpart)                  
                     textparts += 1
                     pinfo = '%x::T' % len(payload[0])
 
