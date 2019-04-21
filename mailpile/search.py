@@ -1257,7 +1257,6 @@ class MailIndex(BaseIndex):
                 if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
                     ctype = 'text/html'
                 else:
-                    # FIXME: Search for URLs in the text part, add to urls list.
                     def findurl(textpart):
 	                    url_intext = re.findall('''http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]
 	                    |[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+''', textpart)
