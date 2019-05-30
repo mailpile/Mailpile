@@ -523,6 +523,7 @@ class GnuPG:
         self.event = GnuPGEventUpdater(event)
         self.session = session
         self.config = config or (session and session.config) or None
+        self.status_filenames = []
         if self.config:
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
             self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
@@ -655,7 +656,8 @@ class GnuPG:
             args.insert(1, "--verbose")
             args.insert(1, "--batch")
             args.insert(1, "--enable-progress-filter")
-            args.insert(1, "--status-fd=2")
+            if self.status_filenames:
+                args.insert(1, "--status-file=%s" % self.status_filenames[-1])
             if will_send_passphrase:
                 args.insert(2, "--passphrase-fd=0")
 
@@ -664,7 +666,19 @@ class GnuPG:
 
         return args
 
-    def run(self,
+    def run(self, *args, **kwargs):
+        # This wrapper handles temporary status files. Since we may recursively
+        # invoke ourselves, we keep a stack of tempfiles and push/pop from the
+        # list.
+        fd = tempfile.NamedTemporaryFile(delete=False)
+        fd.close()  # Avoid potential conflicts on Windows
+        try:
+            self.status_filenames.append(fd.name)
+            return self.run_without_status(*args, **kwargs)
+        finally:
+            os.remove(self.status_filenames.pop(-1))
+
+    def run_without_status(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
             send_passphrase=False, _raise=None, novercheck=False):
         if novercheck:
@@ -732,6 +746,11 @@ class GnuPG:
             # Reap GnuPG
             gpg_retcode = proc.wait()
 
+            # Consume the contents of the status file
+            if self.status_filenames:
+                with open(self.status_filenames[-1], 'r') as status_fd:
+                    for line in iter(status_fd.readline, b''):
+                        self.parse_status(line)
         finally:
             # Close this so GPG will terminate. This should already have
             # been done, but we're handling errors here...
@@ -775,8 +794,6 @@ class GnuPG:
 
     def parse_stderr(self, line):
         self.event.update_stderr(line)
-        if line.startswith("[GNUPG:] "):
-            return self.parse_status(line)
         self.debug('<<STDERR<< %s' % line)
         self.outputbuffers["stderr"].append(line)
 
