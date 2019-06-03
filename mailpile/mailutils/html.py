@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8 :
 #
+import lxml.etree
 import lxml.html
 import lxml.html.clean
 import re
@@ -99,7 +100,7 @@ def extract_text_from_html(html, url_callback=None):
         if html:
             try:
                 html_text = lxml.html.fromstring(html).text_content()
-            except XMLSyntaxError:
+            except lxml.etree.Error:
                 html_text = _('(Invalid HTML suppressed)')
         else:
             html_text = ''
