@@ -52,6 +52,7 @@ Architecture: all
 Depends: ${misc:Depends},
          wordlist,
          gnupg,
+         dirmngr,
          spambayes,
          python (<< 2.8),
          python (>= 2.7.5),
