@@ -13,3 +13,4 @@ pillow
 pbr
 fasteners
 stem>=1.4
+icalendar

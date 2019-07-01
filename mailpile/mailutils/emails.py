@@ -41,7 +41,7 @@ from mailpile.mailutils.generator import Generator
 from mailpile.mailutils.html import extract_text_from_html, clean_html
 from mailpile.mailutils.headerprint import HeaderPrints
 from mailpile.mailutils.safe import safe_decode_hdr
-
+from mailpile.mailutils.vcal import calendar_parse
 
 GLOBAL_CONTENT_ID_LOCK = MboxLock()
 GLOBAL_CONTENT_ID = random.randint(0, 0xfffffff)
@@ -1115,7 +1115,7 @@ class Email(object):
                 want.extend(['text_parts', 'headers', 'attachments',
                              'addresses'])
 
-        for p in 'text_parts', 'html_parts', 'attachments':
+        for p in 'text_parts', 'html_parts', 'vcal_parts', 'attachments':
             if want is None or p in want:
                 tree[p] = []
 
@@ -1202,6 +1202,10 @@ class Email(object):
                             'count': count,
                             'mimetype': mimetype,
                             'aid': 'part-%d' % count})
+
+                elif mimetype == "text/calendar":
+                    if want is None or 'vcal_parts' in want:
+                        tree["vcal_parts"].extend(calendar_parse(payload))
 
                 elif want is None or 'text_parts' in want:
                     if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
