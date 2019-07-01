@@ -66,6 +66,7 @@ Depends: ${misc:Depends},
          python-markupsafe,
          python-pgpdump,
          python-pil,
+         python-icalendar,
          python-socksipychain
 Recommends: tor, pagekite, python-stem, wamerican-small, gnupg-curl
 Description: library and command-line interface for mailpile
