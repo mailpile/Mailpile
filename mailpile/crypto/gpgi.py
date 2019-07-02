@@ -29,7 +29,8 @@ from mailpile.crypto.autocrypt_utils import get_minimal_PGP_key
 
 _ = lambda s: s
 
-DEFAULT_KEYSERVERS = ["hkps://keys.openpgp.org"]
+DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
+                      "hkp://subset.pool.sks-keyservers.net"]
 DEFAULT_KEYSERVER_OPTIONS = [
   'import-clean',
   'ca-cert-file=%s' % __file__.replace('.pyc', '.py')]

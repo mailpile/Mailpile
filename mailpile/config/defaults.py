@@ -46,7 +46,7 @@ CONFIG_RULES = {
         'debug':         p(_('Debugging flags'), str,                      ''),
         'experiments':    (_('Enabled experiments'), str,                  ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),
-                           str, 'keys.openpgp.org'),
+                           str, 'pool.sks-keyservers.net'),
         'gpg_home':      p(_('Override the home directory of GnuPG'),
                            'dir', None),
         'gpg_binary':    p(_('Override the default GPG binary path'),
