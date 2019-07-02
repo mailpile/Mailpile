@@ -4,6 +4,7 @@
 Mailpile.Crypto.Import.Key = function(import_data) {
   // Set Null
   if (import_data.file === undefined) import_data.file = false;
+  import_data.failed = false;
 
   // Show Processing UI feedback
   var importing_template = Mailpile.safe_template($('#template-crypto-encryption-key-importing').html());
@@ -27,18 +28,21 @@ Mailpile.Crypto.Import.Key = function(import_data) {
           key_result['score_color'] = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
         }
       }
-
       console.log(key_result);
+
+      var $key_elem = $('#item-encryption-key-' + import_data.fingerprint);
+      var $events = $key_elem.closest('.has-keylookup-events');
+      var key_template_html;
       if (key_result) {
         var key_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
-        var key_html = key_template(key_result);
-
-        var $key_elem = $('#item-encryption-key-' + import_data.fingerprint);
-        var $events = $key_elem.closest('.has-keylookup-events');
-
-        $key_elem.replaceWith(key_html);
-        $events.trigger('keylookup:imported');
+        key_template_html = key_template(key_result);
       }
+      else {
+        import_data.failed = true;
+        key_template_html = importing_template(import_data);
+      }
+      $key_elem.replaceWith(key_template_html);
+      $events.trigger('keylookup:imported');
     }
   });
 };
