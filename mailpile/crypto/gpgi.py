@@ -31,6 +31,7 @@ _ = lambda s: s
 
 DEFAULT_KEYSERVERS = ["hkps://keys.openpgp.org"]
 DEFAULT_KEYSERVER_OPTIONS = [
+  'import-clean',
   'ca-cert-file=%s' % __file__.replace('.pyc', '.py')]
 
 GPG_KEYID_LENGTH = 8
@@ -1926,9 +1927,6 @@ f4p1bjbAox8eAOQS/8a3bzkJzdyBNUKGx1BIK2IBL9bn/HravSDOiNRSnZ/R3l9G
 ZauX0tu7IIDlRCILXSyeazu0aj/vdT3YFQXPcvt5Fkf5wiNTo53f72/jYEJd6qph
 WrpoKqrwGwTpRUCMhYIUt65hsTxCiJJ5nKe39h46sg==
 -----END CERTIFICATE-----
-"""
-
-COMODO_ROOT_CERTIFICATE="""
 -----BEGIN CERTIFICATE-----
 MIIF2DCCA8CgAwIBAgIQTKr5yttjb+Af907YWwOGnTANBgkqhkiG9w0BAQwFADCB
 hTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G
