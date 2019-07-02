@@ -12,6 +12,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
 from mailpile.plugins import PluginManager
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
+from mailpile.security import secure_urlget
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
@@ -522,12 +523,15 @@ class KeyserverLookupHandler(LookupHandler):
     PRIORITY = 200
     SCORE = 1
 
+    # People with really big keys are just going to have to publish in WKD
+    # or something, unless or until the SKS keyservers get fixed somehow.
+    MAX_KEY_SIZE = 1500000
+
     # During testing, there were frequent HTTP gateway errors returned from
     # hkps.pool.sks-keyservers.net so sks-keyservers.net was added too.
     KEY_SERVER_BASE_URLS = [
         "https://sks-keyservers.net/pks/lookup",
-        "https://hkps.pool.sks-keyservers.net/pks/lookup",
-    ]
+        "https://hkps.pool.sks-keyservers.net/pks/lookup"]
 
     SKS_CA_CERT_FILE = gpgi.__file__.replace('.pyc', '.py')
 
@@ -539,15 +543,16 @@ class KeyserverLookupHandler(LookupHandler):
             "search": address,
             "op": "index",
             "fingerprint": "on",
-            "options": "mr"
-        }
+            "options": "mr"}
 
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = "{}?{}".format(url_base, urllib.urlencode(params))
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('Fetching: %s' % url)
             try:
-                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
-                    r = urllib2.urlopen(url, cafile=self.SKS_CA_CERT_FILE)
+                raw_result = secure_urlget(self.session, url,
+                                           maxbytes=self.MAX_KEY_SIZE+1)
                 error = None
                 break
             except urllib2.HTTPError as e:
@@ -559,19 +564,25 @@ class KeyserverLookupHandler(LookupHandler):
             except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = str(e)
 
+        if len(raw_result) > self.MAX_KEY_SIZE and not error:
+            error = "Response too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug(error)
+
         if error:
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('Error: %s' % error)
             if 'Error 404' in error:
                 return {}
             raise ValueError(error)
 
-        results = self._gnupg().parse_hpk_response(r.read().split('\n'))
+        results = self._gnupg().parse_hpk_response(raw_result.split('\n'))
 
         if strict_email_match:
             for key in results.keys():
                 match = [
                     u for u in results[key].get('uids', [])
-                    if u['email'].lower() == address
-                ]
+                    if u['email'].lower() == address]
                 if not match:
                     del results[key]
 
@@ -585,9 +596,11 @@ class KeyserverLookupHandler(LookupHandler):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = "{}?{}".format(url_base, urllib.urlencode(params))
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('Fetching: %s' % url)
             try:
-                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
-                    r = urllib2.urlopen(url, cafile=self.SKS_CA_CERT_FILE)
+                key_data = secure_urlget(self.session, url,
+                                         maxbytes=self.MAX_KEY_SIZE+1)
                 error = None
                 break
             except urllib2.HTTPError as e:
@@ -599,10 +612,14 @@ class KeyserverLookupHandler(LookupHandler):
             except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = e
 
+        if len(key_data) > self.MAX_KEY_SIZE and not error:
+            error = "Key too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug(error)
+
         if error:
             raise ValueError(str(error))
 
-        key_data = r.read()
         return self._gnupg().import_keys(key_data)
 
 
