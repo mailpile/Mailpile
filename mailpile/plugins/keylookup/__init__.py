@@ -533,8 +533,6 @@ class KeyserverLookupHandler(LookupHandler):
         "https://sks-keyservers.net/pks/lookup",
         "https://hkps.pool.sks-keyservers.net/pks/lookup"]
 
-    SKS_CA_CERT_FILE = gpgi.__file__.replace('.pyc', '.py')
-
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
@@ -561,7 +559,7 @@ class KeyserverLookupHandler(LookupHandler):
                     # If a server reports the key was not found, let's stop
                     # because the servers are supposed to be in sync.
                     break;
-            except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+            except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = str(e)
 
         if len(raw_result) > self.MAX_KEY_SIZE and not error:
@@ -609,7 +607,7 @@ class KeyserverLookupHandler(LookupHandler):
                     # If a server reports the key was not found, let's stop
                     # because the servers are supposed to be in sync.
                     break;
-            except (urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+            except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = e
 
         if len(key_data) > self.MAX_KEY_SIZE and not error:
@@ -623,8 +621,23 @@ class KeyserverLookupHandler(LookupHandler):
         return self._gnupg().import_keys(key_data)
 
 
+class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
+    NAME = "keys.openpgp.org"
+    PRIVACY_FRIENDLY = True
+    PRIORITY = 75  # Better than SKS keyservers and better than DNS
+    SCORE = 5      # Treat these as valid as WKD, yay e-mail vetting!
+
+    KEY_SERVER_BASE_URLS = [
+        "http://zkaan2xfbuxia2wpf7ofnkbz6r5zdbbvxbunvp5g2iebopbfc4iqmbad.onion/pks/lookup",
+        "https://keys.openpgp.org/pks/lookup"]
+
+    def _score(self, key):
+        return (self.SCORE, _('Found encryption key in keys.openpgp.org'))
+
+
 register_crypto_key_lookup_handler(KeychainLookupHandler)
 register_crypto_key_lookup_handler(KeyserverLookupHandler)
+register_crypto_key_lookup_handler(VerifyingKeyserverLookupHandler)
 
 # We do this down here, as that seems to make the Python module loader
 # things happy enough with the circular dependencies...
