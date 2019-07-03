@@ -235,19 +235,21 @@ class KeyLookup(Command):
         'origins': 'Specify which origins to check (or * for all)'}
 
     def command(self):
+        args = list(self.args)
+
         if len(self.args) > 1:
-            allowremote = self.args.pop()
+            allowremote = args.pop()
         else:
             allowremote = self.data.get('allowremote', ['Y'])[0]
-            if allowremote.lower()[:1] in ('n', 'f'):
-                allowremote = False
+        if allowremote.lower()[:1] in ('n', 'f'):
+            allowremote = False
 
         origins = self.data.get('origins')
         if '*' in (origins or []):
             origins = [h.NAME for h in KEY_LOOKUP_HANDLERS]
 
         email = " ".join(self.data.get('email', []))
-        address = " ".join(self.data.get('address', self.args))
+        address = " ".join(self.data.get('address', args))
         result = lookup_crypto_keys(self.session, email or address,
                                     strict_email_match=email,
                                     event=self.event,
@@ -518,7 +520,7 @@ class KeychainLookupHandler(LookupHandler):
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
-    TIMEOUT = 20  # We know these are slow...
+    TIMEOUT = 30  # We know these are slow...
     PRIVACY_FRIENDLY = True
     PRIORITY = 200
     SCORE = 1
@@ -547,7 +549,7 @@ class KeyserverLookupHandler(LookupHandler):
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = "{}?{}".format(url_base, urllib.urlencode(params))
             if 'keyservers' in self.session.config.sys.debug:
-                self.session.ui.debug('Fetching: %s' % url)
+                self.session.ui.debug('[%s] Fetching: %s' % (self.NAME, url))
             try:
                 raw_result = secure_urlget(self.session, url,
                                            maxbytes=self.MAX_KEY_SIZE+1)
@@ -565,7 +567,7 @@ class KeyserverLookupHandler(LookupHandler):
         if len(raw_result) > self.MAX_KEY_SIZE and not error:
             error = "Response too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
             if 'keyservers' in self.session.config.sys.debug:
-                self.session.ui.debug(error)
+                self.session.ui.debug('[%s] %s' % (self.NAME, error))
 
         if error:
             if 'keyservers' in self.session.config.sys.debug:
@@ -574,6 +576,8 @@ class KeyserverLookupHandler(LookupHandler):
                 return {}
             raise ValueError(error)
 
+        if 'keyservers' in self.session.config.sys.debug:
+            self.session.ui.debug('[%s] DATA: %s' % (self.NAME, raw_result[:200]))
         results = self._gnupg().parse_hpk_response(raw_result.split('\n'))
 
         if strict_email_match:
@@ -582,7 +586,13 @@ class KeyserverLookupHandler(LookupHandler):
                     u for u in results[key].get('uids', [])
                     if u['email'].lower() == address]
                 if not match:
+                    if 'keyservers' in self.session.config.sys.debug:
+                        self.session.ui.debug('[%s] No UID for %s, ignoring key'
+                                              % (self.NAME, address))
                     del results[key]
+
+        if 'keyservers' in self.session.config.sys.debug:
+            self.session.ui.debug('[%s] Results=%d' % (self.NAME, len(results)))
 
         return results
 
@@ -622,8 +632,10 @@ class KeyserverLookupHandler(LookupHandler):
 
 
 class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
-    NAME = "keys.openpgp.org"
+    NAME = "keys.OpenPGP.org"
     PRIVACY_FRIENDLY = True
+    LOCAL = False
+    TIMEOUT = 15
     PRIORITY = 75  # Better than SKS keyservers and better than DNS
     SCORE = 5      # Treat these as valid as WKD, yay e-mail vetting!
 

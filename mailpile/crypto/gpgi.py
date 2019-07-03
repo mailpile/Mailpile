@@ -8,6 +8,7 @@ import StringIO
 import tempfile
 import threading
 import traceback
+import urllib
 import select
 import pgpdump
 import pgpdump.utils
@@ -1367,7 +1368,7 @@ class GnuPG:
                     "fingerprint": curpub
                 }
             elif line[0] == "uid":
-                email, name, comment = parse_uid(line[1])
+                email, name, comment = parse_uid(urllib.unquote(line[1]))
                 results[curpub]["uids"].append({"name": name,
                                                 "email": email,
                                                 "comment": comment})
