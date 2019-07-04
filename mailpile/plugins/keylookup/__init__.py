@@ -678,9 +678,9 @@ class KeyserverLookupHandler(LookupHandler):
 
         if 'keyservers' in self.session.config.sys.debug:
             self.session.ui.debug('[%s] DATA: %s' % (self.NAME, raw_result[:200]))
-        results = self._gnupg().parse_hpk_response(raw_result.split('\n'))
+        results = _mailpile_key_list(
+            self._gnupg().parse_hpk_response(raw_result.split('\n')))
 
-        results = _mailpile_key_list(self._gnupg().search_key(address))
         if strict_email_match:
             for key in results.keys():
                 match = [u for u in results[key].uids
