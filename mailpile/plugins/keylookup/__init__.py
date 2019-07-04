@@ -237,7 +237,7 @@ class KeyLookup(Command):
     def command(self):
         args = list(self.args)
 
-        if len(self.args) > 1:
+        if len(args) > 1:
             allowremote = args.pop()
         else:
             allowremote = self.data.get('allowremote', ['Y'])[0]
@@ -255,6 +255,7 @@ class KeyLookup(Command):
                                     event=self.event,
                                     allowremote=allowremote,
                                     origins=origins)
+
         return self._success(_n('Found %d encryption key',
                                 'Found %d encryption keys',
                                 len(result)) % len(result),
@@ -564,7 +565,7 @@ class KeyserverLookupHandler(LookupHandler):
             except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = str(e)
 
-        if len(raw_result) > self.MAX_KEY_SIZE and not error:
+        if not error and len(raw_result) > self.MAX_KEY_SIZE:
             error = "Response too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
             if 'keyservers' in self.session.config.sys.debug:
                 self.session.ui.debug('[%s] %s' % (self.NAME, error))
