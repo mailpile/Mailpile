@@ -84,7 +84,7 @@ class GnuPGImporter(VCardImporter):
 
     @classmethod
     def key_is_useless(cls, key):
-        return (key.get("disabled") or key.get("revoked") or
+        return (key.get("disabled") or key.get("expired") or key.get("revoked") or
                 not key["capabilities_map"].get("encrypt") or
                 not key["capabilities_map"].get("sign"))
 

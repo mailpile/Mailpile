@@ -33,8 +33,9 @@ _ = lambda s: s
 DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
                       "hkp://subset.pool.sks-keyservers.net"]
 DEFAULT_KEYSERVER_OPTIONS = [
-  'import-clean',
   'ca-cert-file=%s' % __file__.replace('.pyc', '.py')]
+DEFAULT_IMPORT_OPTIONS = [
+  'import-minimal']
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
@@ -866,7 +867,7 @@ class GnuPG:
 
         return secret_keys
 
-    def import_keys(self, key_data=None):
+    def import_keys(self, key_data=None, import_options=DEFAULT_IMPORT_OPTIONS):
         """
         Imports gpg keys from a file object or string.
         >>> key_data = open("testing/pub.key").read()
@@ -875,7 +876,10 @@ class GnuPG:
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
         self.event.running_gpg(_('Importing key to GnuPG key chain'))
-        retvals = self.run(["--import"], gpg_input=key_data)
+        cmd = ["--import"]
+        for opt in import_options:
+            cmd[1:1] = ['--import-options', opt]
+        retvals = self.run(cmd, gpg_input=key_data)
         return self._parse_import(retvals[1]["status"])
 
     def _parse_import(self, output):
@@ -1330,7 +1334,7 @@ class GnuPG:
 
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
-                 keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+                 keyserver_options=(DEFAULT_KEYSERVER_OPTIONS+DEFAULT_IMPORT_OPTIONS)):
         if not keyid[:2] == '0x':
             keyid = '0x%s' % keyid
         self.event.running_gpg(_('Downloading key %s from key servers'
@@ -1376,7 +1380,7 @@ class GnuPG:
 
     def search_key(self, term,
                    keyservers=DEFAULT_KEYSERVERS,
-                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+                   keyserver_options=(DEFAULT_KEYSERVER_OPTIONS+DEFAULT_IMPORT_OPTIONS)):
         self.event.running_gpg(_('Searching for key for %s in key servers'
                                  ) % (term))
         for keyserver in keyservers:
