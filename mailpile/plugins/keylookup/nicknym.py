@@ -1,5 +1,6 @@
 #coding:utf-8
 
+from __future__ import print_function
 from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.plugins import PluginManager
@@ -201,4 +202,4 @@ _plugins.register_commands(NicknymRefreshKeys)
 
 if __name__ == "__main__":
     n = Nicknym()
-    print n.get_key("varac@bitmask.net")
+    print(n.get_key("varac@bitmask.net"))

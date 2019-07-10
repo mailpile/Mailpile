@@ -1,3 +1,4 @@
+from __future__ import print_function
 from mailpile.vcard import MailpileVCard, VCardLine
 from mailpile.tests import MailPileUnittest
 
@@ -29,7 +30,7 @@ class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
         for policy in ['default', 'none', 'sign', 'sign-encrypt',
                        'encrypt', 'best-effort']:
             r = self.mp.crypto_policy_set('test@test.local', policy)
-            print '%s' % r.as_dict()
+            print('%s' % r.as_dict())
             self.assertEqual('success', r.as_dict()['status'])
 
         for policy in ['anything', 'else']:

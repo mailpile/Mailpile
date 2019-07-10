@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import socket
 import re
@@ -367,6 +368,6 @@ if __name__ == "__main__":
     import doctest
     import sys
     result = doctest.testmod(optionflags=doctest.ELLIPSIS)
-    print '%s' % (result, )
+    print('%s' % (result, ))
     if result.failed:
         sys.exit(1)

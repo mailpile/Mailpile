@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # This is code to stream data to or from encrypted storage. If the invoking
 # code us correctly written, it should be able to work with data far in
@@ -267,9 +268,9 @@ class IOCoprocess(object):
             try:
                 self._proc, self._fd = self._popen(command, fd, long_running)
             except:
-                print 'Popen(%s, %s, %s)' % (command, fd, long_running)
+                print('Popen(%s, %s, %s)' % (command, fd, long_running))
                 traceback.print_exc()
-                print
+                print()
                 raise
         else:
             self._proc, self._fd = None, fd
@@ -295,10 +296,10 @@ class IOCoprocess(object):
                     while proc.poll() is None:
                         time.sleep(0.01)
                         if count == 4:
-                            print 'TERM => %s' % proc
+                            print('TERM => %s' % proc)
                             proc.terminate()
                         elif count > 9:
-                            print 'KILL => %s' % proc
+                            print('KILL => %s' % proc)
                             proc.kill()
                             break
                         count += 1
@@ -773,7 +774,7 @@ class DecryptingStreamer(InputCoprocess):
     def verify(self, testing=False, _raise=None):
         if self.close() != 0:
             if testing:
-                print 'Close returned nonzero'
+                print('Close returned nonzero')
             if _raise:
                 raise _raise('Non-zero exit code from coprocess')
             return False
@@ -782,31 +783,31 @@ class DecryptingStreamer(InputCoprocess):
             mac = mac_sha256(self.mep_mutated, self.inner_sha.digest())
             if self.expected_inner_sha256 != mac:
                 if testing:
-                    print 'Inner %s != %s' % (self.expected_inner_sha256, mac)
+                    print('Inner %s != %s' % (self.expected_inner_sha256, mac))
                 if _raise:
                     raise _raise('Invalid inner SHA256')
                 return False
         elif self.expected_inner_md5sum:
             if self.expected_inner_md5sum != self.inner_md5.hexdigest():
                 if testing:
-                    print 'Inner %s != %s' % (self.expected_inner_md5sum,
-                                              self.inner_md5.hexdigest())
+                    print('Inner %s != %s' % (self.expected_inner_md5sum,
+                                              self.inner_md5.hexdigest()))
                 if _raise:
                     raise _raise('Invalid inner MD5 sum')
                 return False
         elif testing and not self.expected_inner_md5sum:
-            print 'No inner MD5 sum or SHA256 expected'
+            print('No inner MD5 sum or SHA256 expected')
 
         if self.expected_outer_sha256:
             mac = mac_sha256(self.mep_mutated, self.outer_sha.digest())
             if self.expected_outer_sha256 != mac:
                 if testing:
-                    print 'Outer %s != %s' % (self.expected_outer_sha256, mac)
+                    print('Outer %s != %s' % (self.expected_outer_sha256, mac))
                 if _raise:
                     raise _raise('Invalid outer SHA256')
                 return False
         elif testing and not self.expected_outer_sha256:
-            print 'No outer SHA256 expected'
+            print('No outer SHA256 expected')
         return True
 
     def _mk_data_filter(self, fd, cb, ecb):
@@ -1054,8 +1055,8 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
         try:
             for fd in fdpair2:
                 if fd not in fdpair1:
-                    print 'Probably have an FD leak at %s!' % where
-                    print 'Verify with: lsof -g %s' % os.getpid()
+                    print('Probably have an FD leak at %s!' % where)
+                    print('Verify with: lsof -g %s' % os.getpid())
                     import time
                     time.sleep(900)
                     return False
@@ -1075,7 +1076,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
     except OSError:
         pass
 
-    print 'Test the IOFilter in write mode'
+    print('Test the IOFilter in write mode')
     with open('/tmp/iofilter.tmp', 'w') as bfd:
         with IOFilter(bfd, counter) as iof:
             iof.writer().write('Hello world!')
@@ -1084,7 +1085,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
     _assert(bc[0], 12)
     _assert(fdcheck('IOFilter in write mode'))
 
-    print 'Test the IOFilter in read mode'
+    print('Test the IOFilter in read mode')
     bc[0] = 0
     with open('/tmp/iofilter.tmp', 'r') as bfd:
         with IOFilter(bfd, counter) as iof:
@@ -1093,7 +1094,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
             _assert(bc[0], 12)
     _assert(fdcheck('IOFilter in read mode'))
 
-    print 'Test the IOFilter in incomplete read mode'
+    print('Test the IOFilter in incomplete read mode')
     bc[0] = 0
     with open('/dev/urandom', 'r') as bfd:
         with IOFilter(bfd, counter) as iof:
@@ -1102,7 +1103,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
     _assert(len(data) == 4096)
     _assert(fdcheck('IOFilter in incomplete read mode'))
 
-    print 'Test the ReadLineIOFilter in incomplete read mode'
+    print('Test the ReadLineIOFilter in incomplete read mode')
     bc[0], daemonlogline = 0, ''
     with open('/etc/passwd', 'r') as bfd:
         with IOFilter(bfd, counter) as iof:
@@ -1114,7 +1115,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
     _assert('daemon' in daemonlogline, msg='daemon in %s' % daemonlogline)
     _assert(fdcheck('ReadLineIOFilter in incomplete read mode'))
 
-    print 'Null decryption test, sha256 verification only'
+    print('Null decryption test, sha256 verification only')
     outer_mac_sha256 = '7982970534e089b839957b7e174725ce1878731ed6d700766e59cb16f1c25e27'
     with open('/tmp/iofilter.tmp', 'rb') as bfd:
         with DecryptingStreamer(bfd,
@@ -1125,7 +1126,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
             _assert(ds.verify(testing=True))
     _assert(fdcheck('Decrypting test, sha256 verification'))
 
-    print 'Legacy (MEP v1) decryption test'
+    print('Legacy (MEP v1) decryption test')
     for legacy in (LEGACY_TEST_1, LEGACY_TEST_2):
         lfd = StringIO.StringIO(legacy)
         with PartialDecryptingStreamer([], lfd,
@@ -1139,16 +1140,16 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
                 _assert(plaintext, LEGACY_PLAINTEXT)
                 _assert(ds.verify(testing=True))
             except AssertionError:
-                print 'command=%s' % ds.command
-                print 'stderr=%s' % ds.stderr
-                print 'key=%s [%s]\n%s' % (LEGACY_TEST_KEY, ds.mep_mutated, legacy)
+                print('command=%s' % ds.command)
+                print('stderr=%s' % ds.stderr)
+                print('key=%s [%s]\n%s' % (LEGACY_TEST_KEY, ds.mep_mutated, legacy))
                 raise
 
     for cipher in ('none', 'broken', 'aes-128-ctr', 'aes-256-cbc'):
       for filter_sha256 in (True, False):
         for delim in (True, False):
-            print ('Encryption test, cipher=%s, delim=%s, filter_sha256=%s'
-                   ) % (cipher, delim, filter_sha256)
+            print(('Encryption test, cipher=%s, delim=%s, filter_sha256=%s'
+                   ) % (cipher, delim, filter_sha256))
 
             fn = '/tmp/enc-%s-%s-%s.tmp' % (cipher, delim, filter_sha256)
             with open(fn, 'wb') as fd:
@@ -1180,7 +1181,7 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
             _assert(fdcheck('Encrypted data, delimited=%s' % delim))
 
             t1 = time.time()
-            print 'Decryption test, delim=%s' % delim
+            print('Decryption test, delim=%s' % delim)
             with open(fn, 'rb') as bfd:
                 new_data = ''
                 for ms in encrypted:
@@ -1199,8 +1200,8 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
                 try:
                     _assert(data, new_data)
                 except:
-                    print 'OLD %d bytes vs. NEW %d bytes: \n%s\n' % (
-                        len(data), len(new_data), new_data[-100:])
+                    print('OLD %d bytes vs. NEW %d bytes: \n%s\n' % (
+                        len(data), len(new_data), new_data[-100:]))
                     raise
             _assert(fdcheck('Decrypting test, delimited=%s' % delim))
             t2 = time.time()
@@ -1209,10 +1210,10 @@ U2FsdGVkX19U8G7SKp8QygUusdHZThlrLcI04+jZ9U5kwfsw7bJJ2721dwgIpCUh
 
         # Cleanup
         os.unlink(fn)
-      print
+      print()
 
     _assert(len(DETECTED_OBSOLETE_FORMATS) > 0)
-    print 'Obsolete formats detected: %s' % DETECTED_OBSOLETE_FORMATS
+    print('Obsolete formats detected: %s' % DETECTED_OBSOLETE_FORMATS)
 
     os.unlink('/tmp/iofilter.tmp')
     _assert(fdcheck('All done'))

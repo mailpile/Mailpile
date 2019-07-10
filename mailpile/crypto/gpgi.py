@@ -1,4 +1,5 @@
 #coding:utf-8
+from __future__ import print_function
 import os
 import string
 import sys
@@ -389,7 +390,7 @@ class GnuPGRecordParser:
         pass  # FIXME
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % (line,)
+        print("Unknown line with code '%s'" % (line,))
 
     def parse_none(line):
         pass
@@ -490,7 +491,7 @@ class StreamWriter(Thread):
             output.close()
         except:
             if not self.partial_write_ok:
-                print '%s: %s bytes left' % (self, total)
+                print('%s: %s bytes left' % (self, total))
                 traceback.print_exc()
         finally:
             self.state = 'done'
@@ -575,7 +576,7 @@ class GnuPG:
         if self.session:
             self.session.debug(msg.rstrip())
         else:
-            print '%s' % str(msg).rstrip()
+            print('%s' % str(msg).rstrip())
 
     def _debug_none(self, msg):
         pass
@@ -644,7 +645,7 @@ class GnuPG:
                 if which in binaries:
                     args.insert(1, "--%s=%s" % (setting, binaries[which]))
                 else:
-                    print 'wtf: %s not in %s' % (which, binaries)
+                    print('wtf: %s not in %s' % (which, binaries))
 
         if (not self.use_agent) or will_send_passphrase:
             if version < (1, 5):
@@ -780,7 +781,7 @@ class GnuPG:
                 if thr.isAlive():
                     thr.join(timeout=15)
                     if thr.isAlive() and tries > 1:
-                        print 'WARNING: Failed to reap thread %s' % thr
+                        print('WARNING: Failed to reap thread %s' % thr)
 
     def parse_status(self, line, *args):
         self.debug('<<STATUS<< %s' % line)
@@ -1162,7 +1163,7 @@ class GnuPG:
                 found = set()
         else:
             # Could be PGP packet header. Check for sequence of legal headers.
-            while skip < len(segment) and body_len <> -1:
+            while skip < len(segment) and body_len != -1:
                 # Check this packet header.
                 prev_partial = partial
                 ptag, hdr_len, body_len, partial = (
@@ -1203,12 +1204,12 @@ class GnuPG:
 
                 dec_start += hdr_len + body_len
                 skip = dec_start
-                if is_base64 and body_len <> -1:
+                if is_base64 and body_len != -1:
                     enc_start, enc_end, skip = self.base64_segment(dec_start,
                                         dec_start + 6, 0, line_len, line_end )
                     segment = base64.b64decode(data[enc_start:enc_end])
 
-            if is_base64 and body_len <> -1 and skip <> len(segment):
+            if is_base64 and body_len != -1 and skip != len(segment):
                 # End of last packet does not match end of data.
                 found = set()
         return found
@@ -1693,7 +1694,7 @@ class GnuPGExpectScript(threading.Thread):
         except TimedOut:
             timebox[0] = 0
             self.gnupg.debug('Timed out')
-            print 'Boo! %s not found in %s' % (exp, self.before)
+            print('Boo! %s not found in %s' % (exp, self.before))
             raise
 
     def run_script(self, proc, script):

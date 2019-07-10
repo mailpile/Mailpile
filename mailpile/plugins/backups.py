@@ -1,3 +1,4 @@
+from __future__ import print_function
 import cStringIO
 import datetime
 import gzip
@@ -239,7 +240,7 @@ class RestoreBackup(Command):
 
         for keyfile in ('gnupg-pubkeys.asc.gze', 'gnupg-privkeys.asc.gze'):
             gze = backup_zip.read(keyfile)
-            print 'DATA: %s' % gze
+            print('DATA: %s' % gze)
             self._gnupg().import_keys(_gunzip(_decrypt(gze, config)))
 
 

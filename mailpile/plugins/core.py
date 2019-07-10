@@ -331,7 +331,7 @@ class Rescan(Command):
                         session.ui.mark('\n')
                     if not session.ui.interactive:
                         break
-        except (KeyboardInterrupt, subprocess.CalledProcessError), e:
+        except (KeyboardInterrupt, subprocess.CalledProcessError) as e:
             return {
                 'aborted': True,
                 'messages': msg_count,
@@ -1007,9 +1007,9 @@ class ListDir(Command):
                             file_list.extend(ls(p))
                         else:
                             file_list.append(lsf(p))
-            except (socket.error, socket.gaierror), e:
+            except (socket.error, socket.gaierror) as e:
                 return self._error(_('Network error: %s') % e)
-            except (OSError, IOError, UnicodeDecodeError), e:
+            except (OSError, IOError, UnicodeDecodeError) as e:
                 errors += 1
 
         if errors and not file_list:
@@ -1058,7 +1058,7 @@ class ChangeDir(ListDir):
             os.chdir(FilePath.unalias(
                         os.path.expanduser(args.pop(0).encode('utf-8'))))
             return ListDir.command(self, args=['.'])
-        except (OSError, IOError, UnicodeEncodeError), e:
+        except (OSError, IOError, UnicodeEncodeError) as e:
             return self._error(_('Failed to change directories: %s') % e)
 
 

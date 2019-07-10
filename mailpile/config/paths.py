@@ -9,7 +9,7 @@ except ImportError:
     AppDirs = None
 
 
-def _ensure_exists(path, mode=0700):
+def _ensure_exists(path, mode=0o700):
     if not os.path.exists(path):
         head, tail = os.path.split(path)
         _ensure_exists(head)

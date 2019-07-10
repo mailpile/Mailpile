@@ -17,6 +17,7 @@
 #       a splash-screen. Arguably, more of this logic should be moved
 #       into `mailpile.plugins.gui` so everything is in one place.
 #
+from __future__ import print_function
 import copy
 import fasteners
 import json
@@ -339,7 +340,7 @@ def Main(argv):
         GenerateBootstrap(state, trust_os_path=trust_os_path)]
 
     if '--script' in argv:
-        print '\n'.join(script)
+        print('\n'.join(script))
 
     else:
         # FIXME: We shouldn't need to do this, refactoring upstream

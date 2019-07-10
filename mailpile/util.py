@@ -2,6 +2,7 @@
 #
 # Misc. utility functions for Mailpile.
 #
+from __future__ import print_function
 import cgi
 import copy
 import ctypes
@@ -165,13 +166,13 @@ def _TracedLock(what, *a, **kw):
     class Wrapper:
         def acquire(self, *args, **kwargs):
             if self.locked():
-                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
+                print('==!== Waiting for %s at %s' % (str(lock), WhereAmI(2)))
             return lock.acquire(*args, **kwargs)
         def release(self, *args, **kwargs):
             return lock.release(*args, **kwargs)
         def __enter__(self, *args, **kwargs):
             if self.locked():
-                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
+                print('==!== Waiting for %s at %s' % (str(lock), WhereAmI(2)))
             return lock.__enter__(*args, **kwargs)
         def __exit__(self, *args, **kwargs):
             return lock.__exit__(*args, **kwargs)
@@ -439,7 +440,7 @@ def b36(number):
     return ''.join(reversed(base36))
 
 
-def string_to_rank(text, maxint=sys.maxint):
+def string_to_rank(text, maxint=sys.maxsize):
     """
     Approximate lexographical order with an int. It's accurate near
     the front of the string, but gets fuzzy towards letter 10.
@@ -1188,6 +1189,6 @@ if __name__ == "__main__":
     import doctest
     import sys
     result = doctest.testmod()
-    print '%s' % (result, )
+    print('%s' % (result, ))
     if result.failed:
         sys.exit(1)

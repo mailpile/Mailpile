@@ -5,6 +5,7 @@ build-desktop.py - Checkout and build Mailpile for desktop platforms (win/mac)
 Usage: build-desktop.py [clean] <nightly|release>
 
 """
+from __future__ import print_function
 import os
 import subprocess
 import sys

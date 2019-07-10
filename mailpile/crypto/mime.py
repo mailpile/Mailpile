@@ -1,3 +1,4 @@
+from __future__ import print_function
 # These are methods to do with MIME and crypto, implementing PGP/MIME.
 
 import re
@@ -237,7 +238,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             # Is there a Memory-Hole force-display part?
             pl = part.get_payload()
-            if hdrs and isinstance(pl, (list, )):
+            if hdrs and isinstance(pl, list):
                 if (pl[0]['content-type'].startswith('text/rfc822-headers;')
                         and 'protected-headers' in pl[0]['content-type']):
                     # Parse these headers as well and override the top level,
@@ -800,6 +801,6 @@ if __name__ == "__main__":
     #        we don't have such tests. :-(
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS)
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

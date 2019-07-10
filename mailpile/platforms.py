@@ -163,9 +163,9 @@ def RestrictReadAccess(path):
     """
     # FIXME: Windows code goes here!
     if os.path.isdir(path):
-        os.chmod(path, 0700)
+        os.chmod(path, 0o700)
     else:
-        os.chmod(path, 0600)
+        os.chmod(path, 0o600)
 
 
 def RandomListeningPort(count=1, host='127.0.0.1'):

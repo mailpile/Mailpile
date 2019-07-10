@@ -161,7 +161,7 @@ class HttpProxyGetRequest(Command):
             with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
                 session.ui.mark('Getting: %s' % url)
                 response = urlopen(url, data=None, timeout=timeout)
-        except HTTPError, e:
+        except HTTPError as e:
             response = e
 
         data = response.read()

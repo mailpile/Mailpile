@@ -131,7 +131,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         try:
             tmpdir = os.path.join(self._path, 'tmp')
             if not os.path.exists(tmpdir):
-                os.mkdir(tmpdir, 0700)
+                os.mkdir(tmpdir, 0o700)
             if key:
                 es = EncryptingStreamer(key,
                                         dir=tmpdir, name='WERVD',

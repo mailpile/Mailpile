@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8 :
 #
+from __future__ import print_function
 import base64
 import copy
 import quopri
@@ -203,7 +204,7 @@ class AddressHeaderParser(list):
                 try:
                     return base64.b64decode(''.join(data.split())+'===').decode(cs)
                 except TypeError:
-                    print 'FAILED TO B64DECODE: %s' % data
+                    print('FAILED TO B64DECODE: %s' % data)
                     return data
             else:
                 return quopri.decodestring(data, header=True).decode(cs)
@@ -379,6 +380,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

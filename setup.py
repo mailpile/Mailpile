@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 from datetime import date
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
@@ -57,7 +58,7 @@ pbr.git._find_git_files = _find_git_files
 try:
     assert(0 == subprocess.call(['make', 'clean'], cwd=here))
 except:
-    print "Faild to run 'make clean'. Bailing out."
+    print("Faild to run 'make clean'. Bailing out.")
     exit(1)
 
 
@@ -68,7 +69,7 @@ class Builder(build_py):
         try:
             assert(0 == subprocess.call(['make', 'bdist-prep'], cwd=here))
         except:
-            print "Error building package. Try running 'make'."
+            print("Error building package. Try running 'make'.")
             exit(1)
         else:
             build_py.run(self)

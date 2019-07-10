@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Connection brokers facilitate & manage incoming and outgoing connections.
 #
 # The idea is that code actually tells us what it wants to do, so we can
@@ -716,7 +717,7 @@ class MasterBroker(BaseConnectionBroker):
 def DisableUnbrokeredConnections():
     """Enforce the use of brokers EVERYWHERE!"""
     def CreateConnWarning(*args, **kwargs):
-        print '*** socket.create_connection used without a broker ***'
+        print('*** socket.create_connection used without a broker ***')
         traceback.print_stack()
         raise IOError('FIXME: Please use within a broker context')
     monkey_clean_scc = CreateConnWarning
@@ -999,7 +1000,7 @@ def SslWrapOnlyOnce(org_sslwrap, sock, *args, **kwargs):
                 kwargs['server_hostname'] = ctx.address[0]
             sock = org_sslwrap(sock, *args, **kwargs)
             ctx.encryption = _explain_encryption(sock)
-        except (socket.error, IOError, ssl.SSLError, ssl.CertificateError), e:
+        except (socket.error, IOError, ssl.SSLError, ssl.CertificateError) as e:
             ctx.error = '%s' % e
             raise
     return sock
@@ -1046,6 +1047,6 @@ else:
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

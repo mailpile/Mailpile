@@ -6,6 +6,7 @@
 #  - Start or stop a user's Mailpile (in a screen session)
 #  - Function as a CGI script to start Mailpile and reconfigure Apache
 #
+from __future__ import print_function
 import argparse
 import cgi
 import ConfigParser
@@ -245,7 +246,7 @@ def app_arguments():
 
 
 def usage(ap, reason, code=3):
-    print 'error: %s' % reason
+    print('error: %s' % reason)
     ap.print_usage()
     sys.exit(code)
 
@@ -454,7 +455,7 @@ def _rewritemap(mailpiles):
         user, host, port = details[0:3]
         suffix = ''
         if user in added:
-            print 'WARNING: User %s has multiple Mailpiles!' % user
+            print('WARNING: User %s has multiple Mailpiles!' % user)
             suffix = '.%d' % (added[user] + 1)
 
         rules.append(
@@ -480,8 +481,8 @@ def parse_rewritemap(args, os_settings, mailpiles=None):
                     port = m.group('port')
                     mailpiles['%s:%s' % (host, port)] = [
                         user, host, port, True, None, None]
-    except (OSError, IOError, KeyError), err:
-        print 'WARNING: %s' % err
+    except (OSError, IOError, KeyError) as err:
+        print('WARNING: %s' % err)
     return mailpiles
 
 
@@ -517,12 +518,12 @@ def save_apache_sudoers(os_settings):
 def run_script(args, settings, script):
     for line in script:
         line = line % _escaped(settings)
-        print '==> %s' % line
+        print('==> %s' % line)
         rv = os.system(line)
         if 0 != rv:
-            print '==[ FAILED! Exit code: %s ]==' % rv
+            print('==[ FAILED! Exit code: %s ]==' % rv)
             return
-    print '===[ SUCCESS! ]==='
+    print('===[ SUCCESS! ]===')
 
 
 def _get_mailpiles(args, os_settings, discover=False):
@@ -539,7 +540,7 @@ def list_mailpiles(args):
     mailpiles = _get_mailpiles(args, os_settings, discover=True)
     fmt =  '%-8.8s %6.6s %6.6s %-6.6s %5.5s %s'
     user_counts = {}
-    print fmt % ('USER', 'PID', 'RSS', 'ACCESS', 'PORT', 'URL')
+    print(fmt % ('USER', 'PID', 'RSS', 'ACCESS', 'PORT', 'URL'))
     for hostport in sorted(mailpiles.keys()):
         user, host, port, in_usermap, pid, rss = mailpiles[hostport]
         user_counts[user] = user_counts.get(user, 0) + 1
@@ -549,9 +550,9 @@ def list_mailpiles(args):
                                       os_settings['webroot'], user)
         else:
             url = 'http://%s:%s/' % (host, port)
-        print fmt % (
+        print(fmt % (
             user, pid or '?', rss or '',
-            'apache' if in_usermap else 'direct', port, url)
+            'apache' if in_usermap else 'direct', port, url))
 
 def generate_apache_usermap(app_args, args):
     mailpiles = _get_mailpiles(args, get_os_settings(args))
@@ -696,9 +697,9 @@ def handle_cgi_post():
         settings = get_os_settings(parsed_args)
 
         # Send headers now, so output doesn't confuse Apache
-        print 'Location: %s/%s/' % (settings['webroot'], username)
-        print 'Expires: 0'
-        print
+        print('Location: %s/%s/' % (settings['webroot'], username))
+        print('Expires: 0')
+        print()
 
         # Launch Mailpile?
         rv = launch_mailpile(app_args, parsed_args)
@@ -707,9 +708,9 @@ def handle_cgi_post():
     except:
         parsed_args = app_args.parse_args(['--launch'])
         settings = get_os_settings(parsed_args)
-        print 'Location: %s/?error=yes' % settings['webroot']
-        print 'Expires: 0'
-        print
+        print('Location: %s/?error=yes' % settings['webroot'])
+        print('Expires: 0')
+        print()
 
 
 if __name__ == "__main__":

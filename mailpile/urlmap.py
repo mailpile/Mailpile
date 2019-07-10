@@ -1,3 +1,4 @@
+from __future__ import print_function
 import cgi
 import time
 from urlparse import parse_qs, urlparse
@@ -104,7 +105,7 @@ class UrlMap:
                          (not method and name == c.SYNOPSIS[1]))]
             if len(match) != 1:
                 raise UsageError('Unknown command: %s' % name)
-        except ValueError, e:
+        except ValueError as e:
             raise UsageError(str(e))
         command = match[0]
 
@@ -650,7 +651,7 @@ class UrlMap:
 
     def print_map_markdown(self):
         """Prints the current URL map to stdout in markdown"""
-        print self.map_as_markdown()
+        print(self.map_as_markdown())
 
 
 class UrlRedirect(Command):
@@ -696,7 +697,7 @@ class HelpUrlMap(Command):
                 html = markdown(str(self.result['urlmap']))
             except:
                 import traceback
-                print traceback.format_exc()
+                print(traceback.format_exc())
                 html = '<pre>%s</pre>' % escape_html(self.result['urlmap'])
             self.result['markdown'] = html
             return Command.CommandResult.as_html(self, *args, **kwargs)
@@ -739,7 +740,7 @@ else:
         results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                                   extraglobs={'urlmap': urlmap,
                                               'request': None})
-        print '%s' % (results, )
+        print('%s' % (results, ))
         if results.failed:
             sys.exit(1)
     else:

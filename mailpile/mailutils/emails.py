@@ -2,6 +2,7 @@
 #
 # FIXME: Refactor this monster into mailpile.mailutils.*
 #
+from __future__ import print_function
 import base64
 import copy
 import email.header
@@ -809,7 +810,7 @@ class Email(object):
                     removed.append(msg_ptr)
             except (IOError, OSError, ValueError, AttributeError) as e:
                 failed.append(msg_ptr)
-                print 'FIXME: Could not delete %s: %s' % (msg_ptr, e)
+                print('FIXME: Could not delete %s: %s' % (msg_ptr, e))
 
         if allow_deletion and not failed and not kept:
             self.index.delete_msg_at_idx_pos(session, self.msg_idx_pos,
@@ -1439,8 +1440,8 @@ class Email(object):
                         pgpdata[1]['crypto']['signature'] = si
                         pgpdata[2]['data'] = ''
 
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
 
             if decrypt:
                 if part['type'] in ('pgpbegin', 'pgptext'):
@@ -1498,6 +1499,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

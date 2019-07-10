@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Plugins!
 import imp
 import inspect
@@ -130,7 +131,7 @@ class PluginManager(object):
             for subdir in self._listdir(pdir):
                 pname = subdir.lower()
                 if pname in self.BUILTIN:
-                    print 'Cannot overwrite built-in plugin: %s' % pname
+                    print('Cannot overwrite built-in plugin: %s' % pname)
                     continue
                 if pname in self.DISCOVERED and not update:
                     # FIXME: this is lame
@@ -145,7 +146,7 @@ class PluginManager(object):
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
                 except (ValueError, AssertionError):
-                    print 'Bad manifest: %s' % manifest_filename
+                    print('Bad manifest: %s' % manifest_filename)
                 except (OSError, IOError):
                     pass
 
@@ -177,7 +178,7 @@ class PluginManager(object):
         sys.modules[full_name].__file__ = full_path
         with i18n_disabled:
             with open(full_path, 'r') as mfd:
-                exec mfd.read() in sys.modules[full_name].__dict__
+                exec(mfd.read(), sys.modules[full_name].__dict__)
 
     def _load(self, plugin_name, process_manifest=False, config=None):
         full_name = 'mailpile.plugins.%s' % plugin_name
@@ -218,7 +219,7 @@ class PluginManager(object):
                 raise
             except:
                 traceback.print_exc(file=sys.stderr)
-                print 'FIXME: Loading %s failed, tell user!' % full_name
+                print('FIXME: Loading %s failed, tell user!' % full_name)
                 if full_name in sys.modules:
                     del sys.modules[full_name]
                 return None
@@ -230,7 +231,7 @@ class PluginManager(object):
                 self._process_manifest_pass_two(*spec)
                 self._process_startup_hooks(*spec)
         else:
-            print 'Unrecognized plugin: %s' % plugin_name
+            print('Unrecognized plugin: %s' % plugin_name)
             return self
 
         if plugin_name not in self.LOADED:
@@ -250,7 +251,7 @@ class PluginManager(object):
                 package = 'mailpile.plugins.%s' % plugin_name
                 _, manifest = self.DISCOVERED[plugin_name]
 
-                if sys.modules.has_key(package):
+                if package in sys.modules:
                     for method_name in self._mf_path(manifest,
                                                      'lifecycle', 'shutdown'):
                         method = self._get_method(package, method_name)
@@ -268,8 +269,8 @@ class PluginManager(object):
                 try:
                     if spec[0] not in failed:
                         process(*spec)
-                except Exception, e:
-                    print 'Failed to process manifest for %s: %s' % (spec[0], e)
+                except Exception as e:
+                    print('Failed to process manifest for %s: %s' % (spec[0], e))
                     failed.append(spec[0])
                     traceback.print_exc()
         return self
@@ -410,7 +411,7 @@ class PluginManager(object):
                                             'html/' + tpath,
                                             filename)
                 else:
-                    print 'FIXME: Un-routable URL in manifest %s' % url
+                    print('FIXME: Un-routable URL in manifest %s' % url)
 
         # Register email content/crypto hooks
         s = self
@@ -491,8 +492,8 @@ class PluginManager(object):
             where = '->'.join(['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]),
                                           stack[i][2])
                               for i in reversed(range(2, len(stack)-1))])
-            print ('FIXME: Deprecated use of %s at %s (issue #547)'
-                   ) % (stack[1][3], where)
+            print(('FIXME: Deprecated use of %s at %s (issue #547)'
+                   ) % (stack[1][3], where))
 
     def _rhtf(self, kw_hash, term, function):
         if term in kw_hash:

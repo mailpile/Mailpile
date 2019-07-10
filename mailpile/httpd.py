@@ -278,7 +278,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     else:
                         message = None
                 code, msg = 200, "OK"
-            except IOError, e:
+            except IOError as e:
                 mimetype = 'text/plain'
                 if e.errno == 2:
                     code, msg = 404, "File not found"
@@ -331,7 +331,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             else:
                 raise ValueError(_('Unknown content-type'))
 
-        except (IOError, ValueError), e:
+        except (IOError, ValueError) as e:
             self.send_full_response(self.server.session.ui.render_page(
                 config, self._ERROR_CONTEXT,
                 body='POST geborked: %s' % e,
@@ -501,7 +501,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                     header_list=http_headers,
                                     cachectrl=cachectrl)
 
-        except UrlRedirectException, e:
+        except UrlRedirectException as e:
             return self.send_http_redirect(e.url)
         except SuppressHtmlOutput:
             return None

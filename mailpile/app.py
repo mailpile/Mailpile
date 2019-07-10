@@ -1,3 +1,4 @@
+from __future__ import print_function
 import getopt
 import gettext
 import locale
@@ -141,12 +142,12 @@ def Interact(session):
                     result = Action(session, opt, arg)
                     session.ui.block()
                     session.ui.display_result(result)
-                except UsageError, e:
+                except UsageError as e:
                     session.fatal_error(unicode(e))
-                except UrlRedirectException, e:
+                except UrlRedirectException as e:
                     session.fatal_error('Tried to redirect to: %s' % e.url)
     except EOFError:
-        print
+        print()
     finally:
         session.ui.unblock(force=True)
 
@@ -181,7 +182,7 @@ class InteractCommand(Command):
         splash = HelpSplash(session, 'help', []).run()
         motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
         session.ui.display_result(splash)
-        print  # FIXME: This is a hack!
+        print()  # FIXME: This is a hack!
         session.ui.display_result(motd)
 
         Interact(session)
@@ -246,7 +247,7 @@ fail in unexpected ways. If it breaks you get to keep both pieces!
                                    'please log in!'))
         HealthCheck(session, None, []).run()
         config.prepare_workers(session)
-    except AccessError, e:
+    except AccessError as e:
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
@@ -282,7 +283,7 @@ fail in unexpected ways. If it breaks you get to keep both pieces!
                     session.ui.display_result(Action(
                         session, args[0], ' '.join(args[1:]).decode('utf-8')))
 
-        except (getopt.GetoptError, UsageError), e:
+        except (getopt.GetoptError, UsageError) as e:
             session.fatal_error(unicode(e))
 
         if (not allopts) and (not a1) and (not a2):
