@@ -90,26 +90,32 @@ class WKDLookupHandler(LookupHandler):
         error = None
         for url in WebKeyDirectoryURLs(address):
             try:
+                if 'keylookup' in self.session.config.sys.debug:
+                    self.session.ui.debug('[%s] Fetching %s' % (self.NAME, url))
                 with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
                     result = urllib2.urlopen(url).read()
                 error = None
                 break
-            except (urllib2.URLError, ssl.CertificateError):
-                error = 'TLS'  # Wrong TLS keys are common. :-(
             except urllib2.HTTPError as e:
                 if e.code == 404 and '+' not in address:
-                    error = '404'
+                    error = '404: %s' % e
                     # Since we are testing openpgpkey.* first, if we actually get a
                     # valid response back we should treat that as authoritative and
                     # not waste cycles checking the bare domain too.
                     break
                 else:
                     error = str(e)
+            except ssl.CertificateError as e:
+                error = 'TLS: %s' % e
+            except urllib2.URLError as e:
+                error = 'FAIL: %s' % e
 
+        if error and 'keylookup' in self.session.config.sys.debug:
+            self.session.ui.debug('[%s] Error: %s' % (self.NAME, error))
         if not error:
             keyinfo = get_keyinfo(result, key_info_class=MailpileKeyInfo)[0]
             self.key_cache[keyinfo["fingerprint"]] = result
-        elif error in ('TLS', '404'):
+        elif error[:3] in ('TLS', 'FAI', '404'):
             return {}  # Suppress these errors, they are common.
         else:
             raise ValueError(error)

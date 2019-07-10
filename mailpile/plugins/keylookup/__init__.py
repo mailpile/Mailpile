@@ -649,7 +649,7 @@ class KeyserverLookupHandler(LookupHandler):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = self._lookup_url(url_base, address)
-            if 'keyservers' in self.session.config.sys.debug:
+            if 'keylookup' in self.session.config.sys.debug:
                 self.session.ui.debug('[%s] Fetching: %s' % (self.NAME, url))
             try:
                 raw_result = secure_urlget(self.session, url,
@@ -671,13 +671,13 @@ class KeyserverLookupHandler(LookupHandler):
                 self.session.ui.debug('[%s] %s' % (self.NAME, error))
 
         if error:
-            if 'keyservers' in self.session.config.sys.debug:
+            if 'keylookup' in self.session.config.sys.debug:
                 self.session.ui.debug('Error: %s' % error)
             if 'Error 404' in error:
                 return {}
             raise ValueError(error)
 
-        if 'keyservers' in self.session.config.sys.debug:
+        if 'keylookup' in self.session.config.sys.debug:
             self.session.ui.debug('[%s] DATA: %s' % (self.NAME, raw_result[:200]))
         results = _mailpile_key_list(
             self._gnupg().parse_hpk_response(raw_result.split('\n')))
@@ -687,12 +687,12 @@ class KeyserverLookupHandler(LookupHandler):
                 match = [u for u in results[key].uids
                          if u.email.lower() == address]
                 if not match:
-                    if 'keyservers' in self.session.config.sys.debug:
+                    if 'keylookup' in self.session.config.sys.debug:
                         self.session.ui.debug('[%s] No UID for %s, ignoring key'
                                               % (self.NAME, address))
                     del results[key]
 
-        if 'keyservers' in self.session.config.sys.debug:
+        if 'keylookup' in self.session.config.sys.debug:
             self.session.ui.debug('[%s] Results=%d' % (self.NAME, len(results)))
 
         return results
@@ -706,7 +706,7 @@ class KeyserverLookupHandler(LookupHandler):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = self._getkey_url(url_base, email, key)
-            if 'keyservers' in self.session.config.sys.debug:
+            if 'keylookup' in self.session.config.sys.debug:
                 self.session.ui.debug('Fetching: %s' % url)
             try:
                 key_data = secure_urlget(self.session, url,
@@ -724,7 +724,7 @@ class KeyserverLookupHandler(LookupHandler):
 
         if len(key_data) > self.MAX_KEY_SIZE and not error:
             error = "Key too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
-            if 'keyservers' in self.session.config.sys.debug:
+            if 'keylookup' in self.session.config.sys.debug:
                 self.session.ui.debug(error)
 
         if error:
