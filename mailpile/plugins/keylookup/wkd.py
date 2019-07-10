@@ -3,17 +3,26 @@ import ssl
 import urllib
 import urllib2
 
+from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto.keyinfo import get_keyinfo, MailpileKeyInfo
 from mailpile.i18n import gettext
+from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
+
+_ = lambda t: t
+
+
+WKD_URL_FORMATS = (
+        'https://openpgpkey.%(d)s/.well-known/%(d)s/openpgpkey/hu/%(l)s?%(q)s',
+        'https://%(d)s/.well-known/openpgpkey/hu/%(l)s?%(q)s')
 
 ALPHABET = "ybndrfg8ejkmcpqxot1uwisza345h769"
 SHIFT = 5
 MASK = 31
 
-#
+
 #  Encodes data using ZBase32 encoding
 #  See: https://tools.ietf.org/html/rfc6189#section-5.1.6
 #
@@ -39,9 +48,23 @@ def _zbase_encode(data):
         result = result + ALPHABET[MASK & (buffer >> bitsLeft)]
     return result
 
-_ = lambda t: t
 
-#
+def WebKeyDirectoryURLs(address, plusmagic=True):
+    local, _, domain = address.partition("@")
+    encoded_parts = [(local, _zbase_encode(
+        hashlib.sha1(local.lower().encode('utf-8')).digest()))]
+    if plusmagic and '+' in local:
+        local = local.split('+')[0]
+        encoded_parts.append((local, _zbase_encode(
+            hashlib.sha1(local.lower().encode('utf-8')).digest())))
+    for lp, lpe in encoded_parts:
+        for urlfmt in WKD_URL_FORMATS:
+            yield urlfmt % {
+                'd': domain,
+                'l': lpe,
+                'q': urllib.urlencode({'l': lp})}
+
+
 #  Support for Web Key Directory (WKD) lookup for keys.
 #  See: https://wiki.gnupg.org/WKD and https://datatracker.ietf.org/doc/draft-koch-openpgp-webkey-service/
 #
@@ -51,10 +74,6 @@ class WKDLookupHandler(LookupHandler):
     PRIORITY = 50  # WKD is better than keyservers and better than DNS
     PRIVACY_FRIENDLY = True  # These lookups can go over Tor
     SCORE = 5
-
-    URL_FORMATS = (
-        'https://openpgpkey.%(d)s/.well-known/%(d)s/openpgpkey/hu/%(l)s?%(q)s',
-        'https://%(d)s/.well-known/openpgpkey/hu/%(l)s?%(q)s')
 
     def __init__(self, *args, **kwargs):
         LookupHandler.__init__(self, *args, **kwargs)
@@ -69,21 +88,16 @@ class WKDLookupHandler(LookupHandler):
             hashlib.sha1(local.lower().encode('utf-8')).digest())
 
         error = None
-        for urlfmt in self.URL_FORMATS:
-            url = urlfmt % {
-                'd': domain,
-                'l': local_part_encoded,
-                'q': urllib.urlencode({'l': local})}
-
+        for url in WebKeyDirectoryURLs(address):
             try:
                 with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
-                    r = urllib2.urlopen(url)
+                    result = urllib2.urlopen(url).read()
                 error = None
                 break
             except (urllib2.URLError, ssl.CertificateError):
                 error = 'TLS'  # Wrong TLS keys are common. :-(
             except urllib2.HTTPError as e:
-                if e.code == 404:
+                if e.code == 404 and '+' not in address:
                     error = '404'
                     # Since we are testing openpgpkey.* first, if we actually get a
                     # valid response back we should treat that as authoritative and
@@ -93,7 +107,6 @@ class WKDLookupHandler(LookupHandler):
                     error = str(e)
 
         if not error:
-            result = r.read()
             keyinfo = get_keyinfo(result, key_info_class=MailpileKeyInfo)[0]
             self.key_cache[keyinfo["fingerprint"]] = result
         elif error in ('TLS', '404'):
@@ -113,5 +126,19 @@ class WKDLookupHandler(LookupHandler):
             raise ValueError("Key not found")
 
 
+class GetWebKeyDirectoryURLs(Command):
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/wkd/urls', None, '<emails>')
+
+    def command(self):
+        return self._success(_("Generated WKD URLs"),
+            dict((addr, list(WebKeyDirectoryURLs(addr))) for addr in self.args))
+
+
 _ = gettext
+
+_plugins = PluginManager(builtin=__file__)
+_plugins.register_commands(GetWebKeyDirectoryURLs)
+
 register_crypto_key_lookup_handler(WKDLookupHandler)
+
