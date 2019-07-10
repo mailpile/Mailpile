@@ -73,10 +73,17 @@ KNOWN_ONION_MAP = {
 }
 
 
-org_cconn = socket.create_connection
+original_scc = socket.create_connection
+monkey_clean_scc = socket.create_connection
+monkey_thread_local = threading.local()
 
 
-monkey_lock = threading.RLock()
+def MonkeySockCreateConn(*args, **kwargs):
+    if hasattr(monkey_thread_local, 'scc'):
+        cconn = (monkey_thread_local.scc or [monkey_clean_scc])[-1]
+    else:
+        cconn = monkey_clean_scc
+    return cconn(*args, **kwargs)
 
 
 def _explain_encryption(sock):
@@ -179,7 +186,6 @@ class BrokeredContext(object):
         self._need = need
         self._reject = reject
         self._oneshot = oneshot
-        self._monkeys = []
         self._reset()
 
     def __str__(self):
@@ -214,28 +220,23 @@ class BrokeredContext(object):
         self.on_localnet = False
         self.on_darknet = None
 
-    def _unmonkey(self):
-        if self._monkeys:
-            (socket.create_connection, ) = self._monkeys
-            self._monkeys = []
-            monkey_lock.release()
-
     def __enter__(self, *args, **kwargs):
-        monkey_lock.acquire()
-        self._monkeys = (socket.create_connection, )
         def create_brokered_conn(address, *a, **kw):
             self._reset()
-            try:
-                return self._broker.create_conn_with_caps(
-                    address, self, self._need, self._reject, *a, **kw)
-            finally:
-                if self._oneshot:
-                    self._unmonkey()
-        socket.create_connection = create_brokered_conn
+            return self._broker.create_conn_with_caps(
+                address, self, self._need, self._reject, *a, **kw)
+
+        if hasattr(monkey_thread_local, 'scc'):
+            monkey_thread_local.scc.append(create_brokered_conn)
+        else:
+            monkey_thread_local.scc = [create_brokered_conn]
+            if socket.create_connection != MonkeySockCreateConn:
+                socket.create_connection = MonkeySockCreateConn
+
         return self
 
     def __exit__(self, *args, **kwargs):
-        self._unmonkey()
+        monkey_thread_local.scc.pop(-1)
 
 
 class BaseConnectionBroker(Capability):
@@ -385,7 +386,7 @@ class TcpConnectionBroker(BaseConnectionBroker):
     def _conn(self, address, *args, **kwargs):
         clean_kwargs = dict((k, v) for k, v in kwargs.iteritems()
                             if not k.startswith('_'))
-        return org_cconn(address, *args, **clean_kwargs)
+        return original_scc(address, *args, **clean_kwargs)
 
     def _create_connection(self, context, address, *args, **kwargs):
         self._avoid(address)
@@ -718,6 +719,7 @@ def DisableUnbrokeredConnections():
         print '*** socket.create_connection used without a broker ***'
         traceback.print_stack()
         raise IOError('FIXME: Please use within a broker context')
+    monkey_clean_scc = CreateConnWarning
     socket.create_connection = CreateConnWarning
 
 
@@ -1010,6 +1012,7 @@ def SslContextWrapOnlyOnce(org_ctxwrap, self, sock, *args, **kwargs):
 
 
 _ = gettext
+
 
 if __name__ != "__main__":
     Master = MasterBroker()
