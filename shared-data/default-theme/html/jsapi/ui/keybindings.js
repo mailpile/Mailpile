@@ -26,24 +26,11 @@ Mailpile.keybinding_move_messages = function(op, keep_new) {
     return;
   }
 
-  // If there is a button in the UI, prefer to click that to keep behaviours
-  // consistent. If not we fall through to direct tagging etc.
-  var $button;
-  if (op.startsWith('!')) {
-    $button = $context.find("a.bulk-action-tag-op[data-op='"+ op.substring(1) +"']");
-    op = '';
-  }
-  else {
-    $button = $context.find("a.bulk-action-tag-op[data-tag='"+ op +"']");
-  }
-  if ($button.length) {
-    $button.eq(0).trigger('click');
-    return;
-  }
-
   var tids = $context.find(".pile-results").data("tids");
   var delete_tags = ((tids || "") + "").split(/\s+/);
   if (!keep_new) delete_tags.push('new');
+
+  Mailpile.bulk_action_selection_down();
 
   Mailpile.UI.Tagging.tag_and_update_ui({
     add: op,
@@ -52,22 +39,17 @@ Mailpile.keybinding_move_messages = function(op, keep_new) {
     context: $context.find('.search-context').data('context')
   }, 'move');
 
-  Mailpile.UI.Selection.select_none($context);
   Mailpile.bulk_actions_update_ui();
 };
 
 Mailpile.keybinding_mark_read = function() {
   var $context = Mailpile.UI.Selection.context(".selection-context");
-  Mailpile.bulk_action_read(undefined, function() {
-    Mailpile.UI.Selection.select_none($context);
-  });
+  Mailpile.bulk_action_read(undefined, function() {});
 };
 
 Mailpile.keybinding_mark_unread = function() {
   var $context = Mailpile.UI.Selection.context(".selection-context");
-  Mailpile.bulk_action_unread(undefined, function() {
-    Mailpile.UI.Selection.select_none($context);
-  });
+  Mailpile.bulk_action_unread(undefined, function() {});
 };
 
 Mailpile.keybinding_undo_last = function() {
