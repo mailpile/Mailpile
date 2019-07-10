@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8 :
 #
+from __future__ import print_function
 import re
 from mailpile.util import md5_hex
 
@@ -108,6 +109,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

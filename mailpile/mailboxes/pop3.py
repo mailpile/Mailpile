@@ -1,3 +1,4 @@
+from __future__ import print_function
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -379,16 +380,16 @@ if __name__ == "__main__":
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)
 
     if len(sys.argv) > 1:
         mbx = MailpileMailbox(*MailpileMailbox.parse_path(None, sys.argv[1]))
-        print 'Status is: %s' % (mbx.stat(), )
-        print 'Downloading mail and listing subjects, hit CTRL-C to quit'
+        print('Status is: %s' % (mbx.stat(), ))
+        print('Downloading mail and listing subjects, hit CTRL-C to quit')
         for msg in mbx:
-            print msg['subject']
+            print(msg['subject'])
             time.sleep(2)
 
 else:

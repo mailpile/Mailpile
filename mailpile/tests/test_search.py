@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from nose.tools import assert_equal, assert_less
 
@@ -13,7 +14,7 @@ def checkSearch(query, expected_count=1):
                 assert_equal(results.result['stats']['count'], expected_count)
                 assert_less(float(results.as_dict()["elapsed"]), 0.2)
             except:
-                print 'BAD RESULT:\n%s' % results.as_text()
+                print('BAD RESULT:\n%s' % results.as_text())
                 raise
     TestSearch.description = "Searching for %s" % str(query)
     return TestSearch

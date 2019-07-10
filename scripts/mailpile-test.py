@@ -6,6 +6,7 @@
 # If run with -i as the first argument, it will then drop to an interactive
 # python shell for experimenting and manual testing.
 #
+from __future__ import print_function
 import os
 import sys
 import time
@@ -369,7 +370,7 @@ try:
             say("Tests passed, woot!")
 except:
     sys.stderr.write("\nTests FAILED!\n")
-    print
+    print()
     traceback.print_exc()
 
 
@@ -379,7 +380,7 @@ if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
     mp._session.ui = ui
-    print '%s' % mp.help_splash()
+    print('%s' % mp.help_splash())
     mp.Interact()
 
 

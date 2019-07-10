@@ -3,6 +3,7 @@
 FIXME...
 
 """
+from __future__ import print_function
 import getopt
 import os
 import time
@@ -75,7 +76,7 @@ class BuildbotController(object):
         return opts, args
 
     def cmd_hello(self, args):
-        print 'Hello: %s' % ' '.join(args)
+        print('Hello: %s' % ' '.join(args))
         args[:] = []
 
     def cmd_win(self, args):

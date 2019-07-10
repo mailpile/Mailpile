@@ -113,6 +113,8 @@ Detailed search keyword stats:
           (sample size: ~300k emails)
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import binascii
 import hashlib
 import os
@@ -120,7 +122,7 @@ import struct
 import time
 import threading
 
-from aes_utils import getrandbits, aes_ctr_encrypt, aes_ctr_decrypt
+from .aes_utils import getrandbits, aes_ctr_encrypt, aes_ctr_decrypt
 
 
 class _SimpleList(object):
@@ -259,7 +261,7 @@ class EncryptedRecordStore(_SimpleList):
         # rest is pseudorandom crap.
         with self._lock:
             self._iv_seed += 1
-            self._iv_seed %= 0x1000000000000L
+            self._iv_seed %= 0x1000000000000
             if (self._iv_seed % 123456) == 0:
                 self._write_header()
 
@@ -734,7 +736,7 @@ class EncryptedDict(object):
     def __getitem__(self, key):
         try:
             keyset, (rpos, rdata) = self.load_record(key)
-        except ValueError, msg:
+        except ValueError as msg:
             raise KeyError('%s: %s' % (key, msg))
         return self.rdata_value(rdata)
 
@@ -795,7 +797,7 @@ class EncryptedIntDict(EncryptedDict):
 if __name__ == '__main__':
     import random
 
-    print 'Creating EncryptedDict...'
+    print('Creating EncryptedDict...')
     eid = EncryptedIntDict('/tmp/test.aes', 'this is my secret key',
                            shard_size=25, overwrite=True)
     eid['hello'] = 99
@@ -807,7 +809,7 @@ if __name__ == '__main__':
     except (ValueError, struct.error):
         pass
     assert(list(eid.keys()) == ['hello'])
-    assert(list(eid.values()) == [99L])
+    assert(list(eid.values()) == [99])
 
     for size in (16, 50, 100, 200, 400, 800, 1600):
         er = EncryptedBlobStore('/tmp/tmp.aes', 'this is my secret key',
@@ -850,7 +852,7 @@ if __name__ == '__main__':
            % (done - t0, (done - t0) / count))
     er.close()
 
-    print 'Creating EncryptedDict...'
+    print('Creating EncryptedDict...')
     ed = EncryptedDict('/tmp/test.aes', 'another secret key',
                        shard_size=(count * 2), min_shards=2, overwrite=True)
 
@@ -883,7 +885,7 @@ if __name__ == '__main__':
         except KeyError:
             pass
         except AssertionError:
-            print 'FAILED, GOT: %s => %s' % (i, ed.get(str(i)))
+            print('FAILED, GOT: %s => %s' % (i, ed.get(str(i))))
     done = time.time()
     print ('10k dict reads in %.2f (%.8f s/op)\n -- reads=%s lf=%s'
            % (done - t0, (done - t0) / count, ed.reads, ed.load_factor))

@@ -3,6 +3,7 @@
 # IMPORTANT: This script runs as root and is invoked by the web server via sudo.
 #            So it's pretty security-sensitive: simple is better than clever!
 #
+from __future__ import print_function
 DOC="""\
 
 This is a script to launch Mailpile as a specific user.
@@ -26,7 +27,7 @@ MAILPILE_WORK_LOCK = 'workdir-lock'
 
 
 def usage(code, msg=''):
-    print DOC, msg, "\n"
+    print(DOC, msg, "\n")
     sys.exit(code)
 
 

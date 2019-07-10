@@ -11,6 +11,7 @@ import os
 import sys
 import subprocess
 import argparse
+from functools import reduce
 
 locate = (("Mailpile", "mailpile"),
           ("gpg", "bin", "gpg.exe"),

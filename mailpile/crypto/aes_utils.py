@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This is a compatibility wrapper for using whatever AES library is handy.
 # By default we support Cryptography and pyCrypto, with a preference for
 # Cryptography.
@@ -148,7 +149,7 @@ if __name__ == "__main__":
     r1 = results[0]
     for result in results[1:]:
         if r1[1] != result[1]:
-            print '%s != %s' % (r1, result)
+            print('%s != %s' % (r1, result))
             okay = False
     assert(okay)
 
@@ -162,4 +163,4 @@ if __name__ == "__main__":
     decrypted = aes_ctr_decrypt(legacy_key, legacy_nonce, legacy_ct)
     assert(legacy_data == decrypted)
 
-    print "ok"
+    print("ok")

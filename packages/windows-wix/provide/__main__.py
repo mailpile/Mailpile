@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import os.path
 import time
@@ -13,8 +14,8 @@ logging.basicConfig()
 if 'DEBUG' in os.environ:
     logging.getLogger().setLevel(logging.DEBUG)
 
-import cache
-import default
+from . import cache
+from . import default
 
 package_dir = os.path.dirname(__file__)
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # This module implements a safer version of Popen and a safe wrapper around
 # os.pipe(), to avoid deadlocks caused by file descriptors being shared
@@ -121,7 +122,7 @@ class Safe_Popen(Unsafe_Popen):
 
         # This lets us inject Popen args into libraries
         preset = self._preset_args()
-        if preset: print 'PRESET[%s]: %s' % (args, preset)
+        if preset: print('PRESET[%s]: %s' % (args, preset))
         cwd = preset.get('cwd', cwd)
         env = preset.get('env', env)
         stdin = preset.get('stdin', stdin)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -35,10 +36,10 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
                 kw.add('%s:sig' % keyinfo[-16:].lower())
 
         if 'cryptostate' in index.config.sys.debug:
-            print 'part status(=%s): enc=%s sig=%s' % (msg_mid,
+            print('part status(=%s): enc=%s sig=%s' % (msg_mid,
                 part.encryption_info.get('status'),
                 part.signature_info.get('status')
-            )
+            ))
 
         # This is OpenPGP-specific
         if (part.encryption_info.get('protocol') == 'openpgp'
@@ -79,7 +80,7 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
             kw.add('%s:in' % tag[0]._key)
 
     if 'cryptostate' in index.config.sys.debug:
-        print 'part crypto state(=%s): %s' % (msg_mid, ','.join(list(kw)))
+        print('part crypto state(=%s): %s' % (msg_mid, ','.join(list(kw))))
 
     return list(kw)
 

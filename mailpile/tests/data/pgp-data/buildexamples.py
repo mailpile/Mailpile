@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import email
 import mailbox
@@ -11,7 +12,7 @@ def getProcesses():
             "--sign", "--recipient 0x5AB5B329 --encrypt"]
 
 def runPGP(input, params):
-    print "Running PGP"
+    print("Running PGP")
     params = params.split(" ")
     params.insert(0, "../gpg-keyring/")
     params.insert(0, "--home")
@@ -29,8 +30,8 @@ def genExamples():
 	contents = open("sources/" + source, "r").read()
 	language, charset = source.split(".")
         for process in getProcesses():
-            print "Creating %s mail with %s encoding and %s PGP" % (language,
-                  charset, process)
+            print("Creating %s mail with %s encoding and %s PGP" % (language,
+                  charset, process))
             string = runPGP(contents, process)
             e = email.message_from_string(string)
             e.set_charset(charset)

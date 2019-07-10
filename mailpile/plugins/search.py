@@ -390,7 +390,7 @@ class SearchResults(dict):
                                              ][cid] = self._address(cid=cid)
             problem = None
 
-        except Exception, e:
+        except Exception as e:
             if problem:
                 problem += ' ' + _('Message may be corrupt!')
             details = {

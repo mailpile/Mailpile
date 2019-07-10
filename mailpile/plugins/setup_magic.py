@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 import datetime
 import os
@@ -497,7 +498,7 @@ class SetupGetEmailSettings(TestableWebbable):
         elif sockettype.lower() == 'starttls':
             servertype += '_tls'
         else:
-            print 'FIXME/SOURCE: %s/%s' % (sockettype, servertype)
+            print('FIXME/SOURCE: %s/%s' % (sockettype, servertype))
         return servertype.lower()
 
     def _route_proto(self, outsrv):
@@ -508,7 +509,7 @@ class SetupGetEmailSettings(TestableWebbable):
         elif sockettype.lower() == 'starttls':
             servertype += 'tls'
         else:
-            print 'FIXME/ROUTE: %s/%s' % (sockettype, servertype)
+            print('FIXME/ROUTE: %s/%s' % (sockettype, servertype))
         return servertype.lower()
 
     def _rank(self, entry):
@@ -1186,7 +1187,7 @@ class SetupTestRoute(TestableWebbable):
         except OSError:
             error_info = {'error': _('Invalid command'),
                           'invalid_command': True}
-        except SendMailError, e:
+        except SendMailError as e:
             error_info = {'error': e.message,
                           'sendmail_error': True}
             error_info.update(e.error_info)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import sys
 import re
 
@@ -47,7 +48,7 @@ with open(sys.argv[1], 'rb') as fd:
         chunk = fd.read(READS)
 
 
-print ('Done, found %d messages, %d msgids'
-       ) % (len(messages), len([1 for mi in msgids if mi]))
+print(('Done, found %d messages, %d msgids'
+       ) % (len(messages), len([1 for mi in msgids if mi])))
 for i in range(0, 20):
-    print '%d/%d = %s' % (i * 13, messages[i], msgids[i * 13])
+    print('%d/%d = %s' % (i * 13, messages[i], msgids[i * 13]))

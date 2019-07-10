@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 import json
 import random
@@ -123,7 +124,7 @@ class BaseIndex(MessageInfoConstants):
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 if 'sources' in self.config.sys.debug:
                     traceback.print_exc()
-                    print 'WARNING: %s not found' % msg_ptr
+                    print('WARNING: %s not found' % msg_ptr)
             yield (msg_ptr, mbox, fd)
 
     ### ... ################################################################
@@ -242,6 +243,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

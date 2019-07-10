@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 import cPickle
 import io
@@ -150,7 +151,7 @@ class ConfigManager(ConfigDict):
         if not os.path.exists(self.workdir):
             if session:
                 session.ui.notify(_('Creating: %s') % self.workdir)
-            os.makedirs(self.workdir, mode=0700)
+            os.makedirs(self.workdir, mode=0o700)
             mailpile.platforms.RestrictReadAccess(self.workdir)
 
         # Once acquired, lock_workdir is only released by process termination.
@@ -1300,10 +1301,10 @@ class ConfigManager(ConfigDict):
                         except socket.error:
                             port_in_use = False
                         if port_in_use:
-                            raise socket.error, errno.EADDRINUSE
+                            raise socket.error(errno.EADDRINUSE)
                     config.http_worker = HttpWorker(config.background, sspec)
                     config.http_worker.start()
-                except socket.error, e:
+                except socket.error as e:
                     if e[0] == errno.EADDRINUSE:
                         session.ui.error(
                             _('Port %s:%s in use by another Mailpile or program'
@@ -1462,7 +1463,7 @@ class ConfigManager(ConfigDict):
             for w in worker_list:
                 if w and w.isAlive():
                     if config.sys.debug and wait:
-                        print 'Waiting for %s' % w
+                        print('Waiting for %s' % w)
                     w.quit(join=wait)
 
         # Flush the mailbox cache (queues save worker jobs)
@@ -1474,7 +1475,7 @@ class ConfigManager(ConfigDict):
             save_worker = config.save_worker
             config.save_worker = config.dumb_worker
         if config.sys.debug:
-            print 'Waiting for %s' % save_worker
+            print('Waiting for %s' % save_worker)
 
         from mailpile.postinglist import PLC_CACHE_FlushAndClean
         PLC_CACHE_FlushAndClean(config.background, keep=0)
@@ -1483,7 +1484,7 @@ class ConfigManager(ConfigDict):
 
         if config.sys.debug:
             # Hooray!
-            print 'All stopped!'
+            print('All stopped!')
 
     def _unlocked_notify_workers_config_changed(config):
         worker_list = config._unlocked_get_all_workers()
@@ -1567,6 +1568,6 @@ if __name__ == "__main__":
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg,
                                           'session': session})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

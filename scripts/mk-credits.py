@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import os
 import re
 import subprocess
@@ -77,7 +78,7 @@ with open(i18n, 'w') as fd:
                              for n in tlist))
             first = False
         elif translators[lang][1]:
-            print 'wtf: %s' % translators[lang]
+            print('wtf: %s' % translators[lang])
     if not first:
         fd.write('</ul>\n')
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import datetime
 import random
 import threading
@@ -130,7 +131,7 @@ class Cron(threading.Thread):
                     self.last_run = time.time()
                     self.running = name
                     task()
-                except Exception, e:
+                except Exception as e:
                     self.schedule[name][4] = 'FAILED'
                     self.session.ui.error(('%s failed in %s: %s'
                                            ) % (name, self.name, e))
@@ -289,14 +290,14 @@ class Worker(threading.Thread):
                     session.report_task_completed(name, task())
                 else:
                     task()
-            except (JobPostponingException), e:
+            except (JobPostponingException) as e:
                 session.ui.debug('Postponing: %s' % name)
                 self.add_task(session, name, task,
                               after=time.time() + e.seconds)
-            except (IOError, OSError), e:
+            except (IOError, OSError) as e:
                 self._failed(session, name, task, e)
                 time.sleep(1)
-            except Exception, e:
+            except Exception as e:
                 self._failed(session, name, task, e)
             finally:
                 self.last_run = time.time()
@@ -397,6 +398,6 @@ if __name__ == "__main__":
     import sys
     result = doctest.testmod(optionflags=doctest.ELLIPSIS,
                              extraglobs={'junk': {}})
-    print '%s' % (result, )
+    print('%s' % (result, ))
     if result.failed:
         sys.exit(1)
