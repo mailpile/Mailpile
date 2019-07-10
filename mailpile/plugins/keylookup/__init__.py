@@ -9,6 +9,7 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.keyinfo import KeyUID, MailpileKeyInfo
+from mailpile.crypto.autocrypt import get_minimal_PGP_key
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
@@ -82,7 +83,7 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         bits = int(key_info.keysize)
 
         if key_info.keytype_name.startswith('Ed'):
-            score = bits // 64
+            score = 4
         else:
             score = bits // 1024
 
@@ -604,7 +605,7 @@ class KeychainLookupHandler(LookupHandler):
                 results[key_id] = key_info
         return results
 
-    def _getkey(self, key):
+    def _getkey(self, email, key):
         # Returns dict like those returned by KeyserverLookupHandler._getkey()
         # and EmailKeyLookupHandler._getkey(). Even though the key is already
         # on the keychain, this is needed so KeyImport will create VCard(s)
@@ -620,7 +621,7 @@ class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
     TIMEOUT = 30  # We know these are slow...
-    PRIVACY_FRIENDLY = True
+    PRIVACY_FRIENDLY = False
     PRIORITY = 200
     SCORE = 1
 
@@ -734,7 +735,7 @@ class KeyserverLookupHandler(LookupHandler):
 
 class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
     NAME = "keys.OpenPGP.org"
-    PRIVACY_FRIENDLY = True
+    PRIVACY_FRIENDLY = False
     LOCAL = False
     TIMEOUT = 15
     PRIORITY = 75  # Better than SKS keyservers and better than DNS
@@ -750,7 +751,7 @@ class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
         return "{}?op=index&options=mr&search={}".format(url_base, address)
 
     def _score(self, key):
-        return (self.SCORE, _('Found encryption key in keys.openpgp.org'))
+        return (self.SCORE, _('Found encryption key in keys.OpenPGP.org'))
 
 
 register_crypto_key_lookup_handler(KeychainLookupHandler)

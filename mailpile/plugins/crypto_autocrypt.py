@@ -149,6 +149,9 @@ class AutocryptRecord(object):
             (k, self.__getattribute__(k))
             for k in (['to'] + list(self.INIT_ORDER)))
 
+    def as_text(self):
+        return '%s' % self.as_dict()
+
     def save_to(self, db):
         db[canonicalize_email(self.to)] = self.as_list()
         return self
@@ -403,6 +406,14 @@ class AutocryptPeers(Command):
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/autocrypt/peers', 'crypto/autocrypt/peers', None)
     HTTP_CALLABLE = ('POST', )
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if not self.result:
+                return _("No results")
+            return '\n'.join([
+                AutocryptRecord.Load(self.result, r).as_text()
+                for r in self.result])
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
