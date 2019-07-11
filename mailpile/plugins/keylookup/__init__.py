@@ -59,7 +59,6 @@ def _update_scores(session, key_id, key_info, known_keys_list):
             score = 9
             reason = _('Encryption key has been imported')
 
-        key_info["on_keychain"] = True
         key_info['scores']['Known encryption keys'] = [score, reason]
 
     # FIXME: For this to work better, we need a list of signing subkeys.
@@ -115,6 +114,7 @@ def _normalize_key(session, key_info):
                 ai = AddressInfo(e, uid["name"], vcard=vcard)
                 key_info["vcards"][e] = ai
     for key, default in [('on_keychain', False),
+                         ('in_vcards', False),
                          ('keysize', '0'),
                          ('keytype_name', 'unknown'),
                          ('created', '1970-01-01 00:00:00'),
@@ -206,8 +206,23 @@ def lookup_crypto_keys(session, address,
                 found_keys[key_id] = key_info
                 found_keys[key_id]["origins"] = []
             found_keys[key_id]["origins"].append(h.NAME)
-            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
+            
             _normalize_key(session, found_keys[key_id])
+            
+            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
+            
+            # If the key_id was listed in get and is in found_keys then the key
+            # has been successfully imported to the keychain.
+            if key_id in known_keys_list or get and key_id in get:
+                found_keys[key_id]['on_keychain'] = True
+
+            # Check if key is already in the VCard for the specified address.
+            if address in found_keys[key_id]['vcards']:
+                vcard = found_keys[key_id]['vcards'][address]
+                if 'keys' in vcard:
+                     for k in vcard['keys']:
+                         if k['fingerprint'] == key_id:
+                             found_keys[key_id]['in_vcards'] = True
 
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
@@ -294,6 +309,13 @@ class KeyImport(Command):
             PGPKeysImportAsVCards(self.session,
                                   arg=[k['fingerprint'] for k in result]
                                   ).run()
+                                  
+            # The key was looked up based on the given address, so it must have
+            # a user id containing that address, so when it is imported to
+            # VCards, the VCard for that address will list the key.
+            # The 'in_vcards' attribute is relevant to the given address only.
+            for k in result:
+                k['in_vcards'] = True
             # Previous crypto evaluations may now be out of date, so we
             # clear the cache so users can see results right away.
             ClearParseCache(pgpmime=True)
