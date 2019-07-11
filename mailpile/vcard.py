@@ -31,9 +31,9 @@ class VCardLine(dict):
     'FN:Lebowski'
 
     The object mostly behaves like a read-only dict.
-    >>> print vcl
+    >>> print(vcl)
     {u'fn': u'Lebowski'}
-    >>> print vcl.value
+    >>> print(vcl.value)
     Lebowski
 
     VCardLine objects can also be initialized by passing in a line of VCard
@@ -48,7 +48,7 @@ class VCardLine(dict):
 
     Note that the as_vcardline() method may return more than one actual line
     of text, as RFC6350 mandates that lines over 75 characters be wrapped:
-    >>> print VCardLine(name='bogus', value=('B' * 100)+'C').as_vcardline()
+    >>> print(VCardLine(name='bogus', value=('B' * 100)+'C').as_vcardline())
     BOGUS:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
      BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBC
     """
@@ -165,7 +165,7 @@ class VCardLine(dict):
         """
         Quote values so they can be safely represented in a VCard.
 
-        >>> print VCardLine.Quote('Comma, semicolon; backslash\\ newline\\n')
+        >>> print(VCardLine.Quote('Comma, semicolon; backslash\\ newline\\n'))
         Comma\\, semicolon\\; backslash\\\\ newline\\n
         """
         return unicode(''.join([self.QUOTE_MAP.get(c, c) for c in text]))
@@ -583,7 +583,7 @@ class SimpleVCard(object):
            ...
         IndexError: ...
 
-        >>> print vc.as_vCard()
+        >>> print(vc.as_vCard())
         BEGIN:VCARD
         VERSION:4.0
         CLIENTPIDMAP:1\\;thisisauid
@@ -727,7 +727,7 @@ class SimpleVCard(object):
         This method returns the VCard data in its native format.
         Note: the output is a string of bytes, not unicode characters.
 
-        >>> print SimpleVCard().as_vCard()
+        >>> print(SimpleVCard().as_vCard())
         BEGIN:VCARD
         VERSION:4.0
         FN:Anonymous

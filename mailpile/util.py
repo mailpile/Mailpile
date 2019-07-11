@@ -598,13 +598,13 @@ def reflow_text(text, quoting=False, target_width=65):
     been manually formatted and preserve unmodified in such cases.
 
     >>> test_string = (('abcd efgh ijkl mnop ' + ('q' * 72) + ' ') * 2)[:-1]
-    >>> print reflow_text(test_string)
+    >>> print(reflow_text(test_string))
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     abcd efgh ijkl mnop
     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
-    >>> print reflow_text('> ' + ('q' * 72))
+    >>> print(reflow_text('> ' + ('q' * 72)))
     > qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     The function should be stable:

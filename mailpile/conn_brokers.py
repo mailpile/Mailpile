@@ -154,7 +154,7 @@ class CapabilityFailure(IOError):
     >>> try:
     ...     raise CapabilityFailure('boo')
     ... except IOError:
-    ...     print 'ok'
+    ...     print('ok')
     ok
     """
     pass
