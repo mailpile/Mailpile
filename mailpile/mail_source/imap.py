@@ -541,6 +541,9 @@ class SharedImapMailbox(Mailbox):
     def get_file_by_ptr(self, msg_ptr):
         return self.get_file(unquote(msg_ptr[MBX_ID_LEN:]))
 
+    def remove_by_ptr(self, msg_ptr):
+        return self.remove(unquote(msg_ptr[MBX_ID_LEN:]))
+
     def get_msg_size(self, key):
         return long(self.get_info(key).get('RFC822.SIZE', 0))
 
