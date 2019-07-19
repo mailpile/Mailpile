@@ -252,12 +252,11 @@ def lookup_crypto_keys(session, address,
 
 
 ##[ API endpoints / commands ]#################################################
-
 class KeyLookup(Command):
     """Perform a key lookup"""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/keylookup', 'crypto/keylookup',
-        '<address> [<allowremote>]')
+        '<address> [<allowremote>] [-- <origin>, <origin>, ...]')
     HTTP_CALLABLE = ('GET',)
     HTTP_QUERY_VARS = {
         'email': 'The address to find a encryption key for (strict)',
@@ -268,6 +267,13 @@ class KeyLookup(Command):
     def command(self):
         args = list(self.args)
 
+        if '--' in args:
+            spoint = args.index('--')
+            origins = (' '.join(args[(spoint+1):])).split(', ')
+            args = args[:spoint]
+        else:
+            origins = self.data.get('origins')
+
         if len(args) > 1:
             allowremote = args.pop()
         else:
@@ -275,13 +281,12 @@ class KeyLookup(Command):
         if allowremote.lower()[:1] in ('n', 'f'):
             allowremote = False
 
-        origins = self.data.get('origins')
         if '*' in (origins or []):
             origins = [h.NAME for h in KEY_LOOKUP_HANDLERS]
 
         email = " ".join(self.data.get('email', []))
         address = " ".join(self.data.get('address', args))
-        result = dict((k.summary(), k) for k in 
+        result = dict((k.summary(), k) for k in
             lookup_crypto_keys(self.session, email or address,
                                strict_email_match=email,
                                event=self.event,
@@ -342,7 +347,7 @@ class KeyImport(Command):
             PGPKeysImportAsVCards(self.session,
                                   arg=[k['fingerprint'] for k in result]
                                   ).run()
-                                  
+
             # The key was looked up based on the given address, so it must have
             # a user id containing that address, so when it is imported to
             # VCards, the VCard for that address will list the key.
@@ -762,4 +767,3 @@ register_crypto_key_lookup_handler(VerifyingKeyserverLookupHandler)
 # things happy enough with the circular dependencies...
 from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
 from mailpile.plugins.keylookup.wkd import WKDLookupHandler
-# Disabled: from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
