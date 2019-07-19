@@ -204,7 +204,7 @@ class Generator:
 
     def _write_headers(self, msg):
         for h, v in msg.items():
-            print('%s:' % h, end='', file=self._fp)
+            print('%s:' % h, end=' ', file=self._fp)
             if self._maxheaderlen == 0:
                 # Explicit no-wrapping
                 print(v + self._NL, end='', file=self._fp)
