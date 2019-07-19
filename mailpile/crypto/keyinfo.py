@@ -95,6 +95,7 @@ class KeyUID(RestrictedDict):
 
 
 class KeyInfo(RestrictedDict):
+    KEY_INVALID_CODES = ('d', 'e', 'r', 'n')
     KEYS = {
         'fingerprint':  (str, 'MISSING'),
         'capabilities': (str, ''),
@@ -112,7 +113,7 @@ class KeyInfo(RestrictedDict):
 
     expired = property(lambda k: time.time() > k.expires > 0)
 
-    is_usable = property(lambda k: (k.validity in ('', '?', 'u')
+    is_usable = property(lambda k: (k.validity not in k.KEY_INVALID_CODES
                                     and not k.expired))
 
     can_encrypt = property(lambda k: ('e' in k.capabilities.lower()
@@ -175,7 +176,8 @@ class KeyInfo(RestrictedDict):
         """Synthesize key validity property."""
         # FIXME: Revocations?
         now = now or time.time()
-        if 0 < keyinfo.expires < now and keyinfo.validity in ('', '?'):
+        if (0 < keyinfo.expires < now
+                and keyinfo.validity not in keyinfo.KEY_INVALID_CODES):
             keyinfo.validity = 'e'
 
     @classmethod
