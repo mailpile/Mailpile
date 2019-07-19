@@ -169,8 +169,8 @@ class KeyInfo(RestrictedDict):
             if not (0 < subkey.expires < now):
                 combined_caps |= set(c.upper() for c in subkey.capabilities)
         keyinfo.capabilities = '%s%s' % (
-            ''.join(sorted(list(key_caps))),
-            ''.join(sorted(list(combined_caps))))
+            ''.join(sorted(list(combined_caps))),
+            ''.join(sorted(list(key_caps))))
 
     def synthesize_validity(keyinfo, now=None):
         """Synthesize key validity property."""
@@ -179,6 +179,24 @@ class KeyInfo(RestrictedDict):
         if (0 < keyinfo.expires < now
                 and keyinfo.validity not in keyinfo.KEY_INVALID_CODES):
             keyinfo.validity = 'e'
+
+    def recalculate_expiration(keyinfo, now=None):
+        """Adjust the main expiration date to take subkeys into account."""
+        now = now or time.time()
+
+        # For each capability, figure out what is the latest expiration date
+        # provided by a subkey for that capability.
+        expirations = {}
+        for cap in set(c for c in keyinfo.capabilities if c in ('C', 'E', 'S')):
+            for subkey in keyinfo.subkeys:
+                if subkey.expires and not (0 < subkey.expires < now):
+                    expirations[cap] = max(subkey.expires, expirations.get(cap, 0))
+
+        for cap in expirations:
+            # If the subkey is not expired, and provides a capability our
+            # main key doesn't have, then its expiration date matters.
+            if cap.lower() not in keyinfo.capabilities:
+                keyinfo.expires = min(subkey.expires, keyinfo.expires)
 
     @classmethod
     def FromGPGI(cls, gpgi_keyinfo):
@@ -197,6 +215,7 @@ class KeyInfo(RestrictedDict):
                 name=uid.get("name", ""),
                 email=uid.get("email", ""),
                 comment=uid.get("comment", "")))
+        mki.capabilities = ''.join(sorted([c for c in mki.capabilities]))
         return mki
 
 
@@ -245,12 +264,14 @@ def get_keyinfo(data, autocrypt_header=None,
     results = []
     last_uid = key_uid_class()  # Dummy
     last_key = key_info_class()  # Dummy
+    last_pubkeypacket = None
     main_key_id = None
     for m in packets:
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *
                                round(len('%x' % (m.modulus or 0)) / 0.256)))
+                last_pubkeypacket = m
                 last_key = key_info_class(
                     fingerprint=m.fingerprint,
                     keytype_name=m.pub_algorithm or '',
@@ -281,7 +302,7 @@ def get_keyinfo(data, autocrypt_header=None,
                 if m.key_id == main_key_id:
                     for s in m.subpackets:
                         if s.subtype == 9:
-                            exp = _unixtime(m, seconds=get_int4(s.data, 0))
+                            exp = _unixtime(last_pubkeypacket, seconds=get_int4(s.data, 0))
                             last_key.expires = max(last_key.expires, exp)
                         elif s.subtype == 27:
                             caps = set(c for c in last_key.capabilities)
@@ -307,6 +328,7 @@ def get_keyinfo(data, autocrypt_header=None,
     for keyinfo in results:
         keyinfo.synthesize_validity(now=now)
         keyinfo.add_subkey_capabilities(now=now)
+        keyinfo.recalculate_expiration(now=now)
         if autocrypt_uid is not None:
             keyinfo.ensure_autocrypt_uid(autocrypt_uid)
 
