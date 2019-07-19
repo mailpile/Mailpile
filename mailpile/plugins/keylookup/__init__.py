@@ -85,7 +85,7 @@ def _update_scores(session, key_id, key_info, known_keys_list):
         if key_info.keytype_name.startswith('Ed'):
             score = 4
         else:
-            score = bits // 1024
+            score = min(3, bits // 1024)  # Cap RSA keys at score=3
 
         if score >= 4:
           key_strength = _('Encryption key is very strong')
