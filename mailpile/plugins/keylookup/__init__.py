@@ -561,16 +561,17 @@ class KeyserverLookupHandler(LookupHandler):
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
-    def _lookup(self, address, strict_email_match=False):
-        params = {
+    def _lookup_url(self, url_base, address):
+        return "{}?{}".format(url_base, urllib.urlencode({
             "search": address,
             "op": "index",
             "fingerprint": "on",
-            "options": "mr"}
+            "options": "mr"}))
 
+    def _lookup(self, address, strict_email_match=False):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
-            url = "{}?{}".format(url_base, urllib.urlencode(params))
+            url = self._lookup_url(url_base, address)
             if 'keyservers' in self.session.config.sys.debug:
                 self.session.ui.debug('[%s] Fetching: %s' % (self.NAME, url))
             try:
@@ -619,14 +620,15 @@ class KeyserverLookupHandler(LookupHandler):
 
         return results
 
-    def _getkey(self, key):
+    def _getkey_url(self, url_base, key):
         fingerprint = '0x{}'.format(key['fingerprint'])
-
         params = {"search": fingerprint, "op": "get", "options": "mr"}
+        return "{}?{}".format(url_base, urllib.urlencode(params))
 
+    def _getkey(self, key):
         error = None
         for url_base in self.KEY_SERVER_BASE_URLS:
-            url = "{}?{}".format(url_base, urllib.urlencode(params))
+            url = self._getkey_url(url_base, key)
             if 'keyservers' in self.session.config.sys.debug:
                 self.session.ui.debug('Fetching: %s' % url)
             try:
@@ -665,6 +667,11 @@ class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
     KEY_SERVER_BASE_URLS = [
         "http://zkaan2xfbuxia2wpf7ofnkbz6r5zdbbvxbunvp5g2iebopbfc4iqmbad.onion/pks/lookup",
         "https://keys.openpgp.org/pks/lookup"]
+
+    def _lookup_url(self, url_base, address):
+        # This deliberately avoids any escaping of the e-mail address; k.o.o.
+        # can't handle such things at the moment.
+        return "{}?op=index&options=mr&search={}".format(url_base, address)
 
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keys.openpgp.org'))
