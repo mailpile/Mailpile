@@ -17,7 +17,7 @@ from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-__all__ = ['email_keylookup', 'nicknym', 'wkd']  # Disabled: dnspka
+__all__ = ['email_keylookup', 'wkd']
 
 KEY_LOOKUP_HANDLERS = []
 
