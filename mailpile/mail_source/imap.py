@@ -334,6 +334,7 @@ class SharedImapConn(threading.Thread):
             raise self._conn.abort('socket error: %s' % val)
 
     def quit(self):
+        self._can_idle = False
         with self._lock:
             try:
                 if self._conn and self._conn.file:
@@ -907,13 +908,6 @@ class ImapMailSource(BaseMailSource):
                 if self.conn is not None:
                     raise IOError('Woah, we lost a race.')
                 self.capabilities = capabilities
-                if 'IDLE' in capabilities:
-                    self.conn = SharedImapConn(
-                        self.session, conn,
-                        idle_mailbox='INBOX',
-                        idle_callback=self._idle_callback)
-                else:
-                    self.conn = SharedImapConn(self.session, conn)
 
                 if 'NAMESPACE' in capabilities:
                     ok, data = self.timed_imap(conn.namespace)
@@ -924,6 +918,14 @@ class ImapMailSource(BaseMailSource):
                             'others': oth if (oth != 'NIL') else [],
                             'shared': shr if (shr != 'NIL') else []
                         }
+
+                if 'IDLE' in capabilities:
+                    self.conn = SharedImapConn(
+                        self.session, conn,
+                        idle_mailbox='INBOX',
+                        idle_callback=self._idle_callback)
+                else:
+                    self.conn = SharedImapConn(self.session, conn)
 
             if self.event:
                 self._log_status(_('Connected to IMAP server %s'
