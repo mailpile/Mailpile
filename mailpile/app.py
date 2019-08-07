@@ -4,6 +4,7 @@ import gettext
 import locale
 import os
 import sys
+import warnings
 import traceback
 
 import mailpile.util
@@ -205,6 +206,7 @@ class WaitCommand(Command):
 
 
 def Main(args):
+    warnings.filterwarnings('error')
     try:
         mailpile.platforms.DetectBinaries(_raise=OSError)
     except OSError as e:
@@ -224,6 +226,9 @@ fail in unexpected ways. If it breaks you get to keep both pieces!
 
 """ % (e, binary.upper(), binary))
         sys.exit(1)
+    except UserWarning as e:
+        sys.stderr.write("Warning: %s\n" %e )
+    warnings.filterwarnings('ignore')
 
     # Enable our connection broker, try to prevent badly behaved plugins from
     # bypassing it.

@@ -7,11 +7,12 @@ import copy
 import os
 import subprocess
 import sys
-
+import warnings
 
 # This is a cache of discovered binaries and their paths.
 BINARIES = {}
 
+just_warn = ['Tor']
 
 # These are the binaries we want, and the test we use to detect whether
 # they are available/working.
@@ -36,7 +37,7 @@ def DetectBinaries(
     import traceback
 
     global BINARIES
-    if which and use_cache:
+    if which and use_cache: 
         if which in BINARIES:
             return BINARIES[which]
         env_bin = os.getenv('MAILPILE_%s' % which.upper(), '')
@@ -84,7 +85,10 @@ def DetectBinaries(
     if which:
         if _raise not in (None, False):
             if not BINARIES.get(which):
-                raise _raise('%s not found' % which)
+                if which in just_warn:
+                    warnings.warn("warning: %s not found, ignoring!" % which, category=UserWarning)
+                else:
+                    raise _raise('%s not found' % which)
         return BINARIES.get(which)
 
     elif _raise not in (None, False):
@@ -92,7 +96,10 @@ def DetectBinaries(
             if binary in skip:
                 continue
             if not BINARIES.get(binary):
-                raise _raise('%s not found' % binary)
+                if binary in just_warn:
+                    warnings.warn("%s not found, ignoring" % binary,category=UserWarning)
+                else:
+                    raise _raise('%s not found' % binary)
 
     return BINARIES
 
