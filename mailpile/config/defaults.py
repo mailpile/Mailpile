@@ -1,3 +1,4 @@
+from __future__ import print_function
 APPVER = "1.0.0rc5"
 ABOUT = """\
 Mailpile.py              a tool             Copyright 2013-2018, Mailpile ehf
@@ -9,7 +10,6 @@ the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation. See the file COPYING.md for details.
 """ % APPVER
 #############################################################################
-from __future__ import print_function
 import os
 import sys
 import time
