@@ -26,15 +26,14 @@ Homepage: https://www.mailpile.is/
 Package: mailpile
 Architecture: all
 Depends: ${misc:Depends},
-         ${python:Depends},
-         python-lxml,
-         python-jinja2,
          wordlist,
          gnupg,
          dirmngr,
          spambayes,
          python (<< 2.8),
          python (>= 2.7.5),
+         python-lxml,
+         python-jinja2,
          python-appdirs,
          python-cryptography,
          python-dns,
