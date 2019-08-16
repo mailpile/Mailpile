@@ -218,7 +218,8 @@ compilemessages:
 	@scripts/compile-messages.sh
 
 transifex:
-	tx pull -a --minimum-perc=25
+	rm -rf shared-data/locale/?? shared-data/locale/??_*
+	tx pull -a -f --minimum-perc=75
 	tx pull -l is,en_GB
 
 
