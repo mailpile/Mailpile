@@ -1,3 +1,4 @@
+from __future__ import print_function
 import io
 import json
 import os
@@ -264,7 +265,7 @@ def RuledContainer(pcls):
                             config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    if isinstance(self[key], (list,)):
+                    if isinstance(self[key], list):
                         # If a list is marked public, we export all items
                         self[key].as_config(config=config)
                     else:
@@ -814,6 +815,6 @@ if __name__ == "__main__":
     session.ui.block()
 
     result = doctest.testmod(optionflags=doctest.ELLIPSIS)
-    print '%s' % (result, )
+    print('%s' % (result, ))
     if result.failed:
         sys.exit(1)

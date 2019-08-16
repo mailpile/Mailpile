@@ -9,7 +9,6 @@ Build-Depends: debhelper (>= 9),
 # requirements.txt
                python-lxml,
                python-jinja2,
-               spambayes,
                python-markupsafe,
                python-dns,
                python-pgpdump,
@@ -19,29 +18,6 @@ Build-Depends: debhelper (>= 9),
                python-mock,
                python-selenium,
                python-nose,
-# javascript (in the same order as bower.json)
-               node-less,
-               uglifyjs,
-               libjs-underscore,
-               libjs-bootstrap,
-               libjs-favico.js,
-               libjs-jquery,
-               libjs-autosize,
-               libjs-jquery-slugify,
-               libjs-jquery-timer,
-               libjs-jquery-ui,
-               libjs-less-elements,
-               libjs-list.js,
-               libjs-mousetrap,
-               libjs-moxie,
-               libjs-plupload,
-               libjs-qtip2,
-               libjs-rebar,
-               libjs-select2.js,
-               libjs-typeahead.js,
-               libjs-jquery-ui-touch-punch,
-               libjs-dompurify,
-               libjs-animate.css
 Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/collab-maint/mailpile.git
 Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/mailpile.git
@@ -50,8 +26,12 @@ Homepage: https://www.mailpile.is/
 Package: mailpile
 Architecture: all
 Depends: ${misc:Depends},
+         ${python:Depends},
+         python-lxml,
+         python-jinja2,
          wordlist,
          gnupg,
+         dirmngr,
          spambayes,
          python (<< 2.8),
          python (>= 2.7.5),
@@ -65,6 +45,7 @@ Depends: ${misc:Depends},
          python-markupsafe,
          python-pgpdump,
          python-pil,
+         python-icalendar,
          python-socksipychain
 Recommends: tor, pagekite, python-stem, wamerican-small, gnupg-curl
 Description: library and command-line interface for mailpile

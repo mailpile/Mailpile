@@ -9,6 +9,7 @@ the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation. See the file COPYING.md for details.
 """ % APPVER
 #############################################################################
+from __future__ import print_function
 import os
 import sys
 import time
@@ -260,7 +261,7 @@ if __name__ == "__main__":
     import mailpile.config.defaults
     from mailpile.config.base import ConfigDict
 
-    print '%s' % (ConfigDict(_name='mailpile',
+    print('%s' % (ConfigDict(_name='mailpile',
                              _comment='Base configuration',
                              _rules=mailpile.config.defaults.CONFIG_RULES
-                             ).as_config_bytes(), )
+                             ).as_config_bytes(), ))

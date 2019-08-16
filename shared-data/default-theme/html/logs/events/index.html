@@ -28,6 +28,14 @@
        href="{{ U('/logs/events/?ui_expand=', event.event_id, '#', event.event_id) }}">
       {{ event.message }}
     </a>
+    {%- if event.data and event.data.undo %}
+    <a href="#"
+       title="{{ event.data.undo }}"
+       class="auto-modal eventlog-undo"
+       data-event_id="{{ event.event_id }}"
+       style="font-style: italic;
+              text-decoration: underline;">{{ _('Undo') }}</a>
+    {%- endif %}
   </p>
   {%- if ui_expand == event.event_id %}
   <p class="subsection">
@@ -35,13 +43,6 @@
   </p>
   {%- endif %}
 {# FIXME:
-    <td class="undo">
-      {%- if event.data.undo %}
-      <a href="/logs/events/undo/?event_id={{ event.event_id }}"
-         title="{{ event.data.undo }}"
-         class="auto-modal">{{ _('Undo') }}</a>
-      {%- endif %}
-    </td>
     <td class="checkbox">
       <input type="checkbox" name="mid" value="{{ event.event_id }}">
     </td>

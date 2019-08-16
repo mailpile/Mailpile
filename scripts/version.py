@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from __future__ import print_function
 import datetime
 import os
 import re
@@ -37,4 +38,4 @@ APPVER = APPVER.replace('1.0.0rc', '0.99.')
 
 
 if __name__ == "__main__":
-    print '%s' % APPVER
+    print('%s' % APPVER)

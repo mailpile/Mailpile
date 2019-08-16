@@ -1,4 +1,5 @@
 #coding:utf-8
+from __future__ import print_function
 import os
 import string
 import sys
@@ -8,6 +9,7 @@ import StringIO
 import tempfile
 import threading
 import traceback
+import urllib
 import select
 import pgpdump
 import pgpdump.utils
@@ -33,10 +35,12 @@ DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
                       "hkp://subset.pool.sks-keyservers.net"]
 DEFAULT_KEYSERVER_OPTIONS = [
   'ca-cert-file=%s' % __file__.replace('.pyc', '.py')]
+DEFAULT_IMPORT_OPTIONS = [
+  'import-minimal']
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
-GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand()
+GPG_BINARY = mailpile.platforms.GetDefaultGnuPGCommand
 GPG_VERSIONS = {}
 BLOCKSIZE = 65536
 
@@ -386,7 +390,7 @@ class GnuPGRecordParser:
         pass  # FIXME
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % (line,)
+        print("Unknown line with code '%s'" % (line,))
 
     def parse_none(line):
         pass
@@ -487,7 +491,7 @@ class StreamWriter(Thread):
             output.close()
         except:
             if not self.partial_write_ok:
-                print '%s: %s bytes left' % (self, total)
+                print('%s: %s bytes left' % (self, total))
                 traceback.print_exc()
         finally:
             self.state = 'done'
@@ -523,10 +527,11 @@ class GnuPG:
         self.event = GnuPGEventUpdater(event)
         self.session = session
         self.config = config or (session and session.config) or None
+        self.status_filenames = []
         if self.config:
             DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
             self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
-            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY
+            self.gpgbinary = self.config.sys.gpg_binary or GPG_BINARY()
             self.passphrases = self.config.passphrases
             self.passphrase = (passphrase if (passphrase is not None) else
                                self.passphrases['DEFAULT']).get_reader()
@@ -534,7 +539,7 @@ class GnuPG:
                               else self.config.prefs.gpg_use_agent)
         else:
             self.homedir = GNUPG_HOMEDIR
-            self.gpgbinary = GPG_BINARY
+            self.gpgbinary = GPG_BINARY()
             self.passphrases = None
             if passphrase:
                 self.passphrase = passphrase.get_reader()
@@ -571,7 +576,7 @@ class GnuPG:
         if self.session:
             self.session.debug(msg.rstrip())
         else:
-            print '%s' % str(msg).rstrip()
+            print('%s' % str(msg).rstrip())
 
     def _debug_none(self, msg):
         pass
@@ -640,7 +645,7 @@ class GnuPG:
                 if which in binaries:
                     args.insert(1, "--%s=%s" % (setting, binaries[which]))
                 else:
-                    print 'wtf: %s not in %s' % (which, binaries)
+                    print('wtf: %s not in %s' % (which, binaries))
 
         if (not self.use_agent) or will_send_passphrase:
             if version < (1, 5):
@@ -655,7 +660,8 @@ class GnuPG:
             args.insert(1, "--verbose")
             args.insert(1, "--batch")
             args.insert(1, "--enable-progress-filter")
-            args.insert(1, "--status-fd=2")
+            if self.status_filenames:
+                args.insert(1, "--status-file=%s" % self.status_filenames[-1])
             if will_send_passphrase:
                 args.insert(2, "--passphrase-fd=0")
 
@@ -664,7 +670,19 @@ class GnuPG:
 
         return args
 
-    def run(self,
+    def run(self, *args, **kwargs):
+        # This wrapper handles temporary status files. Since we may recursively
+        # invoke ourselves, we keep a stack of tempfiles and push/pop from the
+        # list.
+        fd = tempfile.NamedTemporaryFile(delete=False)
+        fd.close()  # Avoid potential conflicts on Windows
+        try:
+            self.status_filenames.append(fd.name)
+            return self.run_without_status(*args, **kwargs)
+        finally:
+            os.remove(self.status_filenames.pop(-1))
+
+    def run_without_status(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
             send_passphrase=False, _raise=None, novercheck=False):
         if novercheck:
@@ -732,6 +750,11 @@ class GnuPG:
             # Reap GnuPG
             gpg_retcode = proc.wait()
 
+            # Consume the contents of the status file
+            if self.status_filenames:
+                with open(self.status_filenames[-1], 'r') as status_fd:
+                    for line in iter(status_fd.readline, b''):
+                        self.parse_status(line)
         finally:
             # Close this so GPG will terminate. This should already have
             # been done, but we're handling errors here...
@@ -758,7 +781,7 @@ class GnuPG:
                 if thr.isAlive():
                     thr.join(timeout=15)
                     if thr.isAlive() and tries > 1:
-                        print 'WARNING: Failed to reap thread %s' % thr
+                        print('WARNING: Failed to reap thread %s' % thr)
 
     def parse_status(self, line, *args):
         self.debug('<<STATUS<< %s' % line)
@@ -775,8 +798,6 @@ class GnuPG:
 
     def parse_stderr(self, line):
         self.event.update_stderr(line)
-        if line.startswith("[GNUPG:] "):
-            return self.parse_status(line)
         self.debug('<<STDERR<< %s' % line)
         self.outputbuffers["stderr"].append(line)
 
@@ -847,7 +868,7 @@ class GnuPG:
 
         return secret_keys
 
-    def import_keys(self, key_data=None):
+    def import_keys(self, key_data=None, import_options=DEFAULT_IMPORT_OPTIONS):
         """
         Imports gpg keys from a file object or string.
         >>> key_data = open("testing/pub.key").read()
@@ -856,7 +877,10 @@ class GnuPG:
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
         self.event.running_gpg(_('Importing key to GnuPG key chain'))
-        retvals = self.run(["--import"], gpg_input=key_data)
+        cmd = ["--import"]
+        for opt in import_options:
+            cmd[1:1] = ['--import-options', opt]
+        retvals = self.run(cmd, gpg_input=key_data)
         return self._parse_import(retvals[1]["status"])
 
     def _parse_import(self, output):
@@ -1139,7 +1163,7 @@ class GnuPG:
                 found = set()
         else:
             # Could be PGP packet header. Check for sequence of legal headers.
-            while skip < len(segment) and body_len <> -1:
+            while skip < len(segment) and body_len != -1:
                 # Check this packet header.
                 prev_partial = partial
                 ptag, hdr_len, body_len, partial = (
@@ -1180,12 +1204,12 @@ class GnuPG:
 
                 dec_start += hdr_len + body_len
                 skip = dec_start
-                if is_base64 and body_len <> -1:
+                if is_base64 and body_len != -1:
                     enc_start, enc_end, skip = self.base64_segment(dec_start,
                                         dec_start + 6, 0, line_len, line_end )
                     segment = base64.b64decode(data[enc_start:enc_end])
 
-            if is_base64 and body_len <> -1 and skip <> len(segment):
+            if is_base64 and body_len != -1 and skip != len(segment):
                 # End of last packet does not match end of data.
                 found = set()
         return found
@@ -1311,7 +1335,7 @@ class GnuPG:
 
     def recv_key(self, keyid,
                  keyservers=DEFAULT_KEYSERVERS,
-                 keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+                 keyserver_options=(DEFAULT_KEYSERVER_OPTIONS+DEFAULT_IMPORT_OPTIONS)):
         if not keyid[:2] == '0x':
             keyid = '0x%s' % keyid
         self.event.running_gpg(_('Downloading key %s from key servers'
@@ -1349,7 +1373,7 @@ class GnuPG:
                     "fingerprint": curpub
                 }
             elif line[0] == "uid":
-                email, name, comment = parse_uid(line[1])
+                email, name, comment = parse_uid(urllib.unquote(line[1]))
                 results[curpub]["uids"].append({"name": name,
                                                 "email": email,
                                                 "comment": comment})
@@ -1357,7 +1381,7 @@ class GnuPG:
 
     def search_key(self, term,
                    keyservers=DEFAULT_KEYSERVERS,
-                   keyserver_options=DEFAULT_KEYSERVER_OPTIONS):
+                   keyserver_options=(DEFAULT_KEYSERVER_OPTIONS+DEFAULT_IMPORT_OPTIONS)):
         self.event.running_gpg(_('Searching for key for %s in key servers'
                                  ) % (term))
         for keyserver in keyservers:
@@ -1670,7 +1694,7 @@ class GnuPGExpectScript(threading.Thread):
         except TimedOut:
             timebox[0] = 0
             self.gnupg.debug('Timed out')
-            print 'Boo! %s not found in %s' % (exp, self.before)
+            print('Boo! %s not found in %s' % (exp, self.before))
             raise
 
     def run_script(self, proc, script):
@@ -1876,7 +1900,7 @@ def GnuPGKeyGenerator(gnupg, **kwargs):
 # Reset our translation variable
 _ = gettext
 
-## Include the SKS keyserver certificate here ##
+## Include the SKS keyserver certificates here ##
 KEYSERVER_CERTIFICATE="""
 -----BEGIN CERTIFICATE-----
 MIIFizCCA3OgAwIBAgIJAK9zyLTPn4CPMA0GCSqGSIb3DQEBBQUAMFwxCzAJBgNV
@@ -1909,5 +1933,39 @@ cE77VnCYqKvN1NVYAqhWjXbY7XasZvszCRcOG+W3FqNaHOK/n/0ueb0uijdLan+U
 f4p1bjbAox8eAOQS/8a3bzkJzdyBNUKGx1BIK2IBL9bn/HravSDOiNRSnZ/R3l9G
 ZauX0tu7IIDlRCILXSyeazu0aj/vdT3YFQXPcvt5Fkf5wiNTo53f72/jYEJd6qph
 WrpoKqrwGwTpRUCMhYIUt65hsTxCiJJ5nKe39h46sg==
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIF2DCCA8CgAwIBAgIQTKr5yttjb+Af907YWwOGnTANBgkqhkiG9w0BAQwFADCB
+hTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G
+A1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxKzApBgNV
+BAMTIkNPTU9ETyBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTAwMTE5
+MDAwMDAwWhcNMzgwMTE4MjM1OTU5WjCBhTELMAkGA1UEBhMCR0IxGzAZBgNVBAgT
+EkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMR
+Q09NT0RPIENBIExpbWl0ZWQxKzApBgNVBAMTIkNPTU9ETyBSU0EgQ2VydGlmaWNh
+dGlvbiBBdXRob3JpdHkwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCR
+6FSS0gpWsawNJN3Fz0RndJkrN6N9I3AAcbxT38T6KhKPS38QVr2fcHK3YX/JSw8X
+pz3jsARh7v8Rl8f0hj4K+j5c+ZPmNHrZFGvnnLOFoIJ6dq9xkNfs/Q36nGz637CC
+9BR++b7Epi9Pf5l/tfxnQ3K9DADWietrLNPtj5gcFKt+5eNu/Nio5JIk2kNrYrhV
+/erBvGy2i/MOjZrkm2xpmfh4SDBF1a3hDTxFYPwyllEnvGfDyi62a+pGx8cgoLEf
+Zd5ICLqkTqnyg0Y3hOvozIFIQ2dOciqbXL1MGyiKXCJ7tKuY2e7gUYPDCUZObT6Z
++pUX2nwzV0E8jVHtC7ZcryxjGt9XyD+86V3Em69FmeKjWiS0uqlWPc9vqv9JWL7w
+qP/0uK3pN/u6uPQLOvnoQ0IeidiEyxPx2bvhiWC4jChWrBQdnArncevPDt09qZah
+SL0896+1DSJMwBGB7FY79tOi4lu3sgQiUpWAk2nojkxl8ZEDLXB0AuqLZxUpaVIC
+u9ffUGpVRr+goyhhf3DQw6KqLCGqR84onAZFdr+CGCe01a60y1Dma/RMhnEw6abf
+Fobg2P9A3fvQQoh/ozM6LlweQRGBY84YcWsr7KaKtzFcOmpH4MN5WdYgGq/yapiq
+crxXStJLnbsQ/LBMQeXtHT1eKJ2czL+zUdqnR+WEUwIDAQABo0IwQDAdBgNVHQ4E
+FgQUu69+Aj36pvE8hI6t7jiY7NkyMtQwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB
+/wQFMAMBAf8wDQYJKoZIhvcNAQEMBQADggIBAArx1UaEt65Ru2yyTUEUAJNMnMvl
+wFTPoCWOAvn9sKIN9SCYPBMtrFaisNZ+EZLpLrqeLppysb0ZRGxhNaKatBYSaVqM
+4dc+pBroLwP0rmEdEBsqpIt6xf4FpuHA1sj+nq6PK7o9mfjYcwlYRm6mnPTXJ9OV
+2jeDchzTc+CiR5kDOF3VSXkAKRzH7JsgHAckaVd4sjn8OoSgtZx8jb8uk2Intzna
+FxiuvTwJaP+EmzzV1gsD41eeFPfR60/IvYcjt7ZJQ3mFXLrrkguhxuhoqEwWsRqZ
+CuhTLJK7oQkYdQxlqHvLI7cawiiFwxv/0Cti76R7CZGYZ4wUAc1oBmpjIXUDgIiK
+boHGhfKppC3n9KUkEEeDys30jXlYsQab5xoq2Z0B15R97QNKyvDb6KkBPvVWmcke
+jkk9u+UJueBPSZI9FoJAzMxZxuY67RIuaTxslbH9qh17f4a+Hg4yRvv7E491f0yL
+S0Zj/gA0QHDBw7mh3aZw4gSzQbzpgJHqZJx64SIDqZxubw5lT2yHh17zbqD5daWb
+QOhTsiedSrnAdyGN/4fy3ryM7xfft0kL0fJuMAsaDk527RH89elWsn2/x20Kk4yl
+0MC2Hb46TpSi125sC8KKfPog88Tk5c0NqMuRkrF8hey1FGlmDoLnzc7ILaZRfyHB
+NVOFBkpdn627G190
 -----END CERTIFICATE-----
 """

@@ -5,6 +5,7 @@ It includes fixes that have not been ported to py2
 https://bugs.python.org/issue1079
 
 """
+from __future__ import print_function
 import binascii
 import email.quoprimime
 import email.base64mime
@@ -121,6 +122,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

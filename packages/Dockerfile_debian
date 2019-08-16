@@ -3,7 +3,7 @@
 #                                                                             #
 # Usage: cd .. && make dpkg                                                   #
 # ----------------------------------------------------------------------------#
-FROM debian:unstable
+FROM debian:stretch
 MAINTAINER Alexandre Viau <aviau@debian.org>
 
 # The big list below is a subset of what we get from mk-build-deps; manually
@@ -16,16 +16,11 @@ RUN apt-get update && \
                            debhelper \
                            devscripts \
                            equivs \
-  libjs-animate.css libjs-autosize libjs-bootstrap libjs-dompurify \
-  libjs-favico.js libjs-jquery libjs-jquery-slugify libjs-jquery-timer \
-  libjs-jquery-ui libjs-jquery-ui-touch-punch libjs-less-elements \
-  libjs-list.js libjs-mousetrap libjs-moxie libjs-plupload libjs-qtip2 \
-  libjs-rebar libjs-select2.js libjs-typeahead.js libjs-underscore \
-  node-less node-uglify python-all python-bs4 python-dns python-funcsigs \
-  python-jinja2 python-lockfile python-lxml python-markupsafe \
-  python-mock python-nose python-olefile python-pbr python-pgpdump \
+  python-all python-bs4 python-dns python-funcsigs \
+  python-jinja2 python-lxml python-markupsafe \
+  python-mock python-nose python-pbr python-pgpdump \
   python-pil python-selenium python-setuptools python-webencodings \
-  python-socksipychain spambayes xdg-utils
+  python-socksipychain xdg-utils
 
 RUN mkdir /root/mailpile /mnt/dist
 COPY packages/debian /root/mailpile/debian

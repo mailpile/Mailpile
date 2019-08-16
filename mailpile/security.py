@@ -6,6 +6,7 @@ security related decisions made by the app, in order to facilitate
 review and testing.
 
 """
+from __future__ import print_function
 import copy
 import hashlib
 import json
@@ -172,7 +173,9 @@ def forbid_config_change(config, config_key):
 
 ##[ Securely download content from the web ]#################################
 
-def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
+def secure_urlget(session, url,
+                  data=None, timeout=30, anonymous=False, maxbytes=None,
+                  urlopen_kwargs={}):
     from mailpile.conn_brokers import Master as ConnBroker
     from urllib2 import urlopen
 
@@ -192,7 +195,8 @@ def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
 
     with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
         # Flagged #nosec, because the URL scheme is constrained above
-        return urlopen(url, data=None, timeout=timeout).read()  # nosec
+        fd = urlopen(url, data=None, timeout=timeout, **urlopen_kwargs)  # nosec
+    return fd.read(maxbytes)
 
 
 ##[ Common web-server security code ]########################################
@@ -750,6 +754,6 @@ if __name__ == "__main__":
     import doctest
     import sys
     result = doctest.testmod(optionflags=doctest.ELLIPSIS)
-    print '%s' % (result, )
+    print('%s' % (result, ))
     if result.failed:
         sys.exit(1)

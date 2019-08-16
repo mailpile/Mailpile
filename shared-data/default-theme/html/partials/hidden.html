@@ -124,8 +124,8 @@
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
-        <% if (on_keychain) { %>
-        <i>{{_("This key is on your key chain.")}}</i>
+        <% if (on_keychain && in_vcards) { %>
+        <i>{{_("This key is available for use.")}}</i>
 {#
         <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
           <option value="true" selected="selected">{{_("Use This Key")}}</option>
@@ -146,13 +146,17 @@
 <script id="template-crypto-encryption-key-importing" type="text/template">
   <li id="item-encryption-key-<%= fingerprint %>" class="searchkey-result-item animated fadeIn">
   <div class="text-center">
+    <% if (failed) { %>
+    <h4 class="half-bottom">{{_("Importing Failed")}}</h4>
+    <em class="text-detail">{{_("Try Again")}}?</em>
+    <% } else { %>
     <h4 class="half-bottom">{{_("Importing Encryption Key")}}</h4>
     <p class="half-bottom">{% include("../img/loading-ellipsis.svg") %}</p>
     <% if (file) { %>
-    <em class="text-detail">Uploading <%= file.name %> (<%= plupload.formatSize(file.size) %>)</em>
+    <em class="text-detail">{{_("Uploading:")}} <%= file.name %> (<%= plupload.formatSize(file.size) %>)</em>
     <% } else { %>
-    <em class="text-detail">This may take a few moments...</em>
-    <% } %>
+    <em class="text-detail">{{_("This may take a few moments...")}}</em>
+    <% }} %>
   </div>
   </li>
 </script>

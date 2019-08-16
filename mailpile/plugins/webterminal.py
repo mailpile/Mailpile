@@ -91,7 +91,7 @@ class TerminalCommand(Command):
             return self._error(_('Command disallowed'), result={})
         try:
             result = Action(session, command, args)
-        except Exception, e:
+        except Exception as e:
             result = {"error": "Fail!"}
 
         return self._success(_('Ran a command'), result={

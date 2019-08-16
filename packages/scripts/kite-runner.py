@@ -4,6 +4,7 @@
 kite-runner.py  - XMLRPC-based script launcher with PageKite integration.
 
 """
+from __future__ import print_function
 import getopt
 import json
 import os

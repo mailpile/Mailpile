@@ -55,6 +55,7 @@
 
 
 """Classes to generate plain text from a message object tree."""
+from __future__ import print_function
 
 __all__ = ['Generator', 'DecodedGenerator']
 
@@ -143,7 +144,7 @@ class Generator:
             ufrom = msg.get_unixfrom()
             if not ufrom:
                 ufrom = 'From nobody ' + time.ctime(time.time())
-            print >> self._fp, ufrom + self._NL,
+            print(ufrom + self._NL, end='', file=self._fp)
         self._write(msg)
 
     def clone(self, fp):
@@ -203,14 +204,14 @@ class Generator:
 
     def _write_headers(self, msg):
         for h, v in msg.items():
-            print >> self._fp, '%s:' % h,
+            print('%s:' % h, end=' ', file=self._fp)
             if self._maxheaderlen == 0:
                 # Explicit no-wrapping
-                print >> self._fp, v + self._NL,
+                print(v + self._NL, end='', file=self._fp)
             elif isinstance(v, Header):
                 # Header instances know what to do
                 hdr = v.encode().replace('\n', self._NL)
-                print >> self._fp, hdr + self._NL,
+                print(hdr + self._NL, end='', file=self._fp)
             elif _is8bitstring(v):
                 # If we have raw 8bit data in a byte string, we have no idea
                 # what the encoding is.  There is no safe way to split this
@@ -218,7 +219,7 @@ class Generator:
                 # ascii split, but if it's multibyte then we could break the
                 # string.  There's no way to know so the least harm seems to
                 # be to not split the string and risk it being too long.
-                print >> self._fp, v + self._NL,
+                print(v + self._NL, end='', file=self._fp)
             else:
                 # Header's got lots of smarts, so use it.  Note that this is
                 # fundamentally broken though because we lose idempotency when
@@ -227,9 +228,9 @@ class Generator:
                 # fixed bug 1974.  Either way, we lose.
                 hdr = Header(v, maxlinelen=self._maxheaderlen, header_name=h
                              ).encode().replace('\n', self._NL)
-                print >> self._fp, hdr + self._NL,
+                print(hdr + self._NL, end='', file=self._fp)
         # A blank line always separates headers from body
-        print >> self._fp, self._NL,
+        print(self._NL, end='', file=self._fp)
 
     #
     # Handlers for writing types and subtypes
@@ -282,9 +283,9 @@ class Generator:
                 preamble = fcre.sub('>From ', msg.preamble)
             else:
                 preamble = msg.preamble
-            print >> self._fp, preamble + self._NL,
+            print(preamble + self._NL, end='', file=self._fp)
         # dash-boundary transport-padding CRLF
-        print >> self._fp, '--' + boundary + self._NL,
+        print('--' + boundary + self._NL, end='', file=self._fp)
         # body-part
         if msgtexts:
             self._fp.write(msgtexts.pop(0))
@@ -293,13 +294,13 @@ class Generator:
         # --> CRLF body-part
         for body_part in msgtexts:
             # delimiter transport-padding CRLF
-            print >> self._fp, self._NL + '--' + boundary + self._NL,
+            print(self._NL + '--' + boundary + self._NL, end='', file=self._fp)
             # body-part
             self._fp.write(body_part)
         # close-delimiter transport-padding
         self._fp.write(self._NL + '--' + boundary + '--')
         if msg.epilogue is not None:
-            print >> self._fp, self._NL,
+            print(self._NL, end='', file=self._fp)
             if self._mangle_from_:
                 epilogue = fcre.sub('>From ', msg.epilogue)
             else:
@@ -403,12 +404,12 @@ class DecodedGenerator(Generator):
         for part in msg.walk():
             maintype = part.get_content_maintype()
             if maintype == 'text':
-                print >> self, part.get_payload(decode=True) + self._NL,
+                print(part.get_payload(decode=True) + self._NL, end='', file=self)
             elif maintype == 'multipart':
                 # Just skip this
                 pass
             else:
-                print >> self, self._fmt % {
+                print(self._fmt % {
                     'type': part.get_content_type(),
                     'maintype': part.get_content_maintype(),
                     'subtype': part.get_content_subtype(),
@@ -417,18 +418,18 @@ class DecodedGenerator(Generator):
                                             '[no description]'),
                     'encoding': part.get('Content-Transfer-Encoding',
                                          '[no encoding]'),
-                    } + self._NL,
+                    } + self._NL, end='', file=self)
 
 
 # Helper
-_width = len(repr(sys.maxint-1))
+_width = len(repr(sys.maxsize-1))
 _fmt = '%%0%dd' % _width
 
 
 def _make_boundary(text=None):
     # Craft a random boundary.  If text is given, ensure that the chosen
     # boundary doesn't appear in the text.
-    token = random.randrange(sys.maxint)
+    token = random.randrange(sys.maxsize)
     boundary = ('=' * 15) + (_fmt % token) + '=='
     if text is None:
         return boundary

@@ -65,7 +65,7 @@ class LoadPlugin(mailpile.commands.Command):
                     config.sys.plugins.append(plugin)
                 else:
                     raise ValueError('Loading failed')
-            except Exception, e:
+            except Exception as e:
                 self._ignore_exception()
                 return self._error(_('Failed to load plugin: %s') % plugin,
                                    info={'failed': plugin})

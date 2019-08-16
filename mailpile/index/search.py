@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 
 from mailpile.i18n import gettext as _
@@ -66,6 +67,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 #coding:utf-8
+from __future__ import print_function
 import sys
 import re
 import getopt
@@ -170,8 +171,8 @@ class MorkImporter(VCardImporter):
             rowkey = row.id + "/" + table.scope
 
         if rowkey in table.rows:
-            print >>stderr, "ERROR: duplicate rowid/scope %s" % rowkey
-            print >>stderr, cells
+            print("ERROR: duplicate rowid/scope %s" % rowkey, file=stderr)
+            print(cells, file=stderr)
 
         table.rows[rowkey] = row
 
@@ -298,8 +299,8 @@ class MorkImporter(VCardImporter):
                 continue
 
             # Syntax error
-            print >>stderr, "ERROR: syntax error while parsing MORK file"
-            print >>stderr, "context[%d]: %s" % (index, sub[:40])
+            print("ERROR: syntax error while parsing MORK file", file=stderr)
+            print("context[%d]: %s" % (index, sub[:40]), file=stderr)
             index += 1
 
         # Return the database
@@ -363,6 +364,6 @@ if __name__ == "__main__":
 
     m = MorkImporter(filename=filename)
     m.load()
-    print m.get_contacts(data)
+    print(m.get_contacts(data))
 else:
     _plugins.register_vcard_importers(MorkImporter)

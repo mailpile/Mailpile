@@ -933,7 +933,7 @@ class Sendit(CompositionCommand):
             # Encryption related failures are fatal, don't retry
             except (KeyLookupError,
                     EncryptionFailureError,
-                    SignatureFailureError), exc:
+                    SignatureFailureError) as exc:
                 message = unicode(exc)
                 session.ui.warning(message)
                 if hasattr(exc, 'missing_keys'):
@@ -1029,15 +1029,15 @@ class Update(CompositionCommand):
                                                    sent=emails)
             else:
                 return self._edit_messages(emails, new=False, tag=False)
-        except KeyLookupError, kle:
+        except KeyLookupError as kle:
             return self._error(_('Missing encryption keys'),
                                info={'missing_keys': kle.missing})
-        except EncryptionFailureError, efe:
+        except EncryptionFailureError as efe:
             # This should never happen, should have been prevented at key
             # lookup!
             return self._error(_('Could not encrypt message'),
                                info={'to_keys': efe.to_keys})
-        except SignatureFailureError, sfe:
+        except SignatureFailureError as sfe:
             # FIXME: We assume signature failures happen because
             # the key is locked. Are there any other reasons?
             return self._error(_('Could not sign message'),

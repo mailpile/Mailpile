@@ -471,7 +471,7 @@ class UserInteraction:
                 #                  very strictly in case it somehow came
                 #                  from user data.
                 return env.get_template(fn)
-            except (IOError, OSError, AttributeError), e:
+            except (IOError, OSError, AttributeError) as e:
                 pass
         return None
 
@@ -523,7 +523,7 @@ class UserInteraction:
                 'traceback': traceback.format_exc(),
                 'data': alldata
             })
-        except (TemplateNotFound, TemplatesNotFound), e:
+        except (TemplateNotFound, TemplatesNotFound) as e:
             tpl_esc_names = [escape_html(tn) for tn in tpl_names]
             return self._render_error(cfg, {
                 'error': _('Template not found'),
@@ -531,7 +531,7 @@ class UserInteraction:
                 'data': alldata
             })
         except (TemplateError, TemplateSyntaxError,
-                TemplateAssertionError,), e:
+                TemplateAssertionError,) as e:
             return self._render_error(cfg, {
                 'error': _('Template error'),
                 'details': ('In %s (%s), line %s:\n%s'

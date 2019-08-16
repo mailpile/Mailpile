@@ -8,7 +8,9 @@ shared-data/default-theme/css/default.css: .less-deps
 	@(cd shared-data/default-theme/less && \
             lessc default.less \
               |perl -npe 's,(libraries|app)/,,g' \
-              |perl -npe 's,/shared-data/,../,g' \
+              |perl -npe 's,../webfonts,/static/webfonts,g' \
+              |perl -npe 's,/shared-data/,/static/,g' \
+              |perl -npe 's,[\./]+/bower_components/select2/,/static/css/,g' \
 	    >../css/default.css)
 	@ls -l shared-data/default-theme/css/default.css
 

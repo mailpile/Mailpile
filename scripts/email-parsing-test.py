@@ -16,6 +16,7 @@
 # This parser is NOT fully RFC2822 compliant - in particular it will get
 # confused by nested comments (see FIXME in tests below).
 #
+from __future__ import print_function
 import sys
 import traceback
 
@@ -23,10 +24,10 @@ from mailpile.mailutils import AddressHeaderParser as AHP
 
 
 ahp_tests = AHP(AHP.TEST_HEADER_DATA)
-print '_tokens: %s' % ahp_tests._tokens
-print '_groups: %s' % ahp_tests._groups
-print '%s' % ahp_tests
-print 'normalized: %s' % ahp_tests.normalized()
+print('_tokens: %s' % ahp_tests._tokens)
+print('_groups: %s' % ahp_tests._groups)
+print('%s' % ahp_tests)
+print('normalized: %s' % ahp_tests.normalized())
 
 
 headers, header, inheader = {}, None, False
@@ -39,12 +40,12 @@ for line in sys.stdin:
                     try:
                         nv = AHP(val, _raise=True).normalized()
                         if '\\' in nv:
-                            print 'ESCAPED: %s: %s (was %s)' % (hdr, nv, val)
+                            print('ESCAPED: %s: %s (was %s)' % (hdr, nv, val))
                         else:
-                            print '%s' % (nv,)
+                            print('%s' % (nv,))
                     except ValueError:
-                        print 'FAILED: %s: %s -- %s' % (hdr, val,
-                            traceback.format_exc().replace('\n', '  '))
+                        print('FAILED: %s: %s -- %s' % (hdr, val,
+                            traceback.format_exc().replace('\n', '  ')))
             headers, header, inheader = {}, None, False
         elif line[:1] in (' ', '\t') and header:
             headers[header] = headers[header].rstrip() + line[1:]

@@ -2,6 +2,7 @@
 #
 # FIXME: Refactor this monster into mailpile.mailutils.*
 #
+from __future__ import print_function
 import base64
 import copy
 import email.header
@@ -41,7 +42,7 @@ from mailpile.mailutils.generator import Generator
 from mailpile.mailutils.html import extract_text_from_html, clean_html
 from mailpile.mailutils.headerprint import HeaderPrints
 from mailpile.mailutils.safe import safe_decode_hdr
-
+from mailpile.mailutils.vcal import calendar_parse
 
 GLOBAL_CONTENT_ID_LOCK = MboxLock()
 GLOBAL_CONTENT_ID = random.randint(0, 0xfffffff)
@@ -809,7 +810,7 @@ class Email(object):
                     removed.append(msg_ptr)
             except (IOError, OSError, ValueError, AttributeError) as e:
                 failed.append(msg_ptr)
-                print 'FIXME: Could not delete %s: %s' % (msg_ptr, e)
+                print('FIXME: Could not delete %s: %s' % (msg_ptr, e))
 
         if allow_deletion and not failed and not kept:
             self.index.delete_msg_at_idx_pos(session, self.msg_idx_pos,
@@ -1115,7 +1116,7 @@ class Email(object):
                 want.extend(['text_parts', 'headers', 'attachments',
                              'addresses'])
 
-        for p in 'text_parts', 'html_parts', 'attachments':
+        for p in 'text_parts', 'html_parts', 'vcal_parts', 'attachments':
             if want is None or p in want:
                 tree[p] = []
 
@@ -1202,6 +1203,10 @@ class Email(object):
                             'count': count,
                             'mimetype': mimetype,
                             'aid': 'part-%d' % count})
+
+                elif mimetype == "text/calendar":
+                    if want is None or 'vcal_parts' in want:
+                        tree["vcal_parts"].extend(calendar_parse(payload))
 
                 elif want is None or 'text_parts' in want:
                     if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
@@ -1435,8 +1440,8 @@ class Email(object):
                         pgpdata[1]['crypto']['signature'] = si
                         pgpdata[2]['data'] = ''
 
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
 
             if decrypt:
                 if part['type'] in ('pgpbegin', 'pgptext'):
@@ -1494,6 +1499,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

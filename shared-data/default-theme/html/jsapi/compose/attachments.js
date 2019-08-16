@@ -200,7 +200,7 @@ Mailpile.Composer.Attachments.Uploader.init = function(settings) {
         }
       },
       Error: function(up, err) {
-        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message });
+        Mailpile.notification({status: 'error', message: '{{_("Could not upload attachment because")|escapejs}}: ' + err.message + ' ' + err.code });
         $('#' + err.file.id).find('b').html('Failed ' + err.code);
         uploader.refresh();
 	Mailpile.notification({status: 'error', message: "Failed to upload " + file.name, event_id: "Upload-" + file.id });

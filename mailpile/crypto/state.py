@@ -1,3 +1,4 @@
+from __future__ import print_function
 #. Common crypto state and structure
 import copy
 
@@ -47,7 +48,7 @@ class CryptoInfo(dict):
 
     def _set_status(self, value):
         if value not in self.STATUSES:
-            print 'Bogus status for %s: %s' % (type(self), value)
+            print('Bogus status for %s: %s' % (type(self), value))
             raise ValueError('Invalid status: %s' % value)
         self._status = value
         self.mix_bubbles()
@@ -57,7 +58,7 @@ class CryptoInfo(dict):
             raise KeyError('Invalid key: %s' % item)
         if item == "status":
             if value not in self.STATUSES:
-                print 'Bogus status for %s: %s' % (type(self), value)
+                print('Bogus status for %s: %s' % (type(self), value))
                 raise ValueError('Invalid value for %s: %s' % (key, value))
             if self._status is None:  # Capture initial value
                 self._status = value

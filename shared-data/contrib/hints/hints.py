@@ -19,16 +19,6 @@ from mailpile.util import md5_hex, safe_assert
 TIMESTAMPS = None
 
 
-def BrokenSpambayes(cfg, ctx):
-    if 'autotag_sb' not in cfg.sys.plugins:
-        return True
-    try:
-        import spambayes
-        return False
-    except:
-        return True
-
-
 class hintsCommand(Command):
     """Provide periodic hints to the user"""
     SYNOPSIS_ARGS = '[now|reset]'
@@ -51,11 +41,6 @@ class hintsCommand(Command):
             _('Your Mailpile is configured to never delete e-mail'),
             '/page/hints/deletion.html',
             lambda cfg, ctx: not cfg.prefs.allow_deletion),
-
-        ('spam-dependencies', 0, 1,
-            _('Your spam filter is broken: please install spambayes'),
-            '/page/hints/spambayes.html',
-            BrokenSpambayes),
 
         ('keyboard', 4, 180,
             _('Mailpile has keyboard shortcuts!'),

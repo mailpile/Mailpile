@@ -1,3 +1,4 @@
+from __future__ import print_function
 # These are methods to do with MIME and crypto, implementing PGP/MIME.
 
 import re
@@ -237,7 +238,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             # Is there a Memory-Hole force-display part?
             pl = part.get_payload()
-            if hdrs and isinstance(pl, (list, )):
+            if hdrs and isinstance(pl, list):
                 if (pl[0]['content-type'].startswith('text/rfc822-headers;')
                         and 'protected-headers' in pl[0]['content-type']):
                     # Parse these headers as well and override the top level,
@@ -656,7 +657,9 @@ class MimeSigningWrapper(MimeWrapper):
     def __init__(self, *args, **kwargs):
         MimeWrapper.__init__(self, *args, **kwargs)
 
-        name = 'signature.html' if self.use_html_wrapper else 'signature.asc'
+        name = ('OpenPGP-digital-signature.html'
+                if self.use_html_wrapper else
+                'OpenPGP-digital-signature.asc')
         self.sigblock = MIMEBase(*self.SIGNATURE_TYPE.split('/'))
         self.sigblock.set_param("name", name)
         for h, v in (("Content-Description", self.SIGNATURE_DESC),
@@ -742,7 +745,7 @@ class MimeEncryptingWrapper(MimeWrapper):
 
         self.enc_data = MIMEBase('application', 'octet-stream')
         for h, v in (("Content-Disposition",
-                      "attachment; filename=\"msg.asc\""), ):
+                      "attachment; filename=\"OpenPGP-encrypted-message.asc\""), ):
             self.enc_data.add_header(h, v)
 
         self.attach(self.version)
@@ -798,6 +801,6 @@ if __name__ == "__main__":
     #        we don't have such tests. :-(
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS)
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

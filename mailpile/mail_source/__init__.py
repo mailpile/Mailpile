@@ -263,6 +263,7 @@ class BaseMailSource(threading.Thread):
         batch = min(self._loop_count * 20, self.RESCAN_BATCH_SIZE)
         errors = rescanned = 0
         all_completed = True
+        ostate = self._state
 
         if not self._check_interrupt(clear=False):
             self._state = 'Waiting... (disco)'
@@ -270,7 +271,6 @@ class BaseMailSource(threading.Thread):
         else:
             discovered = 0
 
-        ostate = self._state
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
         event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])

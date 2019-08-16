@@ -1,3 +1,4 @@
+from __future__ import print_function
 import cStringIO
 import email
 import random
@@ -462,7 +463,7 @@ class MailIndex(BaseIndex):
                 session.ui.mark(_('%s: Checking: %s'
                                   ) % (mailbox_idx, mailbox_fn))
                 mbox.update_toc()
-        except (IOError, OSError, ValueError, NoSuchMailboxError), e:
+        except (IOError, OSError, ValueError, NoSuchMailboxError) as e:
             if 'rescan' in session.config.sys.debug:
                 session.ui.debug(traceback.format_exc())
             return finito(-1, _('%s: Error opening: %s (%s)'
@@ -1552,7 +1553,7 @@ class MailIndex(BaseIndex):
                             incoming=incoming)
 
         if 'keywords' in self.config.sys.debug:
-            print 'KEYWORDS: %s' % keywords
+            print('KEYWORDS: %s' % keywords)
 
         for word in keywords:
             if (word.startswith('__') or
@@ -1871,8 +1872,8 @@ class MailIndex(BaseIndex):
                         return [int(h, 36) for h in gpl_hits]
                     except ValueError:
                         b36re = re.compile('^[a-zA-Z0-9]{1,8}$')
-                        print 'FIXME! BAD HITS: %s => %s' % (term, [
-                            h for h in gpl_hits if not b36re.match(h)])
+                        print('FIXME! BAD HITS: %s => %s' % (term, [
+                            h for h in gpl_hits if not b36re.match(h)]))
                         return [int(h, 36) for h in gpl_hits if b36re.match(h)]
 
         # Replace some GMail-compatible terms with what we really use
@@ -2146,6 +2147,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

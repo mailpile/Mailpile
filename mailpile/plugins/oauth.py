@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import time
 import traceback
@@ -219,7 +220,7 @@ class OAuth2(TestableWebbable):
         if code:
             username, oname, csrf = state.split('/', 2)
             if not session.ui.valid_csrf_token(csrf):
-                print 'Invalid CSRF token: %s' % csrf
+                print('Invalid CSRF token: %s' % csrf)
                 raise AccessError('Invalid CSRF token')
 
             oname, ocfg = self.GetOAuthConfig(config, oname=oname)

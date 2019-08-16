@@ -302,9 +302,9 @@ class SearchResults(dict):
 
         return thread
 
-    WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
-                     'headerprints', 'editing_strings', 'crypto', '_cleaned',
-                     'trust')
+    WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'vcal_parts',
+                     'header_list', 'headerprints', 'editing_strings', 'crypto',
+                     '_cleaned', 'trust')
     PRUNE_MSG_TREE = ('headers', )  # Added by editing_strings
 
     def _prune_msg_tree(self, tree):
@@ -390,7 +390,7 @@ class SearchResults(dict):
                                              ][cid] = self._address(cid=cid)
             problem = None
 
-        except Exception, e:
+        except Exception as e:
             if problem:
                 problem += ' ' + _('Message may be corrupt!')
             details = {

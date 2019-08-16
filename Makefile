@@ -104,6 +104,7 @@ pytests:
 	@echo -n 'mailboxes/pop3   ' && python2.7 mailpile/mailboxes/pop3.py
 	@echo -n 'mail_source/imap ' && python2.7 mailpile/mail_source/imap.py
 	@echo -n 'crypto/aes_utils ' && python2.7 mailpile/crypto/aes_utils.py
+	@echo 'spambayes...        ' && python2.7 mailpile/spambayes/Tester.py
 	@echo 'crypto/streamer...'   && python2.7 mailpile/crypto/streamer.py
 	@echo
 
@@ -161,20 +162,36 @@ bower_components:
 
 js: bower_components
 	# Warning: Horrible hack to extract rules from Gruntfile.js
-	rm -f shared-data/default-theme/js/libraries.min.js
-	cat `cat Gruntfile.js \
+	@rm -f shared-data/default-theme/js/libraries.min.js
+	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp*
+	@cat Gruntfile.js \
                 |sed -e '1,/concat:/d ' \
                 |sed -e '1,/src:/d' -e '/dest:/,$$d' \
                 |grep / \
-                |sed -e "s/[',]/ /g"` \
-          >> shared-data/default-theme/js/mailpile-min.js.tmp
-	uglify -s shared-data/default-theme/js/mailpile-min.js.tmp \
-               -o shared-data/default-theme/js/libraries.min.js
-	#@cp -va shared-data/default-theme/js/mailpile-min.js.tmp \
-        #        shared-data/default-theme/js/libraries.min.js
-	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp
+                |sed -e "s/[',]/ /g" \
+            |xargs sed -e '$$a;' \
+            >> shared-data/default-theme/js/mailpile-min.js.tmp
+	@uglify -s shared-data/default-theme/js/mailpile-min.js.tmp \
+               -o shared-data/default-theme/js/mailpile-min.js.tmp2
+	@sed -e "s/@MP_JSBUILD_INFO@/`./scripts/gitwhere.sh`/" \
+	    < shared-data/default-theme/js/libraries.js \
+	    > shared-data/default-theme/js/libraries.min.js
+	@echo '/* Sources...' \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@bower --offline --no-color list \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@echo '*/' \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@cat shared-data/default-theme/js/mailpile-min.js.tmp2 \
+            >> shared-data/default-theme/js/libraries.min.js
+	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp*
 
 less: less-compiler bower_components
+	@cp -fa \
+                bower_components/select2/select2.png \
+                bower_components/select2/select2x2.png \
+                bower_components/select2/select2-spinner.gif \
+            shared-data/default-theme/css/
 	@make -s -f scripts/less-compiler.mk
 
 less-loop: less-compiler
@@ -201,7 +218,7 @@ compilemessages:
 	@scripts/compile-messages.sh
 
 transifex:
-	tx pull -a --minimum-perc=50
+	tx pull -a --minimum-perc=25
 	tx pull -l is,en_GB
 
 
@@ -213,7 +230,7 @@ dist/version.txt: mailpile/config/defaults.py scripts/version.py
 	mkdir -p dist
 	scripts/version.py > dist/version.txt
 
-dist/mailpile.tar.gz: mrproper js dist/version.txt
+dist/mailpile.tar.gz: mrproper dist/version.txt
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
 	mkdir -p dist

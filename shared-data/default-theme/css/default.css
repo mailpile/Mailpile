@@ -20,23 +20,23 @@
 */
 @font-face {
   font-family: 'Mailpile-300';
-  src: url('../webfonts/Mailpile-Normal.eot');
-  src: url('../webfonts/Mailpile-Normal.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Normal.woff') format('font-woff'), url('../webfonts/Mailpile-Normal.ttf') format('truetype'), url('../webfonts/Mailpile-Normal.svg#wf') format('svg');
+  src: url('/static/webfonts/Mailpile-Normal.eot');
+  src: url('/static/webfonts/Mailpile-Normal.eot?#iefix') format('embedded-opentype'), url('/static/webfonts/Mailpile-Normal.woff') format('font-woff'), url('/static/webfonts/Mailpile-Normal.ttf') format('truetype'), url('/static/webfonts/Mailpile-Normal.svg#wf') format('svg');
 }
 @font-face {
   font-family: 'Mailpile-500';
-  src: url('../webfonts/Mailpile-500.eot');
-  src: url('../webfonts/Mailpile-500.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-500.woff') format('font-woff'), url('../webfonts/Mailpile-500.ttf') format('truetype'), url('../webfonts/Mailpile-500.svg#wf') format('svg');
+  src: url('/static/webfonts/Mailpile-500.eot');
+  src: url('/static/webfonts/Mailpile-500.eot?#iefix') format('embedded-opentype'), url('/static/webfonts/Mailpile-500.woff') format('font-woff'), url('/static/webfonts/Mailpile-500.ttf') format('truetype'), url('/static/webfonts/Mailpile-500.svg#wf') format('svg');
 }
 @font-face {
   font-family: 'Mailpile-700';
-  src: url('../webfonts/Mailpile-700.eot');
-  src: url('../webfonts/Mailpile-700.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-700.woff') format('font-woff'), url('../webfonts/Mailpile-700.ttf') format('truetype'), url('../webfonts/Mailpile-700.svg#wf') format('svg');
+  src: url('/static/webfonts/Mailpile-700.eot');
+  src: url('/static/webfonts/Mailpile-700.eot?#iefix') format('embedded-opentype'), url('/static/webfonts/Mailpile-700.woff') format('font-woff'), url('/static/webfonts/Mailpile-700.ttf') format('truetype'), url('/static/webfonts/Mailpile-700.svg#wf') format('svg');
 }
 @font-face {
   font-family: 'Mailpile-Interface';
-  src: url('../webfonts/Mailpile-Interface.eot');
-  src: url('../webfonts/Mailpile-Interface.eot') format('embedded-opentype'), url('../webfonts/Mailpile-Interface.woff') format('woff'), url('../webfonts/Mailpile-Interface.ttf') format('truetype'), url('../webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
+  src: url('/static/webfonts/Mailpile-Interface.eot');
+  src: url('/static/webfonts/Mailpile-Interface.eot') format('embedded-opentype'), url('/static/webfonts/Mailpile-Interface.woff') format('woff'), url('/static/webfonts/Mailpile-Interface.ttf') format('truetype'), url('/static/webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -4570,15 +4570,12 @@ select.validation-error {
 }
 /* Libraries */
 /*
-Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
+Version: 3.5.4 Timestamp: Sun Aug 30 13:30:32 EDT 2015
 */
 .select2-container {
   margin: 0;
   position: relative;
   display: inline-block;
-  /* inline-block for ie7 */
-  zoom: 1;
-  *display: inline;
   vertical-align: middle;
 }
 .select2-container,
@@ -4622,6 +4619,9 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
   background-image: linear-gradient(to top, #eeeeee 0%, #ffffff 50%);
 }
+html[dir="rtl"] .select2-container .select2-choice {
+  padding: 0 8px 0 0;
+}
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
   border-radius: 0 0 4px 4px;
@@ -4643,6 +4643,10 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   float: none;
   width: auto;
 }
+html[dir="rtl"] .select2-container .select2-choice > .select2-chosen {
+  margin-left: 26px;
+  margin-right: 0;
+}
 .select2-container .select2-choice abbr {
   display: none;
   width: 12px;
@@ -4653,7 +4657,7 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   font-size: 1px;
   text-decoration: none;
   border: 0;
-  background: url('../../../bower_components/select2/select2.png') right top no-repeat;
+  background: url('/static/css/select2.png') right top no-repeat;
   cursor: pointer;
   outline: 0;
 }
@@ -4714,9 +4718,6 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   border-top: 1px solid #aaa;
   width: auto;
 }
-.select2-drop-auto-width .select2-search {
-  padding-top: 4px;
-}
 .select2-container .select2-choice .select2-arrow {
   display: inline-block;
   width: 18px;
@@ -4734,19 +4735,28 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#cccccc', GradientType=0);
   background-image: linear-gradient(to top, #cccccc 0%, #eeeeee 60%);
 }
+html[dir="rtl"] .select2-container .select2-choice .select2-arrow {
+  left: 0;
+  right: auto;
+  border-left: none;
+  border-right: 1px solid #aaa;
+  border-radius: 4px 0 0 4px;
+}
 .select2-container .select2-choice .select2-arrow b {
   display: block;
   width: 100%;
   height: 100%;
-  background: url('../../../bower_components/select2/select2.png') no-repeat 0 1px;
+  background: url('/static/css/select2.png') no-repeat 0 1px;
+}
+html[dir="rtl"] .select2-container .select2-choice .select2-arrow b {
+  background-position: 2px 1px;
 }
 .select2-search {
   display: inline-block;
   width: 100%;
   min-height: 26px;
   margin: 0;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding: 4px 4px 0 4px;
   position: relative;
   z-index: 10000;
   white-space: nowrap;
@@ -4764,21 +4774,26 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   border-radius: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
-  background: #ffffff url('../../../bower_components/select2/select2.png') no-repeat 100% -22px;
-  background: url('../../../bower_components/select2/select2.png') no-repeat 100% -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, #ffffff), color-stop(0.99, #eeeeee));
-  background: url('../../../bower_components/select2/select2.png') no-repeat 100% -22px, -webkit-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
-  background: url('../../../bower_components/select2/select2.png') no-repeat 100% -22px, -moz-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
-  background: url('../../../bower_components/select2/select2.png') no-repeat 100% -22px, linear-gradient(to bottom, #ffffff 85%, #eeeeee 99%) 0 0;
+  background: #ffffff url('/static/css/select2.png') no-repeat 100% -22px;
+  background: url('/static/css/select2.png') no-repeat 100% -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, #ffffff), color-stop(0.99, #eeeeee));
+  background: url('/static/css/select2.png') no-repeat 100% -22px, -webkit-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2.png') no-repeat 100% -22px, -moz-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2.png') no-repeat 100% -22px, linear-gradient(to bottom, #ffffff 85%, #eeeeee 99%) 0 0;
 }
-.select2-drop.select2-drop-above .select2-search input {
-  margin-top: 4px;
+html[dir="rtl"] .select2-search input {
+  padding: 4px 5px 4px 20px;
+  background: #ffffff url('/static/css/select2.png') no-repeat -37px -22px;
+  background: url('/static/css/select2.png') no-repeat -37px -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, #ffffff), color-stop(0.99, #eeeeee));
+  background: url('/static/css/select2.png') no-repeat -37px -22px, -webkit-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2.png') no-repeat -37px -22px, -moz-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2.png') no-repeat -37px -22px, linear-gradient(to bottom, #ffffff 85%, #eeeeee 99%) 0 0;
 }
 .select2-search input.select2-active {
-  background: #ffffff url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%;
-  background: url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, #ffffff), color-stop(0.99, #eeeeee));
-  background: url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%, -webkit-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
-  background: url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%, -moz-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
-  background: url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%, linear-gradient(to bottom, #ffffff 85%, #eeeeee 99%) 0 0;
+  background: #ffffff url('/static/css/select2-spinner.gif') no-repeat 100%;
+  background: url('/static/css/select2-spinner.gif') no-repeat 100%, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, #ffffff), color-stop(0.99, #eeeeee));
+  background: url('/static/css/select2-spinner.gif') no-repeat 100%, -webkit-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2-spinner.gif') no-repeat 100%, -moz-linear-gradient(center bottom, #ffffff 85%, #eeeeee 99%);
+  background: url('/static/css/select2-spinner.gif') no-repeat 100%, linear-gradient(to bottom, #ffffff 85%, #eeeeee 99%) 0 0;
 }
 .select2-container-active .select2-choice,
 .select2-container-active .select2-choices {
@@ -4815,8 +4830,14 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   border-left: none;
   filter: none;
 }
+html[dir="rtl"] .select2-dropdown-open .select2-choice .select2-arrow {
+  border-right: none;
+}
 .select2-dropdown-open .select2-choice .select2-arrow b {
   background-position: -18px 1px;
+}
+html[dir="rtl"] .select2-dropdown-open .select2-choice .select2-arrow b {
+  background-position: -16px 1px;
 }
 .select2-hidden-accessible {
   border: 0;
@@ -4837,6 +4858,10 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+html[dir="rtl"] .select2-results {
+  padding: 0 4px 0 0;
+  margin: 4px 0 4px 4px;
 }
 .select2-results ul.select2-result-sub {
   margin: 0;
@@ -4899,6 +4924,7 @@ Version: 3.4.7 Timestamp: Wed Apr 30 19:28:03 EDT 2014
 }
 .select2-results .select2-no-results,
 .select2-results .select2-searching,
+.select2-results .select2-ajax-error,
 .select2-results .select2-selection-limit {
   background: #f4f4f4;
   display: list-item;
@@ -4922,7 +4948,10 @@ disabled look for disabled choices in the results dropdown
   display: none;
 }
 .select2-more-results.select2-active {
-  background: #f4f4f4 url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100%;
+  background: #f4f4f4 url('/static/css/select2-spinner.gif') no-repeat 100%;
+}
+.select2-results .select2-ajax-error {
+  background: rgba(255, 50, 50, 0.2);
 }
 .select2-more-results {
   background: #f4f4f4;
@@ -4948,7 +4977,7 @@ disabled look for disabled choices in the results dropdown
   height: auto !important;
   height: 1%;
   margin: 0;
-  padding: 0;
+  padding: 0 5px 0 0;
   position: relative;
   border: 1px solid #aaa;
   cursor: text;
@@ -4958,6 +4987,9 @@ disabled look for disabled choices in the results dropdown
   background-image: -webkit-linear-gradient(top, #eeeeee 1%, #ffffff 15%);
   background-image: -moz-linear-gradient(top, #eeeeee 1%, #ffffff 15%);
   background-image: linear-gradient(to bottom, #eeeeee 1%, #ffffff 15%);
+}
+html[dir="rtl"] .select2-container-multi .select2-choices {
+  padding: 0 0 0 5px;
 }
 .select2-locked {
   padding: 3px 5px 3px 5px !important;
@@ -4996,7 +5028,7 @@ html[dir="rtl"] .select2-container-multi .select2-choices li {
   background: transparent !important;
 }
 .select2-container-multi .select2-choices .select2-search-field input.select2-active {
-  background: #ffffff url('../../../bower_components/select2/select2-spinner.gif') no-repeat 100% !important;
+  background: #ffffff url('/static/css/select2-spinner.gif') no-repeat 100% !important;
 }
 .select2-default {
   color: #999 !important;
@@ -5023,11 +5055,11 @@ html[dir="rtl"] .select2-container-multi .select2-choices li {
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(20%, #f4f4f4), color-stop(50%, #f0f0f0), color-stop(52%, #e8e8e8), color-stop(100%, #eeeeee));
   background-image: -webkit-linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
   background-image: -moz-linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
-  background-image: linear-gradient(to top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
+  background-image: linear-gradient(to bottom, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
 }
 html[dir="rtl"] .select2-container-multi .select2-choices .select2-search-choice {
-  margin-left: 0;
-  margin-right: 5px;
+  margin: 3px 5px 3px 0;
+  padding: 3px 18px 3px 5px;
 }
 .select2-container-multi .select2-choices .select2-search-choice .select2-chosen {
   cursor: default;
@@ -5044,7 +5076,7 @@ html[dir="rtl"] .select2-container-multi .select2-choices .select2-search-choice
   top: 4px;
   font-size: 1px;
   outline: none;
-  background: url('../../../bower_components/select2/select2.png') right top no-repeat;
+  background: url('/static/css/select2.png') right top no-repeat;
 }
 html[dir="rtl"] .select2-search-choice-close {
   right: auto;
@@ -5052,6 +5084,10 @@ html[dir="rtl"] .select2-search-choice-close {
 }
 .select2-container-multi .select2-search-choice-close {
   left: 3px;
+}
+html[dir="rtl"] .select2-container-multi .select2-search-choice-close {
+  left: auto;
+  right: 2px;
 }
 .select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close:hover {
   background-position: right -11px;
@@ -5112,7 +5148,7 @@ html[dir="rtl"] .select2-search-choice-close {
   .select2-search-choice-close,
   .select2-container .select2-choice abbr,
   .select2-container .select2-choice .select2-arrow b {
-    background-image: url('../../../bower_components/select2/select2x2.png') !important;
+    background-image: url('/static/css/select2x2.png') !important;
     background-repeat: no-repeat !important;
     background-size: 60px 40px !important;
   }
@@ -9402,6 +9438,20 @@ a.message-actions-quote {
 }
 a.message-actions-quote:hover {
   background: #e9e9e9;
+}
+.pile-message-vcal-event {
+  border: 1px solid #ccc;
+  width: 100%;
+  margin-top: 2em;
+  padding: 1em;
+  background: #eee;
+}
+.event-details {
+  display: grid;
+  vertical-align: top;
+  text-align: left;
+  padding-top: 15px;
+  grid-template-columns: 15% 85%;
 }
 /* Tags */
 .tag-card-name {

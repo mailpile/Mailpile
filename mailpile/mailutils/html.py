@@ -1,5 +1,7 @@
 # vim: set fileencoding=utf-8 :
 #
+from __future__ import print_function
+import lxml.etree
 import lxml.html
 import lxml.html.clean
 import re
@@ -99,7 +101,7 @@ def extract_text_from_html(html, url_callback=None):
         if html:
             try:
                 html_text = lxml.html.fromstring(html).text_content()
-            except XMLSyntaxError:
+            except lxml.etree.Error:
                 html_text = _('(Invalid HTML suppressed)')
         else:
             html_text = ''
@@ -120,6 +122,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

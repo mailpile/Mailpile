@@ -4,7 +4,6 @@ cryptography>=1.3.4
 lxml>=2.3.2
 imgsize
 Jinja2
-spambayes>=1.1b1
 selenium>=2.40.0
 markupsafe
 nose
@@ -18,3 +17,4 @@ pbr
 fasteners
 win_inet_pton; sys_platform == 'win32'
 stem>=1.4
+icalendar

@@ -4,7 +4,7 @@
 # which should allow us to actually introspect a bit into the behavior
 # of the classifier.
 
-from spambayes.classifier import Classifier
+from mailpile.spambayes import Classifier
 
 import mailpile.plugins.autotag
 from mailpile.i18n import gettext as _

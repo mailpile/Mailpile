@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 import datetime
 import re
@@ -302,7 +303,7 @@ class GPGKeySign(Command):
         try: signingkey = args.pop(0)
         except: signingkey = self.data.get("signingkey", None)
 
-        print keyid
+        print(keyid)
         if not keyid:
             return self._error("You must supply a keyid", None)
         rv = self._gnupg().sign_key(keyid, signingkey)
@@ -475,7 +476,7 @@ class GPGCheckKeys(Search):
             Command.CommandResult.__init__(self, *args, **kwargs)
 
         def as_text(self):
-            if not isinstance(self.result, (dict,)):
+            if not isinstance(self.result, dict):
                 return ''
             if self.result.get('details'):
                 message = '%s.\n - %s' % (self.message, '\n - '.join(

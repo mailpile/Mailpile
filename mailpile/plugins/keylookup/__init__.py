@@ -1,17 +1,23 @@
 import math
 import traceback
+import ssl
+import urllib
+import urllib2
 from mailpile.commands import Command
+from mailpile.conn_brokers import Master as ConnBroker
+from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
 from mailpile.plugins import PluginManager
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
+from mailpile.security import secure_urlget
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
 
 
-__all__ = ['email_keylookup', 'nicknym', 'wkd']  # Disabled: dnspka
+__all__ = ['email_keylookup', 'wkd']
 
 KEY_LOOKUP_HANDLERS = []
 
@@ -53,7 +59,6 @@ def _update_scores(session, key_id, key_info, known_keys_list):
             score = 9
             reason = _('Encryption key has been imported')
 
-        key_info["on_keychain"] = True
         key_info['scores']['Known encryption keys'] = [score, reason]
 
     # FIXME: For this to work better, we need a list of signing subkeys.
@@ -109,6 +114,7 @@ def _normalize_key(session, key_info):
                 ai = AddressInfo(e, uid["name"], vcard=vcard)
                 key_info["vcards"][e] = ai
     for key, default in [('on_keychain', False),
+                         ('in_vcards', False),
                          ('keysize', '0'),
                          ('keytype_name', 'unknown'),
                          ('created', '1970-01-01 00:00:00'),
@@ -200,8 +206,23 @@ def lookup_crypto_keys(session, address,
                 found_keys[key_id] = key_info
                 found_keys[key_id]["origins"] = []
             found_keys[key_id]["origins"].append(h.NAME)
-            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
+            
             _normalize_key(session, found_keys[key_id])
+            
+            _update_scores(session, key_id, found_keys[key_id], known_keys_list)
+            
+            # If the key_id was listed in get and is in found_keys then the key
+            # has been successfully imported to the keychain.
+            if key_id in known_keys_list or get and key_id in get:
+                found_keys[key_id]['on_keychain'] = True
+
+            # Check if key is already in the VCard for the specified address.
+            if address in found_keys[key_id]['vcards']:
+                vcard = found_keys[key_id]['vcards'][address]
+                if 'keys' in vcard:
+                     for k in vcard['keys']:
+                         if k['fingerprint'] == key_id:
+                             found_keys[key_id]['in_vcards'] = True
 
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
@@ -229,24 +250,27 @@ class KeyLookup(Command):
         'origins': 'Specify which origins to check (or * for all)'}
 
     def command(self):
-        if len(self.args) > 1:
-            allowremote = self.args.pop()
+        args = list(self.args)
+
+        if len(args) > 1:
+            allowremote = args.pop()
         else:
             allowremote = self.data.get('allowremote', ['Y'])[0]
-            if allowremote.lower()[:1] in ('n', 'f'):
-                allowremote = False
+        if allowremote.lower()[:1] in ('n', 'f'):
+            allowremote = False
 
         origins = self.data.get('origins')
         if '*' in (origins or []):
             origins = [h.NAME for h in KEY_LOOKUP_HANDLERS]
 
         email = " ".join(self.data.get('email', []))
-        address = " ".join(self.data.get('address', self.args))
+        address = " ".join(self.data.get('address', args))
         result = lookup_crypto_keys(self.session, email or address,
                                     strict_email_match=email,
                                     event=self.event,
                                     allowremote=allowremote,
                                     origins=origins)
+
         return self._success(_n('Found %d encryption key',
                                 'Found %d encryption keys',
                                 len(result)) % len(result),
@@ -285,6 +309,13 @@ class KeyImport(Command):
             PGPKeysImportAsVCards(self.session,
                                   arg=[k['fingerprint'] for k in result]
                                   ).run()
+                                  
+            # The key was looked up based on the given address, so it must have
+            # a user id containing that address, so when it is imported to
+            # VCards, the VCard for that address will list the key.
+            # The 'in_vcards' attribute is relevant to the given address only.
+            for k in result:
+                k['in_vcards'] = True
             # Previous crypto evaluations may now be out of date, so we
             # clear the cache so users can see results right away.
             ClearParseCache(pgpmime=True)
@@ -512,56 +543,143 @@ class KeychainLookupHandler(LookupHandler):
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
-    TIMEOUT = 20  # We know these are slow...
-    PRIVACY_FRIENDLY = False
+    TIMEOUT = 30  # We know these are slow...
+    PRIVACY_FRIENDLY = True
     PRIORITY = 200
     SCORE = 1
+
+    # People with really big keys are just going to have to publish in WKD
+    # or something, unless or until the SKS keyservers get fixed somehow.
+    MAX_KEY_SIZE = 1500000
+
+    # During testing, there were frequent HTTP gateway errors returned from
+    # hkps.pool.sks-keyservers.net so sks-keyservers.net was added too.
+    KEY_SERVER_BASE_URLS = [
+        "https://sks-keyservers.net/pks/lookup",
+        "https://hkps.pool.sks-keyservers.net/pks/lookup"]
 
     def _score(self, key):
         return (self.SCORE, _('Found encryption key in keyserver'))
 
-    def _allowed_by_config(self):
-        # FIXME: When direct keyserver contact works, change this.
-        config = self.session.config
-        return (
-            config.sys.proxy.protocol in ('none', 'unknown', 'system')
-            or config.sys.proxy.fallback)
+    def _lookup_url(self, url_base, address):
+        return "{}?{}".format(url_base, urllib.urlencode({
+            "search": address,
+            "op": "index",
+            "fingerprint": "on",
+            "options": "mr"}))
 
     def _lookup(self, address, strict_email_match=False):
-        # FIXME: We should probably just contact the keyservers directly.
-        #
-        # Queries look like this:
-        #
-        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
-        #        search=EMAIL&op=index&fingerprint=on&options=mr
-        #
-        if not self._allowed_by_config():
-            return {}
+        error = None
+        for url_base in self.KEY_SERVER_BASE_URLS:
+            url = self._lookup_url(url_base, address)
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('[%s] Fetching: %s' % (self.NAME, url))
+            try:
+                raw_result = secure_urlget(self.session, url,
+                                           maxbytes=self.MAX_KEY_SIZE+1)
+                error = None
+                break
+            except urllib2.HTTPError as e:
+                error = str(e)
+                if e.code == 404:
+                    # If a server reports the key was not found, let's stop
+                    # because the servers are supposed to be in sync.
+                    break;
+            except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+                error = str(e)
 
-        results = self._gnupg().search_key(address)
+        if not error and len(raw_result) > self.MAX_KEY_SIZE:
+            error = "Response too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('[%s] %s' % (self.NAME, error))
+
+        if error:
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('Error: %s' % error)
+            if 'Error 404' in error:
+                return {}
+            raise ValueError(error)
+
+        if 'keyservers' in self.session.config.sys.debug:
+            self.session.ui.debug('[%s] DATA: %s' % (self.NAME, raw_result[:200]))
+        results = self._gnupg().parse_hpk_response(raw_result.split('\n'))
+
         if strict_email_match:
             for key in results.keys():
-                match = [u for u in results[key].get('uids', [])
-                         if u['email'].lower() == address]
+                match = [
+                    u for u in results[key].get('uids', [])
+                    if u['email'].lower() == address]
                 if not match:
+                    if 'keyservers' in self.session.config.sys.debug:
+                        self.session.ui.debug('[%s] No UID for %s, ignoring key'
+                                              % (self.NAME, address))
                     del results[key]
+
+        if 'keyservers' in self.session.config.sys.debug:
+            self.session.ui.debug('[%s] Results=%d' % (self.NAME, len(results)))
+
         return results
 
+    def _getkey_url(self, url_base, key):
+        fingerprint = '0x{}'.format(key['fingerprint'])
+        params = {"search": fingerprint, "op": "get", "options": "mr"}
+        return "{}?{}".format(url_base, urllib.urlencode(params))
+
     def _getkey(self, key):
-        # FIXME: We should probably just contact the keyservers directly.
-        #
-        # Key downloads look like this:
-        #
-        #    https://hkps.pool.sks-keyservers.net/pks/lookup?
-        #        search=0xFINGERPRINT&op=get&options=mr
-        #
-        if not self._allowed_by_config():
-            return {}
-        return self._gnupg().recv_key(key['fingerprint'])
+        error = None
+        for url_base in self.KEY_SERVER_BASE_URLS:
+            url = self._getkey_url(url_base, key)
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug('Fetching: %s' % url)
+            try:
+                key_data = secure_urlget(self.session, url,
+                                         maxbytes=self.MAX_KEY_SIZE+1)
+                error = None
+                break
+            except urllib2.HTTPError as e:
+                error = e
+                if e.code == 404:
+                    # If a server reports the key was not found, let's stop
+                    # because the servers are supposed to be in sync.
+                    break;
+            except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
+                error = e
+
+        if len(key_data) > self.MAX_KEY_SIZE and not error:
+            error = "Key too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
+            if 'keyservers' in self.session.config.sys.debug:
+                self.session.ui.debug(error)
+
+        if error:
+            raise ValueError(str(error))
+
+        return self._gnupg().import_keys(key_data)
+
+
+class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):
+    NAME = "keys.OpenPGP.org"
+    PRIVACY_FRIENDLY = True
+    LOCAL = False
+    TIMEOUT = 15
+    PRIORITY = 75  # Better than SKS keyservers and better than DNS
+    SCORE = 5      # Treat these as valid as WKD, yay e-mail vetting!
+
+    KEY_SERVER_BASE_URLS = [
+        "http://zkaan2xfbuxia2wpf7ofnkbz6r5zdbbvxbunvp5g2iebopbfc4iqmbad.onion/pks/lookup",
+        "https://keys.openpgp.org/pks/lookup"]
+
+    def _lookup_url(self, url_base, address):
+        # This deliberately avoids any escaping of the e-mail address; k.o.o.
+        # can't handle such things at the moment.
+        return "{}?op=index&options=mr&search={}".format(url_base, address)
+
+    def _score(self, key):
+        return (self.SCORE, _('Found encryption key in keys.openpgp.org'))
 
 
 register_crypto_key_lookup_handler(KeychainLookupHandler)
 register_crypto_key_lookup_handler(KeyserverLookupHandler)
+register_crypto_key_lookup_handler(VerifyingKeyserverLookupHandler)
 
 # We do this down here, as that seems to make the Python module loader
 # things happy enough with the circular dependencies...

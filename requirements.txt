@@ -4,7 +4,6 @@ cryptography>=1.3.4
 lxml>=2.3.2
 imgsize
 Jinja2
-spambayes>=1.1b1
 markupsafe
 pyDNS
 PySocks
@@ -13,3 +12,4 @@ pillow
 pbr
 fasteners
 stem>=1.4
+icalendar

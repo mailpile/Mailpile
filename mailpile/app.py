@@ -1,3 +1,4 @@
+from __future__ import print_function
 import getopt
 import gettext
 import locale
@@ -141,12 +142,12 @@ def Interact(session):
                     result = Action(session, opt, arg)
                     session.ui.block()
                     session.ui.display_result(result)
-                except UsageError, e:
+                except UsageError as e:
                     session.fatal_error(unicode(e))
-                except UrlRedirectException, e:
+                except UrlRedirectException as e:
                     session.fatal_error('Tried to redirect to: %s' % e.url)
     except EOFError:
-        print
+        print()
     finally:
         session.ui.unblock(force=True)
 
@@ -181,7 +182,7 @@ class InteractCommand(Command):
         splash = HelpSplash(session, 'help', []).run()
         motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
         session.ui.display_result(splash)
-        print  # FIXME: This is a hack!
+        print()  # FIXME: This is a hack!
         session.ui.display_result(motd)
 
         Interact(session)
@@ -204,7 +205,28 @@ class WaitCommand(Command):
 
 
 def Main(args):
-    mailpile.platforms.DetectBinaries()
+    try:
+        mailpile.platforms.DetectBinaries(_raise=OSError)
+    except OSError as e:
+        binary = str(e).split()[0]
+        sys.stderr.write("""
+Required binary missing or unusable: %s
+
+If you know where it is, or would like to skip this test and run Mailpile
+anyway, you can set one of the following environment variables:
+
+    MAILPILE_%s="/path/to/binary"
+or
+    MAILPILE_IGNORE_BINARIES="%s"
+
+Note that skipping a binary check may cause the app to become unstable or
+fail in unexpected ways. If it breaks you get to keep both pieces!
+
+""" % (e, binary.upper(), binary))
+        sys.exit(1)
+
+    # Enable our connection broker, try to prevent badly behaved plugins from
+    # bypassing it.
     DisableUnbrokeredConnections()
 
     # Bootstrap translations until we've loaded everything else
@@ -225,7 +247,7 @@ def Main(args):
                                    'please log in!'))
         HealthCheck(session, None, []).run()
         config.prepare_workers(session)
-    except AccessError, e:
+    except AccessError as e:
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
@@ -261,7 +283,7 @@ def Main(args):
                     session.ui.display_result(Action(
                         session, args[0], ' '.join(args[1:]).decode('utf-8')))
 
-        except (getopt.GetoptError, UsageError), e:
+        except (getopt.GetoptError, UsageError) as e:
             session.fatal_error(unicode(e))
 
         if (not allopts) and (not a1) and (not a2):

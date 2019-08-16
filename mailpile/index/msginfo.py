@@ -1,3 +1,4 @@
+from __future__ import print_function
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 
@@ -35,6 +36,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

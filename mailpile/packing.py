@@ -1,3 +1,4 @@
+from __future__ import print_function
 import struct
 import time
 import zlib
@@ -75,7 +76,7 @@ def PackLongList(longs):
     1416
     """
     packed = struct.pack('<' + 'q' * len(longs), *longs)
-    if (len(packed) > 8 * 15) or (longs[0] == 0xffffffffffffffffL):
+    if (len(packed) > 8 * 15) or (longs[0] == 0xffffffffffffffff):
         return ('\xff\xff\xff\xff\xff\xff\xff\xff' + zlib.compress(packed))
     else:
         return packed
@@ -257,6 +258,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print('%s' % (results, ))
     if results.failed:
         sys.exit(1)

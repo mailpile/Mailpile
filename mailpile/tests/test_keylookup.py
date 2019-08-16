@@ -13,7 +13,7 @@ GPG_MOCK_RETURN = {
         'uids': [{'comment': '', 'name': 'Mailpile!', 'email': 'test@mailpile.is'}],
         'keysize': '4096',
         'keytype_name': 'RSA',
-        'created': datetime.datetime(2014, 06, 22, 02, 37, 23),
+        'created': datetime.datetime(2014, 6, 22, 2, 37, 23),
         'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA',
     }
 }

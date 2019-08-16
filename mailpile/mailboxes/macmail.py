@@ -78,7 +78,7 @@ class MacMaildir(mailbox.Mailbox):
             self.remove(key)
         except KeyError:
             pass
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
 

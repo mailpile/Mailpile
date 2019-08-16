@@ -9,7 +9,7 @@ import mailpile.mailutils.generator as mail_generator
 class TestMailGenerator(MailPileUnittest):
 
     def test_is8bitstring(self):
-        res = mail_generator._is8bitstring("Ä")
+        res = mail_generator._is8bitstring(u'\xc4')
         self.assertEqual(res, True)
         for input_types_generating_false in [1, "a"]:
             res = mail_generator._is8bitstring(input_types_generating_false)
