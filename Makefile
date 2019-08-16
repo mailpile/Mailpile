@@ -218,7 +218,7 @@ compilemessages:
 	@scripts/compile-messages.sh
 
 transifex:
-	tx pull -a --minimum-perc=50
+	tx pull -a --minimum-perc=25
 	tx pull -l is,en_GB
 
 
