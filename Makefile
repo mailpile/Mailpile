@@ -230,7 +230,7 @@ dist/version.txt: mailpile/config/defaults.py scripts/version.py
 	mkdir -p dist
 	scripts/version.py > dist/version.txt
 
-dist/mailpile.tar.gz: mrproper js genmessages transifex dist/version.txt
+dist/mailpile.tar.gz: mrproper genmessages transifex dist/version.txt
 	git submodule update --init --recursive
 	git submodule foreach 'git reset --hard && git clean -dfx'
 	mkdir -p dist
