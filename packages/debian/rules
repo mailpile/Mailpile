@@ -18,6 +18,11 @@ override_dh_auto_build:
 	# Remove unused files
 	rm -f shared-data/default-theme/index.html
 	rm -f shared-data/default-theme/webfonts/LICENSE
+	rm -rf mailpile/tests
+	rm -rf shared-data/default-theme/less
+
+	# Remove plugins that aren't fit for use
+	rm -f shared-data/contrib/{experiments,forcegrapher,maildeck,i18nhelper}
 
 	########################
 	# Generate apache conf #
@@ -32,84 +37,6 @@ override_dh_auto_build:
 		> mailpile-apache
 
 	dh_auto_build
-
-unused_override_dh_auto_build:
-	# Remove unused files
-	rm -f shared-data/default-theme/index.html
-	rm -f shared-data/default-theme/webfonts/LICENSE
-
-	########################
-	# Generate apache conf #
-	########################
-	python shared-data/multipile/mailpile-admin.py --generate-apache-config \
-		--mailpile-share /usr/share/mailpile \
-		--mailpile-theme /usr/share/mailpile/default-theme \
-		--multipile-www /usr/share/mailpile/multipile/www \
-		> mailpile-apache.conf
-
-	##############################
-	# Replacing libraries.min.js #
-	##############################
-	rm -f shared-data/default-theme/js/libraries.min.js
-
-	cat /usr/share/javascript/jquery/jquery.js \
-		/usr/share/javascript/moxie/moxie.js \
-		/usr/share/javascript/plupload/plupload.dev.js \
-		/usr/share/javascript/underscore/underscore.js \
-		/usr/share/javascript/jquery-timer/jquery.timer.js \
-		/usr/share/javascript/autosize/autosize.js \
-		/usr/share/javascript/mousetrap/mousetrap.js \
-		shared-data/default-theme/js/mousetrap.global.bind.js \
-		/usr/share/javascript/jquery-ui/jquery-ui.js \
-		/usr/share/javascript/jquery-ui-touch-punch/jquery.ui.touch-punch.js \
-		/usr/share/javascript/qtip2/jquery.qtip.js \
-		/usr/share/javascript/jquery-slugify/slugify.js \
-		/usr/share/javascript/typeahead.js/typeahead.jquery.js \
-		/usr/share/javascript/bootstrap/js/bootstrap.js \
-		/usr/share/javascript/list.js/list.js \
-		/usr/share/javascript/favico.js/favico.js \
-		/usr/share/javascript/select2.js/select2.js \
-		/usr/share/javascript/dompurify/purify.js \
-		> shared-data/default-theme/js/libraries.js
-
-	uglifyjs -o shared-data/default-theme/js/libraries.min.js \
-		shared-data/default-theme/js/libraries.js
-
-	#########################
-	# Replacing default.css #
-	#########################
-	rm -f shared-data/default-theme/css/default.css
-
-	# We are removing bower_components even if its not in the tarball because
-	# upstream uses the same packaging with the original tarball, this is an
-	# effort to keep it compatible.
-	rm -rf bower_components
-
-	mkdir -p bower_components/animate.css
-	ln -s /usr/share/javascript/animate.css/animate.css bower_components/animate.css/animate.css
-
-	mkdir -p bower_components/less-elements-old
-	ln -s /usr/share/javascript/less-elements/elements.less bower_components/less-elements-old/elements.less
-
-	mkdir -p bower_components/rebar
-	ln -s /usr/share/javascript/rebar/less bower_components/rebar/less
-
-	mkdir -p bower_components/select2
-	ln -s /usr/share/javascript/select2.js/select2.css bower_components/select2/select2.css
-
-	mkdir -p bower_components/qtip2/basic
-	ln -s /usr/share/javascript/qtip2/jquery.qtip.css bower_components/qtip2/basic/jquery.qtip.css
-
-        # NOTE: This differs from the normal Mailpile build system in that
-        # we're using the Node lessc, Mailpile's build uses Ruby's lessc.
-	(cd shared-data/default-theme/less; lessc default.less) \
-            |perl -npe 's,(libraries|app)/,,g' \
-            |perl -npe 's,/shared-data/,../,g' \
-            |perl -npe 's,.\./\.\./,../,g' \
-          > shared-data/default-theme/css/default.css
-
-	dh_auto_build
-
 
 override_dh_install:
 	# FIXME: This is a build step, but the .mo files are ignored. :(
