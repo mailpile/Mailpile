@@ -187,6 +187,11 @@ js: bower_components
 	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp*
 
 less: less-compiler bower_components
+	@cp -fa \
+                bower_components/select2/select2.png \
+                bower_components/select2/select2x2.png \
+                bower_components/select2/select2-spinner.gif \
+            shared-data/default-theme/css/
 	@make -s -f scripts/less-compiler.mk
 
 less-loop: less-compiler
