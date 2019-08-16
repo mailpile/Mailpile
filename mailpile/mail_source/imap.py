@@ -334,7 +334,7 @@ class SharedImapConn(threading.Thread):
             raise self._conn.abort('socket error: %s' % val)
 
     def quit(self):
-        self._can_idle = False
+        self._can_idle = False  # Required to avoid deadlock below
         with self._lock:
             try:
                 if self._conn and self._conn.file:
