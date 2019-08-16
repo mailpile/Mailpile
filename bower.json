@@ -19,26 +19,23 @@
   "dependencies": {
     "underscore": ">=1.7.0",
     "bootstrap": "~3.3.0",
-    "d3": "~3.4.3",
     "favico.js": "~0.3.5",
     "html5shiv": "~3.7.0",
-    "jquery": "~2.1.0",
+    "jquery": "~2.1",
     "autosize": "~3.0.14",
     "jquery-confirm": "~2.1.1",
     "jquery-slugify": "~1.0.3",
     "jquery-timer": "*",
-    "jquery.ui": "~1.10.4",
+    "jquery.ui": "~1.10",
     "less-elements-old": "~1.0",
-    "listjs": "~1.1.0",
     "mousetrap": "~1.6.0",
     "moxie": "~1.3.4",
     "plupload": "~2.1.2",
-    "purl": "~2.3.1",
     "qtip2": "~2.1.1",
     "rebar": "~0.3.2",
-    "select2": "3.4.7",
+    "select2": "3.5.4",
     "typeahead.js": "~0.10.5",
     "jqueryui-touch-punch": "*",
-    "dompurify": "~0.8.5"
+    "dompurify": "~1.0.11"
   }
 }

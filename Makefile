@@ -162,18 +162,29 @@ bower_components:
 
 js: bower_components
 	# Warning: Horrible hack to extract rules from Gruntfile.js
-	rm -f shared-data/default-theme/js/libraries.min.js
-	cat `cat Gruntfile.js \
+	@rm -f shared-data/default-theme/js/libraries.min.js
+	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp*
+	@cat Gruntfile.js \
                 |sed -e '1,/concat:/d ' \
                 |sed -e '1,/src:/d' -e '/dest:/,$$d' \
                 |grep / \
-                |sed -e "s/[',]/ /g"` \
-          >> shared-data/default-theme/js/mailpile-min.js.tmp
-	uglify -s shared-data/default-theme/js/mailpile-min.js.tmp \
-               -o shared-data/default-theme/js/libraries.min.js
-	#@cp -va shared-data/default-theme/js/mailpile-min.js.tmp \
-        #        shared-data/default-theme/js/libraries.min.js
-	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp
+                |sed -e "s/[',]/ /g" \
+            |xargs sed -e '$$a;' \
+            >> shared-data/default-theme/js/mailpile-min.js.tmp
+	@uglify -s shared-data/default-theme/js/mailpile-min.js.tmp \
+               -o shared-data/default-theme/js/mailpile-min.js.tmp2
+	@sed -e "s/@MP_JSBUILD_INFO@/`./scripts/gitwhere.sh`/" \
+	    < shared-data/default-theme/js/libraries.js \
+	    > shared-data/default-theme/js/libraries.min.js
+	@echo '/* Sources...' \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@bower --offline --no-color list \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@echo '*/' \
+	    >> shared-data/default-theme/js/libraries.min.js
+	@cat shared-data/default-theme/js/mailpile-min.js.tmp2 \
+            >> shared-data/default-theme/js/libraries.min.js
+	@rm -f shared-data/default-theme/js/mailpile-min.js.tmp*
 
 less: less-compiler bower_components
 	@make -s -f scripts/less-compiler.mk
