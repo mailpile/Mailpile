@@ -16,13 +16,11 @@ from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.addresses import AddressHeaderParser
 from mailpile.mailutils.emails import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.security import SecurePassphraseStorage
-from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo
+from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo, GLOBAL_VCARD_LOCK
 from mailpile.util import *
 
 
 _plugins = PluginManager(builtin=__file__)
-
-GLOBAL_VCARD_LOCK = VCardRLock()
 
 
 ##[ VCards ]########################################
@@ -851,8 +849,10 @@ def ProfileVCard(parent):
             route = self.session.config.routes.get(route_id)
             protocol = self.data.get('route-protocol', ['none'])[0]
             if protocol == 'none':
-                if route:
+                try:
                     del self.session.config.routes[route_id]
+                except (KeyError, IndexError):
+                    pass
                 vcard.route = ''
                 return
             elif protocol == 'local':
@@ -996,14 +996,15 @@ def ProfileVCard(parent):
             config = self.session.config
             fingerprint = self._key_generator.generated_key
             if fingerprint:
-                vcard = vcard_rid and config.vcards.get_vcard(vcard_rid)
-                if vcard:
-                    vcard.pgp_key = fingerprint
-                    vcard.save()
-                    event.message = _('The PGP key for %s is ready for use.'
-                                      ) % vcard.email
-                else:
-                    event.message = _('PGP key generation is complete')
+                with GLOBAL_VCARD_LOCK:
+                    vcard = vcard_rid and config.vcards.get_vcard(vcard_rid)
+                    if vcard:
+                        vcard.pgp_key = fingerprint
+                        vcard.save()
+                        event.message = _('The PGP key for %s is ready for use.'
+                                          ) % vcard.email
+                    else:
+                        event.message = _('PGP key generation is complete')
 
                 # Record the passphrase!
                 config.secrets[fingerprint] = {
@@ -1202,8 +1203,8 @@ class AddProfile(ProfileVCard(AddVCard)):
                 tags[vcard.tag].slug = Slugify(
                     'account-%s' % vcard.email, tags=self.session.config.tags)
 
-        route_id = state.get('route_id')
-        if route_id:
+        route_id = state.get('route_id', None)
+        if route_id is not None:
             self._configure_sending_route(vcard, route_id)
 
         self._configure_mail_sources(vcard)

@@ -10,6 +10,8 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
+GLOBAL_VCARD_LOCK = VCardRLock()
+
 
 class VCardLine(dict):
     """
@@ -353,6 +355,12 @@ class SimpleVCard(object):
 
     UNREMOVABLE = ('x-mailpile-rid', 'x-mailpile-kind-hint',
                    'clientpidmap', 'version')
+
+    def __enter__(self, *args, **kwargs):
+        return GLOBAL_VCARD_LOCK.__enter__(*args, **kwargs)
+
+    def __exit__(self, *args, **kwargs):
+        return GLOBAL_VCARD_LOCK.__exit__(*args, **kwargs)
 
     def remove(self, *line_ids):
         """
@@ -1224,6 +1232,12 @@ class VCardStore(dict):
         self.loading = False
         self.loaded = False
         self._lock = VCardRLock()
+
+    def __enter__(self, *args, **kwargs):
+        return GLOBAL_VCARD_LOCK.__enter__(*args, **kwargs)
+
+    def __exit__(self, *args, **kwargs):
+        return GLOBAL_VCARD_LOCK.__exit__(*args, **kwargs)
 
     def index_vcard(self, card, collision_callback=None):
         attrs = (['email'] if (card.kind in self.KINDS_PEOPLE)
