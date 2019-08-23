@@ -237,9 +237,10 @@ def lookup_crypto_keys(session, address,
         ordered_keys = [k for k in ordered_keys if k.score > 0]
 
     if get and vcard and ordered_keys:
-        vcard.pgp_key = ordered_keys[0].fingerprint
-        vcard.pgp_key_pinned = 'true' if pin_key else 'false'
-        vcard.save()
+        with vcard:
+            vcard.pgp_key = ordered_keys[0].fingerprint
+            vcard.pgp_key_pinned = 'true' if pin_key else 'false'
+            vcard.save()
         ordered_keys[0].is_preferred = True
         ordered_keys[0].is_pinned = pin_key
         for k in ordered_keys[1:]:
