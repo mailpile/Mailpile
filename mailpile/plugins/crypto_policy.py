@@ -42,8 +42,9 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
 
         vcard = self.session.config.vcards.get_vcard(email)
         if vcard:
-            vcard.crypto_policy = policy
-            vcard.save()
+            with vcard:
+                vcard.crypto_policy = policy
+                vcard.save()
             return self._success(_('Set crypto policy for %s to %s'
                                    ) % (email, policy),
                                  result={'email': email, 'policy:': policy})
