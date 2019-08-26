@@ -670,24 +670,24 @@ class ConfigManager(ConfigDict):
 
     def load_pickle(self, pfn, delete_if_corrupt=False):
         pickle_path = os.path.join(self.workdir, pfn)
-        with open(pickle_path, 'rb') as fd:
-            master_key = self.get_master_key()
-            if master_key:
-                from mailpile.crypto.streamer import DecryptingStreamer
-                with DecryptingStreamer(fd,
-                                        mep_key=master_key,
-                                        name='load_pickle(%s)' % pfn
-                                        ) as streamer:
-                    data = streamer.read()
-                    streamer.verify(_raise=IOError)
-            else:
-                data = fd.read()
         try:
+            with open(pickle_path, 'rb') as fd:
+                master_key = self.get_master_key()
+                if master_key:
+                    from mailpile.crypto.streamer import DecryptingStreamer
+                    with DecryptingStreamer(fd,
+                                            mep_key=master_key,
+                                            name='load_pickle(%s)' % pfn
+                                            ) as streamer:
+                        data = streamer.read()
+                        streamer.verify(_raise=IOError)
+                else:
+                    data = fd.read()
             return cPickle.loads(data)
-        except cPickle.UnpicklingError:
+        except (cPickle.UnpicklingError, IOError, EOFError, OSError):
             if delete_if_corrupt:
                 safe_remove(pickle_path)
-            raise IOError('Load/unpickle failed')
+            raise IOError('Load/unpickle failed: %s' % pickle_path)
 
     def save_pickle(self, obj, pfn, encrypt=True):
         ppath = os.path.join(self.workdir, pfn)
