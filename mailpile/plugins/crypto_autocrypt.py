@@ -105,12 +105,13 @@ class AutocryptRecord(object):
     RATIO_WINDOW = 100
     INIT_ORDER = ('key_sig', 'autocrypt_ts', 'prefer_encrypt',
                   'key_count', 'mid', 'last_seen_ts', 'seen_count',
-                  'imported_ts', 'key_ratio')
+                  'imported_ts', 'key_ratio', 'key_info')
 
     def __init__(self, to,
                  key_sig=None, autocrypt_ts=None, prefer_encrypt=None,
                  key_count=None, mid=None, last_seen_ts=None,
-                 seen_count=None, imported_ts=None, key_ratio=None):
+                 seen_count=None, imported_ts=None, key_ratio=None,
+                 key_info=None):
         if '@' not in to:
             raise ValueError('To must be an e-mail address')
         self.autocrypt_ts = int(key_sig and (autocrypt_ts or time.time()) or 0)
@@ -123,6 +124,7 @@ class AutocryptRecord(object):
         self.seen_count = int(seen_count or 1)
         self.imported_ts = (imported_ts or 0)
         self.key_ratio = (key_ratio or (self.RATIO_INIT if key_sig else 0))
+        self.key_info = key_info or ''
 
     def float_ratio(self):
         return (self.key_ratio / self.RATIO_MAX)
@@ -170,6 +172,9 @@ def autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
     Process an e-mail, updating the Autocrypt state database as appropriate.
     If the state database has changed, return the new state. Otherwise None.
     """
+    if not config.prefs.key_tofu.autocrypt:
+        return None
+
     db = get_Autocrypt_DB(config)['state']
     changed = False
     try:
@@ -432,6 +437,8 @@ def autocrypt_meta_kwe(index, msg_mid, msg, msg_size, msg_ts,
     """
     keywords = set([])
     config = index.config
+    if not config.prefs.key_tofu.autocrypt:
+        return keywords
 
     mimetype = (msg.get_content_type() or '').lower()
     if mimetype not in AUTOCRYPT_IGNORE_MIMETYPES:
@@ -537,12 +544,13 @@ class AutocryptKeyLookupHandler(EmailKeyLookupHandler):
         return (self.SCORE, _('Found key using Autocrypt'))
 
     def _lookup(self, address, strict_email_match=False):
+        config, ui = self.session.config, self.session.ui
         results = {}
-        if not address:
+        if not (address and config.prefs.key_tofu.autocrypt):
             return results
 
         try:
-            db = get_Autocrypt_DB(self.session.config)['state']
+            db = get_Autocrypt_DB(config)['state']
             acr = AutocryptRecord.Load(db, address)
         except KeyError:
             acr = None
@@ -557,8 +565,12 @@ class AutocryptKeyLookupHandler(EmailKeyLookupHandler):
             key_sig = sha1b64(raw_key).strip()
             if key_sig == acr.key_sig:
                 fp = key_info.fingerprint
-                results[fp] = copy.copy(key_info)
-                self.key_cache[fp] = raw_key
+                results[fp] = results[key_sig] = copy.copy(key_info)
+                self.key_cache[fp] = self.key_cache[key_sig] = raw_key
+                if 'keylookup' in config.sys.debug:
+                    ui.debug('Got key from =%s: %s' % (acr.mid, key_sig,))
+            elif 'keylookup' in config.sys.debug:
+                ui.debug('Key sig %s != %s' % (key_sig, acr.key_sig))
 
         return results
 

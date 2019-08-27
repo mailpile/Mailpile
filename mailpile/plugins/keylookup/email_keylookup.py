@@ -37,6 +37,7 @@ def _might_be_pgp_key(filename, mimetype):
 
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = _("E-mail keys")
+    SHORTNAME = 'e-mail'
     PRIORITY = 5
     TIMEOUT = 25  # 5 seconds per message we are willing to parse
     LOCAL = True

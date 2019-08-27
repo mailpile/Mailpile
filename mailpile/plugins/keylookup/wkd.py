@@ -70,6 +70,7 @@ def WebKeyDirectoryURLs(address, plusmagic=True):
 #
 class WKDLookupHandler(LookupHandler):
     NAME = _("Web Key Directory")
+    SHORTNAME = 'wkd'
     TIMEOUT = 10
     PRIORITY = 50  # WKD is better than keyservers and better than DNS
     PRIVACY_FRIENDLY = True  # These lookups can go over Tor

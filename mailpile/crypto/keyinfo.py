@@ -79,9 +79,9 @@ class RestrictedDict(dict):
 
 class KeyUID(RestrictedDict):
     KEYS = {
-        'name':    (str, ''),
+        'name':    (unicode, ''),
         'email':   (str, ''),
-        'comment': (str, '')}
+        'comment': (unicode, '')}
 
     def __repr__(self):
         parts = []
@@ -109,7 +109,8 @@ class KeyInfo(RestrictedDict):
         'subkeys':      (list, None),
         'is_subkey':    (bool, False),
         'have_secret':  (bool, False),
-        'on_keychain':  (bool, False)}
+        'on_keychain':  (bool, False),
+        'in_vcards':    (bool, False)}
 
     expired = property(lambda k: time.time() > k.expires > 0)
 
