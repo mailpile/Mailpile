@@ -164,6 +164,13 @@ def lookup_crypto_keys(session, address,
     ungotten = get and get[:] or []
     progress = [ ]
 
+    # If the user has disabled "web content", only allow local requests
+    if config and allowremote and config.prefs.web_content == 'off':
+        if ('keylookup' in config.sys.debug
+                or 'keytofu' in config.sys.debug):
+            session.ui.debug("Remote key lookups disabled by prefs.web_content.")
+        allowremote = False
+
     for handler in handlers:
         if get and not ungotten:
             # We have all the keys!
@@ -173,6 +180,15 @@ def lookup_crypto_keys(session, address,
             h = handler(session, known_keys_list)
             if not allowremote and not h.LOCAL:
                 continue
+
+            if allowremote and config and config.prefs.web_content == 'anon':
+                if (config.sys.proxy.protocol not in ('tor', 'tor-risky')
+                        or not h.PRIVACY_FRIENDLY):
+                    if ('keylookup' in config.sys.debug
+                            or 'keytofu' in config.sys.debug):
+                        session.ui.debug(
+                            "Origin %s disabled by prefs.web_content" % h.NAME)
+                    continue
 
             if found_keys and (not h.PRIVACY_FRIENDLY) and (not origins):
                 # We only try the privacy-hostile methods if we haven't
