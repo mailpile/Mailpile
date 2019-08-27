@@ -148,7 +148,8 @@ def MimeReplacePart(part, newpart, keep_old_headers=False):
 
 
 def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
-                     unwrap_attachments=True, require_MDC=True, depth=0):
+                     unwrap_attachments=True, require_MDC=True,
+                     depth=0, sibling=0, efail_unsafe=False, allow_decrypt=True):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -208,7 +209,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
                              require_MDC=require_MDC,
-                             depth = depth + 1 )
+                             depth=depth+1, sibling=sibling,
+                             efail_unsafe=efail_unsafe,
+                             allow_decrypt=allow_decrypt)
 
         except (IOError, OSError, ValueError, IndexError, KeyError):
             part.signature_info = SignatureInfo()
@@ -217,8 +220,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
     elif part.is_multipart() and mimetype == 'multipart/encrypted':
         try:
+            if not allow_decrypt:
+                raise ValueError('Decryption forbidden, MIME structure is weird')
             preamble, payload = part.get_payload()
-
             (part.signature_info, part.encryption_info, decrypted) = (
                 crypto_cls().decrypt(
                     payload.as_string(), require_MDC=require_MDC))
@@ -268,12 +272,23 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
                              require_MDC=require_MDC,
-                             depth = depth + 1 )
+                             depth=depth+1, sibling=sibling,
+                             efail_unsafe=efail_unsafe,
+                             allow_decrypt=allow_decrypt)
 
     # If we are still multipart after the above shenanigans (perhaps due
     # to an error state), recurse into our subparts and unwrap them too.
     elif part.is_multipart():
-        for sp in part.get_payload():
+        for count, sp in enumerate(part.get_payload()):
+            # EFail mitigation: We decrypt attachments and the first part
+            # or a nested multipart structure, but not any subsequent parts.
+            # This allows rewriting of messages to *append* cleartext, but
+            # disallows rewriting that pushes "inline" encrypted content
+            # further down to where the recipient might not notice it.
+            sp_disp = (unwrap_attachments and sp['content-disposition']) or ""
+            allow_decrypt = (efail_unsafe
+                    or (count == sibling == 0)
+                    or sp_disp.startswith('attachment')) and allow_decrypt
             UnwrapMimeCrypto(sp,
                              protocols=protocols,
                              psi=part.signature_info,
@@ -281,7 +296,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                              charsets=charsets,
                              unwrap_attachments=unwrap_attachments,
                              require_MDC=require_MDC,
-                             depth = depth + 1 )
+                             depth=depth+1, sibling=count,
+                             efail_unsafe=efail_unsafe,
+                             allow_decrypt=allow_decrypt)
 
     elif disposition.startswith('attachment'):
         # The sender can attach signed/encrypted/key files without following
@@ -299,6 +316,8 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
             # are encrypted and signed, and files that are signed only.
             payload = part.get_payload( None, True )
             try:
+                if not allow_decrypt:
+                    raise ValueError('Decryption forbidden, MIME structure is weird')
                 (part.signature_info, part.encryption_info, decrypted) = (
                     crypto_cls().decrypt(
                         payload, require_MDC=require_MDC))
@@ -330,7 +349,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                                  charsets=charsets,
                                  unwrap_attachments=unwrap_attachments,
                                  require_MDC=require_MDC,
-                                 depth = depth + 1 )
+                                 depth=depth+1, sibling=sibling,
+                                 efail_unsafe=efail_unsafe,
+                                 allow_decrypt=allow_decrypt)
             else:
                 # FIXME: Best action for unsuccessful attachment processing?
                 pass
@@ -342,7 +363,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
                                      pei=pei,
                                      charsets=charsets,
                                      require_MDC=require_MDC,
-                                     depth = depth + 1 )
+                                     depth=depth+1, sibling=sibling,
+                                     efail_unsafe=efail_unsafe,
+                                     allow_decrypt=allow_decrypt)
 
     else:
         # FIXME: This is where we would handle cryptoschemes that don't
@@ -360,7 +383,9 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
 
 def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
-                                charsets=None, require_MDC=True, depth=0):
+                                charsets=None, require_MDC=True,
+                                depth=0, sibling=0,
+                                efail_unsafe=False, allow_decrypt=True):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -375,6 +400,8 @@ def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
         if (payload.startswith(crypto.ARMOR_BEGIN_ENCRYPTED) and
                 payload.endswith(crypto.ARMOR_END_ENCRYPTED)):
             try:
+                if not allow_decrypt:
+                    raise ValueError('Decryption forbidden, MIME structure is weird')
                 si, ei, text = crypto.decrypt(payload, require_MDC=require_MDC)
                 _update_text_payload(part, text, charsets=charsets)
             except (IOError, OSError, ValueError, IndexError, KeyError):

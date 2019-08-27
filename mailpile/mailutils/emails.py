@@ -1304,8 +1304,8 @@ class Email(object):
         parse = []
         block = 'body'
         clines = []
-        for line in data.splitlines(True):
-            block, ltype = self.parse_line_type(line, block)
+        for count, line in enumerate(data.splitlines(True)):
+            block, ltype = self.parse_line_type(line, block, count)
             if ltype != current['type']:
 
                 # This is not great, it's a hack to move the preamble
@@ -1339,7 +1339,7 @@ class Email(object):
     GIT_DIFF_STARTS = re.compile('^diff --git a/.*b/')
     GIT_DIFF_LINE = re.compile('^([ +@-]|index |$)')
 
-    def parse_line_type(self, line, block):
+    def parse_line_type(self, line, block, line_count):
         # FIXME: Detect forwarded messages, ...
 
         if (block in ('body', 'quote', 'barequote')
@@ -1372,7 +1372,12 @@ class Email(object):
             else:
                 return 'pgpsignature', 'pgpsignature'
 
-        if stripped == GnuPG.ARMOR_BEGIN_ENCRYPTED:
+        if (stripped == GnuPG.ARMOR_BEGIN_ENCRYPTED
+                # This is an EFail mitigation: do not decrypt content
+                # inlined somewhere well below a bunch of other stuff.
+                # The encrypted content must be high up enough that
+                # the user will plausibly see it when reading.
+                and line_count < 10 and block == 'body'):
             return 'pgpbegin', 'pgpbegin'
         if block == 'pgpbegin':
             if ':' in line or stripped == '':
