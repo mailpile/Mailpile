@@ -242,6 +242,10 @@ def generate_autocrypt_setup_code(random_data=None):
     return '-'.join(blocks)
 
 
+# FIXME: Add a with_signing_subkeys=True, implement. This deviates
+#        from the Autocrypt spec, because Autocrypt says nothing about
+#        signatures. But we're almost always signing our mail, and w/o
+#        the subkeys the signatures cannot be checked.
 def get_minimal_PGP_key(keydata,
                         user_id=None, subkey_id=None, binary_out=False):
     """
@@ -374,7 +378,7 @@ def get_minimal_PGP_key(keydata,
                     if (pri_key.fingerprint.endswith(packet.key_id) and
                             not packet.expiration_time or
                             packet.expiration_time >= now):
-                        can_encrypt = True  # Assume encrypt if no flags.
+                        can_encrypt = True  # Assume encrypt -- FIXME
                         for subpacket in packet.subpackets:
                             if subpacket.subtype == 9:  # Key expiration
                                 packet.key_expire_time = _exp_time(
