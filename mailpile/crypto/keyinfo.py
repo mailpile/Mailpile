@@ -63,7 +63,15 @@ class RestrictedDict(dict):
                 raise KeyError('Invalid key: %s' % item)
             if not isinstance(value, self.KEYS[item][0]):
                 try:
-                    value = self.KEYS[item][0](value)
+                    if isinstance(value, unicode):
+                        # Value is unicode, we want other: encode, convert
+                        value = self.KEYS[item][0](value.encode('utf-8'))
+                    elif isinstance(value, str):
+                        # Value is not unicode, we want unicode: decode, convert
+                        value = self.KEYS[item][0](value.decode('utf-8'))
+                    else:
+                        # Neither unicode nor string, just try to convert
+                        value = self.KEYS[item][0](value)
                 except (TypeError, ValueError):
                     raise TypeError(
                         'Bad type for %s: %s (want %s)'
