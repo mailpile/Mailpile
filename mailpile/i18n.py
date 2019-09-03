@@ -109,20 +109,21 @@ def ActivateTranslation(session, config, language, localedir=None):
         localedir = mailpile.config.paths.DEFAULT_LOCALE_DIRECTORY()
 
     trans = None
-    if language:
+    if (not language) or language[:5].lower() in ('en', 'en_us', 'c'):
+        trans = NullTranslations()
+    elif language:
         try:
             trans = translation("mailpile", localedir,
                                 [language], codeset="utf-8")
         except IOError:
-            if session and language[:2] not in ('en', 'C'):
+            if session:
                 session.ui.debug('Failed to load language %s' % language)
 
     if not trans:
         trans = translation("mailpile", localedir,
                             codeset='utf-8', fallback=True)
 
-        if (session and language and language[:2] not in ('en', 'C', '')
-                and isinstance(trans, NullTranslations)):
+        if session:
             session.ui.debug('Failed to configure i18n (%s). '
                              'Using fallback.' % language)
 

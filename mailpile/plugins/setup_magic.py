@@ -490,6 +490,14 @@ class SetupGetEmailSettings(TestableWebbable):
         return str(val).replace('%EMAILADDRESS%', email
                                 ).replace('%EMAILLOCALPART%', lpart)
 
+    def _guess_username(self, email):
+        lpart, domain = email.split('@', 1)
+        if not '.' in domain:
+            # Localhost or other "local" names, assume just local part
+            return lpart
+        else:
+            return email
+
     def _source_proto(self, insrv):
         sockettype = str(insrv.socketType)
         servertype = str(insrv.get('type', ''))
@@ -516,10 +524,14 @@ class SetupGetEmailSettings(TestableWebbable):
         rank = 0
         proto = entry.get('protocol', 'unknown').lower()
         auth = entry.get('auth_type', 'unknown').lower()
+        # Deprioritize encrypted services on localhost, because they will
+        # generally have a certificate mismatch and the crypto doesn't
+        # do anything anyway.
+        lmul = -1 if (entry.get('hostname', '') == 'localhost') else 1
         for srch, score in [('pop3', 1),
                             ('imap', 2),
-                            ('ssl', 10),
-                            ('tls', 5),
+                            ('ssl', 10 * lmul),
+                            ('tls', 5 * lmul),
                             ('oauth2', 10),
                             ('password', 0)]:
             if srch in proto or srch in auth:
@@ -736,20 +748,22 @@ class SetupGetEmailSettings(TestableWebbable):
 
         self._progress(_('Probing for services...'))
         result = {'sources': [], 'routes': []}
-        for section, service, port, proto in (
-                ('sources', 'imap', '993', 'imap_ssl'),
-                ('sources', 'pop3', '995', 'pop3_ssl'),
-                ('sources', 'imap', '143', 'imap'),
-                ('sources', 'pop3', '110', 'pop3'),
-                ('routes', 'smtp', '465', 'smtpssl'),
-                ('routes', 'smtp', '587', 'smtp'),
-                ('routes', 'smtp', '25', 'smtp')):
+        for section, service, port, proto, auth_type in (
+                ('sources', 'imap', '993', 'imap_ssl', 'password'),
+                ('sources', 'pop3', '995', 'pop3_ssl', 'password'),
+                ('sources', 'imap', '143', 'imap', 'password'),
+                ('sources', 'pop3', '110', 'pop3', 'password'),
+                ('routes', 'smtp', '465', 'smtpssl', 'password-cleartext'),
+                ('routes', 'smtp', '587', 'smtp', 'password-cleartext'),
+                ('routes', 'smtp', '25', 'smtp', 'password-cleartext')):
             for host in service_domains.get(service, []):
                 if len(result[section]) > 3:
                     break
                 if self._probe_port(host, port, encrypted=('ssl' in proto)):
                     result[section].append({
                         'protocol': proto,
+                        'username': self._guess_username(email),
+                        'auth_type': auth_type,
                         'host': str(host),
                         'port': str(port),
                     })

@@ -383,12 +383,13 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                 for rcpt in to:
                     vcard = session.config.vcards.get_vcard(rcpt)
                     if vcard:
-                        vcard.record_history('send', time.time(), msg_mid)
-                        if frm_vcard:
-                            vcard.prefer_sender(rcpt, frm_vcard)
-                        if update_to_vcards:
-                            vcard.pgp_key_shared = int(time.time())
-                        vcard.save()
+                        with vcard:
+                            vcard.record_history('send', time.time(), msg_mid)
+                            if frm_vcard:
+                                vcard.prefer_sender(rcpt, frm_vcard)
+                            if update_to_vcards:
+                                vcard.pgp_key_shared = int(time.time())
+                            vcard.save()
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total
                 ev.data['delivered'] = len([k for k in ev.private_data
