@@ -1,7 +1,7 @@
 # Translations template for mailpile.
-# Copyright (C) 2018 Mailpile ehf
+# Copyright (C) 2019 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-#
+# 
 # Translators:
 # Allan Nordhøy <epost@anotheragency.no>, 2015-2018
 # Daniel <i18n@daniel.priv.no>, 2014
@@ -13,22 +13,20 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-16 17:38+0000\n"
-"PO-Revision-Date: 2018-05-19 08:20+0000\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
-"Language-Team: Norwegian Bokmål (Norway) (http://www.transifex.com/otf/"
-"mailpile/language/nb_NO/)\n"
-"Language: nb_NO\n"
+"POT-Creation-Date: 2019-08-16 17:28+0000\n"
+"PO-Revision-Date: 2019-08-17 02:52+0000\n"
+"Last-Translator: Dragana Kaurin <dragana.kaurin@localizationlab.org>\n"
+"Language-Team: Norwegian Bokmål (Norway) (http://www.transifex.com/otf/mailpile/language/nb_NO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.4.0\n"
+"Language: nb_NO\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: mailpile/app.py:125
 msgid "Mailpile is unconfigured, please run `setup` or visit the web UI."
-msgstr ""
-"Mailpile er ikke satt opp, kjør \"setup\"` eller besøk nettgrensesnittet."
+msgstr "Mailpile er ikke satt opp, kjør \"setup\"` eller besøk nettgrensesnittet."
 
 #: mailpile/app.py:131
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
@@ -460,18 +458,16 @@ msgid "In lockdown, doing nothing."
 msgstr "Ved nedlåst status, gjør ingenting."
 
 #: mailpile/security.py:619
-#, fuzzy
 msgid "We trust ourselves"
-msgstr "Nøkkeltillitsmodell"
+msgstr ""
 
 #: mailpile/security.py:651
 msgid "This sender's reputation is unknown"
 msgstr ""
 
 #: mailpile/security.py:718
-#, fuzzy
 msgid "The digital signature is invalid"
-msgstr "Den digitale signaturen var ugyldig eller feil"
+msgstr ""
 
 #: mailpile/security.py:720
 msgid "This person usually signs their mail"
@@ -482,9 +478,8 @@ msgid "This was signed by an unexpected key"
 msgstr ""
 
 #: mailpile/security.py:724
-#, fuzzy
 msgid "This was signed by an expired key"
-msgstr "Digitalt signert med utgått nøkkel"
+msgstr ""
 
 #: mailpile/security.py:726
 msgid "Good signature, we are happy"
@@ -995,14 +990,12 @@ msgid "Mailboxes we index"
 msgstr "Postbokser vi indekserer"
 
 #: mailpile/config/defaults.py:59
-#, fuzzy
 msgid "Plugins to load before login"
-msgstr "Tillegg som lastes ved oppstart"
+msgstr ""
 
 #: mailpile/config/defaults.py:61
-#, fuzzy
 msgid "Plugins to load after login"
-msgstr "Tillegg som lastes ved oppstart"
+msgstr ""
 
 #: mailpile/config/defaults.py:63
 msgid "Locations of assorted data"
@@ -1069,14 +1062,12 @@ msgid "List of hosts to avoid proxying"
 msgstr "Liste over verter som ikke skal mellomtjenes"
 
 #: mailpile/config/defaults.py:82
-#, fuzzy
 msgid "Tor settings"
-msgstr "Mellomtjenerinnstillinger"
+msgstr ""
 
 #: mailpile/config/defaults.py:83
-#, fuzzy
 msgid "Override the default Tor binary path"
-msgstr "Overstyr forvalgt binær GPG-sti"
+msgstr ""
 
 #: mailpile/config/defaults.py:85
 msgid "Use shared system-wide Tor (not our own)"
@@ -1095,9 +1086,8 @@ msgid "Control Port"
 msgstr ""
 
 #: mailpile/config/defaults.py:90
-#, fuzzy
 msgid "Control Password"
-msgstr "Kontopassord"
+msgstr ""
 
 #: mailpile/config/defaults.py:93
 msgid "User preferences"
@@ -1266,8 +1256,7 @@ msgstr "Forvalgt utgående e-postrute"
 
 #: mailpile/config/defaults.py:159
 msgid "Target line length, <40 disables reflow"
-msgstr ""
-"Mål for linjelengde, under 40 tegn strekker linje istedefor å hoppe til neste"
+msgstr "Mål for linjelengde, under 40 tegn strekker linje istedefor å hoppe til neste"
 
 #: mailpile/config/defaults.py:161
 msgid "Always BCC self on outgoing mail"
@@ -1761,14 +1750,12 @@ msgid "Creating a %(bits)s bit GnuPG key"
 msgstr "Oppretter en %(bits)s-bits GnuPG-nøkkel"
 
 #: mailpile/crypto/gpgi.py:1777
-#, fuzzy
 msgid "Waiting to generate a PGP key."
-msgstr "Venter på å opprette en %d bit GnuPG-nøkkel.bits"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1781
-#, fuzzy
 msgid "Generating new PGP key."
-msgstr "Oppretter en %d bit PGP-nøkkel.bits"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1863
 #, python-format
@@ -1952,9 +1939,8 @@ msgid "Updating search engine for %s"
 msgstr "Oppdaterer søkemotor for %s"
 
 #: mailpile/mail_source/__init__.py:1056
-#, fuzzy
 msgid "Checking new credentials"
-msgstr "Ser etter nye e-postbokser"
+msgstr ""
 
 #: mailpile/mail_source/__init__.py:1107
 msgid "Internal error!  Sleeping..."
@@ -2380,9 +2366,8 @@ msgid "Failed to attach files"
 msgstr "Mislyktes i å legge til filer"
 
 #: mailpile/plugins/compose.py:1014
-#, fuzzy
 msgid "Cannot find message"
-msgstr "Kunne ikke signere melding"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1019
 #, python-format
@@ -2407,9 +2392,9 @@ msgid "Unthreaded %d messages"
 msgstr "%d utrådede meldinger"
 
 #: mailpile/plugins/compose.py:1090
-#, fuzzy, python-format
+#, python-format
 msgid "Unthread %d messages"
-msgstr "%d utrådede meldinger"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1107
 msgid "The index is not ready yet"
@@ -2492,10 +2477,9 @@ msgstr "Påkrevd parameter mangler. De påkrevde parameterne er: %s"
 #: mailpile/plugins/contacts.py:631
 #, python-format
 msgid ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
-msgstr ""
-"Ukjent parameter sendt til importør. Ga %s, men de kjente parameterne er: %s"
+"Unknown parameter passed to importer. Provided %s; but known parameters are:"
+" %s"
+msgstr "Ukjent parameter sendt til importør. Ga %s, men de kjente parameterne er: %s"
 
 #: mailpile/plugins/contacts.py:800
 msgid "Searched for addresses"
@@ -2591,9 +2575,9 @@ msgid "Rescanning: %s"
 msgstr "Reskanner: %s"
 
 #: mailpile/plugins/core.py:183
-#, fuzzy, python-format
+#, python-format
 msgid "Importing VCards from: %s"
-msgstr "Importerte kontakter fra GPG-nøkkelring"
+msgstr ""
 
 #: mailpile/plugins/core.py:202
 #, python-format
@@ -2854,8 +2838,7 @@ msgstr "Kommandoer:"
 
 #: mailpile/plugins/core.py:1940
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr ""
-"Merkelapper: (bruk merkelapper som en kommando for å vise merkede meldinger)"
+msgstr "Merkelapper: (bruk merkelapper som en kommando for å vise merkede meldinger)"
 
 #: mailpile/plugins/core.py:1978 mailpile/plugins/core.py:2006
 msgid "Displayed help"
@@ -2885,19 +2868,18 @@ msgstr "Ingen resultater"
 
 #: mailpile/plugins/crypto_autocrypt.py:191
 #: mailpile/plugins/crypto_autocrypt.py:218
-#, fuzzy
 msgid "Not found"
-msgstr "Kunne ikke finne noen data"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:216
-#, fuzzy, python-format
+#, python-format
 msgid "Forgot %d recipients"
-msgstr "Ingen mottakere"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:265
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d peers"
-msgstr "Fant %d hendelser"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:47
 msgid ""
@@ -2905,11 +2887,7 @@ msgid ""
 "confidential messages to the owner, or to verify their\n"
 "digital signatures. You can safely discard or ignore this\n"
 "file if you do not use e-mail encryption or signatures."
-msgstr ""
-"Dette er en digital krypteringsnøkkel, som du kan bruke for å sende\n"
-"konfidensielle meldinger til eieren, eller for å bekrefte deres\n"
-"digitale signaturer. Du kan trygt se bort fra eller ignorere denne\n"
-"fila hvis du ikke bruker e-postkryptering eller signaturer."
+msgstr "Dette er en digital krypteringsnøkkel, som du kan bruke for å sende\nkonfidensielle meldinger til eieren, eller for å bekrefte deres\ndigitale signaturer. Du kan trygt se bort fra eller ignorere denne\nfila hvis du ikke bruker e-postkryptering eller signaturer."
 
 #: mailpile/plugins/crypto_gnupg.py:52
 msgid "Generated by Mailpile and GnuPG"
@@ -2963,8 +2941,7 @@ msgstr "VIKTIG: dette MÅ gjøres før en nøkkel blir avskrudd!"
 
 #: mailpile/plugins/crypto_gnupg.py:508
 msgid "This key's passphrase will be used to log in to Mailpile"
-msgstr ""
-"Denne nøkkelens passordsekvens vil bli brukt til å logge inn i Mailpile"
+msgstr "Denne nøkkelens passordsekvens vil bli brukt til å logge inn i Mailpile"
 
 #: mailpile/plugins/crypto_gnupg.py:512
 msgid "Revoke bad keys:"
@@ -3083,7 +3060,8 @@ msgid "This account does not have an encryption key."
 msgstr "Denne kontoen har ikke en krypteringsnøkkel"
 
 #: mailpile/plugins/crypto_policy.py:208
-msgid "Your policy is to always encrypt, but we do not have keys for everyone!"
+msgid ""
+"Your policy is to always encrypt, but we do not have keys for everyone!"
 msgstr "Din praksis er å alltid kryptere, men vi har ikke nøkler for alle!"
 
 #: mailpile/plugins/crypto_policy.py:211
@@ -3129,9 +3107,7 @@ msgstr "Hendelse %s ble ikke funnet"
 
 #: mailpile/plugins/eventlog.py:196
 msgid "Watching logs: Press CTRL-C to return to the CLI"
-msgstr ""
-"Overvoker loggføring: Trykk CTRL+C for å returnere til "
-"kommandolinjegrensesnitt"
+msgstr "Overvoker loggføring: Trykk CTRL+C for å returnere til kommandolinjegrensesnitt"
 
 #: mailpile/plugins/exporters.py:92
 msgid "Parent directory does not exist."
@@ -3392,9 +3368,8 @@ msgid "Failed to parse message."
 msgstr "Klarte ikke å tolke melding."
 
 #: mailpile/plugins/search.py:375
-#, fuzzy
 msgid "Failed to evalute sender trust"
-msgstr "Klarte ikke å vurdere nøkkeltillit"
+msgstr ""
 
 #: mailpile/plugins/search.py:381
 #, python-format
@@ -3554,11 +3529,9 @@ msgstr "Skrur nedlåsing på igjen"
 
 #: mailpile/plugins/setup_magic.py:354
 msgid ""
-"Unable to obfuscate search index without losing data. Not indexing encrypted "
-"mail."
-msgstr ""
-"Kunne ikke beskytte søkeindeksen uten å miste data. Indekserer ikke kryptert "
-"e-post."
+"Unable to obfuscate search index without losing data. Not indexing encrypted"
+" mail."
+msgstr "Kunne ikke beskytte søkeindeksen uten å miste data. Indekserer ikke kryptert e-post."
 
 #: mailpile/plugins/setup_magic.py:360
 msgid ""
@@ -3617,8 +3590,7 @@ msgstr "Spør %s, klartekst=%s"
 #, python-format
 msgid ""
 "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
-msgstr ""
-"Tester %(protocol)4.4s på %(host)s:%(port)s med STARTTLS som %(username)s"
+msgstr "Tester %(protocol)4.4s på %(host)s:%(port)s med STARTTLS som %(username)s"
 
 #: mailpile/plugins/setup_magic.py:904
 #, python-format
@@ -3959,9 +3931,8 @@ msgid "Found encryption key in keyserver"
 msgstr "Fant krypteringsnøkkel i nøkkeltjener"
 
 #: mailpile/plugins/keylookup/__init__.py:677
-#, fuzzy
 msgid "Found encryption key in keys.openpgp.org"
-msgstr "Fant krypteringsnøkkel i nøkkeltjener"
+msgstr ""
 
 #: mailpile/plugins/keylookup/email_keylookup.py:39
 msgid "E-mail keys"
@@ -3972,14 +3943,12 @@ msgid "Found key in local e-mail"
 msgstr "Fant nøkkel i lokal e-post"
 
 #: mailpile/plugins/keylookup/wkd.py:49
-#, fuzzy
 msgid "Web Key Directory"
-msgstr "Søk i indekseringsmappen"
+msgstr ""
 
 #: mailpile/plugins/keylookup/wkd.py:64
-#, fuzzy
 msgid "Found key in Web Key Directory"
-msgstr "Fant nøkkel i DNS PKA"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:63
 msgid "Basic header tokenising"
@@ -4216,9 +4185,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:203
-#, fuzzy
 msgid "Address headers to mine"
-msgstr "Legg til melding til søkemotor"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:205
 msgid ""
@@ -4230,9 +4198,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:212
-#, fuzzy
 msgid "Generate long skips"
-msgstr "Opprettet kurvebasert visning"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:213
 msgid ""
@@ -4300,9 +4267,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:252
-#, fuzzy
 msgid "Search for Habeas Headers"
-msgstr "Søkte etter adresser"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:253
 msgid ""
@@ -4385,8 +4351,7 @@ msgid ""
 "     something scores >= spamc, it's called spam; and everything else is\n"
 "     called 'I am not sure' -- the middle ground.\n"
 "\n"
-"     Note:  You may wish to increase nbuckets, to give this scheme more "
-"cutoff\n"
+"     Note:  You may wish to increase nbuckets, to give this scheme more cutoff\n"
 "     values to analyze."
 msgstr ""
 
@@ -4403,9 +4368,8 @@ msgid "Best cutoff unsure weight"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:352
-#, fuzzy
 msgid "Percentiles"
-msgstr "Profiler"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:353
 #, python-format
@@ -4432,9 +4396,8 @@ msgid "Show false negatives"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:387
-#, fuzzy
 msgid "Show unsure"
-msgstr "Vis i sidepanel"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:391
 msgid "Show character limit"
@@ -4478,9 +4441,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:417
-#, fuzzy
 msgid "Spam directories"
-msgstr "Ikke en mappe: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:418 mailpile/spambayes/Options.py:423
 msgid ""
@@ -4489,9 +4451,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:422
-#, fuzzy
 msgid "Ham directories"
-msgstr "Ikke en mappe: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:429
 msgid "Build each classifier from scratch"
@@ -4510,9 +4471,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:442
-#, fuzzy
 msgid "Maximum number of extreme words"
-msgstr "Minimalt antall signaturer som kreves"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:443
 msgid ""
@@ -4522,9 +4482,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:448
-#, fuzzy
 msgid "Unknown word probability"
-msgstr "Ukjent krypteringsforordning: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:449
 msgid ""
@@ -4536,9 +4495,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:456
-#, fuzzy
 msgid "Unknown word strength"
-msgstr "Ukjent innholdstype (Content-Type)"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:457
 msgid ""
@@ -4609,10 +4567,8 @@ msgid ""
 "     probably at least triple it.\n"
 "\n"
 "     You may also wish to increase the max_discriminators (maximum number\n"
-"     of extreme words) option if you enable this option, perhaps doubling "
-"or\n"
-"     quadrupling it.  It's not yet clear.  Bigrams create many more "
-"hapaxes,\n"
+"     of extreme words) option if you enable this option, perhaps doubling or\n"
+"     quadrupling it.  It's not yet clear.  Bigrams create many more hapaxes,\n"
 "     and that seems to increase the brittleness of minimalist training\n"
 "     regimes; increasing max_discriminators may help to soften that effect.\n"
 "     OTOH, max_discriminators defaults to 150 in part because that makes it\n"
@@ -4654,9 +4610,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:552
-#, fuzzy
 msgid "Storage file name"
-msgstr "Kildenavn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:553
 msgid ""
@@ -4669,9 +4624,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:561
-#, fuzzy
 msgid "Message information file name"
-msgstr "Meldingen kan ikke endres"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:562
 msgid ""
@@ -4705,9 +4659,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:582 mailpile/spambayes/Options.py:597
-#, fuzzy
 msgid "Spam cache directory"
-msgstr "Søk i indekseringsmappen"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:583 mailpile/spambayes/Options.py:598
 msgid ""
@@ -4716,9 +4669,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:587 mailpile/spambayes/Options.py:602
-#, fuzzy
 msgid "Ham cache directory"
-msgstr "Søk i indekseringsmappen"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:588 mailpile/spambayes/Options.py:603
 msgid ""
@@ -4727,9 +4679,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:592 mailpile/spambayes/Options.py:607
-#, fuzzy
 msgid "Unknown cache directory"
-msgstr "Ukjent feil"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:593 mailpile/spambayes/Options.py:608
 msgid ""
@@ -4738,9 +4689,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:612
-#, fuzzy
 msgid "Cache messages"
-msgstr "Søk i meldinger"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:613
 msgid ""
@@ -4769,9 +4719,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:632
-#, fuzzy
 msgid "Maximum size of cached messages"
-msgstr "Mislyktes i å legge til melding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:633
 msgid ""
@@ -4818,16 +4767,14 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:670
-#, fuzzy
 msgid "Ham disposition name"
-msgstr "Vertsnavn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:670 mailpile/spambayes/Options.py:773
 #: mailpile/spambayes/Options.py:778 mailpile/spambayes/Options.py:1021
 #: mailpile/spambayes/Options.py:1027 mailpile/spambayes/Options.py:1033
-#, fuzzy
 msgid "ham"
-msgstr "Skinke"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:671
 msgid "As for Spam Designation, but for emails classified as Ham."
@@ -4865,8 +4812,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:686
 msgid ""
 "Set this option to augment scores of 1.00 or 0.00 by a\n"
-"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows "
-"the\n"
+"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows the\n"
 "     \"number of zeros\" or \"number of nines\" next to the score value)."
 msgstr ""
 
@@ -4900,9 +4846,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:710
-#, fuzzy
 msgid "Level header name"
-msgstr "Trenger navn på merkelapp"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:714
 msgid "Add evidence header"
@@ -4926,9 +4871,8 @@ msgid "Spambayes id header name"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:730
-#, fuzzy
 msgid "Add trained header"
-msgstr "Legg til merkelapper her!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:731
 msgid ""
@@ -4956,8 +4900,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:744
 msgid ""
 "The range of clues that are added to the \"debug\" header in the\n"
-"     E-mail. All clues that have their probability smaller than this "
-"number,\n"
+"     E-mail. All clues that have their probability smaller than this number,\n"
 "     or larger than one minus this number are added to the header such that\n"
 "     you can see why spambayes thinks this is ham/spam or why it is unsure.\n"
 "     The default is to show all clues, but you can reduce that by setting\n"
@@ -5009,9 +4952,8 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:786 mailpile/spambayes/Options.py:844
 #: mailpile/spambayes/Options.py:921
-#, fuzzy
 msgid "Remote Servers"
-msgstr "Tjener"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:787
 msgid ""
@@ -5019,19 +4961,15 @@ msgid ""
 "     before sending it on to your email client.  You need to specify which\n"
 "     POP3 server(s) and port(s) you wish it to connect to - a POP3 server\n"
 "     address typically looks like 'pop3.myisp.net:110' where\n"
-"     'pop3.myisp.net' is the name of the computer where the POP3 server "
-"runs\n"
-"     and '110' is the port on which the POP3 server listens.  The other "
-"port\n"
+"     'pop3.myisp.net' is the name of the computer where the POP3 server runs\n"
+"     and '110' is the port on which the POP3 server listens.  The other port\n"
 "     you might find is '995', which is used for secure POP3.  If you use\n"
 "     more than one server, simply separate their names with commas.  For\n"
 "     example:  'pop3.myisp.net:110,pop.gmail.com:995'.  You can get\n"
 "     these server names and port numbers from your existing email\n"
 "     configuration, or from your ISP or system administrator.  If you are\n"
-"     using Web-based email, you can't use the SpamBayes POP3 proxy "
-"(sorry!).\n"
-"     In your email client's configuration, where you would normally put "
-"your\n"
+"     using Web-based email, you can't use the SpamBayes POP3 proxy (sorry!).\n"
+"     In your email client's configuration, where you would normally put your\n"
 "     POP3 server address, you should now put the address of the machine\n"
 "     running SpamBayes.\n"
 msgstr ""
@@ -5213,9 +5151,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:969
-#, fuzzy
 msgid "Launch browser"
-msgstr "oppdater din nettleser"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:970
 msgid ""
@@ -5240,9 +5177,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:985
-#, fuzzy
 msgid "Headers to display in message review"
-msgstr "Kunne ikke forhåndsvise melding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:986
 msgid ""
@@ -5254,9 +5190,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:993
-#, fuzzy
 msgid "Display date received in message review"
-msgstr "Vist velkomstmelding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:994
 msgid ""
@@ -5267,9 +5202,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1000
-#, fuzzy
 msgid "Display score in message review"
-msgstr "Vist velkomstmelding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1001
 msgid ""
@@ -5363,15 +5297,13 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1049
-#, fuzzy
 msgid "HTTP Authentication"
-msgstr "Identitetsbekreftelse"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1050
 msgid ""
 "This option lets you choose the security level of the web interface.\n"
-"     When selecting Basic or Digest, the user will be prompted a login and "
-"a\n"
+"     When selecting Basic or Digest, the user will be prompted a login and a\n"
 "     password to access the web interface. The Basic option is faster, but\n"
 "     transmits the password in clear on the network. The Digest option\n"
 "     encrypts the password before transmission."
@@ -5390,9 +5322,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1067
-#, fuzzy
 msgid "Rows per section"
-msgstr "Flytt utvalg oppover"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1068
 msgid "Number of rows to display per ham/spam/unsure section."
@@ -5464,27 +5395,24 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1112
-#, fuzzy
 msgid "Folders to filter"
-msgstr "La til nytt filt"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1113
 msgid "Comma delimited list of folders to be filtered"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1116
-#, fuzzy
 msgid "Folder for unsure messages"
-msgstr "Mislyktes i å fjerne melding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1120
 msgid "Folder for suspected spam"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1124
-#, fuzzy
 msgid "Folder for ham messages"
-msgstr "Mislyktes i å legge til melding"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1125
 msgid ""
@@ -5582,9 +5510,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1223
-#, fuzzy
 msgid "HTTP Proxy Username"
-msgstr "Unix-brukernavn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1224
 msgid ""
@@ -5593,9 +5520,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1227
-#, fuzzy
 msgid "HTTP Proxy Password"
-msgstr "Nøkkelpassord"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1228
 msgid ""
@@ -5617,9 +5543,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1239
-#, fuzzy
 msgid "User Interface Language"
-msgstr "Grensesnittspråk"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1240
 msgid ""
@@ -5667,9 +5592,7 @@ msgstr "Ikke signert"
 msgid ""
 "This data has no digital signature, which means it could have come from "
 "anyone, not necessarily the apparent sender"
-msgstr ""
-"Denne meldingen har ingen digital signatur, noe som betyr at den kan ha "
-"kommet fra hvem som helst, ikke nødvendigvis den avsenderen som er oppgitt"
+msgstr "Denne meldingen har ingen digital signatur, noe som betyr at den kan ha kommet fra hvem som helst, ikke nødvendigvis den avsenderen som er oppgitt"
 
 #: mailpile/www/jinjaextensions.py:351
 msgid "There was a weird error with this digital signature"
@@ -5693,9 +5616,7 @@ msgstr "Usignert"
 msgid ""
 "This data has no digital signature, which means it could easily have been "
 "forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Denne dataen har ingen digital signatur, noe som betyr at den kan ha blitt "
-"forfalsket. Sendere signerer vanligvis meldingene sine, så vær forsiktig!"
+msgstr "Denne dataen har ingen digital signatur, noe som betyr at den kan ha blitt forfalsket. Sendere signerer vanligvis meldingene sine, så vær forsiktig!"
 
 #: mailpile/www/jinjaextensions.py:367
 msgid "Mixed Unsigned"
@@ -5703,12 +5624,9 @@ msgstr "Blandet usignert"
 
 #: mailpile/www/jinjaextensions.py:368
 msgid ""
-"This message has no digital signature, which means it could easily have been "
-"forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Denne meldingen har ingen digital signatur, noe som betyr at den kan ha "
-"blitt forfalsket. Sendere signerer vanligvis meldingene sine, så vær "
-"forsiktig!"
+"This message has no digital signature, which means it could easily have been"
+" forged. This sender usually signs their messages, so be careful!"
+msgstr "Denne meldingen har ingen digital signatur, noe som betyr at den kan ha blitt forfalsket. Sendere signerer vanligvis meldingene sine, så vær forsiktig!"
 
 #: mailpile/www/jinjaextensions.py:374
 msgid "Invalid"
@@ -5724,9 +5642,7 @@ msgstr "Blandet ugyldig"
 
 #: mailpile/www/jinjaextensions.py:380
 msgid "Parts of this message have a digital signature that is invalid or bad"
-msgstr ""
-"Deler av denne meldingen har en digital signatur som enten er ugyldig eller "
-"eller feil"
+msgstr "Deler av denne meldingen har en digital signatur som enten er ugyldig eller eller feil"
 
 #: mailpile/www/jinjaextensions.py:385
 msgid "Revoked"
@@ -5734,10 +5650,9 @@ msgstr "Tilbaketrukket"
 
 #: mailpile/www/jinjaextensions.py:386
 msgid ""
-"Watch out, the digital signature was made with a key that has been revoked - "
-"this is not a good thing"
-msgstr ""
-"Pass opp, digitalt signert med tilbakekalt nøkkel - det er ikke en god ting."
+"Watch out, the digital signature was made with a key that has been revoked -"
+" this is not a good thing"
+msgstr "Pass opp, digitalt signert med tilbakekalt nøkkel - det er ikke en god ting."
 
 #: mailpile/www/jinjaextensions.py:391
 msgid "Mixed Revoked"
@@ -5747,9 +5662,7 @@ msgstr "Blandet tilbakekalt"
 msgid ""
 "Watch out, parts of this message were digitally signed with a key that has "
 "been revoked"
-msgstr ""
-"Pass opp, deler av denne meldingen har blitt digitalt signert med en "
-"tilbakekalt nøkkel"
+msgstr "Pass opp, deler av denne meldingen har blitt digitalt signert med en tilbakekalt nøkkel"
 
 #: mailpile/www/jinjaextensions.py:397
 msgid "Expired"
@@ -5764,7 +5677,8 @@ msgid "Mixed Expired"
 msgstr "Blandet utløpt"
 
 #: mailpile/www/jinjaextensions.py:403
-msgid "Parts of this message have a digital signature made with an expired key"
+msgid ""
+"Parts of this message have a digital signature made with an expired key"
 msgstr "Deler av denne meldingen er digitalt signert med en utgått nøkkel"
 
 #: mailpile/www/jinjaextensions.py:409
@@ -5778,11 +5692,9 @@ msgstr "Blandet ukjent"
 
 #: mailpile/www/jinjaextensions.py:415
 msgid ""
-"Parts of this message have a signature made with an unknown key which we can "
-"not verify"
-msgstr ""
-"Deler av denne meldingen er signert med en ukjent nøkkel som vi ikke kan "
-"bekrefte"
+"Parts of this message have a signature made with an unknown key which we can"
+" not verify"
+msgstr "Deler av denne meldingen er signert med en ukjent nøkkel som vi ikke kan bekrefte"
 
 #: mailpile/www/jinjaextensions.py:420
 msgid "Changed"
@@ -5790,8 +5702,7 @@ msgstr "Endret"
 
 #: mailpile/www/jinjaextensions.py:421
 msgid "The digital signature was made with an unexpected key. Be careful!"
-msgstr ""
-"Den digitale signaturen ble utført med en uventet nøkkel. Vær forsiktig!"
+msgstr "Den digitale signaturen ble utført med en uventet nøkkel. Vær forsiktig!"
 
 #: mailpile/www/jinjaextensions.py:426
 msgid "Mixed Changed"
@@ -5801,9 +5712,7 @@ msgstr "Blandet endret"
 msgid ""
 "Parts of this message have a digital signature that was made with an "
 "unexpected key. Be careful!"
-msgstr ""
-"Deler av denne meldingen har en digital signatur utført med en uventet "
-"nøkkel. Vær forsiktig!"
+msgstr "Deler av denne meldingen har en digital signatur utført med en uventet nøkkel. Vær forsiktig!"
 
 #: mailpile/www/jinjaextensions.py:432
 msgid "Unverified"
@@ -5811,8 +5720,7 @@ msgstr "Ikke verifisert"
 
 #: mailpile/www/jinjaextensions.py:433
 msgid "The signature was good but it came from a key that is not verified yet"
-msgstr ""
-"Signaturen er god, men den kommer fra en nøkkel som ikke er bekreftet enda"
+msgstr "Signaturen er god, men den kommer fra en nøkkel som ikke er bekreftet enda"
 
 #: mailpile/www/jinjaextensions.py:438
 msgid "Mixed Unverified"
@@ -5831,10 +5739,7 @@ msgstr "Signert"
 msgid ""
 "The digital signature is valid and was made with a key we have seen before. "
 "Looks good!"
-msgstr ""
-"Den digitale signaturen er gyldig og ble gjort med en nøkkel du har sett "
-"før.\n"
-"Ser bra ut!"
+msgstr "Den digitale signaturen er gyldig og ble gjort med en nøkkel du har sett før.\nSer bra ut!"
 
 #: mailpile/www/jinjaextensions.py:449
 msgid "Mixed Signed"
@@ -5844,9 +5749,7 @@ msgstr "Blandet signert"
 msgid ""
 "Parts of the message have a good digital signature, made with a key we have "
 "seen before."
-msgstr ""
-"Deler av denne meldingen har en gyldig digital signatur, gjort med en nøkkel "
-"du har sett før."
+msgstr "Deler av denne meldingen har en gyldig digital signatur, gjort med en nøkkel du har sett før."
 
 #: mailpile/www/jinjaextensions.py:455
 msgid "Verified"
@@ -5876,9 +5779,7 @@ msgstr "Ikke kryptert"
 msgid ""
 "This content was not encrypted. It could have been intercepted and read by "
 "an unauthorized party"
-msgstr ""
-"Innholdet ble ikke kryptert. Det kan ha blitt snappet opp og lest av en "
-"uvedkommen tredjepart"
+msgstr "Innholdet ble ikke kryptert. Det kan ha blitt snappet opp og lest av en uvedkommen tredjepart"
 
 #: mailpile/www/jinjaextensions.py:509
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:258
@@ -5894,9 +5795,9 @@ msgid "Mixed Encrypted"
 msgstr "Blandet kryptert"
 
 #: mailpile/www/jinjaextensions.py:515
-msgid "Part of this message were encrypted, but other parts were not encrypted"
-msgstr ""
-"Deler av denne meldingen ble kryptert, men andre deler ble ikke kryptert"
+msgid ""
+"Part of this message were encrypted, but other parts were not encrypted"
+msgstr "Deler av denne meldingen ble kryptert, men andre deler ble ikke kryptert"
 
 #: mailpile/www/jinjaextensions.py:520
 msgid "Locked Key"
@@ -5905,9 +5806,7 @@ msgstr "Låst nøkkel"
 #: mailpile/www/jinjaextensions.py:521
 msgid ""
 "You have the encryption key to decrypt this, but the key itself is locked."
-msgstr ""
-"Du har krypteringsnøkkelen til å dekryptere dette, men selve nøkkelen er "
-"låst."
+msgstr "Du har krypteringsnøkkelen til å dekryptere dette, men selve nøkkelen er låst."
 
 #: mailpile/www/jinjaextensions.py:526
 msgid "Mixed Locked Key"
@@ -5917,9 +5816,7 @@ msgstr "Blandet låst nøkkel"
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr ""
-"Deler av meldingen kunne ikke dekrypteres fordi din krypteringsnøkkel er "
-"låst."
+msgstr "Deler av meldingen kunne ikke dekrypteres fordi din krypteringsnøkkel er låst."
 
 #: mailpile/www/jinjaextensions.py:532
 msgid "Missing Key"
@@ -5929,9 +5826,7 @@ msgstr "Mangler nøkkel"
 msgid ""
 "You don't have the encryption key to decrypt this, perhaps it was encrypted "
 "to an old key you don't have anymore?"
-msgstr ""
-"Du mangler tilhørende krypteringsnøkkel for å dekryptere dette, kanskje ble "
-"det kryptert med en gammel nøkkel du ikke har lenger?"
+msgstr "Du mangler tilhørende krypteringsnøkkel for å dekryptere dette, kanskje ble det kryptert med en gammel nøkkel du ikke har lenger?"
 
 #: mailpile/www/jinjaextensions.py:538
 msgid "Mixed Missing Key"
@@ -5941,10 +5836,7 @@ msgstr "Blandet manglende nøkkel"
 msgid ""
 "Parts of the message could not be decrypted because you are missing the "
 "private key. Perhaps it was encrypted to an old key you don't have anymore?"
-msgstr ""
-"Deler av meldingen kunne ikke dekrypteres som følge av at du mangler "
-"tilhørende krypteringsnøkkel. Kanskje den ble kryptert med en gammel nøkkel "
-"du ikke har lenger?"
+msgstr "Deler av meldingen kunne ikke dekrypteres som følge av at du mangler tilhørende krypteringsnøkkel. Kanskje den ble kryptert med en gammel nøkkel du ikke har lenger?"
 
 #: mailpile/www/jinjaextensions.py:546
 msgid "We failed to decrypt and are unsure why."
@@ -5962,9 +5854,7 @@ msgstr "Automatisk"
 msgid ""
 "Mailpile will intelligently try to guess and suggest the best security with "
 "the given contact"
-msgstr ""
-"Mailpile vil etter beste evne prøve å gjette og foreslå best mulig "
-"sikkerhetshensyn å ta med gitt kontakt"
+msgstr "Mailpile vil etter beste evne prøve å gjette og foreslå best mulig sikkerhetshensyn å ta med gitt kontakt"
 
 #: mailpile/www/jinjaextensions.py:593
 msgid "Don't Sign or Encrypt"
@@ -5972,8 +5862,7 @@ msgstr "Ikke signer eller krypter"
 
 #: mailpile/www/jinjaextensions.py:594
 msgid "Messages will not be encrypted nor signed by your encryption key"
-msgstr ""
-"Meldinger vil ikke bli kryptert eller signert med din krypteringsnøkkel"
+msgstr "Meldinger vil ikke bli kryptert eller signert med din krypteringsnøkkel"
 
 #: mailpile/www/jinjaextensions.py:596
 msgid "Only Sign"
@@ -5989,8 +5878,7 @@ msgstr "Bare krypter"
 
 #: mailpile/www/jinjaextensions.py:600
 msgid "Messages will only be encrypted but not signed by your encryption key"
-msgstr ""
-"Meldinger vil bare bli kryptert men ikke signert med din krypteringsnøkkel"
+msgstr "Meldinger vil bare bli kryptert men ikke signert med din krypteringsnøkkel"
 
 #: mailpile/www/jinjaextensions.py:602
 msgid "Always Encrypt & Sign"
@@ -6004,9 +5892,7 @@ msgstr "Meldinger vil både bli kryptert og signert med din krypteringsnøkkel"
 msgid ""
 "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
 "Are you sure you want to continue?\\n"
-msgstr ""
-"Mailpile sikkerhetstips: \\n\\n  Oi oi! Denne nettsiden kan være skadelig!"
-"\\n Er du sikker på at du vil fortsette?\\n"
+msgstr "Mailpile sikkerhetstips: \\n\\n  Oi oi! Denne nettsiden kan være skadelig!\\n Er du sikker på at du vil fortsette?\\n"
 
 #: mailpile/www/jinjaextensions.py:824 mailpile/www/jinjaextensions.py:832
 msgid "No Subject"
@@ -6073,9 +5959,8 @@ msgid "Displayed raw metadata"
 msgstr "Viste rå metadata"
 
 #: shared-data/contrib/hacks/hacks.py:194
-#, fuzzy
 msgid "Edited raw metadata"
-msgstr "Viste rå metadata"
+msgstr ""
 
 #: shared-data/contrib/hacks/hacks.py:213
 msgid "Displayed message keywords"
@@ -6120,8 +6005,7 @@ msgstr "Du burde virkelig ta sikkerhetskopier av din Mailpile"
 
 #: shared-data/contrib/hints/hints.py:83
 msgid "Mailpile can automatically tag or untag any kind of e-mail!"
-msgstr ""
-"Mailpile kan automatisk merke eller fjerne merking av enhver type e-post!"
+msgstr "Mailpile kan automatisk merke eller fjerne merking av enhver type e-post!"
 
 #: shared-data/contrib/hints/hints.py:129
 msgid "never"
@@ -6180,16 +6064,15 @@ msgid "Note"
 msgstr "Notis"
 
 #: shared-data/default-theme/html/auth/shared.html:47
-msgid "Mailpile is still running and processing your e-mail in the background."
+msgid ""
+"Mailpile is still running and processing your e-mail in the background."
 msgstr "Mailpile kjører fremdeles, og behandler din e-post i bakgrunnen."
 
 #: shared-data/default-theme/html/auth/shared.html:48
 msgid ""
 "To disable Mailpile completely, press the Shutdown button on the settings "
 "page or in the desktop application window."
-msgstr ""
-"For å skru av Mailpile helt, trykk \"Skru av\"-knappen på innstillingssiden "
-"eller i skrivebordsprogramvinduet."
+msgstr "For å skru av Mailpile helt, trykk \"Skru av\"-knappen på innstillingssiden eller i skrivebordsprogramvinduet."
 
 #: shared-data/default-theme/html/backup/restore/index.html:2
 #: shared-data/default-theme/html/backup/restore/index.html:24
@@ -6209,8 +6092,7 @@ msgstr "Sikkerhetskopiarkiv er OK"
 
 #: shared-data/default-theme/html/backup/restore/index.html:31
 msgid "This backup was created by Mailpile version {ver} on {date}."
-msgstr ""
-"Denne sikkerhetskopien ble opprettet av Mailpile versjon {ver} på {date}."
+msgstr "Denne sikkerhetskopien ble opprettet av Mailpile versjon {ver} på {date}."
 
 #: shared-data/default-theme/html/backup/restore/index.html:37
 msgid "Restore encryption keys to shared GnuPG keychain"
@@ -6226,8 +6108,7 @@ msgstr "Ikke gjenopprett GnuPG/PGP -krypteringsnøkler"
 
 #: shared-data/default-theme/html/backup/restore/index.html:46
 msgid "Keep default Operating System settings (override backup)"
-msgstr ""
-"Behold forvalgte operativsystemsinnstillinger (overstyr sikkerhetskopi)"
+msgstr "Behold forvalgte operativsystemsinnstillinger (overstyr sikkerhetskopi)"
 
 #: shared-data/default-theme/html/backup/restore/index.html:50
 msgid "Enter your Mailpile Password to restore this configuration."
@@ -6241,9 +6122,7 @@ msgstr "Gjenopprett"
 msgid ""
 "You can restore a previous Mailpile configuration (keys, tags, etc.), "
 "provided you have a Mailpile Backup Archive available."
-msgstr ""
-"Du kan gjenopprette et tidligere Mailpile-oppsett (nøkler, etiketter, osv.), "
-"forutsatt at du har et Mailpile-sikkerhetskopiarkiv tilgjengelig."
+msgstr "Du kan gjenopprette et tidligere Mailpile-oppsett (nøkler, etiketter, osv.), forutsatt at du har et Mailpile-sikkerhetskopiarkiv tilgjengelig."
 
 #: shared-data/default-theme/html/backup/restore/index.html:69
 msgid "Upload a Backup Archive"
@@ -6287,9 +6166,7 @@ msgstr "Åpne overnevnt mappe"
 
 #: shared-data/default-theme/html/browse/index.html:44
 msgid "Browse local or remote folders for mailboxes to add to your pile."
-msgstr ""
-"Utforsk lokale og mapper annensteds hen for e-postbokser å legge til i "
-"haugen."
+msgstr "Utforsk lokale og mapper annensteds hen for e-postbokser å legge til i haugen."
 
 #: shared-data/default-theme/html/browse/index.html:48
 msgid "These are mailboxes recognized by Mailpile."
@@ -6333,9 +6210,7 @@ msgstr "Fant ingen kontakter"
 msgid ""
 "Don't worry, it's ok. Mailpile will start to automatically create contacts "
 "whenever you send or reply to messages."
-msgstr ""
-"Fortvil ikke. Mailpile vil automatisk opprette kontakter når du sender eller "
-"svarer på meldinger."
+msgstr "Fortvil ikke. Mailpile vil automatisk opprette kontakter når du sender eller svarer på meldinger."
 
 #: shared-data/default-theme/html/contacts/index.html:60
 #: shared-data/default-theme/html/search/prev_more_next.html:15
@@ -6445,9 +6320,7 @@ msgstr "meldinger i utveksling med"
 msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
-msgstr ""
-"Du har ingen krypteringsnøkler for denne kontakten. Du trenger "
-"krypteringsnøkler for å kommunisere sikkert."
+msgstr "Du har ingen krypteringsnøkler for denne kontakten. Du trenger krypteringsnøkler for å kommunisere sikkert."
 
 #: shared-data/default-theme/html/contacts/view/index.html:95
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -6525,9 +6398,7 @@ msgstr "Gyldig fra {DATE1} til {DATE2}."
 msgid ""
 "If the certificate cannot be verified, then there is no guarantee you are "
 "communicating with the right server."
-msgstr ""
-"Hvis sertifikatet kan ikke bekreftes er det ingen garanti for at du snakker "
-"med rett tjener."
+msgstr "Hvis sertifikatet kan ikke bekreftes er det ingen garanti for at du snakker med rett tjener."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:105
 msgid "Your account details or e-mail may be at risk if you proceed."
@@ -6537,9 +6408,7 @@ msgstr "Dine kontodetaljer eller e-post kan være i fare hvis du fortsetter."
 msgid ""
 "Some servers deliberately use certificates that cannot be verified; in such "
 "cases adding a security exception should be safe."
-msgstr ""
-"Noen tjenere bruker med vilje sertifikater som ikke kan bekreftes, i slike "
-"tilfeller bør det være trygt å legge til et sikkerhetsunntak."
+msgstr "Noen tjenere bruker med vilje sertifikater som ikke kan bekreftes, i slike tilfeller bør det være trygt å legge til et sikkerhetsunntak."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:109
 msgid "Ask your e-mail server administrator to be sure."
@@ -6548,9 +6417,7 @@ msgstr "Spør e-posttjeneradministratoren for å være sikker."
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:117
 msgid ""
 "The information below could not be validated. It may be incorrect or forged."
-msgstr ""
-"Informasjonen nedenfor kunne ikke bekreftes. Den kan være feilaktig eller "
-"forfalsket."
+msgstr "Informasjonen nedenfor kunne ikke bekreftes. Den kan være feilaktig eller forfalsket."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:121
 msgid "Issued To"
@@ -6581,11 +6448,9 @@ msgstr "Nåværende dato ser ut til å være {D}. Er systemklokka rett?"
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:155
 msgid ""
-"If this certificate error is unsual, then adding a security exception is not "
-"recommended."
-msgstr ""
-"Hvis denne sertifikatsfeilen er uvanlig, er det ikke anbefalt å legge til et "
-"sikkerhetsunntak."
+"If this certificate error is unsual, then adding a security exception is not"
+" recommended."
+msgstr "Hvis denne sertifikatsfeilen er uvanlig, er det ikke anbefalt å legge til et sikkerhetsunntak."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:162
 msgid "Try Again Later"
@@ -6602,35 +6467,26 @@ msgstr "TLS-sertifikater"
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:211
 msgid ""
 "You can use this tool to examine the TLS certificates of remote servers."
-msgstr ""
-"Du kan bruke dette verktøyet til å studere TLS-sertifikatene til tjenere "
-"annensteds hen."
+msgstr "Du kan bruke dette verktøyet til å studere TLS-sertifikatene til tjenere annensteds hen."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:214
 msgid ""
 "TLS certificates are a form of digital identification, used to ensure you "
 "are communicating with the intended server and not an imposter."
-msgstr ""
-"TLS-sertifikater er en form for digital identifisering, brukt til å forsikre "
-"at du snakker med ønsket tjener, og ikke en bedrager."
+msgstr "TLS-sertifikater er en form for digital identifisering, brukt til å forsikre at du snakker med ønsket tjener, og ikke en bedrager."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:217
 msgid ""
 "If necessary, you can add security exceptions (TOFU: Trust on First Use) "
 "which will allow you to connect to a server even if it does not present a "
 "valid certificate."
-msgstr ""
-"Hvis nødvendig, kan du lege til sikkerhetsunntak (TOFU: Betro ved første "
-"bruk(Trust on First Use) som tillater deg å koble til en tjener selv når den "
-"ikke presenterer et gyldig sertifikat."
+msgstr "Hvis nødvendig, kan du lege til sikkerhetsunntak (TOFU: Betro ved første bruk(Trust on First Use) som tillater deg å koble til en tjener selv når den ikke presenterer et gyldig sertifikat."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:218
 msgid ""
-"When TOFU is in use, if the remote certificate ever changes the new one will "
-"be rejected until you add another exception."
-msgstr ""
-"Når TOFU er i bruk, hvis sertifikatet annensteds fra noen gang endres, vil "
-"det nye bli avslått til du legger til et nytt unntak."
+"When TOFU is in use, if the remote certificate ever changes the new one will"
+" be rejected until you add another exception."
+msgstr "Når TOFU er i bruk, hvis sertifikatet annensteds fra noen gang endres, vil det nye bli avslått til du legger til et nytt unntak."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:234
 msgid "Known Certificates"
@@ -6664,9 +6520,7 @@ msgstr "Det finnes ingen filter"
 msgid ""
 "Filters are clever rules that automatically apply tags, sort and otherwise "
 "handle your messages."
-msgstr ""
-"Filter er en smart måte å automatisk merke, sortere og på annen måte "
-"behandle dine meldinger."
+msgstr "Filter er en smart måte å automatisk merke, sortere og på annen måte behandle dine meldinger."
 
 #: shared-data/default-theme/html/help/bottom.html:2
 msgid "Hopefully this tip helped."
@@ -6697,9 +6551,7 @@ msgstr "Egendefinerte søk"
 msgid ""
 "Underneath the hood Mailpile is a high performance search engine that can "
 "answer complex questions."
-msgstr ""
-"Under panseret er Mailpile en søkemotor med høy ytelse som kan besvare "
-"komplekse spørsmål."
+msgstr "Under panseret er Mailpile en søkemotor med høy ytelse som kan besvare komplekse spørsmål."
 
 #: shared-data/default-theme/html/help/index.html:12
 #: shared-data/default-theme/html/jsapi/templates/modal-display-keybindings.html:5
@@ -6708,8 +6560,8 @@ msgstr "Tastatursnarveier"
 
 #: shared-data/default-theme/html/help/index.html:13
 msgid ""
-"Here will be a list of keyboard shortcuts / keybindings for all you cool cat "
-"power users out there!"
+"Here will be a list of keyboard shortcuts / keybindings for all you cool cat"
+" power users out there!"
 msgstr "Her kommer en liste over tastatursnarveier."
 
 #: shared-data/default-theme/html/help/index.html:15
@@ -6718,13 +6570,10 @@ msgstr "Kryptering og sikkerhet"
 
 #: shared-data/default-theme/html/help/index.html:16
 msgid ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you how to use your Mailpile in the "
-"most secure way possible."
-msgstr ""
-"Er kryptering og nøkler  nytt for deg? Fortvil ikke. Vi vil gjøre vårt "
-"ytterste for å forklare og utdanne deg om hvordan du bruker Mailpile på "
-"sikrest mulig måte."
+"Are you new to all these terms like encryption and keys? Don't fret. We will"
+" do our best to help explain and educate you how to use your Mailpile in the"
+" most secure way possible."
+msgstr "Er kryptering og nøkler  nytt for deg? Fortvil ikke. Vi vil gjøre vårt ytterste for å forklare og utdanne deg om hvordan du bruker Mailpile på sikrest mulig måte."
 
 #: shared-data/default-theme/html/help/index.html:20
 msgid "Gmail's 2 Step App Passwords"
@@ -6900,9 +6749,7 @@ msgstr "Tidsavbrudd for Mailpile…"
 msgid ""
 "There is still an attachment upload in progress. Are you sure you want to "
 "cancel the upload?"
-msgstr ""
-"En vedleggsopplasting pågår fremdeles. Er du sikker på at du vil avbryte "
-"denne opplastingen?"
+msgstr "En vedleggsopplasting pågår fremdeles. Er du sikker på at du vil avbryte denne opplastingen?"
 
 #: shared-data/default-theme/html/jsapi/compose/attachments.js:158
 msgid "is"
@@ -6956,33 +6803,25 @@ msgstr "Feil inntraff under tilgangsforespørsel til din krypteringsnøkkel"
 msgid ""
 "This message will be verifiable to recipients who have your encryption key. "
 "They will know it actually came from you :)"
-msgstr ""
-"Denne meldingen vil kunne bekreftes av mottakere som har din "
-"krypteringsnøkkel. De vil vite med sikkerhet at den faktisk kom fra deg :)"
+msgstr "Denne meldingen vil kunne bekreftes av mottakere som har din krypteringsnøkkel. De vil vite med sikkerhet at den faktisk kom fra deg :)"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:219
 msgid ""
 "This message will not be verifiable, recipients will have no way of knowing "
 "it actually came from you."
-msgstr ""
-"Denne meldingen vil ikke kunne bekreftes, mottakere vil ikke kunne vite "
-"hvorvidt den faktisk kom fra deg."
+msgstr "Denne meldingen vil ikke kunne bekreftes, mottakere vil ikke kunne vite hvorvidt den faktisk kom fra deg."
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:256
 msgid ""
 "This message and attachments will be encrypted. The recipients & subject "
 "(metadata) will not"
-msgstr ""
-"Denne meldingen og vedleggene vil bli kryptert. Mottakere og emnet "
-"(metadataen) ei"
+msgstr "Denne meldingen og vedleggene vil bli kryptert. Mottakere og emnet (metadataen) ei"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:263
 msgid ""
 "This message cannot be encrypted because you do not have keys for one or "
 "more recipients"
-msgstr ""
-"Denne meldingen kan ikke krypteres fordi du ikke har nøkler til én eller "
-"flere av mottakerne"
+msgstr "Denne meldingen kan ikke krypteres fordi du ikke har nøkler til én eller flere av mottakerne"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:265
 msgid "Can Not Encrypt"
@@ -7030,9 +6869,8 @@ msgid "No Email"
 msgstr "Ingen e-post"
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:147
-#, fuzzy
 msgid "Searching"
-msgstr "Søk"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:83
 msgid "is too large:"
@@ -7093,8 +6931,7 @@ msgstr "Kopierer e-post. Sving armene og ta OL-floka mens du venter"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:11
 msgid "Making a copy of your mail. Putting it in your inbox, all comfy like"
-msgstr ""
-"Lager en kopi av e-posten din. Legger den i innboksen din på dekadent vis"
+msgstr "Lager en kopi av e-posten din. Legger den i innboksen din på dekadent vis"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:14
 msgid "Damn kids."
@@ -7222,19 +7059,17 @@ msgid ""
 msgstr "Trenger du alle disse Amazon Prime-forsendelseskvitteringene?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:48
-msgid "I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
+msgid ""
+"I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
 msgstr "E-poster om tilbud fra Julesalget 2011 lar seg med fordel slettes."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:49
 msgid "Do you really need an e-mail to know when you have been retweeted?"
-msgstr ""
-"Trenger du egentlig e-post for å vite at noen har vist til ditt "
-"mikrobloggeri?"
+msgstr "Trenger du egentlig e-post for å vite at noen har vist til ditt mikrobloggeri?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:50
 msgid "E-mail is the largest internet based social network on the planet"
-msgstr ""
-"E-post utgjør det største internettbaserte sosiale nettverket på planeten"
+msgstr "E-post utgjør det største internettbaserte sosiale nettverket på planeten"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:51
 msgid "Which other technology do you use that is 40 years old?"
@@ -7244,9 +7079,7 @@ msgstr "Hvilken annen teknologi bruker du som er 40 år gammel?"
 msgid ""
 "There are 2.5 billion e-mail users worldwide, that is double the amount of "
 "Facebook users!"
-msgstr ""
-"Det er 2.5 milliarder e-postbrukere verden over, det er dobbelt så mange som "
-"bruker Facebook!"
+msgstr "Det er 2.5 milliarder e-postbrukere verden over, det er dobbelt så mange som bruker Facebook!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:53
 msgid "Use Mailpile Tags to better organize and search your mail"
@@ -7256,17 +7089,13 @@ msgstr "Bruk merkelappene i Mailpile for å få struktur på e-posten din"
 msgid ""
 "Remember getting your first e-mail address? Remember how it felt like "
 "something private?"
-msgstr ""
-"Husker du da du fikk din første e-postadresse? Husker du at det føltes som "
-"en del av en privat sfære?"
+msgstr "Husker du da du fikk din første e-postadresse? Husker du at det føltes som en del av en privat sfære?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:55
 msgid ""
 "E-mail is decentralized by design, this means no one company or government "
 "owns it!"
-msgstr ""
-"E-post er tuftet på desentraliserte prinsipper, dette betyr at det ikke eies "
-"av et selskap eller noen myndighet!"
+msgstr "E-post er tuftet på desentraliserte prinsipper, dette betyr at det ikke eies av et selskap eller noen myndighet!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:56
 msgid "Over 100 trillion e-mails are sent per year, wow!"
@@ -7275,17 +7104,13 @@ msgstr "Over 100 billioner e-poster blir sendt hvert år, wow!"
 #: shared-data/default-theme/html/jsapi/global/silly.js:57
 msgid ""
 "E-mail is the most widely used communication protocol ever created by humans"
-msgstr ""
-"E-post er den mest brukte kommunikasjonsprotokollen som noen gang har blitt "
-"laget av mennesker"
+msgstr "E-post er den mest brukte kommunikasjonsprotokollen som noen gang har blitt laget av mennesker"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:58
 msgid ""
 "E-mail uses an open standard agreed upon by the entire world & owned by no "
 "one"
-msgstr ""
-"E-post bruker en åpen standard som hele verden er enig i, og ikke eies av "
-"noen"
+msgstr "E-post bruker en åpen standard som hele verden er enig i, og ikke eies av noen"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:61
 msgid "BCC-ing ALL THE SPIES!"
@@ -7293,35 +7118,27 @@ msgstr "BCC går ut til alle spioner!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:62
 msgid "Many powerful governments are conducting mass dragnet surveillance"
-msgstr ""
-"Mange toneangivende myndighetene i verden tar del i massiv overvåkning etter "
-"trålingsmodellen"
+msgstr "Mange toneangivende myndighetene i verden tar del i massiv overvåkning etter trålingsmodellen"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:63
 msgid ""
 "Most e-mail can be read by network operators as it travels through the "
 "internet"
-msgstr ""
-"Brorparten av e-posten sendt på Internett kan leses av hvem som helst på "
-"veien"
+msgstr "Brorparten av e-posten sendt på Internett kan leses av hvem som helst på veien"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:64
 msgid ""
 "Encryption ensures that your e-mails are only read by the intended recipient"
-msgstr ""
-"Kryptering forsikrer deg om at dine e-poster bare leses av ønsket mottaker"
+msgstr "Kryptering forsikrer deg om at dine e-poster bare leses av ønsket mottaker"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:65
 msgid ""
 "Unencrypted e-mail is more like sending a postcard than sending a letter"
-msgstr ""
-"Ukryptert e-post kan sammenlignes med å sende et postkort istedenfor et brev"
+msgstr "Ukryptert e-post kan sammenlignes med å sende et postkort istedenfor et brev"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:66
 msgid "Mailpile uses OpenPGP to encrypt and decrypt your messages securely"
-msgstr ""
-"Mailpile bruker OpenPGP for å kryptere og dekryptere dine meldinger på en "
-"sikker måte"
+msgstr "Mailpile bruker OpenPGP for å kryptere og dekryptere dine meldinger på en sikker måte"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:67
 msgid "All of your config settings & passwords are encrypted with AES-256"
@@ -7337,18 +7154,16 @@ msgstr "Desto mer kryptert e-post du sender, desto bedre!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:70
 msgid "Make sure you print or save your keys & passwords somewhere secure"
-msgstr ""
-"Husk å skrive ned eller lagre dine nøkler og passord på et sikkert sted"
+msgstr "Husk å skrive ned eller lagre dine nøkler og passord på et sikkert sted"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:71
 msgid "Mailpile by default encrypts your search index!"
 msgstr "Forvalg i Mailpile er kryptering av din søkeindeksering."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:72
-msgid "The most common e-mail password is 123456, hopefully yours is different"
-msgstr ""
-"Det vanligste e-postpassordet er 123456, forhåpentligvis har du valgt noe "
-"annet"
+msgid ""
+"The most common e-mail password is 123456, hopefully yours is different"
+msgstr "Det vanligste e-postpassordet er 123456, forhåpentligvis har du valgt noe annet"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:75
 msgid "Good things come to those who wait"
@@ -7368,9 +7183,7 @@ msgstr "Mange islendinger tror på alver og magiske usynlige folk"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:79
 msgid "The founders of Mailpile first met in a public hot tub in Reykjavík"
-msgstr ""
-"Grunleggerne av Mailpile møttes første gang i et offentlig boblebad i "
-"Reykjavik"
+msgstr "Grunleggerne av Mailpile møttes første gang i et offentlig boblebad i Reykjavik"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:80
 msgid "We like volcanos, do you like volcanos?"
@@ -7427,10 +7240,9 @@ msgid ""
 msgstr "Smør deg med tolmod og niste. Dette tar omtrentlig 4 gode blingser."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:93
-msgid "Did you know humans share 50 percent of their DNA with a banana? Freaky"
-msgstr ""
-"Visste du at mennesker deler 50 prosent av DNA-et med en banan? Det må vi "
-"ikke glemme."
+msgid ""
+"Did you know humans share 50 percent of their DNA with a banana? Freaky"
+msgstr "Visste du at mennesker deler 50 prosent av DNA-et med en banan? Det må vi ikke glemme."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:94
 msgid "Estimating chance of astroid hitting Earth"
@@ -7478,10 +7290,9 @@ msgstr "Nam nam, det var en godbit"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:105
 msgid ""
-"Hey, there is some Nigerian prince here who wants to give you twenty million "
-"dollars..."
-msgstr ""
-"Hei, det er en Nigeriansk prins her som vil gi vekk 20 millioner dollar..."
+"Hey, there is some Nigerian prince here who wants to give you twenty million"
+" dollars..."
+msgstr "Hei, det er en Nigeriansk prins her som vil gi vekk 20 millioner dollar..."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:106
 msgid "How rude!"
@@ -7564,10 +7375,7 @@ msgid ""
 "This message references images or other content from the web. Downloading "
 "and displaying these images may notify the sender that you have read the "
 "mail."
-msgstr ""
-"Denne meldinger peker til bilder eller annet innhold fra nettet. Nedlastning "
-"og visning av disse bildene kan gjøre senderen oppmerksom på at du har lest "
-"e-posten."
+msgstr "Denne meldinger peker til bilder eller annet innhold fra nettet. Nedlastning og visning av disse bildene kan gjøre senderen oppmerksom på at du har lest e-posten."
 
 #: shared-data/default-theme/html/jsapi/message/html-sandbox.js:282
 msgid "Okay, display the images"
@@ -7598,9 +7406,8 @@ msgstr "Kunne ikke innhente melding"
 
 #: shared-data/default-theme/html/jsapi/search/bulk_actions.js:80
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:13
-#, fuzzy
 msgid "Search for Similar E-mail"
-msgstr "Søk etter e-poster fra:"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/search/ui.js:134
 msgid "No Messages Selected"
@@ -7681,9 +7488,7 @@ msgstr "Deg selv!"
 msgid ""
 "You cannot send encrypted or signed mail without an encryption key of your "
 "own."
-msgstr ""
-"Du kan ikke sende kryptert eller signert e-post uten en egen "
-"krypteringsnøkkel."
+msgstr "Du kan ikke sende kryptert eller signert e-post uten en egen krypteringsnøkkel."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:54
 msgid "Check your account settings or send using a different profile."
@@ -7709,9 +7514,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:93
-#, fuzzy
 msgid "Search All Sources"
-msgstr "Søk etter nøkkel"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:98
 #: shared-data/default-theme/html/partials/hidden.html:151
@@ -7755,24 +7559,20 @@ msgid "From"
 msgstr "Fra"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:37
-#, fuzzy
 msgid "Mailing list"
-msgstr "E-post: %s"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:42
-#, fuzzy
 msgid "E-mail client"
-msgstr "E-postkontoer"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:46
-#, fuzzy
 msgid "Message structure"
-msgstr "Meldinger"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:50
-#, fuzzy
 msgid "Sender fingerprint"
-msgstr "Nøkkel-fingeravtrykk"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
@@ -7792,18 +7592,16 @@ msgid "Has an image"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:78
-#, fuzzy
 msgid "Has an attachment"
-msgstr "Kunne ikke legge til vedlegg"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:85
 msgid "Has a digital signature"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:91
-#, fuzzy
 msgid "Is encrypted"
-msgstr "Krypterte"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:108
 msgid "Additional search terms"
@@ -7822,9 +7620,7 @@ msgstr "Lagrede søk vises som merkelapper i sidemenyen."
 msgid ""
 "New matching messages will be tagged automatically as they arrive, but you "
 "can also add or remove messages by hand."
-msgstr ""
-"Samsvarende meldinger vil bli merket ettersom de ankommer, men du kan også "
-"legge til og fjerne meldinger for hand."
+msgstr "Samsvarende meldinger vil bli merket ettersom de ankommer, men du kan også legge til og fjerne meldinger for hand."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:17
 msgid "Configure new Saved Search"
@@ -7963,9 +7759,7 @@ msgstr "Velg eller dra krypteringsnøkkel"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:14
 msgid "A file located on your computer usually ending in: .asc .key .pub"
-msgstr ""
-"En fil som finnes på datamaskinen, som oftest med filendelsen .asc .key "
-"eller .pub"
+msgstr "En fil som finnes på datamaskinen, som oftest med filendelsen .asc .key eller .pub"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:16
 msgid "Select Encryption Key"
@@ -8198,18 +7992,13 @@ msgid ""
 "Ongoing events represent current actions taken by Mailpile on your behalf, "
 "such as watching a Mail Source for new mail or refreshing your contact "
 "database."
-msgstr ""
-"Utgående hendelser representerer nåværende handlinger tatt av Mailpile på "
-"dine vegne, som å holde oppsyn med en e-postkilde etter ny e-post eller å "
-"gjenoppfriske din kontaktdatabase."
+msgstr "Utgående hendelser representerer nåværende handlinger tatt av Mailpile på dine vegne, som å holde oppsyn med en e-postkilde etter ny e-post eller å gjenoppfriske din kontaktdatabase."
 
 #: shared-data/default-theme/html/logs/events/index.html:66
 msgid ""
 "Browsing the event details can help with troubleshooting if Mailpile is not "
 "behaving as you expect."
-msgstr ""
-"Utforsking av hendelsesdetaljer kan hjelpe deg med problemsøking hvis "
-"Mailpile ikke oppfører seg slik du forventer."
+msgstr "Utforsking av hendelsesdetaljer kan hjelpe deg med problemsøking hvis Mailpile ikke oppfører seg slik du forventer."
 
 #: shared-data/default-theme/html/logs/events/index.html:79
 msgid "No Events Found"
@@ -8223,8 +8012,7 @@ msgstr "Fullførte hendelser"
 msgid ""
 "The Event Log gives an overview over what has happened in your Mailpile "
 "recently."
-msgstr ""
-"Hendelsesloggen gir en oversikt over hva som har skjedd i din Mailpile nylig."
+msgstr "Hendelsesloggen gir en oversikt over hva som har skjedd i din Mailpile nylig."
 
 #: shared-data/default-theme/html/logs/events/index.html:104
 msgid "Some events, such as Tagging operations, can be undone."
@@ -8242,9 +8030,7 @@ msgstr "Nylig aktivitet"
 msgid ""
 "Here you can see a log of recent network activity, both successful and "
 "failed attempts."
-msgstr ""
-"Her kan du se en logg over nylig nettverksaktivitet, både vellykkede og "
-"mislykkede forsøk."
+msgstr "Her kan du se en logg over nylig nettverksaktivitet, både vellykkede og mislykkede forsøk."
 
 #: shared-data/default-theme/html/logs/network/index.html:24
 #, python-format
@@ -8255,50 +8041,38 @@ msgstr "Du har en mellomtjener (%(proxy)s) satt opp på %(host)s:%(port)s."
 msgid ""
 "Proxy fallback is disabled, so if the proxy cannot connect to a given "
 "server, the connection will fail."
-msgstr ""
-"Mellomtjener-tilbakefall er avskrudd, så hvis mellomtjeneren ikke kan koble "
-"til gitt tjener, vil tilkoblingen mislykkes."
+msgstr "Mellomtjener-tilbakefall er avskrudd, så hvis mellomtjeneren ikke kan koble til gitt tjener, vil tilkoblingen mislykkes."
 
 #: shared-data/default-theme/html/logs/network/index.html:34
 msgid ""
 "Some service providers block connections from Tor, so this may prevent you "
 "from accessing your mail or other data."
-msgstr ""
-"Noen tjenestetilbydere blokkerer tilkoblinger fra Tor, så dette kan "
-"forhindre deg fra å få tilgang til din e-post eller annen data."
+msgstr "Noen tjenestetilbydere blokkerer tilkoblinger fra Tor, så dette kan forhindre deg fra å få tilgang til din e-post eller annen data."
 
 #: shared-data/default-theme/html/logs/network/index.html:39
 msgid ""
 "You can configure destinations to bypass the proxy in the Advanced section "
 "of Networking in your Privacy Policy."
-msgstr ""
-"Du kan sette opp mål til å omgå mellomtjeneren i \"Avansert\"-delen av "
-"\"Nettverk\" i din personvernspraksis."
+msgstr "Du kan sette opp mål til å omgå mellomtjeneren i \"Avansert\"-delen av \"Nettverk\" i din personvernspraksis."
 
 #: shared-data/default-theme/html/logs/network/index.html:45
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if Tor cannot "
 "connect."
-msgstr ""
-"Mellomtjener-tilbakefall er påskrudd, så en direkte tilkobling vil bli "
-"utført hvis Tor ikke kan koble til."
+msgstr "Mellomtjener-tilbakefall er påskrudd, så en direkte tilkobling vil bli utført hvis Tor ikke kan koble til."
 
 #: shared-data/default-theme/html/logs/network/index.html:46
 #: shared-data/default-theme/html/logs/network/index.html:63
 msgid ""
 "This may leak your IP address and allow monitoring of which servers you "
 "communicate with."
-msgstr ""
-"Dette kan lekke IP-adressen din, og tillatte overvåkning av hvilken tjenere "
-"du kommuniserer med."
+msgstr "Dette kan lekke IP-adressen din, og tillatte overvåkning av hvilken tjenere du kommuniserer med."
 
 #: shared-data/default-theme/html/logs/network/index.html:48
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if the proxy "
 "cannot connect."
-msgstr ""
-"Tilbakefall er påskrudd, så en direkte tilkobling vil bli gjort hvis "
-"mellomtjeneren ikke kan koble til."
+msgstr "Tilbakefall er påskrudd, så en direkte tilkobling vil bli gjort hvis mellomtjeneren ikke kan koble til."
 
 #: shared-data/default-theme/html/logs/network/index.html:55
 msgid "You are using Tor for unencrypted traffic."
@@ -8308,9 +8082,7 @@ msgstr "Du bruker Tor for ukryptert trafikk."
 msgid ""
 "This may allow exit-node operators to listen in or modify your "
 "communications."
-msgstr ""
-"Dette kan tillate utgående node-operatører å lytte til, eller endre din "
-"kommunikasjon."
+msgstr "Dette kan tillate utgående node-operatører å lytte til, eller endre din kommunikasjon."
 
 #: shared-data/default-theme/html/logs/network/index.html:62
 msgid "You are not using Tor."
@@ -8336,9 +8108,7 @@ msgstr "Notis:"
 msgid ""
 "These instructions are in English only, because we are currently unable to "
 "accept bug reports in other languages. Sorry!"
-msgstr ""
-"Disse instruksjonene finnes kun på engelsk, fordi vi ikke kan motta "
-"feilrapporter på andre språk enda. Beklager."
+msgstr "Disse instruksjonene finnes kun på engelsk, fordi vi ikke kan motta feilrapporter på andre språk enda. Beklager."
 
 #: shared-data/default-theme/html/page/contribute/bugs.html:12
 msgid "Thank you for testing Mailpile!"
@@ -8353,9 +8123,7 @@ msgstr "Hjelp Mailpile å vokse"
 msgid ""
 "Mailpile is created by a diverse community of people and organizations who "
 "care about freedom and privacy."
-msgstr ""
-"Mailpile blir til på vegne av en variert gruppe folk og organisasjoner som "
-"bryr seg om frihet og personvern."
+msgstr "Mailpile blir til på vegne av en variert gruppe folk og organisasjoner som bryr seg om frihet og personvern."
 
 #: shared-data/default-theme/html/page/contribute/index.html:9
 msgid "Please join our community and contribute in any way you can!"
@@ -8375,27 +8143,21 @@ msgstr "Doner"
 
 #: shared-data/default-theme/html/page/contribute/index.html:19
 msgid ""
-"Employing people to work on Mailpile full time is the fastest way to improve "
-"the software."
-msgstr ""
-"Å sysselsette folk til å jobbe fulltid på Mailpile er den raskeste måten å "
-"forbedre programvaren på."
+"Employing people to work on Mailpile full time is the fastest way to improve"
+" the software."
+msgstr "Å sysselsette folk til å jobbe fulltid på Mailpile er den raskeste måten å forbedre programvaren på."
 
 #: shared-data/default-theme/html/page/contribute/index.html:20
 msgid ""
 "Although the software is (and will always be) free, salaries still cost "
 "money and your support matters."
-msgstr ""
-"Selv om programvaren er (og alltid vil være) fri, koster det med lønninger, "
-"og din støtte monner."
+msgstr "Selv om programvaren er (og alltid vil være) fri, koster det med lønninger, og din støtte monner."
 
 #: shared-data/default-theme/html/page/contribute/index.html:21
 msgid ""
 "If you contribute $23 USD or more, you get access to our community voting "
 "platform, where you can have a say in the future direction of the project:"
-msgstr ""
-"Hvis du bidrar med $23 dollar eller mer, vil du få tilgang til fellesskapets "
-"stemmeplattform, der du kan stake ut kursen videre:"
+msgstr "Hvis du bidrar med $23 dollar eller mer, vil du få tilgang til fellesskapets stemmeplattform, der du kan stake ut kursen videre:"
 
 #: shared-data/default-theme/html/page/contribute/index.html:25
 msgid "Tell your friends"
@@ -8409,17 +8171,13 @@ msgstr "Hvis du liker Mailpile, fortell folk om det!"
 msgid ""
 "Tweet, share, link, write articles and blog posts, act out dramatic "
 "tutorials on Youtube, make movies..."
-msgstr ""
-"Blogg, i smått og stort, del, lenk, skriv artikler og, dramatiser "
-"brukerveiledninger i videoform, lag filmer..."
+msgstr "Blogg, i smått og stort, del, lenk, skriv artikler og, dramatiser brukerveiledninger i videoform, lag filmer..."
 
 #: shared-data/default-theme/html/page/contribute/index.html:30
 msgid ""
 "Let us know what you create, so we can share the best content with the rest "
 "of the community."
-msgstr ""
-"La det komme oss for øre hva du lager, så vi kan dele det beste innholdet i "
-"fellesskapet."
+msgstr "La det komme oss for øre hva du lager, så vi kan dele det beste innholdet i fellesskapet."
 
 #: shared-data/default-theme/html/page/contribute/index.html:31
 msgid "We are:"
@@ -8448,31 +8206,24 @@ msgstr "Øker entropi"
 
 #: shared-data/default-theme/html/page/entropy/index.html:10
 msgid "Mailpile needs true random numbers to generate good encryption keys."
-msgstr ""
-"Mailpile trenger en helt tilfeldig tallgenerator for å lage gode "
-"krypteringsnøkler."
+msgstr "Mailpile trenger en helt tilfeldig tallgenerator for å lage gode krypteringsnøkler."
 
 #: shared-data/default-theme/html/page/entropy/index.html:13
 msgid ""
 "Although your computer may be powerful, it may still have hard time finding "
 "enough randomness when generating keys."
-msgstr ""
-"Selv om datamaskinen din er kraftig, kan den ha problemer med å finne nok "
-"tilfeldighet når den lager nøkler."
+msgstr "Selv om datamaskinen din er kraftig, kan den ha problemer med å finne nok tilfeldighet når den lager nøkler."
 
 #: shared-data/default-theme/html/page/entropy/index.html:14
 msgid ""
 "The technical term used to describe the source of randomness is Entropy!"
-msgstr ""
-"Teknisk nomenklatur brukt til beskrivelse av kilden til tilfeldighet er "
-"\"entropi\"!"
+msgstr "Teknisk nomenklatur brukt til beskrivelse av kilden til tilfeldighet er \"entropi\"!"
 
 #: shared-data/default-theme/html/page/entropy/index.html:17
 msgid ""
 "On the machine that is running Mailpile you can do a few things to increase "
 "the Entropy:"
-msgstr ""
-"På maskinen som kjører Mailpile kan du gjøre en del ting for å øke entropien:"
+msgstr "På maskinen som kjører Mailpile kan du gjøre en del ting for å øke entropien:"
 
 #: shared-data/default-theme/html/page/entropy/index.html:20
 msgid "Move the mouse."
@@ -8494,9 +8245,7 @@ msgstr "Surf på Internett."
 msgid ""
 "Because the computer cannot predict human activity these actions help the "
 "computer generate random numbers."
-msgstr ""
-"Fordi maskinen ikke kan forutsi menneskelig aktivitet, hjelper disse "
-"handlingene maskinen å generere tilfeldige nummer."
+msgstr "Fordi maskinen ikke kan forutsi menneskelig aktivitet, hjelper disse handlingene maskinen å generere tilfeldige nummer."
 
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:2
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:10
@@ -8526,9 +8275,7 @@ msgstr "Unix-passord"
 msgid ""
 "To launch the app please enter your account details above or use a terminal "
 "(SSH) to start Mailpile manually."
-msgstr ""
-"For å starte programmet, skriv inn dine kontodetaljer ovenfor, eller bruke "
-"en terminal (SSH) for å starte Mailpile manuelt."
+msgstr "For å starte programmet, skriv inn dine kontodetaljer ovenfor, eller bruke en terminal (SSH) for å starte Mailpile manuelt."
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:2
 #: shared-data/default-theme/html/page/release-notes/credits.html:6
@@ -8556,10 +8303,7 @@ msgid ""
 "The Mailpile team would like to thank all the people who contributed\n"
 "    money or volunteered their time to help create a truly free, secure\n"
 "    e-mail client. You're all awesome!"
-msgstr ""
-"Mailpile-laget ønsker å takke alle som bidro med\n"
-"    penger, eller sin tid for å hjelpe til å skape en virkelig fri, sikker\n"
-"    e-postklient. Dere er alle fantastiske!"
+msgstr "Mailpile-laget ønsker å takke alle som bidro med\n    penger, eller sin tid for å hjelpe til å skape en virkelig fri, sikker\n    e-postklient. Dere er alle fantastiske!"
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:22
 msgid "Community"
@@ -8593,9 +8337,7 @@ msgstr "Tak for at du tester vår slippkandidat!"
 #: shared-data/default-theme/html/page/release-notes/index.html:14
 #, python-format
 msgid "If no critical bugs are found, this will become version %(version)s."
-msgstr ""
-"Hvis det ikke blir funnet noen kritiske feil, vil dette bli versjon "
-"%(version)s."
+msgstr "Hvis det ikke blir funnet noen kritiske feil, vil dette bli versjon %(version)s."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:19
 #, python-format
@@ -8648,8 +8390,7 @@ msgstr "Det var det!"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:41
 msgid "Read on if you've used one of the Mailpile Beta or GitHub releases."
-msgstr ""
-"Les videre hvis du har brukt enten Mailpile Beta eller GitHub-utgivelser."
+msgstr "Les videre hvis du har brukt enten Mailpile Beta eller GitHub-utgivelser."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:44
 msgid "What's new?"
@@ -8670,11 +8411,9 @@ msgstr "Forbedret PGP-støtte, inkludert automatisk import av nøkler"
 #: shared-data/default-theme/html/page/release-notes/index.html:49
 #, python-format
 msgid ""
-"Per-tag automatic bayesian classification, as <a target=_blank href="
-"\"%(blog_url)s\">discussed on our blog</a>"
-msgstr ""
-"Automatisk bayesiansk klassifisering per etikett, som <a target=_blank href="
-"\"%(blog_url)s\">diskutert på vår blogg</a>"
+"Per-tag automatic bayesian classification, as <a target=_blank "
+"href=\"%(blog_url)s\">discussed on our blog</a>"
+msgstr "Automatisk bayesiansk klassifisering per etikett, som <a target=_blank href=\"%(blog_url)s\">diskutert på vår blogg</a>"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:51
 msgid "The ability to delete e-mail and accounts"
@@ -8691,13 +8430,10 @@ msgstr "Hva er ordnet?"
 #: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
-"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed issues</"
-"a> and <a target=_blank href=\"%(release_url)s\">issues closed for this "
-"release</a>"
-msgstr ""
-"Sjekk GitHub for <a target=_blank href=\"%(closed_url)s\">alle lukkede "
-"problemrapporter</a> og <a target=_blank href=\"%(release_url)s"
-"\">problemrapporter som har blitt lukket i denne utgivelsen</a>"
+"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
+"issues</a> and <a target=_blank href=\"%(release_url)s\">issues closed for "
+"this release</a>"
+msgstr "Sjekk GitHub for <a target=_blank href=\"%(closed_url)s\">alle lukkede problemrapporter</a> og <a target=_blank href=\"%(release_url)s\">problemrapporter som har blitt lukket i denne utgivelsen</a>"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:63
 msgid "What's still broken?"
@@ -8716,17 +8452,12 @@ msgstr "IMAP-synkronisering er ikke implementert enda"
 msgid ""
 "The <a target=_blank href=\"%(roadmap_url)s\">Security Roadmap</a> is "
 "incomplete"
-msgstr ""
-"<a target=_blank href=\"%(roadmap_url)s\">Sikkerhetsveikartet</a> er "
-"ufullstendig"
+msgstr "<a target=_blank href=\"%(roadmap_url)s\">Sikkerhetsveikartet</a> er ufullstendig"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:70
 #, python-format
-msgid ""
-"Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
-msgstr ""
-"GitHub har <a target=_blank href=\"%(issues_url)s\">mange åpne "
-"problemrapporter</a>."
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgstr "GitHub har <a target=_blank href=\"%(issues_url)s\">mange åpne problemrapporter</a>."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:72
 msgid "You can help."
@@ -8848,11 +8579,9 @@ msgstr "Klarte ikke å finne meldingen du forespurte, kanskje den ble slettet?"
 #: shared-data/default-theme/html/partials/error_message_missing.html:37
 #, python-format
 msgid ""
-"If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank"
-"\">file a report</a> including the technical details above."
-msgstr ""
-"Hvis du tror dette er en feil <a href=\"%(url)s\" target=\"_blank"
-"\">innrapporter en feil</a>, inkludert de tekniske detaljene ovenfor."
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details above."
+msgstr "Hvis du tror dette er en feil <a href=\"%(url)s\" target=\"_blank\">innrapporter en feil</a>, inkludert de tekniske detaljene ovenfor."
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:47
 msgid "DESCRIBE YOUR PROBLEM HERE"
@@ -8866,9 +8595,7 @@ msgstr "Kontakt mangler"
 msgid ""
 "We were unable to find the contact you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"Klarte ikke å finne kontakten du forespurte, kanskje det ble skrevet (eller "
-"lenket til) på feil vis?"
+msgstr "Klarte ikke å finne kontakten du forespurte, kanskje det ble skrevet (eller lenket til) på feil vis?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:6
 msgid "Tag Missing"
@@ -8878,9 +8605,7 @@ msgstr "Merkelapp mangler"
 msgid ""
 "We were unable to find the tag you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"Vi kunne ikke finne merkelappen du ba om. Kanskje det ble skrevet (eller "
-"lenket til) på feil vis?"
+msgstr "Vi kunne ikke finne merkelappen du ba om. Kanskje det ble skrevet (eller lenket til) på feil vis?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:9
 msgid "Oops, You've Found a Quirk"
@@ -8890,18 +8615,14 @@ msgstr "Oisann, du fant en knirk"
 msgid ""
 "There's something happening here. What it is ain't exactly clear. Everybody "
 "look what's going down."
-msgstr ""
-"Noe skjer, akkurat hva er uklart. Gå manngard i jakten på forklaringen på "
-"denne hendelsen."
+msgstr "Noe skjer, akkurat hva er uklart. Gå manngard i jakten på forklaringen på denne hendelsen."
 
 #: shared-data/default-theme/html/partials/errors_content.html:12
 #, python-format
 msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"Fyll gjerne en <a href=\"%(url)s\" target=\"_blank\">feilrapport</a> om du "
-"tror dette er en programfeil."
+"If you think this is a bug, please file a <a href=\"%(url)s\" "
+"target=\"_blank\">bug report</a>"
+msgstr "Fyll gjerne en <a href=\"%(url)s\" target=\"_blank\">feilrapport</a> om du tror dette er en programfeil."
 
 #: shared-data/default-theme/html/partials/helpers.html:14
 #: shared-data/default-theme/html/partials/helpers.html:15
@@ -8992,32 +8713,28 @@ msgid "Don't use this key"
 msgstr "Ikke bruk denne nøkkelen"
 
 #: shared-data/default-theme/html/partials/hidden.html:128
-#, fuzzy
 msgid "This key is available for use."
-msgstr "PGP-nøkkelen for %s er klar til bruk."
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:137
 msgid "Import Key"
 msgstr "Importer nøkkel"
 
 #: shared-data/default-theme/html/partials/hidden.html:150
-#, fuzzy
 msgid "Importing Failed"
-msgstr "Innlogging mislyktes"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:153
 msgid "Importing Encryption Key"
 msgstr "Importerer krypteringsnøkkel"
 
 #: shared-data/default-theme/html/partials/hidden.html:156
-#, fuzzy
 msgid "Uploading:"
-msgstr "Last opp nøkkel"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:158
-#, fuzzy
 msgid "This may take a few moments..."
-msgstr "Dette kan ta sin tid!"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:177
 msgid "Key"
@@ -9037,8 +8754,7 @@ msgstr "Vis skjulte krypteringsnøkler"
 
 #: shared-data/default-theme/html/partials/hidden.html:191
 msgid "Hidden keys are either revoked or expired and should not be used"
-msgstr ""
-"Gjemte nøkler har enten blitt tilbakekalt, er utgåtte, eller bør ikke brukes"
+msgstr "Gjemte nøkler har enten blitt tilbakekalt, er utgåtte, eller bør ikke brukes"
 
 #: shared-data/default-theme/html/partials/hidden.html:237
 msgid "Draft was deleted"
@@ -9077,33 +8793,27 @@ msgid "This message has HTML formatted content."
 msgstr "Denne meldingen har HTML-formatert innhold."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:8
-msgid "For security reasons, Mailpile will by default only display plain text."
+msgid ""
+"For security reasons, Mailpile will by default only display plain text."
 msgstr "Av sikkerhetsgrunner vil Mailpile bare vise klartekst som forvalg."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:10
 msgid ""
 "You can change display modes by clicking the icons to the right of the "
 "Subject line."
-msgstr ""
-"Du kan endre visningsmodus ved å klikke på miniatyrbildene til høyre for "
-"emnefeltet."
+msgstr "Du kan endre visningsmodus ved å klikke på miniatyrbildene til høyre for emnefeltet."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:23
 msgid ""
 "Usually when you reply to a message, all participants in the conversation "
 "will be sent a copy of your reply."
-msgstr ""
-"Vanligvis når du svarer på en melding, vil alle deltagere i samtalen bli "
-"sendt en kopi av svaret ditt."
+msgstr "Vanligvis når du svarer på en melding, vil alle deltagere i samtalen bli sendt en kopi av svaret ditt."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:25
 msgid ""
 "If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
-msgstr ""
-"Hvis du ønsker å sende et privat svar, bare til forfatteren av denne "
-"meldinger, hold pekeren over navnet deres og klikk svars-miniatyrbildet som "
-"kommer til syne."
+msgstr "Hvis du ønsker å sende et privat svar, bare til forfatteren av denne meldinger, hold pekeren over navnet deres og klikk svars-miniatyrbildet som kommer til syne."
 
 #: shared-data/default-theme/html/partials/pile_message.html:77
 msgid "Blocked attachments, replies, and links."
@@ -9118,9 +8828,8 @@ msgid "Links are blocked."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:91
-#, fuzzy
 msgid "Remove from spam"
-msgstr "Fjern fra %(name)s"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:92
 #: shared-data/default-theme/html/partials/pile_message.html:96
@@ -9130,14 +8839,12 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:97
 #: shared-data/default-theme/html/partials/pile_message.html:103
-#, fuzzy
 msgid "Send to spam"
-msgstr "Flytt til søppelpost"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:101
-#, fuzzy
 msgid "Add to contacts"
-msgstr "La til %d kontakter"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:189
 msgid "Unknown Text Part"
@@ -9189,9 +8896,8 @@ msgid "Private Reply"
 msgstr "Privat svar"
 
 #: shared-data/default-theme/html/partials/search_item.html:224
-#, fuzzy
 msgid "Download from the web"
-msgstr "Last ned innhold fra nettet"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/search_item.html:239
 msgid "Oops, no attachments found!"
@@ -9618,9 +9324,7 @@ msgstr "Send e-post ved bruk av lokale Unix-verktøy."
 #: shared-data/default-theme/html/profiles/account-form.html:456
 #: shared-data/default-theme/html/profiles/account-form.html:592
 msgid "Use this setting if you have a working mail server on this machine."
-msgstr ""
-"Bruk denne innstillingen hvis du har en fungerende e-posttjener på denne "
-"maskinen."
+msgstr "Bruk denne innstillingen hvis du har en fungerende e-posttjener på denne maskinen."
 
 #: shared-data/default-theme/html/profiles/account-form.html:463
 msgid "Leave blank to auto-detect"
@@ -9691,10 +9395,7 @@ msgid ""
 "Use this setting if you would like Mailpile to read e-mails already "
 "downloaded by Thunderbird, Mac Mail or another local application on this "
 "machine."
-msgstr ""
-"Bruk denne innstillingen hvis du ønsker at Mailpile skal lese e-poster som "
-"allerede har blitt lastet ned av Thunderbird, Mac-mail, eller annet lokalt "
-"program på denne maskinen."
+msgstr "Bruk denne innstillingen hvis du ønsker at Mailpile skal lese e-poster som allerede har blitt lastet ned av Thunderbird, Mac-mail, eller annet lokalt program på denne maskinen."
 
 #: shared-data/default-theme/html/profiles/account-form.html:634
 msgid "Use the Browse tool to import local mailboxes later on."
@@ -9712,9 +9413,7 @@ msgstr "Legg til ny"
 msgid ""
 "Mailpile may not be able to access your mail unless you log on to your "
 "account and enable IMAP and/or POP3."
-msgstr ""
-"Mailpile kan ikke gi tilgang til dine e-postkontoer med mindre du logger på "
-"din konto og skrur på IMAP og/eller POP3."
+msgstr "Mailpile kan ikke gi tilgang til dine e-postkontoer med mindre du logger på din konto og skrur på IMAP og/eller POP3."
 
 #: shared-data/default-theme/html/profiles/account-form.html:682
 msgid "Important"
@@ -9742,9 +9441,8 @@ msgid "Create a new Autocrypt Level 1.1 compatible key (Ed25519)"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
-#, fuzzy
 msgid "Create a new 4096 bit RSA key"
-msgstr "Opprett en ny 2048-bits RSA-nøkkel"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
 msgid "Legacy, strong"
@@ -9803,14 +9501,12 @@ msgid "Signal a preference for un-signed, un-encrypted mail"
 msgstr "Tilkjennegi at du ønsker usignert e-post"
 
 #: shared-data/default-theme/html/profiles/account-form.html:829
-#, fuzzy
 msgid "Use Autocrypt to exchange encryption keys"
-msgstr "Bruk delt GnuPG-nøkkelknippe for PGP-krypteringsnøkler"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:837
-#, fuzzy
 msgid "Use attachments to exchange encryption keys"
-msgstr "Denne kontoen har ikke en krypteringsnøkkel"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:9
 #: shared-data/default-theme/html/profiles/index.html:47
@@ -9845,9 +9541,7 @@ msgstr "Sett opp dine kontoer, profiler og andre innstillinger"
 msgid ""
 "You can configure accounts and profiles once you have reviewed your privacy "
 "settings."
-msgstr ""
-"Du kan sette opp kontoer og profiler så snart du har gjennomgått dine "
-"personvernsinnstillinger."
+msgstr "Du kan sette opp kontoer og profiler så snart du har gjennomgått dine personvernsinnstillinger."
 
 #: shared-data/default-theme/html/profiles/index.html:56
 msgid "Your name"
@@ -9948,25 +9642,19 @@ msgstr "Flytt e-post til søppelpost"
 msgid ""
 "By default this will remove: account details, OAuth credentials, saved "
 "passwords, linked mail sources, and route settings."
-msgstr ""
-"Som forvalg vil dette fjerne: Kontodetaljer, OAuth-identitetsdetaljer, "
-"lagrede passord, lenkede e-postkilder, og ruteinnstillinger."
+msgstr "Som forvalg vil dette fjerne: Kontodetaljer, OAuth-identitetsdetaljer, lagrede passord, lenkede e-postkilder, og ruteinnstillinger."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:83
 msgid ""
 "This only affects local data, e-mail and settings on remote mail servers "
 "will not be modifed."
-msgstr ""
-"Dette har kun innvirkning på lokal data, og e-post og innstillinger på "
-"tjenere annensteds hen vil ikke bli endret."
+msgstr "Dette har kun innvirkning på lokal data, og e-post og innstillinger på tjenere annensteds hen vil ikke bli endret."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:87
 msgid ""
 "If you also delete the encryption keys, you may be unable to read old "
 "encrypted e-mail."
-msgstr ""
-"Hvis du også sletter krypteringsnøklene, kan det hende du blir ute av stand "
-"til å lese gammel kryptert e-post."
+msgstr "Hvis du også sletter krypteringsnøklene, kan det hende du blir ute av stand til å lese gammel kryptert e-post."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:91
 #: shared-data/default-theme/html/settings/plugins.html:61
@@ -10063,11 +9751,9 @@ msgstr "Mer"
 #: shared-data/default-theme/html/search/prev_more_next.html:47
 #, python-format
 msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
-msgstr ""
-"Gjennomsøkte <strong>%(number)s</strong> meldinger på <strong>%(elapsed)s</"
-"strong> sekunder."
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
+msgstr "Gjennomsøkte <strong>%(number)s</strong> meldinger på <strong>%(elapsed)s</strong> sekunder."
 
 #: shared-data/default-theme/html/search/prev_more_next.html:49
 msgid "Vroom!"
@@ -10177,10 +9863,9 @@ msgid "Author"
 msgstr "Utvikler"
 
 #: shared-data/default-theme/html/settings/plugins.html:62
-msgid "This plugin is meant for developers and may be incomplete or dangerous."
-msgstr ""
-"Dette programtillegget er ment for utviklere og kan være ufullstendig eller "
-"farlig."
+msgid ""
+"This plugin is meant for developers and may be incomplete or dangerous."
+msgstr "Dette programtillegget er ment for utviklere og kan være ufullstendig eller farlig."
 
 #: shared-data/default-theme/html/settings/plugins.html:74
 msgid "Plugin will be disabled on restart."
@@ -10212,25 +9897,20 @@ msgstr "Søk og merkelapper"
 
 #: shared-data/default-theme/html/settings/preferences.html:34
 msgid "Here you can customize how search results and tag views are displayed."
-msgstr ""
-"Har kan du tilpasse hvordan søkeresultater og merkelappsvisning framgår."
+msgstr "Har kan du tilpasse hvordan søkeresultater og merkelappsvisning framgår."
 
 #: shared-data/default-theme/html/settings/preferences.html:35
 msgid ""
 "The ordering and grouping options determine whether messages are grouped "
 "together into conversations or not, and which results are sorted to the top "
 "of the list."
-msgstr ""
-"Rekkefølge og grupperingsvalg bestemmer hvorvidt meldinger grupperes i "
-"samtaler eller ei, og hvilke resultat som sorteres på toppen av listen."
+msgstr "Rekkefølge og grupperingsvalg bestemmer hvorvidt meldinger grupperes i samtaler eller ei, og hvilke resultat som sorteres på toppen av listen."
 
 #: shared-data/default-theme/html/settings/preferences.html:39
 msgid ""
 "The display density determines how tightly the results are packed together "
 "on your screen."
-msgstr ""
-"Pikseltettheten for skjermen bestemmer hvor tett resultatene pakkes sammen "
-"på skjermen din."
+msgstr "Pikseltettheten for skjermen bestemmer hvor tett resultatene pakkes sammen på skjermen din."
 
 #: shared-data/default-theme/html/settings/preferences.html:64
 msgid "Custom"
@@ -10298,16 +9978,13 @@ msgstr "Faresone"
 
 #: shared-data/default-theme/html/settings/preferences.html:142
 msgid ""
-"These are technical settings which may interfere with normal use of Mailpile."
-msgstr ""
-"Dette er de tekniske innstillingene som kan krangle med normal bruk av "
+"These are technical settings which may interfere with normal use of "
 "Mailpile."
+msgstr "Dette er de tekniske innstillingene som kan krangle med normal bruk av Mailpile."
 
 #: shared-data/default-theme/html/settings/preferences.html:143
 msgid "If Mailpile came with a warranty, changing these would invalidate it."
-msgstr ""
-"Hvis Mailpile kom med garanti, ville endring av disse medføre bortfall av "
-"den."
+msgstr "Hvis Mailpile kom med garanti, ville endring av disse medføre bortfall av den."
 
 #: shared-data/default-theme/html/settings/preferences.html:150
 msgid "Always BCC self when sending mail"
@@ -10336,16 +10013,15 @@ msgid "Networking Privacy"
 msgstr "Nettverkspersonvern"
 
 #: shared-data/default-theme/html/settings/privacy.html:55
-msgid "Tor is a community-run system for making anonymous network connections."
+msgid ""
+"Tor is a community-run system for making anonymous network connections."
 msgstr "Tor er et system for anonyme nettverkstilkoblinger drevet i gemenskap."
 
 #: shared-data/default-theme/html/settings/privacy.html:56
 msgid ""
 "It masks your IP address and location, thus preventing many forms of "
 "surveillance and tracking."
-msgstr ""
-"Det maskerer din IP-adresse og plassering, og forhindrer på den måten mange "
-"former for overvåkning og sporing."
+msgstr "Det maskerer din IP-adresse og plassering, og forhindrer på den måten mange former for overvåkning og sporing."
 
 #: shared-data/default-theme/html/settings/privacy.html:60
 msgid ""
@@ -10357,10 +10033,7 @@ msgid ""
 "Since the Tor network is run by volunteers, bad actors can (and do) "
 "volunteer to run exit-nodes so they can listen in on traffic; as a result "
 "Tor is not suitable for accessing the unencrypted web."
-msgstr ""
-"Siden Tor er et nettverk drevet av frivillige, kan og gjør ondsinnede sitt "
-"for å kjøre utgående noder slik at de kan lytte til trafikk; derfor er Tor "
-"ikke egnet til å nå det ukrypterte nettet."
+msgstr "Siden Tor er et nettverk drevet av frivillige, kan og gjør ondsinnede sitt for å kjøre utgående noder slik at de kan lytte til trafikk; derfor er Tor ikke egnet til å nå det ukrypterte nettet."
 
 #: shared-data/default-theme/html/settings/privacy.html:65
 msgid "Visit the Tor project's web-site"
@@ -10375,9 +10048,9 @@ msgid "When sending and receiving mail, or downloading from the web:"
 msgstr "Ved forsendelse og mottak av e-post, eller nedlasting fra nettet:"
 
 #: shared-data/default-theme/html/settings/privacy.html:78
-#, fuzzy, python-format
+#, python-format
 msgid "Custom proxy setting (%(proto)s on %(host)s:%(port)s)"
-msgstr "Egendefinerte mellomtjener-innstillinger (%(proto)s)"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:87
 msgid "Prefer anonymous Tor networking for encrypted connections."
@@ -10415,9 +10088,7 @@ msgstr "Avanserte innstillinger"
 #: shared-data/default-theme/html/settings/privacy.html:115
 #, python-format
 msgid "Fall back to direct networking if connecting over %(proxy)s fails."
-msgstr ""
-"Fall tilbake på direkte nettverkstilknytning hvis tilkobling over %(proxy)s "
-"feiler."
+msgstr "Fall tilbake på direkte nettverkstilknytning hvis tilkobling over %(proxy)s feiler."
 
 #: shared-data/default-theme/html/settings/privacy.html:123
 msgid "Disable direct networking connections completely."
@@ -10449,27 +10120,20 @@ msgstr "Skru på Tor"
 msgid ""
 "Without Tor, Mailpile can not prevent service providers and network "
 "operators from monitoring or tracking your IP address and communications."
-msgstr ""
-"Uten Tor kan ikke Mailpile forhindre tjenestetilbydere og "
-"nettverksoperatører fra å se og spore din IP-adresse og kommunikasjon."
+msgstr "Uten Tor kan ikke Mailpile forhindre tjenestetilbydere og nettverksoperatører fra å se og spore din IP-adresse og kommunikasjon."
 
 #: shared-data/default-theme/html/settings/privacy.html:199
 msgid ""
 "The Mailpile Team publishes updates to notify users of available upgrades "
 "and potential security vulnerabilities in Mailpile."
-msgstr ""
-"Mailpile-utviklerne offentliggjør meldinger om tilgjengelige oppdateringer "
-"og potensiell sikkerhetsfeil i Mailpile."
+msgstr "Mailpile-utviklerne offentliggjør meldinger om tilgjengelige oppdateringer og potensiell sikkerhetsfeil i Mailpile."
 
 #: shared-data/default-theme/html/settings/privacy.html:203
 msgid ""
 "Update subscriptions help the Mailpile Team keep track of how many people "
 "use Mailpile, what operating systems are in use, and which languages users "
 "speak."
-msgstr ""
-"Abonnementsoppdateringer hjelper Mailpile-laget å holde øye med hvor mange "
-"som bruker Mailpile, hvilket operativsystem de bruker, og hvilke språk "
-"brukerne snakker."
+msgstr "Abonnementsoppdateringer hjelper Mailpile-laget å holde øye med hvor mange som bruker Mailpile, hvilket operativsystem de bruker, og hvilke språk brukerne snakker."
 
 #: shared-data/default-theme/html/settings/privacy.html:204
 #: shared-data/default-theme/html/settings/privacy.html:266
@@ -10491,16 +10155,12 @@ msgstr "Bare last ned oppdateringer anonymt over Tor."
 #: shared-data/default-theme/html/settings/privacy.html:228
 msgid ""
 "Generic updates only, over Tor - keeps all details about your setup private."
-msgstr ""
-"Bare vanlige oppdateringer, over Tor - lar alle detaljer om ditt oppsett "
-"forbli private."
+msgstr "Bare vanlige oppdateringer, over Tor - lar alle detaljer om ditt oppsett forbli private."
 
 #: shared-data/default-theme/html/settings/privacy.html:234
 msgid ""
 "Download generic updates only, to keep details about your setup private."
-msgstr ""
-"Bare last ned vanlige oppdateringer, for å holde detaljer om ditt oppsett "
-"privat."
+msgstr "Bare last ned vanlige oppdateringer, for å holde detaljer om ditt oppsett privat."
 
 #: shared-data/default-theme/html/settings/privacy.html:241
 msgid "Keep your custom settings:"
@@ -10513,8 +10173,7 @@ msgstr "Skru av dagens melding."
 #: shared-data/default-theme/html/settings/privacy.html:250
 #: shared-data/default-theme/html/settings/privacy.html:303
 msgid "Tor will be used to protect your IP address, if it is available."
-msgstr ""
-"Tor vil bli brukt til å beskytte din IP-adresse, hvis dette er tilgjengelig."
+msgstr "Tor vil bli brukt til å beskytte din IP-adresse, hvis dette er tilgjengelig."
 
 #: shared-data/default-theme/html/settings/privacy.html:256
 msgid "Third Party Content"
@@ -10528,17 +10187,13 @@ msgstr "Mailpile kan laste ned innhold fra nettet for å bistå din e-post."
 msgid ""
 "This includes user photos from Gravatar, key material from key servers, and "
 "potentially other sources."
-msgstr ""
-"Dette inkluderer bilder fra Gravatar, nøkkelmateriale fra nøkkelhvelv, og "
-"potensielt andre kilder."
+msgstr "Dette inkluderer bilder fra Gravatar, nøkkelmateriale fra nøkkelhvelv, og potensielt andre kilder."
 
 #: shared-data/default-theme/html/settings/privacy.html:265
 msgid ""
-"This may leak information about your address book and use of Mailpile to the "
-"providers of these services."
-msgstr ""
-"Dette kan lekke informasjon om din adressebok og bruk av Mailpile til "
-"tilbyderne av disse tjenestene."
+"This may leak information about your address book and use of Mailpile to the"
+" providers of these services."
+msgstr "Dette kan lekke informasjon om din adressebok og bruk av Mailpile til tilbyderne av disse tjenestene."
 
 #: shared-data/default-theme/html/settings/privacy.html:269
 msgid "Learn more about:"
@@ -10561,9 +10216,8 @@ msgid "Securing Your Data"
 msgstr "Sikrer din data"
 
 #: shared-data/default-theme/html/settings/privacy.html:314
-#, fuzzy
 msgid "Your Mailpile stores data here:"
-msgstr "Din Mailpile er oppdatert"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:319
 msgid "Mailpile can encrypt your e-mail, search engine and settings."
@@ -10571,22 +10225,17 @@ msgstr "Mailpile kan kryptere din e-post, søkemotor og innstillinger."
 
 #: shared-data/default-theme/html/settings/privacy.html:320
 msgid "This protects your privacy, even if your computer gets lost or stolen."
-msgstr ""
-"Dette hegner om ditt personvern, selv om mister din datamaskin eller hvis "
-"den blir stjålet."
+msgstr "Dette hegner om ditt personvern, selv om mister din datamaskin eller hvis den blir stjålet."
 
 #: shared-data/default-theme/html/settings/privacy.html:324
 msgid ""
 "Encryption makes it harder to migrate your data to another e-mail client, "
 "slows things down and may increase the odds of data loss."
-msgstr ""
-"Kryptering gjør det vanskeligere å flytte over din data til en annen e-"
-"postklient, sakker ned ting, og kan øke mulighetene for datatap."
+msgstr "Kryptering gjør det vanskeligere å flytte over din data til en annen e-postklient, sakker ned ting, og kan øke mulighetene for datatap."
 
 #: shared-data/default-theme/html/settings/privacy.html:325
-#, fuzzy
 msgid "Losing your encryption key becomes equivalent to losing the data."
-msgstr "Tap av din krypteringsnøkkelen er å forstå som tap av all din e-post."
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:329
 msgid "Download a backup of current settings and keys."
@@ -10596,18 +10245,15 @@ msgstr "Last ned en sikkerhetskopi av gjeldende innstillinger og nøkler."
 msgid ""
 "Also keep in mind that the security of your data depends entirely on the "
 "strength of your password."
-msgstr ""
-"Ha også i minnet at sikkerheten for din data avhenger fullt og helt av "
-"styrken på passordet ditt."
+msgstr "Ha også i minnet at sikkerheten for din data avhenger fullt og helt av styrken på passordet ditt."
 
 #: shared-data/default-theme/html/settings/privacy.html:337
 msgid "You can change your Mailpile Password here."
 msgstr "Du kan endre ditt Mailpile-passord her."
 
 #: shared-data/default-theme/html/settings/privacy.html:351
-#, fuzzy
 msgid "Allow deletion of e-mail from servers and mailboxes."
-msgstr "Tillat sletting av e-post fra tjenere og postbokser"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:387
 msgid "Encrypt the contact database."
@@ -10630,9 +10276,8 @@ msgid "Strongly encrypt the local search index (slow)."
 msgstr "Sterk kryptering av lokal søkeindeks (tregt)."
 
 #: shared-data/default-theme/html/settings/privacy.html:443
-#, fuzzy
 msgid "Use shared GnuPG keychain for PGP encryption keys."
-msgstr "Bruk delt GnuPG-nøkkelknippe for PGP-krypteringsnøkler"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:447
 msgid "Notes:"
@@ -10642,29 +10287,25 @@ msgstr "Notiser:"
 msgid ""
 "Changing encryption settings will only affect data created or edited from "
 "now on."
-msgstr ""
-"Endring av krypteringsinnstillinger vil kun ha innvirkning på data opprettet "
-"eller redigert fra og med nå."
+msgstr "Endring av krypteringsinnstillinger vil kun ha innvirkning på data opprettet eller redigert fra og med nå."
 
 #: shared-data/default-theme/html/settings/privacy.html:452
 msgid ""
 "Backups are protected by the same password and encryption as the "
 "configuration."
-msgstr ""
-"Sikkerhetskopier beskyttes av samme passord o kryptering som oppsettet."
+msgstr "Sikkerhetskopier beskyttes av samme passord o kryptering som oppsettet."
 
 #: shared-data/default-theme/html/settings/privacy.html:454
 msgid ""
-"The configuration is always kept encrypted, because it may contain passwords."
+"The configuration is always kept encrypted, because it may contain "
+"passwords."
 msgstr "Oppsettet er alltid kryptert, fordi det kan inneholde passord."
 
 #: shared-data/default-theme/html/settings/privacy.html:455
 msgid ""
 "The search index is always at least partially encrypted because it is so "
 "sensitive."
-msgstr ""
-"Søkeindeksen er alltid ihvertfall delvis kryptert av hensyn til dens "
-"sensitivitet."
+msgstr "Søkeindeksen er alltid ihvertfall delvis kryptert av hensyn til dens sensitivitet."
 
 #: shared-data/default-theme/html/settings/privacy.html:463
 #: shared-data/default-theme/html/settings/privacy.html:470
@@ -10877,23 +10518,18 @@ msgstr "Vis husket kontopassord"
 #: shared-data/default-theme/html/settings/set/password/index.html:139
 msgid ""
 "Unlocking an account allows Mailpile to use it to send and receive e-mail."
-msgstr ""
-"Opplåsing av en konto tillater Mailpile å bruke den til å sende og motta e-"
-"post."
+msgstr "Opplåsing av en konto tillater Mailpile å bruke den til å sende og motta e-post."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:141
 msgid ""
 "By default, unlocked accounts stay accessible until you restart Mailpile."
-msgstr ""
-"Som forvalg, vil opplåste kontoer forbli tilgjengelige til du starter "
-"Mailpile på nytt."
+msgstr "Som forvalg, vil opplåste kontoer forbli tilgjengelige til du starter Mailpile på nytt."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:144
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the account "
 "again."
-msgstr ""
-"Hvis Mailpile husker passordet, vil du ikke måtte låse opp kontoen igjen."
+msgstr "Hvis Mailpile husker passordet, vil du ikke måtte låse opp kontoen igjen."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:150
 msgid "Locked accounts can not be used to send or receive e-mail."
@@ -10991,22 +10627,17 @@ msgstr "Vis husket nøkkelpassord"
 msgid ""
 "Unlocking a key allows Mailpile to use it for decryption and creating "
 "digital signatures."
-msgstr ""
-"Opplåsing av en nøkkel tillater Mailpile å bruke den for dekryptering og "
-"opprettelse av digitale signaturer."
+msgstr "Opplåsing av en nøkkel tillater Mailpile å bruke den for dekryptering og opprettelse av digitale signaturer."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:194
 msgid "By default, unlocked keys stay accessible until you restart Mailpile."
-msgstr ""
-"Som forvalg, vil opplåste nøkler forbli tilgjengelige til du starter "
-"Mailpile på nytt."
+msgstr "Som forvalg, vil opplåste nøkler forbli tilgjengelige til du starter Mailpile på nytt."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:197
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the key "
 "again."
-msgstr ""
-"Hvis Mailpile husker passordet, vil du ikke måtte låse opp nøkkelen igjen."
+msgstr "Hvis Mailpile husker passordet, vil du ikke måtte låse opp nøkkelen igjen."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:203
 msgid "Locked keys can not be used for decryption or digital signatures."
@@ -11029,14 +10660,11 @@ msgstr "Innvilg tilgang"
 msgid ""
 "In order for Mailpile to process your e-mail, you need to grant permission "
 "for the application to access your e-mail account."
-msgstr ""
-"For at Mailpile skal kunne behandle din e-post, må du innvilge tilgang for "
-"programmet til din e-postkonto."
+msgstr "For at Mailpile skal kunne behandle din e-post, må du innvilge tilgang for programmet til din e-postkonto."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:17
 msgid "The authorization process will take place in a new window (or tab)."
-msgstr ""
-"Identitetsbekreftelsesprosessen vil finne sted i et nytt vindu (eller fane)."
+msgstr "Identitetsbekreftelsesprosessen vil finne sted i et nytt vindu (eller fane)."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:19
 msgid "You will need to copy and paste an access code into the form below."
@@ -11083,9 +10711,7 @@ msgstr "Mailpile vil nå forespørre dette passordet for tilgang."
 msgid ""
 "All settings and downloaded mail will be encrypted, so even if someone "
 "steals your laptop they will not have access to your e-mail."
-msgstr ""
-"Alle innstillinger og nedlastet e-post vil bli kryptert, så selv om noen "
-"stjeler din enhet vil de ikke få tilgang til e-posten din."
+msgstr "Alle innstillinger og nedlastet e-post vil bli kryptert, så selv om noen stjeler din enhet vil de ikke få tilgang til e-posten din."
 
 #: shared-data/default-theme/html/setup/password/index.html:23
 msgid "Start using Mailpile"
@@ -11120,21 +10746,18 @@ msgstr "Velg ditt Mailpile-passord"
 msgid ""
 "Your Mailpile Password should be something really hard to guess but "
 "memorable."
-msgstr ""
-"Ditt Mailpile-passord bør være noe som er vanskelig å gjette seg til, men "
-"enkelt å huske."
+msgstr "Ditt Mailpile-passord bør være noe som er vanskelig å gjette seg til, men enkelt å huske."
 
 #: shared-data/default-theme/html/setup/password/index.html:59
 msgid ""
 "This password will be used to unlock your Mailpile settings, keys and "
 "accounts."
-msgstr ""
-"Dette passordet vil bli brukt til å låse opp Mailpile-innstillinger, nøkler "
-"og kontoer."
+msgstr "Dette passordet vil bli brukt til å låse opp Mailpile-innstillinger, nøkler og kontoer."
 
 #: shared-data/default-theme/html/setup/password/index.html:64
 msgid ""
-"We have made a secure recommendation, but you still need to type it yourself!"
+"We have made a secure recommendation, but you still need to type it "
+"yourself!"
 msgstr "Dette er en sikker anbefaling, men du må fremdeles skrive den selv!"
 
 #: shared-data/default-theme/html/setup/password/index.html:67
@@ -11399,85 +11022,3 @@ msgstr "Klarte ikke å koble til Mailpile!"
 #: shared-data/mailpile-gui/mailpile-gui.py:311
 msgid "Failed to launch Mailpile!"
 msgstr "Klarte ikke å starte Mailpile!"
-
-#~ msgid "Message not found?"
-#~ msgstr "Kunne ikke finne meldingen?"
-
-#~ msgid "MaybeSpam"
-#~ msgstr "MuligSøppelpost"
-
-#~ msgid "DNS PKA records"
-#~ msgstr "DNS PKA fortegnelse"
-
-#~ msgid "Your spam filter is broken: please install spambayes"
-#~ msgstr "Ditt søppelpostfilter er ødelagt: Installer SpamBayes"
-
-#~ msgid "Could Not Render Composer"
-#~ msgstr "Kunne ikke tegne opp skrivefelt"
-
-#~ msgid "People in Conversation"
-#~ msgstr "Folk i samtalen"
-
-#~ msgid "Tags in Conversation"
-#~ msgstr "Etiketter i samtale"
-
-#~ msgid "This key is on your key chain."
-#~ msgstr "Denne nøkkelen er på ditt nøkkelknippe"
-
-#~ msgid "Message moved to new thread"
-#~ msgstr "Melding flyttet til ny tråd"
-
-#~ msgid "go to new thread"
-#~ msgstr "gå til ny tråd"
-
-#~ msgid "View e-mail from this mailing list"
-#~ msgstr "Vis e-poster fra denne e-postlisten"
-
-#~ msgid "Move"
-#~ msgstr "Flytt"
-
-#~ msgid "Archive Message"
-#~ msgstr "Arkiver melding"
-
-#~ msgid "Flag as Spam"
-#~ msgstr "Flagg som søppelpost"
-
-#~ msgid "Remove from Thread"
-#~ msgstr "Fjern fra tråd"
-
-#~ msgid "Unsubscribe"
-#~ msgstr "Fjern abonnement"
-
-#~ msgid "View Profile"
-#~ msgstr "Vis profil"
-
-#~ msgid "Compose New"
-#~ msgstr "Forfatt ny"
-
-#~ msgid "Bcc:"
-#~ msgstr "Blindkopi:"
-
-#~ msgid "View:"
-#~ msgstr "Vis:"
-
-#~ msgid "JSON"
-#~ msgstr "JSON"
-
-#~ msgid "Raw Source"
-#~ msgstr "Råkilde:"
-
-#~ msgid "People"
-#~ msgstr "Mennesker"
-
-#~ msgid "Create a new 4096 bit RSA key (slow)"
-#~ msgstr "Opprett en ny 4096-biters RSA-nøkkel (tregt)"
-
-#~ msgid "Automatically attach encryption keys to outgoing mail"
-#~ msgstr "Legg ved krypteringsnøkler til utgående e-post automatisk"
-
-#~ msgid ""
-#~ "You need to have already installed and enabled the Tor service on your "
-#~ "computer."
-#~ msgstr ""
-#~ "Du må allerede har installert og skrudd på Tor-tjenesten på din "
-#~ "datamaskin."

@@ -1,7 +1,7 @@
 # Translations template for mailpile.
-# Copyright (C) 2018 Mailpile ehf
+# Copyright (C) 2019 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-#
+# 
 # Translators:
 # Andrzej Broniarek <andrzej.broniarek@gmail.com>, 2016
 # Anna SOBOLEWSKA <sobolewska.a.m@gmail.com>, 2013-2014
@@ -19,18 +19,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-16 17:38+0000\n"
-"PO-Revision-Date: 2018-05-18 15:54+0000\n"
+"POT-Creation-Date: 2019-08-16 17:28+0000\n"
+"PO-Revision-Date: 2019-08-17 02:52+0000\n"
 "Last-Translator: Dragana Kaurin <dragana.kaurin@localizationlab.org>\n"
 "Language-Team: Polish (http://www.transifex.com/otf/mailpile/language/pl/)\n"
-"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n"
-"%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
-"%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"Generated-By: Babel 2.4.0\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
 #: mailpile/app.py:125
 msgid "Mailpile is unconfigured, please run `setup` or visit the web UI."
@@ -50,8 +48,7 @@ msgstr "Nic się nie działo przez dłuższą chwilę"
 
 #: mailpile/app.py:246 mailpile/plugins/core.py:60
 msgid "Failed to decrypt configuration, please log in!"
-msgstr ""
-"Nie udało się rozszyfrować konfiguracji. Proszę się zalogować ponownie."
+msgstr "Nie udało się rozszyfrować konfiguracji. Proszę się zalogować ponownie."
 
 #: mailpile/auth.py:188
 msgid "Hello world, welcome!"
@@ -93,9 +90,7 @@ msgstr "Wprowadź swoje hasło"
 
 #: mailpile/auth.py:454
 msgid "That key is managed by Mailpile, it cannot be changed directly."
-msgstr ""
-"Ten klucz jest zarządzany przez Mailpile, nie może być modyfikowany "
-"bezpośrednio."
+msgstr "Ten klucz jest zarządzany przez Mailpile, nie może być modyfikowany bezpośrednio."
 
 #: mailpile/auth.py:456
 msgid "Protected secret"
@@ -329,8 +324,7 @@ msgstr "Twój index metadanych jest albo za bardzo stary, nowy lub uszkodzony!"
 
 #: mailpile/search.py:166
 msgid "Corrupt data in metadata index! Trying to cope..."
-msgstr ""
-"Uszkodzone dane w indeksie metadanych! Próbujemy sobie poradzić z tym..."
+msgstr "Uszkodzone dane w indeksie metadanych! Próbujemy sobie poradzić z tym..."
 
 #: mailpile/search.py:190
 #, python-format
@@ -454,9 +448,7 @@ msgstr "Nieznany rodzaj sortowania: %s"
 
 #: mailpile/search.py:2099
 msgid "Sort failed, sorting badly. Partial index?"
-msgstr ""
-"Sortowanie się nie powiodło, nieudany rodzaj sortowania. Niepełny parametr "
-"indeksowania?"
+msgstr "Sortowanie się nie powiodło, nieudany rodzaj sortowania. Niepełny parametr indeksowania?"
 
 #: mailpile/search.py:2115
 msgid "Collapsing conversations..."
@@ -472,18 +464,16 @@ msgid "In lockdown, doing nothing."
 msgstr "W trybie blokady, nic nie robi."
 
 #: mailpile/security.py:619
-#, fuzzy
 msgid "We trust ourselves"
-msgstr "Model zaufanych kluczy"
+msgstr ""
 
 #: mailpile/security.py:651
 msgid "This sender's reputation is unknown"
 msgstr ""
 
 #: mailpile/security.py:718
-#, fuzzy
 msgid "The digital signature is invalid"
-msgstr "Elektroniczny podpis jest nieprawidłowy lub zły"
+msgstr ""
 
 #: mailpile/security.py:720
 msgid "This person usually signs their mail"
@@ -494,9 +484,8 @@ msgid "This was signed by an unexpected key"
 msgstr ""
 
 #: mailpile/security.py:724
-#, fuzzy
 msgid "This was signed by an expired key"
-msgstr "Elektroniczny podpis został wykonany kluczem którego ważność wygasła"
+msgstr ""
 
 #: mailpile/security.py:726
 msgid "Good signature, we are happy"
@@ -1007,14 +996,12 @@ msgid "Mailboxes we index"
 msgstr "Skrzynki zawarte w pliku index"
 
 #: mailpile/config/defaults.py:59
-#, fuzzy
 msgid "Plugins to load before login"
-msgstr "Wtyczki do uruchomienia przy starcie"
+msgstr ""
 
 #: mailpile/config/defaults.py:61
-#, fuzzy
 msgid "Plugins to load after login"
-msgstr "Wtyczki do uruchomienia przy starcie"
+msgstr ""
 
 #: mailpile/config/defaults.py:63
 msgid "Locations of assorted data"
@@ -1081,14 +1068,12 @@ msgid "List of hosts to avoid proxying"
 msgstr "Lista hostów do uniknięcia proxy"
 
 #: mailpile/config/defaults.py:82
-#, fuzzy
 msgid "Tor settings"
-msgstr "Ustawienia proxy"
+msgstr ""
 
 #: mailpile/config/defaults.py:83
-#, fuzzy
 msgid "Override the default Tor binary path"
-msgstr "Nadpisz domyślną ścieżkę binarną GPG"
+msgstr ""
 
 #: mailpile/config/defaults.py:85
 msgid "Use shared system-wide Tor (not our own)"
@@ -1107,9 +1092,8 @@ msgid "Control Port"
 msgstr ""
 
 #: mailpile/config/defaults.py:90
-#, fuzzy
 msgid "Control Password"
-msgstr "Hasło konta"
+msgstr ""
 
 #: mailpile/config/defaults.py:93
 msgid "User preferences"
@@ -1282,8 +1266,7 @@ msgstr "Długość linii, <40 wyłącza "
 
 #: mailpile/config/defaults.py:161
 msgid "Always BCC self on outgoing mail"
-msgstr ""
-"Zawsze wysyłaj BBC (ukryta kopia) do siebie samego przy wysyłaniu maila"
+msgstr "Zawsze wysyłaj BBC (ukryta kopia) do siebie samego przy wysyłaniu maila"
 
 #: mailpile/config/defaults.py:163
 #: shared-data/default-theme/html/settings/preferences.html:108
@@ -1773,14 +1756,12 @@ msgid "Creating a %(bits)s bit GnuPG key"
 msgstr "Tworzę %(bits)s bit klucz GnuPG"
 
 #: mailpile/crypto/gpgi.py:1777
-#, fuzzy
 msgid "Waiting to generate a PGP key."
-msgstr "Czekam na wygenerowanie %dbitowego GnuPG klucza.bitów"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1781
-#, fuzzy
 msgid "Generating new PGP key."
-msgstr "Generuję nowy %d bitowy PGP klucz.bitów"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1863
 #, python-format
@@ -1964,9 +1945,8 @@ msgid "Updating search engine for %s"
 msgstr "Aktualizuję silnik wyszukiwania dla %s"
 
 #: mailpile/mail_source/__init__.py:1056
-#, fuzzy
 msgid "Checking new credentials"
-msgstr "Sprawdzanie nowych skrzynek"
+msgstr ""
 
 #: mailpile/mail_source/__init__.py:1107
 msgid "Internal error!  Sleeping..."
@@ -2316,8 +2296,7 @@ msgstr "Nie znaleziono żadnych wiadomości"
 
 #: mailpile/plugins/compose.py:682
 msgid "Sorry, ephemeral messages cannot have attachments at this time."
-msgstr ""
-"Przepaszmy ale, chwilowo, tymczasowe wiadomości nie mogą mieć załączników."
+msgstr "Przepaszmy ale, chwilowo, tymczasowe wiadomości nie mogą mieć załączników."
 
 #: mailpile/plugins/compose.py:740
 msgid "No files found"
@@ -2393,9 +2372,8 @@ msgid "Failed to attach files"
 msgstr "Nie udało się załączyć plików"
 
 #: mailpile/plugins/compose.py:1014
-#, fuzzy
 msgid "Cannot find message"
-msgstr "Nie można było podpisać wiadomości"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1019
 #, python-format
@@ -2420,9 +2398,9 @@ msgid "Unthreaded %d messages"
 msgstr "%d wiadomości bez wątku"
 
 #: mailpile/plugins/compose.py:1090
-#, fuzzy, python-format
+#, python-format
 msgid "Unthread %d messages"
-msgstr "%d wiadomości bez wątku"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1107
 msgid "The index is not ready yet"
@@ -2505,11 +2483,9 @@ msgstr "Brakujące wymagane parametry. Wymaganymi parametrami są: %s"
 #: mailpile/plugins/contacts.py:631
 #, python-format
 msgid ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
-msgstr ""
-"Nieznany parametr został przekazany do importera. Dostarczono %s; ale znane "
-"parametry są: %s"
+"Unknown parameter passed to importer. Provided %s; but known parameters are:"
+" %s"
+msgstr "Nieznany parametr został przekazany do importera. Dostarczono %s; ale znane parametry są: %s"
 
 #: mailpile/plugins/contacts.py:800
 msgid "Searched for addresses"
@@ -2605,9 +2581,9 @@ msgid "Rescanning: %s"
 msgstr "Przeskanowanie: %s"
 
 #: mailpile/plugins/core.py:183
-#, fuzzy, python-format
+#, python-format
 msgid "Importing VCards from: %s"
-msgstr "Importowanie kontaktów z pęku kluczy GPG"
+msgstr ""
 
 #: mailpile/plugins/core.py:202
 #, python-format
@@ -2868,9 +2844,7 @@ msgstr "Komendy:"
 
 #: mailpile/plugins/core.py:1940
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr ""
-"Tagi: (nazwy tagów działają jako komendy do wyświetlenia otagowanych "
-"wiadomości)"
+msgstr "Tagi: (nazwy tagów działają jako komendy do wyświetlenia otagowanych wiadomości)"
 
 #: mailpile/plugins/core.py:1978 mailpile/plugins/core.py:2006
 msgid "Displayed help"
@@ -2900,19 +2874,18 @@ msgstr "Brak wyników"
 
 #: mailpile/plugins/crypto_autocrypt.py:191
 #: mailpile/plugins/crypto_autocrypt.py:218
-#, fuzzy
 msgid "Not found"
-msgstr "Nie znaleziono danych"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:216
-#, fuzzy, python-format
+#, python-format
 msgid "Forgot %d recipients"
-msgstr "Brak odbiorców"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:265
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d peers"
-msgstr "Znaleziono %d zdarzeń"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:47
 msgid ""
@@ -2920,11 +2893,7 @@ msgid ""
 "confidential messages to the owner, or to verify their\n"
 "digital signatures. You can safely discard or ignore this\n"
 "file if you do not use e-mail encryption or signatures."
-msgstr ""
-"To jest cyfrowy klucz szyfrujący, który może zostać wykorzystany do wysłania "
-"poufnej wiadomości do właściciela lub by zweryfikować ich podpis cyfrowy. "
-"Możesz bezpiecznie wyrzucić lub zignorować ten plik jeśli nie używasz "
-"szyfrowania maili lub podpisów."
+msgstr "To jest cyfrowy klucz szyfrujący, który może zostać wykorzystany do wysłania poufnej wiadomości do właściciela lub by zweryfikować ich podpis cyfrowy. Możesz bezpiecznie wyrzucić lub zignorować ten plik jeśli nie używasz szyfrowania maili lub podpisów."
 
 #: mailpile/plugins/crypto_gnupg.py:52
 msgid "Generated by Mailpile and GnuPG"
@@ -2994,8 +2963,7 @@ msgstr "Unieważnienie certyfikatu zostanie pokazane na ekranie"
 
 #: mailpile/plugins/crypto_gnupg.py:516
 msgid "Copy & paste that, save, and send to people who have the old key"
-msgstr ""
-"Skopiuj i wyślij to, zapisz i wyślij do ludzi, którzy posiadają zły klucz"
+msgstr "Skopiuj i wyślij to, zapisz i wyślij do ludzi, którzy posiadają zły klucz"
 
 #: mailpile/plugins/crypto_gnupg.py:517
 #, python-format
@@ -3098,16 +3066,14 @@ msgid "This account does not have an encryption key."
 msgstr "To konto nie ma klucza szyfrującego."
 
 #: mailpile/plugins/crypto_policy.py:208
-msgid "Your policy is to always encrypt, but we do not have keys for everyone!"
-msgstr ""
-"Twoja polityka mówi, żeby zawsze szyfrować ale nie posiadamy kluczy dla "
-"wszystkich!"
+msgid ""
+"Your policy is to always encrypt, but we do not have keys for everyone!"
+msgstr "Twoja polityka mówi, żeby zawsze szyfrować ale nie posiadamy kluczy dla wszystkich!"
 
 #: mailpile/plugins/crypto_policy.py:211
 msgid ""
 "Some recipients require encryption, but we do not have keys for everyone!"
-msgstr ""
-"Kilka odbiorców wymaga szyfrowania ale nie posiadamy kluczy dla wszystkich!"
+msgstr "Kilka odbiorców wymaga szyfrowania ale nie posiadamy kluczy dla wszystkich!"
 
 #: mailpile/plugins/crypto_policy.py:227
 msgid "We have keys for everyone!"
@@ -3119,8 +3085,7 @@ msgstr "Nie zaszyfruję ponieważ dane nie są kompletne."
 
 #: mailpile/plugins/crypto_policy.py:235
 msgid "Cannot encrypt because we do not have keys for all recipients."
-msgstr ""
-"Nie mogę zaszyfrować, ponieważ nie mamy kluczy dla wszystkich odbiorców."
+msgstr "Nie mogę zaszyfrować, ponieważ nie mamy kluczy dla wszystkich odbiorców."
 
 #: mailpile/plugins/eventlog.py:114
 #, python-format
@@ -3409,9 +3374,8 @@ msgid "Failed to parse message."
 msgstr "Nie udało się zanalizować wiadomości"
 
 #: mailpile/plugins/search.py:375
-#, fuzzy
 msgid "Failed to evalute sender trust"
-msgstr "Nie udało się stworzyć nowej vCard dla %s"
+msgstr ""
 
 #: mailpile/plugins/search.py:381
 #, python-format
@@ -3461,9 +3425,7 @@ msgstr "Wyświetlono następną stronę z wynikami."
 
 #: mailpile/plugins/search.py:1060
 msgid "You must perform a search before requesting the previous page."
-msgstr ""
-"Najpierw musisz przeprowadzić wyszukiwanie, zanim wyślesz żądanie  "
-"poprzedniej strony."
+msgstr "Najpierw musisz przeprowadzić wyszukiwanie, zanim wyślesz żądanie  poprzedniej strony."
 
 #: mailpile/plugins/search.py:1063
 msgid "Displayed previous page of results."
@@ -3573,18 +3535,14 @@ msgstr "Włączam ponownie blokadę"
 
 #: mailpile/plugins/setup_magic.py:354
 msgid ""
-"Unable to obfuscate search index without losing data. Not indexing encrypted "
-"mail."
-msgstr ""
-"Niezdolny do zaciemnienia wyników wyszukiwania bez straty danych. Nie "
-"indeksuje zaszyfrowanych maili."
+"Unable to obfuscate search index without losing data. Not indexing encrypted"
+" mail."
+msgstr "Niezdolny do zaciemnienia wyników wyszukiwania bez straty danych. Nie indeksuje zaszyfrowanych maili."
 
 #: mailpile/plugins/setup_magic.py:360
 msgid ""
 "Obfuscating search index and enabling indexing of encrypted e-mail. Yay!"
-msgstr ""
-"Zaciemniam wyniki wyszukowania i włączam indeksowanie zaszyfrowanych maili. "
-"Jej!"
+msgstr "Zaciemniam wyniki wyszukowania i włączam indeksowanie zaszyfrowanych maili. Jej!"
 
 #: mailpile/plugins/setup_magic.py:602
 #, python-format
@@ -3638,8 +3596,7 @@ msgstr "Sprawdzam %s, czysty tekst=%s"
 #, python-format
 msgid ""
 "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
-msgstr ""
-"Testuję %(protocol)4.4s na %(host)s: %(port)s z STARTTLS jako %(username)s"
+msgstr "Testuję %(protocol)4.4s na %(host)s: %(port)s z STARTTLS jako %(username)s"
 
 #: mailpile/plugins/setup_magic.py:904
 #, python-format
@@ -3980,9 +3937,8 @@ msgid "Found encryption key in keyserver"
 msgstr "Znaleziono klucz szyfrujący w serwerze kluczy"
 
 #: mailpile/plugins/keylookup/__init__.py:677
-#, fuzzy
 msgid "Found encryption key in keys.openpgp.org"
-msgstr "Znaleziono klucz szyfrujący w serwerze kluczy"
+msgstr ""
 
 #: mailpile/plugins/keylookup/email_keylookup.py:39
 msgid "E-mail keys"
@@ -3993,14 +3949,12 @@ msgid "Found key in local e-mail"
 msgstr "Znaleziono klucz w lokalnym e-mail"
 
 #: mailpile/plugins/keylookup/wkd.py:49
-#, fuzzy
 msgid "Web Key Directory"
-msgstr "Przeszukaj katalog index"
+msgstr ""
 
 #: mailpile/plugins/keylookup/wkd.py:64
-#, fuzzy
 msgid "Found key in Web Key Directory"
-msgstr "Znaleziono klucz w DNS PKA"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:63
 msgid "Basic header tokenising"
@@ -4237,9 +4191,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:203
-#, fuzzy
 msgid "Address headers to mine"
-msgstr "Dodaj wiadomości do wyszukiwarki"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:205
 msgid ""
@@ -4251,9 +4204,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:212
-#, fuzzy
 msgid "Generate long skips"
-msgstr "Wygenerowano wykres"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:213
 msgid ""
@@ -4321,9 +4273,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:252
-#, fuzzy
 msgid "Search for Habeas Headers"
-msgstr "Szukane adresy"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:253
 msgid ""
@@ -4406,8 +4357,7 @@ msgid ""
 "     something scores >= spamc, it's called spam; and everything else is\n"
 "     called 'I am not sure' -- the middle ground.\n"
 "\n"
-"     Note:  You may wish to increase nbuckets, to give this scheme more "
-"cutoff\n"
+"     Note:  You may wish to increase nbuckets, to give this scheme more cutoff\n"
 "     values to analyze."
 msgstr ""
 
@@ -4424,9 +4374,8 @@ msgid "Best cutoff unsure weight"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:352
-#, fuzzy
 msgid "Percentiles"
-msgstr "Profile"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:353
 #, python-format
@@ -4453,9 +4402,8 @@ msgid "Show false negatives"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:387
-#, fuzzy
 msgid "Show unsure"
-msgstr "Pokaż na pasku bocznego"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:391
 msgid "Show character limit"
@@ -4499,9 +4447,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:417
-#, fuzzy
 msgid "Spam directories"
-msgstr "%s nie jest katalogiem"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:418 mailpile/spambayes/Options.py:423
 msgid ""
@@ -4510,9 +4457,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:422
-#, fuzzy
 msgid "Ham directories"
-msgstr "%s nie jest katalogiem"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:429
 msgid "Build each classifier from scratch"
@@ -4531,9 +4477,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:442
-#, fuzzy
 msgid "Maximum number of extreme words"
-msgstr "Wymagana minimalna liczba sygnatur"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:443
 msgid ""
@@ -4543,9 +4488,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:448
-#, fuzzy
 msgid "Unknown word probability"
-msgstr "Nieznana polityka krypto: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:449
 msgid ""
@@ -4557,9 +4501,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:456
-#, fuzzy
 msgid "Unknown word strength"
-msgstr "Kontent nieznanego typu"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:457
 msgid ""
@@ -4630,10 +4573,8 @@ msgid ""
 "     probably at least triple it.\n"
 "\n"
 "     You may also wish to increase the max_discriminators (maximum number\n"
-"     of extreme words) option if you enable this option, perhaps doubling "
-"or\n"
-"     quadrupling it.  It's not yet clear.  Bigrams create many more "
-"hapaxes,\n"
+"     of extreme words) option if you enable this option, perhaps doubling or\n"
+"     quadrupling it.  It's not yet clear.  Bigrams create many more hapaxes,\n"
 "     and that seems to increase the brittleness of minimalist training\n"
 "     regimes; increasing max_discriminators may help to soften that effect.\n"
 "     OTOH, max_discriminators defaults to 150 in part because that makes it\n"
@@ -4675,9 +4616,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:552
-#, fuzzy
 msgid "Storage file name"
-msgstr "Nazwa źródła"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:553
 msgid ""
@@ -4690,9 +4630,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:561
-#, fuzzy
 msgid "Message information file name"
-msgstr "Wiadomość nie jest edytowalna"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:562
 msgid ""
@@ -4726,9 +4665,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:582 mailpile/spambayes/Options.py:597
-#, fuzzy
 msgid "Spam cache directory"
-msgstr "Przeszukaj katalog index"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:583 mailpile/spambayes/Options.py:598
 msgid ""
@@ -4737,9 +4675,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:587 mailpile/spambayes/Options.py:602
-#, fuzzy
 msgid "Ham cache directory"
-msgstr "Przeszukaj katalog index"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:588 mailpile/spambayes/Options.py:603
 msgid ""
@@ -4748,9 +4685,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:592 mailpile/spambayes/Options.py:607
-#, fuzzy
 msgid "Unknown cache directory"
-msgstr "Nieznany błąd"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:593 mailpile/spambayes/Options.py:608
 msgid ""
@@ -4759,9 +4695,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:612
-#, fuzzy
 msgid "Cache messages"
-msgstr "Szukaj wiadomości"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:613
 msgid ""
@@ -4790,9 +4725,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:632
-#, fuzzy
 msgid "Maximum size of cached messages"
-msgstr "Nie udało dodać się wiadomości"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:633
 msgid ""
@@ -4839,16 +4773,14 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:670
-#, fuzzy
 msgid "Ham disposition name"
-msgstr "Host name"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:670 mailpile/spambayes/Options.py:773
 #: mailpile/spambayes/Options.py:778 mailpile/spambayes/Options.py:1021
 #: mailpile/spambayes/Options.py:1027 mailpile/spambayes/Options.py:1033
-#, fuzzy
 msgid "ham"
-msgstr "Ham"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:671
 msgid "As for Spam Designation, but for emails classified as Ham."
@@ -4886,8 +4818,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:686
 msgid ""
 "Set this option to augment scores of 1.00 or 0.00 by a\n"
-"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows "
-"the\n"
+"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows the\n"
 "     \"number of zeros\" or \"number of nines\" next to the score value)."
 msgstr ""
 
@@ -4921,9 +4852,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:710
-#, fuzzy
 msgid "Level header name"
-msgstr "Potrzebuję nazwy tagu"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:714
 msgid "Add evidence header"
@@ -4947,9 +4877,8 @@ msgid "Spambayes id header name"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:730
-#, fuzzy
 msgid "Add trained header"
-msgstr "Dodaj tagi tutaj!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:731
 msgid ""
@@ -4977,8 +4906,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:744
 msgid ""
 "The range of clues that are added to the \"debug\" header in the\n"
-"     E-mail. All clues that have their probability smaller than this "
-"number,\n"
+"     E-mail. All clues that have their probability smaller than this number,\n"
 "     or larger than one minus this number are added to the header such that\n"
 "     you can see why spambayes thinks this is ham/spam or why it is unsure.\n"
 "     The default is to show all clues, but you can reduce that by setting\n"
@@ -5030,9 +4958,8 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:786 mailpile/spambayes/Options.py:844
 #: mailpile/spambayes/Options.py:921
-#, fuzzy
 msgid "Remote Servers"
-msgstr "Serwer"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:787
 msgid ""
@@ -5040,19 +4967,15 @@ msgid ""
 "     before sending it on to your email client.  You need to specify which\n"
 "     POP3 server(s) and port(s) you wish it to connect to - a POP3 server\n"
 "     address typically looks like 'pop3.myisp.net:110' where\n"
-"     'pop3.myisp.net' is the name of the computer where the POP3 server "
-"runs\n"
-"     and '110' is the port on which the POP3 server listens.  The other "
-"port\n"
+"     'pop3.myisp.net' is the name of the computer where the POP3 server runs\n"
+"     and '110' is the port on which the POP3 server listens.  The other port\n"
 "     you might find is '995', which is used for secure POP3.  If you use\n"
 "     more than one server, simply separate their names with commas.  For\n"
 "     example:  'pop3.myisp.net:110,pop.gmail.com:995'.  You can get\n"
 "     these server names and port numbers from your existing email\n"
 "     configuration, or from your ISP or system administrator.  If you are\n"
-"     using Web-based email, you can't use the SpamBayes POP3 proxy "
-"(sorry!).\n"
-"     In your email client's configuration, where you would normally put "
-"your\n"
+"     using Web-based email, you can't use the SpamBayes POP3 proxy (sorry!).\n"
+"     In your email client's configuration, where you would normally put your\n"
 "     POP3 server address, you should now put the address of the machine\n"
 "     running SpamBayes.\n"
 msgstr ""
@@ -5234,9 +5157,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:969
-#, fuzzy
 msgid "Launch browser"
-msgstr "Zaktualizuj swoją przeglądarkę"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:970
 msgid ""
@@ -5261,9 +5183,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:985
-#, fuzzy
 msgid "Headers to display in message review"
-msgstr "Nie mogę wygenerować podglądu wiadomości"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:986
 msgid ""
@@ -5275,9 +5196,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:993
-#, fuzzy
 msgid "Display date received in message review"
-msgstr "Wyświetl wiadomość powitalną"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:994
 msgid ""
@@ -5288,9 +5208,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1000
-#, fuzzy
 msgid "Display score in message review"
-msgstr "Wyświetl wiadomość powitalną"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1001
 msgid ""
@@ -5384,15 +5303,13 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1049
-#, fuzzy
 msgid "HTTP Authentication"
-msgstr "Uwierzytelnianie"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1050
 msgid ""
 "This option lets you choose the security level of the web interface.\n"
-"     When selecting Basic or Digest, the user will be prompted a login and "
-"a\n"
+"     When selecting Basic or Digest, the user will be prompted a login and a\n"
 "     password to access the web interface. The Basic option is faster, but\n"
 "     transmits the password in clear on the network. The Digest option\n"
 "     encrypts the password before transmission."
@@ -5411,9 +5328,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1067
-#, fuzzy
 msgid "Rows per section"
-msgstr "Przenieś wybór w górę"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1068
 msgid "Number of rows to display per ham/spam/unsure section."
@@ -5485,27 +5401,24 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1112
-#, fuzzy
 msgid "Folders to filter"
-msgstr "Dodałem nowy filtr"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1113
 msgid "Comma delimited list of folders to be filtered"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1116
-#, fuzzy
 msgid "Folder for unsure messages"
-msgstr "Wiadomości nie udało się usunąć"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1120
 msgid "Folder for suspected spam"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1124
-#, fuzzy
 msgid "Folder for ham messages"
-msgstr "Nie udało dodać się wiadomości"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1125
 msgid ""
@@ -5613,9 +5526,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1227
-#, fuzzy
 msgid "HTTP Proxy Password"
-msgstr "Hasło klucza"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1228
 msgid ""
@@ -5637,9 +5549,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1239
-#, fuzzy
 msgid "User Interface Language"
-msgstr "Język interfejsu"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1240
 msgid ""
@@ -5687,9 +5598,7 @@ msgstr "Nie podpisano"
 msgid ""
 "This data has no digital signature, which means it could have come from "
 "anyone, not necessarily the apparent sender"
-msgstr ""
-"Te dane nie mają cyfrowego podpisu, co znaczy że mogą pochodzić od "
-"kogokolwiek, niekoniecznie od wyświetlanego nadawcy"
+msgstr "Te dane nie mają cyfrowego podpisu, co znaczy że mogą pochodzić od kogokolwiek, niekoniecznie od wyświetlanego nadawcy"
 
 #: mailpile/www/jinjaextensions.py:351
 msgid "There was a weird error with this digital signature"
@@ -5713,10 +5622,7 @@ msgstr "Niepodpisane"
 msgid ""
 "This data has no digital signature, which means it could easily have been "
 "forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Te dane nie mają cyfrowego podpisu, co znaczy że łatwo mogły zostać "
-"podrobione. Ten nadawca przeważnie podpisuje swoje wiadomości, więc bądź "
-"ostrożny!"
+msgstr "Te dane nie mają cyfrowego podpisu, co znaczy że łatwo mogły zostać podrobione. Ten nadawca przeważnie podpisuje swoje wiadomości, więc bądź ostrożny!"
 
 #: mailpile/www/jinjaextensions.py:367
 msgid "Mixed Unsigned"
@@ -5724,12 +5630,9 @@ msgstr "Mieszane niepodpisane"
 
 #: mailpile/www/jinjaextensions.py:368
 msgid ""
-"This message has no digital signature, which means it could easily have been "
-"forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Ta wiadomość nie ma cyfrowego podpisu, co znaczy, że łatwo mogła zostać "
-"podrobiona. Ten nadawca przeważnie podpisuje swoje wiadomości, więc bądź "
-"ostrożny!"
+"This message has no digital signature, which means it could easily have been"
+" forged. This sender usually signs their messages, so be careful!"
+msgstr "Ta wiadomość nie ma cyfrowego podpisu, co znaczy, że łatwo mogła zostać podrobiona. Ten nadawca przeważnie podpisuje swoje wiadomości, więc bądź ostrożny!"
 
 #: mailpile/www/jinjaextensions.py:374
 msgid "Invalid"
@@ -5753,11 +5656,9 @@ msgstr "Unieważnione"
 
 #: mailpile/www/jinjaextensions.py:386
 msgid ""
-"Watch out, the digital signature was made with a key that has been revoked - "
-"this is not a good thing"
-msgstr ""
-"Uważaj, elektroniczny podpis został wykonany kluczem, który został "
-"unieważniony - to nie jest dobra rzecz"
+"Watch out, the digital signature was made with a key that has been revoked -"
+" this is not a good thing"
+msgstr "Uważaj, elektroniczny podpis został wykonany kluczem, który został unieważniony - to nie jest dobra rzecz"
 
 #: mailpile/www/jinjaextensions.py:391
 msgid "Mixed Revoked"
@@ -5767,9 +5668,7 @@ msgstr "Mieszane Unieważnione"
 msgid ""
 "Watch out, parts of this message were digitally signed with a key that has "
 "been revoked"
-msgstr ""
-"Uważaj, część tej wiadomości została podpisana kluczem, który został "
-"unieważniony"
+msgstr "Uważaj, część tej wiadomości została podpisana kluczem, który został unieważniony"
 
 #: mailpile/www/jinjaextensions.py:397
 msgid "Expired"
@@ -5784,15 +5683,14 @@ msgid "Mixed Expired"
 msgstr "Mieszane Wygasłe"
 
 #: mailpile/www/jinjaextensions.py:403
-msgid "Parts of this message have a digital signature made with an expired key"
+msgid ""
+"Parts of this message have a digital signature made with an expired key"
 msgstr "Część tej wiadomości posiada podpis wykonany wygasłym już kluczem"
 
 #: mailpile/www/jinjaextensions.py:409
 msgid ""
 "The digital signature was made with an unknown key, so we can not verify it"
-msgstr ""
-"Elektroniczny podpis został wykonany nieznanym kluczem, tak więc nie możemy "
-"go zweryfikować"
+msgstr "Elektroniczny podpis został wykonany nieznanym kluczem, tak więc nie możemy go zweryfikować"
 
 #: mailpile/www/jinjaextensions.py:414
 msgid "Mixed Unknown"
@@ -5800,11 +5698,9 @@ msgstr "Mieszane Nieznane"
 
 #: mailpile/www/jinjaextensions.py:415
 msgid ""
-"Parts of this message have a signature made with an unknown key which we can "
-"not verify"
-msgstr ""
-"Część tej wiadomości posiada podpis wykonany nieznanym podpisem który nie "
-"może być zweryfikowany"
+"Parts of this message have a signature made with an unknown key which we can"
+" not verify"
+msgstr "Część tej wiadomości posiada podpis wykonany nieznanym podpisem który nie może być zweryfikowany"
 
 #: mailpile/www/jinjaextensions.py:420
 msgid "Changed"
@@ -5822,9 +5718,7 @@ msgstr "Mieszane zmienione"
 msgid ""
 "Parts of this message have a digital signature that was made with an "
 "unexpected key. Be careful!"
-msgstr ""
-"Cześci tej wiadomości mają podpis cyfrowy, który został wykonany "
-"niespodziewanym kluczem. Bądź ostrożny!"
+msgstr "Cześci tej wiadomości mają podpis cyfrowy, który został wykonany niespodziewanym kluczem. Bądź ostrożny!"
 
 #: mailpile/www/jinjaextensions.py:432
 msgid "Unverified"
@@ -5832,9 +5726,7 @@ msgstr "Niezweryfikowany"
 
 #: mailpile/www/jinjaextensions.py:433
 msgid "The signature was good but it came from a key that is not verified yet"
-msgstr ""
-"Podpis jest dobry, ale pochodzi on z klucza który nie jest jeszcze "
-"zweryfikowany"
+msgstr "Podpis jest dobry, ale pochodzi on z klucza który nie jest jeszcze zweryfikowany"
 
 #: mailpile/www/jinjaextensions.py:438
 msgid "Mixed Unverified"
@@ -5853,9 +5745,7 @@ msgstr "Podpisano"
 msgid ""
 "The digital signature is valid and was made with a key we have seen before. "
 "Looks good!"
-msgstr ""
-"Cyfrowy podpis jest poprawny i został wykonany kluczem, który już "
-"widzieliśmy. Wygląda to dobrze!"
+msgstr "Cyfrowy podpis jest poprawny i został wykonany kluczem, który już widzieliśmy. Wygląda to dobrze!"
 
 #: mailpile/www/jinjaextensions.py:449
 msgid "Mixed Signed"
@@ -5865,9 +5755,7 @@ msgstr "Mieszane podpisane"
 msgid ""
 "Parts of the message have a good digital signature, made with a key we have "
 "seen before."
-msgstr ""
-"Część tej wiadomości ma dobry podpis cyfrowy wykonany kluczem, który już "
-"widzieliśmy."
+msgstr "Część tej wiadomości ma dobry podpis cyfrowy wykonany kluczem, który już widzieliśmy."
 
 #: mailpile/www/jinjaextensions.py:455
 msgid "Verified"
@@ -5883,8 +5771,7 @@ msgstr "Mieszane Zweryfikowane"
 
 #: mailpile/www/jinjaextensions.py:461
 msgid "Parts of the message have a verified signature, but other parts do not"
-msgstr ""
-"Część wiadomości posiada zweryfikowany podpis, ale inne jej części nie są"
+msgstr "Część wiadomości posiada zweryfikowany podpis, ale inne jej części nie są"
 
 #: mailpile/www/jinjaextensions.py:498
 msgid "There is some unknown thing wrong with this encryption"
@@ -5898,9 +5785,7 @@ msgstr "Nieszyfrowane"
 msgid ""
 "This content was not encrypted. It could have been intercepted and read by "
 "an unauthorized party"
-msgstr ""
-"Ta zawartość nie została zaszyfrowana. Mogła być ona przechwycona i "
-"odczytana przez nieautoryzowane osoby."
+msgstr "Ta zawartość nie została zaszyfrowana. Mogła być ona przechwycona i odczytana przez nieautoryzowane osoby."
 
 #: mailpile/www/jinjaextensions.py:509
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:258
@@ -5916,7 +5801,8 @@ msgid "Mixed Encrypted"
 msgstr "Mieszane Szyfrowane"
 
 #: mailpile/www/jinjaextensions.py:515
-msgid "Part of this message were encrypted, but other parts were not encrypted"
+msgid ""
+"Part of this message were encrypted, but other parts were not encrypted"
 msgstr "Część tej wiadomości jest zaszyfrowana, lecz inne części ni są."
 
 #: mailpile/www/jinjaextensions.py:520
@@ -5926,9 +5812,7 @@ msgstr "Zablokowany klucz"
 #: mailpile/www/jinjaextensions.py:521
 msgid ""
 "You have the encryption key to decrypt this, but the key itself is locked."
-msgstr ""
-"Posiadasz klucz szyfrujący by to odszyfrować ale klucz sam w sobie jest "
-"zablokowany."
+msgstr "Posiadasz klucz szyfrujący by to odszyfrować ale klucz sam w sobie jest zablokowany."
 
 #: mailpile/www/jinjaextensions.py:526
 msgid "Mixed Locked Key"
@@ -5938,9 +5822,7 @@ msgstr "Wymieszane zablokowane klucze"
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr ""
-"Część tej wiadomości nie mogła zostać odszyfrowana, ponieważ Twój klucz "
-"szyfrujący jest zablokowany."
+msgstr "Część tej wiadomości nie mogła zostać odszyfrowana, ponieważ Twój klucz szyfrujący jest zablokowany."
 
 #: mailpile/www/jinjaextensions.py:532
 msgid "Missing Key"
@@ -5950,9 +5832,7 @@ msgstr "Brakujący klucz"
 msgid ""
 "You don't have the encryption key to decrypt this, perhaps it was encrypted "
 "to an old key you don't have anymore?"
-msgstr ""
-"Nie posiadasz klucza szyfrującego by to odszyfrować, być może zostało to "
-"zaszyfrowana starym kluczem, którego już nie posiadasz?"
+msgstr "Nie posiadasz klucza szyfrującego by to odszyfrować, być może zostało to zaszyfrowana starym kluczem, którego już nie posiadasz?"
 
 #: mailpile/www/jinjaextensions.py:538
 msgid "Mixed Missing Key"
@@ -5962,22 +5842,15 @@ msgstr "Mieszane z brakującym kluczem"
 msgid ""
 "Parts of the message could not be decrypted because you are missing the "
 "private key. Perhaps it was encrypted to an old key you don't have anymore?"
-msgstr ""
-"Część tej wiadomości nie może zostać odszyfrowana, ponieważ nie posiadasz "
-"klucza prywatnego. Być może wiadomość była szyfrowana starym kluczem, "
-"którego już nie posiadasz?"
+msgstr "Część tej wiadomości nie może zostać odszyfrowana, ponieważ nie posiadasz klucza prywatnego. Być może wiadomość była szyfrowana starym kluczem, którego już nie posiadasz?"
 
 #: mailpile/www/jinjaextensions.py:546
 msgid "We failed to decrypt and are unsure why."
-msgstr ""
-"Nie udało się nam odszyfrować wiadomości i nie jesteśmy pewni czemu tak się "
-"stało..."
+msgstr "Nie udało się nam odszyfrować wiadomości i nie jesteśmy pewni czemu tak się stało..."
 
 #: mailpile/www/jinjaextensions.py:551
 msgid "We failed to decrypt parts of this message and are unsure why"
-msgstr ""
-"Nie udało się nam odszyfrować części tej wiadomości, nie jesteśmy pewni "
-"czemu tak się stało..."
+msgstr "Nie udało się nam odszyfrować części tej wiadomości, nie jesteśmy pewni czemu tak się stało..."
 
 #: mailpile/www/jinjaextensions.py:584 mailpile/www/jinjaextensions.py:589
 msgid "Automatic"
@@ -5987,9 +5860,7 @@ msgstr "Automatycznie"
 msgid ""
 "Mailpile will intelligently try to guess and suggest the best security with "
 "the given contact"
-msgstr ""
-"Mailpile będzie próbował zgadnąć i zaproponować najlepsze zabezpieczenie z "
-"danym kontaktem"
+msgstr "Mailpile będzie próbował zgadnąć i zaproponować najlepsze zabezpieczenie z danym kontaktem"
 
 #: mailpile/www/jinjaextensions.py:593
 msgid "Don't Sign or Encrypt"
@@ -5997,8 +5868,7 @@ msgstr "Nie podpisuj lub nie szyfruj"
 
 #: mailpile/www/jinjaextensions.py:594
 msgid "Messages will not be encrypted nor signed by your encryption key"
-msgstr ""
-"Wiadomości nie będą szyfrowane ani podpisywane przez twój klucz szyfrujący"
+msgstr "Wiadomości nie będą szyfrowane ani podpisywane przez twój klucz szyfrujący"
 
 #: mailpile/www/jinjaextensions.py:596
 msgid "Only Sign"
@@ -6014,9 +5884,7 @@ msgstr "Tylko zaszyfruj"
 
 #: mailpile/www/jinjaextensions.py:600
 msgid "Messages will only be encrypted but not signed by your encryption key"
-msgstr ""
-"Wiadomości będą tylko szyfrowane, nie będą podpisywane przez twój klucz "
-"szyfrujący"
+msgstr "Wiadomości będą tylko szyfrowane, nie będą podpisywane przez twój klucz szyfrujący"
 
 #: mailpile/www/jinjaextensions.py:602
 msgid "Always Encrypt & Sign"
@@ -6024,16 +5892,13 @@ msgstr "Zawsze szyfruj i podpisuj"
 
 #: mailpile/www/jinjaextensions.py:603
 msgid "Messages will be both encrypted and signed by your encryption key"
-msgstr ""
-"Wiadomości będą i szyfrowane, i podpisywane przez twój klucz szyfrujący"
+msgstr "Wiadomości będą i szyfrowane, i podpisywane przez twój klucz szyfrujący"
 
 #: mailpile/www/jinjaextensions.py:668
 msgid ""
 "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
 "Are you sure you want to continue?\\n"
-msgstr ""
-"Wskazówki bezpieczeństwa od Mailpile: \\n\\n O jej! Ta strona internetowa "
-"może być niebezpieczna!\\n Czy jesteś pewny, że chcesz kontynuować?\\n"
+msgstr "Wskazówki bezpieczeństwa od Mailpile: \\n\\n O jej! Ta strona internetowa może być niebezpieczna!\\n Czy jesteś pewny, że chcesz kontynuować?\\n"
 
 #: mailpile/www/jinjaextensions.py:824 mailpile/www/jinjaextensions.py:832
 msgid "No Subject"
@@ -6100,9 +5965,8 @@ msgid "Displayed raw metadata"
 msgstr "Wyświetlone surowe/oryginalne metadane"
 
 #: shared-data/contrib/hacks/hacks.py:194
-#, fuzzy
 msgid "Edited raw metadata"
-msgstr "Wyświetlone surowe/oryginalne metadane"
+msgstr ""
 
 #: shared-data/contrib/hacks/hacks.py:213
 msgid "Displayed message keywords"
@@ -6147,8 +6011,7 @@ msgstr "Naprawdę powinieneś robić kopię zapasową twojego Mailpile"
 
 #: shared-data/contrib/hints/hints.py:83
 msgid "Mailpile can automatically tag or untag any kind of e-mail!"
-msgstr ""
-"Mailpile może automatycznie tagować i odtagowywać wszystkie rodzaje emaili!"
+msgstr "Mailpile może automatycznie tagować i odtagowywać wszystkie rodzaje emaili!"
 
 #: shared-data/contrib/hints/hints.py:129
 msgid "never"
@@ -6207,7 +6070,8 @@ msgid "Note"
 msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:47
-msgid "Mailpile is still running and processing your e-mail in the background."
+msgid ""
+"Mailpile is still running and processing your e-mail in the background."
 msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:48
@@ -6308,9 +6172,7 @@ msgstr "Otwórz nadrzędny folder"
 
 #: shared-data/default-theme/html/browse/index.html:44
 msgid "Browse local or remote folders for mailboxes to add to your pile."
-msgstr ""
-"Przeglądaj lokalne lub zdalne foldery dla skrzynek pocztowych by dodać swój "
-"stos"
+msgstr "Przeglądaj lokalne lub zdalne foldery dla skrzynek pocztowych by dodać swój stos"
 
 #: shared-data/default-theme/html/browse/index.html:48
 msgid "These are mailboxes recognized by Mailpile."
@@ -6318,8 +6180,7 @@ msgstr "To są skrzynki pocztowe rozpoznane przez Mailpile"
 
 #: shared-data/default-theme/html/browse/index.html:49
 msgid "Click to view mailbox contents or change settings."
-msgstr ""
-"Kliknij by zobaczyć zawartość skrzynek pocztowych lub by zmienić ustawienia"
+msgstr "Kliknij by zobaczyć zawartość skrzynek pocztowych lub by zmienić ustawienia"
 
 #: shared-data/default-theme/html/browse/index.html:97
 #: shared-data/default-theme/html/logs/layout.html:8
@@ -6355,9 +6216,7 @@ msgstr "Nie znaleziono kontaktów"
 msgid ""
 "Don't worry, it's ok. Mailpile will start to automatically create contacts "
 "whenever you send or reply to messages."
-msgstr ""
-"Nie przejmuj się, jest ok. Mailpile wystartuje by automatycznie stworzyć "
-"kontakty gdziekolwiek zechcesz wysłać lub odpowiedzieć na wiadomości"
+msgstr "Nie przejmuj się, jest ok. Mailpile wystartuje by automatycznie stworzyć kontakty gdziekolwiek zechcesz wysłać lub odpowiedzieć na wiadomości"
 
 #: shared-data/default-theme/html/contacts/index.html:60
 #: shared-data/default-theme/html/search/prev_more_next.html:15
@@ -6467,9 +6326,7 @@ msgstr "wiadomości kiedy komunikujesz się z"
 msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
-msgstr ""
-"Nie masz żadnych kluczy szyfrujących dla tego kontaktu. Potrzebujesz tych "
-"kluczy aby komunikować się bezpiecznie."
+msgstr "Nie masz żadnych kluczy szyfrujących dla tego kontaktu. Potrzebujesz tych kluczy aby komunikować się bezpiecznie."
 
 #: shared-data/default-theme/html/contacts/view/index.html:95
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -6547,9 +6404,7 @@ msgstr "Poprawny od {DATE1} do {DATE2}."
 msgid ""
 "If the certificate cannot be verified, then there is no guarantee you are "
 "communicating with the right server."
-msgstr ""
-"Jeśli certyfikat nie może być zweryfikowany, to oznacza, że mozesz "
-"komunikować się ze złym serwerem."
+msgstr "Jeśli certyfikat nie może być zweryfikowany, to oznacza, że mozesz komunikować się ze złym serwerem."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:105
 msgid "Your account details or e-mail may be at risk if you proceed."
@@ -6559,10 +6414,7 @@ msgstr "Twoje dane i maile mogą być zagrożone, jeśli będziesz kontynuował.
 msgid ""
 "Some servers deliberately use certificates that cannot be verified; in such "
 "cases adding a security exception should be safe."
-msgstr ""
-"Niektóre serwery celowo używają certyfikatów, które nie mogą być "
-"zweryfikowane; w tych przypadkach dodanie wyjątku bezpieczeństwa powinno być "
-"bezpieczne."
+msgstr "Niektóre serwery celowo używają certyfikatów, które nie mogą być zweryfikowane; w tych przypadkach dodanie wyjątku bezpieczeństwa powinno być bezpieczne."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:109
 msgid "Ask your e-mail server administrator to be sure."
@@ -6571,9 +6423,7 @@ msgstr "Zapytaj się administratora serwera mail by być pewnym."
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:117
 msgid ""
 "The information below could not be validated. It may be incorrect or forged."
-msgstr ""
-"Informacja poniżej nie może być zweryfikowana. Oznacza to, że może być "
-"niepoprawna lub sfałszowana."
+msgstr "Informacja poniżej nie może być zweryfikowana. Oznacza to, że może być niepoprawna lub sfałszowana."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:121
 msgid "Issued To"
@@ -6604,11 +6454,9 @@ msgstr "Obecna data wygląda na {D}. Czy data systemowa jest poprawna?"
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:155
 msgid ""
-"If this certificate error is unsual, then adding a security exception is not "
-"recommended."
-msgstr ""
-"Jeśli ten błąd certyfikatu jest niecodzienny, to dodanie wyjątku "
-"bezpieczeństwa nie jest rekomendowane."
+"If this certificate error is unsual, then adding a security exception is not"
+" recommended."
+msgstr "Jeśli ten błąd certyfikatu jest niecodzienny, to dodanie wyjątku bezpieczeństwa nie jest rekomendowane."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:162
 msgid "Try Again Later"
@@ -6625,35 +6473,26 @@ msgstr "Certyfikaty TLS"
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:211
 msgid ""
 "You can use this tool to examine the TLS certificates of remote servers."
-msgstr ""
-"Możesz używać tego narzędzia do ocenienia certyfikatów TLS serwerów zdalnych."
+msgstr "Możesz używać tego narzędzia do ocenienia certyfikatów TLS serwerów zdalnych."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:214
 msgid ""
 "TLS certificates are a form of digital identification, used to ensure you "
 "are communicating with the intended server and not an imposter."
-msgstr ""
-"Certyfikaty TLS są formą cyfrowej identyfikacji, używanej do upewnienia się, "
-"że prowadzona jest komunikacja z odpowiednim serwerem, a nie z oszustem."
+msgstr "Certyfikaty TLS są formą cyfrowej identyfikacji, używanej do upewnienia się, że prowadzona jest komunikacja z odpowiednim serwerem, a nie z oszustem."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:217
 msgid ""
 "If necessary, you can add security exceptions (TOFU: Trust on First Use) "
 "which will allow you to connect to a server even if it does not present a "
 "valid certificate."
-msgstr ""
-"Jeśli jest potrzeba, możesz dodać wyjątek bezpieczeństwa (TOFU: zaufaj przy "
-"pierwszym użyciu), która pozwala połączyć się z serwerem nawet jeśli przyśle "
-"niepoprawny certyfikat."
+msgstr "Jeśli jest potrzeba, możesz dodać wyjątek bezpieczeństwa (TOFU: zaufaj przy pierwszym użyciu), która pozwala połączyć się z serwerem nawet jeśli przyśle niepoprawny certyfikat."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:218
 msgid ""
-"When TOFU is in use, if the remote certificate ever changes the new one will "
-"be rejected until you add another exception."
-msgstr ""
-"Kiedy TOFU jest w użyciu, jeśli certyfikat serwera zdalnego kiedykolwiek się "
-"zmieni zostanie on odrzucony dopóki nie dodasz kolejnego wyjątku "
-"bezpieczeństwa."
+"When TOFU is in use, if the remote certificate ever changes the new one will"
+" be rejected until you add another exception."
+msgstr "Kiedy TOFU jest w użyciu, jeśli certyfikat serwera zdalnego kiedykolwiek się zmieni zostanie on odrzucony dopóki nie dodasz kolejnego wyjątku bezpieczeństwa."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:234
 msgid "Known Certificates"
@@ -6687,9 +6526,7 @@ msgstr "Żaden filtr nie istnieje"
 msgid ""
 "Filters are clever rules that automatically apply tags, sort and otherwise "
 "handle your messages."
-msgstr ""
-"Filtry to mądre zasady, które automatycznie dodają tagi, sortują i w inny "
-"sposób obsługują twoje wiadomości"
+msgstr "Filtry to mądre zasady, które automatycznie dodają tagi, sortują i w inny sposób obsługują twoje wiadomości"
 
 #: shared-data/default-theme/html/help/bottom.html:2
 msgid "Hopefully this tip helped."
@@ -6720,9 +6557,7 @@ msgstr "Niestandardowe wyszukiwanie"
 msgid ""
 "Underneath the hood Mailpile is a high performance search engine that can "
 "answer complex questions."
-msgstr ""
-"Pod spodem Mailpile posiada wydajny silnik wyszukiwania, który potrafi "
-"odpowiadać na skomplikowane zapytania."
+msgstr "Pod spodem Mailpile posiada wydajny silnik wyszukiwania, który potrafi odpowiadać na skomplikowane zapytania."
 
 #: shared-data/default-theme/html/help/index.html:12
 #: shared-data/default-theme/html/jsapi/templates/modal-display-keybindings.html:5
@@ -6731,10 +6566,9 @@ msgstr "Skróty klawiszowe"
 
 #: shared-data/default-theme/html/help/index.html:13
 msgid ""
-"Here will be a list of keyboard shortcuts / keybindings for all you cool cat "
-"power users out there!"
-msgstr ""
-"Tutaj będzie lista skrótów klawiszowych dla wszystkich twoich użytkowników."
+"Here will be a list of keyboard shortcuts / keybindings for all you cool cat"
+" power users out there!"
+msgstr "Tutaj będzie lista skrótów klawiszowych dla wszystkich twoich użytkowników."
 
 #: shared-data/default-theme/html/help/index.html:15
 msgid "Encryption & Security"
@@ -6742,13 +6576,10 @@ msgstr "Szyfrowanie i bezpieczeństwo"
 
 #: shared-data/default-theme/html/help/index.html:16
 msgid ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you how to use your Mailpile in the "
-"most secure way possible."
-msgstr ""
-"Jesteś zielony jeśli chodzi o czynności jak szyfrowanie i klucze? Nie bój "
-"się. Zrobimy wszystko co w naszej mocy by wytłumaczyć to i wyjaśnić jak "
-"używać Mailpile w najbezpieczniejszy możliwy sposób."
+"Are you new to all these terms like encryption and keys? Don't fret. We will"
+" do our best to help explain and educate you how to use your Mailpile in the"
+" most secure way possible."
+msgstr "Jesteś zielony jeśli chodzi o czynności jak szyfrowanie i klucze? Nie bój się. Zrobimy wszystko co w naszej mocy by wytłumaczyć to i wyjaśnić jak używać Mailpile w najbezpieczniejszy możliwy sposób."
 
 #: shared-data/default-theme/html/help/index.html:20
 msgid "Gmail's 2 Step App Passwords"
@@ -6924,8 +6755,7 @@ msgstr "Mailpile przekroczyło limit czasu..."
 msgid ""
 "There is still an attachment upload in progress. Are you sure you want to "
 "cancel the upload?"
-msgstr ""
-"Ciągle trwa wysyłanie załącznika. Jesteś pewien, że chcesz to przerwać?"
+msgstr "Ciągle trwa wysyłanie załącznika. Jesteś pewien, że chcesz to przerwać?"
 
 #: shared-data/default-theme/html/jsapi/compose/attachments.js:158
 msgid "is"
@@ -6979,33 +6809,25 @@ msgstr "Błąd dostępu do twojego klucza szyfrującego"
 msgid ""
 "This message will be verifiable to recipients who have your encryption key. "
 "They will know it actually came from you :)"
-msgstr ""
-"Ta wiadomość jest weryfikowalna przez osoby, które posiadają twój klucz "
-"szyfrujący. Będą wiedzieć, że ta wiadomość pochodzi od ciebie :)"
+msgstr "Ta wiadomość jest weryfikowalna przez osoby, które posiadają twój klucz szyfrujący. Będą wiedzieć, że ta wiadomość pochodzi od ciebie :)"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:219
 msgid ""
 "This message will not be verifiable, recipients will have no way of knowing "
 "it actually came from you."
-msgstr ""
-"Ta wiadomość nie będzie weryfikowalna, odbiorcy nie będą mogli zweryfikować, "
-"czy wiadomość pochodzi naprawdę od ciebie."
+msgstr "Ta wiadomość nie będzie weryfikowalna, odbiorcy nie będą mogli zweryfikować, czy wiadomość pochodzi naprawdę od ciebie."
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:256
 msgid ""
 "This message and attachments will be encrypted. The recipients & subject "
 "(metadata) will not"
-msgstr ""
-"Treść tej wiadomość i jej załączniki będą zaszyfrowane. Odbiorca i temat "
-"maila (metadane) nie będą zaszyfrowane"
+msgstr "Treść tej wiadomość i jej załączniki będą zaszyfrowane. Odbiorca i temat maila (metadane) nie będą zaszyfrowane"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:263
 msgid ""
 "This message cannot be encrypted because you do not have keys for one or "
 "more recipients"
-msgstr ""
-"Wiadomość nie może być zaszyfrowana, ponieważ nie posiadasz kluczy dla "
-"jednego lub więcej odbiorców"
+msgstr "Wiadomość nie może być zaszyfrowana, ponieważ nie posiadasz kluczy dla jednego lub więcej odbiorców"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:265
 msgid "Can Not Encrypt"
@@ -7053,9 +6875,8 @@ msgid "No Email"
 msgstr "Brak Email"
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:147
-#, fuzzy
 msgid "Searching"
-msgstr "Szukaj"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:83
 msgid "is too large:"
@@ -7116,9 +6937,7 @@ msgstr "Kopiuję maile. Rozluźnij się i sobie pogwizduj."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:11
 msgid "Making a copy of your mail. Putting it in your inbox, all comfy like"
-msgstr ""
-"Robię kopię twoich maili. Wsadzam je do twojej skrzynki odbiorczej, tak by "
-"było wygodnie"
+msgstr "Robię kopię twoich maili. Wsadzam je do twojej skrzynki odbiorczej, tak by było wygodnie"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:14
 msgid "Damn kids."
@@ -7238,24 +7057,21 @@ msgstr "Ten serwer działa dzięki cytrynie i dwóm elektrodom"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:46
 msgid "Mailpile has an advanced tagging system & search engine at its core"
-msgstr ""
-"Mailpile posiada zaawansowany system tagowania i wyszukiwania w swoim silniku"
+msgstr "Mailpile posiada zaawansowany system tagowania i wyszukiwania w swoim silniku"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:47
 msgid ""
 "Do you really need to keep all these Amazon Prime shipping confirmations?"
-msgstr ""
-"Czy ty naprawdę musisz trzymać wszystkie potwierdzenia zakupu z Allegro?"
+msgstr "Czy ty naprawdę musisz trzymać wszystkie potwierdzenia zakupu z Allegro?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:48
-msgid "I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
+msgid ""
+"I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
 msgstr "Jestem pewien, że możesz usunąć tego maila z kuponami do McDonalds."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:49
 msgid "Do you really need an e-mail to know when you have been retweeted?"
-msgstr ""
-"Czy naprawdę potrzebujesz emaila, by wiedzieć kiedy zostałeś wspomniany w "
-"poście na Facebooku?"
+msgstr "Czy naprawdę potrzebujesz emaila, by wiedzieć kiedy zostałeś wspomniany w poście na Facebooku?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:50
 msgid "E-mail is the largest internet based social network on the planet"
@@ -7269,9 +7085,7 @@ msgstr "Jakiej innej technologii używasz, która ma już 40 lat?"
 msgid ""
 "There are 2.5 billion e-mail users worldwide, that is double the amount of "
 "Facebook users!"
-msgstr ""
-"Na całym świecie jest 2.5 miliarda użytkowników email, to dwa razy więcej "
-"niż użytkowników Facebooka!"
+msgstr "Na całym świecie jest 2.5 miliarda użytkowników email, to dwa razy więcej niż użytkowników Facebooka!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:53
 msgid "Use Mailpile Tags to better organize and search your mail"
@@ -7281,17 +7095,13 @@ msgstr "Używaj Mailpile tagów by lepiej organizować i wyszukiwać swoje maile
 msgid ""
 "Remember getting your first e-mail address? Remember how it felt like "
 "something private?"
-msgstr ""
-"Pamiętasz swojego pierwszego e-maila? Pamiętasz to uczucie, jakbyś miał coś "
-"prywatnego?"
+msgstr "Pamiętasz swojego pierwszego e-maila? Pamiętasz to uczucie, jakbyś miał coś prywatnego?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:55
 msgid ""
 "E-mail is decentralized by design, this means no one company or government "
 "owns it!"
-msgstr ""
-"Emaile są zdecentralizowane, to znaczy, że żadna firma czy państwo nie może "
-"ich kontrolować!"
+msgstr "Emaile są zdecentralizowane, to znaczy, że żadna firma czy państwo nie może ich kontrolować!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:56
 msgid "Over 100 trillion e-mails are sent per year, wow!"
@@ -7300,17 +7110,13 @@ msgstr "Ponad 100 trylionów maili jest wysyłane przez rok!"
 #: shared-data/default-theme/html/jsapi/global/silly.js:57
 msgid ""
 "E-mail is the most widely used communication protocol ever created by humans"
-msgstr ""
-"Email jest najczęściej wykorzystywanym protokołem komunikacji międzyludzkiej "
-"kiedykolwiek"
+msgstr "Email jest najczęściej wykorzystywanym protokołem komunikacji międzyludzkiej kiedykolwiek"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:58
 msgid ""
 "E-mail uses an open standard agreed upon by the entire world & owned by no "
 "one"
-msgstr ""
-"Email używa otwartego standardu zaakceptowanego przez cały świat i nie "
-"kontrolowanego przez nikogo"
+msgstr "Email używa otwartego standardu zaakceptowanego przez cały świat i nie kontrolowanego przez nikogo"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:61
 msgid "BCC-ing ALL THE SPIES!"
@@ -7324,28 +7130,21 @@ msgstr "Wiele potężnych rządów prowadzi masową inwigilację"
 msgid ""
 "Most e-mail can be read by network operators as it travels through the "
 "internet"
-msgstr ""
-"Zdecydowana większość emaili może zostać odczytana przez operatorów "
-"internetu, jako, że jest przesyłana przez internet"
+msgstr "Zdecydowana większość emaili może zostać odczytana przez operatorów internetu, jako, że jest przesyłana przez internet"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:64
 msgid ""
 "Encryption ensures that your e-mails are only read by the intended recipient"
-msgstr ""
-"Szyfrowanie zapewnia to, że twoje maile zostaną odczytane tylko przez "
-"wybranego odbiorce"
+msgstr "Szyfrowanie zapewnia to, że twoje maile zostaną odczytane tylko przez wybranego odbiorce"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:65
 msgid ""
 "Unencrypted e-mail is more like sending a postcard than sending a letter"
-msgstr ""
-"Niezaszyfrowany email można porównać do wysłania pocztówki zamiast listu"
+msgstr "Niezaszyfrowany email można porównać do wysłania pocztówki zamiast listu"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:66
 msgid "Mailpile uses OpenPGP to encrypt and decrypt your messages securely"
-msgstr ""
-"Mailpile używa OpenPGP by szyfrować i deszyfrować twoje wiadomości "
-"bezpiecznie"
+msgstr "Mailpile używa OpenPGP by szyfrować i deszyfrować twoje wiadomości bezpiecznie"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:67
 msgid "All of your config settings & passwords are encrypted with AES-256"
@@ -7353,8 +7152,7 @@ msgstr "Wszystkie twoje konfiguracje i hasła są zaszyfrowane za pomocą AES-25
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:68
 msgid "Encrypting e-mails means your communication actually stays private"
-msgstr ""
-"Szyfrowanie emaili oznacza, że twoja komunikacja zawsze pozostanie prywatna"
+msgstr "Szyfrowanie emaili oznacza, że twoja komunikacja zawsze pozostanie prywatna"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:69
 msgid "The more encrypted e-mail you send, the better!"
@@ -7362,19 +7160,16 @@ msgstr "Im więcej zaszyfrowanych maili wyślesz, tym lepiej!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:70
 msgid "Make sure you print or save your keys & passwords somewhere secure"
-msgstr ""
-"Upewnij się, że wydrukowałeś/zapisałeś swoje klucze i hasła, i "
-"przetrzymujesz je w bezpiecznym miejscu"
+msgstr "Upewnij się, że wydrukowałeś/zapisałeś swoje klucze i hasła, i przetrzymujesz je w bezpiecznym miejscu"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:71
 msgid "Mailpile by default encrypts your search index!"
 msgstr "Mailpile domyślnie szyfruje twoje wyniki wyszukiwania!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:72
-msgid "The most common e-mail password is 123456, hopefully yours is different"
-msgstr ""
-"Najczęstszym hasłem do emaila jest 123456, mam nadzieję, że twoje hasło jest "
-"inne"
+msgid ""
+"The most common e-mail password is 123456, hopefully yours is different"
+msgstr "Najczęstszym hasłem do emaila jest 123456, mam nadzieję, że twoje hasło jest inne"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:75
 msgid "Good things come to those who wait"
@@ -7386,8 +7181,7 @@ msgstr "Twórz darmowe oprogramowanie i bądź szczęśliwy"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:77
 msgid "Much of Mailpile was built in cafes in Reykjavík, Iceland"
-msgstr ""
-"Duża część Mailpile została zbudowana w kafejkach w Revkjavik w Islandi"
+msgstr "Duża część Mailpile została zbudowana w kafejkach w Revkjavik w Islandi"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:78
 msgid "Many Icelanders believe in elves and magical hidden people"
@@ -7449,12 +7243,11 @@ msgstr "Idź postaw wodę na kawę, chwile to zajmie"
 msgid ""
 "Go get a cup of tea and some biscuits. This will take approximately 4 "
 "custard creams worth of time"
-msgstr ""
-"Idź po kubek herbaty i jakieś ciasteczka. To zajmie około 4 kremowe "
-"ciasteczka"
+msgstr "Idź po kubek herbaty i jakieś ciasteczka. To zajmie około 4 kremowe ciasteczka"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:93
-msgid "Did you know humans share 50 percent of their DNA with a banana? Freaky"
+msgid ""
+"Did you know humans share 50 percent of their DNA with a banana? Freaky"
 msgstr "Wiedziałeś, że ludzie dzielą 50 procent DNA z bananami?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:94
@@ -7503,11 +7296,9 @@ msgstr "Mniam mnian, ten był pyszny"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:105
 msgid ""
-"Hey, there is some Nigerian prince here who wants to give you twenty million "
-"dollars..."
-msgstr ""
-"Hej, jest sobie nigeryjski książę, który chce ci dać dwadzieścia milionów "
-"dolarów..."
+"Hey, there is some Nigerian prince here who wants to give you twenty million"
+" dollars..."
+msgstr "Hej, jest sobie nigeryjski książę, który chce ci dać dwadzieścia milionów dolarów..."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:106
 msgid "How rude!"
@@ -7590,9 +7381,7 @@ msgid ""
 "This message references images or other content from the web. Downloading "
 "and displaying these images may notify the sender that you have read the "
 "mail."
-msgstr ""
-"Ta wiadomość zawiera obrazki i inną zawartość z internetu. Ściągnięcie i "
-"wyświetlenie ich może powiadomić nadawcę, że przeczytałeś maila."
+msgstr "Ta wiadomość zawiera obrazki i inną zawartość z internetu. Ściągnięcie i wyświetlenie ich może powiadomić nadawcę, że przeczytałeś maila."
 
 #: shared-data/default-theme/html/jsapi/message/html-sandbox.js:282
 msgid "Okay, display the images"
@@ -7623,9 +7412,8 @@ msgstr "Nie mogłem pobrać wiadomości"
 
 #: shared-data/default-theme/html/jsapi/search/bulk_actions.js:80
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:13
-#, fuzzy
 msgid "Search for Similar E-mail"
-msgstr "Szukaj e-maila z:"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/search/ui.js:134
 msgid "No Messages Selected"
@@ -7671,8 +7459,7 @@ msgstr "Cytowanie odpowiedzi"
 #: shared-data/default-theme/html/jsapi/templates/modal-compose-quoted-reply.html:12
 msgid ""
 "Would you like to disable quoted replies in all the messages you compose?"
-msgstr ""
-"Czy chciałbyś wyłączyć cytowanie odpowiedzi we wszystkich wiadomościach?"
+msgstr "Czy chciałbyś wyłączyć cytowanie odpowiedzi we wszystkich wiadomościach?"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-compose-quoted-reply.html:13
 msgid "Disable Quoted Replies"
@@ -7707,9 +7494,7 @@ msgstr "Siebie!"
 msgid ""
 "You cannot send encrypted or signed mail without an encryption key of your "
 "own."
-msgstr ""
-"Nie możesz wysłać zaszyfrowanego lub podpisanego maila bez swojego klucza "
-"szyfrującego."
+msgstr "Nie możesz wysłać zaszyfrowanego lub podpisanego maila bez swojego klucza szyfrującego."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:54
 msgid "Check your account settings or send using a different profile."
@@ -7735,9 +7520,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:93
-#, fuzzy
 msgid "Search All Sources"
-msgstr "Szukaj Klucza"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:98
 #: shared-data/default-theme/html/partials/hidden.html:151
@@ -7781,24 +7565,20 @@ msgid "From"
 msgstr "Od"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:37
-#, fuzzy
 msgid "Mailing list"
-msgstr "Mail: %s"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:42
-#, fuzzy
 msgid "E-mail client"
-msgstr "Konta e-mail"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:46
-#, fuzzy
 msgid "Message structure"
-msgstr "Wiadomości"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:50
-#, fuzzy
 msgid "Sender fingerprint"
-msgstr "Odcisk klucza"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
@@ -7818,18 +7598,16 @@ msgid "Has an image"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:78
-#, fuzzy
 msgid "Has an attachment"
-msgstr "Nie można dodać załącznika"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:85
 msgid "Has a digital signature"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:91
-#, fuzzy
 msgid "Is encrypted"
-msgstr "Zaszyfrowane"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:108
 msgid "Additional search terms"
@@ -7848,9 +7626,7 @@ msgstr "Zapisane wyszukania pojawiają się jako tagi na pasku bocznym."
 msgid ""
 "New matching messages will be tagged automatically as they arrive, but you "
 "can also add or remove messages by hand."
-msgstr ""
-"Nowe wiadomości będą tagowane automatycznie jak tylko przyjdą ale możesz "
-"również ręcznie dodać lub usunąć"
+msgstr "Nowe wiadomości będą tagowane automatycznie jak tylko przyjdą ale możesz również ręcznie dodać lub usunąć"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:17
 msgid "Configure new Saved Search"
@@ -7981,8 +7757,7 @@ msgstr "Wrzuć klucz szyfrujący"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:9
 msgid "Something went wrong uploading encryption key. Try again?"
-msgstr ""
-"Coś poszło nie tak przy wrzucaniu klucza szyfrującego. Spróbuj jeszcze raz?"
+msgstr "Coś poszło nie tak przy wrzucaniu klucza szyfrującego. Spróbuj jeszcze raz?"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:14
 msgid "Select or Drag Encryption Key"
@@ -7990,8 +7765,7 @@ msgstr "Wybierz lub przeciągnij klucz szyfrujący"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:14
 msgid "A file located on your computer usually ending in: .asc .key .pub"
-msgstr ""
-"Plik zlokalizowany na twoim komputerze przeważnie zakończony: .asc .key .pub"
+msgstr "Plik zlokalizowany na twoim komputerze przeważnie zakończony: .asc .key .pub"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:16
 msgid "Select Encryption Key"
@@ -8224,18 +7998,13 @@ msgid ""
 "Ongoing events represent current actions taken by Mailpile on your behalf, "
 "such as watching a Mail Source for new mail or refreshing your contact "
 "database."
-msgstr ""
-"Trwające wydarzenia reprezentują obecne rzeczy robione przez Mailpile na "
-"twoje żądanie, takie jak obserwowanie źródła maili w oczekiwaniu na nowego "
-"maila czy odświeżanie twojej bazy kontaktów."
+msgstr "Trwające wydarzenia reprezentują obecne rzeczy robione przez Mailpile na twoje żądanie, takie jak obserwowanie źródła maili w oczekiwaniu na nowego maila czy odświeżanie twojej bazy kontaktów."
 
 #: shared-data/default-theme/html/logs/events/index.html:66
 msgid ""
 "Browsing the event details can help with troubleshooting if Mailpile is not "
 "behaving as you expect."
-msgstr ""
-"Przeglądanie szczegółów zdarzeń może pomóc naprawić Mailpile, jeśli nie "
-"zachowuje się tak jakbyś oczekiwał."
+msgstr "Przeglądanie szczegółów zdarzeń może pomóc naprawić Mailpile, jeśli nie zachowuje się tak jakbyś oczekiwał."
 
 #: shared-data/default-theme/html/logs/events/index.html:79
 msgid "No Events Found"
@@ -8267,9 +8036,7 @@ msgstr "Ostatnia aktywność"
 msgid ""
 "Here you can see a log of recent network activity, both successful and "
 "failed attempts."
-msgstr ""
-"Tutaj możesz zobaczyć logi ostatniej aktywności sieciowej, zarówno udane jak "
-"i nieudane próby."
+msgstr "Tutaj możesz zobaczyć logi ostatniej aktywności sieciowej, zarówno udane jak i nieudane próby."
 
 #: shared-data/default-theme/html/logs/network/index.html:24
 #, python-format
@@ -8280,50 +8047,38 @@ msgstr "Posiadasz proxy (%(proxy)s) ustawione na %(host)s:%(port)s"
 msgid ""
 "Proxy fallback is disabled, so if the proxy cannot connect to a given "
 "server, the connection will fail."
-msgstr ""
-"Proxy awaryjne jest wyłączone, więc jeśli nie będzie można się połączyć z "
-"serwerem poprzez proxy, połączenie się nie uda."
+msgstr "Proxy awaryjne jest wyłączone, więc jeśli nie będzie można się połączyć z serwerem poprzez proxy, połączenie się nie uda."
 
 #: shared-data/default-theme/html/logs/network/index.html:34
 msgid ""
 "Some service providers block connections from Tor, so this may prevent you "
 "from accessing your mail or other data."
-msgstr ""
-"Niektórzy dostawcy internetowi mogą blokować połączenia z Tora, dlatego może "
-"to blokować dostęp do twoich maili i innych danych."
+msgstr "Niektórzy dostawcy internetowi mogą blokować połączenia z Tora, dlatego może to blokować dostęp do twoich maili i innych danych."
 
 #: shared-data/default-theme/html/logs/network/index.html:39
 msgid ""
 "You can configure destinations to bypass the proxy in the Advanced section "
 "of Networking in your Privacy Policy."
-msgstr ""
-"Możesz skonfigurować miejsca docelowe by obejść proxy w sekcji "
-"zaawansowanych ustawień sieciowych w Polityce Prywatności"
+msgstr "Możesz skonfigurować miejsca docelowe by obejść proxy w sekcji zaawansowanych ustawień sieciowych w Polityce Prywatności"
 
 #: shared-data/default-theme/html/logs/network/index.html:45
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if Tor cannot "
 "connect."
-msgstr ""
-"Fallback jest włączony, więc jeśli nie będzie można się połączyć przez Tor "
-"powstanie połączenie bezpośrednie."
+msgstr "Fallback jest włączony, więc jeśli nie będzie można się połączyć przez Tor powstanie połączenie bezpośrednie."
 
 #: shared-data/default-theme/html/logs/network/index.html:46
 #: shared-data/default-theme/html/logs/network/index.html:63
 msgid ""
 "This may leak your IP address and allow monitoring of which servers you "
 "communicate with."
-msgstr ""
-"To może prowadzić do wycieku twojego adresu IP i pozwoli na monitorowanie z "
-"jakimi serwerami się łączysz."
+msgstr "To może prowadzić do wycieku twojego adresu IP i pozwoli na monitorowanie z jakimi serwerami się łączysz."
 
 #: shared-data/default-theme/html/logs/network/index.html:48
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if the proxy "
 "cannot connect."
-msgstr ""
-"Fallback jest włączony, więc jeśli nie będzie można się połączyć przez proxy "
-"powstanie połączenie bezpośrednie."
+msgstr "Fallback jest włączony, więc jeśli nie będzie można się połączyć przez proxy powstanie połączenie bezpośrednie."
 
 #: shared-data/default-theme/html/logs/network/index.html:55
 msgid "You are using Tor for unencrypted traffic."
@@ -8333,9 +8088,7 @@ msgstr "Używasz Tora dla nieszyfrowanego ruchu."
 msgid ""
 "This may allow exit-node operators to listen in or modify your "
 "communications."
-msgstr ""
-"To może pozwolić wierzchołkom wyjściowym na podsłuchiwanie i modyfikowanie "
-"twojej komunikacji."
+msgstr "To może pozwolić wierzchołkom wyjściowym na podsłuchiwanie i modyfikowanie twojej komunikacji."
 
 #: shared-data/default-theme/html/logs/network/index.html:62
 msgid "You are not using Tor."
@@ -8376,14 +8129,11 @@ msgstr "Pomóż Mailpile rosnąć"
 msgid ""
 "Mailpile is created by a diverse community of people and organizations who "
 "care about freedom and privacy."
-msgstr ""
-"Mailpile jest tworzony przez różnorodną społeczność ludzi i organizacji, "
-"którym zależy na wolności i prywatności"
+msgstr "Mailpile jest tworzony przez różnorodną społeczność ludzi i organizacji, którym zależy na wolności i prywatności"
 
 #: shared-data/default-theme/html/page/contribute/index.html:9
 msgid "Please join our community and contribute in any way you can!"
-msgstr ""
-"Prosimy dołącz do naszej społeczności i wnoś wkład w jakikolwiek sposób!"
+msgstr "Prosimy dołącz do naszej społeczności i wnoś wkład w jakikolwiek sposób!"
 
 #: shared-data/default-theme/html/page/contribute/index.html:10
 msgid "Thank you!"
@@ -8399,27 +8149,21 @@ msgstr "Darowizna"
 
 #: shared-data/default-theme/html/page/contribute/index.html:19
 msgid ""
-"Employing people to work on Mailpile full time is the fastest way to improve "
-"the software."
-msgstr ""
-"Zatrudnianie ludzi do pracy nad Mailpile jest najszybszym sposobem, by "
-"poprawić oprogramowanie."
+"Employing people to work on Mailpile full time is the fastest way to improve"
+" the software."
+msgstr "Zatrudnianie ludzi do pracy nad Mailpile jest najszybszym sposobem, by poprawić oprogramowanie."
 
 #: shared-data/default-theme/html/page/contribute/index.html:20
 msgid ""
 "Although the software is (and will always be) free, salaries still cost "
 "money and your support matters."
-msgstr ""
-"Aczkolwiek oprogramowanie jest (i zawsze będzie) darmowe, wypłaty ciągle "
-"kosztują i twoje wsparcie jest ważne."
+msgstr "Aczkolwiek oprogramowanie jest (i zawsze będzie) darmowe, wypłaty ciągle kosztują i twoje wsparcie jest ważne."
 
 #: shared-data/default-theme/html/page/contribute/index.html:21
 msgid ""
 "If you contribute $23 USD or more, you get access to our community voting "
 "platform, where you can have a say in the future direction of the project:"
-msgstr ""
-"Jeśli wpłacisz $23 USD lub więcej, dostaniesz dostęp do platformy, gdzie "
-"będziesz mógł decydować odnośnie kierunku rozwijania się tego projektu:"
+msgstr "Jeśli wpłacisz $23 USD lub więcej, dostaniesz dostęp do platformy, gdzie będziesz mógł decydować odnośnie kierunku rozwijania się tego projektu:"
 
 #: shared-data/default-theme/html/page/contribute/index.html:25
 msgid "Tell your friends"
@@ -8433,17 +8177,13 @@ msgstr "Jeśli lubisz Mailpile, powiedz innym o nim!"
 msgid ""
 "Tweet, share, link, write articles and blog posts, act out dramatic "
 "tutorials on Youtube, make movies..."
-msgstr ""
-"Tweet, sharuj, linkuj, pisz artykuły i posty,  przedstawiaj nasze "
-"dramatycznie tutoriale na YouTube, rób filmy..."
+msgstr "Tweet, sharuj, linkuj, pisz artykuły i posty,  przedstawiaj nasze dramatycznie tutoriale na YouTube, rób filmy..."
 
 #: shared-data/default-theme/html/page/contribute/index.html:30
 msgid ""
 "Let us know what you create, so we can share the best content with the rest "
 "of the community."
-msgstr ""
-"Daj nam znać co stworzyłeś, żebyśmy mogli dzielić się najlepszymi rzeczami z "
-"resztą społeczności"
+msgstr "Daj nam znać co stworzyłeś, żebyśmy mogli dzielić się najlepszymi rzeczami z resztą społeczności"
 
 #: shared-data/default-theme/html/page/contribute/index.html:31
 msgid "We are:"
@@ -8459,8 +8199,7 @@ msgstr "Jeśli lubisz psuć rzeczy, możesz znajdywać i reportować błędy."
 
 #: shared-data/default-theme/html/page/contribute/index.html:40
 msgid "If you are fluent in an interesting language, you can help translate."
-msgstr ""
-"Jeśli jesteś biegły w interesującym języku, możesz pomóc nam tłumaczyć."
+msgstr "Jeśli jesteś biegły w interesującym języku, możesz pomóc nam tłumaczyć."
 
 #: shared-data/default-theme/html/page/contribute/index.html:41
 msgid "If you are a hacker, you can contribute code."
@@ -8473,31 +8212,24 @@ msgstr "Zwiększam entropię"
 
 #: shared-data/default-theme/html/page/entropy/index.html:10
 msgid "Mailpile needs true random numbers to generate good encryption keys."
-msgstr ""
-"Mailpile potrzebuje prawdziwe liczby losowe by wygenerować dobre klucze "
-"szyfrujące."
+msgstr "Mailpile potrzebuje prawdziwe liczby losowe by wygenerować dobre klucze szyfrujące."
 
 #: shared-data/default-theme/html/page/entropy/index.html:13
 msgid ""
 "Although your computer may be powerful, it may still have hard time finding "
 "enough randomness when generating keys."
-msgstr ""
-"Mimo, że twój komputer może być wydajny, to i tak zapewnienie odpowiedniej "
-"losowości do wygenerowania kluczy może chwilę zająć."
+msgstr "Mimo, że twój komputer może być wydajny, to i tak zapewnienie odpowiedniej losowości do wygenerowania kluczy może chwilę zająć."
 
 #: shared-data/default-theme/html/page/entropy/index.html:14
 msgid ""
 "The technical term used to describe the source of randomness is Entropy!"
-msgstr ""
-"Technicznym terminem używanym do opisania źródła losowości jest Entropia!"
+msgstr "Technicznym terminem używanym do opisania źródła losowości jest Entropia!"
 
 #: shared-data/default-theme/html/page/entropy/index.html:17
 msgid ""
 "On the machine that is running Mailpile you can do a few things to increase "
 "the Entropy:"
-msgstr ""
-"Na maszynie na której pracuje Mailpile możesz wykonać kilka rzeczy by "
-"poprawić Entropię:"
+msgstr "Na maszynie na której pracuje Mailpile możesz wykonać kilka rzeczy by poprawić Entropię:"
 
 #: shared-data/default-theme/html/page/entropy/index.html:20
 msgid "Move the mouse."
@@ -8519,9 +8251,7 @@ msgstr "Przeglądnij internet."
 msgid ""
 "Because the computer cannot predict human activity these actions help the "
 "computer generate random numbers."
-msgstr ""
-"Ponieważ komputer nie jest w stanie przewidzieć aktywności człowieka, te "
-"akcje pomogą komputerowi wygenerować losowe wartości."
+msgstr "Ponieważ komputer nie jest w stanie przewidzieć aktywności człowieka, te akcje pomogą komputerowi wygenerować losowe wartości."
 
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:2
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:10
@@ -8551,9 +8281,7 @@ msgstr ""
 msgid ""
 "To launch the app please enter your account details above or use a terminal "
 "(SSH) to start Mailpile manually."
-msgstr ""
-"By uruchomić aplikację wpisz swoje dane logowania powyżej lub użyj terminala "
-"(SSH) do uruchomienia Mailpile manualnie."
+msgstr "By uruchomić aplikację wpisz swoje dane logowania powyżej lub użyj terminala (SSH) do uruchomienia Mailpile manualnie."
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:2
 #: shared-data/default-theme/html/page/release-notes/credits.html:6
@@ -8581,12 +8309,7 @@ msgid ""
 "The Mailpile team would like to thank all the people who contributed\n"
 "    money or volunteered their time to help create a truly free, secure\n"
 "    e-mail client. You're all awesome!"
-msgstr ""
-"Zespół Mailpile chciałby podziękować wszystkim ludziom, którzy "
-"kontrybuowali\n"
-"    pieniądze lub swój czas by pomóc w tworzeniu prawdziwie darmowego, "
-"bezpiecznego\n"
-"    klienta email. Jesteście wspaniali!"
+msgstr "Zespół Mailpile chciałby podziękować wszystkim ludziom, którzy kontrybuowali\n    pieniądze lub swój czas by pomóc w tworzeniu prawdziwie darmowego, bezpiecznego\n    klienta email. Jesteście wspaniali!"
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:22
 msgid "Community"
@@ -8620,9 +8343,7 @@ msgstr "Dziękujemy wszystkim za testowanie naszego kandydata do wydania."
 #: shared-data/default-theme/html/page/release-notes/index.html:14
 #, python-format
 msgid "If no critical bugs are found, this will become version %(version)s."
-msgstr ""
-"Jeśli nie znajdziemy błędów krytycznych to ta wersja zostanie wersją "
-"%(version)s."
+msgstr "Jeśli nie znajdziemy błędów krytycznych to ta wersja zostanie wersją %(version)s."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:19
 #, python-format
@@ -8675,9 +8396,7 @@ msgstr "To jest to!"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:41
 msgid "Read on if you've used one of the Mailpile Beta or GitHub releases."
-msgstr ""
-"Przeczytaj jeśli używałeś wcześniej wersji beta Mailpile lub wydania z "
-"Githuba."
+msgstr "Przeczytaj jeśli używałeś wcześniej wersji beta Mailpile lub wydania z Githuba."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:44
 msgid "What's new?"
@@ -8698,11 +8417,9 @@ msgstr "Ulepszono wsparcie dla PGP, włączając automatyczne importowanie klucz
 #: shared-data/default-theme/html/page/release-notes/index.html:49
 #, python-format
 msgid ""
-"Per-tag automatic bayesian classification, as <a target=_blank href="
-"\"%(blog_url)s\">discussed on our blog</a>"
-msgstr ""
-"Automatyczna klasyfikacja Bayesa dla każdego tagu, <a target=_blank href="
-"\"%(blog_url)s\"> przedyskutowana na naszym blogu </a> "
+"Per-tag automatic bayesian classification, as <a target=_blank "
+"href=\"%(blog_url)s\">discussed on our blog</a>"
+msgstr "Automatyczna klasyfikacja Bayesa dla każdego tagu, <a target=_blank href=\"%(blog_url)s\"> przedyskutowana na naszym blogu </a> "
 
 #: shared-data/default-theme/html/page/release-notes/index.html:51
 msgid "The ability to delete e-mail and accounts"
@@ -8719,13 +8436,10 @@ msgstr "Co zostało naprawione?"
 #: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
-"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed issues</"
-"a> and <a target=_blank href=\"%(release_url)s\">issues closed for this "
-"release</a>"
-msgstr ""
-"Zobacz Githuba po <a target=_blank href=\"%(closed_url)s\"> wszystkie "
-"zamknięte problemy </a> i <a target=_blank href=\"%(release_url)s\"> "
-"problemy zamknięte dla tego wydania </a>"
+"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
+"issues</a> and <a target=_blank href=\"%(release_url)s\">issues closed for "
+"this release</a>"
+msgstr "Zobacz Githuba po <a target=_blank href=\"%(closed_url)s\"> wszystkie zamknięte problemy </a> i <a target=_blank href=\"%(release_url)s\"> problemy zamknięte dla tego wydania </a>"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:63
 msgid "What's still broken?"
@@ -8744,17 +8458,12 @@ msgstr "Synchronizacja IMAP nie jest jeszcze zaimplementowana"
 msgid ""
 "The <a target=_blank href=\"%(roadmap_url)s\">Security Roadmap</a> is "
 "incomplete"
-msgstr ""
-"<a target=_blank href=\"%(roadmap_url)s\">Harmonogram bezpieczeństwa</a> "
-"jest niekompletny"
+msgstr "<a target=_blank href=\"%(roadmap_url)s\">Harmonogram bezpieczeństwa</a> jest niekompletny"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:70
 #, python-format
-msgid ""
-"Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
-msgstr ""
-"Github ma <a target=_blank href=\"%(issues_url)s\"> wiele otwartych "
-"problemów </a>."
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgstr "Github ma <a target=_blank href=\"%(issues_url)s\"> wiele otwartych problemów </a>."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:72
 msgid "You can help."
@@ -8871,18 +8580,14 @@ msgstr "Pokaż szczegóły techniczne."
 #: shared-data/default-theme/html/partials/error_message_missing.html:32
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
-msgstr ""
-"Nie udało nam się znaleźć wiadomości którą szukasz, być może została ona już "
-"skasowana? "
+msgstr "Nie udało nam się znaleźć wiadomości którą szukasz, być może została ona już skasowana? "
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:37
 #, python-format
 msgid ""
-"If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank"
-"\">file a report</a> including the technical details above."
-msgstr ""
-"Jeśli uważasz to za bug, wyślij do nas <a href=\"%(url)s\" target=\"_blank"
-"\">zgłoszenie buga</a>  załączając dane techniczne powyżej."
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details above."
+msgstr "Jeśli uważasz to za bug, wyślij do nas <a href=\"%(url)s\" target=\"_blank\">zgłoszenie buga</a>  załączając dane techniczne powyżej."
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:47
 msgid "DESCRIBE YOUR PROBLEM HERE"
@@ -8896,9 +8601,7 @@ msgstr "Brakuje Kontaktu"
 msgid ""
 "We were unable to find the contact you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"Nie udało nam się znaleźć tego kontaktu, być może źle go wpisałeś (lub "
-"podlinkowałeś)?"
+msgstr "Nie udało nam się znaleźć tego kontaktu, być może źle go wpisałeś (lub podlinkowałeś)?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:6
 msgid "Tag Missing"
@@ -8908,9 +8611,7 @@ msgstr "Brakuje Taga"
 msgid ""
 "We were unable to find the tag you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"Nie udało znaleźć się nam tego taga, być może źle go wpisałeś (lub źle "
-"podlinkowałeś)?"
+msgstr "Nie udało znaleźć się nam tego taga, być może źle go wpisałeś (lub źle podlinkowałeś)?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:9
 msgid "Oops, You've Found a Quirk"
@@ -8920,18 +8621,14 @@ msgstr "Ups, znalazłeś błąd"
 msgid ""
 "There's something happening here. What it is ain't exactly clear. Everybody "
 "look what's going down."
-msgstr ""
-"Dzieje się tutaj coś, co nie jest do końca jasne. Wszyscy sprawdzają co jest "
-"nie tak."
+msgstr "Dzieje się tutaj coś, co nie jest do końca jasne. Wszyscy sprawdzają co jest nie tak."
 
 #: shared-data/default-theme/html/partials/errors_content.html:12
 #, python-format
 msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"Jeśli uważasz to za bug, wyślij do nas <a href=\"%(url)s\" target=\"_blank"
-"\">zgłoszenie buga</a>  "
+"If you think this is a bug, please file a <a href=\"%(url)s\" "
+"target=\"_blank\">bug report</a>"
+msgstr "Jeśli uważasz to za bug, wyślij do nas <a href=\"%(url)s\" target=\"_blank\">zgłoszenie buga</a>  "
 
 #: shared-data/default-theme/html/partials/helpers.html:14
 #: shared-data/default-theme/html/partials/helpers.html:15
@@ -9022,32 +8719,28 @@ msgid "Don't use this key"
 msgstr "Nie używaj tego klucza"
 
 #: shared-data/default-theme/html/partials/hidden.html:128
-#, fuzzy
 msgid "This key is available for use."
-msgstr "Klucz PGP dla %s jest gotowy do użycia."
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:137
 msgid "Import Key"
 msgstr "Importuj klucz"
 
 #: shared-data/default-theme/html/partials/hidden.html:150
-#, fuzzy
 msgid "Importing Failed"
-msgstr "Logowanie nie udało się"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:153
 msgid "Importing Encryption Key"
 msgstr "Importowanie klucza szyfrującego"
 
 #: shared-data/default-theme/html/partials/hidden.html:156
-#, fuzzy
 msgid "Uploading:"
-msgstr "Prześlij klucz"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:158
-#, fuzzy
 msgid "This may take a few moments..."
-msgstr "To może chwilę potrwać!"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:177
 msgid "Key"
@@ -9106,32 +8799,27 @@ msgid "This message has HTML formatted content."
 msgstr "Ta wiadomość ma wstawki HTML"
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:8
-msgid "For security reasons, Mailpile will by default only display plain text."
+msgid ""
+"For security reasons, Mailpile will by default only display plain text."
 msgstr "Z powodu bezpieczeństwa, Mailpile domyślnie pokazuje tylko tekst"
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:10
 msgid ""
 "You can change display modes by clicking the icons to the right of the "
 "Subject line."
-msgstr ""
-"Możesz zmienić tryby wyświetlania przez kliknięcie na ikony po prawej od "
-"linii z tematem."
+msgstr "Możesz zmienić tryby wyświetlania przez kliknięcie na ikony po prawej od linii z tematem."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:23
 msgid ""
 "Usually when you reply to a message, all participants in the conversation "
 "will be sent a copy of your reply."
-msgstr ""
-"Zwykle kiedy odpisujesz na wiadomość, wszyscy uczestniczy konwersacji "
-"dostaną kopię twojej odpowiedzi."
+msgstr "Zwykle kiedy odpisujesz na wiadomość, wszyscy uczestniczy konwersacji dostaną kopię twojej odpowiedzi."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:25
 msgid ""
 "If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
-msgstr ""
-"Jeśli chcesz wysłać prywatną kopię, tylko do autora tej wiadomośći, najedź "
-"na jego imię i kliknij ikonę odpowiedzi."
+msgstr "Jeśli chcesz wysłać prywatną kopię, tylko do autora tej wiadomośći, najedź na jego imię i kliknij ikonę odpowiedzi."
 
 #: shared-data/default-theme/html/partials/pile_message.html:77
 msgid "Blocked attachments, replies, and links."
@@ -9146,9 +8834,8 @@ msgid "Links are blocked."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:91
-#, fuzzy
 msgid "Remove from spam"
-msgstr "Usuń z %(name)s"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:92
 #: shared-data/default-theme/html/partials/pile_message.html:96
@@ -9158,14 +8845,12 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:97
 #: shared-data/default-theme/html/partials/pile_message.html:103
-#, fuzzy
 msgid "Send to spam"
-msgstr "Przenieś do spamu"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:101
-#, fuzzy
 msgid "Add to contacts"
-msgstr "Dodano %d kontaktów"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:189
 msgid "Unknown Text Part"
@@ -9217,9 +8902,8 @@ msgid "Private Reply"
 msgstr "Prywatna odpowiedź"
 
 #: shared-data/default-theme/html/partials/search_item.html:224
-#, fuzzy
 msgid "Download from the web"
-msgstr "Pobierz dane z sieci"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/search_item.html:239
 msgid "Oops, no attachments found!"
@@ -9360,8 +9044,7 @@ msgstr "wybrane konwersacje"
 
 #: shared-data/default-theme/html/partials/tools_default.html:86
 msgid "conversations selected, click to select all matching this search"
-msgstr ""
-"wybrano konwersacje, kliknij by wybrać wszystkie pasujące do wyszukania"
+msgstr "wybrano konwersacje, kliknij by wybrać wszystkie pasujące do wyszukania"
 
 #: shared-data/default-theme/html/partials/tools_default.html:87
 msgid "Entire search selected, click to undo"
@@ -9718,14 +9401,11 @@ msgid ""
 "Use this setting if you would like Mailpile to read e-mails already "
 "downloaded by Thunderbird, Mac Mail or another local application on this "
 "machine."
-msgstr ""
-"Użyj tego ustawienia jeśli chcesz by Mailpile czytał maile pobrane przez "
-"Thunderbirda, Mac Mail czy inną aplikację na tym urządzeniu"
+msgstr "Użyj tego ustawienia jeśli chcesz by Mailpile czytał maile pobrane przez Thunderbirda, Mac Mail czy inną aplikację na tym urządzeniu"
 
 #: shared-data/default-theme/html/profiles/account-form.html:634
 msgid "Use the Browse tool to import local mailboxes later on."
-msgstr ""
-"Użyj tego narzędzia wyszukiwania by zaimportować lokalne skrzynki mailowe."
+msgstr "Użyj tego narzędzia wyszukiwania by zaimportować lokalne skrzynki mailowe."
 
 #: shared-data/default-theme/html/profiles/account-form.html:648
 msgid "Enable this mail source"
@@ -9739,9 +9419,7 @@ msgstr "Dodaj nowy"
 msgid ""
 "Mailpile may not be able to access your mail unless you log on to your "
 "account and enable IMAP and/or POP3."
-msgstr ""
-"Mailpile może nie mieć dostępu do twojego maila, dopóki nie zalogujesz się "
-"na niego i nie włączysz IMAP i/lub POP3"
+msgstr "Mailpile może nie mieć dostępu do twojego maila, dopóki nie zalogujesz się na niego i nie włączysz IMAP i/lub POP3"
 
 #: shared-data/default-theme/html/profiles/account-form.html:682
 msgid "Important"
@@ -9769,9 +9447,8 @@ msgid "Create a new Autocrypt Level 1.1 compatible key (Ed25519)"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
-#, fuzzy
 msgid "Create a new 4096 bit RSA key"
-msgstr "Stwórz nowy 2048 bitowy klucz RSA"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
 msgid "Legacy, strong"
@@ -9803,13 +9480,11 @@ msgstr "Zawsze podpisuj cyfrowo wysyłane wiadomości"
 
 #: shared-data/default-theme/html/profiles/account-form.html:769
 msgid "Always encrypt (warn when sending unencrypted mail)"
-msgstr ""
-"Zawsze szyfruj (ostrzegaj przez próbą wysłania niezaszyfrowanej wiadomości)"
+msgstr "Zawsze szyfruj (ostrzegaj przez próbą wysłania niezaszyfrowanej wiadomości)"
 
 #: shared-data/default-theme/html/profiles/account-form.html:777
 msgid "Minimize metadata (may make mail unreadable)"
-msgstr ""
-"Zminimalizuj metadane (może spowodować maile niemożliwe do przeczytania)"
+msgstr "Zminimalizuj metadane (może spowodować maile niemożliwe do przeczytania)"
 
 #: shared-data/default-theme/html/profiles/account-form.html:785
 msgid "Prefer compatibility; avoid PGP/MIME (makes mail ugly)"
@@ -9832,14 +9507,12 @@ msgid "Signal a preference for un-signed, un-encrypted mail"
 msgstr "Zaznacz preferencję dla niepodpisanych, niezaszyfrowanych maili"
 
 #: shared-data/default-theme/html/profiles/account-form.html:829
-#, fuzzy
 msgid "Use Autocrypt to exchange encryption keys"
-msgstr "To konto nie ma klucza szyfrującego."
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:837
-#, fuzzy
 msgid "Use attachments to exchange encryption keys"
-msgstr "To konto nie ma klucza szyfrującego."
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:9
 #: shared-data/default-theme/html/profiles/index.html:47
@@ -9874,9 +9547,7 @@ msgstr "Skonfiguruj swoje konta, profile i inne ustawienia"
 msgid ""
 "You can configure accounts and profiles once you have reviewed your privacy "
 "settings."
-msgstr ""
-"Możesz skonfigurować konta i profile po tym, jak odwiedzisz swoje ustawienia "
-"prywatności."
+msgstr "Możesz skonfigurować konta i profile po tym, jak odwiedzisz swoje ustawienia prywatności."
 
 #: shared-data/default-theme/html/profiles/index.html:56
 msgid "Your name"
@@ -9924,9 +9595,7 @@ msgstr "Usuń konto"
 
 #: shared-data/default-theme/html/profiles/index.html:173
 msgid "Please review your privacy settings before adding any accounts."
-msgstr ""
-"Proszę, przeglądnij swoje ustawienia bezpieczeństwa przed dodaniem "
-"jakiegokolwiek konta"
+msgstr "Proszę, przeglądnij swoje ustawienia bezpieczeństwa przed dodaniem jakiegokolwiek konta"
 
 #: shared-data/default-theme/html/profiles/index.html:176
 msgid "Privacy & Security"
@@ -9979,25 +9648,19 @@ msgstr "Przenieś mail do kosza"
 msgid ""
 "By default this will remove: account details, OAuth credentials, saved "
 "passwords, linked mail sources, and route settings."
-msgstr ""
-"Domyślnie to usunie: dane konta, dane logowania OAuth, zapisane hasła, "
-"połączone źródła maili i ustawienia przesyłu."
+msgstr "Domyślnie to usunie: dane konta, dane logowania OAuth, zapisane hasła, połączone źródła maili i ustawienia przesyłu."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:83
 msgid ""
 "This only affects local data, e-mail and settings on remote mail servers "
 "will not be modifed."
-msgstr ""
-"To wpłynie jedynie na dane lokalne, maile i ustawienia na zdalnym serwerze "
-"mailowym nie zostaną zmodyfikowane."
+msgstr "To wpłynie jedynie na dane lokalne, maile i ustawienia na zdalnym serwerze mailowym nie zostaną zmodyfikowane."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:87
 msgid ""
 "If you also delete the encryption keys, you may be unable to read old "
 "encrypted e-mail."
-msgstr ""
-"Jeśli usuniesz klucze szyfrujące to nie będziesz w stanie odczytać stare "
-"zaszyfrowane maile."
+msgstr "Jeśli usuniesz klucze szyfrujące to nie będziesz w stanie odczytać stare zaszyfrowane maile."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:91
 #: shared-data/default-theme/html/settings/plugins.html:61
@@ -10056,8 +9719,7 @@ msgstr "Pusta skrzynka odbiorcza? Imponujące!"
 
 #: shared-data/default-theme/html/search/default.html:134
 msgid "It seems your Mailpile does not contain any messages for the search"
-msgstr ""
-"Wygląda na to, że twój Mailpile nie zawiera żadnych wiadomości do wyszukania"
+msgstr "Wygląda na to, że twój Mailpile nie zawiera żadnych wiadomości do wyszukania"
 
 #: shared-data/default-theme/html/search/default.html:139
 msgid "Here are some other options for you"
@@ -10095,11 +9757,9 @@ msgstr "Więcej"
 #: shared-data/default-theme/html/search/prev_more_next.html:47
 #, python-format
 msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
-msgstr ""
-"Przeszukano <strong>%(number)s</strong> wiadomości w <strong>%(elapsed)s</"
-"strong> sekund."
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
+msgstr "Przeszukano <strong>%(number)s</strong> wiadomości w <strong>%(elapsed)s</strong> sekund."
 
 #: shared-data/default-theme/html/search/prev_more_next.html:49
 msgid "Vroom!"
@@ -10209,7 +9869,8 @@ msgid "Author"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/plugins.html:62
-msgid "This plugin is meant for developers and may be incomplete or dangerous."
+msgid ""
+"This plugin is meant for developers and may be incomplete or dangerous."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/plugins.html:74
@@ -10323,7 +9984,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/preferences.html:142
 msgid ""
-"These are technical settings which may interfere with normal use of Mailpile."
+"These are technical settings which may interfere with normal use of "
+"Mailpile."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/preferences.html:143
@@ -10357,34 +10019,27 @@ msgid "Networking Privacy"
 msgstr "Prywatność sieci"
 
 #: shared-data/default-theme/html/settings/privacy.html:55
-msgid "Tor is a community-run system for making anonymous network connections."
-msgstr ""
-"Tor jest systemem społecznościowym do tworzenia anonimowych połączeń "
-"sieciowych."
+msgid ""
+"Tor is a community-run system for making anonymous network connections."
+msgstr "Tor jest systemem społecznościowym do tworzenia anonimowych połączeń sieciowych."
 
 #: shared-data/default-theme/html/settings/privacy.html:56
 msgid ""
 "It masks your IP address and location, thus preventing many forms of "
 "surveillance and tracking."
-msgstr ""
-"To maskuje twój adres IP i lokalizację, co zapobiega śledzeniu i inwigilacji."
+msgstr "To maskuje twój adres IP i lokalizację, co zapobiega śledzeniu i inwigilacji."
 
 #: shared-data/default-theme/html/settings/privacy.html:60
 msgid ""
 "Using Tor may be considered suspicious or even illegal in some countries."
-msgstr ""
-"Używanie Tor może być podejrzane a nawet nielegalne w niektórych krajach."
+msgstr "Używanie Tor może być podejrzane a nawet nielegalne w niektórych krajach."
 
 #: shared-data/default-theme/html/settings/privacy.html:61
 msgid ""
 "Since the Tor network is run by volunteers, bad actors can (and do) "
 "volunteer to run exit-nodes so they can listen in on traffic; as a result "
 "Tor is not suitable for accessing the unencrypted web."
-msgstr ""
-"Jako, że sieć Tor działa dzięki wolontariusz, może się zdarzyć (i zdarza "
-"się) by ktoś specjalnie chciał zostać wierzchołkiem końcowym by podsłuchiwać "
-"połączenie. Z tego wynika, że Tor nie jest przeznaczony do wchodzenia w "
-"niezaszyfrowaną część internetu."
+msgstr "Jako, że sieć Tor działa dzięki wolontariusz, może się zdarzyć (i zdarza się) by ktoś specjalnie chciał zostać wierzchołkiem końcowym by podsłuchiwać połączenie. Z tego wynika, że Tor nie jest przeznaczony do wchodzenia w niezaszyfrowaną część internetu."
 
 #: shared-data/default-theme/html/settings/privacy.html:65
 msgid "Visit the Tor project's web-site"
@@ -10399,9 +10054,9 @@ msgid "When sending and receiving mail, or downloading from the web:"
 msgstr "Kiedy wysyłasz lub otrzymujesz mail, lub ściągasz z internetu:"
 
 #: shared-data/default-theme/html/settings/privacy.html:78
-#, fuzzy, python-format
+#, python-format
 msgid "Custom proxy setting (%(proto)s on %(host)s:%(port)s)"
-msgstr "Własne ustawienia proxy (%(proto)s)"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:87
 msgid "Prefer anonymous Tor networking for encrypted connections."
@@ -10439,9 +10094,7 @@ msgstr "Zaawansowane Ustawienia"
 #: shared-data/default-theme/html/settings/privacy.html:115
 #, python-format
 msgid "Fall back to direct networking if connecting over %(proxy)s fails."
-msgstr ""
-"Powróć do bezpośredniego połączenia jeśli połączenie przez %(proxy)s się nie "
-"udało."
+msgstr "Powróć do bezpośredniego połączenia jeśli połączenie przez %(proxy)s się nie udało."
 
 #: shared-data/default-theme/html/settings/privacy.html:123
 msgid "Disable direct networking connections completely."
@@ -10473,26 +10126,20 @@ msgstr "Włącz Tora"
 msgid ""
 "Without Tor, Mailpile can not prevent service providers and network "
 "operators from monitoring or tracking your IP address and communications."
-msgstr ""
-"Bez Tora, Mailpile nie może zapobiec monitorowaniu i lokalizowaniu twojego "
-"adresu IP i komunikacji przez dostawców internetu."
+msgstr "Bez Tora, Mailpile nie może zapobiec monitorowaniu i lokalizowaniu twojego adresu IP i komunikacji przez dostawców internetu."
 
 #: shared-data/default-theme/html/settings/privacy.html:199
 msgid ""
 "The Mailpile Team publishes updates to notify users of available upgrades "
 "and potential security vulnerabilities in Mailpile."
-msgstr ""
-"Zespół Mailpile publikuje aktualizacje, by poinformować o nowych rzeczy i "
-"ewentualnych błędach bezpieczeństwa w Mailpile."
+msgstr "Zespół Mailpile publikuje aktualizacje, by poinformować o nowych rzeczy i ewentualnych błędach bezpieczeństwa w Mailpile."
 
 #: shared-data/default-theme/html/settings/privacy.html:203
 msgid ""
 "Update subscriptions help the Mailpile Team keep track of how many people "
 "use Mailpile, what operating systems are in use, and which languages users "
 "speak."
-msgstr ""
-"Subskrypcja aktualizacji pomaga zespołowi Mailpile wiedzieć jak dużo ludzi "
-"używa Mailpile, na jakich systemach i w jakich językach."
+msgstr "Subskrypcja aktualizacji pomaga zespołowi Mailpile wiedzieć jak dużo ludzi używa Mailpile, na jakich systemach i w jakich językach."
 
 #: shared-data/default-theme/html/settings/privacy.html:204
 #: shared-data/default-theme/html/settings/privacy.html:266
@@ -10514,16 +10161,12 @@ msgstr "Ściągaj aktualizacje tylko przez Tor"
 #: shared-data/default-theme/html/settings/privacy.html:228
 msgid ""
 "Generic updates only, over Tor - keeps all details about your setup private."
-msgstr ""
-"Ogólne aktualizacje tylko, poprzez Tor - nie przesyła informacji o twoich "
-"ustawieniach."
+msgstr "Ogólne aktualizacje tylko, poprzez Tor - nie przesyła informacji o twoich ustawieniach."
 
 #: shared-data/default-theme/html/settings/privacy.html:234
 msgid ""
 "Download generic updates only, to keep details about your setup private."
-msgstr ""
-"Pobierz jedynie ogólne aktualizacji, by zachować w prywatności twoją "
-"konfigurację."
+msgstr "Pobierz jedynie ogólne aktualizacji, by zachować w prywatności twoją konfigurację."
 
 #: shared-data/default-theme/html/settings/privacy.html:241
 msgid "Keep your custom settings:"
@@ -10544,24 +10187,19 @@ msgstr "Zawartość osób trzecich"
 
 #: shared-data/default-theme/html/settings/privacy.html:260
 msgid "Mailpile can download content from the web to augment your mail."
-msgstr ""
-"Mailpile może sciągać zawartość z internetu by powiększyć twojego maila."
+msgstr "Mailpile może sciągać zawartość z internetu by powiększyć twojego maila."
 
 #: shared-data/default-theme/html/settings/privacy.html:261
 msgid ""
 "This includes user photos from Gravatar, key material from key servers, and "
 "potentially other sources."
-msgstr ""
-"To zawiera zdjęcia użytkownika z Gravatar, kluczowe dane z serwerów kluczy i "
-"potencjalnie inne źródła"
+msgstr "To zawiera zdjęcia użytkownika z Gravatar, kluczowe dane z serwerów kluczy i potencjalnie inne źródła"
 
 #: shared-data/default-theme/html/settings/privacy.html:265
 msgid ""
-"This may leak information about your address book and use of Mailpile to the "
-"providers of these services."
-msgstr ""
-"To może spowodować wyciek informacji odnośnie twojej książki adresowej i "
-"informację, że używasz Mailpile."
+"This may leak information about your address book and use of Mailpile to the"
+" providers of these services."
+msgstr "To może spowodować wyciek informacji odnośnie twojej książki adresowej i informację, że używasz Mailpile."
 
 #: shared-data/default-theme/html/settings/privacy.html:269
 msgid "Learn more about:"
@@ -10584,9 +10222,8 @@ msgid "Securing Your Data"
 msgstr "Zabezpieczam twoje dane"
 
 #: shared-data/default-theme/html/settings/privacy.html:314
-#, fuzzy
 msgid "Your Mailpile stores data here:"
-msgstr "Twój Mailpile jest aktualny"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:319
 msgid "Mailpile can encrypt your e-mail, search engine and settings."
@@ -10594,23 +10231,17 @@ msgstr "Mailpile może szyfrować twoje emaile, ustawienia i wyszukiwarkę."
 
 #: shared-data/default-theme/html/settings/privacy.html:320
 msgid "This protects your privacy, even if your computer gets lost or stolen."
-msgstr ""
-"To chroni twoją prywatność, nawet jeśli twój komputer zostanie skradziony "
-"lub zgubiony."
+msgstr "To chroni twoją prywatność, nawet jeśli twój komputer zostanie skradziony lub zgubiony."
 
 #: shared-data/default-theme/html/settings/privacy.html:324
 msgid ""
 "Encryption makes it harder to migrate your data to another e-mail client, "
 "slows things down and may increase the odds of data loss."
-msgstr ""
-"Szyfrowanie utrudnia przenoszenie danych do innego klienta e-mail, spowalnia "
-"pewne rzeczy i zwiększa prawdopodobieństwo utraty danych."
+msgstr "Szyfrowanie utrudnia przenoszenie danych do innego klienta e-mail, spowalnia pewne rzeczy i zwiększa prawdopodobieństwo utraty danych."
 
 #: shared-data/default-theme/html/settings/privacy.html:325
-#, fuzzy
 msgid "Losing your encryption key becomes equivalent to losing the data."
 msgstr ""
-"Zgubienie kluczy szyfrujących oznacza zgubienie wszystkich swoich maili."
 
 #: shared-data/default-theme/html/settings/privacy.html:329
 msgid "Download a backup of current settings and keys."
@@ -10620,18 +10251,15 @@ msgstr ""
 msgid ""
 "Also keep in mind that the security of your data depends entirely on the "
 "strength of your password."
-msgstr ""
-"Weź pod uwagę, że bezpieczeństwo twoich danych w całości zależy od siły "
-"twojego hasła."
+msgstr "Weź pod uwagę, że bezpieczeństwo twoich danych w całości zależy od siły twojego hasła."
 
 #: shared-data/default-theme/html/settings/privacy.html:337
 msgid "You can change your Mailpile Password here."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:351
-#, fuzzy
 msgid "Allow deletion of e-mail from servers and mailboxes."
-msgstr "Zezwól na usuwanie maili z serwera i skrzynek pocztowych"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:387
 msgid "Encrypt the contact database."
@@ -10654,9 +10282,8 @@ msgid "Strongly encrypt the local search index (slow)."
 msgstr "Mocno szyfruj lokalny indeks wyszukiwania (wolne)."
 
 #: shared-data/default-theme/html/settings/privacy.html:443
-#, fuzzy
 msgid "Use shared GnuPG keychain for PGP encryption keys."
-msgstr "Szukam kluczy szyfrujących..."
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:447
 msgid "Notes:"
@@ -10666,9 +10293,7 @@ msgstr "Notatki:"
 msgid ""
 "Changing encryption settings will only affect data created or edited from "
 "now on."
-msgstr ""
-"Zmiana ustawień szyfrowania dotknie jedynie danych stworzonych lub "
-"edytowanych od teraz."
+msgstr "Zmiana ustawień szyfrowania dotknie jedynie danych stworzonych lub edytowanych od teraz."
 
 #: shared-data/default-theme/html/settings/privacy.html:452
 msgid ""
@@ -10678,16 +10303,15 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:454
 msgid ""
-"The configuration is always kept encrypted, because it may contain passwords."
+"The configuration is always kept encrypted, because it may contain "
+"passwords."
 msgstr "Konfiguracja zawsze jest szyfrowana, ponieważ zawiera hasła."
 
 #: shared-data/default-theme/html/settings/privacy.html:455
 msgid ""
 "The search index is always at least partially encrypted because it is so "
 "sensitive."
-msgstr ""
-"Indeks wyszukiwania zawsze jest przynajmniej częściowo szyfrowany, ponieważ "
-"jest mocno wrażliwy."
+msgstr "Indeks wyszukiwania zawsze jest przynajmniej częściowo szyfrowany, ponieważ jest mocno wrażliwy."
 
 #: shared-data/default-theme/html/settings/privacy.html:463
 #: shared-data/default-theme/html/settings/privacy.html:470
@@ -10900,30 +10524,22 @@ msgstr "Wyświetl zapamiętane hasła"
 #: shared-data/default-theme/html/settings/set/password/index.html:139
 msgid ""
 "Unlocking an account allows Mailpile to use it to send and receive e-mail."
-msgstr ""
-"Odblokowanie konta pozwala Mailpile na użycie go do wysłania i odbierania "
-"maili."
+msgstr "Odblokowanie konta pozwala Mailpile na użycie go do wysłania i odbierania maili."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:141
 msgid ""
 "By default, unlocked accounts stay accessible until you restart Mailpile."
-msgstr ""
-"Domyślnie odblokowane konta zostają dostępne dopóki nie zrestartujesz "
-"Mailpile."
+msgstr "Domyślnie odblokowane konta zostają dostępne dopóki nie zrestartujesz Mailpile."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:144
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the account "
 "again."
-msgstr ""
-"Jeśli Mailpile zapamięta hasło, nie będziesz musiał odblokowywać konta "
-"ponownie."
+msgstr "Jeśli Mailpile zapamięta hasło, nie będziesz musiał odblokowywać konta ponownie."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:150
 msgid "Locked accounts can not be used to send or receive e-mail."
-msgstr ""
-"Zablokowane konto nie może zostać wykorzystane do wysyłania i odbierania "
-"maili."
+msgstr "Zablokowane konto nie może zostać wykorzystane do wysyłania i odbierania maili."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:155
 #: shared-data/default-theme/html/settings/set/password/keys.html:208
@@ -11017,28 +10633,21 @@ msgstr "Wyświetl zapamiętane hasło"
 msgid ""
 "Unlocking a key allows Mailpile to use it for decryption and creating "
 "digital signatures."
-msgstr ""
-"Odblokowanie klucza pozwala Mailpile użyć go do deszyfrowania i tworzenia "
-"cyfrowych podpisów."
+msgstr "Odblokowanie klucza pozwala Mailpile użyć go do deszyfrowania i tworzenia cyfrowych podpisów."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:194
 msgid "By default, unlocked keys stay accessible until you restart Mailpile."
-msgstr ""
-"Domyślnie odblokowane klucze stają się dostępne do zresetowania Mailpile."
+msgstr "Domyślnie odblokowane klucze stają się dostępne do zresetowania Mailpile."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:197
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the key "
 "again."
-msgstr ""
-"Jeśli Mailpile pamięta hasło, nie będziesz musiał odblokowywać klucza "
-"ponownie."
+msgstr "Jeśli Mailpile pamięta hasło, nie będziesz musiał odblokowywać klucza ponownie."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:203
 msgid "Locked keys can not be used for decryption or digital signatures."
-msgstr ""
-"Zablokowane klucze nie mogą być użyte do deszyfrowania lub cyfrowych "
-"podpisów."
+msgstr "Zablokowane klucze nie mogą być użyte do deszyfrowania lub cyfrowych podpisów."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:325
 msgid "No Keys Here!"
@@ -11057,9 +10666,7 @@ msgstr "Przyznano dostęp"
 msgid ""
 "In order for Mailpile to process your e-mail, you need to grant permission "
 "for the application to access your e-mail account."
-msgstr ""
-"By Mailpile mógł przetwarzać twoje maile musisz przyznać aplikacji prawa "
-"dostępu do skrzynki pocztowej."
+msgstr "By Mailpile mógł przetwarzać twoje maile musisz przyznać aplikacji prawa dostępu do skrzynki pocztowej."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:17
 msgid "The authorization process will take place in a new window (or tab)."
@@ -11110,9 +10717,7 @@ msgstr "Dostęp do Mailpile teraz będzie wymagać hasła."
 msgid ""
 "All settings and downloaded mail will be encrypted, so even if someone "
 "steals your laptop they will not have access to your e-mail."
-msgstr ""
-"Wszystkie ustawienia i ściągnięte maile będą szyfrowane, więc jeśli ktoś "
-"ukradnie twojego laptopa nie uzyska dostępu do twoich maili."
+msgstr "Wszystkie ustawienia i ściągnięte maile będą szyfrowane, więc jeśli ktoś ukradnie twojego laptopa nie uzyska dostępu do twoich maili."
 
 #: shared-data/default-theme/html/setup/password/index.html:23
 msgid "Start using Mailpile"
@@ -11157,7 +10762,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:64
 msgid ""
-"We have made a secure recommendation, but you still need to type it yourself!"
+"We have made a secure recommendation, but you still need to type it "
+"yourself!"
 msgstr "Podaliśmy bezpieczną rekomendację, jednak ty ciągle musisz ją wpisać!"
 
 #: shared-data/default-theme/html/setup/password/index.html:67
@@ -11174,9 +10780,7 @@ msgstr "To hasło jest trochę zbyt krótkie!"
 
 #: shared-data/default-theme/html/setup/password/index.html:74
 msgid "We recommend using a phrase of at least four memorable words."
-msgstr ""
-"Rekomendujemy używanie wyrażenia złożonego z co najmniej czterech słów, "
-"które można zapamiętać."
+msgstr "Rekomendujemy używanie wyrażenia złożonego z co najmniej czterech słów, które można zapamiętać."
 
 #: shared-data/default-theme/html/setup/password/index.html:86
 msgid "Confirm your Mailpile Password"
@@ -11424,85 +11028,3 @@ msgstr ""
 #: shared-data/mailpile-gui/mailpile-gui.py:311
 msgid "Failed to launch Mailpile!"
 msgstr ""
-
-#~ msgid "Message not found?"
-#~ msgstr "Nie znaleziono wiadomości?"
-
-#~ msgid "MaybeSpam"
-#~ msgstr "Może Spam"
-
-#~ msgid "DNS PKA records"
-#~ msgstr "Rekordy DNS PKA"
-
-#~ msgid "Your spam filter is broken: please install spambayes"
-#~ msgstr "Twój filtr antyspamowy jest zepsuty: proszę, zainstaluj spambayes"
-
-#~ msgid "Could Not Render Composer"
-#~ msgstr "Nie udało się zrenderować Composera"
-
-#~ msgid "People in Conversation"
-#~ msgstr "Ludzie w konwersacji"
-
-#~ msgid "Tags in Conversation"
-#~ msgstr "Tagi w konwersacji"
-
-#~ msgid "This key is on your key chain."
-#~ msgstr "Ten klucz jest w twoim keychain"
-
-#~ msgid "Message moved to new thread"
-#~ msgstr "Wiadomość przeniesiona do nowego wątku"
-
-#~ msgid "go to new thread"
-#~ msgstr "idź do nowego wątku"
-
-#~ msgid "View e-mail from this mailing list"
-#~ msgstr "Wyświetl e-mail z listy mailingowej"
-
-#~ msgid "Move"
-#~ msgstr "Przenieś"
-
-#~ msgid "Archive Message"
-#~ msgstr "Archiwizuj wiadomość"
-
-#~ msgid "Flag as Spam"
-#~ msgstr "Zaznacz jako spam"
-
-#~ msgid "Remove from Thread"
-#~ msgstr "Usuń z wątku"
-
-#~ msgid "Unsubscribe"
-#~ msgstr "Wypisz się"
-
-#~ msgid "View Profile"
-#~ msgstr "Pokaż profil"
-
-#~ msgid "Compose New"
-#~ msgstr "Utwórz nową"
-
-#~ msgid "Bcc:"
-#~ msgstr "Bcc:"
-
-#~ msgid "View:"
-#~ msgstr "Widok:"
-
-#~ msgid "JSON"
-#~ msgstr "JSON"
-
-#~ msgid "Raw Source"
-#~ msgstr "Oryginalne, surowe źródło"
-
-#~ msgid "People"
-#~ msgstr "Ludzie"
-
-#~ msgid "Create a new 4096 bit RSA key (slow)"
-#~ msgstr "Stwórz nowy 4096 bitowy klucz RSA (powolne)"
-
-#~ msgid "Automatically attach encryption keys to outgoing mail"
-#~ msgstr "Automatycznie złącz publiczny klucz do wysyłanej wiadomości"
-
-#~ msgid ""
-#~ "You need to have already installed and enabled the Tor service on your "
-#~ "computer."
-#~ msgstr ""
-#~ "Musisz mieć już zainstalowaną i uruchomioną usługę Tor na swoim "
-#~ "komputerze."

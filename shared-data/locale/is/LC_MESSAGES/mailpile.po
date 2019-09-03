@@ -1,7 +1,7 @@
 # Translations template for mailpile.
-# Copyright (C) 2018 Mailpile ehf
+# Copyright (C) 2019 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-#
+# 
 # Translators:
 # GunnarSturla <gunnistulli@gmail.com>, 2014
 # GunnarSturla <gunnistulli@gmail.com>, 2014
@@ -14,16 +14,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-16 17:38+0000\n"
-"PO-Revision-Date: 2019-05-07 15:35+0000\n"
-"Last-Translator: Sveinn í Felli <sv1@fellsnet.is>\n"
-"Language-Team: Icelandic (http://www.transifex.com/otf/mailpile/language/"
-"is/)\n"
-"Language: is\n"
+"POT-Creation-Date: 2019-08-16 17:28+0000\n"
+"PO-Revision-Date: 2019-08-17 02:52+0000\n"
+"Last-Translator: Dragana Kaurin <dragana.kaurin@localizationlab.org>\n"
+"Language-Team: Icelandic (http://www.transifex.com/otf/mailpile/language/is/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.4.0\n"
+"Language: is\n"
 "Plural-Forms: nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);\n"
 
 #: mailpile/app.py:125
@@ -460,18 +459,16 @@ msgid "In lockdown, doing nothing."
 msgstr "Forritið er læst! Breytti engu."
 
 #: mailpile/security.py:619
-#, fuzzy
 msgid "We trust ourselves"
-msgstr "Uppbygging á trausti lykils"
+msgstr ""
 
 #: mailpile/security.py:651
 msgid "This sender's reputation is unknown"
 msgstr ""
 
 #: mailpile/security.py:718
-#, fuzzy
 msgid "The digital signature is invalid"
-msgstr "Stafræna undirskriftin var ógild eða röng"
+msgstr ""
 
 #: mailpile/security.py:720
 msgid "This person usually signs their mail"
@@ -482,9 +479,8 @@ msgid "This was signed by an unexpected key"
 msgstr ""
 
 #: mailpile/security.py:724
-#, fuzzy
 msgid "This was signed by an expired key"
-msgstr "Stafræna undirskriftin var gerð með útrunnum lykli"
+msgstr ""
 
 #: mailpile/security.py:726
 msgid "Good signature, we are happy"
@@ -995,14 +991,12 @@ msgid "Mailboxes we index"
 msgstr "Við búum til atriðaskrá (index) úr þessum pósthólfum"
 
 #: mailpile/config/defaults.py:59
-#, fuzzy
 msgid "Plugins to load before login"
-msgstr "Viðbætur til að virkja við ræsingu"
+msgstr ""
 
 #: mailpile/config/defaults.py:61
-#, fuzzy
 msgid "Plugins to load after login"
-msgstr "Viðbætur til að virkja við ræsingu"
+msgstr ""
 
 #: mailpile/config/defaults.py:63
 msgid "Locations of assorted data"
@@ -1069,14 +1063,12 @@ msgid "List of hosts to avoid proxying"
 msgstr ""
 
 #: mailpile/config/defaults.py:82
-#, fuzzy
 msgid "Tor settings"
-msgstr "Proxy stillingar"
+msgstr ""
 
 #: mailpile/config/defaults.py:83
-#, fuzzy
 msgid "Override the default Tor binary path"
-msgstr "Stilla slóð að GPG forritinu"
+msgstr ""
 
 #: mailpile/config/defaults.py:85
 msgid "Use shared system-wide Tor (not our own)"
@@ -1095,9 +1087,8 @@ msgid "Control Port"
 msgstr ""
 
 #: mailpile/config/defaults.py:90
-#, fuzzy
 msgid "Control Password"
-msgstr "Lykilorð notandaaðgangs"
+msgstr ""
 
 #: mailpile/config/defaults.py:93
 msgid "User preferences"
@@ -1764,9 +1755,8 @@ msgid "Waiting to generate a PGP key."
 msgstr ""
 
 #: mailpile/crypto/gpgi.py:1781
-#, fuzzy
 msgid "Generating new PGP key."
-msgstr "Bý til ný vCard nafnspjöld"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1863
 #, python-format
@@ -1950,9 +1940,8 @@ msgid "Updating search engine for %s"
 msgstr "Uppfæri leitarvél fyrir %s"
 
 #: mailpile/mail_source/__init__.py:1056
-#, fuzzy
 msgid "Checking new credentials"
-msgstr "Leita að nýjum pósthólfum"
+msgstr ""
 
 #: mailpile/mail_source/__init__.py:1107
 msgid "Internal error!  Sleeping..."
@@ -2378,9 +2367,8 @@ msgid "Failed to attach files"
 msgstr "Mistókst að hengja við skrár"
 
 #: mailpile/plugins/compose.py:1014
-#, fuzzy
 msgid "Cannot find message"
-msgstr "Gat ekki undirritað bréf"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1019
 #, python-format
@@ -2405,9 +2393,9 @@ msgid "Unthreaded %d messages"
 msgstr "Tók %d bréf úr samtalinu"
 
 #: mailpile/plugins/compose.py:1090
-#, fuzzy, python-format
+#, python-format
 msgid "Unthread %d messages"
-msgstr "Tók %d bréf úr samtalinu"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1107
 msgid "The index is not ready yet"
@@ -2490,8 +2478,8 @@ msgstr "Skylduviðfang vantar. Skylduviðföng eru: %s"
 #: mailpile/plugins/contacts.py:631
 #, python-format
 msgid ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
+"Unknown parameter passed to importer. Provided %s; but known parameters are:"
+" %s"
 msgstr "Óþekkt viðfang sent til innflytjanda. Sendi %s; þekkt viðföng eru: %s"
 
 #: mailpile/plugins/contacts.py:800
@@ -2588,9 +2576,9 @@ msgid "Rescanning: %s"
 msgstr "Uppfæri gögn: %s"
 
 #: mailpile/plugins/core.py:183
-#, fuzzy, python-format
+#, python-format
 msgid "Importing VCards from: %s"
-msgstr "Flyt inn tengiliði af GPG lyklakippu"
+msgstr ""
 
 #: mailpile/plugins/core.py:202
 #, python-format
@@ -2881,19 +2869,18 @@ msgstr "Engar niðurstöður"
 
 #: mailpile/plugins/crypto_autocrypt.py:191
 #: mailpile/plugins/crypto_autocrypt.py:218
-#, fuzzy
 msgid "Not found"
-msgstr "Engin gögn fundust"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:216
-#, fuzzy, python-format
+#, python-format
 msgid "Forgot %d recipients"
-msgstr "Engir viðtakendur"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:265
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d peers"
-msgstr "Fann %d atvik"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:47
 msgid ""
@@ -3074,15 +3061,14 @@ msgid "This account does not have an encryption key."
 msgstr "Þessi reikningur er ekki með dulritunarlykil."
 
 #: mailpile/plugins/crypto_policy.py:208
-msgid "Your policy is to always encrypt, but we do not have keys for everyone!"
-msgstr ""
-"Dulkóðunarreglan þín krefst dulkóðunar, en við höfum ekki lykla fyrir alla!"
+msgid ""
+"Your policy is to always encrypt, but we do not have keys for everyone!"
+msgstr "Dulkóðunarreglan þín krefst dulkóðunar, en við höfum ekki lykla fyrir alla!"
 
 #: mailpile/plugins/crypto_policy.py:211
 msgid ""
 "Some recipients require encryption, but we do not have keys for everyone!"
-msgstr ""
-"Sumir móttakendur krefjast dulkóðunar, en við höfum ekki lykla fyrir alla!"
+msgstr "Sumir móttakendur krefjast dulkóðunar, en við höfum ekki lykla fyrir alla!"
 
 #: mailpile/plugins/crypto_policy.py:227
 msgid "We have keys for everyone!"
@@ -3383,9 +3369,8 @@ msgid "Failed to parse message."
 msgstr ""
 
 #: mailpile/plugins/search.py:375
-#, fuzzy
 msgid "Failed to evalute sender trust"
-msgstr "Mistókst að búa til nýtt vCard fyrir %s"
+msgstr ""
 
 #: mailpile/plugins/search.py:381
 #, python-format
@@ -3545,11 +3530,9 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:354
 msgid ""
-"Unable to obfuscate search index without losing data. Not indexing encrypted "
-"mail."
-msgstr ""
-"Get ekki ruglað leitarvélina án þess að tapa gögnum. Býð því ekki upp á leit "
-"í dulkóðuðum pósti."
+"Unable to obfuscate search index without losing data. Not indexing encrypted"
+" mail."
+msgstr "Get ekki ruglað leitarvélina án þess að tapa gögnum. Býð því ekki upp á leit í dulkóðuðum pósti."
 
 #: mailpile/plugins/setup_magic.py:360
 msgid ""
@@ -3608,8 +3591,7 @@ msgstr "Kannaa %s, cleartext=%s"
 #, python-format
 msgid ""
 "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
-msgstr ""
-"Prófa %(protocol)4.4s á %(host)s:%(port)s með STARTTLS sem %(username)s"
+msgstr "Prófa %(protocol)4.4s á %(host)s:%(port)s með STARTTLS sem %(username)s"
 
 #: mailpile/plugins/setup_magic.py:904
 #, python-format
@@ -3950,9 +3932,8 @@ msgid "Found encryption key in keyserver"
 msgstr "Fann dulritunarlykil í lyklaþjóni"
 
 #: mailpile/plugins/keylookup/__init__.py:677
-#, fuzzy
 msgid "Found encryption key in keys.openpgp.org"
-msgstr "Fann dulritunarlykil í lyklaþjóni"
+msgstr ""
 
 #: mailpile/plugins/keylookup/email_keylookup.py:39
 msgid "E-mail keys"
@@ -3963,14 +3944,12 @@ msgid "Found key in local e-mail"
 msgstr "Fann lykil í tölvupósti"
 
 #: mailpile/plugins/keylookup/wkd.py:49
-#, fuzzy
 msgid "Web Key Directory"
-msgstr "Slóð á atriðaorðaskrá"
+msgstr ""
 
 #: mailpile/plugins/keylookup/wkd.py:64
-#, fuzzy
 msgid "Found key in Web Key Directory"
-msgstr "Fann lykil í DNS PKA"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:63
 msgid "Basic header tokenising"
@@ -4220,9 +4199,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:212
-#, fuzzy
 msgid "Generate long skips"
-msgstr "Vinn úr niðurstöðum"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:213
 msgid ""
@@ -4290,9 +4268,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:252
-#, fuzzy
 msgid "Search for Habeas Headers"
-msgstr "Leitaði að netföngum"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:253
 msgid ""
@@ -4375,8 +4352,7 @@ msgid ""
 "     something scores >= spamc, it's called spam; and everything else is\n"
 "     called 'I am not sure' -- the middle ground.\n"
 "\n"
-"     Note:  You may wish to increase nbuckets, to give this scheme more "
-"cutoff\n"
+"     Note:  You may wish to increase nbuckets, to give this scheme more cutoff\n"
 "     values to analyze."
 msgstr ""
 
@@ -4393,9 +4369,8 @@ msgid "Best cutoff unsure weight"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:352
-#, fuzzy
 msgid "Percentiles"
-msgstr "Snið"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:353
 #, python-format
@@ -4422,9 +4397,8 @@ msgid "Show false negatives"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:387
-#, fuzzy
 msgid "Show unsure"
-msgstr "Birta í hliðarspjaldi"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:391
 msgid "Show character limit"
@@ -4468,9 +4442,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:417
-#, fuzzy
 msgid "Spam directories"
-msgstr "Þetta er ekki mappa: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:418 mailpile/spambayes/Options.py:423
 msgid ""
@@ -4479,9 +4452,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:422
-#, fuzzy
 msgid "Ham directories"
-msgstr "Þetta er ekki mappa: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:429
 msgid "Build each classifier from scratch"
@@ -4500,9 +4472,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:442
-#, fuzzy
 msgid "Maximum number of extreme words"
-msgstr "Lágmarksfjöldi undirritana sem er krafist"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:443
 msgid ""
@@ -4512,9 +4483,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:448
-#, fuzzy
 msgid "Unknown word probability"
-msgstr "Óþekkt dulkóðunarregla: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:449
 msgid ""
@@ -4526,9 +4496,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:456
-#, fuzzy
 msgid "Unknown word strength"
-msgstr "Óþekkt gagnasnið"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:457
 msgid ""
@@ -4599,10 +4568,8 @@ msgid ""
 "     probably at least triple it.\n"
 "\n"
 "     You may also wish to increase the max_discriminators (maximum number\n"
-"     of extreme words) option if you enable this option, perhaps doubling "
-"or\n"
-"     quadrupling it.  It's not yet clear.  Bigrams create many more "
-"hapaxes,\n"
+"     of extreme words) option if you enable this option, perhaps doubling or\n"
+"     quadrupling it.  It's not yet clear.  Bigrams create many more hapaxes,\n"
 "     and that seems to increase the brittleness of minimalist training\n"
 "     regimes; increasing max_discriminators may help to soften that effect.\n"
 "     OTOH, max_discriminators defaults to 150 in part because that makes it\n"
@@ -4644,9 +4611,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:552
-#, fuzzy
 msgid "Storage file name"
-msgstr "Nafn uppsprettu"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:553
 msgid ""
@@ -4659,9 +4625,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:561
-#, fuzzy
 msgid "Message information file name"
-msgstr "Bréfið er óbreytanlegt"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:562
 msgid ""
@@ -4695,9 +4660,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:582 mailpile/spambayes/Options.py:597
-#, fuzzy
 msgid "Spam cache directory"
-msgstr "Slóð á atriðaorðaskrá"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:583 mailpile/spambayes/Options.py:598
 msgid ""
@@ -4706,9 +4670,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:587 mailpile/spambayes/Options.py:602
-#, fuzzy
 msgid "Ham cache directory"
-msgstr "Slóð á atriðaorðaskrá"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:588 mailpile/spambayes/Options.py:603
 msgid ""
@@ -4717,9 +4680,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:592 mailpile/spambayes/Options.py:607
-#, fuzzy
 msgid "Unknown cache directory"
-msgstr "Óþekkt villa"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:593 mailpile/spambayes/Options.py:608
 msgid ""
@@ -4728,9 +4690,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:612
-#, fuzzy
 msgid "Cache messages"
-msgstr "Leita í skilaboðum"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:613
 msgid ""
@@ -4759,9 +4720,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:632
-#, fuzzy
 msgid "Maximum size of cached messages"
-msgstr "Mistókst að bæta við bréfi"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:633
 msgid ""
@@ -4808,16 +4768,14 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:670
-#, fuzzy
 msgid "Ham disposition name"
-msgstr "Nafn netþjóns"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:670 mailpile/spambayes/Options.py:773
 #: mailpile/spambayes/Options.py:778 mailpile/spambayes/Options.py:1021
 #: mailpile/spambayes/Options.py:1027 mailpile/spambayes/Options.py:1033
-#, fuzzy
 msgid "ham"
-msgstr "Ekki-Rusl"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:671
 msgid "As for Spam Designation, but for emails classified as Ham."
@@ -4855,8 +4813,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:686
 msgid ""
 "Set this option to augment scores of 1.00 or 0.00 by a\n"
-"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows "
-"the\n"
+"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows the\n"
 "     \"number of zeros\" or \"number of nines\" next to the score value)."
 msgstr ""
 
@@ -4890,9 +4847,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:710
-#, fuzzy
 msgid "Level header name"
-msgstr "Vantar nafn flokks"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:714
 msgid "Add evidence header"
@@ -4916,9 +4872,8 @@ msgid "Spambayes id header name"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:730
-#, fuzzy
 msgid "Add trained header"
-msgstr "Bættu við flokkum hér!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:731
 msgid ""
@@ -4946,8 +4901,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:744
 msgid ""
 "The range of clues that are added to the \"debug\" header in the\n"
-"     E-mail. All clues that have their probability smaller than this "
-"number,\n"
+"     E-mail. All clues that have their probability smaller than this number,\n"
 "     or larger than one minus this number are added to the header such that\n"
 "     you can see why spambayes thinks this is ham/spam or why it is unsure.\n"
 "     The default is to show all clues, but you can reduce that by setting\n"
@@ -4999,9 +4953,8 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:786 mailpile/spambayes/Options.py:844
 #: mailpile/spambayes/Options.py:921
-#, fuzzy
 msgid "Remote Servers"
-msgstr "Póstþjónn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:787
 msgid ""
@@ -5009,19 +4962,15 @@ msgid ""
 "     before sending it on to your email client.  You need to specify which\n"
 "     POP3 server(s) and port(s) you wish it to connect to - a POP3 server\n"
 "     address typically looks like 'pop3.myisp.net:110' where\n"
-"     'pop3.myisp.net' is the name of the computer where the POP3 server "
-"runs\n"
-"     and '110' is the port on which the POP3 server listens.  The other "
-"port\n"
+"     'pop3.myisp.net' is the name of the computer where the POP3 server runs\n"
+"     and '110' is the port on which the POP3 server listens.  The other port\n"
 "     you might find is '995', which is used for secure POP3.  If you use\n"
 "     more than one server, simply separate their names with commas.  For\n"
 "     example:  'pop3.myisp.net:110,pop.gmail.com:995'.  You can get\n"
 "     these server names and port numbers from your existing email\n"
 "     configuration, or from your ISP or system administrator.  If you are\n"
-"     using Web-based email, you can't use the SpamBayes POP3 proxy "
-"(sorry!).\n"
-"     In your email client's configuration, where you would normally put "
-"your\n"
+"     using Web-based email, you can't use the SpamBayes POP3 proxy (sorry!).\n"
+"     In your email client's configuration, where you would normally put your\n"
 "     POP3 server address, you should now put the address of the machine\n"
 "     running SpamBayes.\n"
 msgstr ""
@@ -5203,9 +5152,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:969
-#, fuzzy
 msgid "Launch browser"
-msgstr "uppfærðu vafrann þinn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:970
 msgid ""
@@ -5243,9 +5191,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:993
-#, fuzzy
 msgid "Display date received in message review"
-msgstr "Bauð notandann velkominn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:994
 msgid ""
@@ -5256,9 +5203,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1000
-#, fuzzy
 msgid "Display score in message review"
-msgstr "Bauð notandann velkominn"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1001
 msgid ""
@@ -5352,15 +5298,13 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1049
-#, fuzzy
 msgid "HTTP Authentication"
-msgstr "Auðkenning"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1050
 msgid ""
 "This option lets you choose the security level of the web interface.\n"
-"     When selecting Basic or Digest, the user will be prompted a login and "
-"a\n"
+"     When selecting Basic or Digest, the user will be prompted a login and a\n"
 "     password to access the web interface. The Basic option is faster, but\n"
 "     transmits the password in clear on the network. The Digest option\n"
 "     encrypts the password before transmission."
@@ -5379,9 +5323,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1067
-#, fuzzy
 msgid "Rows per section"
-msgstr "Flytja valið upp"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1068
 msgid "Number of rows to display per ham/spam/unsure section."
@@ -5453,27 +5396,24 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1112
-#, fuzzy
 msgid "Folders to filter"
-msgstr "Bætti við nýrri síu"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1113
 msgid "Comma delimited list of folders to be filtered"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1116
-#, fuzzy
 msgid "Folder for unsure messages"
-msgstr "Mistókst að fjarlægja bréf"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1120
 msgid "Folder for suspected spam"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1124
-#, fuzzy
 msgid "Folder for ham messages"
-msgstr "Mistókst að bæta við bréfi"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1125
 msgid ""
@@ -5581,9 +5521,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1227
-#, fuzzy
 msgid "HTTP Proxy Password"
-msgstr "Lykilorð lykils"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1228
 msgid ""
@@ -5605,9 +5544,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1239
-#, fuzzy
 msgid "User Interface Language"
-msgstr "Tungumál á vefviðmóti"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1240
 msgid ""
@@ -5687,8 +5625,8 @@ msgstr "Blönduð - óundirrituð"
 
 #: mailpile/www/jinjaextensions.py:368
 msgid ""
-"This message has no digital signature, which means it could easily have been "
-"forged. This sender usually signs their messages, so be careful!"
+"This message has no digital signature, which means it could easily have been"
+" forged. This sender usually signs their messages, so be careful!"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:374
@@ -5713,11 +5651,9 @@ msgstr "Afturkölluð"
 
 #: mailpile/www/jinjaextensions.py:386
 msgid ""
-"Watch out, the digital signature was made with a key that has been revoked - "
-"this is not a good thing"
-msgstr ""
-"Gættu þín, stafræna undirskriftin var framkvæmd með lykli sem hefur verið "
-"afturkallaður - sem er frekar grunsamlegt"
+"Watch out, the digital signature was made with a key that has been revoked -"
+" this is not a good thing"
+msgstr "Gættu þín, stafræna undirskriftin var framkvæmd með lykli sem hefur verið afturkallaður - sem er frekar grunsamlegt"
 
 #: mailpile/www/jinjaextensions.py:391
 msgid "Mixed Revoked"
@@ -5727,9 +5663,7 @@ msgstr "Blönduð - afturkölluð"
 msgid ""
 "Watch out, parts of this message were digitally signed with a key that has "
 "been revoked"
-msgstr ""
-"Gættu þín, hluti þessa bréfs var undirritaður með lykli sem hefur verið "
-"afturkallaður - sem er frekar grunsamlegt"
+msgstr "Gættu þín, hluti þessa bréfs var undirritaður með lykli sem hefur verið afturkallaður - sem er frekar grunsamlegt"
 
 #: mailpile/www/jinjaextensions.py:397
 msgid "Expired"
@@ -5744,15 +5678,14 @@ msgid "Mixed Expired"
 msgstr "Blönduð - útrunnin"
 
 #: mailpile/www/jinjaextensions.py:403
-msgid "Parts of this message have a digital signature made with an expired key"
+msgid ""
+"Parts of this message have a digital signature made with an expired key"
 msgstr "Hlutar þessa bréfs voru stafrænt undirritaðir með úreltum lykli"
 
 #: mailpile/www/jinjaextensions.py:409
 msgid ""
 "The digital signature was made with an unknown key, so we can not verify it"
-msgstr ""
-"Ekki var hægt að sannreyna stafrænu undirskriftina því hún var gerð með "
-"óþekktum lykli"
+msgstr "Ekki var hægt að sannreyna stafrænu undirskriftina því hún var gerð með óþekktum lykli"
 
 #: mailpile/www/jinjaextensions.py:414
 msgid "Mixed Unknown"
@@ -5760,11 +5693,9 @@ msgstr "Blönduð - óþekkt"
 
 #: mailpile/www/jinjaextensions.py:415
 msgid ""
-"Parts of this message have a signature made with an unknown key which we can "
-"not verify"
-msgstr ""
-"Hlutar þessa bréfs voru undirritaðir með undirskrift sem ekki var hægt að "
-"sannreyna, því lykillinn er óþekktur"
+"Parts of this message have a signature made with an unknown key which we can"
+" not verify"
+msgstr "Hlutar þessa bréfs voru undirritaðir með undirskrift sem ekki var hægt að sannreyna, því lykillinn er óþekktur"
 
 #: mailpile/www/jinjaextensions.py:420
 msgid "Changed"
@@ -5790,9 +5721,7 @@ msgstr "Óstaðfest"
 
 #: mailpile/www/jinjaextensions.py:433
 msgid "The signature was good but it came from a key that is not verified yet"
-msgstr ""
-"Stafræn undirskrift er í lagi, en var gerð með lykli sem eftir er að "
-"staðfesta"
+msgstr "Stafræn undirskrift er í lagi, en var gerð með lykli sem eftir er að staðfesta"
 
 #: mailpile/www/jinjaextensions.py:438
 msgid "Mixed Unverified"
@@ -5851,9 +5780,7 @@ msgstr "Ekki dulkóðuð"
 msgid ""
 "This content was not encrypted. It could have been intercepted and read by "
 "an unauthorized party"
-msgstr ""
-"Þessi gögn voru ekki dulkóðuð. Þau gætu því hafa verið lesin af óviðkomandi "
-"aðilum á leið um netið"
+msgstr "Þessi gögn voru ekki dulkóðuð. Þau gætu því hafa verið lesin af óviðkomandi aðilum á leið um netið"
 
 #: mailpile/www/jinjaextensions.py:509
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:258
@@ -5869,7 +5796,8 @@ msgid "Mixed Encrypted"
 msgstr "Blönduð - dulrituð"
 
 #: mailpile/www/jinjaextensions.py:515
-msgid "Part of this message were encrypted, but other parts were not encrypted"
+msgid ""
+"Part of this message were encrypted, but other parts were not encrypted"
 msgstr "Hlutar þessa bréfs voru dulkóðuð, en aðrir hlutar ekki"
 
 #: mailpile/www/jinjaextensions.py:520
@@ -5879,9 +5807,7 @@ msgstr "Læstur lykill"
 #: mailpile/www/jinjaextensions.py:521
 msgid ""
 "You have the encryption key to decrypt this, but the key itself is locked."
-msgstr ""
-"Þú ert með lykilinn sem þarf til að afkóða þessi gögn, en "
-"dulritunarlykillinn sjálfur er læstur."
+msgstr "Þú ert með lykilinn sem þarf til að afkóða þessi gögn, en dulritunarlykillinn sjálfur er læstur."
 
 #: mailpile/www/jinjaextensions.py:526
 msgid "Mixed Locked Key"
@@ -5891,9 +5817,7 @@ msgstr "Blönduð - læstur lykill"
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr ""
-"Hlutar þessa bréfs gátu ekki verið afkóðaðir, því dulritunarlykillinn er "
-"læstur."
+msgstr "Hlutar þessa bréfs gátu ekki verið afkóðaðir, því dulritunarlykillinn er læstur."
 
 #: mailpile/www/jinjaextensions.py:532
 msgid "Missing Key"
@@ -6036,9 +5960,8 @@ msgid "Displayed raw metadata"
 msgstr "Birti hrá lýsigögn"
 
 #: shared-data/contrib/hacks/hacks.py:194
-#, fuzzy
 msgid "Edited raw metadata"
-msgstr "Birti hrá lýsigögn"
+msgstr ""
 
 #: shared-data/contrib/hacks/hacks.py:213
 msgid "Displayed message keywords"
@@ -6142,7 +6065,8 @@ msgid "Note"
 msgstr "Minnispunktur"
 
 #: shared-data/default-theme/html/auth/shared.html:47
-msgid "Mailpile is still running and processing your e-mail in the background."
+msgid ""
+"Mailpile is still running and processing your e-mail in the background."
 msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:48
@@ -6525,8 +6449,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:155
 msgid ""
-"If this certificate error is unsual, then adding a security exception is not "
-"recommended."
+"If this certificate error is unsual, then adding a security exception is not"
+" recommended."
 msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:162
@@ -6561,8 +6485,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:218
 msgid ""
-"When TOFU is in use, if the remote certificate ever changes the new one will "
-"be rejected until you add another exception."
+"When TOFU is in use, if the remote certificate ever changes the new one will"
+" be rejected until you add another exception."
 msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:234
@@ -6637,8 +6561,8 @@ msgstr "Flýtileiðir á lyklaborði"
 
 #: shared-data/default-theme/html/help/index.html:13
 msgid ""
-"Here will be a list of keyboard shortcuts / keybindings for all you cool cat "
-"power users out there!"
+"Here will be a list of keyboard shortcuts / keybindings for all you cool cat"
+" power users out there!"
 msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:15
@@ -6647,9 +6571,9 @@ msgstr "Dulritun og öryggi"
 
 #: shared-data/default-theme/html/help/index.html:16
 msgid ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you how to use your Mailpile in the "
-"most secure way possible."
+"Are you new to all these terms like encryption and keys? Don't fret. We will"
+" do our best to help explain and educate you how to use your Mailpile in the"
+" most secure way possible."
 msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:20
@@ -6946,9 +6870,8 @@ msgid "No Email"
 msgstr "Enginn póstur"
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:147
-#, fuzzy
 msgid "Searching"
-msgstr "Leita"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:83
 msgid "is too large:"
@@ -7137,7 +7060,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:48
-msgid "I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
+msgid ""
+"I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:49
@@ -7238,7 +7162,8 @@ msgid "Mailpile by default encrypts your search index!"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:72
-msgid "The most common e-mail password is 123456, hopefully yours is different"
+msgid ""
+"The most common e-mail password is 123456, hopefully yours is different"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:75
@@ -7316,7 +7241,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:93
-msgid "Did you know humans share 50 percent of their DNA with a banana? Freaky"
+msgid ""
+"Did you know humans share 50 percent of their DNA with a banana? Freaky"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:94
@@ -7365,8 +7291,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:105
 msgid ""
-"Hey, there is some Nigerian prince here who wants to give you twenty million "
-"dollars..."
+"Hey, there is some Nigerian prince here who wants to give you twenty million"
+" dollars..."
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:106
@@ -7481,9 +7407,8 @@ msgstr "Gat ekki sótt bréf"
 
 #: shared-data/default-theme/html/jsapi/search/bulk_actions.js:80
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:13
-#, fuzzy
 msgid "Search for Similar E-mail"
-msgstr "Leita að póstskeytum frá:"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/search/ui.js:134
 msgid "No Messages Selected"
@@ -7590,9 +7515,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:93
-#, fuzzy
 msgid "Search All Sources"
-msgstr "Leita að lykli"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:98
 #: shared-data/default-theme/html/partials/hidden.html:151
@@ -7636,24 +7560,20 @@ msgid "From"
 msgstr "Frá"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:37
-#, fuzzy
 msgid "Mailing list"
-msgstr "Póstur: %s"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:42
-#, fuzzy
 msgid "E-mail client"
-msgstr "Tölvupóstreikningar"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:46
-#, fuzzy
 msgid "Message structure"
-msgstr "Skilaboð"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:50
-#, fuzzy
 msgid "Sender fingerprint"
-msgstr "Fingrafar dulritunarlykils"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
@@ -7673,18 +7593,16 @@ msgid "Has an image"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:78
-#, fuzzy
 msgid "Has an attachment"
-msgstr "Mistókst að bæta við viðhengjum"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:85
 msgid "Has a digital signature"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:91
-#, fuzzy
 msgid "Is encrypted"
-msgstr "Dulritað"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:108
 msgid "Additional search terms"
@@ -8226,8 +8144,8 @@ msgstr "Styrkja"
 
 #: shared-data/default-theme/html/page/contribute/index.html:19
 msgid ""
-"Employing people to work on Mailpile full time is the fastest way to improve "
-"the software."
+"Employing people to work on Mailpile full time is the fastest way to improve"
+" the software."
 msgstr ""
 
 #: shared-data/default-theme/html/page/contribute/index.html:20
@@ -8494,8 +8412,8 @@ msgstr ""
 #: shared-data/default-theme/html/page/release-notes/index.html:49
 #, python-format
 msgid ""
-"Per-tag automatic bayesian classification, as <a target=_blank href="
-"\"%(blog_url)s\">discussed on our blog</a>"
+"Per-tag automatic bayesian classification, as <a target=_blank "
+"href=\"%(blog_url)s\">discussed on our blog</a>"
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:51
@@ -8513,9 +8431,9 @@ msgstr ""
 #: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
-"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed issues</"
-"a> and <a target=_blank href=\"%(release_url)s\">issues closed for this "
-"release</a>"
+"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
+"issues</a> and <a target=_blank href=\"%(release_url)s\">issues closed for "
+"this release</a>"
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:63
@@ -8539,8 +8457,7 @@ msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:70
 #, python-format
-msgid ""
-"Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:72
@@ -8663,8 +8580,8 @@ msgstr ""
 #: shared-data/default-theme/html/partials/error_message_missing.html:37
 #, python-format
 msgid ""
-"If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank"
-"\">file a report</a> including the technical details above."
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details above."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:47
@@ -8704,11 +8621,9 @@ msgstr ""
 #: shared-data/default-theme/html/partials/errors_content.html:12
 #, python-format
 msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"Ef þú heldur að þetta sé villa í forritinu, endilega <a href=\"%(url)s\" "
-"target=\"_blank\">sendu inn villuskýrslu</a>"
+"If you think this is a bug, please file a <a href=\"%(url)s\" "
+"target=\"_blank\">bug report</a>"
+msgstr "Ef þú heldur að þetta sé villa í forritinu, endilega <a href=\"%(url)s\" target=\"_blank\">sendu inn villuskýrslu</a>"
 
 #: shared-data/default-theme/html/partials/helpers.html:14
 #: shared-data/default-theme/html/partials/helpers.html:15
@@ -8799,32 +8714,28 @@ msgid "Don't use this key"
 msgstr "Ekki nota þennan lykil"
 
 #: shared-data/default-theme/html/partials/hidden.html:128
-#, fuzzy
 msgid "This key is available for use."
-msgstr "PGP lykillinn fyrir %s er tilbúinn."
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:137
 msgid "Import Key"
 msgstr "Flytja inn lykil"
 
 #: shared-data/default-theme/html/partials/hidden.html:150
-#, fuzzy
 msgid "Importing Failed"
-msgstr "Innskráning mistókst"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:153
 msgid "Importing Encryption Key"
 msgstr "Flyt inn dulritunarlykil"
 
 #: shared-data/default-theme/html/partials/hidden.html:156
-#, fuzzy
 msgid "Uploading:"
-msgstr "Senda inn dulritunarlykil"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:158
-#, fuzzy
 msgid "This may take a few moments..."
-msgstr "Þetta gæti tekið nokkra stund!"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/hidden.html:177
 msgid "Key"
@@ -8883,7 +8794,8 @@ msgid "This message has HTML formatted content."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:8
-msgid "For security reasons, Mailpile will by default only display plain text."
+msgid ""
+"For security reasons, Mailpile will by default only display plain text."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:10
@@ -8896,17 +8808,13 @@ msgstr ""
 msgid ""
 "Usually when you reply to a message, all participants in the conversation "
 "will be sent a copy of your reply."
-msgstr ""
-"Yfirleitt þegar pósti er svarað, er afrit af svarinu sent á alla sem tóku "
-"þátt í samtalinu."
+msgstr "Yfirleitt þegar pósti er svarað, er afrit af svarinu sent á alla sem tóku þátt í samtalinu."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:25
 msgid ""
 "If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
-msgstr ""
-"Ef þú vilt bara senda svar til höfundar þessa bréfs, færðu þá músina yfir "
-"nafnið þeirra og smelltu á svartáknið sem þá birtist."
+msgstr "Ef þú vilt bara senda svar til höfundar þessa bréfs, færðu þá músina yfir nafnið þeirra og smelltu á svartáknið sem þá birtist."
 
 #: shared-data/default-theme/html/partials/pile_message.html:77
 msgid "Blocked attachments, replies, and links."
@@ -8921,9 +8829,8 @@ msgid "Links are blocked."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:91
-#, fuzzy
 msgid "Remove from spam"
-msgstr "Fjarlægja af %(name)s"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:92
 #: shared-data/default-theme/html/partials/pile_message.html:96
@@ -8933,14 +8840,12 @@ msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:97
 #: shared-data/default-theme/html/partials/pile_message.html:103
-#, fuzzy
 msgid "Send to spam"
-msgstr "Færa í ruslpóst"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:101
-#, fuzzy
 msgid "Add to contacts"
-msgstr "Bætti við %d tengiliðum"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:189
 msgid "Unknown Text Part"
@@ -8992,9 +8897,8 @@ msgid "Private Reply"
 msgstr "Einkasvar"
 
 #: shared-data/default-theme/html/partials/search_item.html:224
-#, fuzzy
 msgid "Download from the web"
-msgstr "Sækja efni af netinu"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/search_item.html:239
 msgid "Oops, no attachments found!"
@@ -9538,9 +9442,8 @@ msgid "Create a new Autocrypt Level 1.1 compatible key (Ed25519)"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
-#, fuzzy
 msgid "Create a new 4096 bit RSA key"
-msgstr "Búa til nýjan 2048 bita RSA lykil"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
 msgid "Legacy, strong"
@@ -9599,14 +9502,12 @@ msgid "Signal a preference for un-signed, un-encrypted mail"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:829
-#, fuzzy
 msgid "Use Autocrypt to exchange encryption keys"
-msgstr "Þessi reikningur er ekki með dulritunarlykil."
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:837
-#, fuzzy
 msgid "Use attachments to exchange encryption keys"
-msgstr "Þessi reikningur er ekki með dulritunarlykil."
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:9
 #: shared-data/default-theme/html/profiles/index.html:47
@@ -9742,9 +9643,7 @@ msgstr "Setja tölvupóst í ruslið"
 msgid ""
 "By default this will remove: account details, OAuth credentials, saved "
 "passwords, linked mail sources, and route settings."
-msgstr ""
-"Sjálfgefið mun þetta fjarlægja: gögn í notandaaðgangi, OAuth auðkenni, "
-"vistuð lykilorð, tengd pósttilföng og upplýsingar um leiðir (routes)."
+msgstr "Sjálfgefið mun þetta fjarlægja: gögn í notandaaðgangi, OAuth auðkenni, vistuð lykilorð, tengd pósttilföng og upplýsingar um leiðir (routes)."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:83
 msgid ""
@@ -9853,8 +9752,8 @@ msgstr "Meira"
 #: shared-data/default-theme/html/search/prev_more_next.html:47
 #, python-format
 msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
 msgstr ""
 
 #: shared-data/default-theme/html/search/prev_more_next.html:49
@@ -9965,10 +9864,9 @@ msgid "Author"
 msgstr "Höfundur"
 
 #: shared-data/default-theme/html/settings/plugins.html:62
-msgid "This plugin is meant for developers and may be incomplete or dangerous."
-msgstr ""
-"Þessi viðbót er hugsuð fyrir forritarana og gæti verið ókláruð og jafnvel "
-"hættuleg."
+msgid ""
+"This plugin is meant for developers and may be incomplete or dangerous."
+msgstr "Þessi viðbót er hugsuð fyrir forritarana og gæti verið ókláruð og jafnvel hættuleg."
 
 #: shared-data/default-theme/html/settings/plugins.html:74
 msgid "Plugin will be disabled on restart."
@@ -10081,7 +9979,8 @@ msgstr "Hættusvæði"
 
 #: shared-data/default-theme/html/settings/preferences.html:142
 msgid ""
-"These are technical settings which may interfere with normal use of Mailpile."
+"These are technical settings which may interfere with normal use of "
+"Mailpile."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/preferences.html:143
@@ -10115,7 +10014,8 @@ msgid "Networking Privacy"
 msgstr "Gagnaleynd netvinnslu"
 
 #: shared-data/default-theme/html/settings/privacy.html:55
-msgid "Tor is a community-run system for making anonymous network connections."
+msgid ""
+"Tor is a community-run system for making anonymous network connections."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:56
@@ -10149,9 +10049,9 @@ msgid "When sending and receiving mail, or downloading from the web:"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:78
-#, fuzzy, python-format
+#, python-format
 msgid "Custom proxy setting (%(proto)s on %(host)s:%(port)s)"
-msgstr "Prófa %(protocol)4.4s á %(host)s:%(port)s sem %(username)s"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:87
 msgid "Prefer anonymous Tor networking for encrypted connections."
@@ -10292,8 +10192,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:265
 msgid ""
-"This may leak information about your address book and use of Mailpile to the "
-"providers of these services."
+"This may leak information about your address book and use of Mailpile to the"
+" providers of these services."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:269
@@ -10317,9 +10217,8 @@ msgid "Securing Your Data"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:314
-#, fuzzy
 msgid "Your Mailpile stores data here:"
-msgstr "Mailpile-forritið þitt er með öllum uppfærslum"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:319
 msgid "Mailpile can encrypt your e-mail, search engine and settings."
@@ -10336,11 +10235,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:325
-#, fuzzy
 msgid "Losing your encryption key becomes equivalent to losing the data."
 msgstr ""
-"Það að tapa dulritunarlyklinum þínum samsvarar því að tapa öllum póstinum "
-"þínum."
 
 #: shared-data/default-theme/html/settings/privacy.html:329
 msgid "Download a backup of current settings and keys."
@@ -10381,9 +10277,8 @@ msgid "Strongly encrypt the local search index (slow)."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:443
-#, fuzzy
 msgid "Use shared GnuPG keychain for PGP encryption keys."
-msgstr "Leita að dulritunarlyklums..."
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:447
 msgid "Notes:"
@@ -10403,7 +10298,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:454
 msgid ""
-"The configuration is always kept encrypted, because it may contain passwords."
+"The configuration is always kept encrypted, because it may contain "
+"passwords."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:455
@@ -10816,10 +10712,7 @@ msgstr "Aðgangur að Mailpile mun nú krefjast þessa lykilorðs."
 msgid ""
 "All settings and downloaded mail will be encrypted, so even if someone "
 "steals your laptop they will not have access to your e-mail."
-msgstr ""
-"Stillingar og niðurhlaðinn tölvupóstur verða nú dulkóðuð með þessu "
-"lykilorði, sem tryggir öryggi gagnanna jafnvel þó tölvan sjálf falli í "
-"rangar hendur."
+msgstr "Stillingar og niðurhlaðinn tölvupóstur verða nú dulkóðuð með þessu lykilorði, sem tryggir öryggi gagnanna jafnvel þó tölvan sjálf falli í rangar hendur."
 
 #: shared-data/default-theme/html/setup/password/index.html:23
 msgid "Start using Mailpile"
@@ -10864,7 +10757,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:64
 msgid ""
-"We have made a secure recommendation, but you still need to type it yourself!"
+"We have made a secure recommendation, but you still need to type it "
+"yourself!"
 msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:67
@@ -11129,58 +11023,3 @@ msgstr "Mistókst að tengjast Mailpile!"
 #: shared-data/mailpile-gui/mailpile-gui.py:311
 msgid "Failed to launch Mailpile!"
 msgstr "Mistókst að ræsa Mailpile!"
-
-#~ msgid "Message not found?"
-#~ msgstr "Bréf fannst ekki?"
-
-#~ msgid "MaybeSpam"
-#~ msgstr "Kannski-Rusl"
-
-#~ msgid "DNS PKA records"
-#~ msgstr "DNS PKA færslur"
-
-#~ msgid "Your spam filter is broken: please install spambayes"
-#~ msgstr ""
-#~ "Ruslpóstsían þín er biluð:  settu inn SpamBayes til að virkja ruslvarnir"
-
-#~ msgid "Could Not Render Composer"
-#~ msgstr "Gat ekki myndgert ritilinn"
-
-#~ msgid "This key is on your key chain."
-#~ msgstr "Þessi lykill er á lyklakippunni þinni."
-
-#~ msgid "Move"
-#~ msgstr "Færa"
-
-#~ msgid "Archive Message"
-#~ msgstr "Geyma skilaboð"
-
-#~ msgid "Flag as Spam"
-#~ msgstr "Merkja sem ruslpóst"
-
-#~ msgid "Remove from Thread"
-#~ msgstr "Fjarlægja úr þræði"
-
-#~ msgid "Unsubscribe"
-#~ msgstr "Segja upp áskrift"
-
-#~ msgid "Compose New"
-#~ msgstr "Skrifa nýtt"
-
-#~ msgid "Bcc:"
-#~ msgstr "Bcc:"
-
-#~ msgid "View:"
-#~ msgstr "Skoða:"
-
-#~ msgid "JSON"
-#~ msgstr "JSON"
-
-#~ msgid "People"
-#~ msgstr "Fólk"
-
-#~ msgid "Create a new 4096 bit RSA key (slow)"
-#~ msgstr "Búa til nýjan 4096 bita RSA lykil (hægvirkt)"
-
-#~ msgid "Automatically attach encryption keys to outgoing mail"
-#~ msgstr "Hengja dulritunarlykla sjálfkrafa á sendan póst"

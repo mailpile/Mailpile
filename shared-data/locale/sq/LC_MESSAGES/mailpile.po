@@ -1,31 +1,29 @@
 # Translations template for mailpile.
-# Copyright (C) 2018 Mailpile ehf
+# Copyright (C) 2019 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-#
+# 
 # Translators:
+# Besnik <besnik@programeshqip.org>, 2019
 # Besnik <besnik@programeshqip.org>, 2019
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-16 17:38+0000\n"
-"PO-Revision-Date: 2019-08-11 12:04+0000\n"
+"POT-Creation-Date: 2019-08-16 17:28+0000\n"
+"PO-Revision-Date: 2019-08-17 09:16+0000\n"
 "Last-Translator: Besnik <besnik@programeshqip.org>\n"
-"Language-Team: Albanian (http://www.transifex.com/otf/mailpile/language/"
-"sq/)\n"
-"Language: sq\n"
+"Language-Team: Albanian (http://www.transifex.com/otf/mailpile/language/sq/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.4.0\n"
+"Language: sq\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: mailpile/app.py:125
 msgid "Mailpile is unconfigured, please run `setup` or visit the web UI."
-msgstr ""
-"Mailpile-i është i paformësuar, ju lutemi, xhironi `setup` ose vizitoni UI-n "
-"web."
+msgstr "Mailpile-i është i paformësuar, ju lutemi, xhironi `setup` ose vizitoni UI-n web."
 
 #: mailpile/app.py:131
 msgid "Interrupted. Press CTRL-D or type `quit` to quit."
@@ -83,8 +81,7 @@ msgstr "Jepni fjalëkalimin tuaj"
 
 #: mailpile/auth.py:454
 msgid "That key is managed by Mailpile, it cannot be changed directly."
-msgstr ""
-"Ky kyç administrohet nga Mailpile, s’mund të ndryshohet drejtpërsëdrejti."
+msgstr "Ky kyç administrohet nga Mailpile, s’mund të ndryshohet drejtpërsëdrejti."
 
 #: mailpile/auth.py:456
 msgid "Protected secret"
@@ -314,14 +311,11 @@ msgstr "Po ngarkohet tregues tejtëdhënash…"
 
 #: mailpile/search.py:162
 msgid "Your metadata index is either too old, too new or corrupt!"
-msgstr ""
-"Treguesi juaj i tejtëdhënave ose është i vjetër, ose është shumë i ri, ose "
-"është i dëmtuar!"
+msgstr "Treguesi juaj i tejtëdhënave ose është i vjetër, ose është shumë i ri, ose është i dëmtuar!"
 
 #: mailpile/search.py:166
 msgid "Corrupt data in metadata index! Trying to cope..."
-msgstr ""
-"Të dhëna të dëmtuara te treguesi i tejtëdhënave! Po provohet të vahdohet…"
+msgstr "Të dhëna të dëmtuara te treguesi i tejtëdhënave! Po provohet të vahdohet…"
 
 #: mailpile/search.py:190
 #, python-format
@@ -461,43 +455,40 @@ msgid "In lockdown, doing nothing."
 msgstr "Kyçur, rri kot."
 
 #: mailpile/security.py:619
-#, fuzzy
 msgid "We trust ourselves"
-msgstr "Model Besueshmërie Kyçesh"
+msgstr "I besojmë vetes"
 
 #: mailpile/security.py:651
 msgid "This sender's reputation is unknown"
-msgstr ""
+msgstr "Reputacioni i këtij dërguesi është i panjohur"
 
 #: mailpile/security.py:718
-#, fuzzy
 msgid "The digital signature is invalid"
-msgstr "Nënshkrimi dixhital është i pavlefshëm ose i keq"
+msgstr "Nënshkrimi dixhital është i pavlefshëm"
 
 #: mailpile/security.py:720
 msgid "This person usually signs their mail"
-msgstr ""
+msgstr "Ky person zakonisht e nënshkruan postën e vet"
 
 #: mailpile/security.py:722
 msgid "This was signed by an unexpected key"
-msgstr ""
+msgstr "Ky qe nënshkruar me një kyç të papritur"
 
 #: mailpile/security.py:724
-#, fuzzy
 msgid "This was signed by an expired key"
-msgstr "Nënshkrimi dixhital qe bërë me një kyç të skaduar"
+msgstr "Ky qe nënshkruar me një kyç të skaduar"
 
 #: mailpile/security.py:726
 msgid "Good signature, we are happy"
-msgstr ""
+msgstr "Nënshkrim i mirë, jemi të kënaqur"
 
 #: mailpile/security.py:728
 msgid "This came from an unexpected source"
-msgstr ""
+msgstr "Ky erdhi prej një burimi të papritur"
 
 #: mailpile/security.py:730
 msgid "No problems detected."
-msgstr ""
+msgstr "S’u pikasën probleme."
 
 #: mailpile/smtp_client.py:196
 #, python-format
@@ -945,7 +936,7 @@ msgstr "Çaktivizo mirëfilltësim HTTP"
 
 #: mailpile/config/defaults.py:43
 msgid "AJAX Request timeout"
-msgstr ""
+msgstr "Mbarim kohe për kërkesën AJAX"
 
 #: mailpile/config/defaults.py:44
 msgid "Posting list target size in KB"
@@ -996,14 +987,12 @@ msgid "Mailboxes we index"
 msgstr "Kuti postare që indeksojmë"
 
 #: mailpile/config/defaults.py:59
-#, fuzzy
 msgid "Plugins to load before login"
-msgstr "Shtojca për ngarkim gjatë nisjesh"
+msgstr "Shtojca për t’u ngarkuar përpara hyrjes"
 
 #: mailpile/config/defaults.py:61
-#, fuzzy
 msgid "Plugins to load after login"
-msgstr "Shtojca për ngarkim gjatë nisjesh"
+msgstr "Shtojca për t’u ngarkuar pas hyrjes"
 
 #: mailpile/config/defaults.py:63
 msgid "Locations of assorted data"
@@ -1070,14 +1059,12 @@ msgid "List of hosts to avoid proxying"
 msgstr "Listë strehës për shmangie ndërmjetësimi"
 
 #: mailpile/config/defaults.py:82
-#, fuzzy
 msgid "Tor settings"
-msgstr "Rregullime ndërmjetësi"
+msgstr "Rregullime Tor-i"
 
 #: mailpile/config/defaults.py:83
-#, fuzzy
 msgid "Override the default Tor binary path"
-msgstr "Anashkalo shtegun parazgjedhje për dyor GPG"
+msgstr ""
 
 #: mailpile/config/defaults.py:85
 msgid "Use shared system-wide Tor (not our own)"
@@ -1093,12 +1080,11 @@ msgstr ""
 
 #: mailpile/config/defaults.py:89
 msgid "Control Port"
-msgstr ""
+msgstr "Portë Kontrolli"
 
 #: mailpile/config/defaults.py:90
-#, fuzzy
 msgid "Control Password"
-msgstr "Fjalëkalim Llogarie"
+msgstr "Fjalëkalim Kontrolli"
 
 #: mailpile/config/defaults.py:93
 msgid "User preferences"
@@ -1137,8 +1123,7 @@ msgstr ""
 
 #: mailpile/config/defaults.py:104
 msgid "Accept weak crypto in messages older than this (unix time)"
-msgstr ""
-"Prano kriptografi të dobët në mesazhe më të vjetër se sa kjo kohë (kohë Unix)"
+msgstr "Prano kriptografi të dobët në mesazhe më të vjetër se sa kjo kohë (kohë Unix)"
 
 #: mailpile/config/defaults.py:106
 msgid "Never display HTML from encrypted mail"
@@ -1527,8 +1512,7 @@ msgstr "Po krijohet: %s"
 
 #: mailpile/config/manager.py:164
 msgid "Another Mailpile or program is using the profile directory"
-msgstr ""
-"Drejtorinë e profileve po e përdor një tjetër instancë Mailpile ose program"
+msgstr "Drejtorinë e profileve po e përdor një tjetër instancë Mailpile ose program"
 
 #: mailpile/config/manager.py:386
 #, python-format
@@ -1763,14 +1747,12 @@ msgid "Creating a %(bits)s bit GnuPG key"
 msgstr "Po krijohet një kyç GnuPG %(bits)s bitësh"
 
 #: mailpile/crypto/gpgi.py:1777
-#, fuzzy
 msgid "Waiting to generate a PGP key."
-msgstr "Po pritet të prodhohet një key.bits GnuPG %d bitësh"
+msgstr "Po pritet të prodhohet një kyç PGP."
 
 #: mailpile/crypto/gpgi.py:1781
-#, fuzzy
 msgid "Generating new PGP key."
-msgstr "Po prodhohet key.bits i ri PGP %d bitësh"
+msgstr "Po prodhohet kyç i ri PGP."
 
 #: mailpile/crypto/gpgi.py:1863
 #, python-format
@@ -1954,9 +1936,8 @@ msgid "Updating search engine for %s"
 msgstr "Po përditësohet motori i kërkimeve për %s"
 
 #: mailpile/mail_source/__init__.py:1056
-#, fuzzy
 msgid "Checking new credentials"
-msgstr "Po kontrollohet për kuti të reja postare"
+msgstr "Po kontrollohen kredencialet e reja"
 
 #: mailpile/mail_source/__init__.py:1107
 msgid "Internal error!  Sleeping..."
@@ -2222,8 +2203,7 @@ msgstr "U vetë-etiketuan %d mesazhe"
 #: mailpile/plugins/backups.py:104
 #, python-format
 msgid "This is a backup of Mailpile v%(ver)s keys and configuration."
-msgstr ""
-"Kjo është një kopjeruajtje e kyçeve dhe formësimit të Mailpile-it v%(ver)s."
+msgstr "Kjo është një kopjeruajtje e kyçeve dhe formësimit të Mailpile-it v%(ver)s."
 
 #: mailpile/plugins/backups.py:106
 #, python-format
@@ -2383,9 +2363,8 @@ msgid "Failed to attach files"
 msgstr "Dështoi bashkëngjitja e kartelave"
 
 #: mailpile/plugins/compose.py:1014
-#, fuzzy
 msgid "Cannot find message"
-msgstr "S’u nënshkrua dot mesazhi"
+msgstr "S’gjendet dot mesazh"
 
 #: mailpile/plugins/compose.py:1019
 #, python-format
@@ -2410,9 +2389,9 @@ msgid "Unthreaded %d messages"
 msgstr "U hoq paraqitja në rrjedha për %d mesazhe"
 
 #: mailpile/plugins/compose.py:1090
-#, fuzzy, python-format
+#, python-format
 msgid "Unthread %d messages"
-msgstr "U hoq paraqitja në rrjedha për %d mesazhe"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1107
 msgid "The index is not ready yet"
@@ -2495,11 +2474,9 @@ msgstr "Mungon parametër i domosdoshëm. Parametra të domosdoshëm janë: %s"
 #: mailpile/plugins/contacts.py:631
 #, python-format
 msgid ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
-msgstr ""
-"Importuesit iu dha parametër i panjohur. U dha %s; por parametra të njohur "
-"janë: %s"
+"Unknown parameter passed to importer. Provided %s; but known parameters are:"
+" %s"
+msgstr "Importuesit iu dha parametër i panjohur. U dha %s; por parametra të njohur janë: %s"
 
 #: mailpile/plugins/contacts.py:800
 msgid "Searched for addresses"
@@ -2595,9 +2572,9 @@ msgid "Rescanning: %s"
 msgstr "Po riskanohet: %s"
 
 #: mailpile/plugins/core.py:183
-#, fuzzy, python-format
+#, python-format
 msgid "Importing VCards from: %s"
-msgstr "Po importohen kontakte nga varg GPG kyçesh"
+msgstr "Po importohen VCards prej: %s"
 
 #: mailpile/plugins/core.py:202
 #, python-format
@@ -2687,7 +2664,7 @@ msgstr "U shfaq orar CRON-i"
 
 #: mailpile/plugins/core.py:828
 msgid "Memory corruption detected"
-msgstr ""
+msgstr "I pikas dëmtim kujtese"
 
 #: mailpile/plugins/core.py:841
 msgid "Your Mailpile is read-only!"
@@ -2841,9 +2818,7 @@ msgstr "Shtypni `help` për udhëzime, ose `quit` që të dilet."
 
 #: mailpile/plugins/core.py:1881
 msgid "Long running operations can be aborted by pressing: <CTRL-C>"
-msgstr ""
-"Operacionet që xhirojnë për një kohë të gjatë mund të ndërpriten duke "
-"shtypur: <CTRL-C>"
+msgstr "Operacionet që xhirojnë për një kohë të gjatë mund të ndërpriten duke shtypur: <CTRL-C>"
 
 #: mailpile/plugins/core.py:1884
 #, python-format
@@ -2860,9 +2835,7 @@ msgstr "Urdhra:"
 
 #: mailpile/plugins/core.py:1940
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr ""
-"Etiketa:  (përdoreni një etiketë si një urdhër për të shfaqur mesazhe të "
-"etiketuar me të)"
+msgstr "Etiketa:  (përdoreni një etiketë si një urdhër për të shfaqur mesazhe të etiketuar me të)"
 
 #: mailpile/plugins/core.py:1978 mailpile/plugins/core.py:2006
 msgid "Displayed help"
@@ -2892,19 +2865,18 @@ msgstr "S’ka përfundime"
 
 #: mailpile/plugins/crypto_autocrypt.py:191
 #: mailpile/plugins/crypto_autocrypt.py:218
-#, fuzzy
 msgid "Not found"
-msgstr "S’u gjetën të dhëna"
+msgstr "S’u gjet"
 
 #: mailpile/plugins/crypto_autocrypt.py:216
-#, fuzzy, python-format
+#, python-format
 msgid "Forgot %d recipients"
-msgstr "S’ka Marrës"
+msgstr "U harruan %d marrës"
 
 #: mailpile/plugins/crypto_autocrypt.py:265
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d peers"
-msgstr "U gjetën %d veprimtari"
+msgstr "U gjetën %d ortakë"
 
 #: mailpile/plugins/crypto_gnupg.py:47
 msgid ""
@@ -2912,12 +2884,7 @@ msgid ""
 "confidential messages to the owner, or to verify their\n"
 "digital signatures. You can safely discard or ignore this\n"
 "file if you do not use e-mail encryption or signatures."
-msgstr ""
-"Ky është një kyç dixhital fshehtëzimesh, që mund ta përdorni\n"
-"për t’i dërguar të zotit mesazhe konfidenciale, ose për\n"
-"verifikim nënshkrimi të tij dixhital. Mundeni pa rrezik ta hidhni tej\n"
-"ose shpërfillni këtë kartelë, nëse s’përdorni fshehtëzim ose\n"
-"nënshkrim email-i."
+msgstr "Ky është një kyç dixhital fshehtëzimesh, që mund ta përdorni\npër t’i dërguar të zotit mesazhe konfidenciale, ose për\nverifikim nënshkrimi të tij dixhital. Mundeni pa rrezik ta hidhni tej\nose shpërfillni këtë kartelë, nëse s’përdorni fshehtëzim ose\nnënshkrim email-i."
 
 #: mailpile/plugins/crypto_gnupg.py:52
 msgid "Generated by Mailpile and GnuPG"
@@ -2959,8 +2926,7 @@ msgstr "Xhironi: %s"
 #: mailpile/plugins/crypto_gnupg.py:498
 #, python-format
 msgid "Answer the tool's questions: use RSA and RSA, %d bits or more"
-msgstr ""
-"Përgjigjuni pyetjeve të mjetit: përdorni RSA dhe RSA, %d bite ose më tepër"
+msgstr "Përgjigjuni pyetjeve të mjetit: përdorni RSA dhe RSA, %d bite ose më tepër"
 
 #: mailpile/plugins/crypto_gnupg.py:504
 msgid "Update the Mailpile config to use a good key:"
@@ -2988,9 +2954,7 @@ msgstr "Në ekran do të shfaqet një dëshmi shfuqizimi"
 
 #: mailpile/plugins/crypto_gnupg.py:516
 msgid "Copy & paste that, save, and send to people who have the old key"
-msgstr ""
-"Kopjojeni & ngjiteni, ruajeni, dhe dërgojuani personave që kanë kyçin e "
-"vjetër"
+msgstr "Kopjojeni & ngjiteni, ruajeni, dhe dërgojuani personave që kanë kyçin e vjetër"
 
 #: mailpile/plugins/crypto_gnupg.py:517
 #, python-format
@@ -3093,16 +3057,14 @@ msgid "This account does not have an encryption key."
 msgstr "Kjo llogari s’ka kyç fshehtëzimi."
 
 #: mailpile/plugins/crypto_policy.py:208
-msgid "Your policy is to always encrypt, but we do not have keys for everyone!"
-msgstr ""
-"Rregulli juaj kërkon që të fshehtëzohet përherë, por nuk kemi kyçe për "
-"gjithkënd!"
+msgid ""
+"Your policy is to always encrypt, but we do not have keys for everyone!"
+msgstr "Rregulli juaj kërkon që të fshehtëzohet përherë, por nuk kemi kyçe për gjithkënd!"
 
 #: mailpile/plugins/crypto_policy.py:211
 msgid ""
 "Some recipients require encryption, but we do not have keys for everyone!"
-msgstr ""
-"Disa marrës kërkojnë doemos fshehtëzim, por nuk kemi kyçe për gjithkënd!"
+msgstr "Disa marrës kërkojnë doemos fshehtëzim, por nuk kemi kyçe për gjithkënd!"
 
 #: mailpile/plugins/crypto_policy.py:227
 msgid "We have keys for everyone!"
@@ -3110,8 +3072,7 @@ msgstr "Kemi kyçe për gjithkënd!"
 
 #: mailpile/plugins/crypto_policy.py:232
 msgid "Will not encrypt because historic data is insufficient."
-msgstr ""
-"S’do të fshehtëzojë, ngaqë të dhënat kronologjike janë të pamjaftueshme."
+msgstr "S’do të fshehtëzojë, ngaqë të dhënat kronologjike janë të pamjaftueshme."
 
 #: mailpile/plugins/crypto_policy.py:235
 msgid "Cannot encrypt because we do not have keys for all recipients."
@@ -3219,9 +3180,7 @@ msgstr "Jo i futur"
 
 #: mailpile/plugins/gui.py:98
 msgid "Your data is stored encrypted and is inaccessible until you log in."
-msgstr ""
-"Të dhënat tuaja janë depozituar të fshehtëzuara dhe s’i përdorni dot pa bërë "
-"hyrjen."
+msgstr "Të dhënat tuaja janë depozituar të fshehtëzuara dhe s’i përdorni dot pa bërë hyrjen."
 
 #: mailpile/plugins/gui.py:102
 msgid "Log In"
@@ -3253,8 +3212,7 @@ msgstr "Instalim i Ri"
 
 #: mailpile/plugins/gui.py:183
 msgid "Loaded metadata for {num} messages so far, please wait."
-msgstr ""
-"Deri tani janë ngarkuar tejtëdhënat për {num} mesazhe, ju lutemi, prisni."
+msgstr "Deri tani janë ngarkuar tejtëdhënat për {num} mesazhe, ju lutemi, prisni."
 
 #: mailpile/plugins/gui.py:226
 msgid "No new mail, {num} messages total."
@@ -3407,9 +3365,8 @@ msgid "Failed to parse message."
 msgstr "Dështoi përtypja e mesazhit."
 
 #: mailpile/plugins/search.py:375
-#, fuzzy
 msgid "Failed to evalute sender trust"
-msgstr "Dështoi vleftësimi i besueshmërisë së kyçit"
+msgstr "Dështoi vleftësimi i besueshmërisë së dërguesit"
 
 #: mailpile/plugins/search.py:381
 #, python-format
@@ -3549,9 +3506,7 @@ msgstr "Po aktivizohet auto-etiketuesi SpamBayes"
 
 #: mailpile/plugins/setup_magic.py:287
 msgid "Please install SpamBayes for super awesome spam filtering"
-msgstr ""
-"Për filtrim super-të-mahnitshëm mesazhesh të padëshiruar, ju lutemi, "
-"instaloni SpamBayes"
+msgstr "Për filtrim super-të-mahnitshëm mesazhesh të padëshiruar, ju lutemi, instaloni SpamBayes"
 
 #: mailpile/plugins/setup_magic.py:293
 msgid "Enabling Gravatar image importer"
@@ -3571,18 +3526,14 @@ msgstr "Po riaktivizohet kyçja"
 
 #: mailpile/plugins/setup_magic.py:354
 msgid ""
-"Unable to obfuscate search index without losing data. Not indexing encrypted "
-"mail."
-msgstr ""
-"S’arrihet të maskohet treguesi i kërkimit pa humbur të dhëna. Nuk po "
-"indeksohet postë e fshehtëzuar."
+"Unable to obfuscate search index without losing data. Not indexing encrypted"
+" mail."
+msgstr "S’arrihet të maskohet treguesi i kërkimit pa humbur të dhëna. Nuk po indeksohet postë e fshehtëzuar."
 
 #: mailpile/plugins/setup_magic.py:360
 msgid ""
 "Obfuscating search index and enabling indexing of encrypted e-mail. Yay!"
-msgstr ""
-"Po maskohet treguesi i kërkimit dhe po aktivizohet indeksimi i email-eve të "
-"fshehtëzuar. Urra!"
+msgstr "Po maskohet treguesi i kërkimit dhe po aktivizohet indeksimi i email-eve të fshehtëzuar. Urra!"
 
 #: mailpile/plugins/setup_magic.py:602
 #, python-format
@@ -3636,8 +3587,7 @@ msgstr "Po testohet %s, cleartext=%s"
 #, python-format
 msgid ""
 "Testing %(protocol)4.4s on %(host)s:%(port)s with STARTTLS as %(username)s"
-msgstr ""
-"Po provohet %(protocol)4.4s te %(host)s:%(port)s me STARTTLS si %(username)s"
+msgstr "Po provohet %(protocol)4.4s te %(host)s:%(port)s me STARTTLS si %(username)s"
 
 #: mailpile/plugins/setup_magic.py:904
 #, python-format
@@ -3978,9 +3928,8 @@ msgid "Found encryption key in keyserver"
 msgstr "U gjet kyç fshehtëzimesh në shërbyes kyçesh"
 
 #: mailpile/plugins/keylookup/__init__.py:677
-#, fuzzy
 msgid "Found encryption key in keys.openpgp.org"
-msgstr "U gjet kyç fshehtëzimesh në shërbyes kyçesh"
+msgstr "U gjet kyç fshehtëzimesh në keys.openpgp.org"
 
 #: mailpile/plugins/keylookup/email_keylookup.py:39
 msgid "E-mail keys"
@@ -3991,14 +3940,12 @@ msgid "Found key in local e-mail"
 msgstr "U gjet kyç në email vendor"
 
 #: mailpile/plugins/keylookup/wkd.py:49
-#, fuzzy
 msgid "Web Key Directory"
-msgstr "Drejtori treguesi kërkimesh"
+msgstr "Drejtori Kyçesh Web"
 
 #: mailpile/plugins/keylookup/wkd.py:64
-#, fuzzy
 msgid "Found key in Web Key Directory"
-msgstr "U gjet kyç në PKA DNS-je"
+msgstr "U gjet kyç në Drejtori Kyçesh Web"
 
 #: mailpile/spambayes/Options.py:63
 msgid "Basic header tokenising"
@@ -4106,7 +4053,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:122
 msgid "Look inside images for text"
-msgstr ""
+msgstr "Shih brenda figurash për tekst"
 
 #: mailpile/spambayes/Options.py:123
 msgid ""
@@ -4118,7 +4065,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:129
 msgid "OCR engine to use"
-msgstr ""
+msgstr "Motor OCR për t’u përdorur"
 
 #: mailpile/spambayes/Options.py:130
 msgid ""
@@ -4235,9 +4182,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:203
-#, fuzzy
 msgid "Address headers to mine"
-msgstr "Shtoji mesazhet te motori i kërkimeve"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:205
 msgid ""
@@ -4249,9 +4195,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:212
-#, fuzzy
 msgid "Generate long skips"
-msgstr "U prodhua pamja grafik"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:213
 msgid ""
@@ -4306,7 +4251,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:243
 msgid "Replace non-ascii characters"
-msgstr ""
+msgstr "Zëvendëso shenja non-ascii."
 
 #: mailpile/spambayes/Options.py:244
 msgid ""
@@ -4319,9 +4264,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:252
-#, fuzzy
 msgid "Search for Habeas Headers"
-msgstr "U kërkua për adresa"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:253
 msgid ""
@@ -4404,8 +4348,7 @@ msgid ""
 "     something scores >= spamc, it's called spam; and everything else is\n"
 "     called 'I am not sure' -- the middle ground.\n"
 "\n"
-"     Note:  You may wish to increase nbuckets, to give this scheme more "
-"cutoff\n"
+"     Note:  You may wish to increase nbuckets, to give this scheme more cutoff\n"
 "     values to analyze."
 msgstr ""
 
@@ -4422,9 +4365,8 @@ msgid "Best cutoff unsure weight"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:352
-#, fuzzy
 msgid "Percentiles"
-msgstr "Profile"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:353
 #, python-format
@@ -4451,9 +4393,8 @@ msgid "Show false negatives"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:387
-#, fuzzy
 msgid "Show unsure"
-msgstr "Shfaqe në anështyllë"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:391
 msgid "Show character limit"
@@ -4497,9 +4438,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:417
-#, fuzzy
 msgid "Spam directories"
-msgstr "S’është drejtori: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:418 mailpile/spambayes/Options.py:423
 msgid ""
@@ -4508,9 +4448,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:422
-#, fuzzy
 msgid "Ham directories"
-msgstr "S’është drejtori: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:429
 msgid "Build each classifier from scratch"
@@ -4529,9 +4468,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:442
-#, fuzzy
 msgid "Maximum number of extreme words"
-msgstr "Numër minimum nënshkrimesh i domosdoshëm"
+msgstr "Numër maksimum fjalësh ekstreme"
 
 #: mailpile/spambayes/Options.py:443
 msgid ""
@@ -4541,9 +4479,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:448
-#, fuzzy
 msgid "Unknown word probability"
-msgstr "Rregull i panjohur kriptografie: %s"
+msgstr "Probabilitet i panjohur fjale"
 
 #: mailpile/spambayes/Options.py:449
 msgid ""
@@ -4555,9 +4492,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:456
-#, fuzzy
 msgid "Unknown word strength"
-msgstr "Lloj i panjohur lënde"
+msgstr "Fortësi fjale e panjohur"
 
 #: mailpile/spambayes/Options.py:457
 msgid ""
@@ -4628,10 +4564,8 @@ msgid ""
 "     probably at least triple it.\n"
 "\n"
 "     You may also wish to increase the max_discriminators (maximum number\n"
-"     of extreme words) option if you enable this option, perhaps doubling "
-"or\n"
-"     quadrupling it.  It's not yet clear.  Bigrams create many more "
-"hapaxes,\n"
+"     of extreme words) option if you enable this option, perhaps doubling or\n"
+"     quadrupling it.  It's not yet clear.  Bigrams create many more hapaxes,\n"
 "     and that seems to increase the brittleness of minimalist training\n"
 "     regimes; increasing max_discriminators may help to soften that effect.\n"
 "     OTOH, max_discriminators defaults to 150 in part because that makes it\n"
@@ -4673,9 +4607,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:552
-#, fuzzy
 msgid "Storage file name"
-msgstr "Emër burimi"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:553
 msgid ""
@@ -4688,9 +4621,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:561
-#, fuzzy
 msgid "Message information file name"
-msgstr "Mesazhi s’është i përpunueshëm"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:562
 msgid ""
@@ -4705,7 +4637,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:571
 msgid "Use gzip"
-msgstr ""
+msgstr "Përdor gzip"
 
 #: mailpile/spambayes/Options.py:572
 msgid "Use gzip to compress the cache."
@@ -4724,9 +4656,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:582 mailpile/spambayes/Options.py:597
-#, fuzzy
 msgid "Spam cache directory"
-msgstr "Drejtori treguesi kërkimesh"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:583 mailpile/spambayes/Options.py:598
 msgid ""
@@ -4735,9 +4666,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:587 mailpile/spambayes/Options.py:602
-#, fuzzy
 msgid "Ham cache directory"
-msgstr "Drejtori treguesi kërkimesh"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:588 mailpile/spambayes/Options.py:603
 msgid ""
@@ -4746,9 +4676,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:592 mailpile/spambayes/Options.py:607
-#, fuzzy
 msgid "Unknown cache directory"
-msgstr "Gabim i panjohur"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:593 mailpile/spambayes/Options.py:608
 msgid ""
@@ -4757,9 +4686,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:612
-#, fuzzy
 msgid "Cache messages"
-msgstr "Kërko Te Mesazhet"
+msgstr "Mesazhe fshehtine"
 
 #: mailpile/spambayes/Options.py:613
 msgid ""
@@ -4788,9 +4716,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:632
-#, fuzzy
 msgid "Maximum size of cached messages"
-msgstr "Dështoi të shtojë mesazh"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:633
 msgid ""
@@ -4837,9 +4764,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:670
-#, fuzzy
 msgid "Ham disposition name"
-msgstr "Emër Strehe"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:670 mailpile/spambayes/Options.py:773
 #: mailpile/spambayes/Options.py:778 mailpile/spambayes/Options.py:1021
@@ -4883,8 +4809,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:686
 msgid ""
 "Set this option to augment scores of 1.00 or 0.00 by a\n"
-"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows "
-"the\n"
+"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows the\n"
 "     \"number of zeros\" or \"number of nines\" next to the score value)."
 msgstr ""
 
@@ -4918,9 +4843,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:710
-#, fuzzy
 msgid "Level header name"
-msgstr "Lypset emër etikete"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:714
 msgid "Add evidence header"
@@ -4944,9 +4868,8 @@ msgid "Spambayes id header name"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:730
-#, fuzzy
 msgid "Add trained header"
-msgstr "Shtoni etiketa këtu!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:731
 msgid ""
@@ -4974,8 +4897,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:744
 msgid ""
 "The range of clues that are added to the \"debug\" header in the\n"
-"     E-mail. All clues that have their probability smaller than this "
-"number,\n"
+"     E-mail. All clues that have their probability smaller than this number,\n"
 "     or larger than one minus this number are added to the header such that\n"
 "     you can see why spambayes thinks this is ham/spam or why it is unsure.\n"
 "     The default is to show all clues, but you can reduce that by setting\n"
@@ -5027,9 +4949,8 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:786 mailpile/spambayes/Options.py:844
 #: mailpile/spambayes/Options.py:921
-#, fuzzy
 msgid "Remote Servers"
-msgstr "Shërbyes"
+msgstr "Shërbyes të Largët"
 
 #: mailpile/spambayes/Options.py:787
 msgid ""
@@ -5037,19 +4958,15 @@ msgid ""
 "     before sending it on to your email client.  You need to specify which\n"
 "     POP3 server(s) and port(s) you wish it to connect to - a POP3 server\n"
 "     address typically looks like 'pop3.myisp.net:110' where\n"
-"     'pop3.myisp.net' is the name of the computer where the POP3 server "
-"runs\n"
-"     and '110' is the port on which the POP3 server listens.  The other "
-"port\n"
+"     'pop3.myisp.net' is the name of the computer where the POP3 server runs\n"
+"     and '110' is the port on which the POP3 server listens.  The other port\n"
 "     you might find is '995', which is used for secure POP3.  If you use\n"
 "     more than one server, simply separate their names with commas.  For\n"
 "     example:  'pop3.myisp.net:110,pop.gmail.com:995'.  You can get\n"
 "     these server names and port numbers from your existing email\n"
 "     configuration, or from your ISP or system administrator.  If you are\n"
-"     using Web-based email, you can't use the SpamBayes POP3 proxy "
-"(sorry!).\n"
-"     In your email client's configuration, where you would normally put "
-"your\n"
+"     using Web-based email, you can't use the SpamBayes POP3 proxy (sorry!).\n"
+"     In your email client's configuration, where you would normally put your\n"
 "     POP3 server address, you should now put the address of the machine\n"
 "     running SpamBayes.\n"
 msgstr ""
@@ -5070,7 +4987,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:816
 msgid "Allowed remote POP3 connections"
-msgstr ""
+msgstr "Lidhje POP3 të largëta të lejuara"
 
 #: mailpile/spambayes/Options.py:817
 msgid ""
@@ -5084,7 +5001,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:825
 msgid "Retrieval timeout"
-msgstr ""
+msgstr "Mbarim kohe marrjeje"
 
 #: mailpile/spambayes/Options.py:826
 msgid ""
@@ -5127,7 +5044,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:871
 msgid "Allowed remote SMTP connections"
-msgstr ""
+msgstr "Lidhje SMTP të largëta të lejuara"
 
 #: mailpile/spambayes/Options.py:872
 msgid ""
@@ -5218,7 +5135,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:946
 msgid "Allowed remote IMAP4 connections"
-msgstr ""
+msgstr "Lidhje IMAP4 të largëta të lejuara"
 
 #: mailpile/spambayes/Options.py:947
 msgid ""
@@ -5231,9 +5148,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:969
-#, fuzzy
 msgid "Launch browser"
-msgstr "përditësoni shfletuesin tuaj"
+msgstr "Nis shfletuesin"
 
 #: mailpile/spambayes/Options.py:970
 msgid ""
@@ -5245,7 +5161,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:976
 msgid "Allowed remote UI connections"
-msgstr ""
+msgstr "Lidhje UI të largëta të lejuara"
 
 #: mailpile/spambayes/Options.py:977
 msgid ""
@@ -5258,9 +5174,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:985
-#, fuzzy
 msgid "Headers to display in message review"
-msgstr "S’arrihet të shihet paraparje mesazhi"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:986
 msgid ""
@@ -5272,9 +5187,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:993
-#, fuzzy
 msgid "Display date received in message review"
-msgstr "U shfaq mesazh mirëseardhjeje"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:994
 msgid ""
@@ -5285,9 +5199,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1000
-#, fuzzy
 msgid "Display score in message review"
-msgstr "U shfaq mesazh mirëseardhjeje"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1001
 msgid ""
@@ -5381,15 +5294,13 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1049
-#, fuzzy
 msgid "HTTP Authentication"
-msgstr "Mirëfilltësim"
+msgstr "Mirëfilltësim HTTP"
 
 #: mailpile/spambayes/Options.py:1050
 msgid ""
 "This option lets you choose the security level of the web interface.\n"
-"     When selecting Basic or Digest, the user will be prompted a login and "
-"a\n"
+"     When selecting Basic or Digest, the user will be prompted a login and a\n"
 "     password to access the web interface. The Basic option is faster, but\n"
 "     transmits the password in clear on the network. The Digest option\n"
 "     encrypts the password before transmission."
@@ -5408,9 +5319,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1067
-#, fuzzy
 msgid "Rows per section"
-msgstr "Ngjite përzgjedhjen sipër"
+msgstr "Rreshta për ndarje"
 
 #: mailpile/spambayes/Options.py:1068
 msgid "Number of rows to display per ham/spam/unsure section."
@@ -5459,7 +5369,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:1098
 msgid "Purge//Expunge"
-msgstr ""
+msgstr "Spastro//Fshi"
 
 #: mailpile/spambayes/Options.py:1099
 msgid ""
@@ -5482,27 +5392,24 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1112
-#, fuzzy
 msgid "Folders to filter"
-msgstr "U shtua filtër i ri"
+msgstr "Dosje për filtrim"
 
 #: mailpile/spambayes/Options.py:1113
 msgid "Comma delimited list of folders to be filtered"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1116
-#, fuzzy
 msgid "Folder for unsure messages"
-msgstr "Dështoi të heqë mesazh"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1120
 msgid "Folder for suspected spam"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1124
-#, fuzzy
 msgid "Folder for ham messages"
-msgstr "Dështoi të shtojë mesazh"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1125
 msgid ""
@@ -5577,7 +5484,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:1206
 msgid "IMAP Listen Port"
-msgstr ""
+msgstr "Portë përgjimi për IMAP"
 
 #: mailpile/spambayes/Options.py:1207
 msgid "The port to serve the SpamBayes IMAP server on."
@@ -5585,11 +5492,11 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:1212
 msgid "Verbose"
-msgstr ""
+msgstr "Fjalaman"
 
 #: mailpile/spambayes/Options.py:1216
 msgid "Database storage type"
-msgstr ""
+msgstr "Lloj depozitimi baze të dhënash"
 
 #: mailpile/spambayes/Options.py:1217
 msgid ""
@@ -5600,9 +5507,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1223
-#, fuzzy
 msgid "HTTP Proxy Username"
-msgstr "Emër Përdoruesi Unix"
+msgstr "Emër përdoruesi Ndërmjetësi HTTP"
 
 #: mailpile/spambayes/Options.py:1224
 msgid ""
@@ -5611,9 +5517,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1227
-#, fuzzy
 msgid "HTTP Proxy Password"
-msgstr "Fjalëkalim Kyçi"
+msgstr "Fjalëkalim Ndërmjetësi HTTP"
 
 #: mailpile/spambayes/Options.py:1228
 msgid ""
@@ -5625,7 +5530,7 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:1233
 msgid "HTTP Proxy Server"
-msgstr ""
+msgstr "Shërbyes Ndërmjetës HTTP"
 
 #: mailpile/spambayes/Options.py:1234
 msgid ""
@@ -5635,9 +5540,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1239
-#, fuzzy
 msgid "User Interface Language"
-msgstr "Gjuhë ndërfaqeje përdoruesi"
+msgstr "Gjuhë Ndërfaqeje Përdoruesi"
 
 #: mailpile/spambayes/Options.py:1240
 msgid ""
@@ -5647,27 +5551,27 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:1245
 msgid "XML-RPC path"
-msgstr ""
+msgstr "Shteg XML-RPC"
 
 #: mailpile/spambayes/Options.py:1246
 msgid "The path to respond to."
-msgstr ""
+msgstr "Shteg ku të përgjigjet."
 
 #: mailpile/spambayes/Options.py:1248
 msgid "XML-RPC host"
-msgstr ""
+msgstr "Strehë XML-RPC"
 
 #: mailpile/spambayes/Options.py:1249
 msgid "The host to listen on."
-msgstr ""
+msgstr "Strehë ku të përgjohet."
 
 #: mailpile/spambayes/Options.py:1251
 msgid "XML-RPC port"
-msgstr ""
+msgstr "Portë XML-RPC"
 
 #: mailpile/spambayes/Options.py:1252
 msgid "The port to listen on."
-msgstr ""
+msgstr "Porta ku të përgjohet."
 
 #: mailpile/www/jinjaextensions.py:298
 msgid "unnamed"
@@ -5685,9 +5589,7 @@ msgstr "I panënshkruar"
 msgid ""
 "This data has no digital signature, which means it could have come from "
 "anyone, not necessarily the apparent sender"
-msgstr ""
-"Këto të dhëna nuk përmbajnë nënshkrim dixhital, që do të thotë se mund të "
-"kenë ardhur nga cilido, jo detyrimisht nga dërguesi i dukshëm"
+msgstr "Këto të dhëna nuk përmbajnë nënshkrim dixhital, që do të thotë se mund të kenë ardhur nga cilido, jo detyrimisht nga dërguesi i dukshëm"
 
 #: mailpile/www/jinjaextensions.py:351
 msgid "There was a weird error with this digital signature"
@@ -5711,10 +5613,7 @@ msgstr "I panënshkruar"
 msgid ""
 "This data has no digital signature, which means it could easily have been "
 "forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Këto të dhëna nuk kanë nënshkrim dixhital, që do të thotë se fare lehtë mund "
-"të jenë sajuar. Ky përdorues zakonisht i nënshkruan mesazhet e veta, ndaj "
-"hapni sytë!"
+msgstr "Këto të dhëna nuk kanë nënshkrim dixhital, që do të thotë se fare lehtë mund të jenë sajuar. Ky përdorues zakonisht i nënshkruan mesazhet e veta, ndaj hapni sytë!"
 
 #: mailpile/www/jinjaextensions.py:367
 msgid "Mixed Unsigned"
@@ -5722,12 +5621,9 @@ msgstr "Përzierë Me Pjesë të Panënshkruar"
 
 #: mailpile/www/jinjaextensions.py:368
 msgid ""
-"This message has no digital signature, which means it could easily have been "
-"forged. This sender usually signs their messages, so be careful!"
-msgstr ""
-"Ky mesazh nuk përmban nënshkrim dixhital, që do të thotë se mund të ketë "
-"qenë sajuar lehtësisht. Ky dërgues zakonisht i nënshkruan mesazhet e veta, "
-"ndaj jini i kujdesshëm!"
+"This message has no digital signature, which means it could easily have been"
+" forged. This sender usually signs their messages, so be careful!"
+msgstr "Ky mesazh nuk përmban nënshkrim dixhital, që do të thotë se mund të ketë qenë sajuar lehtësisht. Ky dërgues zakonisht i nënshkruan mesazhet e veta, ndaj jini i kujdesshëm!"
 
 #: mailpile/www/jinjaextensions.py:374
 msgid "Invalid"
@@ -5743,9 +5639,7 @@ msgstr "Përzierë Me Pjesë të Pavlefshme"
 
 #: mailpile/www/jinjaextensions.py:380
 msgid "Parts of this message have a digital signature that is invalid or bad"
-msgstr ""
-"Pjesë të këtij mesazhi kanë një nënshkrim dixhital që është i pavlefshëm ose "
-"i keq"
+msgstr "Pjesë të këtij mesazhi kanë një nënshkrim dixhital që është i pavlefshëm ose i keq"
 
 #: mailpile/www/jinjaextensions.py:385
 msgid "Revoked"
@@ -5753,11 +5647,9 @@ msgstr "I shfuqizuar"
 
 #: mailpile/www/jinjaextensions.py:386
 msgid ""
-"Watch out, the digital signature was made with a key that has been revoked - "
-"this is not a good thing"
-msgstr ""
-"Hapni sytë, nënshkrimi dixhital qe bërë me një kyç që është shfuqizuar - kjo "
-"s’është gjë e mirë"
+"Watch out, the digital signature was made with a key that has been revoked -"
+" this is not a good thing"
+msgstr "Hapni sytë, nënshkrimi dixhital qe bërë me një kyç që është shfuqizuar - kjo s’është gjë e mirë"
 
 #: mailpile/www/jinjaextensions.py:391
 msgid "Mixed Revoked"
@@ -5767,9 +5659,7 @@ msgstr "Përzierë Me Pjesë të Shfuqizuar"
 msgid ""
 "Watch out, parts of this message were digitally signed with a key that has "
 "been revoked"
-msgstr ""
-"Hapni sytë, pjesë të këtij mesazhi qenë nënshkruar në mënyrë dixhitale me "
-"një kyç që është shfuqizuar"
+msgstr "Hapni sytë, pjesë të këtij mesazhi qenë nënshkruar në mënyrë dixhitale me një kyç që është shfuqizuar"
 
 #: mailpile/www/jinjaextensions.py:397
 msgid "Expired"
@@ -5784,17 +5674,14 @@ msgid "Mixed Expired"
 msgstr "Përzierë Me Pjesë të Skaduar"
 
 #: mailpile/www/jinjaextensions.py:403
-msgid "Parts of this message have a digital signature made with an expired key"
-msgstr ""
-"Pjesë të këtij mesazhi kanë një nënshkrim dixhital të bërë me një kyç të "
-"skaduar"
+msgid ""
+"Parts of this message have a digital signature made with an expired key"
+msgstr "Pjesë të këtij mesazhi kanë një nënshkrim dixhital të bërë me një kyç të skaduar"
 
 #: mailpile/www/jinjaextensions.py:409
 msgid ""
 "The digital signature was made with an unknown key, so we can not verify it"
-msgstr ""
-"Nënshkrimi dixhital është bërë me një kyç të panjohur, ndaj s’mund ta "
-"verifikojmë"
+msgstr "Nënshkrimi dixhital është bërë me një kyç të panjohur, ndaj s’mund ta verifikojmë"
 
 #: mailpile/www/jinjaextensions.py:414
 msgid "Mixed Unknown"
@@ -5802,11 +5689,9 @@ msgstr "Përzierë Me Pjesë të Panjohur"
 
 #: mailpile/www/jinjaextensions.py:415
 msgid ""
-"Parts of this message have a signature made with an unknown key which we can "
-"not verify"
-msgstr ""
-"Pjesë të këtij mesazhi kanë një nënshkrim të bërë me një kyç të panjohur të "
-"cilin s’mund ta verifikojmë"
+"Parts of this message have a signature made with an unknown key which we can"
+" not verify"
+msgstr "Pjesë të këtij mesazhi kanë një nënshkrim të bërë me një kyç të panjohur të cilin s’mund ta verifikojmë"
 
 #: mailpile/www/jinjaextensions.py:420
 msgid "Changed"
@@ -5824,9 +5709,7 @@ msgstr "Përzierë Me Pjesë të Ndryshuar"
 msgid ""
 "Parts of this message have a digital signature that was made with an "
 "unexpected key. Be careful!"
-msgstr ""
-"Pjesë të këtij mesazhi kanë një nënshkrim dixhital të bërë me një kyç të "
-"papritur. Hapni sytë!"
+msgstr "Pjesë të këtij mesazhi kanë një nënshkrim dixhital të bërë me një kyç të papritur. Hapni sytë!"
 
 #: mailpile/www/jinjaextensions.py:432
 msgid "Unverified"
@@ -5834,8 +5717,7 @@ msgstr "I paverifikuar"
 
 #: mailpile/www/jinjaextensions.py:433
 msgid "The signature was good but it came from a key that is not verified yet"
-msgstr ""
-"Nënshkrimi është i mirë, por ka ardhur nga një kyç që s’është verifikuar ende"
+msgstr "Nënshkrimi është i mirë, por ka ardhur nga një kyç që s’është verifikuar ende"
 
 #: mailpile/www/jinjaextensions.py:438
 msgid "Mixed Unverified"
@@ -5854,9 +5736,7 @@ msgstr "I nënshkruar"
 msgid ""
 "The digital signature is valid and was made with a key we have seen before. "
 "Looks good!"
-msgstr ""
-"Nënshkrimi dixhital është bërë me një kyç që e kemi parë edhe më herët. "
-"Duket në rregull!"
+msgstr "Nënshkrimi dixhital është bërë me një kyç që e kemi parë edhe më herët. Duket në rregull!"
 
 #: mailpile/www/jinjaextensions.py:449
 msgid "Mixed Signed"
@@ -5866,9 +5746,7 @@ msgstr "Përzierë Me Pjesë të NënshkruarShfuqizuar"
 msgid ""
 "Parts of the message have a good digital signature, made with a key we have "
 "seen before."
-msgstr ""
-"Pjesë të këtij mesazhi kanë një nënshkrim dixhital të mirë, bërë me një kyç "
-"të cilin e kemi parë më parë."
+msgstr "Pjesë të këtij mesazhi kanë një nënshkrim dixhital të mirë, bërë me një kyç të cilin e kemi parë më parë."
 
 #: mailpile/www/jinjaextensions.py:455
 msgid "Verified"
@@ -5884,9 +5762,7 @@ msgstr "Përzierë Me Pjesë të Verifikuar"
 
 #: mailpile/www/jinjaextensions.py:461
 msgid "Parts of the message have a verified signature, but other parts do not"
-msgstr ""
-"Disa pjesë të mesazhit kanë nënshkrim të verifikuar, disa pjesë të tjera nuk "
-"kanë"
+msgstr "Disa pjesë të mesazhit kanë nënshkrim të verifikuar, disa pjesë të tjera nuk kanë"
 
 #: mailpile/www/jinjaextensions.py:498
 msgid "There is some unknown thing wrong with this encryption"
@@ -5900,9 +5776,7 @@ msgstr "Jo i Fshehtëzuar"
 msgid ""
 "This content was not encrypted. It could have been intercepted and read by "
 "an unauthorized party"
-msgstr ""
-"Kjo lëndë nuk qe i fshehtëzuar. Mund të jetë kapur dhe lexuar nga palë të pa-"
-"autorizuara"
+msgstr "Kjo lëndë nuk qe i fshehtëzuar. Mund të jetë kapur dhe lexuar nga palë të pa-autorizuara"
 
 #: mailpile/www/jinjaextensions.py:509
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:258
@@ -5918,10 +5792,9 @@ msgid "Mixed Encrypted"
 msgstr "Përzierë Me Pjesë të Fshehtëzuar"
 
 #: mailpile/www/jinjaextensions.py:515
-msgid "Part of this message were encrypted, but other parts were not encrypted"
-msgstr ""
-"Disa pjesë të këtij mesazhi qenë fshehtëzuar, por disa pjesë të tjera nuk "
-"kanë qenë fshehtëzuar"
+msgid ""
+"Part of this message were encrypted, but other parts were not encrypted"
+msgstr "Disa pjesë të këtij mesazhi qenë fshehtëzuar, por disa pjesë të tjera nuk kanë qenë fshehtëzuar"
 
 #: mailpile/www/jinjaextensions.py:520
 msgid "Locked Key"
@@ -5930,9 +5803,7 @@ msgstr "Kyç i Kyçur"
 #: mailpile/www/jinjaextensions.py:521
 msgid ""
 "You have the encryption key to decrypt this, but the key itself is locked."
-msgstr ""
-"E keni kyçin e fshehtëzimeve për ta shfshehtëzuar këtë, por kyçi vetë është "
-"i kyçur."
+msgstr "E keni kyçin e fshehtëzimeve për ta shfshehtëzuar këtë, por kyçi vetë është i kyçur."
 
 #: mailpile/www/jinjaextensions.py:526
 msgid "Mixed Locked Key"
@@ -5942,9 +5813,7 @@ msgstr "Përzierë Me Kyç të Kyçur"
 msgid ""
 "Parts of the message could not be decrypted because your encryption key is "
 "locked."
-msgstr ""
-"Pjesë të mesazhit s’mund të shfshehtëzohen dot, ngaqë kyçi juaj i "
-"fshehtëzimeve është i kyçur."
+msgstr "Pjesë të mesazhit s’mund të shfshehtëzohen dot, ngaqë kyçi juaj i fshehtëzimeve është i kyçur."
 
 #: mailpile/www/jinjaextensions.py:532
 msgid "Missing Key"
@@ -5954,9 +5823,7 @@ msgstr "Mungon Kyç"
 msgid ""
 "You don't have the encryption key to decrypt this, perhaps it was encrypted "
 "to an old key you don't have anymore?"
-msgstr ""
-"Nuk keni kyçin e fshehtëzimeve për shfshehtëzimin e kësaj, ndoshta qe "
-"fshehtëzuar me një kyç të vjetër që s’e keni më?"
+msgstr "Nuk keni kyçin e fshehtëzimeve për shfshehtëzimin e kësaj, ndoshta qe fshehtëzuar me një kyç të vjetër që s’e keni më?"
 
 #: mailpile/www/jinjaextensions.py:538
 msgid "Mixed Missing Key"
@@ -5966,9 +5833,7 @@ msgstr "Përzierë Me Ky të Mangët"
 msgid ""
 "Parts of the message could not be decrypted because you are missing the "
 "private key. Perhaps it was encrypted to an old key you don't have anymore?"
-msgstr ""
-"Pjesë të mesazhit s’u shfshehtëzuan dot, ngaqë ju mungon kyçi privat. "
-"Ndoshta qe fshehtëzuar me një kyç të vjetër që s’e keni më?"
+msgstr "Pjesë të mesazhit s’u shfshehtëzuan dot, ngaqë ju mungon kyçi privat. Ndoshta qe fshehtëzuar me një kyç të vjetër që s’e keni më?"
 
 #: mailpile/www/jinjaextensions.py:546
 msgid "We failed to decrypt and are unsure why."
@@ -5976,9 +5841,7 @@ msgstr "Dështuam ta shfshehtëzojmë dhe s’jemi të sigurt për arsyen."
 
 #: mailpile/www/jinjaextensions.py:551
 msgid "We failed to decrypt parts of this message and are unsure why"
-msgstr ""
-"Dështuam të shfshehtëzojmë pjesë të këtij mesazhi dhe s’jemi të sigurt për "
-"arsyen"
+msgstr "Dështuam të shfshehtëzojmë pjesë të këtij mesazhi dhe s’jemi të sigurt për arsyen"
 
 #: mailpile/www/jinjaextensions.py:584 mailpile/www/jinjaextensions.py:589
 msgid "Automatic"
@@ -5988,9 +5851,7 @@ msgstr "Automatike"
 msgid ""
 "Mailpile will intelligently try to guess and suggest the best security with "
 "the given contact"
-msgstr ""
-"Mailpile-i do të provojë me mençuri të hamendësojë dhe sugjerojë sigurinë më "
-"të mirë lidhur me këtë kontakt"
+msgstr "Mailpile-i do të provojë me mençuri të hamendësojë dhe sugjerojë sigurinë më të mirë lidhur me këtë kontakt"
 
 #: mailpile/www/jinjaextensions.py:593
 msgid "Don't Sign or Encrypt"
@@ -5998,9 +5859,7 @@ msgstr "Mos e Nënshkruaj ose Fshehtëzo"
 
 #: mailpile/www/jinjaextensions.py:594
 msgid "Messages will not be encrypted nor signed by your encryption key"
-msgstr ""
-"Mesazhet s’do të fshehtëzohen, dhe as nënshkruhen me kyçin tuaj të "
-"fshehtëzimeve"
+msgstr "Mesazhet s’do të fshehtëzohen, dhe as nënshkruhen me kyçin tuaj të fshehtëzimeve"
 
 #: mailpile/www/jinjaextensions.py:596
 msgid "Only Sign"
@@ -6016,9 +5875,7 @@ msgstr "Vetëm Fshehtëzoji"
 
 #: mailpile/www/jinjaextensions.py:600
 msgid "Messages will only be encrypted but not signed by your encryption key"
-msgstr ""
-"Mesazhet vetëm do të fshehtëzohen, por jo nënshkruhen me kyçin tuaj të "
-"fshehtëzimeve"
+msgstr "Mesazhet vetëm do të fshehtëzohen, por jo nënshkruhen me kyçin tuaj të fshehtëzimeve"
 
 #: mailpile/www/jinjaextensions.py:602
 msgid "Always Encrypt & Sign"
@@ -6026,16 +5883,13 @@ msgstr "Fshehtëzo & Nënshkruaj Përherë"
 
 #: mailpile/www/jinjaextensions.py:603
 msgid "Messages will be both encrypted and signed by your encryption key"
-msgstr ""
-"Mesazhet do të fshehtëzohen dhe nënshkruhen me kyçin tuaj të fshehtëzimeve"
+msgstr "Mesazhet do të fshehtëzohen dhe nënshkruhen me kyçin tuaj të fshehtëzimeve"
 
 #: mailpile/www/jinjaextensions.py:668
 msgid ""
 "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
 "Are you sure you want to continue?\\n"
-msgstr ""
-"Ndihmëz sigurie nga Mailpile: \\n\\n  Oh! Ky sajt mund të jetë i rrezikshëm!"
-"\\n  Jeni i sigurt se doni të vazhdohet?\\n"
+msgstr "Ndihmëz sigurie nga Mailpile: \\n\\n  Oh! Ky sajt mund të jetë i rrezikshëm!\\n  Jeni i sigurt se doni të vazhdohet?\\n"
 
 #: mailpile/www/jinjaextensions.py:824 mailpile/www/jinjaextensions.py:832
 msgid "No Subject"
@@ -6102,9 +5956,8 @@ msgid "Displayed raw metadata"
 msgstr "U shfaqën tejtëdhëna të papërpunuara"
 
 #: shared-data/contrib/hacks/hacks.py:194
-#, fuzzy
 msgid "Edited raw metadata"
-msgstr "U shfaqën tejtëdhëna të papërpunuara"
+msgstr "Përpunoni tejtëdhëna të papërpunuara"
 
 #: shared-data/contrib/hacks/hacks.py:213
 msgid "Displayed message keywords"
@@ -6129,14 +5982,11 @@ msgstr "Mailpile ka shkurtore tastiere!"
 
 #: shared-data/contrib/hints/hints.py:53
 msgid "Learn how to get the most out of Mailpile's spam filter"
-msgstr ""
-"Mësoni si të përfitoni maksimumin nga filtri i Mailpile-it për të "
-"padëshiruarit"
+msgstr "Mësoni si të përfitoni maksimumin nga filtri i Mailpile-it për të padëshiruarit"
 
 #: shared-data/contrib/hints/hints.py:58
 msgid "Rearrange your sidebar to organize how you see your e-mail"
-msgstr ""
-"Risistemoni anështyllën tuaj që të ujdisni se si i shihni email-et tuaj"
+msgstr "Risistemoni anështyllën tuaj që të ujdisni se si i shihni email-et tuaj"
 
 #: shared-data/contrib/hints/hints.py:64
 msgid "Learn how dragging and dropping tags works"
@@ -6211,16 +6061,15 @@ msgid "Note"
 msgstr "Shënim"
 
 #: shared-data/default-theme/html/auth/shared.html:47
-msgid "Mailpile is still running and processing your e-mail in the background."
+msgid ""
+"Mailpile is still running and processing your e-mail in the background."
 msgstr "Mailpile-i ende po xhiron dhe përpunon në prapaskenë email-et tuaj."
 
 #: shared-data/default-theme/html/auth/shared.html:48
 msgid ""
 "To disable Mailpile completely, press the Shutdown button on the settings "
 "page or in the desktop application window."
-msgstr ""
-"Për ta çaktivizuar plotësisht Mailpile-in, shtypni butoni Shutdown te faqja "
-"e rregullimeve ose te dritarja e aplikacionit për desktop."
+msgstr "Për ta çaktivizuar plotësisht Mailpile-in, shtypni butoni Shutdown te faqja e rregullimeve ose te dritarja e aplikacionit për desktop."
 
 #: shared-data/default-theme/html/backup/restore/index.html:2
 #: shared-data/default-theme/html/backup/restore/index.html:24
@@ -6256,8 +6105,7 @@ msgstr "Mos rikthe kyçe fshehtëzimi GnuPG/PGP"
 
 #: shared-data/default-theme/html/backup/restore/index.html:46
 msgid "Keep default Operating System settings (override backup)"
-msgstr ""
-"Mbaj rregullime parazgjedhje të Sistemit Operativ (anashkalo kopjeruatje)"
+msgstr "Mbaj rregullime parazgjedhje të Sistemit Operativ (anashkalo kopjeruatje)"
 
 #: shared-data/default-theme/html/backup/restore/index.html:50
 msgid "Enter your Mailpile Password to restore this configuration."
@@ -6271,9 +6119,7 @@ msgstr "Riktheje"
 msgid ""
 "You can restore a previous Mailpile configuration (keys, tags, etc.), "
 "provided you have a Mailpile Backup Archive available."
-msgstr ""
-"Mund të riktheni një formësim të mëparshëm Mailpile (kyçe, etiekta, etj.), "
-"me kusht që të keni një Arkiv Kopjeruajtjesh Mailpile-i."
+msgstr "Mund të riktheni një formësim të mëparshëm Mailpile (kyçe, etiekta, etj.), me kusht që të keni një Arkiv Kopjeruajtjesh Mailpile-i."
 
 #: shared-data/default-theme/html/backup/restore/index.html:69
 msgid "Upload a Backup Archive"
@@ -6281,8 +6127,7 @@ msgstr "Ngarkoni një Arkiv Kopjeruajtjesh"
 
 #: shared-data/default-theme/html/backup/restore/index.html:79
 msgid "Please upload your Mailpile Backup Archive to continue."
-msgstr ""
-"Që të vazhdohet, ju lutemi, ngarkoni Arkivin tuaj Kopjeruajtjeje Mailpile-i."
+msgstr "Që të vazhdohet, ju lutemi, ngarkoni Arkivin tuaj Kopjeruajtjeje Mailpile-i."
 
 #: shared-data/default-theme/html/backup/restore/index.html:80
 msgid "It should have a name similar to: "
@@ -6318,9 +6163,7 @@ msgstr "Hap Dosjen Mëmë"
 
 #: shared-data/default-theme/html/browse/index.html:44
 msgid "Browse local or remote folders for mailboxes to add to your pile."
-msgstr ""
-"Shfletoni dosje vendore ose të largëta për kuti postare, që të shtohen tel "
-"togu juaj."
+msgstr "Shfletoni dosje vendore ose të largëta për kuti postare, që të shtohen tel togu juaj."
 
 #: shared-data/default-theme/html/browse/index.html:48
 msgid "These are mailboxes recognized by Mailpile."
@@ -6328,8 +6171,7 @@ msgstr "Këto janë kuti postare që Mailpile i njeh."
 
 #: shared-data/default-theme/html/browse/index.html:49
 msgid "Click to view mailbox contents or change settings."
-msgstr ""
-"Klikoni që të shihet lënda e kutisë postare ose që të ndryshoni rregullimet."
+msgstr "Klikoni që të shihet lënda e kutisë postare ose që të ndryshoni rregullimet."
 
 #: shared-data/default-theme/html/browse/index.html:97
 #: shared-data/default-theme/html/logs/layout.html:8
@@ -6365,9 +6207,7 @@ msgstr "S’u Gjetën Kontakte"
 msgid ""
 "Don't worry, it's ok. Mailpile will start to automatically create contacts "
 "whenever you send or reply to messages."
-msgstr ""
-"Mos u bëni merak, gjithçka në rregull. Mailpile-i do të fillojë të krijojë "
-"automatikisht kontakte sa herë që dërgoni ose u përgjigjeni mesazheve."
+msgstr "Mos u bëni merak, gjithçka në rregull. Mailpile-i do të fillojë të krijojë automatikisht kontakte sa herë që dërgoni ose u përgjigjeni mesazheve."
 
 #: shared-data/default-theme/html/contacts/index.html:60
 #: shared-data/default-theme/html/search/prev_more_next.html:15
@@ -6477,9 +6317,7 @@ msgstr "mesazhe kur komunikohet me"
 msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
-msgstr ""
-"S’keni kyçe fshehtëzimi për këtë kontakt. Që të mund të komunikoni në mënyrë "
-"të sigurt, ju duhen kyçe fshehtëzimi."
+msgstr "S’keni kyçe fshehtëzimi për këtë kontakt. Që të mund të komunikoni në mënyrë të sigurt, ju duhen kyçe fshehtëzimi."
 
 #: shared-data/default-theme/html/contacts/view/index.html:95
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -6557,23 +6395,17 @@ msgstr "E vlefshme nga {DATE1} deri më {DATE2}."
 msgid ""
 "If the certificate cannot be verified, then there is no guarantee you are "
 "communicating with the right server."
-msgstr ""
-"Nëse dëshmia s’verifikohet dot, atëherë s’ka garanci se po komunikoni me "
-"shërbyesin e duhur."
+msgstr "Nëse dëshmia s’verifikohet dot, atëherë s’ka garanci se po komunikoni me shërbyesin e duhur."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:105
 msgid "Your account details or e-mail may be at risk if you proceed."
-msgstr ""
-"Hollësitë e llogarisë tuaj ose email-i mund të jenë të rrezikuara, nëse "
-"vazhdoni."
+msgstr "Hollësitë e llogarisë tuaj ose email-i mund të jenë të rrezikuara, nëse vazhdoni."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:108
 msgid ""
 "Some servers deliberately use certificates that cannot be verified; in such "
 "cases adding a security exception should be safe."
-msgstr ""
-"Disa shërbyes përdorin qëllimisht dëshmi që s’mund të verifikohen; në raste "
-"të tilla, shtimi i një përjashtimi sigurie do të duhej të ishte i parrezik."
+msgstr "Disa shërbyes përdorin qëllimisht dëshmi që s’mund të verifikohen; në raste të tilla, shtimi i një përjashtimi sigurie do të duhej të ishte i parrezik."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:109
 msgid "Ask your e-mail server administrator to be sure."
@@ -6582,9 +6414,7 @@ msgstr "Për të qenë të sigurt, pyetni përgjegjësin e shërbyesit tuaj emai
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:117
 msgid ""
 "The information below could not be validated. It may be incorrect or forged."
-msgstr ""
-"Informacioni më poshtë s’u vleftësua dot. Mund të jetë i pasaktë ose i "
-"sajuar."
+msgstr "Informacioni më poshtë s’u vleftësua dot. Mund të jetë i pasaktë ose i sajuar."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:121
 msgid "Issued To"
@@ -6615,11 +6445,9 @@ msgstr "Data e sotme duket se është {D}. Është e saktë ora e sistemit?"
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:155
 msgid ""
-"If this certificate error is unsual, then adding a security exception is not "
-"recommended."
-msgstr ""
-"Nëse ky gabim dëshmie është i pazakontë, atëherë shtimi i një përjashtimi "
-"sigurie nuk këshillohet."
+"If this certificate error is unsual, then adding a security exception is not"
+" recommended."
+msgstr "Nëse ky gabim dëshmie është i pazakontë, atëherë shtimi i një përjashtimi sigurie nuk këshillohet."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:162
 msgid "Try Again Later"
@@ -6636,35 +6464,26 @@ msgstr "Dëshmi TLS"
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:211
 msgid ""
 "You can use this tool to examine the TLS certificates of remote servers."
-msgstr ""
-"Mund ta përdorni këtë mjet që të merrni në shqyrtim dëshmitë TLS të "
-"shërbyesve të largët."
+msgstr "Mund ta përdorni këtë mjet që të merrni në shqyrtim dëshmitë TLS të shërbyesve të largët."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:214
 msgid ""
 "TLS certificates are a form of digital identification, used to ensure you "
 "are communicating with the intended server and not an imposter."
-msgstr ""
-"Dëshmitë TLS janë një formë identifikimi dixhital, i përdorur për të "
-"siguruar se po komunikoni me shërbyesin e synuar dhe jo me një mashtrues."
+msgstr "Dëshmitë TLS janë një formë identifikimi dixhital, i përdorur për të siguruar se po komunikoni me shërbyesin e synuar dhe jo me një mashtrues."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:217
 msgid ""
 "If necessary, you can add security exceptions (TOFU: Trust on First Use) "
 "which will allow you to connect to a server even if it does not present a "
 "valid certificate."
-msgstr ""
-"Në qoftë e nevojshme, mund të shtoni përjashtime sigurie (TOFU: Trust on "
-"First Use) që do t’ju lejojnë të lidheni me një shërbyes edhe pse ky nuk "
-"paraqet një dëshmi të vlefshme."
+msgstr "Në qoftë e nevojshme, mund të shtoni përjashtime sigurie (TOFU: Trust on First Use) që do t’ju lejojnë të lidheni me një shërbyes edhe pse ky nuk paraqet një dëshmi të vlefshme."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:218
 msgid ""
-"When TOFU is in use, if the remote certificate ever changes the new one will "
-"be rejected until you add another exception."
-msgstr ""
-"Kur përdoret TOFU, nëse dëshmia e largët ndryshon, e reja do të hidhet "
-"poshtë deri sa të shtoni një tjetër përjashtim."
+"When TOFU is in use, if the remote certificate ever changes the new one will"
+" be rejected until you add another exception."
+msgstr "Kur përdoret TOFU, nëse dëshmia e largët ndryshon, e reja do të hidhet poshtë deri sa të shtoni një tjetër përjashtim."
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:234
 msgid "Known Certificates"
@@ -6698,9 +6517,7 @@ msgstr "Nuk Ekzistojnë Filtra"
 msgid ""
 "Filters are clever rules that automatically apply tags, sort and otherwise "
 "handle your messages."
-msgstr ""
-"Filtrat janë rregulla të mençur që vendosin automatikisht etiketa, renditin "
-"ose kryejnë veprime të tjera mbi mesazhet tuaja."
+msgstr "Filtrat janë rregulla të mençur që vendosin automatikisht etiketa, renditin ose kryejnë veprime të tjera mbi mesazhet tuaja."
 
 #: shared-data/default-theme/html/help/bottom.html:2
 msgid "Hopefully this tip helped."
@@ -6731,9 +6548,7 @@ msgstr "Kërkime Vetjake"
 msgid ""
 "Underneath the hood Mailpile is a high performance search engine that can "
 "answer complex questions."
-msgstr ""
-"Nën zhguallin e Mailpile-it gjendet një motor kërkimesh i fuqishëm që mund "
-"të japë përgjigje për pyetje të ndërlikuara."
+msgstr "Nën zhguallin e Mailpile-it gjendet një motor kërkimesh i fuqishëm që mund të japë përgjigje për pyetje të ndërlikuara."
 
 #: shared-data/default-theme/html/help/index.html:12
 #: shared-data/default-theme/html/jsapi/templates/modal-display-keybindings.html:5
@@ -6742,11 +6557,9 @@ msgstr "Shkurtore Tastiere"
 
 #: shared-data/default-theme/html/help/index.html:13
 msgid ""
-"Here will be a list of keyboard shortcuts / keybindings for all you cool cat "
-"power users out there!"
-msgstr ""
-"Këtu do të gjeni një listë shkurtoresh tastiere / përshoqërimesh tastesh, "
-"për krejt ju përdoruesit e thelluar qejflij të tastierës!"
+"Here will be a list of keyboard shortcuts / keybindings for all you cool cat"
+" power users out there!"
+msgstr "Këtu do të gjeni një listë shkurtoresh tastiere / përshoqërimesh tastesh, për krejt ju përdoruesit e thelluar qejflij të tastierës!"
 
 #: shared-data/default-theme/html/help/index.html:15
 msgid "Encryption & Security"
@@ -6754,13 +6567,10 @@ msgstr "Fshehtëzim & Siguri"
 
 #: shared-data/default-theme/html/help/index.html:16
 msgid ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you how to use your Mailpile in the "
-"most secure way possible."
-msgstr ""
-"E keni për herë të parë me krejt këto terma, si fshehtëzim dhe kyçe? Mos u "
-"tutni. Do të bëjmë ç’të mundeni për t’ju ndihmuar të shpjegohen dhe të "
-"mësoni si ta përdorni Mailpile-in në rrugën më të sigurt të mundshme."
+"Are you new to all these terms like encryption and keys? Don't fret. We will"
+" do our best to help explain and educate you how to use your Mailpile in the"
+" most secure way possible."
+msgstr "E keni për herë të parë me krejt këto terma, si fshehtëzim dhe kyçe? Mos u tutni. Do të bëjmë ç’të mundeni për t’ju ndihmuar të shpjegohen dhe të mësoni si ta përdorni Mailpile-in në rrugën më të sigurt të mundshme."
 
 #: shared-data/default-theme/html/help/index.html:20
 msgid "Gmail's 2 Step App Passwords"
@@ -6936,9 +6746,7 @@ msgstr "Mailpile-i i mbaroi koha…"
 msgid ""
 "There is still an attachment upload in progress. Are you sure you want to "
 "cancel the upload?"
-msgstr ""
-"Ka ende në kryerje e sipër një ngarkim bashkëngjitjeje. Jeni i sigurt se "
-"doni të anulohet ngarkimi?"
+msgstr "Ka ende në kryerje e sipër një ngarkim bashkëngjitjeje. Jeni i sigurt se doni të anulohet ngarkimi?"
 
 #: shared-data/default-theme/html/jsapi/compose/attachments.js:158
 msgid "is"
@@ -6992,33 +6800,25 @@ msgstr "Gabim hyrjeje te kyçi juaj i fshehtëzimeve"
 msgid ""
 "This message will be verifiable to recipients who have your encryption key. "
 "They will know it actually came from you :)"
-msgstr ""
-"Ky mesazh do të jetë i verifikueshëm për marrës që kanë kyçin tuaj të "
-"fshehtëzimit. Ata do ta marrin vesh që ka ardhur vërtet nga ju :)"
+msgstr "Ky mesazh do të jetë i verifikueshëm për marrës që kanë kyçin tuaj të fshehtëzimit. Ata do ta marrin vesh që ka ardhur vërtet nga ju :)"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:219
 msgid ""
 "This message will not be verifiable, recipients will have no way of knowing "
 "it actually came from you."
-msgstr ""
-"Ky mesazh s’do të jetë i verifikueshëm, marrësi s’do të kenë ndonjë rrugë të "
-"marrin vesh që ka ardhur vërtet nga ju."
+msgstr "Ky mesazh s’do të jetë i verifikueshëm, marrësi s’do të kenë ndonjë rrugë të marrin vesh që ka ardhur vërtet nga ju."
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:256
 msgid ""
 "This message and attachments will be encrypted. The recipients & subject "
 "(metadata) will not"
-msgstr ""
-"Ky mesazh dhe bashkëngjitjet do të fshehtëzohen. Marrësit & subjekti "
-"(tejtëdhënat) nuk do të fshehtëzohen"
+msgstr "Ky mesazh dhe bashkëngjitjet do të fshehtëzohen. Marrësit & subjekti (tejtëdhënat) nuk do të fshehtëzohen"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:263
 msgid ""
 "This message cannot be encrypted because you do not have keys for one or "
 "more recipients"
-msgstr ""
-"Ky mesazh s’do të fshehtëzohet, ngaqë s’keni kyçet për një ose më tepër "
-"marrës"
+msgstr "Ky mesazh s’do të fshehtëzohet, ngaqë s’keni kyçet për një ose më tepër marrës"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:265
 msgid "Can Not Encrypt"
@@ -7066,9 +6866,8 @@ msgid "No Email"
 msgstr "S’ka Email"
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:147
-#, fuzzy
 msgid "Searching"
-msgstr "Kërko"
+msgstr "Kërkim"
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:83
 msgid "is too large:"
@@ -7125,15 +6924,11 @@ msgstr "Shpresoj të mos ju duhet të kapni avionin apo gjë tjetër"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:10
 msgid "Copying mail. Put your arms above your head and whistle La Cucaracha"
-msgstr ""
-"Po kopjohet postë. Lidhni duart kryq pas koke dhe fishkëlleni “Do marr "
-"çiften, do dal për gjah”"
+msgstr "Po kopjohet postë. Lidhni duart kryq pas koke dhe fishkëlleni “Do marr çiften, do dal për gjah”"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:11
 msgid "Making a copy of your mail. Putting it in your inbox, all comfy like"
-msgstr ""
-"Po bëhet një kopje e postës tuaj, Po vendoset në kutinë tuaj postare, "
-"gjithçka në rehati"
+msgstr "Po bëhet një kopje e postës tuaj, Po vendoset në kutinë tuaj postare, gjithçka në rehati"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:14
 msgid "Damn kids."
@@ -7217,9 +7012,7 @@ msgstr "Kjo është bota jonë tani… bota e elektroni dhe e çelësit"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:34
 msgid "Fedexing all your spam to online advertisers..."
-msgstr ""
-"Po u federohen krejt mesazhet tuaj të padëshiruar dërguesve të reklamave "
-"internetore…"
+msgstr "Po u federohen krejt mesazhet tuaj të padëshiruar dërguesve të reklamave internetore…"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:35
 msgid "Becoming self-aware"
@@ -7255,32 +7048,25 @@ msgstr "Ky shërbyes ushqehet me energji nga një limon dhe dy elektroda"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:46
 msgid "Mailpile has an advanced tagging system & search engine at its core"
-msgstr ""
-"Në bazën e Mailpile-it gjendet një sistem i përparuar etiketimesh & motor "
-"kërkimesh"
+msgstr "Në bazën e Mailpile-it gjendet një sistem i përparuar etiketimesh & motor kërkimesh"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:47
 msgid ""
 "Do you really need to keep all these Amazon Prime shipping confirmations?"
-msgstr ""
-"Keni vërtet nevojë t’i ruani tërë këto ripohime dërgesash nga Amazon Prime?"
+msgstr "Keni vërtet nevojë t’i ruani tërë këto ripohime dërgesash nga Amazon Prime?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:48
-msgid "I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
-msgstr ""
-"Jam goxha i sigurt se email-i për shitje me ulje çmimesh nga ThinkGeeks për "
-"Kërshëndellat e 2011-s mund të fshihet."
+msgid ""
+"I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
+msgstr "Jam goxha i sigurt se email-i për shitje me ulje çmimesh nga ThinkGeeks për Kërshëndellat e 2011-s mund të fshihet."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:49
 msgid "Do you really need an e-mail to know when you have been retweeted?"
-msgstr ""
-"Keni vërtet nevojë për një email të dini se kur është ricicëruar diçka e "
-"juaja?"
+msgstr "Keni vërtet nevojë për një email të dini se kur është ricicëruar diçka e juaja?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:50
 msgid "E-mail is the largest internet based social network on the planet"
-msgstr ""
-"Email-i është rrjeti shoqëror më i madh i planetit, i bazuar në internet"
+msgstr "Email-i është rrjeti shoqëror më i madh i planetit, i bazuar në internet"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:51
 msgid "Which other technology do you use that is 40 years old?"
@@ -7290,31 +7076,23 @@ msgstr "Ç’teknologji tjetër përdorni dhe është 40 vjeçe?"
 msgid ""
 "There are 2.5 billion e-mail users worldwide, that is double the amount of "
 "Facebook users!"
-msgstr ""
-"Në botë ka 2.5 miliardë përdorues të email-it, kjo është dyfish sasia e "
-"përdoruesve të Facebook-ut!"
+msgstr "Në botë ka 2.5 miliardë përdorues të email-it, kjo është dyfish sasia e përdoruesve të Facebook-ut!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:53
 msgid "Use Mailpile Tags to better organize and search your mail"
-msgstr ""
-"Përdorni Etiketa Mailpile që të sistemoni më mirë dhe të bëni kërkime më të "
-"efektshme te posta juaj"
+msgstr "Përdorni Etiketa Mailpile që të sistemoni më mirë dhe të bëni kërkime më të efektshme te posta juaj"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:54
 msgid ""
 "Remember getting your first e-mail address? Remember how it felt like "
 "something private?"
-msgstr ""
-"E mbani kur patët adresën tuaj të parë email? E mbani mend se si ju jepte "
-"ndjesinë e diçkaje private?"
+msgstr "E mbani kur patët adresën tuaj të parë email? E mbani mend se si ju jepte ndjesinë e diçkaje private?"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:55
 msgid ""
 "E-mail is decentralized by design, this means no one company or government "
 "owns it!"
-msgstr ""
-"Email-i është i decentralizuar, nga vetë konceptimi i tij, kjo do të thotë "
-"që s’është pronë e ndonjë kompanie apo qeverie!"
+msgstr "Email-i është i decentralizuar, nga vetë konceptimi i tij, kjo do të thotë që s’është pronë e ndonjë kompanie apo qeverie!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:56
 msgid "Over 100 trillion e-mails are sent per year, wow!"
@@ -7323,17 +7101,13 @@ msgstr "Çdo vit dërgohen mbi 100 trilion email-e!"
 #: shared-data/default-theme/html/jsapi/global/silly.js:57
 msgid ""
 "E-mail is the most widely used communication protocol ever created by humans"
-msgstr ""
-"Email-i është protokolli më i përdorur për komunikime që ka krijuar "
-"ndonjëherë njeriu"
+msgstr "Email-i është protokolli më i përdorur për komunikime që ka krijuar ndonjëherë njeriu"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:58
 msgid ""
 "E-mail uses an open standard agreed upon by the entire world & owned by no "
 "one"
-msgstr ""
-"Email-i përdor një standard të hapur të pranuar nga e tërë bota & dhe pronë "
-"e askujt"
+msgstr "Email-i përdor një standard të hapur të pranuar nga e tërë bota & dhe pronë e askujt"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:61
 msgid "BCC-ing ALL THE SPIES!"
@@ -7347,40 +7121,29 @@ msgstr "Mjaft qeveritë të fuqishme kryejnë survejim masiv kapilar"
 msgid ""
 "Most e-mail can be read by network operators as it travels through the "
 "internet"
-msgstr ""
-"Shumica e email-eve mund të lexohen nga operatorë të rrjetit, teksa "
-"udhëtojnë nëpër internet"
+msgstr "Shumica e email-eve mund të lexohen nga operatorë të rrjetit, teksa udhëtojnë nëpër internet"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:64
 msgid ""
 "Encryption ensures that your e-mails are only read by the intended recipient"
-msgstr ""
-"Fshehtëzimi garanton që email-et tuaj lexohen vetëm nga marrësi i synuar"
+msgstr "Fshehtëzimi garanton që email-et tuaj lexohen vetëm nga marrësi i synuar"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:65
 msgid ""
 "Unencrypted e-mail is more like sending a postcard than sending a letter"
-msgstr ""
-"Email-i i pafshehtëzuar ngjan më tepër me dërgimin e një kartoline, se sa "
-"dërgimin e një letre"
+msgstr "Email-i i pafshehtëzuar ngjan më tepër me dërgimin e një kartoline, se sa dërgimin e një letre"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:66
 msgid "Mailpile uses OpenPGP to encrypt and decrypt your messages securely"
-msgstr ""
-"Mailpile-i përdor OpenPGP për të fshehtëzuar dhe shfshehtëzuar mesazhet tuaj "
-"në mënyrë të sigurt"
+msgstr "Mailpile-i përdor OpenPGP për të fshehtëzuar dhe shfshehtëzuar mesazhet tuaj në mënyrë të sigurt"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:67
 msgid "All of your config settings & passwords are encrypted with AES-256"
-msgstr ""
-"Krejt rregullimet tuaja për formësimin & fjalëkalimet fshehtëzohen sipas "
-"protokollit AES-256"
+msgstr "Krejt rregullimet tuaja për formësimin & fjalëkalimet fshehtëzohen sipas protokollit AES-256"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:68
 msgid "Encrypting e-mails means your communication actually stays private"
-msgstr ""
-"Fshehtëzimi i email-eve do të thotë që komunikimi juaj mbetet faktikisht "
-"privat"
+msgstr "Fshehtëzimi i email-eve do të thotë që komunikimi juaj mbetet faktikisht privat"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:69
 msgid "The more encrypted e-mail you send, the better!"
@@ -7388,19 +7151,16 @@ msgstr "Sa më shumë email të fshehtëzuar të dërgoni, aq më mirë!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:70
 msgid "Make sure you print or save your keys & passwords somewhere secure"
-msgstr ""
-"Sigurohuni që i shtypni ose ruani kyçet & fjalëkalimet tuaj diku të "
-"parrezikuar"
+msgstr "Sigurohuni që i shtypni ose ruani kyçet & fjalëkalimet tuaj diku të parrezikuar"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:71
 msgid "Mailpile by default encrypts your search index!"
 msgstr "Mailpile-i, si parazgjedhje, e fshehtëzon treguesin tuaj të kërkimeve!"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:72
-msgid "The most common e-mail password is 123456, hopefully yours is different"
-msgstr ""
-"Fjalëkalimi më i rëndomtë për email është 123456, shpresojmë që i juaji të "
-"jetë ndryshe"
+msgid ""
+"The most common e-mail password is 123456, hopefully yours is different"
+msgstr "Fjalëkalimi më i rëndomtë për email është 123456, shpresojmë që i juaji të jetë ndryshe"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:75
 msgid "Good things come to those who wait"
@@ -7412,19 +7172,15 @@ msgstr "Krijoni Software të Lirë dhe jini i lumtur"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:77
 msgid "Much of Mailpile was built in cafes in Reykjavík, Iceland"
-msgstr ""
-"Një pjesë e madhe e Mailpile-it u krijua nëpër kafe në Reikjavik, Islandë"
+msgstr "Një pjesë e madhe e Mailpile-it u krijua nëpër kafe në Reikjavik, Islandë"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:78
 msgid "Many Icelanders believe in elves and magical hidden people"
-msgstr ""
-"Mjaft nga islandezët besojnë në zana dhe persona magjikë që rrinë fshehur"
+msgstr "Mjaft nga islandezët besojnë në zana dhe persona magjikë që rrinë fshehur"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:79
 msgid "The founders of Mailpile first met in a public hot tub in Reykjavík"
-msgstr ""
-"Themeluesit e Mailpile-it, për herë të parë u takuan në një vaskë publike në "
-"Reikjavik"
+msgstr "Themeluesit e Mailpile-it, për herë të parë u takuan në një vaskë publike në Reikjavik"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:80
 msgid "We like volcanos, do you like volcanos?"
@@ -7478,15 +7234,12 @@ msgstr "Shkoni vini xhezven në zjarr, kjo mund të zgjasë ca"
 msgid ""
 "Go get a cup of tea and some biscuits. This will take approximately 4 "
 "custard creams worth of time"
-msgstr ""
-"Shkoni e merrni një kupë çaj dhe ca biskota. Kjo do të marrë afërsisht kohë "
-"sa për 4 biskota"
+msgstr "Shkoni e merrni një kupë çaj dhe ca biskota. Kjo do të marrë afërsisht kohë sa për 4 biskota"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:93
-msgid "Did you know humans share 50 percent of their DNA with a banana? Freaky"
-msgstr ""
-"E dini që qeniet njerëzore kanë 50 përqind të DNA-së të përbashkët me "
-"bananet? Të luash mendsh"
+msgid ""
+"Did you know humans share 50 percent of their DNA with a banana? Freaky"
+msgstr "E dini që qeniet njerëzore kanë 50 përqind të DNA-së të përbashkët me bananet? Të luash mendsh"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:94
 msgid "Estimating chance of astroid hitting Earth"
@@ -7534,10 +7287,9 @@ msgstr "Aam, am, kjo qe e shijshme"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:105
 msgid ""
-"Hey, there is some Nigerian prince here who wants to give you twenty million "
-"dollars..."
-msgstr ""
-"Hej, paska një princ nigerian që dashka t’ju japë njëzet milionë dollarë…"
+"Hey, there is some Nigerian prince here who wants to give you twenty million"
+" dollars..."
+msgstr "Hej, paska një princ nigerian që dashka t’ju japë njëzet milionë dollarë…"
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:106
 msgid "How rude!"
@@ -7620,10 +7372,7 @@ msgid ""
 "This message references images or other content from the web. Downloading "
 "and displaying these images may notify the sender that you have read the "
 "mail."
-msgstr ""
-"Ky mesazh përmban lidhje për te figura apo tjetër lëndë në web. Shkarkimi "
-"dhe shfaqja e këtyre figurave mund të sjellë njoftimin e dërguesit se e keni "
-"lexuar email-in."
+msgstr "Ky mesazh përmban lidhje për te figura apo tjetër lëndë në web. Shkarkimi dhe shfaqja e këtyre figurave mund të sjellë njoftimin e dërguesit se e keni lexuar email-in."
 
 #: shared-data/default-theme/html/jsapi/message/html-sandbox.js:282
 msgid "Okay, display the images"
@@ -7654,9 +7403,8 @@ msgstr "S’u mor dot mesazhi"
 
 #: shared-data/default-theme/html/jsapi/search/bulk_actions.js:80
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:13
-#, fuzzy
 msgid "Search for Similar E-mail"
-msgstr "Kërko për email nga:"
+msgstr "Kërko për Email të Ngjashëm"
 
 #: shared-data/default-theme/html/jsapi/search/ui.js:134
 msgid "No Messages Selected"
@@ -7702,8 +7450,7 @@ msgstr "Përgjigje me Citim"
 #: shared-data/default-theme/html/jsapi/templates/modal-compose-quoted-reply.html:12
 msgid ""
 "Would you like to disable quoted replies in all the messages you compose?"
-msgstr ""
-"Do të donit të çaktivizohen përgjigjet me citim në krejt mesazhet që hartoni?"
+msgstr "Do të donit të çaktivizohen përgjigjet me citim në krejt mesazhet që hartoni?"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-compose-quoted-reply.html:13
 msgid "Disable Quoted Replies"
@@ -7738,15 +7485,11 @@ msgstr "Ju vetë!"
 msgid ""
 "You cannot send encrypted or signed mail without an encryption key of your "
 "own."
-msgstr ""
-"Pa një kyç fshehtëzimi tuajin, s’mund të dërgoni postë të fshehtëzuar ose të "
-"nënshkruar."
+msgstr "Pa një kyç fshehtëzimi tuajin, s’mund të dërgoni postë të fshehtëzuar ose të nënshkruar."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:54
 msgid "Check your account settings or send using a different profile."
-msgstr ""
-"Kontrolloni rregullimet e llogarisë tuaj ose dërgojeni duke përdorur një "
-"tjetër profil."
+msgstr "Kontrolloni rregullimet e llogarisë tuaj ose dërgojeni duke përdorur një tjetër profil."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:62
 #: shared-data/default-theme/html/partials/hidden.html:59
@@ -7768,9 +7511,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:93
-#, fuzzy
 msgid "Search All Sources"
-msgstr "Kërko për Kyç"
+msgstr "Kërko Në Krejt Burimet"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:98
 #: shared-data/default-theme/html/partials/hidden.html:151
@@ -7814,59 +7556,53 @@ msgid "From"
 msgstr "Nga"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:37
-#, fuzzy
 msgid "Mailing list"
-msgstr "Postë: %s"
+msgstr "Listë postimesh"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:42
-#, fuzzy
 msgid "E-mail client"
-msgstr "Llogari email"
+msgstr "Klient email"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:46
-#, fuzzy
 msgid "Message structure"
-msgstr "Mesazhe"
+msgstr "Strukturë mesazhi"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:50
-#, fuzzy
 msgid "Sender fingerprint"
-msgstr "Shenja gishtash Kyçi"
+msgstr "Shenja gishtash të dërguesit"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
 msgid "Similar dates"
-msgstr ""
+msgstr "Data të ngjashme"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 msgid "week"
-msgstr ""
+msgstr "javë"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
 msgid "weeks"
-msgstr ""
+msgstr "javë"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:72
 msgid "Has an image"
-msgstr ""
+msgstr "Ka figurë"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:78
-#, fuzzy
 msgid "Has an attachment"
-msgstr "S’arrihet të shtohen bashkëngjitje"
+msgstr "Ka bashkëngjitje"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:85
 msgid "Has a digital signature"
-msgstr ""
+msgstr "Ka nënshkrim dixhital"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:91
-#, fuzzy
 msgid "Is encrypted"
-msgstr "I fshehtëzuar"
+msgstr "Është i fshehtëzuar"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:108
 msgid "Additional search terms"
-msgstr ""
+msgstr "Terma shtesë kërkimesh"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:8
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:63
@@ -7881,9 +7617,7 @@ msgstr "Kërkimet e Ruajtura shfaqen si Etiketa te anështylla."
 msgid ""
 "New matching messages will be tagged automatically as they arrive, but you "
 "can also add or remove messages by hand."
-msgstr ""
-"Mesazhet e rinj me përputhje do të etiketohen vetvetiu teksa mbërrijnë, por "
-"mundeni të shtoni ose hiqni mesazhe dorazi."
+msgstr "Mesazhet e rinj me përputhje do të etiketohen vetvetiu teksa mbërrijnë, por mundeni të shtoni ose hiqni mesazhe dorazi."
 
 #: shared-data/default-theme/html/jsapi/templates/modal-save-search.html:17
 msgid "Configure new Saved Search"
@@ -8022,9 +7756,7 @@ msgstr "Përzgjidhni ose Tërhiqni Kyç Fshehtëzimi"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:14
 msgid "A file located on your computer usually ending in: .asc .key .pub"
-msgstr ""
-"Një kartelë që gjendet në kompjuterin tuaj, që zakonisht përfundon me: .asc ."
-"key .pub"
+msgstr "Një kartelë që gjendet në kompjuterin tuaj, që zakonisht përfundon me: .asc .key .pub"
 
 #: shared-data/default-theme/html/jsapi/templates/modal-upload-key.html:16
 msgid "Select Encryption Key"
@@ -8170,8 +7902,7 @@ msgstr "Hartoni për:"
 
 #: shared-data/default-theme/html/layouts/content.html:42
 msgid "Uh oh! You have Javascript disabled. This will cause problems."
-msgstr ""
-"Hëm! E keni Javascript-in të çaktivizuar. Kjo do të shkaktojë probleme."
+msgstr "Hëm! E keni Javascript-in të çaktivizuar. Kjo do të shkaktojë probleme."
 
 #: shared-data/default-theme/html/layouts/content.html:45
 msgid "The AGPLv3 License"
@@ -8247,7 +7978,7 @@ msgstr "Rregullime, regjistra, veprimtari, diagnostikim, …"
 
 #: shared-data/default-theme/html/logs/events/index.html:37
 msgid "Undo"
-msgstr ""
+msgstr "Zhbëje"
 
 #: shared-data/default-theme/html/logs/events/index.html:58
 msgid "Ongoing Events"
@@ -8258,18 +7989,13 @@ msgid ""
 "Ongoing events represent current actions taken by Mailpile on your behalf, "
 "such as watching a Mail Source for new mail or refreshing your contact "
 "database."
-msgstr ""
-"Aktet në zhvillim e sipër përfaqësojnë veprime të tanishme të ndërmarra nga "
-"Mailpile-i në këmbën tuaj, b.f., mbikëqyrje e një Burimi Poste për postë të "
-"re, ose rifreskimi i bazës tuaj të të dhënave."
+msgstr "Aktet në zhvillim e sipër përfaqësojnë veprime të tanishme të ndërmarra nga Mailpile-i në këmbën tuaj, b.f., mbikëqyrje e një Burimi Poste për postë të re, ose rifreskimi i bazës tuaj të të dhënave."
 
 #: shared-data/default-theme/html/logs/events/index.html:66
 msgid ""
 "Browsing the event details can help with troubleshooting if Mailpile is not "
 "behaving as you expect."
-msgstr ""
-"Shfletimi i hollësive të akteve mund t’ju ndihmojë me diagnostikimin e "
-"problemeve, nëse Mailpile-i nuk sillet siç pritni."
+msgstr "Shfletimi i hollësive të akteve mund t’ju ndihmojë me diagnostikimin e problemeve, nëse Mailpile-i nuk sillet siç pritni."
 
 #: shared-data/default-theme/html/logs/events/index.html:79
 msgid "No Events Found"
@@ -8283,9 +8009,7 @@ msgstr "Akte të Përfunduar"
 msgid ""
 "The Event Log gives an overview over what has happened in your Mailpile "
 "recently."
-msgstr ""
-"Regjistri i Akteve ju jep një përmbledhje se ç’ka ndodhur te Mailpile-i juaj "
-"së fundi."
+msgstr "Regjistri i Akteve ju jep një përmbledhje se ç’ka ndodhur te Mailpile-i juaj së fundi."
 
 #: shared-data/default-theme/html/logs/events/index.html:104
 msgid "Some events, such as Tagging operations, can be undone."
@@ -8303,9 +8027,7 @@ msgstr "Veprimtari Së Fundi"
 msgid ""
 "Here you can see a log of recent network activity, both successful and "
 "failed attempts."
-msgstr ""
-"Këtu mund të shihni një regjistër të veprimtarisë së rrjetit së fundi, për "
-"të dy llojet e përpjekjeve, të suksesshme apo të dështuara."
+msgstr "Këtu mund të shihni një regjistër të veprimtarisë së rrjetit së fundi, për të dy llojet e përpjekjeve, të suksesshme apo të dështuara."
 
 #: shared-data/default-theme/html/logs/network/index.html:24
 #, python-format
@@ -8316,51 +8038,38 @@ msgstr "Keni të formësuar një ndërmjetës (%(proxy)s) te %(host)s:%(port)s."
 msgid ""
 "Proxy fallback is disabled, so if the proxy cannot connect to a given "
 "server, the connection will fail."
-msgstr ""
-"Prova e një mënyre <em>fallback</em> për ndërmjetësin është e çaktivizuar, "
-"ndaj nëse ndërmjetësi s’mund të lidhet me një shërbyes të dhënë, lidhja do "
-"të dështojë."
+msgstr "Prova e një mënyre <em>fallback</em> për ndërmjetësin është e çaktivizuar, ndaj nëse ndërmjetësi s’mund të lidhet me një shërbyes të dhënë, lidhja do të dështojë."
 
 #: shared-data/default-theme/html/logs/network/index.html:34
 msgid ""
 "Some service providers block connections from Tor, so this may prevent you "
 "from accessing your mail or other data."
-msgstr ""
-"Disa furnizues shërbimesh internet i bllokojnë lidhjet përmes Tor-it, kështu "
-"që kjo mund t’ju pengojë të hyni në postën tuaj apo të dhëna të tjera."
+msgstr "Disa furnizues shërbimesh internet i bllokojnë lidhjet përmes Tor-it, kështu që kjo mund t’ju pengojë të hyni në postën tuaj apo të dhëna të tjera."
 
 #: shared-data/default-theme/html/logs/network/index.html:39
 msgid ""
 "You can configure destinations to bypass the proxy in the Advanced section "
 "of Networking in your Privacy Policy."
-msgstr ""
-"Te ndarja Të mëtejshme e Punimit Në Rrjet, te Rregullat tuaja të "
-"Privatësisë, mund të formësoni destinacione për anashkalim të ndërmjetësit."
+msgstr "Te ndarja Të mëtejshme e Punimit Në Rrjet, te Rregullat tuaja të Privatësisë, mund të formësoni destinacione për anashkalim të ndërmjetësit."
 
 #: shared-data/default-theme/html/logs/network/index.html:45
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if Tor cannot "
 "connect."
-msgstr ""
-"<em>Fallback</em-u është i aktivizuar, kështu që do të vendoset një lidhje e "
-"drejtpërdrejtë, nëse Tor-i s’lidhet dot."
+msgstr "<em>Fallback</em-u është i aktivizuar, kështu që do të vendoset një lidhje e drejtpërdrejtë, nëse Tor-i s’lidhet dot."
 
 #: shared-data/default-theme/html/logs/network/index.html:46
 #: shared-data/default-theme/html/logs/network/index.html:63
 msgid ""
 "This may leak your IP address and allow monitoring of which servers you "
 "communicate with."
-msgstr ""
-"Kjo mund të sjellë zbulim të adresës tuaj IP dhe të lejojë mbikëqyrjen se me "
-"cilët shërbyes komunikoni."
+msgstr "Kjo mund të sjellë zbulim të adresës tuaj IP dhe të lejojë mbikëqyrjen se me cilët shërbyes komunikoni."
 
 #: shared-data/default-theme/html/logs/network/index.html:48
 msgid ""
 "Fall-back is enabled, so a direct connection will be made if the proxy "
 "cannot connect."
-msgstr ""
-"<em>Fallback</em-u është i aktivizuar, kështu që do të vendoset një lidhje e "
-"drejtpërdrejtë, nëse ndërmjetësi s’lidhet dot."
+msgstr "<em>Fallback</em-u është i aktivizuar, kështu që do të vendoset një lidhje e drejtpërdrejtë, nëse ndërmjetësi s’lidhet dot."
 
 #: shared-data/default-theme/html/logs/network/index.html:55
 msgid "You are using Tor for unencrypted traffic."
@@ -8370,9 +8079,7 @@ msgstr "Po përdorni Tor-in për trafik të pafshehtëzuar."
 msgid ""
 "This may allow exit-node operators to listen in or modify your "
 "communications."
-msgstr ""
-"Kjo mund t’u lejojë operatorëve në nyje dalje të përgjojnë ose të "
-"modifikojnë komunikimet tuaja."
+msgstr "Kjo mund t’u lejojë operatorëve në nyje dalje të përgjojnë ose të modifikojnë komunikimet tuaja."
 
 #: shared-data/default-theme/html/logs/network/index.html:62
 msgid "You are not using Tor."
@@ -8398,9 +8105,7 @@ msgstr "Shënim:"
 msgid ""
 "These instructions are in English only, because we are currently unable to "
 "accept bug reports in other languages. Sorry!"
-msgstr ""
-"Këto udhëzime janë vetëm në anglisht, ngaqë hëpërhë s’jemi në gjendje të "
-"pranojmë njoftime të metash në gjuhë të tjera. Na ndjeni!"
+msgstr "Këto udhëzime janë vetëm në anglisht, ngaqë hëpërhë s’jemi në gjendje të pranojmë njoftime të metash në gjuhë të tjera. Na ndjeni!"
 
 #: shared-data/default-theme/html/page/contribute/bugs.html:12
 msgid "Thank you for testing Mailpile!"
@@ -8415,15 +8120,11 @@ msgstr "Ndihmojeni Mailpile-in të Fuqizohet"
 msgid ""
 "Mailpile is created by a diverse community of people and organizations who "
 "care about freedom and privacy."
-msgstr ""
-"Mailpile-i është krijuar nga një bashkësi e larmishme njerëzish dhe entesh "
-"që e kanë për zemër lirinë dhe privatësinë."
+msgstr "Mailpile-i është krijuar nga një bashkësi e larmishme njerëzish dhe entesh që e kanë për zemër lirinë dhe privatësinë."
 
 #: shared-data/default-theme/html/page/contribute/index.html:9
 msgid "Please join our community and contribute in any way you can!"
-msgstr ""
-"Ju lutemi, bëhuni pjesë e bashkësisë tonë dhe jepni ndihme në çfarëdo mënyre "
-"që mundeni!"
+msgstr "Ju lutemi, bëhuni pjesë e bashkësisë tonë dhe jepni ndihme në çfarëdo mënyre që mundeni!"
 
 #: shared-data/default-theme/html/page/contribute/index.html:10
 msgid "Thank you!"
@@ -8439,28 +8140,21 @@ msgstr "Dhuroni"
 
 #: shared-data/default-theme/html/page/contribute/index.html:19
 msgid ""
-"Employing people to work on Mailpile full time is the fastest way to improve "
-"the software."
-msgstr ""
-"Punësimi i personave që të punojnë me kohë të plotë për zhvillimin e "
-"Mailpile-it është rruga më e shpejtë për përmirësimin e software-it."
+"Employing people to work on Mailpile full time is the fastest way to improve"
+" the software."
+msgstr "Punësimi i personave që të punojnë me kohë të plotë për zhvillimin e Mailpile-it është rruga më e shpejtë për përmirësimin e software-it."
 
 #: shared-data/default-theme/html/page/contribute/index.html:20
 msgid ""
 "Although the software is (and will always be) free, salaries still cost "
 "money and your support matters."
-msgstr ""
-"Edhe pse software-i është (dhe do të jetë përherë) falas, rrogat "
-"prapëseprapë duan para dhe përkrahja juaj ka vlerë."
+msgstr "Edhe pse software-i është (dhe do të jetë përherë) falas, rrogat prapëseprapë duan para dhe përkrahja juaj ka vlerë."
 
 #: shared-data/default-theme/html/page/contribute/index.html:21
 msgid ""
 "If you contribute $23 USD or more, you get access to our community voting "
 "platform, where you can have a say in the future direction of the project:"
-msgstr ""
-"Nëse kontribuoni me $23 USD ose më tepër, ju lejohet hyrja te platforma e "
-"bashkësisë tonë për votime, ku mund të keni ndikim në drejtimin që merr "
-"projekti në të ardhmen:"
+msgstr "Nëse kontribuoni me $23 USD ose më tepër, ju lejohet hyrja te platforma e bashkësisë tonë për votime, ku mund të keni ndikim në drejtimin që merr projekti në të ardhmen:"
 
 #: shared-data/default-theme/html/page/contribute/index.html:25
 msgid "Tell your friends"
@@ -8474,18 +8168,13 @@ msgstr "Nëse ju pëlqen Mailpile-i, ju lutemi, tregojuni njerëzve për të!"
 msgid ""
 "Tweet, share, link, write articles and blog posts, act out dramatic "
 "tutorials on Youtube, make movies..."
-msgstr ""
-"Përdorni Twitter, ndajeni me të tjerët, lidheni ku të mundeni, shkruani "
-"artikuj dhe postime blogu, improvizoni udhërrëfyes dramatikë në Youtube, "
-"bëni një film…"
+msgstr "Përdorni Twitter, ndajeni me të tjerët, lidheni ku të mundeni, shkruani artikuj dhe postime blogu, improvizoni udhërrëfyes dramatikë në Youtube, bëni një film…"
 
 #: shared-data/default-theme/html/page/contribute/index.html:30
 msgid ""
 "Let us know what you create, so we can share the best content with the rest "
 "of the community."
-msgstr ""
-"Na bëni të ditur se ç’krijoni, që kështu të mund të ndajmë lëndën më të mirë "
-"me pjesën tjetër të bashkësisë tonë."
+msgstr "Na bëni të ditur se ç’krijoni, që kështu të mund të ndajmë lëndën më të mirë me pjesën tjetër të bashkësisë tonë."
 
 #: shared-data/default-theme/html/page/contribute/index.html:31
 msgid "We are:"
@@ -8514,32 +8203,24 @@ msgstr "Shtim Entropie"
 
 #: shared-data/default-theme/html/page/entropy/index.html:10
 msgid "Mailpile needs true random numbers to generate good encryption keys."
-msgstr ""
-"Që të prodhojë kyçe të mirë fshehtëzimesh, Mailpile-i ka nevojë për numra të "
-"vërtetë të rëndomtë."
+msgstr "Që të prodhojë kyçe të mirë fshehtëzimesh, Mailpile-i ka nevojë për numra të vërtetë të rëndomtë."
 
 #: shared-data/default-theme/html/page/entropy/index.html:13
 msgid ""
 "Although your computer may be powerful, it may still have hard time finding "
 "enough randomness when generating keys."
-msgstr ""
-"Edhe pse kompjuteri juaj mund të jetë i fuqishëm, mund ta ketë prapëseprapë "
-"të vështirë të gjejë rëndomshmëri të mjaftueshme kur prodhon kyçet."
+msgstr "Edhe pse kompjuteri juaj mund të jetë i fuqishëm, mund ta ketë prapëseprapë të vështirë të gjejë rëndomshmëri të mjaftueshme kur prodhon kyçet."
 
 #: shared-data/default-theme/html/page/entropy/index.html:14
 msgid ""
 "The technical term used to describe the source of randomness is Entropy!"
-msgstr ""
-"Termi teknik i përdorur për të përshkruar burimin e rëndomshmërisë quhet "
-"Entropi!"
+msgstr "Termi teknik i përdorur për të përshkruar burimin e rëndomshmërisë quhet Entropi!"
 
 #: shared-data/default-theme/html/page/entropy/index.html:17
 msgid ""
 "On the machine that is running Mailpile you can do a few things to increase "
 "the Entropy:"
-msgstr ""
-"Te makina që xhiron Mailpile-in mundeni të bëni ndoca gjëra që të shtohet "
-"Entropia:"
+msgstr "Te makina që xhiron Mailpile-in mundeni të bëni ndoca gjëra që të shtohet Entropia:"
 
 #: shared-data/default-theme/html/page/entropy/index.html:20
 msgid "Move the mouse."
@@ -8561,9 +8242,7 @@ msgstr "Shfletoni në internet."
 msgid ""
 "Because the computer cannot predict human activity these actions help the "
 "computer generate random numbers."
-msgstr ""
-"Ngaqë kompjuteri nuk mund të parashikojë veprimtari njerëzore, këto veprime "
-"ndihmojnë që kompjuteri të prodhojë numra të rastësishëm."
+msgstr "Ngaqë kompjuteri nuk mund të parashikojë veprimtari njerëzore, këto veprime ndihmojnë që kompjuteri të prodhojë numra të rastësishëm."
 
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:2
 #: shared-data/default-theme/html/page/gmail-2-step-verification/index.html:10
@@ -8593,9 +8272,7 @@ msgstr "Fjalëkalim Unix"
 msgid ""
 "To launch the app please enter your account details above or use a terminal "
 "(SSH) to start Mailpile manually."
-msgstr ""
-"Që të nisni aplikacionin, ju lutemi, jepni më sipër hollësitë e llogarisë "
-"tuaj, ose përdorni një terminal (SSH) që ta nisni Mailpile-in dorazi."
+msgstr "Që të nisni aplikacionin, ju lutemi, jepni më sipër hollësitë e llogarisë tuaj, ose përdorni një terminal (SSH) që ta nisni Mailpile-in dorazi."
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:2
 #: shared-data/default-theme/html/page/release-notes/credits.html:6
@@ -8623,11 +8300,7 @@ msgid ""
 "The Mailpile team would like to thank all the people who contributed\n"
 "    money or volunteered their time to help create a truly free, secure\n"
 "    e-mail client. You're all awesome!"
-msgstr ""
-"Ekipi i Mailpile-it do të donte të falënderonte krejt personat që kanë\n"
-"    kontribuar para apo kohë nga e tyrja për të ndihmuar në krijimin e\n"
-"    një klienti email vërtet të lirë, të sigurt. Jeni të gjithë të "
-"mrekullueshëm!"
+msgstr "Ekipi i Mailpile-it do të donte të falënderonte krejt personat që kanë\n    kontribuar para apo kohë nga e tyrja për të ndihmuar në krijimin e\n    një klienti email vërtet të lirë, të sigurt. Jeni të gjithë të mrekullueshëm!"
 
 #: shared-data/default-theme/html/page/release-notes/credits.html:22
 msgid "Community"
@@ -8656,8 +8329,7 @@ msgstr "Shënime hedhjeje në qarkullim për Mailpile %(version)s"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:13
 msgid "Thank you for testing our release candidate!"
-msgstr ""
-"Faleminderit për provën e bërë me versionin kandidat për hedhje në qarkullim!"
+msgstr "Faleminderit për provën e bërë me versionin kandidat për hedhje në qarkullim!"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:14
 #, python-format
@@ -8715,9 +8387,7 @@ msgstr "Kaq qe!"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:41
 msgid "Read on if you've used one of the Mailpile Beta or GitHub releases."
-msgstr ""
-"Vazhdoni leximin, nëse keni përdorur një nga versionet Mailpile Beta apo nga "
-"ata të GitHub-it."
+msgstr "Vazhdoni leximin, nëse keni përdorur një nga versionet Mailpile Beta apo nga ata të GitHub-it."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:44
 msgid "What's new?"
@@ -8738,11 +8408,9 @@ msgstr "Mbulim i përmirësuar i PGP-së, përfshi importim i vetvetishëm i ky�
 #: shared-data/default-theme/html/page/release-notes/index.html:49
 #, python-format
 msgid ""
-"Per-tag automatic bayesian classification, as <a target=_blank href="
-"\"%(blog_url)s\">discussed on our blog</a>"
-msgstr ""
-"Klasifikim i vetvetishëm bajesian për-etiketë, siç <a target=_blank href="
-"\"%(blog_url)s\">është diskutuar në blogun tonë</a>"
+"Per-tag automatic bayesian classification, as <a target=_blank "
+"href=\"%(blog_url)s\">discussed on our blog</a>"
+msgstr "Klasifikim i vetvetishëm bajesian për-etiketë, siç <a target=_blank href=\"%(blog_url)s\">është diskutuar në blogun tonë</a>"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:51
 msgid "The ability to delete e-mail and accounts"
@@ -8759,13 +8427,10 @@ msgstr "Ç’është ndrequr?"
 #: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
-"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed issues</"
-"a> and <a target=_blank href=\"%(release_url)s\">issues closed for this "
-"release</a>"
-msgstr ""
-"Shihni te GitHub-i për <a target=_blank href=\"%(closed_url)s\">krejt "
-"çështjet e zgjidhura</a> dhe <a target=_blank href=\"%(release_url)s\">për "
-"ato të zgjidhura për këtë hedhje në qarkullim</a>"
+"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
+"issues</a> and <a target=_blank href=\"%(release_url)s\">issues closed for "
+"this release</a>"
+msgstr "Shihni te GitHub-i për <a target=_blank href=\"%(closed_url)s\">krejt çështjet e zgjidhura</a> dhe <a target=_blank href=\"%(release_url)s\">për ato të zgjidhura për këtë hedhje në qarkullim</a>"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:63
 msgid "What's still broken?"
@@ -8784,17 +8449,12 @@ msgstr "Njëkohësimi IMAP s’është sendërtuar ende"
 msgid ""
 "The <a target=_blank href=\"%(roadmap_url)s\">Security Roadmap</a> is "
 "incomplete"
-msgstr ""
-"<a target=_blank href=\"%(roadmap_url)s\">Plani i Përgjithshëm për Sigurinë</"
-"a> është i paplotë"
+msgstr "<a target=_blank href=\"%(roadmap_url)s\">Plani i Përgjithshëm për Sigurinë</a> është i paplotë"
 
 #: shared-data/default-theme/html/page/release-notes/index.html:70
 #, python-format
-msgid ""
-"Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
-msgstr ""
-"Github-i ka <a target=_blank href=\"%(issues_url)s\">plot çështje të hapura</"
-"a>."
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgstr "Github-i ka <a target=_blank href=\"%(issues_url)s\">plot çështje të hapura</a>."
 
 #: shared-data/default-theme/html/page/release-notes/index.html:72
 msgid "You can help."
@@ -8911,18 +8571,14 @@ msgstr "Shfaq hollësi teknike."
 #: shared-data/default-theme/html/partials/error_message_missing.html:32
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
-msgstr ""
-"S’qemë në gjendje të gjenin mesazhin që kërkuat, mos vallë është fshirë?"
+msgstr "S’qemë në gjendje të gjenin mesazhin që kërkuat, mos vallë është fshirë?"
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:37
 #, python-format
 msgid ""
-"If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank"
-"\">file a report</a> including the technical details above."
-msgstr ""
-"Nëse mendoni se është një e metë, ju lutemi, parashtroni një <a href="
-"\"%(url)s\" target=\"_blank\">njoftim të metash</a> duke përfshirë hollësitë "
-"teknike më sipër."
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details above."
+msgstr "Nëse mendoni se është një e metë, ju lutemi, parashtroni një <a href=\"%(url)s\" target=\"_blank\">njoftim të metash</a> duke përfshirë hollësitë teknike më sipër."
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:47
 msgid "DESCRIBE YOUR PROBLEM HERE"
@@ -8936,9 +8592,7 @@ msgstr "Mungon Kontakt"
 msgid ""
 "We were unable to find the contact you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"S’qemë në gjendje të gjenin kontaktin që kërkuat, mos vallë është shtypur "
-"(apo treguar me një lidhje) pasaktësisht?"
+msgstr "S’qemë në gjendje të gjenin kontaktin që kërkuat, mos vallë është shtypur (apo treguar me një lidhje) pasaktësisht?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:6
 msgid "Tag Missing"
@@ -8948,9 +8602,7 @@ msgstr "Mungon Etiketë"
 msgid ""
 "We were unable to find the tag you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"S’qemë në gjendje të gjejmë etiketën që kërkuat, mos vallë qe shkruar (apo "
-"dhënë lidhje për të) pasaktësisht?"
+msgstr "S’qemë në gjendje të gjejmë etiketën që kërkuat, mos vallë qe shkruar (apo dhënë lidhje për të) pasaktësisht?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:9
 msgid "Oops, You've Found a Quirk"
@@ -8960,18 +8612,14 @@ msgstr "Hëm! Hasët Diçka të Çuditshme"
 msgid ""
 "There's something happening here. What it is ain't exactly clear. Everybody "
 "look what's going down."
-msgstr ""
-"Diçka po ndodh këtu. Se çfarë konkretisht, s’është e qartë. Të tërë këtej "
-"sytë, te ç’po vithiset."
+msgstr "Diçka po ndodh këtu. Se çfarë konkretisht, s’është e qartë. Të tërë këtej sytë, te ç’po vithiset."
 
 #: shared-data/default-theme/html/partials/errors_content.html:12
 #, python-format
 msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"Nëse mendoni se është një e metë, ju lutemi, parashtroni një <a href="
-"\"%(url)s\" target=\"_blank\">njoftim të metash</a>"
+"If you think this is a bug, please file a <a href=\"%(url)s\" "
+"target=\"_blank\">bug report</a>"
+msgstr "Nëse mendoni se është një e metë, ju lutemi, parashtroni një <a href=\"%(url)s\" target=\"_blank\">njoftim të metash</a>"
 
 #: shared-data/default-theme/html/partials/helpers.html:14
 #: shared-data/default-theme/html/partials/helpers.html:15
@@ -9062,32 +8710,28 @@ msgid "Don't use this key"
 msgstr "Mos e përdor këtë kyç"
 
 #: shared-data/default-theme/html/partials/hidden.html:128
-#, fuzzy
 msgid "This key is available for use."
-msgstr "Kyçi PGP për %s është gati për përdorim."
+msgstr "Ky kyç është i gatshëm për përdorim."
 
 #: shared-data/default-theme/html/partials/hidden.html:137
 msgid "Import Key"
 msgstr "Importo Kyç"
 
 #: shared-data/default-theme/html/partials/hidden.html:150
-#, fuzzy
 msgid "Importing Failed"
-msgstr "Hyrja dështoi"
+msgstr "Importimi Dështoi"
 
 #: shared-data/default-theme/html/partials/hidden.html:153
 msgid "Importing Encryption Key"
 msgstr "Po importohet Kyç Fshehtëzimesh"
 
 #: shared-data/default-theme/html/partials/hidden.html:156
-#, fuzzy
 msgid "Uploading:"
-msgstr "Ngarkoni Kyç"
+msgstr "Ngarkim:"
 
 #: shared-data/default-theme/html/partials/hidden.html:158
-#, fuzzy
 msgid "This may take a few moments..."
-msgstr "Kjo mund të dojë ca kohë!"
+msgstr "Kjo mund të hajë pak çaste…"
 
 #: shared-data/default-theme/html/partials/hidden.html:177
 msgid "Key"
@@ -9107,8 +8751,7 @@ msgstr "Shfaq Kyçe Fshehtëzimesh të Fshehur"
 
 #: shared-data/default-theme/html/partials/hidden.html:191
 msgid "Hidden keys are either revoked or expired and should not be used"
-msgstr ""
-"Kyçet e fshehur ose janë shfuqizuar, ose kanë skaduar, dhe nuk duhen përdorur"
+msgstr "Kyçet e fshehur ose janë shfuqizuar, ose kanë skaduar, dhe nuk duhen përdorur"
 
 #: shared-data/default-theme/html/partials/hidden.html:237
 msgid "Draft was deleted"
@@ -9147,69 +8790,58 @@ msgid "This message has HTML formatted content."
 msgstr "Ky mesazh ka lëndë të formatuar si HTML."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:8
-msgid "For security reasons, Mailpile will by default only display plain text."
-msgstr ""
-"Për arsye sigurie, Mailpile, si parazgjedhje, do të shfaqë vetëm tekst të "
-"thjeshtë."
+msgid ""
+"For security reasons, Mailpile will by default only display plain text."
+msgstr "Për arsye sigurie, Mailpile, si parazgjedhje, do të shfaqë vetëm tekst të thjeshtë."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:10
 msgid ""
 "You can change display modes by clicking the icons to the right of the "
 "Subject line."
-msgstr ""
-"Mënyrën e shfaqjes mund ta ndryshoni duke klikuar te ikonat në të djathtë të "
-"rreshtit të Subjektit."
+msgstr "Mënyrën e shfaqjes mund ta ndryshoni duke klikuar te ikonat në të djathtë të rreshtit të Subjektit."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:23
 msgid ""
 "Usually when you reply to a message, all participants in the conversation "
 "will be sent a copy of your reply."
-msgstr ""
-"Zakonisht kur i përgjigjeni një mesazhi, krejt pjesëmarrësve në "
-"bashkëbisedim do t’u dërgohet një kopje e përgjigjes tuaj."
+msgstr "Zakonisht kur i përgjigjeni një mesazhi, krejt pjesëmarrësve në bashkëbisedim do t’u dërgohet një kopje e përgjigjes tuaj."
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:25
 msgid ""
 "If you want to send a private reply, only to the author of this message, "
 "mouse over their name and click the reply icon that appears."
-msgstr ""
-"Nëse doni të dërgoni një përgjigje private, vetëm për autorin e këtij "
-"mesazhi, kalojeni kursorin sipër emrit të tyre dhe klikoni ikonën e "
-"përgjigjeve që shfaqet."
+msgstr "Nëse doni të dërgoni një përgjigje private, vetëm për autorin e këtij mesazhi, kalojeni kursorin sipër emrit të tyre dhe klikoni ikonën e përgjigjeve që shfaqet."
 
 #: shared-data/default-theme/html/partials/pile_message.html:77
 msgid "Blocked attachments, replies, and links."
-msgstr ""
+msgstr "U bllokuan bashkëngjitje, përgjigje, dhe lidhje."
 
 #: shared-data/default-theme/html/partials/pile_message.html:78
 msgid "Attachments and replies are blocked."
-msgstr ""
+msgstr "Bashkëngjitjet dhe përgjigjet janë bllokuar."
 
 #: shared-data/default-theme/html/partials/pile_message.html:79
 msgid "Links are blocked."
-msgstr ""
+msgstr "Lidhjet janë të bllokuara."
 
 #: shared-data/default-theme/html/partials/pile_message.html:91
-#, fuzzy
 msgid "Remove from spam"
-msgstr "Hiqe prej %(name)s"
+msgstr "Hiqe nga të padëshiruarit"
 
 #: shared-data/default-theme/html/partials/pile_message.html:92
 #: shared-data/default-theme/html/partials/pile_message.html:96
 #: shared-data/default-theme/html/partials/pile_message.html:102
 msgid "Show risky content"
-msgstr ""
+msgstr "Shfaq lëndë me rrezik"
 
 #: shared-data/default-theme/html/partials/pile_message.html:97
 #: shared-data/default-theme/html/partials/pile_message.html:103
-#, fuzzy
 msgid "Send to spam"
-msgstr "Shpjere te të padëshiruarit"
+msgstr "Dërgoje te të padëshiruarat"
 
 #: shared-data/default-theme/html/partials/pile_message.html:101
-#, fuzzy
 msgid "Add to contacts"
-msgstr "U shtuan %d kontakte"
+msgstr "Shtoje te kontaktet"
 
 #: shared-data/default-theme/html/partials/pile_message.html:189
 msgid "Unknown Text Part"
@@ -9261,9 +8893,8 @@ msgid "Private Reply"
 msgstr "Përgjigje Private"
 
 #: shared-data/default-theme/html/partials/search_item.html:224
-#, fuzzy
 msgid "Download from the web"
-msgstr "Shkarko lëndë nga interneti"
+msgstr "Shkarkoje prej interneti"
 
 #: shared-data/default-theme/html/partials/search_item.html:239
 msgid "Oops, no attachments found!"
@@ -9404,9 +9035,7 @@ msgstr "mesazhet u përzgjodhën"
 
 #: shared-data/default-theme/html/partials/tools_default.html:86
 msgid "conversations selected, click to select all matching this search"
-msgstr ""
-"mesazhe të përzgjedhur, klikoni që të përzgjidhen krejt përputhjet me këtë "
-"kërkim"
+msgstr "mesazhe të përzgjedhur, klikoni që të përzgjidhen krejt përputhjet me këtë kërkim"
 
 #: shared-data/default-theme/html/partials/tools_default.html:87
 msgid "Entire search selected, click to undo"
@@ -9565,8 +9194,7 @@ msgstr "Shfaq Kyçe Fshehtëzimi"
 #: shared-data/default-theme/html/partials/topbar.html:3
 #, python-format
 msgid "%(name)s's Mailpile is version %(version)s with %(size)s messages"
-msgstr ""
-"Mailpile-i për %(name)s është në versionin %(version)s me %(size)s mesazhe"
+msgstr "Mailpile-i për %(name)s është në versionin %(version)s me %(size)s mesazhe"
 
 #: shared-data/default-theme/html/partials/topbar.html:37
 msgid "How to report bugs"
@@ -9693,9 +9321,7 @@ msgstr "Dërgo postë duke përdor mjete vendore Unix."
 #: shared-data/default-theme/html/profiles/account-form.html:456
 #: shared-data/default-theme/html/profiles/account-form.html:592
 msgid "Use this setting if you have a working mail server on this machine."
-msgstr ""
-"Përdoreni këtë rregullim, nëse keni në këtë makinë një shërbyes poste "
-"funksional."
+msgstr "Përdoreni këtë rregullim, nëse keni në këtë makinë një shërbyes poste funksional."
 
 #: shared-data/default-theme/html/profiles/account-form.html:463
 msgid "Leave blank to auto-detect"
@@ -9766,15 +9392,11 @@ msgid ""
 "Use this setting if you would like Mailpile to read e-mails already "
 "downloaded by Thunderbird, Mac Mail or another local application on this "
 "machine."
-msgstr ""
-"Përdoreni këtë rregullim nëse do të donit ta përdorni Mailpile-in të lexoni "
-"email-e të shkarkuar tashmë me Thunderbird, Mac Mail ose tjetër aplikacion "
-"vendor në këtë makinë."
+msgstr "Përdoreni këtë rregullim nëse do të donit ta përdorni Mailpile-in të lexoni email-e të shkarkuar tashmë me Thunderbird, Mac Mail ose tjetër aplikacion vendor në këtë makinë."
 
 #: shared-data/default-theme/html/profiles/account-form.html:634
 msgid "Use the Browse tool to import local mailboxes later on."
-msgstr ""
-"Përdoreni mjetin Shfletoni që të importoni më vonë kuti postare vendore."
+msgstr "Përdoreni mjetin Shfletoni që të importoni më vonë kuti postare vendore."
 
 #: shared-data/default-theme/html/profiles/account-form.html:648
 msgid "Enable this mail source"
@@ -9788,9 +9410,7 @@ msgstr "Shtoni të Re"
 msgid ""
 "Mailpile may not be able to access your mail unless you log on to your "
 "account and enable IMAP and/or POP3."
-msgstr ""
-"Mailpile mund të mos jetë në gjendje të hyjë në postën tuaj, veç në hyfshi "
-"në llogarinë tuaj dhe aktivizofshi IMAP dhe/ose POP3."
+msgstr "Mailpile mund të mos jetë në gjendje të hyjë në postën tuaj, veç në hyfshi në llogarinë tuaj dhe aktivizofshi IMAP dhe/ose POP3."
 
 #: shared-data/default-theme/html/profiles/account-form.html:682
 msgid "Important"
@@ -9799,9 +9419,7 @@ msgstr "E rëndësishme"
 #: shared-data/default-theme/html/profiles/account-form.html:687
 msgid ""
 "Without this, some providers will even mistake Mailpile for an intruder!"
-msgstr ""
-"Pa këtë, disa furnizues shërbimi do ta marrin gabimisht Mailpile-in për një "
-"shkelës!"
+msgstr "Pa këtë, disa furnizues shërbimi do ta marrin gabimisht Mailpile-in për një shkelës!"
 
 #: shared-data/default-theme/html/profiles/account-form.html:700
 msgid "Got it"
@@ -9820,13 +9438,12 @@ msgid "Create a new Autocrypt Level 1.1 compatible key (Ed25519)"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
-#, fuzzy
 msgid "Create a new 4096 bit RSA key"
-msgstr "Krijoni një kyç të ri RSA 2048 bit"
+msgstr "Krijoni një kyç të ri RSA 4096 bit"
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
 msgid "Legacy, strong"
-msgstr ""
+msgstr "I dikurshëm, i fortë"
 
 #: shared-data/default-theme/html/profiles/account-form.html:733
 msgid "Create a new 3072 bit RSA key"
@@ -9834,7 +9451,7 @@ msgstr "Krijoni një kyç të ri RSA 3027"
 
 #: shared-data/default-theme/html/profiles/account-form.html:733
 msgid "Autocrypt Level 1"
-msgstr ""
+msgstr "Autocrypt Level 1"
 
 #: shared-data/default-theme/html/profiles/account-form.html:735
 msgid "Disable encryption for this account"
@@ -9846,9 +9463,7 @@ msgstr "Shfaq shumë rregullime fshehtëzimi"
 
 #: shared-data/default-theme/html/profiles/account-form.html:753
 msgid "Best-effort: Encrypt and/or sign mail whenever possible"
-msgstr ""
-"Më e mira e mundshme: Fshehtëzo dhe/ose nënshkruaj postë kurdo që të jetë e "
-"mundur"
+msgstr "Më e mira e mundshme: Fshehtëzo dhe/ose nënshkruaj postë kurdo që të jetë e mundur"
 
 #: shared-data/default-theme/html/profiles/account-form.html:761
 msgid "Always digitally sign outgoing mail"
@@ -9883,14 +9498,12 @@ msgid "Signal a preference for un-signed, un-encrypted mail"
 msgstr "Sinjalizo parapëlqim poste të panënshkruar, të pafshehtëzuar"
 
 #: shared-data/default-theme/html/profiles/account-form.html:829
-#, fuzzy
 msgid "Use Autocrypt to exchange encryption keys"
-msgstr "Përdor varg të përbashkët kyçesh GnuPG për kyçe fshehtëzimi PGP"
+msgstr "Për shkëmbim kyçesh fshehtëzimi përdor Autocrypt"
 
 #: shared-data/default-theme/html/profiles/account-form.html:837
-#, fuzzy
 msgid "Use attachments to exchange encryption keys"
-msgstr "Kjo llogari s’ka kyç fshehtëzimi."
+msgstr "Për shkëmbim kyçesh fshehtëzimi përdor bashkëngjitje"
 
 #: shared-data/default-theme/html/profiles/index.html:9
 #: shared-data/default-theme/html/profiles/index.html:47
@@ -9925,9 +9538,7 @@ msgstr "Formësoni llogaritë, profilet tuaj dhe të tjera rregullime"
 msgid ""
 "You can configure accounts and profiles once you have reviewed your privacy "
 "settings."
-msgstr ""
-"Mund të formësoni llogari dhe profile pasi të keni marrë në shqyrtim "
-"rregullimet tuaja mbi privatësinë."
+msgstr "Mund të formësoni llogari dhe profile pasi të keni marrë në shqyrtim rregullimet tuaja mbi privatësinë."
 
 #: shared-data/default-theme/html/profiles/index.html:56
 msgid "Your name"
@@ -9975,9 +9586,7 @@ msgstr "Hiqe Llogarinë"
 
 #: shared-data/default-theme/html/profiles/index.html:173
 msgid "Please review your privacy settings before adding any accounts."
-msgstr ""
-"Ju lutemi, përpara se të shtoni çfarëdo llogarie, merrni në shqyrtim "
-"rregullimet tuaja mbi privatësinë."
+msgstr "Ju lutemi, përpara se të shtoni çfarëdo llogarie, merrni në shqyrtim rregullimet tuaja mbi privatësinë."
 
 #: shared-data/default-theme/html/profiles/index.html:176
 msgid "Privacy & Security"
@@ -10030,26 +9639,19 @@ msgstr "Kaloje Email-in te Hedhurinat"
 msgid ""
 "By default this will remove: account details, OAuth credentials, saved "
 "passwords, linked mail sources, and route settings."
-msgstr ""
-"Si parazgjedhje, kjo do të sjellë heqjen e: hollësive të llogarisë, "
-"kredenciale OAuth, fjalëkalime të ruajtur, burime poste të lidhur, dhe "
-"rregullime rrugësh poste."
+msgstr "Si parazgjedhje, kjo do të sjellë heqjen e: hollësive të llogarisë, kredenciale OAuth, fjalëkalime të ruajtur, burime poste të lidhur, dhe rregullime rrugësh poste."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:83
 msgid ""
 "This only affects local data, e-mail and settings on remote mail servers "
 "will not be modifed."
-msgstr ""
-"Kjo prek vetëm të dhëna vendore, email-et dhe rregullimet në shërbyes të "
-"largët nuk do të ndryshohen."
+msgstr "Kjo prek vetëm të dhëna vendore, email-et dhe rregullimet në shërbyes të largët nuk do të ndryshohen."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:87
 msgid ""
 "If you also delete the encryption keys, you may be unable to read old "
 "encrypted e-mail."
-msgstr ""
-"Nëse fshini edhe kyçe fshehtëzimesh, mund të mos jeni më në gjendje të "
-"lexoni email-e të dikurshëm të fshehtëzuar."
+msgstr "Nëse fshini edhe kyçe fshehtëzimesh, mund të mos jeni më në gjendje të lexoni email-e të dikurshëm të fshehtëzuar."
 
 #: shared-data/default-theme/html/profiles/remove/index.html:91
 #: shared-data/default-theme/html/settings/plugins.html:61
@@ -10075,8 +9677,7 @@ msgstr "Mesazhet do të shpihen te Hedhurinat pas {days} ditësh."
 
 #: shared-data/default-theme/html/search/default.html:49
 msgid "Automation is enabled. Consult tag settings for details."
-msgstr ""
-"Automatizimi është i aktivizuar. Për hollësi, shihni rregullime etiketash."
+msgstr "Automatizimi është i aktivizuar. Për hollësi, shihni rregullime etiketash."
 
 #: shared-data/default-theme/html/search/default.html:53
 msgid "Add and remove messages to train the system."
@@ -10147,11 +9748,9 @@ msgstr "Më tepër"
 #: shared-data/default-theme/html/search/prev_more_next.html:47
 #, python-format
 msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
-msgstr ""
-"U kërkua në <strong>%(number)s</strong> mesazhe, gjatë <strong>%(elapsed)s</"
-"strong> sekondash."
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
+msgstr "U kërkua në <strong>%(number)s</strong> mesazhe, gjatë <strong>%(elapsed)s</strong> sekondash."
 
 #: shared-data/default-theme/html/search/prev_more_next.html:49
 msgid "Vroom!"
@@ -10261,10 +9860,9 @@ msgid "Author"
 msgstr "Autor"
 
 #: shared-data/default-theme/html/settings/plugins.html:62
-msgid "This plugin is meant for developers and may be incomplete or dangerous."
-msgstr ""
-"Kjo shtojcë është e menduar për zhvillues dhe mund të jetë e paplotë ose e "
-"rrezikshme."
+msgid ""
+"This plugin is meant for developers and may be incomplete or dangerous."
+msgstr "Kjo shtojcë është e menduar për zhvillues dhe mund të jetë e paplotë ose e rrezikshme."
 
 #: shared-data/default-theme/html/settings/plugins.html:74
 msgid "Plugin will be disabled on restart."
@@ -10296,25 +9894,20 @@ msgstr "Kërkime dhe Etiketa"
 
 #: shared-data/default-theme/html/settings/preferences.html:34
 msgid "Here you can customize how search results and tag views are displayed."
-msgstr ""
-"Këtu mund të përshtatni si shfaqen përfundimet e kërkimeve dhe etiketat."
+msgstr "Këtu mund të përshtatni si shfaqen përfundimet e kërkimeve dhe etiketat."
 
 #: shared-data/default-theme/html/settings/preferences.html:35
 msgid ""
 "The ordering and grouping options determine whether messages are grouped "
 "together into conversations or not, and which results are sorted to the top "
 "of the list."
-msgstr ""
-"Mundësitë mbi renditje dhe grupime përcaktojnë nëse mesazhet grupohen tok në "
-"biseda apo jo, dhe se cilat përfundime shfaqen në krye të listës."
+msgstr "Mundësitë mbi renditje dhe grupime përcaktojnë nëse mesazhet grupohen tok në biseda apo jo, dhe se cilat përfundime shfaqen në krye të listës."
 
 #: shared-data/default-theme/html/settings/preferences.html:39
 msgid ""
 "The display density determines how tightly the results are packed together "
 "on your screen."
-msgstr ""
-"Dendësia e shfaqjes përcakton sa ngjeshur paketohen në ekranin tuaj "
-"përfundimet."
+msgstr "Dendësia e shfaqjes përcakton sa ngjeshur paketohen në ekranin tuaj përfundimet."
 
 #: shared-data/default-theme/html/settings/preferences.html:64
 msgid "Custom"
@@ -10382,16 +9975,13 @@ msgstr "Zonë Rreziku"
 
 #: shared-data/default-theme/html/settings/preferences.html:142
 msgid ""
-"These are technical settings which may interfere with normal use of Mailpile."
-msgstr ""
-"Këto janë rregullime teknike që mund të ndikojnë në përdorimin normal të "
-"Mailpile-it."
+"These are technical settings which may interfere with normal use of "
+"Mailpile."
+msgstr "Këto janë rregullime teknike që mund të ndikojnë në përdorimin normal të Mailpile-it."
 
 #: shared-data/default-theme/html/settings/preferences.html:143
 msgid "If Mailpile came with a warranty, changing these would invalidate it."
-msgstr ""
-"Sikur Mailpile-i të vinte me një garanci, ndryshimi i këtyre do ta bënte atë "
-"të pavlefshme."
+msgstr "Sikur Mailpile-i të vinte me një garanci, ndryshimi i këtyre do ta bënte atë të pavlefshme."
 
 #: shared-data/default-theme/html/settings/preferences.html:150
 msgid "Always BCC self when sending mail"
@@ -10409,8 +9999,7 @@ msgstr "Ju lutemi, shqyrtoni dhe ruani rregullimet tuaja."
 
 #: shared-data/default-theme/html/settings/privacy.html:32
 msgid "Some features may not be enabled until you have saved."
-msgstr ""
-"Disa veçori mund të mos jenë aktivizuar, përpara se të keni bërë ruajtjen."
+msgstr "Disa veçori mund të mos jenë aktivizuar, përpara se të keni bërë ruajtjen."
 
 #: shared-data/default-theme/html/settings/privacy.html:45
 msgid "Choose your own privacy policy!"
@@ -10421,36 +10010,27 @@ msgid "Networking Privacy"
 msgstr "Privatësi Në Rrjet"
 
 #: shared-data/default-theme/html/settings/privacy.html:55
-msgid "Tor is a community-run system for making anonymous network connections."
-msgstr ""
-"Tor-i është një sistem i xhiruar nga bashkësia, për realizim lidhjesh "
-"anonime rrjeti."
+msgid ""
+"Tor is a community-run system for making anonymous network connections."
+msgstr "Tor-i është një sistem i xhiruar nga bashkësia, për realizim lidhjesh anonime rrjeti."
 
 #: shared-data/default-theme/html/settings/privacy.html:56
 msgid ""
 "It masks your IP address and location, thus preventing many forms of "
 "surveillance and tracking."
-msgstr ""
-"Ai maskon adresën IP dhe vendndodhjen tuaj, duke penguar kështu mjaft forma "
-"survejimi dhe gjurmimi."
+msgstr "Ai maskon adresën IP dhe vendndodhjen tuaj, duke penguar kështu mjaft forma survejimi dhe gjurmimi."
 
 #: shared-data/default-theme/html/settings/privacy.html:60
 msgid ""
 "Using Tor may be considered suspicious or even illegal in some countries."
-msgstr ""
-"Në disa vende, përdorimi i Tor-it mund të konsiderohet i dyshimtë ose madje "
-"i paligjshëm."
+msgstr "Në disa vende, përdorimi i Tor-it mund të konsiderohet i dyshimtë ose madje i paligjshëm."
 
 #: shared-data/default-theme/html/settings/privacy.html:61
 msgid ""
 "Since the Tor network is run by volunteers, bad actors can (and do) "
 "volunteer to run exit-nodes so they can listen in on traffic; as a result "
 "Tor is not suitable for accessing the unencrypted web."
-msgstr ""
-"Ngaqë rrjeti Tor mbahet në këmbë nga vullnetarë, palë të interesuara munden "
-"(dhe e bëjnë) të marrin përsipër vullnetarisht xhirim nyjash dalje që të "
-"mund të përgjojnë trafik prej tyre; si përfundim, Tor-i s’është i "
-"përshtatshëm për përdorim në web-in e pafshehtëzuar."
+msgstr "Ngaqë rrjeti Tor mbahet në këmbë nga vullnetarë, palë të interesuara munden (dhe e bëjnë) të marrin përsipër vullnetarisht xhirim nyjash dalje që të mund të përgjojnë trafik prej tyre; si përfundim, Tor-i s’është i përshtatshëm për përdorim në web-in e pafshehtëzuar."
 
 #: shared-data/default-theme/html/settings/privacy.html:65
 msgid "Visit the Tor project's web-site"
@@ -10465,9 +10045,9 @@ msgid "When sending and receiving mail, or downloading from the web:"
 msgstr "Kur dërgohet ose merret postë, ose kur bëhen shkarkime nga interneti:"
 
 #: shared-data/default-theme/html/settings/privacy.html:78
-#, fuzzy, python-format
+#, python-format
 msgid "Custom proxy setting (%(proto)s on %(host)s:%(port)s)"
-msgstr "Rregullime vetjake ndërmjetësi (%(proto)s)"
+msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:87
 msgid "Prefer anonymous Tor networking for encrypted connections."
@@ -10505,8 +10085,7 @@ msgstr "Rregullime të Mëtejshme"
 #: shared-data/default-theme/html/settings/privacy.html:115
 #, python-format
 msgid "Fall back to direct networking if connecting over %(proxy)s fails."
-msgstr ""
-"Përdor punim të drejtpërdrejt në rrjet, nëse lidhja përmes %(proxy)s dështon."
+msgstr "Përdor punim të drejtpërdrejt në rrjet, nëse lidhja përmes %(proxy)s dështon."
 
 #: shared-data/default-theme/html/settings/privacy.html:123
 msgid "Disable direct networking connections completely."
@@ -10538,35 +10117,25 @@ msgstr "Aktivizo Tor-in"
 msgid ""
 "Without Tor, Mailpile can not prevent service providers and network "
 "operators from monitoring or tracking your IP address and communications."
-msgstr ""
-"Pa Tor-in, Mailpile-i s’mundet të parandalojë mbikëqyrjen apo gjurmimin e "
-"adresës tuaj IP dhe komunikimeve nga furnizuesh shërbimesh internet dhe "
-"operatorë rrjeti."
+msgstr "Pa Tor-in, Mailpile-i s’mundet të parandalojë mbikëqyrjen apo gjurmimin e adresës tuaj IP dhe komunikimeve nga furnizuesh shërbimesh internet dhe operatorë rrjeti."
 
 #: shared-data/default-theme/html/settings/privacy.html:199
 msgid ""
 "The Mailpile Team publishes updates to notify users of available upgrades "
 "and potential security vulnerabilities in Mailpile."
-msgstr ""
-"Ekipi i Mailpile-it boton përditësime për të njoftuar përdoruesit rreth "
-"përmirësimesh dhe cenueshmërish të mundshme sigurie në Mailpile."
+msgstr "Ekipi i Mailpile-it boton përditësime për të njoftuar përdoruesit rreth përmirësimesh dhe cenueshmërish të mundshme sigurie në Mailpile."
 
 #: shared-data/default-theme/html/settings/privacy.html:203
 msgid ""
 "Update subscriptions help the Mailpile Team keep track of how many people "
 "use Mailpile, what operating systems are in use, and which languages users "
 "speak."
-msgstr ""
-"Përditësimi i pajtimeve e ndihmon ekipin e Mailpile-it të ndjekë se sa vetë "
-"e përdorin Mailpile-in, çfarë sistemesh operativë përdoren, dhe cilët gjuhë "
-"flasin përdoruesit."
+msgstr "Përditësimi i pajtimeve e ndihmon ekipin e Mailpile-it të ndjekë se sa vetë e përdorin Mailpile-in, çfarë sistemesh operativë përdoren, dhe cilët gjuhë flasin përdoruesit."
 
 #: shared-data/default-theme/html/settings/privacy.html:204
 #: shared-data/default-theme/html/settings/privacy.html:266
 msgid "If Tor is not installed, this may leak your IP address."
-msgstr ""
-"Nëse Tor-i s’është i instaluar, kjo mund të shkaktojë zbulimin e adresës "
-"tuaj IP."
+msgstr "Nëse Tor-i s’është i instaluar, kjo mund të shkaktojë zbulimin e adresës tuaj IP."
 
 #: shared-data/default-theme/html/settings/privacy.html:208
 msgid "Consult the Mailpile wiki for more details"
@@ -10583,16 +10152,12 @@ msgstr "Shkarkoni vetëm përditësim në mënyrë anonime përmes Tor-it."
 #: shared-data/default-theme/html/settings/privacy.html:228
 msgid ""
 "Generic updates only, over Tor - keeps all details about your setup private."
-msgstr ""
-"Vetëm për përditësime të përgjithshme, përmes Tor-i - i ruan krejt hollësitë "
-"rreth rregullimet tuaj privat."
+msgstr "Vetëm për përditësime të përgjithshme, përmes Tor-i - i ruan krejt hollësitë rreth rregullimet tuaj privat."
 
 #: shared-data/default-theme/html/settings/privacy.html:234
 msgid ""
 "Download generic updates only, to keep details about your setup private."
-msgstr ""
-"Shkarko vetëm përditësime të thjeshta, për të mbajtur private hollësitë "
-"rreth rregullimit tuaj të sistemit."
+msgstr "Shkarko vetëm përditësime të thjeshta, për të mbajtur private hollësitë rreth rregullimit tuaj të sistemit."
 
 #: shared-data/default-theme/html/settings/privacy.html:241
 msgid "Keep your custom settings:"
@@ -10613,24 +10178,19 @@ msgstr "Lëndë Palësh të Treta"
 
 #: shared-data/default-theme/html/settings/privacy.html:260
 msgid "Mailpile can download content from the web to augment your mail."
-msgstr ""
-"Mailpile-i mund të shkarkojë lëndë nga web-i që të pasurojë postën tuaj."
+msgstr "Mailpile-i mund të shkarkojë lëndë nga web-i që të pasurojë postën tuaj."
 
 #: shared-data/default-theme/html/settings/privacy.html:261
 msgid ""
 "This includes user photos from Gravatar, key material from key servers, and "
 "potentially other sources."
-msgstr ""
-"Kjo përmbledh foto përdoruesish nga Gravatari, lëndë kyçesh nga shërbyes "
-"kyçesh, dhe burime të tjera potencialisht."
+msgstr "Kjo përmbledh foto përdoruesish nga Gravatari, lëndë kyçesh nga shërbyes kyçesh, dhe burime të tjera potencialisht."
 
 #: shared-data/default-theme/html/settings/privacy.html:265
 msgid ""
-"This may leak information about your address book and use of Mailpile to the "
-"providers of these services."
-msgstr ""
-"Kjo mund të sjellë zbulim të dhënash rreth librit tuaj të adresave dhe "
-"përdorimit të Mailpile-it kundrejt furnizuesve të këtyre shërbimeve."
+"This may leak information about your address book and use of Mailpile to the"
+" providers of these services."
+msgstr "Kjo mund të sjellë zbulim të dhënash rreth librit tuaj të adresave dhe përdorimit të Mailpile-it kundrejt furnizuesve të këtyre shërbimeve."
 
 #: shared-data/default-theme/html/settings/privacy.html:269
 msgid "Learn more about:"
@@ -10653,36 +10213,26 @@ msgid "Securing Your Data"
 msgstr "Sigurim i të Dhënave Tuaja"
 
 #: shared-data/default-theme/html/settings/privacy.html:314
-#, fuzzy
 msgid "Your Mailpile stores data here:"
-msgstr "Mailpile-i juaj është i përditësuar"
+msgstr "Të dhënat tuaja Mailpile gjenden këtu:"
 
 #: shared-data/default-theme/html/settings/privacy.html:319
 msgid "Mailpile can encrypt your e-mail, search engine and settings."
-msgstr ""
-"Mailpile-i mund të fshehtëzojë email-et, motorin e kërkimeve dhe rregullimet "
-"tuaja."
+msgstr "Mailpile-i mund të fshehtëzojë email-et, motorin e kërkimeve dhe rregullimet tuaja."
 
 #: shared-data/default-theme/html/settings/privacy.html:320
 msgid "This protects your privacy, even if your computer gets lost or stolen."
-msgstr ""
-"Kjo mbron privatësinë tuaj, edhe nëse kompjuteri juaj humb apo jua vjedhin."
+msgstr "Kjo mbron privatësinë tuaj, edhe nëse kompjuteri juaj humb apo jua vjedhin."
 
 #: shared-data/default-theme/html/settings/privacy.html:324
 msgid ""
 "Encryption makes it harder to migrate your data to another e-mail client, "
 "slows things down and may increase the odds of data loss."
-msgstr ""
-"Fshehtëzimi e bën të vështirë të migroni të dhënat tuaja në një klient "
-"tjetër email, ngadalëson gjërat dhe mund të rritë gjasat për humbje të "
-"dhënash."
+msgstr "Fshehtëzimi e bën të vështirë të migroni të dhënat tuaja në një klient tjetër email, ngadalëson gjërat dhe mund të rritë gjasat për humbje të dhënash."
 
 #: shared-data/default-theme/html/settings/privacy.html:325
-#, fuzzy
 msgid "Losing your encryption key becomes equivalent to losing the data."
-msgstr ""
-"Humbja e kyçeve tuaj të fshehtëzimit bëhet e njëvlershme me humbjen e krejt "
-"postës tuaj."
+msgstr "Humbja e kyçeve tuaj të fshehtëzimit bëhet e njëvlershme me humbjen e të dhënave tuaja."
 
 #: shared-data/default-theme/html/settings/privacy.html:329
 msgid "Download a backup of current settings and keys."
@@ -10692,18 +10242,15 @@ msgstr "Shkarkoni një kopjeruajtje të rregullimeve të tanishme dhe kyçeve."
 msgid ""
 "Also keep in mind that the security of your data depends entirely on the "
 "strength of your password."
-msgstr ""
-"Mbani gjithashtu parasysh që siguria e të dhënave tuaja varet krejtësisht "
-"nga fortësia e fjalëkalimit tuaj."
+msgstr "Mbani gjithashtu parasysh që siguria e të dhënave tuaja varet krejtësisht nga fortësia e fjalëkalimit tuaj."
 
 #: shared-data/default-theme/html/settings/privacy.html:337
 msgid "You can change your Mailpile Password here."
 msgstr "Fjalëkalimin tuaj për Mailpile-in mund ta ndryshoni këtu."
 
 #: shared-data/default-theme/html/settings/privacy.html:351
-#, fuzzy
 msgid "Allow deletion of e-mail from servers and mailboxes."
-msgstr "Lejo fshirje email-i prej shërbyesish dhe kutish postare"
+msgstr "Lejo fshirje email-i prej shërbyesish dhe kutish postare."
 
 #: shared-data/default-theme/html/settings/privacy.html:387
 msgid "Encrypt the contact database."
@@ -10726,9 +10273,8 @@ msgid "Strongly encrypt the local search index (slow)."
 msgstr "Fshehtëzo fort treguesin lokal të kërkimeve (e ngadaltë)."
 
 #: shared-data/default-theme/html/settings/privacy.html:443
-#, fuzzy
 msgid "Use shared GnuPG keychain for PGP encryption keys."
-msgstr "Përdor varg të përbashkët kyçesh GnuPG për kyçe fshehtëzimi PGP"
+msgstr "Përdor varg të përbashkët kyçesh GnuPG për kyçe fshehtëzimi PGP."
 
 #: shared-data/default-theme/html/settings/privacy.html:447
 msgid "Notes:"
@@ -10738,35 +10284,30 @@ msgstr "Shënime:"
 msgid ""
 "Changing encryption settings will only affect data created or edited from "
 "now on."
-msgstr ""
-"Ndryshimi i rregullimeve të fshehtëzimit do të prekë vetëm të dhëna të "
-"krijuara ose përpunuar nga tani e tutje."
+msgstr "Ndryshimi i rregullimeve të fshehtëzimit do të prekë vetëm të dhëna të krijuara ose përpunuar nga tani e tutje."
 
 #: shared-data/default-theme/html/settings/privacy.html:452
 msgid ""
 "Backups are protected by the same password and encryption as the "
 "configuration."
-msgstr ""
-"Kopjeruajtjet mbrohen me të njëjtin fjalëkalim dhe fshehtëzim si formësimi."
+msgstr "Kopjeruajtjet mbrohen me të njëjtin fjalëkalim dhe fshehtëzim si formësimi."
 
 #: shared-data/default-theme/html/settings/privacy.html:454
 msgid ""
-"The configuration is always kept encrypted, because it may contain passwords."
-msgstr ""
-"Formësimi mbahet përherë i fshehtëzuar, ngaqë mund të përmbajë fjalëkalime."
+"The configuration is always kept encrypted, because it may contain "
+"passwords."
+msgstr "Formësimi mbahet përherë i fshehtëzuar, ngaqë mund të përmbajë fjalëkalime."
 
 #: shared-data/default-theme/html/settings/privacy.html:455
 msgid ""
 "The search index is always at least partially encrypted because it is so "
 "sensitive."
-msgstr ""
-"Treguesi i kërkimeve, përherë, fshehtëzohet të paktën pjesërisht, ngaqë "
-"është kaq me spec."
+msgstr "Treguesi i kërkimeve, përherë, fshehtëzohet të paktën pjesërisht, ngaqë është kaq me spec."
 
 #: shared-data/default-theme/html/settings/privacy.html:463
 #: shared-data/default-theme/html/settings/privacy.html:470
 msgid "WARNING"
-msgstr ""
+msgstr "KUJDES"
 
 #: shared-data/default-theme/html/settings/privacy.html:464
 msgid "Changing GnuPG keychains may prevent decryption of old e-mail!"
@@ -10974,35 +10515,27 @@ msgstr "Shfaq Fjalëkalim Llogarie të Mbajtur Mend"
 #: shared-data/default-theme/html/settings/set/password/index.html:139
 msgid ""
 "Unlocking an account allows Mailpile to use it to send and receive e-mail."
-msgstr ""
-"Shkyçja e një llogarie e lejon Mailpile-in ta përdorë për të dërguar dhe "
-"marrë email."
+msgstr "Shkyçja e një llogarie e lejon Mailpile-in ta përdorë për të dërguar dhe marrë email."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:141
 msgid ""
 "By default, unlocked accounts stay accessible until you restart Mailpile."
-msgstr ""
-"Si parazgjedhje, llogaritë e shkyçura mbeten të përdorshme derisa të rinisni "
-"Mailpile-in."
+msgstr "Si parazgjedhje, llogaritë e shkyçura mbeten të përdorshme derisa të rinisni Mailpile-in."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:144
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the account "
 "again."
-msgstr ""
-"Nëse Mailpile-i e mban mend fjalëkalimin, s’do t’ju duhet të rishkyçni "
-"llogarinë."
+msgstr "Nëse Mailpile-i e mban mend fjalëkalimin, s’do t’ju duhet të rishkyçni llogarinë."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:150
 msgid "Locked accounts can not be used to send or receive e-mail."
-msgstr ""
-"Llogaritë e kyçura s’mund të përdoren për të dërguar ose marrë email-e."
+msgstr "Llogaritë e kyçura s’mund të përdoren për të dërguar ose marrë email-e."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:155
 #: shared-data/default-theme/html/settings/set/password/keys.html:208
 msgid "Please authenticate using your Mailpile password."
-msgstr ""
-"Ju lutemi, bëni mirëfilltësimin duke përdorur fjalëkalimin tuaj për Mailpile."
+msgstr "Ju lutemi, bëni mirëfilltësimin duke përdorur fjalëkalimin tuaj për Mailpile."
 
 #: shared-data/default-theme/html/settings/set/password/index.html:278
 msgid "No Saved Passwords Here!"
@@ -11091,27 +10624,21 @@ msgstr "Shfaq Fjalëkalim Llogarie të Mbajtur Mend"
 msgid ""
 "Unlocking a key allows Mailpile to use it for decryption and creating "
 "digital signatures."
-msgstr ""
-"Shkyçja e një kyçi e lejon Mailpile-in ta përdorë për fshehtëzim dhe për "
-"krijim nënshkrimesh dixhitale."
+msgstr "Shkyçja e një kyçi e lejon Mailpile-in ta përdorë për fshehtëzim dhe për krijim nënshkrimesh dixhitale."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:194
 msgid "By default, unlocked keys stay accessible until you restart Mailpile."
-msgstr ""
-"Si parazgjedhje, kyçet e shkyçur mbeten të tillë dhe të përdorshëm derisa të "
-"riniset Mailpile-i."
+msgstr "Si parazgjedhje, kyçet e shkyçur mbeten të tillë dhe të përdorshëm derisa të riniset Mailpile-i."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:197
 msgid ""
 "If Mailpile remembers the password, you will not have to unlock the key "
 "again."
-msgstr ""
-"Nëse Mailpile-i e mban mend fjalëkalimin, s’do t’ju duhet të rishkyçni kyçin."
+msgstr "Nëse Mailpile-i e mban mend fjalëkalimin, s’do t’ju duhet të rishkyçni kyçin."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:203
 msgid "Locked keys can not be used for decryption or digital signatures."
-msgstr ""
-"Kyçet e kyçur s’mund të përdoren për shfshehtëzim apo nënshkrime dixhitale."
+msgstr "Kyçet e kyçur s’mund të përdoren për shfshehtëzim apo nënshkrime dixhitale."
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:325
 msgid "No Keys Here!"
@@ -11119,9 +10646,7 @@ msgstr "S’ka Kyçe Këtu!"
 
 #: shared-data/default-theme/html/settings/set/password/keys.html:327
 msgid "Encryption keys can be created during the account creation process."
-msgstr ""
-"Kyçet e fshehtëzimit mund të krijohen gjatë procesit të krijimit të "
-"llogarisë."
+msgstr "Kyçet e fshehtëzimit mund të krijohen gjatë procesit të krijimit të llogarisë."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:2
 #: shared-data/default-theme/html/setup/oauth2/index.html:11
@@ -11132,9 +10657,7 @@ msgstr "Akordojini Hyrje"
 msgid ""
 "In order for Mailpile to process your e-mail, you need to grant permission "
 "for the application to access your e-mail account."
-msgstr ""
-"Që Mailpile-i të mund të përpunojë email-et tuaj, lypset të akordoni leje që "
-"aplikacioni të hyjë te llogaria juaj email."
+msgstr "Që Mailpile-i të mund të përpunojë email-et tuaj, lypset të akordoni leje që aplikacioni të hyjë te llogaria juaj email."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:17
 msgid "The authorization process will take place in a new window (or tab)."
@@ -11142,8 +10665,7 @@ msgstr "Procesi i autorizimit do të kryhet në një dritare (ose skedë) të re
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:19
 msgid "You will need to copy and paste an access code into the form below."
-msgstr ""
-"Do t’ju duhet të kopjoni dhe ngjitni te formulari më poshtë një kod hyrjeje."
+msgstr "Do t’ju duhet të kopjoni dhe ngjitni te formulari më poshtë një kod hyrjeje."
 
 #: shared-data/default-theme/html/setup/oauth2/index.html:23
 msgid "Paste your access code here!"
@@ -11186,9 +10708,7 @@ msgstr "Hyrja te Mailpile-i juaj tani e tutje do të kërkojë këtë fjalëkali
 msgid ""
 "All settings and downloaded mail will be encrypted, so even if someone "
 "steals your laptop they will not have access to your e-mail."
-msgstr ""
-"Krejt rregullimet dhe posta e shkarkuar do të fshehtëzohen, kështu që edhe "
-"nëse dikush vjedh laptopin tuaj, ata s’do të mund të hyjnë në email-et tuaj."
+msgstr "Krejt rregullimet dhe posta e shkarkuar do të fshehtëzohen, kështu që edhe nëse dikush vjedh laptopin tuaj, ata s’do të mund të hyjnë në email-et tuaj."
 
 #: shared-data/default-theme/html/setup/password/index.html:23
 msgid "Start using Mailpile"
@@ -11223,23 +10743,19 @@ msgstr "Zgjidhni fjalëkalimin tuaj për Mailpile-in"
 msgid ""
 "Your Mailpile Password should be something really hard to guess but "
 "memorable."
-msgstr ""
-"Fjalëkalimi juaj për Mailpile duhet të jetë diçka përnjëmend e vështirë për "
-"t’u hamendësuar, por që mund të mbahet mend."
+msgstr "Fjalëkalimi juaj për Mailpile duhet të jetë diçka përnjëmend e vështirë për t’u hamendësuar, por që mund të mbahet mend."
 
 #: shared-data/default-theme/html/setup/password/index.html:59
 msgid ""
 "This password will be used to unlock your Mailpile settings, keys and "
 "accounts."
-msgstr ""
-"Ky fjalëkalim do të përdoret për të shkyçur rregullimet, kyçet dhe llogaritë "
-"tuaja Mailpile."
+msgstr "Ky fjalëkalim do të përdoret për të shkyçur rregullimet, kyçet dhe llogaritë tuaja Mailpile."
 
 #: shared-data/default-theme/html/setup/password/index.html:64
 msgid ""
-"We have made a secure recommendation, but you still need to type it yourself!"
-msgstr ""
-"Kemi bërë një rekomandim të sigurt, por lypset ende ta shtypni ju vetë!"
+"We have made a secure recommendation, but you still need to type it "
+"yourself!"
+msgstr "Kemi bërë një rekomandim të sigurt, por lypset ende ta shtypni ju vetë!"
 
 #: shared-data/default-theme/html/setup/password/index.html:67
 msgid "The passwords don't match!"
@@ -11255,9 +10771,7 @@ msgstr "Fjalëkalimi juaj është ca i shkurtër!"
 
 #: shared-data/default-theme/html/setup/password/index.html:74
 msgid "We recommend using a phrase of at least four memorable words."
-msgstr ""
-"Këshillojmë përdorimin e një fraze me të paktën katër fjalë që mund t’i "
-"mbani mend."
+msgstr "Këshillojmë përdorimin e një fraze me të paktën katër fjalë që mund t’i mbani mend."
 
 #: shared-data/default-theme/html/setup/password/index.html:86
 msgid "Confirm your Mailpile Password"
@@ -11277,8 +10791,7 @@ msgstr "Ju ndan një hap nga përdorimi i email-it të sigurt si kurrë më par�
 
 #: shared-data/default-theme/html/setup/welcome/index.html:25
 msgid "Uh oh! You have JavaScript disabled. This will cause problems."
-msgstr ""
-"Hëm! E keni Javascript-in të çaktivizuar. Kjo do të shkaktojë probleme."
+msgstr "Hëm! E keni Javascript-in të çaktivizuar. Kjo do të shkaktojë probleme."
 
 #: shared-data/default-theme/html/setup/welcome/index.html:31
 msgid "Select Language"
@@ -11363,9 +10876,7 @@ msgstr "Automatizim"
 
 #: shared-data/default-theme/html/tags/form.html:219
 msgid "Enable to tag messages automatically, like spam."
-msgstr ""
-"Aktivizojeni që të etiketohen mesazhet automatikisht, fjala vjen si mesazhe "
-"të padëshiruar."
+msgstr "Aktivizojeni që të etiketohen mesazhet automatikisht, fjala vjen si mesazhe të padëshiruar."
 
 #: shared-data/default-theme/html/tags/form.html:220
 msgid "Tag or un-tag mail by hand to train the system."
@@ -11508,87 +11019,3 @@ msgstr "S’u arrit të lidhet me Mailpile-in!"
 #: shared-data/mailpile-gui/mailpile-gui.py:311
 msgid "Failed to launch Mailpile!"
 msgstr "S’u arrit të niset Mailpile-i!"
-
-#~ msgid "Message not found?"
-#~ msgstr "S’u gjet mesazh?"
-
-#~ msgid "MaybeSpam"
-#~ msgstr "Ndoshta të padëshiruar"
-
-#~ msgid "DNS PKA records"
-#~ msgstr "Zë PKA DNS"
-
-#~ msgid "Your spam filter is broken: please install spambayes"
-#~ msgstr ""
-#~ "Filtri juaj për mesazhe të padëshiruar është i prishur: ju lutemi, "
-#~ "instaloni spambayes"
-
-#~ msgid "Could Not Render Composer"
-#~ msgstr "S’u Vizatua Dot Hartuesi"
-
-#~ msgid "People in Conversation"
-#~ msgstr "Persona në Bisedë"
-
-#~ msgid "Tags in Conversation"
-#~ msgstr "Etiketa në Bisedë"
-
-#~ msgid "This key is on your key chain."
-#~ msgstr "Ky kyç gjendet te vargu juaj i kyçeve."
-
-#~ msgid "Message moved to new thread"
-#~ msgstr "Mesazhi u kalua në rrjedhë të re"
-
-#~ msgid "go to new thread"
-#~ msgstr "shko te rrjedha e re"
-
-#~ msgid "View e-mail from this mailing list"
-#~ msgstr "Shihni email nga kjo listë postimesh"
-
-#~ msgid "Move"
-#~ msgstr "Kaloje"
-
-#~ msgid "Archive Message"
-#~ msgstr "Arkivoje Mesazhin"
-
-#~ msgid "Flag as Spam"
-#~ msgstr "Vëri shenjë si I padëshiruar"
-
-#~ msgid "Remove from Thread"
-#~ msgstr "Hiqe prej Rrjedhe"
-
-#~ msgid "Unsubscribe"
-#~ msgstr "Shpajtomëni"
-
-#~ msgid "View Profile"
-#~ msgstr "Shihni Profilin"
-
-#~ msgid "Compose New"
-#~ msgstr "Hartoni të Ri"
-
-#~ msgid "Bcc:"
-#~ msgstr "Bcc:"
-
-#~ msgid "View:"
-#~ msgstr "Parje:"
-
-#~ msgid "JSON"
-#~ msgstr "JSON"
-
-#~ msgid "Raw Source"
-#~ msgstr "Burim i Papërpunuar"
-
-#~ msgid "People"
-#~ msgstr "Persona"
-
-#~ msgid "Create a new 4096 bit RSA key (slow)"
-#~ msgstr "Krijoni një kyç të ri RSA 4096 bit (e ngadaltë)"
-
-#~ msgid "Automatically attach encryption keys to outgoing mail"
-#~ msgstr "Postës që dërgohet bashkëngjiti vetvetiu kyçet e fshehtëzimit"
-
-#~ msgid ""
-#~ "You need to have already installed and enabled the Tor service on your "
-#~ "computer."
-#~ msgstr ""
-#~ "Lypset të keni tashmë të instaluar dhe aktivizuar shërbimin Tor në "
-#~ "kompjuterin tuaj."

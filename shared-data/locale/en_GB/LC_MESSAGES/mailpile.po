@@ -1,7 +1,7 @@
 # Translations template for mailpile.
-# Copyright (C) 2018 Mailpile ehf
+# Copyright (C) 2019 Mailpile ehf
 # This file is distributed under the same license as the mailpile project.
-#
+# 
 # Translators:
 # Andi Chandler <andi@gowling.com>, 2016-2018
 # Daniel Johnson <dxni.johnson@gmail.com>, 2018
@@ -10,16 +10,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-08-16 17:38+0000\n"
-"PO-Revision-Date: 2018-05-18 15:54+0000\n"
+"POT-Creation-Date: 2019-08-16 17:28+0000\n"
+"PO-Revision-Date: 2019-08-17 02:52+0000\n"
 "Last-Translator: Dragana Kaurin <dragana.kaurin@localizationlab.org>\n"
-"Language-Team: English (United Kingdom) (http://www.transifex.com/otf/"
-"mailpile/language/en_GB/)\n"
-"Language: en_GB\n"
+"Language-Team: English (United Kingdom) (http://www.transifex.com/otf/mailpile/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.4.0\n"
+"Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: mailpile/app.py:125
@@ -988,14 +987,12 @@ msgid "Mailboxes we index"
 msgstr "Mailboxes we index"
 
 #: mailpile/config/defaults.py:59
-#, fuzzy
 msgid "Plugins to load before login"
-msgstr "Plugins to load on startup"
+msgstr ""
 
 #: mailpile/config/defaults.py:61
-#, fuzzy
 msgid "Plugins to load after login"
-msgstr "Plugins to load on startup"
+msgstr ""
 
 #: mailpile/config/defaults.py:63
 msgid "Locations of assorted data"
@@ -1062,9 +1059,8 @@ msgid "List of hosts to avoid proxying"
 msgstr ""
 
 #: mailpile/config/defaults.py:82
-#, fuzzy
 msgid "Tor settings"
-msgstr "Settings"
+msgstr ""
 
 #: mailpile/config/defaults.py:83
 msgid "Override the default Tor binary path"
@@ -1087,9 +1083,8 @@ msgid "Control Port"
 msgstr ""
 
 #: mailpile/config/defaults.py:90
-#, fuzzy
 msgid "Control Password"
-msgstr "Enter your password"
+msgstr ""
 
 #: mailpile/config/defaults.py:93
 msgid "User preferences"
@@ -1756,9 +1751,8 @@ msgid "Waiting to generate a PGP key."
 msgstr ""
 
 #: mailpile/crypto/gpgi.py:1781
-#, fuzzy
 msgid "Generating new PGP key."
-msgstr "Generating result"
+msgstr ""
 
 #: mailpile/crypto/gpgi.py:1863
 #, python-format
@@ -1942,9 +1936,8 @@ msgid "Updating search engine for %s"
 msgstr ""
 
 #: mailpile/mail_source/__init__.py:1056
-#, fuzzy
 msgid "Checking new credentials"
-msgstr "Checking for new mailboxes"
+msgstr ""
 
 #: mailpile/mail_source/__init__.py:1107
 msgid "Internal error!  Sleeping..."
@@ -2370,9 +2363,8 @@ msgid "Failed to attach files"
 msgstr "Failed to attach files"
 
 #: mailpile/plugins/compose.py:1014
-#, fuzzy
 msgid "Cannot find message"
-msgstr "Sent %d messages"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1019
 #, python-format
@@ -2397,9 +2389,9 @@ msgid "Unthreaded %d messages"
 msgstr ""
 
 #: mailpile/plugins/compose.py:1090
-#, fuzzy, python-format
+#, python-format
 msgid "Unthread %d messages"
-msgstr "Sent %d messages"
+msgstr ""
 
 #: mailpile/plugins/compose.py:1107
 msgid "The index is not ready yet"
@@ -2482,11 +2474,9 @@ msgstr ""
 #: mailpile/plugins/contacts.py:631
 #, python-format
 msgid ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
-msgstr ""
-"Unknown parameter passed to importer. Provided %s; but known parameters are: "
-"%s"
+"Unknown parameter passed to importer. Provided %s; but known parameters are:"
+" %s"
+msgstr "Unknown parameter passed to importer. Provided %s; but known parameters are: %s"
 
 #: mailpile/plugins/contacts.py:800
 msgid "Searched for addresses"
@@ -2582,9 +2572,9 @@ msgid "Rescanning: %s"
 msgstr "Rescanning: %s"
 
 #: mailpile/plugins/core.py:183
-#, fuzzy, python-format
+#, python-format
 msgid "Importing VCards from: %s"
-msgstr "Importing contacts from GPG keyring"
+msgstr ""
 
 #: mailpile/plugins/core.py:202
 #, python-format
@@ -2875,19 +2865,18 @@ msgstr "No results"
 
 #: mailpile/plugins/crypto_autocrypt.py:191
 #: mailpile/plugins/crypto_autocrypt.py:218
-#, fuzzy
 msgid "Not found"
-msgstr "No data found"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:216
-#, fuzzy, python-format
+#, python-format
 msgid "Forgot %d recipients"
-msgstr "No Recipients"
+msgstr ""
 
 #: mailpile/plugins/crypto_autocrypt.py:265
-#, fuzzy, python-format
+#, python-format
 msgid "Found %d peers"
-msgstr "Found %d events"
+msgstr ""
 
 #: mailpile/plugins/crypto_gnupg.py:47
 msgid ""
@@ -3068,7 +3057,8 @@ msgid "This account does not have an encryption key."
 msgstr ""
 
 #: mailpile/plugins/crypto_policy.py:208
-msgid "Your policy is to always encrypt, but we do not have keys for everyone!"
+msgid ""
+"Your policy is to always encrypt, but we do not have keys for everyone!"
 msgstr ""
 
 #: mailpile/plugins/crypto_policy.py:211
@@ -3375,9 +3365,8 @@ msgid "Failed to parse message."
 msgstr ""
 
 #: mailpile/plugins/search.py:375
-#, fuzzy
 msgid "Failed to evalute sender trust"
-msgstr "Failed to reindex: %s"
+msgstr ""
 
 #: mailpile/plugins/search.py:381
 #, python-format
@@ -3537,8 +3526,8 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:354
 msgid ""
-"Unable to obfuscate search index without losing data. Not indexing encrypted "
-"mail."
+"Unable to obfuscate search index without losing data. Not indexing encrypted"
+" mail."
 msgstr ""
 
 #: mailpile/plugins/setup_magic.py:360
@@ -3951,9 +3940,8 @@ msgid "Found key in local e-mail"
 msgstr ""
 
 #: mailpile/plugins/keylookup/wkd.py:49
-#, fuzzy
 msgid "Web Key Directory"
-msgstr "Search index directory"
+msgstr ""
 
 #: mailpile/plugins/keylookup/wkd.py:64
 msgid "Found key in Web Key Directory"
@@ -4207,9 +4195,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:212
-#, fuzzy
 msgid "Generate long skips"
-msgstr "Generating result"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:213
 msgid ""
@@ -4277,9 +4264,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:252
-#, fuzzy
 msgid "Search for Habeas Headers"
-msgstr "Searched for addresses"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:253
 msgid ""
@@ -4362,8 +4348,7 @@ msgid ""
 "     something scores >= spamc, it's called spam; and everything else is\n"
 "     called 'I am not sure' -- the middle ground.\n"
 "\n"
-"     Note:  You may wish to increase nbuckets, to give this scheme more "
-"cutoff\n"
+"     Note:  You may wish to increase nbuckets, to give this scheme more cutoff\n"
 "     values to analyze."
 msgstr ""
 
@@ -4380,9 +4365,8 @@ msgid "Best cutoff unsure weight"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:352
-#, fuzzy
 msgid "Percentiles"
-msgstr "Profiles"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:353
 #, python-format
@@ -4454,9 +4438,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:417
-#, fuzzy
 msgid "Spam directories"
-msgstr "Not a directory: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:418 mailpile/spambayes/Options.py:423
 msgid ""
@@ -4465,9 +4448,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:422
-#, fuzzy
 msgid "Ham directories"
-msgstr "Not a directory: %s"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:429
 msgid "Build each classifier from scratch"
@@ -4510,9 +4492,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:456
-#, fuzzy
 msgid "Unknown word strength"
-msgstr "Unknown content-type"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:457
 msgid ""
@@ -4583,10 +4564,8 @@ msgid ""
 "     probably at least triple it.\n"
 "\n"
 "     You may also wish to increase the max_discriminators (maximum number\n"
-"     of extreme words) option if you enable this option, perhaps doubling "
-"or\n"
-"     quadrupling it.  It's not yet clear.  Bigrams create many more "
-"hapaxes,\n"
+"     of extreme words) option if you enable this option, perhaps doubling or\n"
+"     quadrupling it.  It's not yet clear.  Bigrams create many more hapaxes,\n"
 "     and that seems to increase the brittleness of minimalist training\n"
 "     regimes; increasing max_discriminators may help to soften that effect.\n"
 "     OTOH, max_discriminators defaults to 150 in part because that makes it\n"
@@ -4628,9 +4607,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:552
-#, fuzzy
 msgid "Storage file name"
-msgstr "Source name"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:553
 msgid ""
@@ -4643,9 +4621,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:561
-#, fuzzy
 msgid "Message information file name"
-msgstr "Message is not editable"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:562
 msgid ""
@@ -4679,9 +4656,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:582 mailpile/spambayes/Options.py:597
-#, fuzzy
 msgid "Spam cache directory"
-msgstr "Search index directory"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:583 mailpile/spambayes/Options.py:598
 msgid ""
@@ -4690,9 +4666,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:587 mailpile/spambayes/Options.py:602
-#, fuzzy
 msgid "Ham cache directory"
-msgstr "Search index directory"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:588 mailpile/spambayes/Options.py:603
 msgid ""
@@ -4701,9 +4676,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:592 mailpile/spambayes/Options.py:607
-#, fuzzy
 msgid "Unknown cache directory"
-msgstr "Search index directory"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:593 mailpile/spambayes/Options.py:608
 msgid ""
@@ -4712,9 +4686,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:612
-#, fuzzy
 msgid "Cache messages"
-msgstr "No messages!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:613
 msgid ""
@@ -4743,9 +4716,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:632
-#, fuzzy
 msgid "Maximum size of cached messages"
-msgstr "Failed to add message"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:633
 msgid ""
@@ -4798,9 +4770,8 @@ msgstr ""
 #: mailpile/spambayes/Options.py:670 mailpile/spambayes/Options.py:773
 #: mailpile/spambayes/Options.py:778 mailpile/spambayes/Options.py:1021
 #: mailpile/spambayes/Options.py:1027 mailpile/spambayes/Options.py:1033
-#, fuzzy
 msgid "ham"
-msgstr "Ham"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:671
 msgid "As for Spam Designation, but for emails classified as Ham."
@@ -4838,8 +4809,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:686
 msgid ""
 "Set this option to augment scores of 1.00 or 0.00 by a\n"
-"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows "
-"the\n"
+"     logarithmic \"one-ness\" or \"zero-ness\" score (basically it shows the\n"
 "     \"number of zeros\" or \"number of nines\" next to the score value)."
 msgstr ""
 
@@ -4898,9 +4868,8 @@ msgid "Spambayes id header name"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:730
-#, fuzzy
 msgid "Add trained header"
-msgstr "Add tags here!"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:731
 msgid ""
@@ -4928,8 +4897,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:744
 msgid ""
 "The range of clues that are added to the \"debug\" header in the\n"
-"     E-mail. All clues that have their probability smaller than this "
-"number,\n"
+"     E-mail. All clues that have their probability smaller than this number,\n"
 "     or larger than one minus this number are added to the header such that\n"
 "     you can see why spambayes thinks this is ham/spam or why it is unsure.\n"
 "     The default is to show all clues, but you can reduce that by setting\n"
@@ -4981,9 +4949,8 @@ msgstr ""
 
 #: mailpile/spambayes/Options.py:786 mailpile/spambayes/Options.py:844
 #: mailpile/spambayes/Options.py:921
-#, fuzzy
 msgid "Remote Servers"
-msgstr "Server"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:787
 msgid ""
@@ -4991,19 +4958,15 @@ msgid ""
 "     before sending it on to your email client.  You need to specify which\n"
 "     POP3 server(s) and port(s) you wish it to connect to - a POP3 server\n"
 "     address typically looks like 'pop3.myisp.net:110' where\n"
-"     'pop3.myisp.net' is the name of the computer where the POP3 server "
-"runs\n"
-"     and '110' is the port on which the POP3 server listens.  The other "
-"port\n"
+"     'pop3.myisp.net' is the name of the computer where the POP3 server runs\n"
+"     and '110' is the port on which the POP3 server listens.  The other port\n"
 "     you might find is '995', which is used for secure POP3.  If you use\n"
 "     more than one server, simply separate their names with commas.  For\n"
 "     example:  'pop3.myisp.net:110,pop.gmail.com:995'.  You can get\n"
 "     these server names and port numbers from your existing email\n"
 "     configuration, or from your ISP or system administrator.  If you are\n"
-"     using Web-based email, you can't use the SpamBayes POP3 proxy "
-"(sorry!).\n"
-"     In your email client's configuration, where you would normally put "
-"your\n"
+"     using Web-based email, you can't use the SpamBayes POP3 proxy (sorry!).\n"
+"     In your email client's configuration, where you would normally put your\n"
 "     POP3 server address, you should now put the address of the machine\n"
 "     running SpamBayes.\n"
 msgstr ""
@@ -5224,9 +5187,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:993
-#, fuzzy
 msgid "Display date received in message review"
-msgstr "Displayed welcome message"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:994
 msgid ""
@@ -5237,9 +5199,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1000
-#, fuzzy
 msgid "Display score in message review"
-msgstr "Displayed welcome message"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1001
 msgid ""
@@ -5339,8 +5300,7 @@ msgstr ""
 #: mailpile/spambayes/Options.py:1050
 msgid ""
 "This option lets you choose the security level of the web interface.\n"
-"     When selecting Basic or Digest, the user will be prompted a login and "
-"a\n"
+"     When selecting Basic or Digest, the user will be prompted a login and a\n"
 "     password to access the web interface. The Basic option is faster, but\n"
 "     transmits the password in clear on the network. The Digest option\n"
 "     encrypts the password before transmission."
@@ -5440,18 +5400,16 @@ msgid "Comma delimited list of folders to be filtered"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1116
-#, fuzzy
 msgid "Folder for unsure messages"
-msgstr "Failed to remove message"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1120
 msgid "Folder for suspected spam"
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1124
-#, fuzzy
 msgid "Folder for ham messages"
-msgstr "Failed to add message"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1125
 msgid ""
@@ -5582,9 +5540,8 @@ msgid ""
 msgstr ""
 
 #: mailpile/spambayes/Options.py:1239
-#, fuzzy
 msgid "User Interface Language"
-msgstr "User interface language"
+msgstr ""
 
 #: mailpile/spambayes/Options.py:1240
 msgid ""
@@ -5664,8 +5621,8 @@ msgstr ""
 
 #: mailpile/www/jinjaextensions.py:368
 msgid ""
-"This message has no digital signature, which means it could easily have been "
-"forged. This sender usually signs their messages, so be careful!"
+"This message has no digital signature, which means it could easily have been"
+" forged. This sender usually signs their messages, so be careful!"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:374
@@ -5690,8 +5647,8 @@ msgstr "Revoked"
 
 #: mailpile/www/jinjaextensions.py:386
 msgid ""
-"Watch out, the digital signature was made with a key that has been revoked - "
-"this is not a good thing"
+"Watch out, the digital signature was made with a key that has been revoked -"
+" this is not a good thing"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:391
@@ -5717,7 +5674,8 @@ msgid "Mixed Expired"
 msgstr "Mixed Expired"
 
 #: mailpile/www/jinjaextensions.py:403
-msgid "Parts of this message have a digital signature made with an expired key"
+msgid ""
+"Parts of this message have a digital signature made with an expired key"
 msgstr ""
 
 #: mailpile/www/jinjaextensions.py:409
@@ -5731,11 +5689,9 @@ msgstr "Mixed Unknown"
 
 #: mailpile/www/jinjaextensions.py:415
 msgid ""
-"Parts of this message have a signature made with an unknown key which we can "
-"not verify"
-msgstr ""
-"Parts of this message have a signature made with an unknown key which we "
-"cannot verify"
+"Parts of this message have a signature made with an unknown key which we can"
+" not verify"
+msgstr "Parts of this message have a signature made with an unknown key which we cannot verify"
 
 #: mailpile/www/jinjaextensions.py:420
 msgid "Changed"
@@ -5836,9 +5792,9 @@ msgid "Mixed Encrypted"
 msgstr "Mixed Encrypted"
 
 #: mailpile/www/jinjaextensions.py:515
-msgid "Part of this message were encrypted, but other parts were not encrypted"
-msgstr ""
+msgid ""
 "Part of this message were encrypted, but other parts were not encrypted"
+msgstr "Part of this message were encrypted, but other parts were not encrypted"
 
 #: mailpile/www/jinjaextensions.py:520
 msgid "Locked Key"
@@ -5933,9 +5889,7 @@ msgstr ""
 msgid ""
 "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
 "Are you sure you want to continue?\\n"
-msgstr ""
-"Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  "
-"Are you sure you want to continue?\\n"
+msgstr "Mailpile security tip: \\n\\n  Uh oh! This web site may be dangerous!\\n  Are you sure you want to continue?\\n"
 
 #: mailpile/www/jinjaextensions.py:824 mailpile/www/jinjaextensions.py:832
 msgid "No Subject"
@@ -6002,9 +5956,8 @@ msgid "Displayed raw metadata"
 msgstr "Displayed raw metadata"
 
 #: shared-data/contrib/hacks/hacks.py:194
-#, fuzzy
 msgid "Edited raw metadata"
-msgstr "Displayed raw metadata"
+msgstr ""
 
 #: shared-data/contrib/hacks/hacks.py:213
 msgid "Displayed message keywords"
@@ -6108,9 +6061,9 @@ msgid "Note"
 msgstr ""
 
 #: shared-data/default-theme/html/auth/shared.html:47
-msgid "Mailpile is still running and processing your e-mail in the background."
-msgstr ""
-"Mailpile is still running and processing your e-mails in the background."
+msgid ""
+"Mailpile is still running and processing your e-mail in the background."
+msgstr "Mailpile is still running and processing your e-mails in the background."
 
 #: shared-data/default-theme/html/auth/shared.html:48
 msgid ""
@@ -6364,9 +6317,7 @@ msgstr ""
 msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
-msgstr ""
-"You have no encryption keys for this contact. You need encryption keys in "
-"order to communicate securely."
+msgstr "You have no encryption keys for this contact. You need encryption keys in order to communicate securely."
 
 #: shared-data/default-theme/html/contacts/view/index.html:95
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:40
@@ -6494,8 +6445,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:155
 msgid ""
-"If this certificate error is unsual, then adding a security exception is not "
-"recommended."
+"If this certificate error is unsual, then adding a security exception is not"
+" recommended."
 msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:162
@@ -6530,8 +6481,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:218
 msgid ""
-"When TOFU is in use, if the remote certificate ever changes the new one will "
-"be rejected until you add another exception."
+"When TOFU is in use, if the remote certificate ever changes the new one will"
+" be rejected until you add another exception."
 msgstr ""
 
 #: shared-data/default-theme/html/crypto/tls/getcert/index.html:234
@@ -6606,8 +6557,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:13
 msgid ""
-"Here will be a list of keyboard shortcuts / keybindings for all you cool cat "
-"power users out there!"
+"Here will be a list of keyboard shortcuts / keybindings for all you cool cat"
+" power users out there!"
 msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:15
@@ -6616,13 +6567,10 @@ msgstr ""
 
 #: shared-data/default-theme/html/help/index.html:16
 msgid ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you how to use your Mailpile in the "
-"most secure way possible."
-msgstr ""
-"Are you new to all these terms like encryption and keys? Don't fret. We will "
-"do our best to help explain and educate you on how to use your Mailpile in "
-"the most secure way possible."
+"Are you new to all these terms like encryption and keys? Don't fret. We will"
+" do our best to help explain and educate you how to use your Mailpile in the"
+" most secure way possible."
+msgstr "Are you new to all these terms like encryption and keys? Don't fret. We will do our best to help explain and educate you on how to use your Mailpile in the most secure way possible."
 
 #: shared-data/default-theme/html/help/index.html:20
 msgid "Gmail's 2 Step App Passwords"
@@ -6864,17 +6812,13 @@ msgstr ""
 msgid ""
 "This message and attachments will be encrypted. The recipients & subject "
 "(metadata) will not"
-msgstr ""
-"This message and attachments will be encrypted. The recipients & subject "
-"(metadata) will not"
+msgstr "This message and attachments will be encrypted. The recipients & subject (metadata) will not"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:263
 msgid ""
 "This message cannot be encrypted because you do not have keys for one or "
 "more recipients"
-msgstr ""
-"This message cannot be encrypted because you do not have keys for one or "
-"more recipients"
+msgstr "This message cannot be encrypted because you do not have keys for one or more recipients"
 
 #: shared-data/default-theme/html/jsapi/compose/crypto.js:265
 msgid "Can Not Encrypt"
@@ -6922,9 +6866,8 @@ msgid "No Email"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/find.js:147
-#, fuzzy
 msgid "Searching"
-msgstr "Search"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/crypto/import.js:83
 msgid "is too large:"
@@ -7113,7 +7056,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:48
-msgid "I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
+msgid ""
+"I am pretty sure e-mail from ThinkGeeks 2011 X-mas sale can be deleted."
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:49
@@ -7214,7 +7158,8 @@ msgid "Mailpile by default encrypts your search index!"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:72
-msgid "The most common e-mail password is 123456, hopefully yours is different"
+msgid ""
+"The most common e-mail password is 123456, hopefully yours is different"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:75
@@ -7292,7 +7237,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:93
-msgid "Did you know humans share 50 percent of their DNA with a banana? Freaky"
+msgid ""
+"Did you know humans share 50 percent of their DNA with a banana? Freaky"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:94
@@ -7341,11 +7287,9 @@ msgstr ""
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:105
 msgid ""
-"Hey, there is some Nigerian prince here who wants to give you twenty million "
-"dollars..."
-msgstr ""
-"Hey, there is some Nigerian Prince here who wants to give you twenty million "
-"Dollars..."
+"Hey, there is some Nigerian prince here who wants to give you twenty million"
+" dollars..."
+msgstr "Hey, there is some Nigerian Prince here who wants to give you twenty million Dollars..."
 
 #: shared-data/default-theme/html/jsapi/global/silly.js:106
 msgid "How rude!"
@@ -7567,9 +7511,8 @@ msgid ""
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:93
-#, fuzzy
 msgid "Search All Sources"
-msgstr "Search Terms"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-composer-encryption-helper.html:98
 #: shared-data/default-theme/html/partials/hidden.html:151
@@ -7617,19 +7560,16 @@ msgid "Mailing list"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:42
-#, fuzzy
 msgid "E-mail client"
-msgstr "E-mail"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:46
-#, fuzzy
 msgid "Message structure"
-msgstr "Messages"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:50
-#, fuzzy
 msgid "Sender fingerprint"
-msgstr "No Fingerprint"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:59
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:66
@@ -7649,18 +7589,16 @@ msgid "Has an image"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:78
-#, fuzzy
 msgid "Has an attachment"
-msgstr "Extracted attachment %s"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:85
 msgid "Has a digital signature"
 msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:91
-#, fuzzy
 msgid "Is encrypted"
-msgstr "Encrypted"
+msgstr ""
 
 #: shared-data/default-theme/html/jsapi/templates/modal-related-search.html:108
 msgid "Additional search terms"
@@ -8202,8 +8140,8 @@ msgstr "Donate"
 
 #: shared-data/default-theme/html/page/contribute/index.html:19
 msgid ""
-"Employing people to work on Mailpile full time is the fastest way to improve "
-"the software."
+"Employing people to work on Mailpile full time is the fastest way to improve"
+" the software."
 msgstr ""
 
 #: shared-data/default-theme/html/page/contribute/index.html:20
@@ -8470,8 +8408,8 @@ msgstr ""
 #: shared-data/default-theme/html/page/release-notes/index.html:49
 #, python-format
 msgid ""
-"Per-tag automatic bayesian classification, as <a target=_blank href="
-"\"%(blog_url)s\">discussed on our blog</a>"
+"Per-tag automatic bayesian classification, as <a target=_blank "
+"href=\"%(blog_url)s\">discussed on our blog</a>"
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:51
@@ -8489,9 +8427,9 @@ msgstr ""
 #: shared-data/default-theme/html/page/release-notes/index.html:57
 #, python-format
 msgid ""
-"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed issues</"
-"a> and <a target=_blank href=\"%(release_url)s\">issues closed for this "
-"release</a>"
+"See GitHub for <a target=_blank href=\"%(closed_url)s\">all closed "
+"issues</a> and <a target=_blank href=\"%(release_url)s\">issues closed for "
+"this release</a>"
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:63
@@ -8515,8 +8453,7 @@ msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:70
 #, python-format
-msgid ""
-"Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
+msgid "Github has <a target=_blank href=\"%(issues_url)s\">many open issues</a>."
 msgstr ""
 
 #: shared-data/default-theme/html/page/release-notes/index.html:72
@@ -8639,8 +8576,8 @@ msgstr ""
 #: shared-data/default-theme/html/partials/error_message_missing.html:37
 #, python-format
 msgid ""
-"If you think this is a bug, please <a href=\"%(url)s\" target=\"_blank"
-"\">file a report</a> including the technical details above."
+"If you think this is a bug, please <a href=\"%(url)s\" "
+"target=\"_blank\">file a report</a> including the technical details above."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/error_message_missing.html:47
@@ -8655,9 +8592,7 @@ msgstr "Contact Missing"
 msgid ""
 "We were unable to find the contact you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"We were unable to find the contact you requested, perhaps it was typed (or "
-"linked to) incorrectly?"
+msgstr "We were unable to find the contact you requested, perhaps it was typed (or linked to) incorrectly?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:6
 msgid "Tag Missing"
@@ -8667,9 +8602,7 @@ msgstr "Tag Missing"
 msgid ""
 "We were unable to find the tag you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
-msgstr ""
-"We were unable to find the tag you requested, perhaps it was typed (or "
-"linked to) incorrectly?"
+msgstr "We were unable to find the tag you requested, perhaps it was typed (or linked to) incorrectly?"
 
 #: shared-data/default-theme/html/partials/errors_content.html:9
 msgid "Oops, You've Found a Quirk"
@@ -8679,18 +8612,14 @@ msgstr "Oops, You've Found a Quirk"
 msgid ""
 "There's something happening here. What it is ain't exactly clear. Everybody "
 "look what's going down."
-msgstr ""
-"There's something happening here. What it is ain't exactly clear. Everybody "
-"look what's going down."
+msgstr "There's something happening here. What it is ain't exactly clear. Everybody look what's going down."
 
 #: shared-data/default-theme/html/partials/errors_content.html:12
 #, python-format
 msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
+"If you think this is a bug, please file a <a href=\"%(url)s\" "
+"target=\"_blank\">bug report</a>"
+msgstr "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank\">bug report</a>"
 
 #: shared-data/default-theme/html/partials/helpers.html:14
 #: shared-data/default-theme/html/partials/helpers.html:15
@@ -8861,7 +8790,8 @@ msgid "This message has HTML formatted content."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:8
-msgid "For security reasons, Mailpile will by default only display plain text."
+msgid ""
+"For security reasons, Mailpile will by default only display plain text."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_email_hints.html:10
@@ -8895,9 +8825,8 @@ msgid "Links are blocked."
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:91
-#, fuzzy
 msgid "Remove from spam"
-msgstr "Remove Tag"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:92
 #: shared-data/default-theme/html/partials/pile_message.html:96
@@ -8911,9 +8840,8 @@ msgid "Send to spam"
 msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:101
-#, fuzzy
 msgid "Add to contacts"
-msgstr "Added %d contacts"
+msgstr ""
 
 #: shared-data/default-theme/html/partials/pile_message.html:189
 msgid "Unknown Text Part"
@@ -9510,9 +9438,8 @@ msgid "Create a new Autocrypt Level 1.1 compatible key (Ed25519)"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
-#, fuzzy
 msgid "Create a new 4096 bit RSA key"
-msgstr "Create a new tag"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:732
 msgid "Legacy, strong"
@@ -9575,9 +9502,8 @@ msgid "Use Autocrypt to exchange encryption keys"
 msgstr ""
 
 #: shared-data/default-theme/html/profiles/account-form.html:837
-#, fuzzy
 msgid "Use attachments to exchange encryption keys"
-msgstr "Missing encryption keys"
+msgstr ""
 
 #: shared-data/default-theme/html/profiles/index.html:9
 #: shared-data/default-theme/html/profiles/index.html:47
@@ -9822,8 +9748,8 @@ msgstr ""
 #: shared-data/default-theme/html/search/prev_more_next.html:47
 #, python-format
 msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
+"Searched <strong>%(number)s</strong> messages in "
+"<strong>%(elapsed)s</strong> seconds."
 msgstr ""
 
 #: shared-data/default-theme/html/search/prev_more_next.html:49
@@ -9934,7 +9860,8 @@ msgid "Author"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/plugins.html:62
-msgid "This plugin is meant for developers and may be incomplete or dangerous."
+msgid ""
+"This plugin is meant for developers and may be incomplete or dangerous."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/plugins.html:74
@@ -10048,7 +9975,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/preferences.html:142
 msgid ""
-"These are technical settings which may interfere with normal use of Mailpile."
+"These are technical settings which may interfere with normal use of "
+"Mailpile."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/preferences.html:143
@@ -10082,7 +10010,8 @@ msgid "Networking Privacy"
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:55
-msgid "Tor is a community-run system for making anonymous network connections."
+msgid ""
+"Tor is a community-run system for making anonymous network connections."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:56
@@ -10259,8 +10188,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:265
 msgid ""
-"This may leak information about your address book and use of Mailpile to the "
-"providers of these services."
+"This may leak information about your address book and use of Mailpile to the"
+" providers of these services."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:269
@@ -10365,7 +10294,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:454
 msgid ""
-"The configuration is always kept encrypted, because it may contain passwords."
+"The configuration is always kept encrypted, because it may contain "
+"passwords."
 msgstr ""
 
 #: shared-data/default-theme/html/settings/privacy.html:455
@@ -10823,7 +10753,8 @@ msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:64
 msgid ""
-"We have made a secure recommendation, but you still need to type it yourself!"
+"We have made a secure recommendation, but you still need to type it "
+"yourself!"
 msgstr ""
 
 #: shared-data/default-theme/html/setup/password/index.html:67
@@ -11088,18 +11019,3 @@ msgstr ""
 #: shared-data/mailpile-gui/mailpile-gui.py:311
 msgid "Failed to launch Mailpile!"
 msgstr ""
-
-#~ msgid "Message not found?"
-#~ msgstr "Message not found?"
-
-#~ msgid "MaybeSpam"
-#~ msgstr "MaybeSpam"
-
-#~ msgid "Bcc:"
-#~ msgstr "Bcc:"
-
-#~ msgid "Raw Source"
-#~ msgstr "Raw Source"
-
-#~ msgid "People"
-#~ msgstr "People"
