@@ -50,7 +50,8 @@ def IsMailbox(fn, config):
 def OpenMailbox(fn, config, create=False):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            return mbox_cls(*mbox_cls.parse_path(config, fn, create=create))
+            return mbox_cls(
+                *mbox_cls.parse_path(config, fn, create=create, allow_empty=True))
         except KeyboardInterrupt:
             raise
         except:

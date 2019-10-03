@@ -237,7 +237,7 @@ class MailpileMailbox(UnorderedPicklable(POP3Mailbox)):
     UNPICKLABLE = ['_pop3', '_debug']
 
     @classmethod
-    def parse_path(cls, config, path, create=False):
+    def parse_path(cls, config, path, create=False, allow_empty=False):
         path = path.split('/')
         if path and path[0].lower() in ('pop:', 'pop3:',
                                         'pop3_ssl:', 'pop3s:'):
