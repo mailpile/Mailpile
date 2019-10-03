@@ -27,7 +27,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 #   MAX_COPIES = 5
 
     @classmethod
-    def parse_path(cls, config, fn, create=False):
+    def parse_path(cls, config, fn, create=False, allow_empty=False):
         if (((cls.supported_platform is None) or
              (cls.supported_platform == sys.platform[:3].lower())) and
                 ((os.path.isdir(fn) and

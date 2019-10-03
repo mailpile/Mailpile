@@ -146,7 +146,7 @@ class MacMaildir(mailbox.Mailbox):
 class MailpileMailbox(UnorderedPicklable(MacMaildir)):
     """A Mac Mail.app maildir class that supports pickling etc."""
     @classmethod
-    def parse_path(cls, config, fn, create=False):
+    def parse_path(cls, config, fn, create=False, allow_empty=False):
         if (os.path.isdir(fn)
                 and os.path.exists(os.path.join(fn, 'Info.plist'))):
             return (fn, )

@@ -24,15 +24,16 @@ class MailpileMailbox(mailbox.mbox):
         '^(X-)?Status:\s*\S+', flags=re.IGNORECASE|re.MULTILINE)
 
     @classmethod
-    def parse_path(cls, config, fn, create=False):
+    def parse_path(cls, config, fn, create=False, allow_empty=False):
         try:
             firstline = open(fn, 'r').readline()
             if firstline.startswith('From '):
                 return (fn, )
-        except:
-            if create and not os.path.exists(fn):
+            if (allow_empty or create) and not firstline:
                 return (fn, )
-            pass
+        except:
+            if create and os.path.exists(fn):
+                return (fn, )
         raise ValueError('Not an mbox: %s' % fn)
 
     def __init__(self, *args, **kwargs):
@@ -132,7 +133,7 @@ class MailpileMailbox(mailbox.mbox):
             data = ''
             start = None
             len_nl = 1
-            while True:
+            while (cur_length > 0):
                 self._last_updated = time.time()
                 line_pos = fd.tell()
                 line = fd.readline()
