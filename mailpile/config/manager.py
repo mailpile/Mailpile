@@ -1362,6 +1362,19 @@ class ConfigManager(ConfigDict):
 
         # Update the cron jobs, if necessary
         if config.cron_worker and config.event_log:
+            from mailpile.postinglist import GlobalPostingList
+            from mailpile.plugins.core import HealthCheck
+            def gpl_optimize():
+                if HealthCheck.check(config.background, config):
+                    runtime = (config.prefs.rescan_interval or 1800) / 10
+                    config.slow_worker.add_unique_task(
+                        config.background, 'Optimize GPL',
+                        lambda: GlobalPostingList.Optimize(config.background,
+                                                           config.index,
+                                                           lazy=True,
+                                                           ratio=0.5,
+                                                           runtime=runtime))
+
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
@@ -1373,7 +1386,10 @@ class ConfigManager(ConfigDict):
                         config.slow_worker.add_unique_task(
                             config.background, 'Rescan',
                             lambda: rsc.run(slowly=True, cron=True))
+                        gpl_optimize()
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
+            else:
+                config.cron_worker.add_task('gpl_optimize', 1800, gpl_optimize)
 
             def metadata_index_saver():
                 config.save_worker.add_unique_task(
@@ -1397,19 +1413,6 @@ class ConfigManager(ConfigDict):
                     first=True)
             config.cron_worker.add_task(
                 'refresh_command_cache', 5, refresh_command_cache)
-
-            from mailpile.postinglist import GlobalPostingList
-            from mailpile.plugins.core import HealthCheck
-            def optimizer():
-                if HealthCheck.check(config.background, config):
-                    config.scan_worker.add_unique_task(
-                        config.background, 'gpl_optimize',
-                        lambda: GlobalPostingList.Optimize(config.background,
-                                                           config.index,
-                                                           lazy=True,
-                                                           ratio=0.25,
-                                                           runtime=15))
-            config.cron_worker.add_task('gpl_optimize', 30, optimizer)
 
             # Schedule plugin jobs
             from mailpile.plugins import PluginManager

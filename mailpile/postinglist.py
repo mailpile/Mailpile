@@ -49,7 +49,7 @@ def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5, runtime=None):
     def remove(ts, plc):
         with PLC_CACHE_LOCK:
             if plc.sig in PLC_CACHE and ts == PLC_CACHE[plc.sig][0]:
-               del PLC_CACHE[plc.sig]
+                del PLC_CACHE[plc.sig]
 
     startt = int(time.time())
     expire = startt - max(30, 300 - len(PLC_CACHE))
@@ -96,7 +96,7 @@ class PostingListContainer(object):
             with PLC_CACHE_LOCK:
                 PLC_CACHE[sig] = [int(time.time()), plc]
             if uncached_cb:
-               uncached_cb()
+                uncached_cb()
         # We return the cached version no matter what, in case a race above
         # had us loading the same posting-list twice: we want to be sure
         # calling code gets the shared object.
@@ -600,7 +600,7 @@ class GlobalPostingList(OldPostingList):
         starttime = time.time()
         count = 0
         global GLOBAL_GPL
-        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 5*1024)):
+        if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 50*1024)):
             # Processing keys in order is more efficient, as it lets things
             # accumulate in the PLC_CACHE.
             keys = sorted(GLOBAL_GPL.keys())
