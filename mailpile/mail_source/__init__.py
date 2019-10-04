@@ -274,7 +274,7 @@ class BaseMailSource(threading.Thread):
         plan = self._sorted_mailboxes()
         self.event.data['plan'] = [[m._key, _('Pending'), m.name] for m in plan]
         event_plan = dict((mp[0], mp) for mp in self.event.data['plan'])
-        if plan and random.randint(0, 10) == 1:
+        if plan and random.randint(0, 20) == 1:
             random_plan = [m._key for m in random.sample(plan, 1)]
         else:
             random_plan = []
