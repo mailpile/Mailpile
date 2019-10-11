@@ -73,6 +73,7 @@ from mailpile.eventlog import GetThreadEvent
 from mailpile.mailutils.emails import Email, ExtractEmails, ClearParseCache
 from mailpile.mailutils.emails import MakeContentID
 from mailpile.plugins import PluginManager, EmailTransform
+from mailpile.plugins.crypto_policy import register_crypto_policy
 from mailpile.plugins.vcard_gnupg import PGPKeysImportAsVCards
 from mailpile.plugins.search import Search
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
@@ -315,6 +316,24 @@ def autocrypt_recommendation(config, email, re_encrypted=False, state_db=None):
         rec = AutocryptRecommendation.ENCRYPT
 
     return AutocryptRecommendation(rec, key_sig=acr.key_sig)
+
+
+def autocrypt_policy_checker(session, profile, emails):
+    AR = AutocryptRecommendation
+    acrs = []
+
+    if 'E' not in profile.crypto_format:
+        return ('none', AR.ENABLE if profile.pgp_key else AR.DISABLE)
+
+    for email in (e for e in emails if e != profile.email):
+        acrs.append(autocrypt_recommendation(session.config, email))
+        if acrs[-1] is None:
+            return ('none', AR.DISABLE)
+
+    policy = AR.Synchronize(*acrs)
+    return (
+        'sign-encrypt' if (policy == AR.ENCRYPT) else 'none',
+        policy)
 
 
 ##[ Autocrypt integration and API commands ]###################################
@@ -594,6 +613,7 @@ else:
         AutocryptParse,
         AutocryptPeers)
     register_crypto_key_lookup_handler(AutocryptKeyLookupHandler)
+    register_crypto_policy('autocrypt', autocrypt_policy_checker)
 
     # Note: we perform our transformations BEFORE the GnuPG transformations
     # (prio 500), so the memory hole transformation can take care of hiding
