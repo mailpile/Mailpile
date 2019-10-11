@@ -109,7 +109,7 @@ autoajax_go = function(url, message, jhtml, noblank, noscroll, selrestore) {
     if (jhtml === undefined) jhtml = ajaxable_url(url);
 
     // Provide UI feedback if this takes time
-    var done = Mailpile.notify_working(message, (noblank) ? 250 : 1500);
+    var done = Mailpile.notify_working(message, (noblank) ? 250 : 1500, 'blank');
 
     // Attempt to preserve selections cross-refresh.
     var selected = get_selection_state();
@@ -215,13 +215,14 @@ update_using_jhtml = function(original_url, callback, error_callback,
                               noblank, nohistory) {
     if (ajaxable_url(document.location.pathname)) {
         var cv = $('#content-view, #content-tall-view').parent();
-        if (!noblank) cv.hide();
+        if (!noblank) cv.css({"opacity": 0.25});
         if (!nohistory)
             history.replaceState({autoajax: true, url: document.location.href},
                                  document.title);
         return $.ajax({
             url: Mailpile.API.jhtml_url(original_url, 'content'),
-            timeout: Mailpile.ajax_timeout,
+            // These are user actions, timeouts barely make sense. Extend.
+            timeout: (Mailpile.ajax_timeout * 12),
             type: 'GET',
             success: function(data) {
                 if (!nohistory)
@@ -232,7 +233,7 @@ update_using_jhtml = function(original_url, callback, error_callback,
             },
             error: function() {
                 if (error_callback) error_callback(cv);
-                cv.show();
+                cv.css({"opacity": ""});
             }
         });
     }
