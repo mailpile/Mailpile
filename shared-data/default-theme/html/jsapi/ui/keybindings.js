@@ -73,10 +73,14 @@ Mailpile.keybinding_mark_unread = function() {
 Mailpile.keybinding_undo_last = function() {
   var $undo = $('#notification-bubbles').find('a.notification-undo');
   if ($undo.length) {
-    $undo.eq(0).trigger('click');
+    $undo.eq(0).trigger('click'); //closest('.notification-bubble').css({'background': '#770'});
   }
   else {
-    console.log('FIXME: Provide helpful / unobstrusive UI feedback that tells a user they hit a keybinding, then fades away');
+    // FIXME: Do this yellow thing with classes
+    $('#notifications-header').css({'background': '#770'});
+    setTimeout(function() {
+        $('#notifications-header').css({'background': ''});
+    }, 250);
   }
 };
 

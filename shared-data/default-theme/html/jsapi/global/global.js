@@ -9,7 +9,7 @@ Mailpile.go = function(url) {
   // FIXME: This check is lame; a workaround for the fact that download
   // URLs never end up triggering the event that cancels the notification.
   if (url.indexOf('/download/') < 0) {
-    Mailpile.notify_working(undefined, 1000);
+    Mailpile.notify_working(undefined, 1000, 'blank');
   }
   window.location.href = Mailpile.fix_url(url);
 };

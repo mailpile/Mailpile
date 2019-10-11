@@ -238,8 +238,9 @@ Mailpile.notification = function(result) {
 };
 
 /* Use when stuff is loading in the backgrount to show progress */
-Mailpile.notify_working = function(message, timeout) {
+Mailpile.notify_working = function(message, timeout, blank) {
   var events = [undefined, undefined];
+  var $content = $('#content-view, #content-tall-view').parent();
   var notify = function() {
     var silly = Math.floor(Math.random() * Mailpile.silly_strings.misc.length);
     events[1] = Mailpile.notification({
@@ -249,6 +250,7 @@ Mailpile.notify_working = function(message, timeout) {
       status: 'warning',
       icon: 'icon-robot'
     });
+    if (blank) $content.css({"opacity": 0.25});
     events[0] = setTimeout(notify, 5000);
   };
   events[0] = setTimeout(notify, timeout);
@@ -257,6 +259,7 @@ Mailpile.notify_working = function(message, timeout) {
     // has already been displayed, we leave it up for a little longer.
     if (events[0]) clearTimeout(events[0]);
     setTimeout(function() {
+      if (blank) $content.css({"opacity": ""});
       if (events[1]) Mailpile.cancel_notification(events[1]);
     }, 1250);
   }
@@ -283,12 +286,14 @@ $(document).on('click', '.notification-close', function() {
 
 /* Notification - Undo */
 $(document).on('click', '.notification-undo', function() {
+  var done = Mailpile.notify_working("{{_('Undoing...')|escapejs}}", 250, 'blank');
   var event_id = $(this).data('event_id').split('.').join('-');
   Mailpile.API.logs_events_undo_post({ event_id: event_id }, function(result) {
     if (result.status === 'success') {
       window.location.reload(true);
     }
     else {
+      done();
       alert("{{ _('Oops. Mailpile failed to complete your task.') }}");
     }
   });
