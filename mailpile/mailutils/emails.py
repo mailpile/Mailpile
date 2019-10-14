@@ -1209,8 +1209,11 @@ class Email(object):
                         tree["vcal_parts"].extend(calendar_parse(payload))
 
                 elif want is None or 'text_parts' in want:
-                    if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
-                        payload = extract_text_from_html(payload)
+                    for ht in ('<div', '<html', '<p>', '<p ', '<table', '<body'):
+                        if start.startswith(ht):
+                            payload = extract_text_from_html(payload)
+                            break
+
                     # Ignore white-space only text parts, they usually mean
                     # the message is HTML only and we want the code below
                     # to try and extract meaning from it.
