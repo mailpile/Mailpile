@@ -1171,6 +1171,7 @@ class Email(object):
         # Note: count algorithm must match that used in extract_attachment
         #       above
         count = 0
+        broken_text_part = None
         for part in msg.walk():
             crypto = {
                 'signature': part.signature_info,
@@ -1211,6 +1212,7 @@ class Email(object):
                 elif want is None or 'text_parts' in want:
                     for ht in ('<div', '<html', '<p>', '<p ', '<table', '<body'):
                         if start.startswith(ht):
+                            broken_text_part = payload
                             payload = extract_text_from_html(payload)
                             break
 
@@ -1247,6 +1249,8 @@ class Email(object):
                 text_parts = self.parse_text_part(
                     payload, html_part['charset'], crypto, None, None)
                 tree['text_parts'].extend(text_parts)
+            elif broken_text_part and not tree.get('text_parts'):
+                tree['text_parts'].extend(broken_text_part)
 
         if self.is_editable():
             if not want or 'editing_strings' in want:
