@@ -72,6 +72,7 @@ class PyCLI(Hacks):
     def command(self):
         import code
         import readline
+        import mailpile.util
         from mailpile import Mailpile
 
         variables = globals()
@@ -80,8 +81,13 @@ class PyCLI(Hacks):
         variables['index'] = self.session.config.index
         variables['mp'] = Mailpile(session=self.session)
 
-        self.session.config.stop_workers()
-        self.session.ui.block()
+        try:
+            mailpile.util.QUITTING = True
+            self.session.config.stop_workers()
+            self.session.ui.block()
+        finally:
+            mailpile.util.QUITTING = False
+
         code.InteractiveConsole(locals=variables).interact("""\
 This is Python inside of Mailpile inside of Python.
 
