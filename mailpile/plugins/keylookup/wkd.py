@@ -53,7 +53,7 @@ class WKDLookupHandler(LookupHandler):
     SCORE = 5
 
     URL_FORMATS = (
-        'https://openpgpkey.%(d)s/.well-known/%(d)s/openpgpkey/hu/%(l)s?%(q)s',
+        'https://openpgpkey.%(d)s/.well-known/openpgpkey/%(d)s/hu/%(l)s?%(q)s',
         'https://%(d)s/.well-known/openpgpkey/hu/%(l)s?%(q)s')
 
     def __init__(self, *args, **kwargs):
