@@ -127,6 +127,21 @@
       <div class="searchkey-result-actions right">
         <% if (on_keychain && in_vcards) { %>
         <i>{{_("This key is available for use.")}}</i>
+        <% } else { %>
+        <a href="#" class="crypto-key-import"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Use This Key")}}
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </li>
+</script>
+<script id="unuxed-key-pinnig-ui-draft" type="text/template">
+      <div class="searchkey-result-actions right">
+        <% if (on_keychain && in_vcards) { %>
+        <i>{{_("This key is available for use.")}}</i>
         <select name="contact-key" class="crypto-key-policy"
                 data-email="<%= uid.email %>"
                 data-fingerprint="<%= fingerprint %>">
@@ -147,8 +162,6 @@
         </a>
         <% } %>
       </div>
-    </div>
-  </li>
 </script>
 
 
@@ -176,18 +189,6 @@
     <div id="contact-search-keyserver-input"></div>
     <div id="contact-search-keyserver-result"></div>
   </div>
-</script>
-
-
-<script id="template-search-keyserver-item" type="text/template">
-  <li class="contact-add-search-item" data-keyid="<%= keyid %>">
-    <span class="name"><%= name %></span>
-    <span class="email"><span class="icon-inbox"></span> <%= email %></span>
-    <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
-    <span class="created">{{_("Created")}} <%= created_date %></span>
-    <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
-    <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
-  </li>
 </script>
 
 
