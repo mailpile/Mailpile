@@ -435,7 +435,7 @@ def ObscureSubject(subject):
     """
     Replace the Subject line with something nondescript.
     """
-    return '(%s)' % _("Subject unavailable")
+    return '...'
 
 
 def ObscureNames(hdr):
