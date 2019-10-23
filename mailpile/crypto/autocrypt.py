@@ -446,6 +446,8 @@ class AutocryptRecommendation(object):
         This will synchronize a set of Autocrypt recommendations to whatever
         the lowest common denomitor is, and then return that policy.
         """
+        if not recommendations:
+            return cls.DISABLE
         lowest_common_policy = cls.ORDERED_POLICIES[min(
             cls.ORDERED_POLICIES.index(r.policy) for r in recommendations)]
         for r in recommendations:

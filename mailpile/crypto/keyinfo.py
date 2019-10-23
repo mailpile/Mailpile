@@ -35,6 +35,11 @@ monkey_patch_pgpdump()
 
 # Classes for storing PGP key info ############################################
 
+class ustr(str):
+    def __new__(cls, content):
+        return super(ustr, cls).__new__(cls, content.upper())
+
+
 class RestrictedDict(dict):
     KEYS = {}
 
@@ -106,9 +111,10 @@ class KeyUID(RestrictedDict):
 
 
 class KeyInfo(RestrictedDict):
-    KEY_INVALID_CODES = ('d', 'e', 'r', 'n')
+    KEY_TRUSTED_CODES = ('u', 'f')  # Note: Ignoring marginal keys
+    KEY_INVALID_CODES = ('i', 'd', 'e', 'r', 'n')
     KEYS = {
-        'fingerprint':  (str, 'MISSING'),
+        'fingerprint':  (ustr, 'MISSING'),
         'capabilities': (str, ''),
         'keytype_name': (str, 'unknown'),
         'keytype_code': (int, 0),

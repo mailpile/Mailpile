@@ -160,11 +160,14 @@ class AutocryptRecord(object):
         return self
 
     @classmethod
-    def Load(cls, db, to):
+    def Load(cls, db, to, _raise=KeyError):
         try:
             return cls(to, *db[canonicalize_email(to)])
-        except (AttributeError, TypeError):
-            raise KeyError('Not Found')
+        except (KeyError, AttributeError, TypeError):
+            if _raise is None:
+                return None
+            else:
+                raise _raise('Not Found')
 
 
 def autocrypt_process_email(config, msg, msg_mid, msg_ts, sender_email,
@@ -321,18 +324,19 @@ def autocrypt_recommendation(config, email, re_encrypted=False, state_db=None):
 def autocrypt_policy_checker(session, profile, emails):
     AR = AutocryptRecommendation
     acrs = []
+    baseline = 'sign' if ('S' in profile.crypto_format) else 'none'
 
     if 'E' not in profile.crypto_format:
-        return ('none', AR.ENABLE if profile.pgp_key else AR.DISABLE)
+        return (baseline, AR.ENABLE if profile.pgp_key else AR.DISABLE)
 
     for email in (e for e in emails if e != profile.email):
         acrs.append(autocrypt_recommendation(session.config, email))
         if acrs[-1] is None:
-            return ('none', AR.DISABLE)
+            return (baseline, AR.DISABLE)
 
     policy = AR.Synchronize(*acrs)
     return (
-        'sign-encrypt' if (policy == AR.ENCRYPT) else 'none',
+        'sign-encrypt' if (policy == AR.ENCRYPT) else baseline,
         policy)
 
 
@@ -562,23 +566,36 @@ class AutocryptKeyLookupHandler(EmailKeyLookupHandler):
     def _score(self, key):
         return (self.SCORE, _('Found key using Autocrypt'))
 
+    def _db_and_acr(self, address):
+        db = get_Autocrypt_DB(self.session.config)['state']
+        try:
+            return db, AutocryptRecord.Load(db, address)
+        except KeyError:
+            return db, None
+
+    def _getkey(self, email, keyinfo):
+        db, acr = self._db_and_acr(email)
+        if acr:
+            rv = EmailKeyLookupHandler._getkey(self, email, keyinfo)
+            if self._gk_succeeded(rv):
+                acr.imported_ts = int(time.time())
+                acr.save_to(db)
+                save_Autocrypt_DB(self.session.config)
+            return rv
+        else:
+            raise ValueError('Not found in Autocrypt DB: %s' % email)
+
     def _lookup(self, address, strict_email_match=False):
         config, ui = self.session.config, self.session.ui
         results = {}
         if not (address and config.prefs.key_tofu.autocrypt):
             return results
 
-        try:
-            db = get_Autocrypt_DB(config)['state']
-            acr = AutocryptRecord.Load(db, address)
-        except KeyError:
-            acr = None
-
+        db, acr = self._db_and_acr(address)
         if acr is None or not acr.key_sig or not acr.mid:
             return results
 
         # Note: Autocrypt gossip is handled by the normal e-mail lookups
-        canon_address = canonicalize_email(address)
         for key_info, raw_key in self._get_message_keys(int(acr.mid, 36),
                 autocrypt=True, autocrypt_gossip=False, attachments=False):
             key_sig = sha1b64(raw_key).strip()

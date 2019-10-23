@@ -1,3 +1,17 @@
+# FIXME: We would like to implement the following priority for sources of keys:
+#
+#       1. Local validated        +User Prefs First, +Happy experts
+#       2. Autocrypt              +Direct knowledge of e-mail client config
+#       3. Autocrypt gossip       +Direct knowledge of thead requirements
+#       - - - - - - - - - - -[ The metadata leakage line ]- - - - - - - - - -
+#       4. WKD                    +Organizational validity, -Admin abuse
+#       5. Validating keyserver   +User control, +Confirmed validity, -Central
+#       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#       6. Local unvalidated      +User Prefs, -Lots of garbage?
+#
+# Our current strategy is close, but is missing the nuanced interaction with the
+# local shared keychain.
+#
 import copy
 import math
 import traceback
@@ -8,7 +22,7 @@ from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.keyinfo import KeyUID, MailpileKeyInfo
+from mailpile.crypto.keyinfo import KeyUID, KeyInfo, MailpileKeyInfo
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
@@ -146,11 +160,11 @@ def _mailpile_key_list(gpgi_key_list):
 def lookup_crypto_keys(session, address,
                        event=None, strict_email_match=False, allowremote=True,
                        origins=None, get=None, vcard=None, only_good=False,
-                       pin_key=False):
+                       pin_key=False, known_keys_list=None):
     config = (session and session.config)
     found_keys = {}
     ordered_keys = []
-    known_keys_list = _mailpile_key_list(
+    known_keys_list = known_keys_list or _mailpile_key_list(
         GnuPG(config or None).list_keys())
 
     if origins:
@@ -383,14 +397,16 @@ class KeyImport(Command):
                              result=result)
 
 
+# FIXME: This seems to want to update keys TOO OFTEN. There is probably a
+#        mismatch in which fingerprints we are using/storing how/where.
 class KeyTofu(Command):
     """Import or refresh keys"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/keytofu', 'crypto/keytofu', '[--dry] <emails>')
+    SYNOPSIS = (None, 'crypto/keytofu', 'crypto/keytofu', '[--dry] [--should] <emails>')
     HTTP_CALLABLE = ('POST',)
     HTTP_POST_VARS = {
         'email': 'E-mail addresses to find or update encryption keys for',
-    }
+        'should-encrypt': 'Is encryption a priority?'}
 
     def _key_can_encrypt(self, gnupg, fingerprint):
         rc, data = gnupg.encrypt("hello", tokeys=[fingerprint])
@@ -420,6 +436,12 @@ class KeyTofu(Command):
             and (len(recent_crypto) >= tofu_cfg.hist_min)
             and len(recent_crypto)) or False
 
+    def _key_is_trusted(self, fingerprint, known_keys_list):
+        for summary, key_info in known_keys_list.iteritems():
+            if key_info['fingerprint'] == fingerprint:
+                return (key_info['validity'] in KeyInfo.KEY_TRUSTED_CODES)
+        return False
+
     def _seen_enough_signatures(self, tofu_cfg, idx, email, keyinfo):
         keyid = keyinfo.fingerprint[-16:].lower()
         signed = idx.search(
@@ -441,6 +463,12 @@ class KeyTofu(Command):
         else:
             dry_run = 'keytofudry' in self.session.config.sys.debug
 
+        if args and (args[0] == '--should'):
+            should_encrypt = args.pop(0)
+        else:
+            should_encrypt = self.data.get('should-encrypt', ['N'])[0]
+            should_encrypt = should_encrypt.lower()[:1] in ('y', 't')
+
         emails = set(args) | set(self.data.get('email', []))
         if not emails:
             return self._success('Nothing Happened')
@@ -451,23 +479,26 @@ class KeyTofu(Command):
         else:
             acState = None
 
-        idx = self._idx()
-        gnupg = self._gnupg(dry_run=True)
-        missing, old, status = [], {}, {}
 
+        idx = self._idx()
+        gnupg = self._gnupg()
+        known_keys_list = _mailpile_key_list(gnupg.list_keys())
+
+        missing, old, status = [], {}, {}
         for email in emails:
             vc = self.session.config.vcards.get_vcard(email)
             fp = vc.pgp_key if vc else None
             if vc and fp:
-                if vc.pgp_key_pinned:
-                    old[email] = fp
-                    status[email] = 'Key is pinned'
-                elif self._key_can_encrypt(gnupg, fp):
+                if self._key_can_encrypt(gnupg, fp):
                     old[email] = fp
                     status[email] = 'Key is already on our key-chain'
-                    if acState:
-                        acr = AutocryptRecord.Load(acState, email)
-                        if acr.should_encrypt() and not acr.imported_ts:
+                    if vc.pgp_key_pinned:
+                        status[email] = 'Key is pinned'
+                    elif self._key_is_trusted(fp, known_keys_list):
+                        status[email] = 'Key is trusted by GnuPG'
+                    elif acState:
+                        acr = AutocryptRecord.Load(acState, email, _raise=None)
+                        if acr and acr.should_encrypt() and not acr.imported_ts:
                             missing.append(email)
                             status[email] = 'Obsolete key is on our key-chain'
                 else:
@@ -492,27 +523,28 @@ class KeyTofu(Command):
         for email in missing:
             checking = '%s/%s' % (email, tofu_cfg)
             last_check = TOFU_CHECK_HISTORY.get(checking, 0)
-            if last_check and last_check > interval_cutoff:
+            if (not should_encrypt) and last_check and last_check > interval_cutoff:
                 status[email] += ' (checked recently)'
                 continue
             elif not dry_run:
                 TOFU_CHECK_HISTORY[checking] = now
 
             if tofu_cfg.autocrypt and acState:
-                acr = AutocryptRecord.Load(acState, email)
-                if acr.should_encrypt() and not acr.imported_ts:
+                acr = AutocryptRecord.Load(acState, email, _raise=None)
+                if acr and acr.should_encrypt() and not acr.imported_ts:
                     should_import[email] = (acr.key_sig, AutocryptKeyLookupHandler.NAME)
 
             if tofu_cfg.historic and hist_origins and email not in should_import:
                 count = self._recently_used_crypto(tofu_cfg, idx, email)
-                if count:
+                if count or should_encrypt:
                     keys = lookup_crypto_keys(self.session, email,
                                               origins=hist_origins,
                                               strict_email_match=True,
+                                              known_keys_list=known_keys_list,
                                               event=self.event,
                                               only_good=True) or []
                     for keyinfo in keys:
-                        if self._seen_enough_signatures(
+                        if should_encrypt or self._seen_enough_signatures(
                                 tofu_cfg, idx, email, keyinfo):
                             should_import[email] = (keyinfo['fingerprint'],
                                                     hist_origins)
@@ -523,24 +555,30 @@ class KeyTofu(Command):
                     status[email] = 'Have not seen enough PGP messages'
 
         imported = {}
-        for email, (fingerprint, origins) in should_import.iteritems():
+        for email, (key_id, origins) in should_import.iteritems():
             if 'keytofu' in self.session.config.sys.debug:
                 self.session.ui.debug('keytofu(%s): importing %s from %s'
-                                      % (email, fingerprint, origins))
+                                      % (email, key_id, origins))
             if dry_run:
-                status[email] = 'Should import %s from %s' % (fingerprint, origins)
+                status[email] = 'Should import %s from %s' % (key_id, origins)
             else:
                 keys = lookup_crypto_keys(
                     self.session, email,
-                    get=[fingerprint],
+                    get=[key_id],
                     vcard=self.session.config.vcards.get_vcard(email),
-                    origins=origins,
                     strict_email_match=True,
+                    origins=origins,
+                    known_keys_list=known_keys_list,
                     event=self.event)
                 if keys:
                     # FIXME: This should trigger a notification, per. #1869
                     imported[email] = keys
                     status[email] = 'Imported key!'
+                    vc = self.session.config.vcards.get_vcard(email)
+                    if vc and key_id in keys:
+                        with vc:
+                            vc.pgp_key = keys[key_id].fingerprint
+                            vc.save()
                 else:
                     status[email] = 'Failed to import key'
 
@@ -552,7 +590,7 @@ class KeyTofu(Command):
             # Update the VCards!
             fingerprints = []
             for keys in imported.values():
-                fingerprints.extend([k['fingerprint'] for k in keys])
+                fingerprints.extend(k['fingerprint'] for k in keys)
             PGPKeysImportAsVCards(self.session, arg=fingerprints).run()
             # Previous crypto evaluations may now be out of date, so we
             # clear the cache so users can see results right away.

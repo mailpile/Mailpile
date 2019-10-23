@@ -61,9 +61,7 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
     }
 
     if (changes || initial) {
-      Mailpile.API.async_crypto_keytofu_post({
-        email: emails
-      }, function(data, ev) {
+      Mailpile.API.async_crypto_keytofu_post(cp_args, function(data, ev) {
         if (data.result && data.result.imported_keys)
         {
           for (key in data.result.imported_keys) {
