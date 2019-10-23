@@ -766,12 +766,16 @@ class KeyserverLookupHandler(LookupHandler):
         return results
 
     def _getkey_url(self, url_base, email, key):
-        fingerprint = '0x{}'.format(key['fingerprint'])
-        params = {"search": fingerprint, "op": "get", "options": "mr"}
-        return "{}?{}".format(url_base, urllib.urlencode(params))
+        # Note: keys.openpgp.org keeps barfing if we change the order of
+        #       the query string parameters. So using an API call to
+        #       generate and escape things causes breakage. We know the
+        #       fingerprint is URL-safe, so we just stick with it.
+        return "{}?op=get&options=mr&search=0x{}".format(
+            url_base, key['fingerprint'])
 
     def _getkey(self, email, key):
         error = None
+        key_data = None
         for url_base in self.KEY_SERVER_BASE_URLS:
             url = self._getkey_url(url_base, email, key)
             if 'keylookup' in self.session.config.sys.debug:
@@ -790,7 +794,10 @@ class KeyserverLookupHandler(LookupHandler):
             except (IOError, urllib2.URLError, ssl.SSLError, ssl.CertificateError) as e:
                 error = e
 
-        if len(key_data) > self.MAX_KEY_SIZE and not error:
+        if not key_data:
+            error = 'No key data!'
+
+        if not error and len(key_data) > self.MAX_KEY_SIZE:
             error = "Key too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
             if 'keylookup' in self.session.config.sys.debug:
                 self.session.ui.debug(error)
