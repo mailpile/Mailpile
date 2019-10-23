@@ -38,6 +38,11 @@ Mailpile.Composer.ToggleEncryption = function(mid, want) {
   }
 
   Mailpile.Composer.Crypto.EncryptionToggle(change, mid, 'manual');
+  if (change == 'encrypt') {
+    // Encrypting without signing makes little sense; yes this makes
+    // things annoying for those who disagree.
+    Mailpile.Composer.Crypto.SignatureToggle('sign', mid, 'manual');
+  }
   Mailpile.Composer.Tooltips.Encryption();
   return false;
 };

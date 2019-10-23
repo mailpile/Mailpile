@@ -1,6 +1,24 @@
 /* Crypto - Find */
 
 
+Mailpile.Crypto.FixupKeyStructure = function(key) {
+    // Make sure these attribute exists, default to False
+    if (!key.on_keychain) key.on_keychain = false;
+    if (!key.in_vcards) key.in_vcards = false;
+
+    // Readable creation date
+    if (key.created && key.created > 0) {
+      cdate = new Date(key.created * 1000);
+      key.creation_date = (
+        cdate.getFullYear() + '-' +
+        (cdate.getMonth()+1) + '-' +
+        cdate.getDate());
+    }
+    else key.creation_date = '{{_("unknown")|escapejs}}';
+    return key;
+};
+
+
 Mailpile.Crypto.Find.KeysResult = function(data, options) {
   var items_hidden = '';
 
@@ -35,18 +53,7 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       }
     }
 
-    // Make sure this attribute exists, default to False
-    if (!key.on_keychain) key.on_keychain = false;
-
-    // Readable creation date
-    if (key.created && key.created > 0) {
-      cdate = new Date(key.created * 1000);
-      key.created_date = (
-        cdate.getFullYear() + '-' +
-        (cdate.getMonth()+1) + '-' +
-        cdate.getDate());
-    }
-    else key.created_date = '{{_("unknown")|escapejs}}';
+    Mailpile.Crypto.FixupKeyStructure(key);
 
     // Key Score
     var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);

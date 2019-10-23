@@ -48,8 +48,11 @@ class RestrictedDict(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         for k, (t, d) in self.KEYS.items():
-            if t in (list, dict):
-                self[k] = t()
+            if k not in self:
+                if t in (list, dict):
+                    self[k] = t()
+                else:
+                    self[k] = d
 
     def keys(self):
         kl = list(dict.keys(self))

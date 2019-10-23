@@ -15,12 +15,12 @@ Mailpile.Crypto.Import.Key = function(import_data) {
   var import_args = _.findWhere(Mailpile.crypto_keylookup,
                                 {fingerprints: import_data.fingerprint});
   import_args.pinned = import_data.pinned;
-  Mailpile.API.crypto_keyimport_post(import_args, function(result) {
+  Mailpile.API.async_crypto_keyimport_post(import_args, function(result) {
     if (result.status === 'success') {
       var key_result;
       for (var key in result.result) {
         if (result.result[key].fingerprint === import_data.fingerprint) {
-          key_result = result.result[key];
+          key_result = Mailpile.Crypto.FixupKeyStructure(result.result[key]);
           key_result['avatar'] = '{{ U("/static/img/avatar-default.png") }}';
           key_result['uid'] = key_result.uids[0];
           key_result['action'] = 'hide-modal';
@@ -28,7 +28,6 @@ Mailpile.Crypto.Import.Key = function(import_data) {
           key_result['score_color'] = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
         }
       }
-      console.log(key_result);
 
       var $key_elem = $('#item-encryption-key-' + import_data.fingerprint);
       var $events = $key_elem.closest('.has-keylookup-events');
