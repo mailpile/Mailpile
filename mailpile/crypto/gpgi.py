@@ -630,8 +630,9 @@ class GnuPG:
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
 
-        # Disable SHA1 in all things GnuPG
+        # Disable SHA1 and compression in all things GnuPG
         args[1:1] = ["--personal-digest-preferences=SHA512",
+                     "--personal-compress-preferences=Uncompressed",
                      "--digest-algo=SHA512",
                      "--cert-digest-algo=SHA512"]
 
