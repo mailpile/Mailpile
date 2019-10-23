@@ -9,7 +9,6 @@ from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto import gpgi
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.keyinfo import KeyUID, MailpileKeyInfo
-from mailpile.crypto.autocrypt import get_minimal_PGP_key
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mailutils.emails import ClearParseCache
@@ -799,7 +798,7 @@ class KeyserverLookupHandler(LookupHandler):
         if error:
             raise ValueError(str(error))
 
-        return self._gnupg().import_keys(key_data)
+        return self._gnupg().import_keys(key_data, filter_uid_emails=[email])
 
 
 class VerifyingKeyserverLookupHandler(KeyserverLookupHandler):

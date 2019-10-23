@@ -128,7 +128,7 @@ class WKDLookupHandler(LookupHandler):
         #        get rid of signatures and UIDs we don't care about.
         data = self.key_cache.pop(keyinfo["fingerprint"])
         if data:
-            return self._gnupg().import_keys(data)
+            return self._gnupg().import_keys(data, filter_uid_emails=[email])
         else:
             raise ValueError("Key not found")
 

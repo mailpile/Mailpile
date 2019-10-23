@@ -79,9 +79,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _getkey(self, email, keyinfo):
         data = self.key_cache.get(keyinfo.fingerprint)
         if data:
-            if keyinfo.is_autocrypt and email:
-                data = get_minimal_PGP_key(data, user_id=email, binary_out=True)[0]
-            return self._gnupg().import_keys(data)
+            return self._gnupg().import_keys(data, filter_uid_emails=[email])
         else:
             raise ValueError("Key not found")
 

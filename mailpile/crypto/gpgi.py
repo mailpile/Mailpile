@@ -741,7 +741,7 @@ class GnuPG:
             if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
-                self.debug('<<STDOUT<< %s' % (gpg_input,))
+                self.debug('<<STDOUT<< %d bytes' % (len(gpg_input), ))
                 StreamWriter('gpgi-output(%s)' % wtf,
                              proc.stdin, gpg_input,
                              partial_write_ok=partial_read_ok).join()
@@ -869,7 +869,10 @@ class GnuPG:
 
         return secret_keys
 
-    def import_keys(self, key_data=None, import_options=DEFAULT_IMPORT_OPTIONS):
+    def import_keys(self,
+            key_data=None,
+            import_options=DEFAULT_IMPORT_OPTIONS,
+            filter_uid_emails=None):
         """
         Imports gpg keys from a file object or string.
         >>> key_data = open("testing/pub.key").read()
@@ -879,6 +882,9 @@ class GnuPG:
         """
         self.event.running_gpg(_('Importing key to GnuPG key chain'))
         cmd = ["--import"]
+        if filter_uid_emails:
+            expr = ' || '.join('uid =~ %s' % e for e in filter_uid_emails)
+            cmd[1:1] = ['--import-filter', 'keep-uid=%s' % expr]
         for opt in import_options:
             cmd[1:1] = ['--import-options', opt]
         retvals = self.run(cmd, gpg_input=key_data)
