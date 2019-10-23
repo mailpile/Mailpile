@@ -1,6 +1,8 @@
 from __future__ import print_function
 # These are methods to do with MIME and crypto, implementing PGP/MIME.
 
+import math
+import random
 import re
 import StringIO
 import email.parser
@@ -785,6 +787,15 @@ class MimeEncryptingWrapper(MimeWrapper):
     def _update_crypto_status(self, part):
         part.encryption_info.part_status = 'decrypted'
 
+    def _add_padding(self, text, chunksize=None):
+        """Add up to 16kB of whitespace to the end of a message as padding."""
+        if chunksize is None:
+            chunksize = min(max(160, 2 ** int(math.log(len(text), 2))), 8192)
+        pad = ('\r\n' + (' ' * 78)) * int(chunksize / 80)
+        return (text
+            + (pad if random.randint(0, 1) else '')
+            + (pad[:chunksize - (len(text) % chunksize)]))
+
     def wrap(self, msg, prefer_inline=False):
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
 
@@ -794,7 +805,10 @@ class MimeEncryptingWrapper(MimeWrapper):
             prefer_inline = False
 
         if prefer_inline is not False:
-            message_text = Normalize(prefer_inline.get_payload(None, True))
+            message_text = self._add_padding(
+                Normalize(prefer_inline.get_payload(None, True)),
+                # This padding is user facing, so don't overdo it.
+                chunksize=160)
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)
@@ -808,7 +822,7 @@ class MimeEncryptingWrapper(MimeWrapper):
             if self.cleaner:
                 self.cleaner(msg)
 
-            message_text = self.flatten(msg)
+            message_text = self._add_padding(self.flatten(msg))
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)
