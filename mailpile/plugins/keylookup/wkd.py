@@ -3,6 +3,7 @@ import ssl
 import urllib
 import urllib2
 
+from mailpile.security import secure_urlget
 from mailpile.commands import Command
 from mailpile.conn_brokers import Master as ConnBroker
 from mailpile.crypto.keyinfo import get_keyinfo, MailpileKeyInfo
@@ -60,7 +61,7 @@ def WebKeyDirectoryURLs(address, plusmagic=True):
     for lp, lpe in encoded_parts:
         for urlfmt in WKD_URL_FORMATS:
             yield urlfmt % {
-                'd': domain,
+                'd': domain,  # FIXME: Should this be punycoded?
                 'l': lpe,
                 'q': urllib.urlencode({'l': lp})}
 
@@ -71,10 +72,49 @@ def WebKeyDirectoryURLs(address, plusmagic=True):
 class WKDLookupHandler(LookupHandler):
     NAME = _("Web Key Directory")
     SHORTNAME = 'wkd'
-    TIMEOUT = 10
+    TIMEOUT = 12
     PRIORITY = 50  # WKD is better than keyservers and better than DNS
     PRIVACY_FRIENDLY = True  # These lookups can go over Tor
     SCORE = 5
+
+    # People with really big keys are just going to have to publish in WKD
+    # or something, unless or until the SKS keyservers get fixed somehow.
+    MAX_KEY_SIZE = 1500000
+
+    # Avoid lookups to certain domains. The rationale here is these are large
+    # providers which are unlikely to implement WKD any time soon, so we would
+    # rather not leak details of our activities to them. This list is a subset
+    # of the list found here:
+    #  - https://github.com/mailcheck/mailcheck/wiki/List-of-Popular-Domains
+    DOMAIN_BLACKLIST = [
+        "aol.com", "att.net", "comcast.net", "facebook.com", "gmail.com",
+        "gmx.com", "googlemail.com", "google.com", "hotmail.com", "hotmail.co.uk",
+        "mac.com", "me.com", "mail.com", "msn.com", "live.com", "sbcglobal.net",
+        "verizon.net", "yahoo.com", "yahoo.co.uk", "email.com",
+        "games.com", "gmx.net", "icloud.com", "iname.com", "inbox.com", "love.com",
+        "outlook.com", "pobox.com", "rocketmail.com", "wow.com", "ygm.com",
+        "ymail.com", "zoho.com", "zohomail.eu", "yandex.com", "bellsouth.net",
+        "charter.net", "cox.net", "earthlink.net", "juno.com", "btinternet.com",
+        "virginmedia.com", "blueyonder.co.uk", "freeserve.co.uk", "live.co.uk",
+        "ntlworld.com", "o2.co.uk", "orange.net", "sky.com", "talktalk.co.uk",
+        "tiscali.co.uk", "virgin.net", "wanadoo.co.uk", "bt.com", "sina.com",
+        "sina.cn", "qq.com", "naver.com", "hanmail.net", "daum.net", "nate.com",
+        "yahoo.co.jp", "yahoo.co.kr", "yahoo.co.id", "yahoo.co.in", "yahoo.com.sg",
+        "yahoo.com.ph", "163.com", "yeah.net", "126.com", "21cn.com", "aliyun.com",
+        "foxmail.com", "hotmail.fr", "live.fr", "laposte.net", "yahoo.fr",
+        "wanadoo.fr", "orange.fr", "gmx.fr", "sfr.fr", "neuf.fr", "free.fr", "gmx.de",
+        "hotmail.de", "live.de", "online.de", "t-online.de", "web.de", "yahoo.de",
+        "libero.it", "virgilio.it", "hotmail.it", "aol.it", "tiscali.it", "alice.it",
+        "live.it", "yahoo.it", "email.it", "tin.it", "poste.it", "teletu.it",
+        "mail.ru", "rambler.ru", "yandex.ru", "ya.ru", "list.ru", "hotmail.be",
+        "live.be", "skynet.be", "voo.be", "tvcablenet.be", "telenet.be",
+        "hotmail.com.ar", "live.com.ar", "yahoo.com.ar", "fibertel.com.ar",
+        "speedy.com.ar", "arnet.com.ar", "yahoo.com.mx", "live.com.mx", "hotmail.es",
+        "hotmail.com.mx", "prodigy.net.mx", "yahoo.ca", "hotmail.ca", "bell.net",
+        "shaw.ca", "sympatico.ca", "rogers.com", "yahoo.com.br", "hotmail.com.br",
+        "outlook.com.br", "uol.com.br", "bol.com.br", "terra.com.br", "ig.com.br",
+        "itelefonica.com.br", "r7.com", "zipmail.com.br", "globo.com", "globomail.com",
+        "oi.com.br"]
 
     def __init__(self, *args, **kwargs):
         LookupHandler.__init__(self, *args, **kwargs)
@@ -85,18 +125,42 @@ class WKDLookupHandler(LookupHandler):
 
     def _lookup(self, address, strict_email_match=True):
         local, _, domain = address.partition("@")
+        if domain.lower() in self.DOMAIN_BLACKLIST:
+            # FIXME: Maybe make this dynamic; check for the WKD policy file and
+            #        if it is present remove the provider from the blacklist.
+            self.session.ui.debug(
+                '[%s] Blacklisted domain, skipping: %s' % (self.NAME, domain))
+            return {}
+
+        # FIXMEs:
+        #   - Check the spec and make sure we are doing the right thing when
+        #     comes to redirects. Probably switch off. But Linus! They seem
+        #     broken now, wah, wah, wah.
+        #   - Check the policy file, if it doesn't exist don't leak the
+        #     e-mail address to the server? Cache this? Counter-argument,
+        #     shame if user has no policy file but has a published key.
+        #   - Check content-type, because some sites return weird crap.
+
         local_part_encoded = _zbase_encode(
             hashlib.sha1(local.lower().encode('utf-8')).digest())
-
         error = None
+        keyinfo = None
         for url in WebKeyDirectoryURLs(address):
             try:
                 if 'keylookup' in self.session.config.sys.debug:
                     self.session.ui.debug('[%s] Fetching %s' % (self.NAME, url))
-                with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTPS]):
-                    result = urllib2.urlopen(url).read()
-                error = None
-                break
+                key_data = secure_urlget(self.session, url,
+                                         maxbytes=self.MAX_KEY_SIZE+1,
+                                         timeout=int(self.TIMEOUT / 3))
+                if key_data:
+                    keyinfo = get_keyinfo(key_data,
+                        key_source=(self.SHORTNAME, url),
+                        key_info_class=MailpileKeyInfo
+                        )[0]
+                    error = None
+                    break
+                else:
+                    error = 'Key not found'
             except urllib2.HTTPError as e:
                 if e.code == 404 and '+' not in address:
                     error = '404: %s' % e
@@ -108,18 +172,28 @@ class WKDLookupHandler(LookupHandler):
                     error = str(e)
             except ssl.CertificateError as e:
                 error = 'TLS: %s' % e
-            except urllib2.URLError as e:
+            except (urllib2.URLError, ValueError, KeyError) as e:
                 error = 'FAIL: %s' % e
+
+        if not error and len(key_data) > self.MAX_KEY_SIZE:
+            error = "Key too big (>%d bytes), ignoring" % self.MAX_KEY_SIZE
+            if 'keylookup' in self.session.config.sys.debug:
+                self.session.ui.debug(error)
 
         if error and 'keylookup' in self.session.config.sys.debug:
             self.session.ui.debug('[%s] Error: %s' % (self.NAME, error))
         if not error:
-            keyinfo = get_keyinfo(result, key_info_class=MailpileKeyInfo)[0]
-            self.key_cache[keyinfo["fingerprint"]] = result
+            self.key_cache[keyinfo["fingerprint"]] = key_data
         elif error[:3] in ('TLS', 'FAI', '404'):
             return {}  # Suppress these errors, they are common.
         else:
             raise ValueError(error)
+
+        # FIXME: Key refreshes will need to know where this key came
+        #        from, we should record this somewhere. Should WKD
+        #        keys be considered ephemeral? What about revocations?
+        #        What about signatures? What if we get back multiple
+        #        keys/certs? What if we get back a revocation?
 
         return {keyinfo["fingerprint"]: keyinfo}
 

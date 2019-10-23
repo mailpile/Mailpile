@@ -113,6 +113,7 @@ class KeyInfo(RestrictedDict):
         'created':      (int, 0),
         'expires':      (int, 0),
         'validity':     (str, '?'),
+        'key_source':   (str, None),
         'uids':         (list, None),
         'subkeys':      (list, None),
         'is_subkey':    (bool, False),
@@ -248,7 +249,8 @@ MailpileKeyInfo.prep_properties()
 
 
 def get_keyinfo(data, autocrypt_header=None,
-                key_info_class=KeyInfo, key_uid_class=KeyUID):
+                key_info_class=KeyInfo, key_uid_class=KeyUID,
+                key_source=None):
     """
     This method will parse a stream of OpenPGP packets into a list of KeyInfo
     objects.
@@ -282,6 +284,7 @@ def get_keyinfo(data, autocrypt_header=None,
                                round(len('%x' % (m.modulus or 0)) / 0.256)))
                 last_pubkeypacket = m
                 last_key = key_info_class(
+                    key_source=key_source,
                     fingerprint=m.fingerprint,
                     keytype_name=m.pub_algorithm or '',
                     keytype_code=m.raw_pub_algorithm,
