@@ -199,7 +199,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             # Reparent the contents up, removing the signature wrapper
             hdrs = MimeReplacePart(part, payload,
-                                   keep_old_headers='MH-Renamed')
+                                   keep_old_headers='PH-Renamed')
             part.signed_headers = hdrs
 
             # Try again, in case we just unwrapped another layer
@@ -242,7 +242,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
             hdrs = MimeReplacePart(part, newpart,
                                    keep_old_headers='MH-Renamed')
 
-            # Is there a Memory-Hole force-display part?
+            # Is there a Memory-Hole/Protected-Headers force-display part?
             pl = part.get_payload()
             if hdrs and isinstance(pl, list):
                 if (pl[0]['content-type'].startswith('text/rfc822-headers;')
@@ -283,7 +283,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
     elif part.is_multipart():
         for count, sp in enumerate(part.get_payload()):
             # EFail mitigation: We decrypt attachments and the first part
-            # or a nested multipart structure, but not any subsequent parts.
+            # of a nested multipart structure, but not any subsequent parts.
             # This allows rewriting of messages to *append* cleartext, but
             # disallows rewriting that pushes "inline" encrypted content
             # further down to where the recipient might not notice it.
@@ -488,7 +488,7 @@ OBSCURE_HEADERS_MILD = {
 # that will obscure as much of the metadata from the public header as
 # possible. This is only useful with encrypted messages and will badly
 # break things unless the recipient is running an MUA that fully implements
-# Memory Hole.
+# Memory Hole / Protected Headers.
 OBSCURE_HEADERS_EXTREME = {
     'subject': ObscureSubject,
     'from': ObscureSender,
