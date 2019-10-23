@@ -177,7 +177,7 @@ def secure_urlget(session, url,
                   data=None, timeout=30, anonymous=False, maxbytes=None,
                   padding=True):
     from mailpile.conn_brokers import Master as ConnBroker
-    from urllib2 import urlopen, Request
+    from urllib2 import build_opener
 
     if session.config.prefs.web_content not in ("on", "anon"):
         raise IOError("Web content is disabled by policy")
@@ -185,7 +185,16 @@ def secure_urlget(session, url,
     if url[:5].lower() not in ('http:', 'https'):
         raise IOError('Non-HTTP URLs are forbidden: %s' % url)
 
-    if url.startswith('https:'):
+    # User Agent forging and padding...
+    ffrv = int(time.time() / (7 * 24 * 3600 * 4)) - 649 + 60
+    headers = [
+        ('User-Agent', (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:%s.0) Gecko/20100101 Firefox/%s.0'
+            % (ffrv, ffrv)))]
+    if padding:
+        headers.append(('X-Pad', 'PA%sD' % ('A' * (160 - len(url) % 160))))
+
+    if url[:6].lower() == 'https:':
         conn_need, conn_reject = [ConnBroker.OUTGOING_HTTPS], []
     else:
         conn_need, conn_reject = [ConnBroker.OUTGOING_HTTP], []
@@ -193,18 +202,11 @@ def secure_urlget(session, url,
     if session.config.prefs.web_content == "anon" or anonymous:
         conn_reject += [ConnBroker.OUTGOING_TRACKABLE]
 
-    # User Agent forging and padding...
-    ffrv = int(time.time() / (7 * 24 * 3600 * 4)) - 649 + 60
-    headers = {
-        'User-Agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:%s.0) Gecko/20100101 Firefox/%s.0'
-            % (ffrv, ffrv))}
-    if padding:
-        headers['X-Pad'] = 'PA%sD' % ('A' * (512 - len(url) % 512))
-
     with ConnBroker.context(need=conn_need, reject=conn_reject) as ctx:
+        url_opener = build_opener()
+        url_opener.addheaders = headers
         # Flagged #nosec, because the URL scheme is constrained above
-        fd = urlopen(Request(url, None, headers), timeout=timeout)  # nosec
+        fd = url_opener.open(url, None, timeout=timeout)  # nosec
 
     return fd.read(maxbytes)
 
