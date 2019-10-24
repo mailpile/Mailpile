@@ -245,7 +245,8 @@
   {%- else %}
     <a class="item-subject" title="{{metadata.body.snippet}}"
        data-noblank=1 data-keep-selection=1
-       href="{{msg_url(mid, 0)}}">{{ nice_subject(metadata.subject) }}</a>
+       href="{{msg_url(mid, 0)}}">{{ nice_subject(metadata.subject) }}
+    </a>
   {%- endif %}
 {%- else %}
     <div class="message-container">

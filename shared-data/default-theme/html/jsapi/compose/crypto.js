@@ -61,9 +61,7 @@ Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
     }
 
     if (changes || initial) {
-      Mailpile.API.async_crypto_keytofu_post({
-        email: emails
-      }, function(data, ev) {
+      Mailpile.API.async_crypto_keytofu_post(cp_args, function(data, ev) {
         if (data.result && data.result.imported_keys)
         {
           for (key in data.result.imported_keys) {
@@ -209,14 +207,14 @@ Mailpile.Composer.Crypto.SignatureToggle = function(status, mid, manual) {
   }
   else if (willSign) {
     $elem.data('crypto_color', 'crypto-color-green');
-    $elem.attr('title', '{{_("This message will be verifiable to recipients who have your encryption key. They will know it actually came from you :)")|escapejs}}');
+    $elem.attr('title', '{{_("This message will be signed and verifiable to recipients who have your encryption key")|escapejs}}');
     $elem.find('span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
     $elem.find('span.text').html('{{_("Signed")|escapejs}}');
     $elem.removeClass('none').addClass('signed bounce');
 
   } else {
     $elem.data('crypto_color', 'crypto-color-gray');
-    $elem.attr('title', '{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you.")|escapejs}}');
+    $elem.attr('title', '{{_("This message will not be verifiable, recipients will have no way of knowing it actually came from you")|escapejs}}');
     $elem.find('span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
     $elem.find('span.text').html('{{_("Unsigned")|escapejs}}');
     $elem.removeClass('signed').addClass('none bounce');
@@ -253,7 +251,7 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
 
   if (status === 'encrypt') {
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-green');
-    $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")|escapejs}}');
+    $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and attachments will be encrypted, unreadable to all but the intended recipients")|escapejs}}');
     $('#compose-crypto-encryption-' + mid).find('span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
     $('#compose-crypto-encryption-' + mid).find('span.text').html('{{_("Encrypted")|escapejs}}');
     $('#compose-crypto-encryption-' + mid).removeClass('none error cannot').addClass('encrypted');
@@ -267,7 +265,7 @@ Mailpile.Composer.Crypto.EncryptionToggle = function(status, mid, manual) {
 
   } else if (status === 'none' || status == '') {
     $('#compose-crypto-encryption-' + mid).data('crypto_color', 'crypto-color-gray');
-    $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and metadata will not be encrypted")|escapejs}}');
+    $('#compose-crypto-encryption-' + mid).attr('title', '{{_("This message and metadata will not be encrypted, if intercepted anyone can read it")|escapejs}}');
     $('#compose-crypto-encryption-' + mid).find('span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
     $('#compose-crypto-encryption-' + mid).find('span.text').html('{{_("None")|escapejs}}');
     $('#compose-crypto-encryption-' + mid).removeClass('encrypted cannot error').addClass('none');

@@ -1,14 +1,122 @@
 from __future__ import print_function
-# Copyright (C) 2018 Jack Dodds
+# Copyright (C) 2018 Jack Dodds & Mailpile ehf.
 # This code is part of Mailpile and is hereby released under the
 # Gnu Affero Public Licence v.3 - see ../../COPYING and ../../AGPLv3.txt.
+#
+"""
+This file contains low-level Autocrypt code: constants, parsing, etc.
 
+The higher level application logic (state database, persistance etc.) is
+mostly in mailpile.plugins.crypto_autocrypt, but inevitably some has
+leaked into mailpile.crypto.gpgi and mailpile.crypto.mime.
+
+Examples (and doctests):
+
+
+# Canonicalize e-mail addresses according to Autocrypt conventions
+>>> canonicalize_email('BrE@maILPile.is')
+'bre@mailpile.is'
+
+
+# Parse the Autocrypt header
+>>> ach = 'addr=bre@mailpile.is; _a=b; _c=d; keydata=aGVsbG8='
+>>> hv = parse_autocrypt_headervalue(ach, optional_attrs=['_a'])
+>>> hv['addr']
+'bre@mailpile.is'
+>>> hv['keydata']
+'hello'
+>>> hv['_a']
+'b'
+>>> hv.get('_c') is None
+True
+>>> hv.get('prefer-encrypt') is None
+True
+
+# Invalid autocrypt headers return {}
+>>> parse_autocrypt_headervalue('addr=bre@mailpile.is')
+{}
+>>> parse_autocrypt_headervalue('keydata=aGVsbG8=')
+{}
+>>> parse_autocrypt_headervalue('unknown=attribute; ' + ach)
+{}
+
+# Invalid prefer-encrypt values just get ignored
+>>> hv = parse_autocrypt_headervalue('prefer-encrypt=bogus; ' + ach)
+>>> hv.get('prefer-encrypt') is None
+True
+>>> hv = parse_autocrypt_headervalue('prefer-encrypt=mutual; ' + ach)
+>>> hv.get('prefer-encrypt') == 'mutual'
+True
+
+
+# Generate a valid Autocrypt header
+>>> make_autocrypt_header('bre@mailpile.is', 'hello', prefer_encrypt_mutual=True)
+'addr=bre@mailpile.is; prefer-encrypt=mutual; keydata=aGVsbG8='
+
+
+# Autocrypt setup-codes are used to secure our PGP keys
+>>> generate_autocrypt_setup_code(random_data='fake random garbage data')
+'1189-1868-6510-5211-5608-1629-1262-5635-4164'
+>>> len(generate_autocrypt_setup_code())
+44
+>>> generate_autocrypt_setup_code() != generate_autocrypt_setup_code()
+True
+
+
+# AutocryptRecommendations combine a key and a policy of what to do
+>>> ar = AutocryptRecommendation('disable')
+>>> ar.policy
+'disable'
+>>> ar.key_sig is None
+True
+
+# Combining recommendations for multiple parties has specific rules
+>>> ar2 = AutocryptRecommendation('encrypt', key_sig='12345')
+>>> AutocryptRecommendation.Synchronize(ar, ar2)
+'disable'
+>>> str(ar2)
+'disable'
+
+# Not just anything is a valid recommendation
+>>> ar2.policy = 'bogus'
+Traceback (most recent call last):
+   ...
+ValueError: Invalid Autocrypt policy: bogus
+
+
+"""
 import base64
 import datetime
 import os
 import pgpdump
 import struct
 import time
+
+
+AUTOCRYPT_IGNORE_MIMETYPES = ('multipart/report', )
+
+
+def canonicalize_email(address):
+    try:
+        localpart, domain = address.split('@')
+    except (ValueError, AttributeError):
+        # Just return invalid e-mails unchanged, there is no sensible way
+        # to canonicalize such a thing.
+        return address
+
+    # FIXME: Ensure domain is ASCII, if not, punycode it
+    domain = domain.lower()
+
+    # FIXME: Ensure we're using the "empty locale"
+    localpart = localpart.lower()
+
+    # NOTE: We deliberately do not strip plussed parts or perform any other
+    #       normalization of the localpart beyond lowercasing. This is both
+    # to comply with the Autocrypt Level 1 spec, but also because being able
+    # to use plussed parts to allow differing cryptographic identities to
+    # share the same e-mail account is something power users like to do.
+
+    return '%s@%s' % (localpart, domain)
 
 
 def parse_autocrypt_headervalue(value, optional_attrs=None):
@@ -49,6 +157,8 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
     if "addr" not in result_dict:
         # found no e-mail address, ignoring header
         return {}
+    else:
+        result_dict["addr"] = canonicalize_email(result_dict["addr"])
 
     if result_dict.get("prefer-encrypt") not in ("mutual", None):
         # Invalid prefer-encrypt value; treat as nopreference
@@ -58,11 +168,28 @@ def parse_autocrypt_headervalue(value, optional_attrs=None):
 
 
 def extract_autocrypt_header(msg, to=None, optional_attrs=None):
+    # Autocrypt requires there only be one From header
+    froms = msg.get_all("From") or []
+    if len(froms) != 1:
+        return {}
+
+    # Extract the from address for comparisons below. We compare the
+    # canonicalized versions, which is not the strictest interpretation
+    # of the spec, but feels like a reasonable balance here.
+    from mailpile.mailutils.addresses import AddressHeaderParser
+    from_addrs = AddressHeaderParser(froms[0])
+    if len(from_addrs) != 1:
+        return {}
+    from_addr = canonicalize_email(from_addrs[0].address)
+
+    to = canonicalize_email(to) if to else None
     all_results = []
     for inb in (msg.get_all("Autocrypt") or []):
         res = parse_autocrypt_headervalue(inb, optional_attrs=optional_attrs)
-        if res and (not to or res['addr'] == to):
-            all_results.append(res)
+        if res:
+            if ((not to or canonicalize_email(res['addr']) == to) and
+                    (canonicalize_email(res['addr']) == from_addr)):
+                all_results.append(res)
 
     # Return parsed header iff we found exactly one.
     if len(all_results) == 1:
@@ -70,12 +197,9 @@ def extract_autocrypt_header(msg, to=None, optional_attrs=None):
     else:
         return {}
 
-    # FIXME: The AutoCrypt spec talks about synthesizing headers from other
-    #        details. That would make sense if AutoCrypt was our primary
-    # mechanism, but we're not really there yet. Needs more thought.
-
 
 def extract_autocrypt_gossip_headers(msg, to=None, optional_attrs=None):
+    to = canonicalize_email(to) if to else None
     all_results = []
     for inb in (msg.get_all("Autocrypt-Gossip") or []):
         res = parse_autocrypt_headervalue(inb, optional_attrs=optional_attrs)
@@ -96,7 +220,7 @@ def make_autocrypt_header(addr, binary_key,
     return hdr[len(prefix):]
 
 
-def generate_autocrypt_setup_code():
+def generate_autocrypt_setup_code(random_data=None):
     """
     Generate a passphrase/setup-code compliant with Autocrypt Level 1.
 
@@ -108,8 +232,8 @@ def generate_autocrypt_setup_code():
     Cyrillic etc.), easily input on a mobile device and split into blocks
     that are easily kept in short term memory.
     """
-    random_data = os.urandom(16)  # 16 bytes = 128 bits of entropy
-    ints = struct.unpack('>4I', random_data)
+    random_data = random_data or os.urandom(16)  # 16 bytes = 128 bits entropy
+    ints = struct.unpack('>4I', random_data[:16])
     ival = ints[0] + (ints[1] << 32) + (ints[2] << 64) + (ints[3] << 96)
     blocks = []
     while len(blocks) < 9:
@@ -118,8 +242,12 @@ def generate_autocrypt_setup_code():
     return '-'.join(blocks)
 
 
-def get_minimal_PGP_key(keydata,
-                        user_id=None, subkey_id=None, binary_out=False):
+# FIXME: Add a with_signing_subkeys=True, implement. This deviates
+#        from the Autocrypt spec, because Autocrypt says nothing about
+#        signatures. But we're almost always signing our mail, and w/o
+#        the subkeys the signatures cannot be checked.
+def UNUSED_get_minimal_PGP_key(keydata,
+                               user_id=None, subkey_id=None, binary_out=False):
     """
     Accepts a PGP key (armored or binary) and returns a minimal PGP key
     containing exactly five packets (base64 or binary) defining a
@@ -166,6 +294,7 @@ def get_minimal_PGP_key(keydata,
     u_id_match = False
     s_key = None
     s_key_sig = None
+    user_id = canonicalize_email(user_id) if user_id else None
     now = datetime.datetime.utcfromtimestamp(time.time())
 
     if '-----BEGIN PGP PUBLIC KEY BLOCK-----' in keydata:
@@ -191,8 +320,8 @@ def get_minimal_PGP_key(keydata,
         elif packet.raw == 13:              # User ID Packet
             u_id_try = packet
             u_id_sig_try = None
-            u_id_try_match = not user_id or user_id in u_id_try.user
-            #**FIXME Autocrypt spec 5.1 requires E-mail address canonicalization
+            u_id_try_match = (
+                not user_id or (user_id == canonicalize_email(u_id_try.user)))
 
             # Accept a nonmatching u_id IFF no other u_id matches.
             if u_id_match and not u_id_try_match:
@@ -205,7 +334,7 @@ def get_minimal_PGP_key(keydata,
                     continue
                                             # User ID certification
                 elif packet.raw_sig_type in (0x10, 0x11, 0x12, 0x13, 0x1F):
-                    if (packet.key_id in pri_key.fingerprint and
+                    if (pri_key.fingerprint.endswith(packet.key_id) and
                             (not packet.expiration_time or
                                 packet.expiration_time > now) and
                             (not u_id_sig_try or
@@ -214,7 +343,7 @@ def get_minimal_PGP_key(keydata,
                         u_id_sig_try = packet
                                             # Certification revocation
                 elif packet.raw_sig_type == 0x30:
-                    if packet.key_id in pri_key.fingerprint:
+                    if pri_key.fingerprint.endswith(packet.key_id):
                         u_id_try = None
                         u_id_sig_try = None
 
@@ -249,7 +378,7 @@ def get_minimal_PGP_key(keydata,
                     if (pri_key.fingerprint.endswith(packet.key_id) and
                             not packet.expiration_time or
                             packet.expiration_time >= now):
-                        can_encrypt = True  # Assume encrypt if no flags.
+                        can_encrypt = True  # Assume encrypt -- FIXME
                         for subpacket in packet.subpackets:
                             if subpacket.subtype == 9:  # Key expiration
                                 packet.key_expire_time = _exp_time(
@@ -294,44 +423,54 @@ def get_minimal_PGP_key(keydata,
     return newkey, u_id.user, s_key.key_id
 
 
+class AutocryptRecommendation(object):
+    DISABLE    = "disable"
+    DISCOURAGE = "discourage"
+    ENABLE     = "enable"
+    ENCRYPT    = "encrypt"
+
+    ORDERED_POLICIES = (DISABLE, DISCOURAGE, ENABLE, ENCRYPT)
+
+    def __init__(self, policy, key_sig=None):
+        self.key_sig = self._policy = None
+        self.set_recommendation(policy, key_sig)
+
+    def __str__(self):
+        if self.policy in (self.DISABLE,):
+            return self.policy
+        return "%s (key=%s)" % (self.policy, self.key_sig)
+
+    @classmethod
+    def Synchronize(cls, *recommendations):
+        """
+        This will synchronize a set of Autocrypt recommendations to whatever
+        the lowest common denomitor is, and then return that policy.
+        """
+        if not recommendations:
+            return cls.DISABLE
+        lowest_common_policy = cls.ORDERED_POLICIES[min(
+            cls.ORDERED_POLICIES.index(r.policy) for r in recommendations)]
+        for r in recommendations:
+            r.policy = lowest_common_policy
+        return lowest_common_policy
+
+    def set_recommendation(self, policy, key_sig=None):
+        if policy not in self.ORDERED_POLICIES:
+            raise ValueError('Invalid Autocrypt policy: %s' % policy)
+        if policy != self.DISABLE and key_sig is None and self.key_sig is None:
+            raise ValueError('Policy %s requires a key' % policy)
+        self._policy = policy
+        if key_sig is not None:
+            self.key_sig = key_sig
+
+    policy = property(lambda self: self._policy, set_recommendation)
+
+
 if __name__ == "__main__":
+    import sys
+    import doctest
 
-    import os
-
-    default_file = os.path.dirname(os.path.abspath(__file__))
-    default_file = os.path.abspath(default_file + '/../tests/data/pub.key')
-
-    print()
-    print('Default key file:', default_file)
-    print()
-
-    key_file_path = raw_input('Enter key file path or <Enter> for default: ')
-    if key_file_path == '':
-        key_file_path = default_file
-
-    user_id = raw_input('Enter email address: ')
-    if user_id == '':
-        user_id = None
-
-    subkey_id = raw_input('Enter subkey_id: ')
-    if subkey_id == '':
-        subkey_id = None
-
-    with open(key_file_path, 'r') as keyfile:
-        keydata = bytearray( keyfile.read() )
-
-    print('Key length:', len(keydata))
-
-    newkey, u, i = get_minimal_PGP_key(
-        keydata, user_id=user_id, subkey_id=subkey_id, binary_out=True)
-
-    print('User ID:', u)
-    print('Subkey ID:', i)
-    print('Minimal key length:', len(newkey))
-    key_file_path += '.min.gpg'
-    print('Minimal key output file:', key_file_path)
-
-    with open(key_file_path, 'w') as keyfile:
-        keyfile.write(newkey)
-
-    quit()
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS)
+    print('%s' % (results, ))
+    if results.failed:
+        sys.exit(1)

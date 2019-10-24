@@ -267,7 +267,7 @@ the `sys.debug` can include the following terms to make various parts of
 the app more verbose:
 
     log http compose cryptostate autotag rescan keywords cache connbroker
-    vcard pop3 gnupg imap sources jinja timing sendmail httpdata
+    vcard pop3 gnupg keylookup imap sources jinja timing sendmail httpdata
 
 There are also a few other ways to examine the app state:
 

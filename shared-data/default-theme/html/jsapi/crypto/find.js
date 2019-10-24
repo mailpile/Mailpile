@@ -1,6 +1,24 @@
 /* Crypto - Find */
 
 
+Mailpile.Crypto.FixupKeyStructure = function(key) {
+    // Make sure these attribute exists, default to False
+    if (!key.on_keychain) key.on_keychain = false;
+    if (!key.in_vcards) key.in_vcards = false;
+
+    // Readable creation date
+    if (key.created && key.created > 0) {
+      cdate = new Date(key.created * 1000);
+      key.creation_date = (
+        cdate.getFullYear() + '-' +
+        (cdate.getMonth()+1) + '-' +
+        cdate.getDate());
+    }
+    else key.creation_date = '{{_("unknown")|escapejs}}';
+    return key;
+};
+
+
 Mailpile.Crypto.Find.KeysResult = function(data, options) {
   var items_hidden = '';
 
@@ -35,6 +53,8 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
       }
     }
 
+    Mailpile.Crypto.FixupKeyStructure(key);
+
     // Key Score
     var score_color = Mailpile.UI.Crypto.ScoreColor(key.score_stars);
 
@@ -43,7 +63,8 @@ Mailpile.Crypto.Find.KeysResult = function(data, options) {
                                avatar: avatar,
                                uid: uid,
                                address: options.query,
-                               action: options.action }, key);
+                               action: options.action,
+                               pinned: false }, key);
     var item_template = Mailpile.safe_template($('#template-crypto-encryption-key').html());
     var item_html = item_template(item_data);
 
@@ -141,6 +162,7 @@ Mailpile.Crypto.Find.Keys = function(options) {
   var args = {}
   args[(options.strict ? "email" : "address")] = options.query;
   if ($('#keylookup_check_all').is(':checked')) args['origins'] = '*';
+  $('span.keylookup_check_all').hide();
   Mailpile.API.async_crypto_keylookup_get(args, function(data, ev) {
     // Render each result found
     if (data.result) Mailpile.Crypto.Find.KeysResult(data, options);

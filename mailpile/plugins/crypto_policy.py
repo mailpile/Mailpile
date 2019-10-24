@@ -6,6 +6,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.vcard import VCardLine, AddressInfo
 from mailpile.commands import Command
+from mailpile.crypto.autocrypt import AutocryptRecommendation
 from mailpile.mailutils.emails import Email
 
 
@@ -16,8 +17,19 @@ VCARD_CRYPTO_POLICY = 'X-MAILPILE-CRYPTO-POLICY'
 CRYPTO_POLICIES = ['none', 'sign', 'encrypt', 'sign-encrypt',
                    'best-effort', 'default']
 
+CRYPTO_POLICY_CHECKERS = {}
+
 
 ##[ Commands ]################################################################
+
+
+def register_crypto_policy(name, checker):
+    global CRYPTO_POLICY_CHECKERS
+    global CRYPTO_POLICIES
+    CRYPTO_POLICY_CHECKERS[name] = checker
+    if name not in CRYPTO_POLICIES:
+        CRYPTO_POLICIES.append(name)
+
 
 class CryptoPolicyBaseAction(Command):
     """ Base class for crypto policy commands """
@@ -157,8 +169,15 @@ class CryptoPolicy(CryptoPolicyBaseAction):
                    if k == 'profile']
         default = default[0] if default else (None, None, None,
                                               'best-effort', 'send_keys')
+
+        recommendation = AutocryptRecommendation.ENABLE
         cpolicy = default[-2]
         cformat = default[-1]
+
+        if cpolicy in CRYPTO_POLICY_CHECKERS:
+            cpolicy, recommendation = (
+                CRYPTO_POLICY_CHECKERS[cpolicy](session, default[0], emails))
+
         if should_encrypt and ('encrypt' not in cpolicy):
             if 'sign' in cpolicy or 'best-effort' == cpolicy:
                 cpolicy = 'sign-encrypt'
@@ -170,8 +189,8 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         policy = cpolicy
         reason = None
         for vc, kind, email, cpol, cfmt in policies:
-            if cpol and cpol not in ('default', 'best-effort'):
-                if policy in ('default', 'best-effort'):
+            if cpol and cpol not in ('default', 'best-effort', 'autocrypt'):
+                if policy in ('default', 'best-effort', 'autocrypt'):
                     policy = cpol
                 elif policy != cpol:
                     reason = _('Recipients have conflicting encryption '
@@ -215,7 +234,7 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         # If the policy is "best-effort", then we would like to sign and
         # encrypt if possible/safe. The bar for signing is lower.
         if policy == 'best-effort':
-            should_encrypt = can_encrypt
+            should_encrypt = (can_encrypt and not should_not_encrypt)
             if should_encrypt:
                 for v, k, e, p, f in policies:
                     if k and k == 'profile':
@@ -250,10 +269,10 @@ class CryptoPolicy(CryptoPolicyBaseAction):
           'can-encrypt': can_encrypt,
           'crypto-policy': policy,
           'crypto-format': cformat,
+          'recommendation': recommendation,
           'send-keys': send_keys,
           'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
-                             for vc, k, e, p, f in policies if vc])
-        }
+                             for vc, k, e, p, f in policies if vc])}
 
     def command(self):
         emails = list(self.args) + self.data.get('email', [])

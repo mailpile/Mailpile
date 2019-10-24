@@ -26,7 +26,6 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
-from mailpile.crypto.autocrypt_utils import get_minimal_PGP_key
 
 
 _ = lambda s: s
@@ -283,13 +282,13 @@ class GnuPGRecordParser:
     def _parse_dates(self, line):
         for ts in ('expiration_date', 'creation_date'):
             if line.get(ts) and '-' not in line[ts]:
+                line[ts+'_ts'] = line[ts]
                 try:
                     unixtime = int(line[ts])
                     if unixtime > 946684800:  # 2000-01-01
                         dt = datetime.fromtimestamp(unixtime)
                         line[ts] = dt.strftime('%Y-%m-%d')
                 except ValueError:
-                    line[ts+'_unparsed'] = line[ts]
                     line[ts] = '1970-01-01'
 
     def _parse_keydata(self, line):
@@ -474,7 +473,7 @@ class StreamWriter(Thread):
         return '%s(%s/%s)' % (Thread.__str__(self), self.name, self.state)
 
     def writeout(self, fd, output):
-        if isinstance(output, (str, unicode)):
+        if isinstance(output, (str, unicode, bytearray)):
             total = len(output)
             output = StringIO.StringIO(output)
         else:
@@ -630,8 +629,9 @@ class GnuPG:
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
 
-        # Disable SHA1 in all things GnuPG
+        # Disable SHA1 and compression in all things GnuPG
         args[1:1] = ["--personal-digest-preferences=SHA512",
+                     "--personal-compress-preferences=Uncompressed",
                      "--digest-algo=SHA512",
                      "--cert-digest-algo=SHA512"]
 
@@ -740,7 +740,7 @@ class GnuPG:
             if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
-                self.debug('<<STDOUT<< %s' % gpg_input)
+                self.debug('<<STDOUT<< %d bytes' % (len(gpg_input), ))
                 StreamWriter('gpgi-output(%s)' % wtf,
                              proc.stdin, gpg_input,
                              partial_write_ok=partial_read_ok).join()
@@ -868,7 +868,10 @@ class GnuPG:
 
         return secret_keys
 
-    def import_keys(self, key_data=None, import_options=DEFAULT_IMPORT_OPTIONS):
+    def import_keys(self,
+            key_data=None,
+            import_options=DEFAULT_IMPORT_OPTIONS,
+            filter_uid_emails=None):
         """
         Imports gpg keys from a file object or string.
         >>> key_data = open("testing/pub.key").read()
@@ -878,6 +881,9 @@ class GnuPG:
         """
         self.event.running_gpg(_('Importing key to GnuPG key chain'))
         cmd = ["--import"]
+        if filter_uid_emails:
+            expr = ' || '.join('uid =~ %s' % e for e in filter_uid_emails)
+            cmd[1:1] = ['--import-filter', 'keep-uid=%s' % expr]
         for opt in import_options:
             cmd[1:1] = ['--import-options', opt]
         retvals = self.run(cmd, gpg_input=key_data)
@@ -1365,6 +1371,7 @@ class GnuPG:
                         validity += 'e'
                 results[curpub] = {
                     "created": datetime.fromtimestamp(int(line[4])),
+                    "created_ts": int(line[4]),
                     "keytype_name": _(openpgp_algorithms.get(int(line[2]),
                                                              'Unknown')),
                     "keysize": line[3],
@@ -1398,24 +1405,18 @@ class GnuPG:
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
 
-    def get_minimal_key(self, key_id=None, user_id=None, subkey_id=None):
+    def get_minimal_key(self, key_id=None, user_id=None):
+        args = [
+            '--export-options', 'export-minimal',
+            '--export-filter', 'drop-subkey=expired-t',
+            '--export-filter', 'drop-subkey=revoked-t',
+            '--export-filter', 'drop-subkey=disabled-t']
         if key_id:
             selector = key_id
-        elif subkey_id:
-            selector = subkey_id
         else:
             selector = user_id
-        key_full = self.export_pubkeys(
-            extra_args=['--export-options', 'export-minimal'],
-            selectors=[selector])
-        try:
-            return get_minimal_PGP_key(
-                 key_full, user_id=user_id, subkey_id=subkey_id,
-                 binary_out=True)[0]
-        except (pgpdump.utils.PgpdumpException):
-            return key_full
-        except (TypeError):
-            return None
+            args.extend(['--export-filter', 'keep-uid=uid =~ %s' % user_id])
+        return self.export_pubkeys(extra_args=args, selectors=[selector])
 
     def export_pubkeys(self, selectors=None, extra_args=[]):
         self.event.running_gpg(_('Exporting keys %s from keychain'

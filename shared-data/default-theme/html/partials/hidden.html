@@ -107,7 +107,7 @@
         <strong>{{_("Details")}}</strong><br>
         {{_("Strength")}}: <%= keysize %><br>
         {{_("Algorithm")}}: <%= keytype_name %><br>
-        {{_("Created")}}: <%= created.split(' ')[0] %>
+        {{_("Created")}}: <%= creation_date %>
       </div>
     </div>
     <div class="half-top clearfix">
@@ -120,26 +120,48 @@
         <span class="icon-star <%= score_color %>"></span>
         <% } %>
         <% } else { %>
-        <span class="icon-signature-revoked <%= score_color %>"></span> <em>{{_("Don't use this key")}}</em>
+        <span class="icon-signature-revoked <%= score_color %>"></span>
+        <em>{{_("Don't use this key")}}</em>
         <% } %>
       </a>
       <div class="searchkey-result-actions right">
         <% if (on_keychain && in_vcards) { %>
         <i>{{_("This key is available for use.")}}</i>
-{#
-        <select name="contact-key" class="crypto-key-policy" data-fingerprint="<%= fingerprint %>">
-          <option value="true" selected="selected">{{_("Use This Key")}}</option>
-          <option value="false">{{_("Don't Use This Key")}}</option>
-        </select>
-#}
         <% } else { %>
-        <a href="#" class="crypto-key-import" data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
-          <span class="icon-key"></span> {{_("Import Key")}}
+        <a href="#" class="crypto-key-import"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Use This Key")}}
         </a>
         <% } %>
       </div>
     </div>
   </li>
+</script>
+<script id="unuxed-key-pinnig-ui-draft" type="text/template">
+      <div class="searchkey-result-actions right">
+        <% if (on_keychain && in_vcards) { %>
+        <i>{{_("This key is available for use.")}}</i>
+        <select name="contact-key" class="crypto-key-policy"
+                data-email="<%= uid.email %>"
+                data-fingerprint="<%= fingerprint %>">
+          <option value="true"<% if (is_preferred && !is_pinned) { %> selected="selected"<% } %>>{{_("Use This Key")}}</option>
+          <option value="pin"<% if (is_preferred && is_pinned) { %> selected="selected"<% } %>>{{_("Pin and Use This Key")}}</option>
+          <option value="false"<% if (!is_preferred) { %> selected="selected"<% } %>>{{_("Don't Use This Key")}}</option>
+        </select>
+        <% } else { %>
+        <a href="#" class="crypto-key-import-pinned searchkey-result-details hide"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-star"></span> {{_("Pin and Use This Key")}}
+        </a> &nbsp;
+        <a href="#" class="crypto-key-import"
+           data-email="<%= uid.email %>"
+           data-fingerprint="<%= fingerprint %>" data-action="<%= action %>">
+          <span class="icon-key"></span> {{_("Use This Key")}}
+        </a>
+        <% } %>
+      </div>
 </script>
 
 
@@ -167,18 +189,6 @@
     <div id="contact-search-keyserver-input"></div>
     <div id="contact-search-keyserver-result"></div>
   </div>
-</script>
-
-
-<script id="template-search-keyserver-item" type="text/template">
-  <li class="contact-add-search-item" data-keyid="<%= keyid %>">
-    <span class="name"><%= name %></span>
-    <span class="email"><span class="icon-inbox"></span> <%= email %></span>
-    <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
-    <span class="created">{{_("Created")}} <%= created %></span>
-    <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
-    <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
-  </li>
 </script>
 
 

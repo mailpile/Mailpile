@@ -7,7 +7,7 @@ import mailpile.config.defaults
 import mailpile.security as security
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import GnuPGBaseKeyGenerator, GnuPGKeyGenerator
-from mailpile.crypto.autocrypt_utils import generate_autocrypt_setup_code
+from mailpile.crypto.autocrypt import generate_autocrypt_setup_code
 from mailpile.plugins import EmailTransform, PluginManager
 from mailpile.commands import Command, Action
 from mailpile.eventlog import Event
@@ -423,24 +423,46 @@ class VCardSet(VCardAddLines):
 
 class VCardRemoveLines(VCardCommand):
     """Remove lines from a VCard"""
-    SYNOPSIS = (None, 'vcards/rmlines', None, '<email> <line IDs>')
+    SYNOPSIS = (None, 'vcards/rmlines', 'vcards/rmlines', '<email> <line IDs>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
     COMMAND_SECURITY = security.CC_CHANGE_CONTACTS
+    HTTP_POST_VARS = {
+        'email': 'update by e-mail',
+        'rid': 'update by x-mailpile-rid',
+        'name': 'Line names',
+        'line_id': 'Line IDs'}
 
     def command(self):
         idx = self._idx()  # Make sure VCards are all loaded
         session, config = self.session, self.session.config
 
-        handle, line_ids = self.args[0], self.args[1:]
+        if self.args:
+            handle, names, line_ids = self.args[0], [], []
+            for arg in self.args[1:]:
+                try:
+                    line_ids.append('%d' % int(arg))
+                except ValueError:
+                    names.append(arg)
+        else:
+            handle = self.data.get('rid', self.data.get('email', [None]))[0]
+            if not handle:
+                raise ValueError('Must set rid or email to choose VCard')
+            names = self.data.get('name', [])
+            line_ids = self.data.get('line_id', [])
+            if not (names or line_ids):
+                raise ValueError('Must send a line name or line ID')
+
         vcard = config.vcards.get_vcard(handle)
         if not vcard:
             return self._error('%s not found: %s' % (self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
         removed = 0
         try:
-            removed = vcard.remove(*[int(li) for li in line_ids])
+            for lname in names:
+                line_ids.extend(ex._line_id for ex in vcard.get_all(lname))
+            removed += vcard.remove(*[int(li) for li in line_ids])
             vcard.save()
             return self._success(_("Removed %d lines") % removed,
                 result=self._vcard_list([vcard], simplify=True, info={
@@ -1077,9 +1099,12 @@ def ProfileVCard(parent):
 
             # Encryption policy rules
             outg_auto = self._yn('security-best-effort-crypto')
+            outg_ac11 = self._yn('security-autocrypt-crypto')
             outg_sig  = self._yn('security-always-sign')
             outg_enc  = self._yn('security-always-encrypt')
-            if outg_enc and outg_sig:
+            if outg_ac11:
+                vcard.crypto_policy = 'autocrypt'
+            elif outg_enc and outg_sig:
                 vcard.crypto_policy = 'openpgp-sign-encrypt'
             elif outg_sig:
                 vcard.crypto_policy = 'openpgp-sign'
@@ -1091,7 +1116,7 @@ def ProfileVCard(parent):
                 vcard.crypto_policy = 'none'
 
             # Crypto formatting rules
-            pgp_autocrypt    = self._yn('security-use-autocrypt')
+            pgp_autocrypt    = outg_ac11 or self._yn('security-use-autocrypt')
             pgp_publish      = self._yn('security-publish-to-keyserver')
             pgp_keys         = self._yn('security-attach-keys')
             pgp_inline       = self._yn('security-prefer-inline')
@@ -1151,6 +1176,7 @@ class AddProfile(ProfileVCard(AddVCard)):
             'source-NEW-copy-local': True,
             'source-NEW-delete-source': False,
             'security-best-effort-crypto': True,
+            'security-autocrypt-crypto': False,
             'security-always-sign': False,
             'security-always-encrypt': False,
             'security-use-autocrypt': True,
@@ -1237,7 +1263,8 @@ class EditProfile(AddProfile):
             'source-NEW-auth_type': 'password',
             'security-pgp-key': vcard.pgp_key or '',
             'security-best-effort-crypto': ('best-effort' in cp),
-            'security-use-autocrypt': ('autocrypt' in cf),
+            'security-autocrypt-crypto': ('autocrypt' in cp),
+            'security-use-autocrypt': ('autocrypt' in cf or 'autocrypt' in cp),
             'security-always-sign': ('sign' in cp),
             'security-always-encrypt': ('encrypt' in cp),
             'security-attach-keys': ('send_keys' in cf),

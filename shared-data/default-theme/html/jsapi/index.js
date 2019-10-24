@@ -37,6 +37,7 @@ Mailpile = {
     { title: '{{_("Move selection up")|escapejs}}',   keys: "k",       callback: function(e) { Mailpile.keybinding_selection_up(); }},
     { title: '{{_("Previous page of results")|escapejs}}', keys: "h",  callback: function(e) { $('#pile-previous').eq(0).trigger('click'); }},
     { title: '{{_("Next page of results")|escapejs}}', keys: "l",      callback: function(e) { $('#pile-next').eq(0).trigger('click'); }},
+    { title: '{{_("More results")|escapejs}}',         keys: "m",      callback: function(e) { $('#pile-more').eq(0).trigger('click'); }},
     { title: '{{_("Open e-mail for reading")|escapejs}}', keys: "o",   callback: function(e) { Mailpile.open_or_close_selected_thread(); }},
     { title: '{{_("Go to Drafts")|escapejs}}',        keys: "g d",     callback: function(e) { Mailpile.go("/in/drafts/"); }},
     { title: '{{_("Go to Inbox")|escapejs}}',         keys: "g i",     callback: function(e) { Mailpile.go("/in/inbox/"); }},

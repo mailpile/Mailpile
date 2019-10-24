@@ -92,6 +92,8 @@ pytests:
 	@echo -n 'config/validators' && python2.7 mailpile/config/validators.py
 	@echo -n 'config/manager   ' && python2.7 mailpile/config/manager.py
 	@echo -n 'conn_brokers     ' && python2.7 mailpile/conn_brokers.py
+	@echo -n 'crypto/autocrypt ' && python2.7 mailpile/crypto/autocrypt.py
+	@echo -n 'plug...autocrypt ' && python2.7 mailpile/plugins/crypto_autocrypt.py
 	@echo -n 'crypto/mime      ' && python2.7 mailpile/crypto/mime.py
 	@echo -n 'index.base       ' && python2.7 mailpile/index/base.py
 	@echo -n 'index.msginfo    ' && python2.7 mailpile/index/msginfo.py

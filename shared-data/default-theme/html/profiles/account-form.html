@@ -95,12 +95,15 @@
             _fpa.mark_copied(this, what);
           });
         },
-        exclude: function(elem, s1, s2, s3, s4) {
+        exclude: function(elem, s1, s2, s3, s4, s5, s6, s7) {
           if ($(elem).is(':checked')) {
             if (s1) $(pf + 'input[name="' + s1 +'"]').removeAttr('checked');
             if (s2) $(pf + 'input[name="' + s2 +'"]').removeAttr('checked');
             if (s3) $(pf + 'input[name="' + s3 +'"]').removeAttr('checked');
             if (s4) $(pf + 'input[name="' + s4 +'"]').removeAttr('checked');
+            if (s5) $(pf + 'input[name="' + s5 +'"]').removeAttr('checked');
+            if (s6) $(pf + 'input[name="' + s6 +'"]').removeAttr('checked');
+            if (s7) $(pf + 'input[name="' + s7 +'"]').removeAttr('checked');
           }
         },
         require: function(elem, s1, s2, s3) {
@@ -747,15 +750,26 @@
            style="margin-right: 0; width: 29em;">
         <div class="more-crypto {% if not result['security-best-effort-crypto'] %}hide{% endif %}">
           <input type="checkbox" name="security-best-effort-crypto" value="yes"
-                 onchange='javascript:_fpa.exclude(this, "security-always-sign", "security-always-encrypt", "security-obscure-metadata", "security-prefer-inline");'
+                 onchange='javascript:_fpa.exclude(this, "security-autocrypt-crypto", "security-always-sign", "security-always-encrypt", "security-obscure-metadata", "security-prefer-inline");'
                  {% if result['security-best-effort-crypto'] %}checked{% endif %}>
           <span class="checkbox">
-            {{_("Best-effort: Encrypt and/or sign mail whenever possible")}}
+            {{_("Sign and encrypt to frequent OpenPGP users")}}
           </span>
+          - <a target=_blank href='https://autocrypt.org/'><i>{{_("learn more")}}</i></a>
+        </div>
+        <div class="more-crypto {% if not result['security-autocrypt-crypto'] %}hide{% endif %}">
+          <input type="checkbox" name="security-autocrypt-crypto" value="yes"
+                 onchange='javascript:{_fpa.exclude(this, "security-best-effort-crypto", "security-always-encrypt", "security-always-sign", "security-obscure-metadata", "security-prefer-inline", "security-openpgp-header-none", "security-attach-keys");
+                                       _fpa.require(this, "security-use-autocrypt", "security-openpgp-header-sign", "security-openpgp-header-encrypt");}'
+                 {% if result['security-autocrypt-crypto'] %}checked{% endif %}>
+          <span class="checkbox">
+            {{_("Autocrypt Level 1.1 encryption policy")}}
+          </span>
+          - <a target=_blank href='https://autocrypt.org/'><i>{{_("learn more")}}</i></a>
         </div>
         <div class="more-crypto {% if not result['security-always-sign'] %}hide{% endif %}">
           <input type="checkbox" name="security-always-sign" value="yes"
-                 onchange='javascript:_fpa.exclude(this, "security-best-effort-crypto");'
+                 onchange='javascript:_fpa.exclude(this, "security-autocrypt-crypto", "security-best-effort-crypto");'
                  {% if result['security-always-sign'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Always digitally sign outgoing mail")}}
@@ -763,7 +777,8 @@
         </div>
         <div class="more-crypto {% if not result['security-always-encrypt'] %}hide{% endif %}">
           <input type="checkbox" name="security-always-encrypt" value="yes"
-                 onchange='javascript:_fpa.exclude(this, "security-best-effort-crypto");_fpa.require(this, "security-always-sign");'
+                 onchange='javascript:_fpa.exclude(this, "security-autocrypt-crypto", "security-best-effort-crypto");
+                                      _fpa.require(this, "security-always-sign");'
                  {% if result['security-always-encrypt'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Always encrypt (warn when sending unencrypted mail)")}}
@@ -779,7 +794,7 @@
         </div>
         <div class="more-crypto {% if not result['security-prefer-inline'] %}hide{% endif %}">
           <input type="checkbox" name="security-prefer-inline" value="yes"
-                 onchange='javascript:_fpa.exclude(this, "security-obscure-metadata", "security-prefer-pgpmime");'
+                 onchange='javascript:_fpa.exclude(this, "security-autocrypt-crypto", "security-obscure-metadata", "security-prefer-pgpmime");'
                  {% if result['security-prefer-inline'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Prefer compatibility; avoid PGP/MIME (makes mail ugly)")}}
@@ -798,7 +813,8 @@
         <div style="margin-top: 0.7em" class="more-crypto hide"></div>
         <div class="more-crypto {% if not result['security-openpgp-header-encrypt'] %}hide{% endif %}">
           <input type="checkbox" name="security-openpgp-header-encrypt" value="yes"
-                 onchange='javascript:_fpa.exclude(this, "security-openpgp-header-none");_fpa.require(this, "security-openpgp-header-sign");'
+                 onchange='javascript:_fpa.exclude(this, "security-openpgp-header-none");
+                                      _fpa.require(this, "security-openpgp-header-sign");'
                  {% if result['security-openpgp-header-encrypt'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Signal a preference for encrypted mail")}}
@@ -832,6 +848,7 @@
         </div>
         <div class="more-crypto {% if not result['security-attach-keys'] %}hide{% endif %}">
           <input type="checkbox" name="security-attach-keys" value="yes"
+                 onchange='javascript:_fpa.exclude(this, "security-autocrypt-crypto", "security-use-autocrypt");'
                  {% if result['security-attach-keys'] %}checked{% endif %}>
           <span class="checkbox">
             {{_("Use attachments to exchange encryption keys")}}

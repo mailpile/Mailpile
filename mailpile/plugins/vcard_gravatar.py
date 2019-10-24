@@ -68,7 +68,7 @@ class GravatarImporter(VCardImporter):
     def _get(self, url):
         self.session.ui.mark('Getting: %s' % url)
         return secure_urlget(self.session, url,
-                             timeout=5,
+                             timeout=5, padding=False,
                              anonymous=self.config.anonymous)
 
     def check_gravatar(self, vcard, email):

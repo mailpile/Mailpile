@@ -65,6 +65,15 @@ $(document).on('click', '.crypto-show-hidden-keys', function(e) {
 $(document).on('click', '.crypto-key-import', function(e) {
   e.preventDefault();
   Mailpile.Crypto.Import.Key({
+    pinned: false,
+    action: $(this).data('action'),
+    fingerprint: $(this).data('fingerprint')
+  });
+});
+$(document).on('click', '.crypto-key-import-pinned', function(e) {
+  e.preventDefault();
+  Mailpile.Crypto.Import.Key({
+    pinned: true,
     action: $(this).data('action'),
     fingerprint: $(this).data('fingerprint')
   });
@@ -73,9 +82,12 @@ $(document).on('click', '.crypto-key-import', function(e) {
 
 /* Crypto - key use */
 $(document).on('change', '.crypto-key-policy', function() {
-
-  alert('Change Key Policy to: ' + $(this).val() + ' for fingerprint: ' + $(this).data('fingerprint'));
-
+  Mailpile.Crypto.Import.SetKeyPolicy({
+    action: $(this).data('action'),
+    email: $(this).data('email'),
+    fingerprint: $(this).data('fingerprint'),
+    policy: $(this).val()
+  });
 });
 
 

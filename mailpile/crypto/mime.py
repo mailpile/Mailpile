@@ -1,6 +1,8 @@
 from __future__ import print_function
 # These are methods to do with MIME and crypto, implementing PGP/MIME.
 
+import math
+import random
 import re
 import StringIO
 import email.parser
@@ -197,7 +199,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
 
             # Reparent the contents up, removing the signature wrapper
             hdrs = MimeReplacePart(part, payload,
-                                   keep_old_headers='MH-Renamed')
+                                   keep_old_headers='PH-Renamed')
             part.signed_headers = hdrs
 
             # Try again, in case we just unwrapped another layer
@@ -240,7 +242,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
             hdrs = MimeReplacePart(part, newpart,
                                    keep_old_headers='MH-Renamed')
 
-            # Is there a Memory-Hole force-display part?
+            # Is there a Memory-Hole/Protected-Headers force-display part?
             pl = part.get_payload()
             if hdrs and isinstance(pl, list):
                 if (pl[0]['content-type'].startswith('text/rfc822-headers;')
@@ -281,7 +283,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None,
     elif part.is_multipart():
         for count, sp in enumerate(part.get_payload()):
             # EFail mitigation: We decrypt attachments and the first part
-            # or a nested multipart structure, but not any subsequent parts.
+            # of a nested multipart structure, but not any subsequent parts.
             # This allows rewriting of messages to *append* cleartext, but
             # disallows rewriting that pushes "inline" encrypted content
             # further down to where the recipient might not notice it.
@@ -433,7 +435,7 @@ def ObscureSubject(subject):
     """
     Replace the Subject line with something nondescript.
     """
-    return '(%s)' % _("Subject unavailable")
+    return '...'
 
 
 def ObscureNames(hdr):
@@ -486,7 +488,7 @@ OBSCURE_HEADERS_MILD = {
 # that will obscure as much of the metadata from the public header as
 # possible. This is only useful with encrypted messages and will badly
 # break things unless the recipient is running an MUA that fully implements
-# Memory Hole.
+# Memory Hole / Protected Headers.
 OBSCURE_HEADERS_EXTREME = {
     'subject': ObscureSubject,
     'from': ObscureSender,
@@ -785,6 +787,15 @@ class MimeEncryptingWrapper(MimeWrapper):
     def _update_crypto_status(self, part):
         part.encryption_info.part_status = 'decrypted'
 
+    def _add_padding(self, text, chunksize=None):
+        """Add up to 16kB of whitespace to the end of a message as padding."""
+        if chunksize is None:
+            chunksize = min(max(160, 2 ** int(math.log(len(text), 2))), 8192)
+        pad = ('\r\n' + (' ' * 78)) * int(chunksize / 80)
+        return (text
+            + (pad if random.randint(0, 1) else '')
+            + (pad[:chunksize - (len(text) % chunksize)]))
+
     def wrap(self, msg, prefer_inline=False):
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
 
@@ -794,7 +805,10 @@ class MimeEncryptingWrapper(MimeWrapper):
             prefer_inline = False
 
         if prefer_inline is not False:
-            message_text = Normalize(prefer_inline.get_payload(None, True))
+            message_text = self._add_padding(
+                Normalize(prefer_inline.get_payload(None, True)),
+                # This padding is user facing, so don't overdo it.
+                chunksize=160)
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)
@@ -808,7 +822,7 @@ class MimeEncryptingWrapper(MimeWrapper):
             if self.cleaner:
                 self.cleaner(msg)
 
-            message_text = self.flatten(msg)
+            message_text = self._add_padding(self.flatten(msg))
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)
