@@ -1405,24 +1405,28 @@ class GnuPG:
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
 
-    def get_minimal_key(self, key_id=None, user_id=None):
+    def get_minimal_key(self, key_id=None, user_id=None, armor=True):
+        # Note: We are not stripping revoked subkeys, revocations are
+        #       rare but important. A more nuanced approach might only
+        #       include *recent* revocations, but we don't have the
+        #       tooling for that.
         args = [
             '--export-options', 'export-minimal',
-            '--export-filter', 'drop-subkey=expired-t',
-            '--export-filter', 'drop-subkey=revoked-t',
-            '--export-filter', 'drop-subkey=disabled-t']
-        if key_id:
-            selector = key_id
-        else:
-            selector = user_id
+            '--export-filter', 'drop-subkey=expired-t||disabled-t']
+        selector = key_id or user_id
+        if not selector:
+            raise ValueError('Export what key?')
+        if user_id:
             args.extend(['--export-filter', 'keep-uid=uid =~ %s' % user_id])
-        return self.export_pubkeys(extra_args=args, selectors=[selector])
+        return self.export_pubkeys(
+            extra_args=args, armor=armor, selectors=[selector])
 
-    def export_pubkeys(self, selectors=None, extra_args=[]):
+    def export_pubkeys(self, selectors=None, armor=True, extra_args=[]):
         self.event.running_gpg(_('Exporting keys %s from keychain'
                                  ) % (selectors,))
         retvals = self.run((extra_args or []) +
-                           ['--armor', '--export'] +
+                           (['--armor'] if armor else []) +
+                           (['--export']) +
                            (selectors or []))[1]["stdout"]
         return "".join(retvals)
 
