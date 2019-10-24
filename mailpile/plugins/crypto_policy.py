@@ -234,7 +234,7 @@ class CryptoPolicy(CryptoPolicyBaseAction):
         # If the policy is "best-effort", then we would like to sign and
         # encrypt if possible/safe. The bar for signing is lower.
         if policy == 'best-effort':
-            should_encrypt = (can_encrypt and not should_not_encrypt)
+            should_encrypt = can_encrypt
             if should_encrypt:
                 for v, k, e, p, f in policies:
                     if k and k == 'profile':
