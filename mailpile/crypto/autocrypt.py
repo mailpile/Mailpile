@@ -246,8 +246,8 @@ def generate_autocrypt_setup_code(random_data=None):
 #        from the Autocrypt spec, because Autocrypt says nothing about
 #        signatures. But we're almost always signing our mail, and w/o
 #        the subkeys the signatures cannot be checked.
-def get_minimal_PGP_key(keydata,
-                        user_id=None, subkey_id=None, binary_out=False):
+def UNUSED_get_minimal_PGP_key(keydata,
+                               user_id=None, subkey_id=None, binary_out=False):
     """
     Accepts a PGP key (armored or binary) and returns a minimal PGP key
     containing exactly five packets (base64 or binary) defining a

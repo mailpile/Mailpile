@@ -26,7 +26,6 @@ from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
-from mailpile.crypto.autocrypt import get_minimal_PGP_key
 
 
 _ = lambda s: s
@@ -1406,24 +1405,18 @@ class GnuPG:
     def get_pubkey(self, keyid):
         return self.export_pubkeys(selectors=[keyid])
 
-    def get_minimal_key(self, key_id=None, user_id=None, subkey_id=None):
+    def get_minimal_key(self, key_id=None, user_id=None):
+        args = [
+            '--export-options', 'export-minimal',
+            '--export-filter', 'drop-subkey=expired-t',
+            '--export-filter', 'drop-subkey=revoked-t',
+            '--export-filter', 'drop-subkey=disabled-t']
         if key_id:
             selector = key_id
-        elif subkey_id:
-            selector = subkey_id
         else:
             selector = user_id
-        key_full = self.export_pubkeys(
-            extra_args=['--export-options', 'export-minimal'],
-            selectors=[selector])
-        try:
-            return get_minimal_PGP_key(
-                 key_full, user_id=user_id, subkey_id=subkey_id,
-                 binary_out=True)[0]
-        except (pgpdump.utils.PgpdumpException):
-            return key_full
-        except (TypeError):
-            return None
+            args.extend(['--export-filter', 'keep-uid=uid =~ %s' % user_id])
+        return self.export_pubkeys(extra_args=args, selectors=[selector])
 
     def export_pubkeys(self, selectors=None, extra_args=[]):
         self.event.running_gpg(_('Exporting keys %s from keychain'
