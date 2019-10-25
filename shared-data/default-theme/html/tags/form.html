@@ -215,9 +215,7 @@
     </p>
     <div class="tag-edit-automation hide">
 {%-  if tag.type in ('tag', 'attribute', 'spam') %}
-      <div class="left" title="
-  {{- _("Enable to tag messages automatically, like spam.")}}
-  {{  _("Tag or un-tag mail by hand to train the system.")}}">
+      <div class="left">
         <label>{{_("Tagging")}}:</label>
 {%-   if tag.auto_tag in ('fancy', 'builtin') %}
         <p style="padding: 1em; font-style: italic;">
@@ -225,13 +223,15 @@
         </p>
 {%-   else %}
         <ul>
-          <li>
+          <li title="
+  {{- _("Enable to tag messages automatically, like spam.") }}
+  {{  _("Tag or un-tag mail by hand to train the system.") }}">
               <input type="radio" name="{{prefix}}auto_tag"
                      value="true" {% if tag.auto_tag and tag.auto_tag != 'false' %}checked{% endif %}>
               <span class="checkbox">{{_("Automatic tagging")}}</span>
 {# FIXME:     (<a href="">{{_("help")}}</a>) #}
           </li>
-          <li>
+          <li title="{{ _("Disable automatic tagging.") }}">
               <input type="radio" name="{{prefix}}auto_tag"
                      value="false" {% if not tag.auto_tag or tag.auto_tag == 'false' %}checked{% endif %}>
               <span class="checkbox">{{_("Tag by hand")}}</span>
