@@ -66,7 +66,7 @@ def DetectBinaries(
                     BINARIES[binary] = env_bin
                     continue
             try:
-                mailpile.util.RunTimed(1.0, _run_bintest, binary_test)
+                mailpile.util.RunTimed(5.0, _run_bintest, binary_test)
                 BINARIES[binary] = binary_test[0]
                 if (not os.path.dirname(BINARIES[binary])
                         and not sys.platform.startswith('win')):
