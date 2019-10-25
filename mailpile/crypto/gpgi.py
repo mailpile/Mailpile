@@ -640,8 +640,8 @@ class GnuPG:
 
         if version > (2, 1, 11):
             binaries = mailpile.platforms.DetectBinaries()
-            for which, setting in (('GnuPG/dm', 'dirmngr-program'),
-                                   ('GnuPG/ga', 'agent-program')):
+            for which, setting in (('GnuPG_dirmngr', 'dirmngr-program'),
+                                   ('GnuPG_agent',   'agent-program')):
                 if which in binaries:
                     args.insert(1, "--%s=%s" % (setting, binaries[which]))
                 else:

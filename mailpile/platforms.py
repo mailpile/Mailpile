@@ -15,12 +15,13 @@ BINARIES = {}
 
 # These are the binaries we want, and the test we use to detect whether
 # they are available/working.
-BINARIES_WANTED = {
-    'GnuPG':    ['gpg', '--version'],
-    'GnuPG/dm': ['dirmngr', '--version'],
-    'GnuPG/ga': ['gpg-agent', '--version'],
-    'OpenSSL':  ['openssl', 'version'],
-    'Tor':      ['tor', '--version']}
+#
+BINARIES_WANTED = {#   Test command            Required?
+    'GnuPG':         (['gpg', '--version'],        True),
+    'GnuPG_dirmngr': (['dirmngr', '--version'],    True),
+    'GnuPG_agent':   (['gpg-agent', '--version'],  True),
+    'OpenSSL':       (['openssl', 'version'],      True),
+    'Tor':           (['tor', '--version'],       False)}
 
 
 def _assert_file_exists(path):
@@ -45,7 +46,10 @@ def DetectBinaries(
             return env_bin
 
     if skip is None:
-        skip = os.getenv('MAILPILE_IGNORE_BINARIES', '').split()
+        skip = (os.getenv('MAILPILE_IGNORE_BINARIES', '')
+            .replace('/ga', '_agent')   # Backwards compatibility
+            .replace('/dm', '_dirmngr') # Backwards compatibility
+            .split())
 
     def _run_bintest(bt):
         p = mailpile.safe_popen.Popen(bt,
@@ -53,21 +57,21 @@ def DetectBinaries(
                                       stderr=subprocess.PIPE)
         return p.communicate()
 
-    for binary, binary_test in BINARIES_WANTED.iteritems():
+    for binary, (bin_test, reqd) in BINARIES_WANTED.iteritems():
         if binary in skip:
             continue
         if (which is None) or (binary == which):
             if preferred.get(binary):
-                binary_test = copy.copy(binary_test)
-                binary_test[0] = preferred[binary]
+                bin_test = copy.copy(bin_test)
+                bin_test[0] = preferred[binary]
             else:
                 env_bin = os.getenv('MAILPILE_%s' % binary.upper(), '')
                 if env_bin:
                     BINARIES[binary] = env_bin
                     continue
             try:
-                mailpile.util.RunTimed(5.0, _run_bintest, binary_test)
-                BINARIES[binary] = binary_test[0]
+                mailpile.util.RunTimed(5.0, _run_bintest, bin_test)
+                BINARIES[binary] = bin_test[0]
                 if (not os.path.dirname(BINARIES[binary])
                         and not sys.platform.startswith('win')):
                     try:
@@ -88,8 +92,8 @@ def DetectBinaries(
         return BINARIES.get(which)
 
     elif _raise not in (None, False):
-        for binary, binary_test in BINARIES_WANTED.iteritems():
-            if binary in skip:
+        for binary, (bin_test, reqd) in BINARIES_WANTED.iteritems():
+            if binary in skip or not reqd:
                 continue
             if not BINARIES.get(binary):
                 raise _raise('%s not found' % binary)
