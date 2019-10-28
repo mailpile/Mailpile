@@ -1,5 +1,7 @@
+import json
 import random
 
+from mailpile.app import FriendlyPipeTransform
 from mailpile.commands import *
 from mailpile.plugins import PluginManager
 from mailpile.ui import Session
@@ -9,7 +11,8 @@ from mailpile.security import CC_WEB_TERMINAL
 
 _plugins = PluginManager(builtin=__file__)
 
-sessions = {}
+SESSIONS = {}
+
 
 class TerminalSessionNew(Command):
     """Create a terminal session."""
@@ -21,15 +24,15 @@ class TerminalSessionNew(Command):
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
+        global SESSIONS
         config = self.session.config
 
         s = Session(config)
+        s.ui.render_mode = 'text'
         sid = "%08x" % random.randint(0, 1000000000)
-        sessions[sid] = s
+        SESSIONS[sid] = s
 
-        return self._success(_('Created a session'), result={
-            "sid": sid,
-        })
+        return self._success('Created a session', result={"sid": sid})
 
 
 class TerminalSessionEnd(Command):
@@ -45,16 +48,16 @@ class TerminalSessionEnd(Command):
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
+        global SESSIONS
+
         config = self.session.config
         sid = self.data.get('sid', [''])[0]
         if sid == '':
-            return self._error(_('No SID supplied'))
+            return self._error('No SID supplied')
 
-        del(sessions[sid])
+        del(SESSIONS[sid])
 
-        return self._success(_('Ended a session'), result={
-            "sid": sid,
-        })
+        return self._success('Ended a session', result={"sid": sid})
 
 
 class TerminalCommand(Command):
@@ -68,21 +71,23 @@ class TerminalCommand(Command):
         'sid': 'id of session to use',
         'command': 'command to execute'
     }
-    TERMINAL_BLACKLIST = ["pipe", "eventlog/watch"]
+    TERMINAL_BLACKLIST = ["eventlog/watch"]
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
-        global sessions
+        global SESSIONS
 
         config = self.session.config
-        cmd = self.data.get('command', [''])[0]
         sid = self.data.get('sid', [''])[0]
         if sid == '':
-            return self._error(_('No session ID supplied'), result={'sessions': sessions.keys()})
-        if sid not in sessions.keys():
-            return self._error(_('Unknown session ID'), result={'sessions': sessions.keys()})
-        session = sessions[sid]
+            return self._error('No session ID supplied')
+        if sid not in SESSIONS:
+            return self._error(
+                'Unknown session ID: %s' % sid, result={'sessions': SESSIONS.keys()})
 
+        wt_session = SESSIONS[sid]
+        cmd = self.data.get('command', [''])[0]
+        old_render_mode, cmd = FriendlyPipeTransform(wt_session, cmd)
         cmd = cmd.split(" ")
         command = cmd[0]
         args = ' '.join(cmd[1:])
@@ -90,15 +95,32 @@ class TerminalCommand(Command):
         if command in self.TERMINAL_BLACKLIST:
             return self._error(_('Command disallowed'), result={})
         try:
-            result = Action(session, command, args)
-        except Exception as e:
-            result = {"error": "Fail!"}
+            main_ui = wt_session.ui
+            from mailpile.ui import CapturingUserInteraction as CUI
+            wt_session.ui = capture = CUI(self.session.config)
+            wt_session.ui.render_mode = main_ui.render_mode
 
+            result = Action(wt_session, command, args)
+            if wt_session.ui.render_mode == 'html':
+                wt_session.ui.render_mode = 'html!content'
+            capture.display_result(result)
+            rendered = [capture.render_mode.split('!')[0], capture.captured]
+
+            # Allow the user to persistently change the render mode
+            main_ui.render_mode = capture.render_mode
+        except Exception as e:
+            result = {"error": "%s" % e}
+            rendered = ["text", "error: %s" % e]
+        finally:
+            wt_session.ui = main_ui
+
+        if old_render_mode is not None:
+            wt_session.ui.render_mode = old_render_mode
         return self._success(_('Ran a command'), result={
-            'result': result,
-            'sessions': sessions.keys()
-        })
+            'result': rendered,
+            'raw_result': result,
+            'sessions': SESSIONS.keys()})
+
 
 _plugins.register_commands(
-    TerminalCommand, TerminalSessionNew, TerminalSessionEnd
-)
+    TerminalCommand, TerminalSessionNew, TerminalSessionEnd)

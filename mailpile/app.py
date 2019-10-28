@@ -3,6 +3,7 @@ import getopt
 import gettext
 import locale
 import os
+import re
 import sys
 import traceback
 
@@ -85,6 +86,25 @@ def CatchUnixSignals(session):
         pass
 
 
+def FriendlyPipeTransform(session, opt):
+    """Shell-like syntax to invoke the pipe command or change render modes."""
+    old_render_mode = None
+    if session.config.prefs.friendly_pipes:
+        if ' |' in opt:
+            cmd, pipe = opt.split(' |', 1)
+            opt = 'pipe %s -- %s' % (pipe.strip(), cmd.strip())
+        elif re.search(' >\S+$', opt):
+            cmd, pipe = opt.rsplit(' >', 1)
+            opt = 'pipe >%s -- %s' % (pipe, cmd.strip())
+            opt = opt.replace('\\|', '|').replace('\\>', '>')
+
+        if re.search(' :(json|j?html|text|\S+.html(?:!\S+))$', opt):
+            old_render_mode = session.ui.render_mode
+            opt, session.ui.render_mode = opt.rsplit(' :', 1)
+
+    return old_render_mode, opt
+
+
 def Interact(session):
     global readline
     try:
@@ -134,6 +154,7 @@ def Interact(session):
             session.ui.term.check_max_width()
             session.ui.unblock(force=True)
             if opt:
+                old_render_mode, opt = FriendlyPipeTransform(session, opt)
                 if ' ' in opt:
                     opt, arg = opt.split(' ', 1)
                 else:
@@ -146,6 +167,8 @@ def Interact(session):
                     session.fatal_error(unicode(e))
                 except UrlRedirectException as e:
                     session.fatal_error('Tried to redirect to: %s' % e.url)
+                if old_render_mode is not None:
+                    session.ui.render_mode = old_render_mode
     except EOFError:
         print()
     finally:

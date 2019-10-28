@@ -1,5 +1,3 @@
-
-
 Mailpile.Terminal = {
     settings: {
         prompt: 'mailpile>',
@@ -9,28 +7,18 @@ Mailpile.Terminal = {
     }
 };
 
-Mailpile.Terminal.debugOutput = function(out) {
-    if (typeof(out) === 'object' || typeof(out) === 'array') {
-        out = JSON.stringify(out);
+Mailpile.Terminal.output = function(mode_out) {
+    var mode = mode_out[0];
+    var output = mode_out[1];
+    var safe_output = output;
+    console.log(mode_out);
+    if (mode != "FIXME_DISABLED_html") {
+        safe_output = output.replace(/&/g, '&amp;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/</g, '&lt;')
+                            .replace(/"/g, '&quot;');
     }
-    var s =  out.replace(/&/g, '&amp;')
-                .replace(/>/g, '&gt;')
-                .replace(/</g, '&lt;')
-                .replace(/"/g, '&quot;');
-    $("#terminal_output").append("<div class=\"output\">" + s + "</div>");
-    var d = document.getElementById("debug_output");
-    d.scrollTop = d.scrollHeight;
-};
-
-Mailpile.Terminal.output = function(out) {
-    if (typeof(out) === 'object' || typeof(out) === 'array') {
-        out = JSON.stringify(out);
-    }
-    var s =  out.replace(/&/g, '&amp;')
-                .replace(/>/g, '&gt;')
-                .replace(/</g, '&lt;')
-                .replace(/"/g, '&quot;');
-    $("#terminal_output").append("<div class=\"output\">" + s + "</div>");
+    $("#terminal_output").append("<div class=\"output\">" + safe_output + "</div>");
     var d = document.getElementById("terminal_output");
     d.scrollTop = d.scrollHeight;
 };
@@ -38,19 +26,19 @@ Mailpile.Terminal.output = function(out) {
 Mailpile.Terminal.handleResponse = function(r) {
     if (r.status == "success") {
         if (r.result.result.error) {
-            Mailpile.Terminal.output("Error: " + r.result.result.error);
+            Mailpile.Terminal.output(["text", "Error: " + r.result.result.error]);
         } else {
             Mailpile.Terminal.output(r.result.result);
         }
     } else if (r.status == "error") {
-        Mailpile.Terminal.output(r.message);
+        Mailpile.Terminal.output(["text", r.message]);
     }
 }
 
 Mailpile.Terminal.executeCommand = function() {
     var cmd = $("#terminal_input input").val();
     $("#terminal_input input").val("");
-    Mailpile.Terminal.output("mailpile> " + cmd);
+    Mailpile.Terminal.output(["text", "mailpile> " + cmd]);
     if (cmd == "/exit") {
         Mailpile.Terminal.session_end();
     } else if (cmd == "/clear") {
@@ -94,7 +82,15 @@ Mailpile.Terminal.init = function() {
     // "     <div id=\"debug_output\"></div>" +
     // "  </div>" +
     "</div>");
-    $("#terminal_input form").submit(Mailpile.Terminal.executeCommand);
+    $("#terminal").on('click', function() {
+        $("#terminal_input input").focus();
+    });
+    $("#terminal_input form")
+        .submit(Mailpile.Terminal.executeCommand)
+        .find('input').on('keyup', function(ev, input) {
+            var code = ev.charCode || ev.keyCode;
+            if (code == 27) Mailpile.Terminal.toggle();
+        });
 }
 
 Mailpile.Terminal.toggle = function(size) {
@@ -106,6 +102,7 @@ Mailpile.Terminal.toggle = function(size) {
         $("#terminal_input input").blur();
         $("#terminal_blanket").show();
         $("#terminal").slideUp('fast');
+        $("body").focus();
     } else {
         if (size == "full") {
             $("#terminal").css("height", "100%");
@@ -125,12 +122,14 @@ Mailpile.Terminal.makeFull = function() {
     $("#terminal").animate({"height": "100%"});
     $("#terminal_fullsize_button").hide();
     $("#terminal_halfsize_button").show();
+    $("#terminal_input input").focus();
 }
 
 Mailpile.Terminal.makeSmall = function() {
     $("#terminal").animate({"height": "350px"});
     $("#terminal_halfsize_button").hide();
     $("#terminal_fullsize_button").show();
+    $("#terminal_input input").focus();
 }
 
 Mailpile.Terminal.hide = function() {

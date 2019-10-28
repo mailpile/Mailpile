@@ -1703,10 +1703,23 @@ class Pipe(Command):
     IS_USER_ACTIVITY = True
     COMMAND_SECURITY = security.CC_ACCESS_FILESYSTEM
 
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            result = self.result or self.error_info or {}
+            output = [
+                result.get('stderr') or '',
+                result.get('stdout') or '']
+            if result.get('return_code'):
+                output.extend([
+                    '(',
+                    _('Command returned non-zero exit code: %d') % result['return_code'],
+                    ')'])
+            return ''.join(output)
+
     def command(self):
         if '--' in self.args:
             dashdash = self.args.index('--')
-            target = self.args[0:dashdash]
+            target = list(self.args[0:dashdash])
             command, args = self.args[dashdash+1], self.args[dashdash+2:]
         else:
             target, command, args = [self.args[0]], self.args[1], self.args[2:]
@@ -1730,8 +1743,11 @@ class Pipe(Command):
                 t = t[1:]
             with vfs.open(t.strip(), 'w') as fd:
                 fd.write(output.encode('utf-8'))
+            return self._success(
+                'Wrote %d bytes to %s' % (len(output), t[1:]),
+                result={})
 
-        elif '@' in target[0]:
+        if '@' in target[0]:
             from mailpile.plugins.compose import Compose
             body = 'Result as %s:\n%s' % (capture.render_mode, output)
             if capture.render_mode != 'json' and output[0] not in ('{', '['):
@@ -1739,26 +1755,39 @@ class Pipe(Command):
             composer = Compose(self.session, data={
                 'to': target,
                 'subject': ['Mailpile: %s %s' % (command, ' '.join(args))],
-                'body': [body]
-            })
+                'body': [body]})
             return self._success('Mailing output to %s' % ', '.join(target),
                                  result=composer.run())
-        else:
-            try:
-                self.session.ui.block()
-                MakePopenUnsafe()
-                kid = subprocess.Popen(target, shell=True, stdin=PIPE)
-                rv = kid.communicate(input=output.encode('utf-8'))
-            finally:
-                self.session.ui.unblock()
-                MakePopenSafe()
-                kid.wait()
-            if kid.returncode != 0:
-                return self._error('Error piping to %s' % (target, ),
-                                   info={'stderr': rv[1], 'stdout': rv[0]})
 
-        return self._success('Wrote %d bytes to %s'
-                             % (len(output), ' '.join(target)))
+        stdout = stderr = ''
+        target = [t.encode('utf-8') for t in target]
+        try:
+            self.session.ui.block()
+            popen_args = {'stdin': subprocess.PIPE}
+            if not self.session.ui.interactive:
+                popen_args.update({
+                    'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE})
+
+            MakePopenUnsafe()
+            kid = subprocess.Popen(target, **popen_args)
+            MakePopenSafe()
+
+            stdout, stderr = kid.communicate(input=output.encode('utf-8'))
+        finally:
+            MakePopenSafe()
+            kid.wait()
+            self.session.ui.unblock()
+
+        result = {
+            'stdout': stdout,
+            'stderr': stderr,
+            'return_code': kid.returncode}
+        if kid.returncode != 0:
+            return self._error('Error piping to %s' % (target, ), info=result)
+        else:
+            return self._success(
+                'Wrote %d bytes to %s' % (len(output), ' '.join(target)),
+                result=result)
 
 
 class Quit(Command):

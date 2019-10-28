@@ -180,6 +180,7 @@ CONFIG_RULES = {
             'exporters':   [_("vCard export settings"), False,             {}],
             'context':     [_("vCard context helper settings"), False,     {}],
         }],
+        'friendly_pipes':  [_("Enable sh-like pipes in the CLI"), bool,  True],
     }),
     'web': (_("Web Interface Preferences"), False, {
         'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
