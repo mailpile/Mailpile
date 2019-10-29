@@ -47,9 +47,9 @@ class CommandCache(object):
     def cache_result(self, fprint, expires, req, cmd_obj, result_obj):
         with self.lock:
             # Make a snapshot of the session, as it provides context
-            ss = Session.Snapshot(cmd_obj.session, ui=False)
-            ss.ui = BackgroundInteraction(cmd_obj.session.config,
-                                          log_parent=cmd_obj.session.ui)
+            ui = BackgroundInteraction(cmd_obj.session.config,
+                                       log_parent=cmd_obj.session.ui)
+            ss = Session.Snapshot(cmd_obj.session, ui=ui)
 
             # Note: We cache this even if the requirements are "dirty",
             #       as mere presence in the cache makes this a candidate

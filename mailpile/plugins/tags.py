@@ -620,7 +620,7 @@ class ListTags(TagCommand):
             if not self.result:
                 return 'Failed'
             tags = self.result['tags']
-            wrap = int(min(23*5, (self.session.ui.term.max_width()-1)) / 23)
+            wrap = int(min(23*5, (self.session.ui.term.max_width-1)) / 23)
             text = []
             for i in range(0, len(tags)):
                 stats = tags[i]['stats']

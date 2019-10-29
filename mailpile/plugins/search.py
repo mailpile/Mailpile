@@ -584,7 +584,7 @@ class SearchResults(dict):
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
 
-        term_width = self.session.ui.term.max_width()
+        term_width = self.session.ui.term.max_width
         fs_width = int((22 + 53) * (term_width / 79.0))
         f_width = min(32, int(0.30 * fs_width))
         s_width = fs_width - f_width

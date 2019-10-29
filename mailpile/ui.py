@@ -44,6 +44,12 @@ def default_dict(*args):
     return d
 
 
+RING_BUFFER_LOCK = UiLock()
+RING_BUFFER_LINES = 50
+RING_BUFFER_COUNT = 0
+RING_BUFFER = [(-1, 0, '')] * RING_BUFFER_LINES
+
+
 class NoColors:
     """Dummy color constants"""
     C_SAVE = ''
@@ -64,7 +70,10 @@ class NoColors:
     LINE_BELOW = ''
 
     def __init__(self):
+        global RING_BUFFER
+        self.ring_buffer = RING_BUFFER
         self.lock = UiRLock()
+        self.max_width = 79
 
     def __enter__(self, *args, **kwargs):
         return self.lock.__enter__()
@@ -72,27 +81,34 @@ class NoColors:
     def __exit__(self, *args, **kwargs):
         return self.lock.__exit__(*args, **kwargs)
 
-    def max_width(self):
-        return 79
-
     def color(self, text, color='', weight='', readline=False):
         return '%s%s%s' % ((self.FORMAT_READLINE if readline else self.FORMAT)
                            % (color, weight), text, self.RESET)
 
     def replace_line(self, text, chars=None):
-        pad = ' ' * max(0, min(self.max_width(),
-                               self.max_width()-(chars or len(unicode(text)))))
+        pad = ' ' * max(0, min(self.max_width,
+                               self.max_width-(chars or len(unicode(text)))))
         return '%s%s\r' % (text, pad)
 
-    def add_line_below(self):
-        pass
-
-    def print_below(self):
-        pass
+    def clean(self, text):
+        return text
 
     def write(self, data):
         with self:
             sys.stderr.write(data)
+
+    def buffer(self, data):
+        global RING_BUFFER, RING_BUFFER_COUNT, RING_BUFFER_LINES, RING_BUFFER_LOCK
+        buffering = self.clean(data).strip()
+        with RING_BUFFER_LOCK:
+            if (RING_BUFFER_COUNT and
+                    RING_BUFFER[(RING_BUFFER_COUNT-1) % RING_BUFFER_LINES][2]
+                        == buffering):
+                return
+            RING_BUFFER[RING_BUFFER_COUNT % RING_BUFFER_LINES] = (
+                RING_BUFFER_COUNT, time.time(), buffering)
+            if buffering and '\n' in data:
+                RING_BUFFER_COUNT += 1
 
     def check_max_width(self):
         pass
@@ -119,6 +135,8 @@ class ANSIColors(NoColors):
     CURSOR_RESTORE = "\x1B[u"
     CLEAR_LINE = "\x1B[2K"
 
+    ANY_CODE = re.compile('\001|\x1B\[(0m|1[AB]|[su]|2K|[\d;]+?m|002)')
+
     def __init__(self):
         NoColors.__init__(self)
         self.check_max_width()
@@ -128,8 +146,8 @@ class ANSIColors(NoColors):
                                self.CLEAR_LINE, text,
                                self.CURSOR_RESTORE)
 
-    def max_width(self):
-        return self.MAX_WIDTH
+    def clean(self, text):
+        return re.sub(self.ANY_CODE, '', text)
 
     def check_max_width(self):
         try:
@@ -138,9 +156,9 @@ class ANSIColors(NoColors):
                                        termios.TIOCGWINSZ,
                                        struct.pack('HHHH', 0, 0, 0, 0))
             h, w, hp, wp = struct.unpack('HHHH', fcntl_result)
-            self.MAX_WIDTH = (w-1)
+            self.max_width = (w-1)
         except:
-            self.MAX_WIDTH = 79
+            self.max_width = 79
 
 
 class Completer(object):
@@ -241,22 +259,34 @@ class UserInteraction:
 
         return formatted
 
-    def _display_log(self, text, level=LOG_URGENT):
+    def _display_log(self, text, level=LOG_URGENT, ring_buffer=None):
         if not text.startswith(self.log_prefix):
             text = '%slog(%s): %s' % (self.log_prefix, level, text)
-        if self.log_parent is not None:
-            self.log_parent.log(level, text)
+        if ring_buffer is True:
+            self.term.buffer(self._fmt_log(text, level=level))
         else:
-            self.term.write(self._fmt_log(text, level=level))
+            if self.log_parent is not None:
+                self.log_parent.log(level, text)
+            else:
+                msg = self._fmt_log(text, level=level)
+                if ring_buffer is not False:
+                    self.term.buffer(msg)
+                self.term.write(msg)
 
-    def _debug_log(self, text, level):
+    def _debug_log(self, text, level, ring_buffer=None):
         if text and 'log' in self.config.sys.debug:
             if not text.startswith(self.log_prefix):
                 text = '%slog(%s): %s' % (self.log_prefix, level, text)
-            if self.log_parent is not None:
-                return self.log_parent.log(level, text)
+            if ring_buffer is True:
+                self.term.buffer(self._fmt_log(text, level=level))
             else:
-                self.term.write(self._fmt_log(text, level=level))
+                if self.log_parent is not None:
+                    return self.log_parent.log(level, text)
+                else:
+                    msg = self._fmt_log(text, level=level)
+                    if ring_buffer is not False:
+                        self.term.buffer(msg)
+                    self.term.write(msg)
 
     def clear_log(self):
         self.log_buffer = []
@@ -266,7 +296,7 @@ class UserInteraction:
             while len(self.log_buffer) > 0:
                 level, message = self.log_buffer.pop(0)
                 if level <= self.log_level:
-                    self._display_log(message, level)
+                    self._display_log(message, level, ring_buffer=False)
         except IndexError:
             pass
 
@@ -285,6 +315,7 @@ class UserInteraction:
 
     def log(self, level, message):
         if self.log_buffering:
+            self._display_log(message, level, ring_buffer=True)
             self.log_buffer.append((level, message))
             while len(self.log_buffer) > self.MAX_BUFFER_LEN:
                 self.log_buffer[0:(self.MAX_BUFFER_LEN/10)] = []
@@ -600,8 +631,8 @@ class HttpUserInteraction(UserInteraction):
         self.results = []
 
     # Just buffer up rendered data
-    def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level)
+    def _display_log(self, text, level=UserInteraction.LOG_URGENT, ring_buffer=None):
+        self._debug_log(text, level, ring_buffer=ring_buffer)
         self.logged.append((level, text))
 
     def _display_result(self, ttype, result):
@@ -655,8 +686,8 @@ class HttpUserInteraction(UserInteraction):
 class BackgroundInteraction(UserInteraction):
     LOG_PREFIX = 'bg/'
 
-    def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level)
+    def _display_log(self, text, level=UserInteraction.LOG_URGENT, ring_buffer=None):
+        self._debug_log(text, level, ring_buffer=ring_buffer)
 
     def edit_messages(self, session, emails):
         return False
@@ -665,8 +696,8 @@ class BackgroundInteraction(UserInteraction):
 class SilentInteraction(UserInteraction):
     LOG_PREFIX = 'silent/'
 
-    def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level)
+    def _display_log(self, text, level=UserInteraction.LOG_URGENT, ring_buffer=None):
+        self._debug_log(text, level, ring_buffer=ring_buffer)
 
     def _display_result(self, ttype, result):
         return result
@@ -676,8 +707,8 @@ class SilentInteraction(UserInteraction):
 
 
 class CapturingUserInteraction(UserInteraction):
-    def __init__(self, config):
-        mailpile.ui.UserInteraction.__init__(self, config)
+    def __init__(self, config, **kwargs):
+        mailpile.ui.UserInteraction.__init__(self, config, **kwargs)
         self.captured = ''
 
     def _display_result(self, ttype, result):
@@ -750,10 +781,12 @@ class Session(object):
     interactive = property(lambda s: s.ui.interactive,
                            lambda s, v: s.set_interactive(v))
 
-    def copy(self, session, ui=False, search=True):
-        if ui is True:
+    def copy(self, session, ui=None, copy_ui=False, search=True):
+        if copy_ui is True:
             self.main = session.main
             self.ui = session.ui
+        if ui is not None:
+            self.ui = ui
         if search:
             self.order = session.order
             self.results = session.results[:]
@@ -761,6 +794,7 @@ class Session(object):
             self.search_index = session.search_index
             self.displayed = session.displayed
             self.context = session.context
+        self.ui.term.max_width = session.ui.term.max_width
         return self
 
     def get_context(self, update=False):

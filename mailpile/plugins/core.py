@@ -1889,29 +1889,44 @@ class Help(Command):
 
         def splash_as_text(self):
             text = [
+                '=' * 77,
                 self.result['splash']
             ]
-            if os.getenv('DISPLAY'):
-                # Launching the web browser often prints junk, move past it.
-                text[:0] = ['=' * 77]
 
-            if self.result['http_url']:
-                text.append(_('The Web interface address is: %s'
-                              ) % self.result['http_url'])
-            else:
-                text.append(_('The Web interface is disabled,'
-                              ' type `www` to turn it on.'))
+            if not self.result['web_terminal']:
+                if self.result['http_url']:
+                    text.append(_('The Web interface address is: %s'
+                                  ) % self.result['http_url'])
+                else:
+                    text.append(_('The Web interface is disabled,'
+                                  ' type `www` to turn it on.'))
+                text.append('')
 
-            text.append('')
-            b = '   * '
-            if self.result['interactive']:
-                text.append(b + _('Type `help` for instructions or `quit` '
-                                  'to quit.'))
-                text.append(b + _('Long running operations can be aborted '
-                                  'by pressing: <CTRL-C>'))
+            b = '  * '
+            if self.result['web_terminal']:
+                text.append(_('Type `help` for instructions, or try these:'))
+                text.append(b + _('Terminal') +': '+
+                    '`/full`, `/small`, `/clear`, `/close`')
+            elif self.result['interactive']:
+                text.append(b + _(
+                    'Type `help` for instructions or `quit` to quit.'))
+                text.append(b + _(
+                    'Slow operations can be aborted by pressing: <CTRL-C>'))
+
             if self.result['login_cmd'] and self.result['interactive']:
-                text.append(b + _('You can log in using the `%s` command.'
-                                  ) % self.result['login_cmd'])
+                text.append(b +
+                    _('You can log in using the `%s` command.')
+                        % self.result['login_cmd'])
+            elif self.result['interactive'] or self.result['web_terminal']:
+                text.append(b + _('System') +': '+
+                    '`sendmail`, `rescan sources`, `set sys.debug = log`')
+                text.append(b + _('Search') +': '+
+                    '`inbox`, `trash`, `search is:unread from:john`')
+                text.append(b + _('Actions') +': '+
+                    '`tag -new these`, `view 2`, `tag -new +trash 1 3 7`')
+                text.append(b + _('Output') +': '+
+                    '`spam :json`, `view 1 :html`, `view raw 1 >/tmp/msg.eml`')
+
             if self.result['in_browser']:
                 text.append(b + _('Check your web browser!'))
 
@@ -1938,7 +1953,7 @@ class Help(Command):
             width = self.result.get('width', 8)
             ckeys = cmds.keys()
             ckeys.sort(key=lambda k: (cmds[k][3], cmds[k][0]))
-            arg_width = min(50, max(14, self.session.ui.term.max_width()-70))
+            arg_width = min(50, max(14, self.session.ui.term.max_width-70))
             for c in ckeys:
                 cmd, args, explanation, rank = cmds[c]
                 if not rank or not cmd:
@@ -2088,16 +2103,21 @@ class HelpVars(Help):
 
 class HelpSplash(Help):
     """Print Mailpile splash screen"""
-    SYNOPSIS = (None, 'help/splash', 'help/splash', None)
+    SYNOPSIS = (None, 'help/splash', 'help/splash', '[web_terminal]')
     ORDER = ('Config', 9)
     CONFIG_REQUIRED = False
 
     def command(self, interactive=True):
         from mailpile.auth import Authenticate
-        http_worker = self.session.config.http_worker
+        config = self.session.config
+
+        if not self.session.ui.interactive:
+            interactive = False
+        web_terminal = 'web_terminal' in self.args
 
         in_browser = False
-        if http_worker:
+        http_worker = config.http_worker
+        if http_worker and not web_terminal:
             http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
             if (mailpile.platforms.InDesktopEnvironment()
                     and self.session.config.prefs.open_in_browser):
@@ -2111,6 +2131,7 @@ class HelpSplash(Help):
             'splash': self.ABOUT,
             'http_url': http_url,
             'in_browser': in_browser,
+            'web_terminal': web_terminal,
             'login_cmd': (Authenticate.SYNOPSIS[1]
                           if not self.session.config.loaded_config else ''),
             'interactive': interactive

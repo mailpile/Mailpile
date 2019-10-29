@@ -103,6 +103,11 @@ Mailpile = {
       keys: "t",
       callback: function(e) { Mailpile.Terminal.toggle("small"); return false; },
       title: "{{_("Show terminal (small).")|escapejs}}"
+    },
+    {
+      keys: "shift+t",
+      callback: function(e) { Mailpile.Terminal.toggle("full"); return false; },
+      title: "{{_("Show terminal (full).")|escapejs}}"
     }
   ],
   nagify: 1000 * 60 * 60 * 24 * 7, // Default nag is 1 per week

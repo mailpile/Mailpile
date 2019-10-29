@@ -28,6 +28,7 @@ class TerminalSessionNew(Command):
         config = self.session.config
 
         s = Session(config)
+        s.ui.log_parent = self.session.ui
         s.ui.render_mode = 'text'
         sid = "%08x" % random.randint(0, 1000000000)
         SESSIONS[sid] = s
@@ -69,9 +70,10 @@ class TerminalCommand(Command):
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {
         'sid': 'id of session to use',
+        'width': 'width of terminal in characters',
         'command': 'command to execute'
     }
-    TERMINAL_BLACKLIST = ["eventlog/watch"]
+    TERMINAL_BLACKLIST = ["eventlog/watch", "hacks/pycli"]
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
@@ -86,6 +88,7 @@ class TerminalCommand(Command):
                 'Unknown session ID: %s' % sid, result={'sessions': SESSIONS.keys()})
 
         wt_session = SESSIONS[sid]
+        max_width = int(float(self.data.get('width', [79])[0]))
         cmd = self.data.get('command', [''])[0]
         old_render_mode, cmd = FriendlyPipeTransform(wt_session, cmd)
         cmd = cmd.split(" ")
@@ -97,8 +100,9 @@ class TerminalCommand(Command):
         try:
             main_ui = wt_session.ui
             from mailpile.ui import CapturingUserInteraction as CUI
-            wt_session.ui = capture = CUI(self.session.config)
+            wt_session.ui = capture = CUI(self.session.config, log_parent=self.session.ui)
             wt_session.ui.render_mode = main_ui.render_mode
+            wt_session.ui.term.max_width = max_width
 
             result = Action(wt_session, command, args)
             if wt_session.ui.render_mode == 'html':

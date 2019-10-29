@@ -532,8 +532,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         return self.do_GET(suppress_body=True, method='HEAD')
 
     def log_message(self, fmt, *args):
-        self.server.session.ui.notify(self.server_url() +
-                                      ' ' + (fmt % args))
+        if 'http' in self.server.session.config.sys.debug:
+            self.server.session.ui.notify(self.server_url() +
+                                          ' ' + (fmt % args))
 
 
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):

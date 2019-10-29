@@ -22,6 +22,7 @@ class Events(Command):
     HTTP_QUERY_VARS = {
         'wait': 'seconds to wait for new data',
         'gather': 'gather time (minimum wait), seconds',
+        'debuglog': 'include current debug-log ring buffer',
         'incomplete': 'incomplete events only?',
         # Filtering by event attributes
         'event_id': 'an event ID',
@@ -44,6 +45,7 @@ class Events(Command):
         session, config, index = self.session, self.session.config, self._idx()
         event_log = config.event_log
 
+        debuglog = truthy(self.data.get('debuglog', ['no'])[0])
         incomplete = truthy(self.data.get('incomplete', ['no'])[0])
         waiting = int(self.data.get('wait', [0])[0])
         gather = float(self.data.get('gather', [self.GATHER_TIME])[0])
@@ -55,6 +57,8 @@ class Events(Command):
                 incomplete = True
             elif arg.lower() == 'wait':
                 waiting = self.DEFAULT_WAIT_TIME
+            elif arg.lower() == 'debuglog':
+                debuglog = True
             elif '=' in arg:
                 field, value = arg.split('=', 1)
                 filters[unicode(field)] = unicode(value)
@@ -111,12 +115,17 @@ class Events(Command):
             else:
                 events = events[-limit:]
 
-        return self._success(_('Found %d events') % len(events),
-                             result={
+        result = {
             'count': len(events),
             'ts': max([0] + [e.ts for e in events]) or time.time(),
-            'events': [e.as_dict() for e in events]
-        })
+            'events': [e.as_dict() for e in events]}
+        if debuglog:
+            log_ui = self.session.ui
+            result['since'] = since = float(filters.get('since', 0))
+            result['debuglog'] = sorted([
+                (c, t, l) for c, t, l in log_ui.term.ring_buffer if t > since])
+
+        return self._success(_('Found %d events') % len(events), result=result)
 
 
 class Cancel(Command):

@@ -3,7 +3,7 @@
 
 #terminal_blanket {
     position: fixed;
-    z-index: 99999;
+    z-index: 500;
     width: 100%;
     height: 100%;
     display: none;
@@ -13,16 +13,15 @@
 
 #terminal {
     position: fixed;
-    z-index: 100000;
-    width: 100%;
-    height: 350px;
+    z-index: 501;
     display: none;
     background: #000;
-    opacity: 0.9;
     font-family: monospace;
     font-size: 14px;
     color: #eee;
+    width: 100%;
 
+    div.log,
     div.output {
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -32,34 +31,25 @@
         background: none;
         padding: 0px;
         margin: 0px;
-        padding-top: 3px;
+        padding-bottom: 10px;
         color: #eee;
         border: 0px;
     }
-
-    /*
-     * For now we're disabling the debug window for now because it's incomplete.
-     * TODO: Bring this to life! -- @smari 2017-07-24
-     *
-    #debug_container {
-        background: #500;
-        top: 0px;
-        bottom: 0px;
-        right: 0px;
-        position: absolute;
-        width: 40%;
-
-        #debug_output {
-            overflow-y: scroll;
-            overflow-x: hidden;
-            position: absolute;
-            top: 0px;
-            bottom: 0px;
-            left: 3px;
-            right: 0px;
-        }
+    div.html_blob {
+        position: relative;
+        white-space: normal;
+        background: #ddd;
+        padding: 0;
+        margin: 5px 50px 15px 50px;
+        border: 2px solid #fff;
     }
-    */
+    div.html_blob #content-view {
+        position: inherit;
+        color: #111;
+    }
+    div.html_blob #pile-speed {
+        display: none;
+    }
 
     #console {
         position: absolute;
@@ -102,6 +92,10 @@
                 width: 90%;
             }
 
+            #prompt {
+                color: #8f9;
+            }
+
             input {
                 outline: none;
                 display: inline-block;
@@ -113,5 +107,15 @@
                 font-size: 15px;
             }
         }
+    }
+
+    div.log {
+        line-height: 16px;
+        color: #77e;
+        padding: 0 0 2px 0;
+        margin: 0;
+    }
+    div.log .ts {
+        color: #55c;
     }
 }

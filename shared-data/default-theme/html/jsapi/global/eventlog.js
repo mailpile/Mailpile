@@ -61,13 +61,16 @@ EventLog.poll = function() {
   // 3) Other tabs may rely on us putting things in localStorage that we
   //    ourselves don't care about.
   //
-  //time for server to wait for new events
-  var waittime = 30;
-  //extra time to account for processing time on backend
+  // FIXME: The Mailpile.Terminal.settings.enabled check does cross tabs.
+
+  // Time for server to wait for new events
+  var waittime = Mailpile.Terminal.settings.enabled ? 2 : 30;
+  // Extra time to account for processing time on backend
   var buffer = 5;
   EventLog.request({
     since: EventLog.last_ts,
     gather: (EventLog.last_ts < 0) ? 0.2 : 1.0,
+    debuglog: (Mailpile.Terminal.settings.enabled ? 'yes' : 'no'),
     wait: waittime,
     _timeout: (waittime+buffer)*1000
   });
@@ -82,6 +85,10 @@ EventLog.invoke_callbacks = function(response) {
   var event_template = $('#template-event').html();
   if (event_template) {
     event_template = Mailpile.safe_jinjaish_template(event_template);
+  }
+
+  if (Mailpile.Terminal.settings.enabled) {
+    Mailpile.Terminal.updateDebugLog(response.result.debuglog);
   }
 
   // Iterate through the events, calling callbacks...

@@ -253,6 +253,7 @@ class Command(object):
             return ''
         from mailpile.urlmap import UrlMap
         args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
+        args += '/%d' % self.session.ui.term.max_width
         # The replace() stuff makes these usable as CSS class IDs
         return ('%s-%s' % (UrlMap(self.session).ui_url(self),
                            md5_hex(str(args))
@@ -566,7 +567,7 @@ class Command(object):
                     rv = self.session.config.command_cache.get_result(cid)
                     rv.session.ui = self.session.ui
                     if self.CHANGES_SESSION_CONTEXT:
-                        self.session.copy(rv.session, ui=False)
+                        self.session.copy(rv.session)
                     self.session.ui.mark(_('Using pre-cached result object %s') % cid)
                     self._finishing(True, just_cleanup=True)
                     return rv
