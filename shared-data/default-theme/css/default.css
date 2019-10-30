@@ -10483,41 +10483,27 @@ a.modal-tag-color-option:hover {
   left: 0px;
   width: 100%;
 }
-#terminal #console #buffers {
-  background: #000;
-  white-space: nowrap;
+#terminal #console #terminal_output {
   display: block;
-  overflow-x: scroll;
-  overflow-y: hidden;
-  padding: 0;
-  margin: 0;
-  height: 100%;
-}
-#terminal #console .terminal_output {
-  vertical-align: top;
-  position: relative;
-  display: inline-block;
-  border-left: 1px solid #ccc;
-  overflow-y: auto;
+  position: absolute;
+  top: 0px;
+  bottom: 25px;
+  left: 0px;
+  right: 0px;
+  padding: 6px;
+  overflow-y: scroll;
   overflow-x: hidden;
-  margin: 0;
-  padding: 0 0 0 5px;
-  min-height: 375px;
-  width: 100%;
-  /*  min-width: 690px;
-            max-width: 950px; */
 }
 #terminal #console #terminal_input {
-  position: absolute;
-  bottom: 0;
   height: 20px;
   background: #000;
+  position: absolute;
   border-top: 1px solid #ccc;
   width: 100%;
-  margin: 0;
-  padding: 4px;
+  padding: 3px;
   padding-left: 6px;
   padding-right: 6px;
+  bottom: 0px;
 }
 #terminal #console #terminal_input #terminal_halfsize_button {
   display: none;

@@ -8,13 +8,12 @@ Mailpile.Terminal = {
 };
 
 Mailpile.Terminal.atBottom = function() {
-    var d = document.getElementsByClassName("terminal_output")[0];
+    var d = document.getElementById("terminal_output");
     return (d.scrollHeight - d.scrollTop === d.clientHeight);
 };
 
 Mailpile.Terminal.scrollDown = function() {
-    $("#terminal .terminal_output").css({"height": $('#terminal').height() - 20});
-    var d = document.getElementsByClassName("terminal_output")[0];
+    var d = document.getElementById("terminal_output");
     d.scrollTop = d.scrollHeight;
     $("#terminal_input input").focus();
 };
@@ -35,7 +34,7 @@ Mailpile.Terminal.updateDebugLog = function(new_lines) {
             $existing.find('.log').html(log_msg);
         }
         else {
-            $(".terminal_output").eq(0).append(
+            $("#terminal_output").append(
                 '<div data-ts="'+ log_ts +'" id="log_line_'+ log_line_id +'" class="log">'+
                   '[<span class="ts">'+ log_time +'</span>] '+
                   '<span class="log">'+ log_msg +'</span>'+
@@ -43,7 +42,7 @@ Mailpile.Terminal.updateDebugLog = function(new_lines) {
         }
     }
     if (wasAtBottom) {
-        var $terminal = $(".terminal_output").eq(0);
+        var $terminal = $("#terminal_output");
         var $elements = $terminal.children("div");
         $elements.sort(function(a, b) {
             a = a.getAttribute('data-ts');
@@ -79,7 +78,7 @@ Mailpile.Terminal.output = function(mode_out) {
                                 .replace(/>/g, '&gt;')
                                 .replace(/</g, '&lt;'));
     }
-    $(".terminal_output").eq(0).append($output);
+    $("#terminal_output").append($output);
     Mailpile.Terminal.scrollDown();
 };
 
@@ -100,30 +99,14 @@ Mailpile.Terminal.submitCommand = function(ev) {
     return false;
 };
 
-Mailpile.Terminal.pushTerminal = function(ev) {
-    $('#buffers').prepend($('<div class="terminal_output"></div>'));
-    Mailpile.Terminal.executeCommand('help/splash web_terminal');
-};
-
-Mailpile.Terminal.closeTerminal = function(ev) {
-    if (1 == $('#buffers .terminal_output').length) {
-        Mailpile.Terminal.session_end();
-    }
-    else {
-        $('#buffers .terminal_output').eq(0).remove();
-        $('#buffers .terminal_output').eq(0).css({ transform: 'scale(1.0)' });
-    }
-};
-
 Mailpile.Terminal.executeCommand = function(cmd) {
     $("#terminal_input input").val("");
     if (cmd == "/full") return Mailpile.Terminal.makeFull();
     if (cmd == "/small") return Mailpile.Terminal.makeSmall();
     if (cmd == "/clear") return Mailpile.Terminal.clearOutput();
-    if (cmd == "/push") return Mailpile.Terminal.pushTerminal();
-    if (cmd == "/close") return Mailpile.Terminal.closeTerminal();
+    if (cmd == "/exit") return Mailpile.Terminal.session_end();
     if (!cmd) return Mailpile.Terminal.executeCommand('help/splash web_terminal');
-    var chars = 10 * $('#buffers .terminal_output').eq(0).width() / $('#terminal #prompt').width();
+    var chars = 10 * $('#terminal #console').width() / $('#terminal #prompt').width();
     Mailpile.Terminal.output(["text", "mailpile> " + cmd]);
     Mailpile.API.terminal_command_post({
             command: cmd,
@@ -138,7 +121,7 @@ Mailpile.Terminal.init = function() {
     "</div>" +
     "<div id=\"terminal\">" +
     "  <div id=\"console\">" +
-    "    <div id=\"buffers\"><div class=\"terminal_output\"></div></div>" +
+    "    <div id=\"terminal_output\"></div>" +
     "    <div id=\"terminal_input\">" +
     "        <a onclick=\"Mailpile.Terminal.session_end();\">" +
     "            <span class=\"icon icon-x\">" +
@@ -241,7 +224,7 @@ Mailpile.Terminal.session_end = function() {
 };
 
 Mailpile.Terminal.clearOutput = function() {
-    $(".terminal_output").eq(0).empty();
+    $("#terminal_output").empty();
 };
 
 $(function() {
