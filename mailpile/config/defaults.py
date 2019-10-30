@@ -180,11 +180,12 @@ CONFIG_RULES = {
             'exporters':   [_("vCard export settings"), False,             {}],
             'context':     [_("vCard context helper settings"), False,     {}],
         }],
-        'friendly_pipes':  [_("Enable sh-like pipes in the CLI"), bool,  True],
+        'friendly_pipes':  (_("Enable sh-like pipes in the CLI"), bool,  True),
     }),
     'web': (_("Web Interface Preferences"), False, {
         'keybindings':     (_('Enable keyboard short-cuts'), bool, False),
         'developer_mode':  (_('Enable developer-only features'), bool, False),
+        'friendly_dates':  (_('UI uses "friendly" date/times'), bool,    True),
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
         'quoted_reply':    (_('Quote replies to messages'), str, 'unset'),

@@ -74,6 +74,8 @@ class MailpileCommand(Extension):
         e.filters['friendly_bytes'] = s._friendly_bytes
         e.globals['friendly_number'] = s._friendly_number
         e.filters['friendly_number'] = s._friendly_number
+        e.globals['friendly_received'] = s._friendly_received
+        e.filters['friendly_received'] = s._friendly_received
         e.globals['body_part_metadata'] = s._body_part_metadata
         e.filters['body_part_metadata'] = s._body_part_metadata
         e.globals['show_avatar'] = s._show_avatar
@@ -264,6 +266,20 @@ class MailpileCommand(Extension):
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""
         return re.sub(find, replace, s)
+
+    def _friendly_received(self, data):
+        if data in ('', None, False):
+            return ''
+        match = re.search(
+            '^.*?by (\S+?) [^;]*;\s+([A-Za-z]{3,3}, +\d+ +\S+ \d\d\d\d \d+:\d+:\d+(?: +[+-]\d\d\d\d)?)',
+            data)
+        if match:
+            return re.sub('\s+', ' ', ('%s (%s)' % (match.group(2), match.group(1))))
+        match = re.search('^.*([A-Za-z]{3,3}, +\d+ +\S+ +20\d\d \d+:\d+:\d+(?: +[+-]\d\d\d\d)?)', data)
+        if match:
+            return re.sub('\s+', ' ', (match.group(1)))
+        else:
+            return data[:50] + ('...' if (len(data) > 50) else '')
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing

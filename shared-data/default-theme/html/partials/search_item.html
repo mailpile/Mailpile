@@ -69,6 +69,18 @@
     <!-- FIXME -->
   {%- else %}
     <div class="message-details">
+      <div class="header-cooked header-date">
+        <h3 class="header-name {{ unsigned.color }}"
+            title="{% for header, value in message.header_list|sort|reverse -%}
+{%- set hlc = header|lower -%}
+{% if hlc == 'user-agent' -%}{{_('Composed With')}}: {{value}}
+{% elif hlc == 'autocrypt' -%}{{_('Message has an Autocrypt header')}}{% if 'prefer-encrypt=mutual' in value %}, {{_('prefers encryption')}}{% endif %}.
+{% elif hlc == 'received' -%}{{_('Received')}}: {{value|friendly_received}}
+{% elif hlc == 'date' -%}{{_('Message Date')}}: {{value}}
+{% endif -%}{%- endfor %}">
+          {{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}
+        </h3>
+      </div>
       <div class="header-cooked header-from">
         <h3 class="header-name {{ unsigned.color }}">
           {{_("From")}}:
@@ -320,9 +332,14 @@
     {%- endif %}
 {%- endif %}
   </td>
-  <td class="date" data-ts="{{ metadata.timestamp }}">
+  <td class="date{% if not config.web.friendly_dates %} wide-date{% endif %}"
+      data-ts="{{ metadata.timestamp }}">
     <span title="{{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}">
-      {{metadata.timestamp|elapsed_datetime}}
+      {% if config.web.friendly_dates -%}
+        {{metadata.timestamp|elapsed_datetime}}
+      {%- else -%}
+        {{metadata.timestamp|friendly_time}}, {{metadata.timestamp|friendly_datetime}}
+      {%- endif %}
     </span>
   </td>
   <td class="checkbox">

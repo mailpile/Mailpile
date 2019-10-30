@@ -8497,6 +8497,9 @@ tr.modal-tag-picker-item td.checkbox {
   white-space: nowrap;
   color: #b3b3b3;
 }
+#pile-results td.date.wide-date {
+  width: 140px;
+}
 #pile-results td.checkbox {
   width: 45px;
   text-align: center;

@@ -117,6 +117,7 @@
     {%- for pref, val, label in (
             ('web.keybindings', config.web.keybindings, _("Enable keyboard short-cuts")+':'),
             ('web.donate_visibility', config.web.donate_visibility, _("Display donate link in topbar?")),
+            ('web.friendly_dates', config.web.friendly_dates, _("Use compact, approximate dates/times in UI")),
             ) %}
       {%- set sel = {val: ' checked'} %}
       <p style="line-height: 1.6em;">
