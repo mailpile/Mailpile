@@ -104,7 +104,7 @@ Mailpile.Terminal.executeCommand = function(cmd) {
     if (cmd == "/full") return Mailpile.Terminal.makeFull();
     if (cmd == "/small") return Mailpile.Terminal.makeSmall();
     if (cmd == "/clear") return Mailpile.Terminal.clearOutput();
-    if (cmd == "/exit") return Mailpile.Terminal.session_end();
+    if (cmd == "/close") return Mailpile.Terminal.session_end();
     if (!cmd) return Mailpile.Terminal.executeCommand('help/splash web_terminal');
     var chars = 10 * $('#terminal #console').width() / $('#terminal #prompt').width();
     Mailpile.Terminal.output(["text", "mailpile> " + cmd]);
