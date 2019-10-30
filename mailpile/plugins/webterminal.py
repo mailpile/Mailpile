@@ -73,7 +73,7 @@ class TerminalCommand(Command):
         'width': 'width of terminal in characters',
         'command': 'command to execute'
     }
-    TERMINAL_BLACKLIST = ["eventlog/watch", "hacks/pycli"]
+    TERMINAL_BLACKLIST = ["eventlog/watch", "hacks/pycli", "quit"]
     COMMAND_SECURITY = CC_WEB_TERMINAL
 
     def command(self):
@@ -96,7 +96,9 @@ class TerminalCommand(Command):
         args = ' '.join(cmd[1:])
 
         if command in self.TERMINAL_BLACKLIST:
-            return self._error(_('Command disallowed'), result={})
+            return self._error(
+                _('This command is not allowed in the web terminal.'),
+                result={})
         try:
             main_ui = wt_session.ui
             from mailpile.ui import CapturingUserInteraction as CUI
