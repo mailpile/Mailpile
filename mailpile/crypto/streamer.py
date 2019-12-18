@@ -754,7 +754,6 @@ class DecryptingStreamer(InputCoprocess):
             self.startup_lock.acquire()
             InputCoprocess.__init__(self, self._mk_command(), self.read_fd,
                                     name=name, long_running=long_running)
-            self.startup_lock = None
         except:
             try:
                 self.data_filter.join(aborting=True)
@@ -762,6 +761,9 @@ class DecryptingStreamer(InputCoprocess):
             except (IOError, OSError):
                 pass
             raise
+        finally:
+            self.startup_lock.release()
+            self.startup_lock = None
 
     def _read_filter(self, data):
         if data:
@@ -772,8 +774,8 @@ class DecryptingStreamer(InputCoprocess):
         return data
 
     def close(self):
-        self.data_filter.join()
         self.read_fd.close()
+        self.data_filter.join()
         return InputCoprocess.close(self)
 
     def verify(self, testing=False, _raise=None):
