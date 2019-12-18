@@ -324,7 +324,7 @@ class Rescan(Command):
                             self._progress(_('Rescanning: %s') % (src, ))
                             (messages, mailboxes) = src.rescan_now(session)
                         except ValueError:
-                            messages = 0
+                            messages = mailboxes = 0
                         if messages > 0:
                             msg_count += messages
                         mbox_count += mailboxes

@@ -180,11 +180,12 @@ class IOFilter(threading.Thread):
             self.info = 'reading'
             data = self.reading_from.read(self.blocksize)
             if not self.aborting:
-                self.info = 'writing'
                 if len(data) == 0:
+                    self.info = 'writing, EOF'
                     self.writing_to.write(self.callback(None) or '')
                     break
                 else:
+                    self.info = 'writing'
                     self.writing_to.write(self.callback(data))
 
     def run(self):
@@ -196,9 +197,12 @@ class IOFilter(threading.Thread):
         try:
             self.info = 'Starting: %s' % self.writing
             self._copy_loop()
+            self.info += ', done'
         except tuple(okay):
+            self.info += ', okay'
             pass
         except:
+            self.info += ', failed'
             self.exc_info = sys.exc_info()
             traceback.print_exc()
             if self.error_callback:
@@ -209,6 +213,7 @@ class IOFilter(threading.Thread):
         finally:
             fd, self.my_pipe_fd = self.my_pipe_fd, None
             if fd is not None:
+                self.info = 'Closing'
                 fd.close()
             self.info = 'Dead'
 
@@ -1003,7 +1008,7 @@ class PartialDecryptingStreamer(DecryptingStreamer):
                                 start_data=self.start_data,
                                 stop_check=self.EndEncrypted,
                                 error_callback=ecb,
-                                name='%s/filter' % (self.name or 'ds'))
+                                name='%s/rlfilter' % (self.name or 'ds'))
 
 
 if __name__ == "__main__":
