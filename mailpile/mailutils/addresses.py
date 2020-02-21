@@ -202,12 +202,15 @@ class AddressHeaderParser(list):
             cs, how, data = m.group(1), m.group(2), m.group(3)
             if how in ('b', 'B'):
                 try:
-                    return base64.b64decode(''.join(data.split())+'===').decode(cs)
+                    data = base64.b64decode(''.join(data.split())+'===')
                 except TypeError:
                     print('FAILED TO B64DECODE: %s' % data)
-                    return data
             else:
-                return quopri.decodestring(data, header=True).decode(cs)
+                data = quopri.decodestring(data, header=True)
+            try:
+                return data.decode(cs)
+            except LookupError:
+                return data.decode('iso-8859-1')  # Always works
 
         for cs in charset_order or self.charset_order:
             try:
