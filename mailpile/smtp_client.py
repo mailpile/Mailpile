@@ -301,7 +301,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
                             authstr = (OAuth2.XOAuth2Response(user, tok_info)
                                        ).encode('base64').replace('\n', '')
                             server.docmd('AUTH', 'XOAUTH2 ' + authstr)
-                        else:
+                        elif auth_type:
                             server.login(user.encode('utf-8'),
                                          (pwd or '').encode('utf-8'))
                     except UnicodeDecodeError:

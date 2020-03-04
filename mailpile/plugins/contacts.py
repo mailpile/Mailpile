@@ -889,6 +889,8 @@ def ProfileVCard(parent):
                             'route-host', 'route-port'):
                     rvar = var.split('-', 1)[1]
                     route[rvar] = self.data.get(var, [''])[0]
+                if not self.data.get('route-username', [''])[0]:
+                    route['auth_type'] = ''
                 if 'route-password' in self.data:
                     route['password'] = self.data['route-password'][0]
             else:
@@ -1286,7 +1288,7 @@ class EditProfile(AddProfile):
                 'route-port': route.port,
                 'route-username': route.username,
                 'route-password': route.password,
-                'route-auth_type': route.auth_type or 'password',
+                'route-auth_type': route.auth_type,
                 'route-command': route.command
             })
         pvars['sources'] = vcard.sources()

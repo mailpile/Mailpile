@@ -427,14 +427,19 @@
             <label>{{_("Username")}}</label>
             <input type="text" name="route-username" class="fpa-username"
                    onchange="javascript:_fpa.mark_copied(this, 'username');"
-                   value="{{ result['route-username'] }}" placeholder="you123">
+                   value="{{ result['route-username'] }}"
+                   placeholder="you123" style="margin-bottom: 0;">
+            <p style="margin-top: 0; font-size: 0.7em; text-align: right;"><i>
+              {{ _("Leave blank for no authentication") }}
+            </i></p>
           </div>
           <div class="left" style="margin-right: 1em; width: 14em;">
             {%- set auth_type = result['route-auth_type'][:8] %}
             <label>{{_("Authentication")}}</label>
             <select name="route-auth_type" style="width: 14em;">
-              {%- for val, txt in (('password', 'Password'),
-                                   ('OAuth2', 'OAuth2')) %}
+              {%- for val, txt in (('password', _('Password')),
+                                   ('OAuth2', 'OAuth2'),
+                                   ('', _('None'))) %}
               <option value="{{val}}"{% if val == auth_type %} selected
                                      {%- endif %}>{{txt}}</option>
               {%- endfor %}
@@ -538,7 +543,7 @@
             {%- set auth_type = result['source-' + rid + '-auth_type'] %}
             <label>{{_("Authentication")}}</label>
             <select name="source-{{ new_rid }}-auth_type" style="width: 14em;">
-              {%- for val, txt in (('password', 'Password'),
+              {%- for val, txt in (('password', _('Password')),
                                    ('OAuth2', 'OAuth2')) %}
               <option value="{{val}}"{% if val == auth_type %} selected
                                      {%- endif %}>{{txt}}</option>
