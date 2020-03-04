@@ -1,0 +1,29 @@
+{% extends "logs/layout.html" %}
+
+{% block title %}
+  {{ _("Download Public Key")}}
+{% endblock %}
+{% block content %}
+<div class="content-normal" style="max-width: 46em;">
+
+  <div>
+    <textarea rows={{ result.public_key.splitlines()|length + 1 }} style="width: 100%">
+      {{- result.public_key -}}
+    </textarea>
+  </div>
+
+  <p>
+    <a class="auto-modal auto-modal-sticky" href="{{ U('/settings/set/password/keys.html') }}">
+      <button class="button button-primary" aria-hidden="true">
+        {{_("Back")}}
+      </button>
+    </a>
+    <a target=_blank href="{{ U('/crypto/gpg/key/', result.key_id, '/?download=1') }}">
+      <button class="button button-secondary right">
+        <span class="icon icon-download"></span> {{_("Download")}}
+      </button>
+    </a>
+  </p>
+
+</div>
+{% endblock %}

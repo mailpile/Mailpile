@@ -387,6 +387,53 @@ class GPGKeyList(Command):
         return self._success("Searched for keys for e-mail address", res)
 
 
+class GPGKeyExport(Command):
+    """Export a GPG Public Key."""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/key', 'crypto/gpg/key', '<id>')
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+        'key': 'ID of key to fetch; passed directly to GnuPG',
+        'download': 'Set to trigger a download instead of inline'
+    }
+
+    class CommandResult(Command.CommandResult):
+        def __init__(self, *args, **kwargs):
+            Command.CommandResult.__init__(self, *args, **kwargs)
+
+        def as_text(self):
+            if self.result:
+                return self.result["public_key"]
+            return ""
+
+    def command(self):
+        args = list(self.args)
+        if len(args) > 0:
+            keyid = args[0]
+        else:
+            keyid = self.data.get("key", None)
+
+        if keyid is None:
+            return self._error("Which key?", None)
+
+        keydata = self._gnupg().export_pubkeys([keyid])
+        if not keydata:
+            return self._error("Key not found", None)
+
+        if self.data.get('download', [False])[0]:
+            filename, fd = self.session.ui.open_for_data(
+                attributes={
+                    'filename': '%s.asc' % keyid,
+                    'mimetype': 'application/pgp-keys',
+                    'disposition': 'attachment'})
+            fd.write(keydata)
+            fd.close()
+
+        return self._success(_("Exported key"), {
+            'key_id': keyid,
+            'public_key': keydata})
+
+
 class GPGKeyListSecret(Command):
     """List secret GPG Keys, --usable omits disabled, revoked, expired."""
     ORDER = ('', 0)
@@ -658,6 +705,7 @@ _plugins.register_commands(GPGKeyImport)
 _plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
+_plugins.register_commands(GPGKeyExport)
 _plugins.register_commands(GPGUsageStatistics)
 _plugins.register_commands(GPGKeyListSecret)
 _plugins.register_commands(GPGCheckKeys)

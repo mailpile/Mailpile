@@ -33,7 +33,7 @@
     <ul class="radio-list add-bottom">
       {%- macro render_key(key_info, first) %}
         {% if key_info.capabilities_map.encrypt and key_info.capabilities_map.sign and not key_info.disabled %}
-        <li class="key-info text-left" style="overflow: hidden;"
+        <li class="key-info text-left" style="overflow: hidden; position: relative;"
             onclick="javascript:_ssp.policy_changing();">
         <label class="radio-list-item">
           <div class="radio text-right">
@@ -63,6 +63,7 @@
               {{ _("{B} bit {T} key").format(B=key_info.keysize,
                                              T=key_info.keytype_name) }}
             </span>
+            <span style="opacity: 0.75; font-size: 0.9em;">
             ({%- if key_info.policy == 'protect' -%}
               {{- _("Managed by Mailpile") -}}
             {%- elif key_info.policy == 'store' -%}
@@ -72,6 +73,7 @@
             {%- else %}
               {{- _("Locked") -}}
             {%- endif %})
+            </span>
             <br>
             <br>
             {%- if key_info.expiration_date %}
@@ -113,6 +115,12 @@
                  onclick="javascript:Mailpile.profile_edit('{{ act.rid }}', 'security');"
                  href="#">{{ act.name }} &lt;{{ act.email }}&gt;</a>
             <br></i>
+            <a href="{{ U('/crypto/gpg/key/', key_info.fingerprint, '/') }}"
+                 class="auto-modal auto-modal-sticky"
+                 style="opacity: 0.4; position: absolute; top: 5px; right: 5px;"
+                 title="{{ _("Download Public Key") }}">
+               <span class="icon icon-download" style="font-size: 0.9em;"></span>
+            </a>
             {%- endfor %}
           </div>
         </label>
