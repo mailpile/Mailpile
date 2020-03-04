@@ -115,13 +115,13 @@
                  onclick="javascript:Mailpile.profile_edit('{{ act.rid }}', 'security');"
                  href="#">{{ act.name }} &lt;{{ act.email }}&gt;</a>
             <br></i>
+            {%- endfor %}
             <a href="{{ U('/crypto/gpg/key/', key_info.fingerprint, '/') }}"
                  class="auto-modal auto-modal-sticky"
                  style="opacity: 0.4; position: absolute; top: 5px; right: 5px;"
                  title="{{ _("Download Public Key") }}">
                <span class="icon icon-download" style="font-size: 0.9em;"></span>
             </a>
-            {%- endfor %}
           </div>
         </label>
         </li>
