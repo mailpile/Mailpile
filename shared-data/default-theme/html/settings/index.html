@@ -27,6 +27,14 @@
     <h3 class="mobile-hide">{{_("Settings")}}</h3>
     <div style="margin-left: 1em; display: inline-block;">
       <p>
+        <a href="{{ U('/profiles/') }}">
+          <button class="button-secondary" style="width: 175px; text-align: left;">
+            <span class="icon icon-home"></span> {{_("Accounts")}}
+          </button>
+        </a> &nbsp;
+        {{_("Your Accounts")}}
+      </p>
+      <p>
         <a href="{{ U('/settings/preferences.html') }}">
           <button class="button-secondary" style="width: 175px; text-align: left;">
             <span class="icon icon-animals"></span> {{_("Preferences")}}
