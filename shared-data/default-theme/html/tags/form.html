@@ -243,7 +243,7 @@
   
       <div class="right">
         <label>{{_("Untagging")}}:</label>
-        <select name="{{prefix}}auto_after">
+        <select name="{{prefix}}auto_after" style="margin-bottom: 5px;">
           <option value="0" {% if not tag.auto_after %}selected{% endif %}>{{_("Never")}}</option>
           <option value="1" {% if tag.auto_after == 1 %}selected{% endif %}>{{_("After 1 day")}}</option>
           <option value="2" {% if tag.auto_after == 2 %}selected{% endif %}>{{_("After 2 days")}}</option>
@@ -256,7 +256,7 @@
           <option value="{{ tag.auto_after }}" selected>{{_("After %(days)s days", days=tag.auto_after) }}</option>
 {%-   endif %}
         </select>
-        <select name="{{prefix}}auto_action">
+        <select name="{{prefix}}auto_action" style="margin-top: 0;">
           {% set to_inbox = "-" + tag.slug + " +inbox" %}
           {% set to_trash = "-" + tag.slug + " +trash" %}
           <option value="!untag" {% if tag.auto_action == "!untag" %}selected{% endif %}>{{ _("Remove from %(name)s", name=tag.name) }}</option>
