@@ -7,7 +7,8 @@
 <div class="content-normal" style="max-width: 46em;">
 
   <div>
-    <textarea rows={{ result.public_key.splitlines()|length + 1 }} style="width: 100%">
+    {% set rows = 1 + result.public_key.splitlines()|length %}
+    <textarea rows={{ (rows > 20) and 20 or rows }} style="width: 100%">
       {{- result.public_key -}}
     </textarea>
   </div>
