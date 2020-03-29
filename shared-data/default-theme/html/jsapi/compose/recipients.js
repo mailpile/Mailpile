@@ -26,6 +26,13 @@ Mailpile.Composer.Recipients.GetAll = function(mid, filter) {
 };
 
 
+Mailpile.Composer.Recipients.Fixup = function(r) {
+  if (r.fn.indexOf('"') == -1) r.fn = '"' + r.fn + '"';
+  r.fn = r.fn.replace(/%@&%/g, '_');  // Horrible Hack
+  return r;
+};
+
+
 Mailpile.Composer.Recipients.AnalyzeAddress = function(address, preset) {
   /* The Mailpile API guarantees consistent formatting of addresses, so
      a simple regexp should generally work juuuust fine. However, we also
@@ -54,7 +61,7 @@ Mailpile.Composer.Recipients.AnalyzeAddress = function(address, preset) {
     parsed["keys"] = [{"fingerprint": check[3].substring(1)}];
     parsed["flags"] = {"secure" : true};
   };
-  return parsed;
+  return Mailpile.Composer.Recipients.Fixup(parsed);
 };
 
 
@@ -67,13 +74,22 @@ Mailpile.Composer.Recipients.Analyze = function(addresses) {
     // We know this simple strategy works, because the backend formats the
     // address lines in a conisistent way.
     var multiple = addresses.split(/>, */);
+    // But we have select2 configured to do this Horrible Hack instead.
+    if (addresses.indexOf('%@&%') != -1) {
+      multiple = addresses.split(/%@&%/);
+    }
 
+    var seen = [];
     $.each(multiple, function(key, value) {
       if (value.indexOf('@') > -1) {
         if (value.indexOf('<') == -1) value = value + ' <' + value;
         if (value.indexOf('>') == -1) value = value + '>';
       }
-      existing.push(Mailpile.Composer.Recipients.AnalyzeAddress(value, true));
+      var analyzed = Mailpile.Composer.Recipients.AnalyzeAddress(value, true)
+      if (seen.indexOf(analyzed.address) == -1) {
+        existing.push(analyzed);
+        seen.push(analyzed.address);
+      }
     });
   }
   return existing;
@@ -98,9 +114,10 @@ Mailpile.Composer.Recipients.RecipientToAddress = function(object) {
 Mailpile.Composer.Recipients.AddressField = function(id) {
 
   // Get MID
-  var mid = $('#' + id).data('mid');
+  var $elem = $('#' + id);
+  var mid = $elem.data('mid');
 
-  $('#' + id).select2({
+  $elem.select2({
     id: Mailpile.Composer.Recipients.RecipientToAddress,
     ajax: {
       // instead of writing the function to execute the request we use
@@ -116,9 +133,12 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       },
       results: function(response, page) {
         // Convert the results into the format expected by Select2
-        return {
-          results: response.result.addresses
-        };
+        var result_list = [];
+        for (i in response.result.addresses) {
+          var r = response.result.addresses[i];
+          result_list.push(Mailpile.Composer.Recipients.Fixup(r));
+        }
+        return {results: result_list};
       }
     },
     multiple: true,
@@ -126,8 +146,9 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
     width: '100%',
     minimumInputLength: 1,
     minimumResultsForSearch: -1,
-    placeholder: 'Type to add contacts',
+    placeholder: "{{_('Type to add contacts')}}",
     maximumSelectionSize: 100,
+    separator: "%&@%",  // Horrible hack, see fixup code in events.js
     tokenSeparators: [", ", ";"],
     createSearchChoice: Mailpile.Composer.Recipients.AnalyzeAddress,
     formatResult: function(state) {
@@ -141,7 +162,7 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
       }
       return ('<span class="compose-select-avatar">' + avatar + '</span>' +
               '<span class="compose-select-name">' + 
-              _.escape(state.fn) + secure + '<br>' +
+              _.escape(state.fn.replace(/(^\"|\"$)/g, '')) + secure + '<br>' +
               '<span class="compose-select-address">' + state.address +
               '</span></span>');
     },
@@ -169,25 +190,19 @@ Mailpile.Composer.Recipients.AddressField = function(id) {
 
       // Create HTML
       var avatar = '<span class="avatar icon-user" data-address="' + _.escape(state.address) + '"></span>';
-      var name   = state.fn;
+      var name   = state.fn.replace(/(^\"|\"$)/g, '');
       var secure = '';
 
       if (state.photo) {
         avatar = '<span class="avatar"><img src="' + _.escape(state.photo) + '" data-address="' + state.address + '"></span>';
       }
-
-      if (!state.fn) {
-        name = state.address;
-      }
-
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed" data-address="' + _.escape(state.address) + '"></span>';
       }
-
       if (!state.fn){
-      return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(state.address) + secure + '</span>';
+        return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(state.address) + secure + '</span>';
       } else {
-      return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(name) + secure + '</span>';
+        return avatar + ' <span class="compose-choice-name" data-address="' + _.escape(state.address) + '">' + _.escape(name) + secure + '</span>';
       }
     },
     formatSelectionTooBig: function() {

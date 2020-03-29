@@ -15,14 +15,14 @@ Mailpile.Composer.Autosave = function(mid, form_data, callback) {
     $('#compose-message-autosaving-' + mid).html(autosave_msg).fadeIn();
 
     // Autosave It
-  	$.ajax({
-  		url			 : Mailpile.api.compose_save,
-  		type		 : 'POST',
+    $.ajax({
+      url      : Mailpile.api.compose_save,
+      type     : 'POST',
       timeout  : 15000,
-  		data     : form_data,
-  		dataType : 'json',
-  	  success  : function(response) {
+      data     : form_data,
+      dataType : 'json',
 
+      success: function(response) {
         // Update Message (data model)
         Mailpile.Composer.Drafts[mid].body = $('#compose-text-' + mid).val();
 
@@ -37,8 +37,7 @@ Mailpile.Composer.Autosave = function(mid, form_data, callback) {
         $('#compose-message-autosaving-' + mid).html('<span class="icon-x"></span>' + autosave_error_msg).fadeIn();
         callback();
       }
-  	});
-
+    });
   }
   // Not Autosaving
   else {
@@ -50,8 +49,9 @@ Mailpile.Composer.Autosave = function(mid, form_data, callback) {
 Mailpile.Composer.AutosaveAll = function(delay, callback) {
   var save_chain = [];
   $('.form-compose').each(function(key, form) {
+    var $form = $(form);
     save_chain.push(function(chain) {
-      Mailpile.Composer.Autosave($(form).data('mid'), $(form).serialize(),
+      Mailpile.Composer.Autosave($form.data('mid'), Mailpile.Composer.SerializeForm($form),
                                  function() {
         if (chain && chain.length) {
           var nxt = chain.shift();

@@ -98,12 +98,23 @@ $(document).on('click', '.compose-action', function(e) {
   return Mailpile.Composer.SendMessage(this);
 });
 
+Mailpile.Composer.SerializeForm = function($form) {
+  var serialized = $form.serialize();
+  // This is a Horrible Hack to undo the very silly separator we use to
+  // hack around select2 being unable to fully parse e-mail addresses.
+  var re = /((^|&)(to|cc|bcc)=[^&]*)%25%26%40%25/gi;
+  while (serialized.search(re) != -1) {
+    serialized = serialized.replace(re, '$1,+');
+  }
+  return serialized
+};
+
 Mailpile.Composer.SendMessage = function(send_btn) {
   var $send_btn = $(send_btn);
   var action = $send_btn.val();
   var mid = $send_btn.parent().data('mid');
   var post_send_url = $send_btn.closest('.has-url').data('url');
-  var form_data = $('#form-compose-' + mid).serialize();
+  var form_data = Mailpile.Composer.SerializeForm($('#form-compose-' + mid));
 
   // Warn the user if he's trying to go against his own security policies,
   // let him abort... or not.
@@ -132,13 +143,14 @@ Mailpile.Composer.SendMessage = function(send_btn) {
   }
 
   // FIXME: Use Mailpile.API instead of this.
-	$.ajax({
-		url			 : action_url,
-		type		 : 'POST',
-		data     : form_data,
-		dataType : 'json',
-	  success  : function(response) {
-	    // Is A New Message (or Forward)
+  $.ajax({
+    url      : action_url,
+    type     : 'POST',
+    data     : form_data,
+    dataType : 'json',
+
+    success: function(response) {
+      // Is A New Message (or Forward)
       done_working();
       if (action === 'send' && response.status === 'success') {
         if (post_send_url) {
@@ -172,6 +184,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
         Mailpile.notification(response);
       }
     },
+
     error: function() {
       done_working();
       Mailpile.notification({
@@ -179,7 +192,7 @@ Mailpile.Composer.SendMessage = function(send_btn) {
         message: 'Could not ' + action + ' your message'
       });
     }
-	});
+  });
 };
 
 
