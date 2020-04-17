@@ -208,11 +208,11 @@ def GuessTags(cfg, name):
 def Slugify(tag_name, tags=None):
     slug = CleanText(tag_name.lower().replace(' ', '-').replace('@', '-'),
                      banned=CleanText.NONDNS.replace('/', '')
-                     ).clean.lower()
+                     ).clean.lower() or 'tag'
     n = 1
     while tags and slug in [t.slug for t in tags.values()]:
         n += 1
-        slug = Slugify('%s.%s' % (tag_name, n))
+        slug = Slugify('%s.%s' % (tag_name or 'tag', n))
     return slug
 
 
@@ -577,7 +577,9 @@ class AddTag(TagCommand):
                 return self._error('Tag already exists: %s/%s' % (tag.slug,
                                                                   tag.name))
 
-        tags = [{'name': n, 'slug': s} for (n, s) in zip(names, slugs)]
+        tags = [
+            {'name': (n or _('New Tag')), 'slug': (s or 'tag')}
+            for (n, s) in zip(names, slugs)]
         for v in self.OPTIONAL_VARS:
             for i in range(0, len(tags)):
                 vlist = self.data.get(v, [])

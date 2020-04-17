@@ -29,7 +29,7 @@
             {{ navigation_on(result.search_tag_ids, tag.tid) }}"
      title="{{tag.name}} {{friendly_number(tag_new_count)}}">
     <span class="icon {{tag.icon}}" style="color: {{theme_colors.get(tag.label_color, tag.label_color)}};"></span>
-    <span class="name">{{tag.name}}</span>
+    <span class="name">{{tag.name or _('(unnamed)')}}</span>
     <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
   </a>
 
@@ -54,7 +54,7 @@
            {%- if subtags_collapsed or 'archive' in (subtag.display, tag.display) %} hide should-hide{% endif %}">
   <a href="{{subtag.url}}" class="sidebar-tag {% if subtag.stats.new %}has-unread{% endif %} {{ navigation_on(result.search_tag_ids, subtag.tid) }}" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
     <span class="icon {{subtag.icon}}" style="color: {{theme_colors.get(subtag.label_color, subtag.label_color)}};"></span>
-    <span class="name">{{subtag.name}}</span>
+    <span class="name">{{subtag.name or _('(unnamed)')}}</span>
     {% if subtag.stats.new %}
     <span class="notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
     {% endif %}
