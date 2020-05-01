@@ -6985,7 +6985,7 @@ div.notification-bubble span.action {
   padding: 0;
 }
 .topbar-actions {
-  min-width: 630px;
+  min-width: 420px;
   display: table-cell;
   box-sizing: border-box;
   vertical-align: middle;
@@ -7066,7 +7066,7 @@ div.notification-bubble span.action {
   float: right;
   position: relative;
   top: 0px;
-  right: 20px;
+  right: 20px
 }
 .topbar-nav ul {
   list-style: none;
@@ -7075,13 +7075,14 @@ div.notification-bubble span.action {
   clear: both;
 }
 .topbar-nav > ul > li {
-  float: left;
-  margin-left: 15px;
+  float: right;
+  margin-left: 5px;
   text-align: center;
 }
 .topbar-nav > ul > li > a {
-  width: 32px;
-  height: 32px;
+  float: right;
+  width: 24px;
+  height: 24px;
   display: block;
   margin: 6px 8px;
   font-weight: normal;
@@ -7097,7 +7098,8 @@ div.notification-bubble span.action {
   transition-duration: 0.2s;
 }
 .topbar-nav > ul > li > a img {
-  height: 32px;
+  float: right;
+  height: 24px;
 }
 .topbar-nav > ul > li > a.donate:hover {
   color: #be1c21;
@@ -7120,7 +7122,7 @@ div.notification-bubble span.action {
 }
 .topbar-nav > ul > li.nav-dropdown ul.dropdown-menu li {
   display: block;
-  float: none;
+  float: right;
   text-align: left;
 }
 .topbar-nav .nav-search {
@@ -9606,7 +9608,36 @@ a.modal-tag-color-option:hover {
 /* =============== Tablet Style =============== */
 @media only screen and (max-width: 1020px) {
   .tablet-hide {
-    display: none !important;
+    /*display: none !important;*/
+  }
+
+  .topbar{
+    height: 62px;
+  }
+
+  .topbar-actions{
+    float: left;
+    width: 10%
+  }
+  .topbar-nav{
+    float: right;
+    position: relative;
+    width: 20%;
+    height: 62px;
+  }
+  .topbar-nav > ul > li {
+    width: 12%;
+    height: 62px;
+  }
+  .topbar-nav > ul > li > a img {
+    float: right;
+    height: 50%;
+  }
+  .topbar-nav > ul > li > a span.link-icon {
+    font-size: 100%;
+    line-height: 32px;
+    margin: 0;
+    padding: 8px 0 0 0;
   }
   /* Shrink the sidebar a bit, but keep it. */
   #sidebar {
@@ -9684,15 +9715,44 @@ a.modal-tag-color-option:hover {
 }
 /* Mobile - All Sizes (devices and browser) */
 @media only screen and (max-width: 767px), (orientation: portrait) {
+
   .mobile-block {
     display: block !important;
-  }
+   }
   .mobile-inline {
     display: inline-block !important;
   }
   .mobile-hide {
-    display: none !important;
+    /*display: none !important;*/
   }
+
+  .topbar{
+    height: 62px;
+  }
+
+  .topbar-nav{
+    float: right;
+    position: relative;
+    width: 40%;
+    height: 62px;
+  }
+  .topbar-nav > ul > li {
+    width: 3%;
+    height: 32px;
+  }
+  .topbar-nav > ul > li > a img {
+    float: right;
+    height: 10%;
+  }
+  .topbar-nav > ul > li > a span.link-icon {
+    font-size: 100%;
+    width: 6px;
+    height: 6px;
+    line-height: 32px;
+    margin: 0;
+    padding: 8px 0 0 0;
+  }
+
   /* Start by making comfy/cozy/snug be identical: */
   #pile-results.comfy td,
   #pile-results.cozy td,
@@ -9807,7 +9867,7 @@ a.modal-tag-color-option:hover {
     min-width: 30%;
   }
   .topbar-actions {
-    min-width: 80%;
+    min-width: 60%;
   }
   .topbar-logo span#page-title-icon {
     padding: 0 0 0 10px;
@@ -9819,29 +9879,7 @@ a.modal-tag-color-option:hover {
     font-size: 24px;
     margin: 18px 10px;
   }
-  .topbar-actions {
-    white-space: nowrap;
-    text-align: right;
-  }
-  .topbar-nav {
-    right: 8px;
-  }
-  .topbar-nav > ul > li {
-    margin: 0 0 0 7px;
-    padding: 0;
-  }
-  .topbar-nav > ul > li > a {
-    width: 22px;
-    height: 22px;
-    margin: 0;
-    padding: 0;
-  }
-  .topbar-nav > ul > li > a span.link-icon {
-    font-size: 22px;
-    line-height: 22px;
-    margin: 0;
-    padding: 8px 0 0 0;
-  }
+
   .topbar-nav .nav-search {
     display: list-item;
   }
