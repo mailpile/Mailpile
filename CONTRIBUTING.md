@@ -12,7 +12,7 @@ be found here](CODE_OF_CONDUCT.md).
 Please also be sure you are comfortable with [our license](COPYING.md)
 before contributing any code to Mailpile.
 
-Note that Mailpile is a slightly unsual app; the design is both political
+Note that Mailpile is a slightly unusual app; the design is both political
 and opinionated. If you are confused or unsure whether something is a bug or a
 feature, [our developer FAQ might have answers](DEV_FAQ.md)! Please read it
 before filing issues about design choices or attempting to reorganize the code
