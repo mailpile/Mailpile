@@ -17,6 +17,42 @@ Mailpile.initialize_keybindings = function() {
   }
 };
 
+
+// ****************************************************************** //
+//START OF GREG EDIT //
+// ****************************************************************** //
+
+function j_click() {
+    // Move to previous email
+    if (document.getElementById("previous-message") != null ){
+        console.log ( document.getElementById("previous-message").click() );
+    }
+    else {
+        console.log ("Please select an email that is not the first email in your inbox, spam, sent");
+    }
+    //Move to previous email in thread
+
+}
+
+function k_click() {
+    // Move to next email
+    if (document.getElementById("next-message") != null ){
+        console.log ( document.getElementById("next-message").click() );
+    }
+    else {
+        console.log ("Please select an email that is not the last email in your inbox, spam, sent");
+    }
+    //Move to next email in thread
+}
+
+Mousetrap.bind('k', k_click);
+Mousetrap.bind('j', j_click);
+
+// ****************************************************************** //
+//END OF GREG EDIT //
+// ****************************************************************** //
+
+
 Mailpile.keybinding_move_messages = function(op, keep_new) {
   // Has Messages
   var $context = Mailpile.UI.Selection.context(".selection-context");
