@@ -17,33 +17,121 @@ Mailpile.initialize_keybindings = function() {
   }
 };
 
-
 // ****************************************************************** //
 //START OF GREG EDIT //
 // ****************************************************************** //
 
-function j_click() {
-    // Move to previous email
-    if (document.getElementById("previous-message") != null ){
-        console.log ( document.getElementById("previous-message").click() );
+// Problems :
+	// 1. When you click to go to the previous element it will stay at the same element / when you click to move to next element it will stay at the same element (switch between j/k k/j)
+	// 2. Does not always stop at first element in a thread when pressing j key to go back
+	// 3. When you click to move to next email, if the email has a thread, it does not move to thread element 0 it moves instead to thread element 1?
+	// 4. Minify and clean up code (put common code into separate functions ? )
+
+
+var thread_counter = 0;
+
+function j_click() {    
+    //Move to previous email in thread
+    if ( document.getElementsByClassName("thread-message").length > 0 ){
+
+	if (thread_counter == document.getElementsByClassName("thread-message").length ) {
+		thread_counter = thread_counter - 1 ;
+		console.log ( "At thread element: ", thread_counter ) ; 
+		console.log ( document.getElementsByClassName("thread-message")[thread_counter].click() );
+	}
+
+	if (thread_counter == -1 ) {
+		// Move to previous email
+		if (document.getElementById("previous-message") != null ){
+        		console.log ( document.getElementById("previous-message").click() );
+			console.log ( "Moving to previous email" );
+			thread_counter = 0;
+    		}
+    		else {
+        		console.log ("Please select an email that is not the first email in your inbox, spam, sent");
+			thread_counter = 0;
+    		}
+		
+	}
+	
+	if (thread_counter == 0 ) {
+		thread_counter = thread_counter - 1 ;
+	}
+
+	if (thread_counter > 0) {
+		thread_counter = thread_counter - 1 ;
+		console.log ( "At thread element: ", thread_counter ) ; 
+		console.log ( document.getElementsByClassName("thread-message")[thread_counter].click() );
+
+	}
+	//else move to previous email
+	else {
+		thread_counter = 0;
+		// Move to previous email
+		if (document.getElementById("previous-message") != null ){
+        		console.log ( document.getElementById("previous-message").click() );
+			console.log ( "Moving to previous email" );
+    		}
+    		else {
+        		console.log ("Please select an email that is not the first email in your inbox, spam, sent");
+    		}
+	}	
     }
     else {
-        console.log ("Please select an email that is not the first email in your inbox, spam, sent");
+	console.log ( "<- Does not contain a thread!" );
+	thread_counter = 0;
+	// Move to previous email
+	if (document.getElementById("previous-message") != null ){
+        	console.log ( document.getElementById("previous-message").click() );
+    	}
+    	else {
+        	console.log ("Please select an email that is not the first email in your inbox, spam, sent");
+    	}
     }
-    //Move to previous email in thread
-
 }
 
 function k_click() {
-    // Move to next email
-    if (document.getElementById("next-message") != null ){
-        console.log ( document.getElementById("next-message").click() );
+    //Move to next email in thread
+    if ( document.getElementsByClassName("thread-message").length > 0 ){
+
+	if (thread_counter == -1 ){
+		thread_counter = 0;
+	}
+
+
+	if (thread_counter < document.getElementsByClassName("thread-message").length ) {
+		console.log("Thread Length: ", document.getElementsByClassName("thread-message").length );
+		console.log ( "At thread element: ", thread_counter ) ;
+		console.log ( document.getElementsByClassName("thread-message")[thread_counter].click() );
+		thread_counter = thread_counter + 1 ;		
+	}
+	// else move to next email
+	else {
+		// moving to next email
+		thread_counter = 0;
+    		// Move to next email
+    		if (document.getElementById("next-message") != null ){
+        		console.log ( document.getElementById("next-message").click() );
+			console.log ( "Moving to next email" );
+    		}
+    		else {
+        		console.log ("Please select an email that is not the last email in your inbox, spam, sent");
+    		}
+	}
     }
     else {
-        console.log ("Please select an email that is not the last email in your inbox, spam, sent");
+	console.log ( "Does not contain a thread! ->" );
+	thread_counter = 0;
+    	// Move to next email
+    	if (document.getElementById("next-message") != null ){
+        	console.log ( document.getElementById("next-message").click() );
+    	}
+    	else {
+        	console.log ("Please select an email that is not the last email in your inbox, spam, sent");
+    	}
     }
-    //Move to next email in thread
 }
+
 
 Mousetrap.bind('k', k_click);
 Mousetrap.bind('j', j_click);
