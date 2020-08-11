@@ -500,8 +500,6 @@ class MailIndex(BaseIndex):
         if reverse:
             messages.reverse()
         for ui in range(0, len(messages)):
-            if not force:
-                play_nice_with_threads(weak=True)
             if mailpile.util.QUITTING or self.interrupt:
                 ir, self.interrupt = self.interrupt, None
                 return finito(-1, _('Rescan interrupted: %s') % ir)
@@ -518,17 +516,17 @@ class MailIndex(BaseIndex):
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
-                if (ui % 317) == 0:
-                    session.ui.mark(parse_status(ui))
-                elif (ui % 129) == 0 and not force:
-                    play_nice_with_threads()
                 if not lazy:
                     msg_info = self.get_msg_at_idx_pos(self.PTRS[msg_ptr])
                     msg_body = msg_info[self.MSG_BODY]
                 if lazy or (msg_body not in self.MSG_BODY_UNSCANNED):
+                    if (ui % 1129) == 0:
+                        session.ui.mark(parse_status(ui))
                     continue
-            else:
-                session.ui.mark(parse_status(ui))
+
+            session.ui.mark(parse_status(ui))
+            if (ui % 127) == 0 and not force:
+                play_nice_with_threads()
 
             # Message new or modified, let's parse it.
             try:
