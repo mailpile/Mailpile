@@ -553,6 +553,7 @@ class MailIndex(BaseIndex):
             # This happens last and in a locked section, because other threads may
             # have added messages while we were busy with other things.
             with self._lock:
+                messages = sorted(mbox.keys())  # Update this, in case it changed
                 existing_ptrs = set()
                 for ui in range(0, len(messages)):
                     msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
