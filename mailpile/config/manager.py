@@ -1366,13 +1366,15 @@ class ConfigManager(ConfigDict):
             from mailpile.plugins.core import HealthCheck
             def gpl_optimize():
                 if HealthCheck.check(config.background, config):
-                    runtime = (config.prefs.rescan_interval or 1800) / 10
+                    rs_interval = (config.prefs.rescan_interval or 1800)
+                    runtime = rs_interval / 10
+                    ratio = 1.0 / (7*24*3600.0 / rs_interval) # Optimize 1x/week
                     config.slow_worker.add_unique_task(
                         config.background, 'Optimize GPL',
                         lambda: GlobalPostingList.Optimize(config.background,
                                                            config.index,
                                                            lazy=True,
-                                                           ratio=0.5,
+                                                           ratio=ratio,
                                                            runtime=runtime))
 
             # Schedule periodic rescanning, if requested.
