@@ -13,8 +13,6 @@ from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 
 
-NEW_POSTING_LIST = True
-
 GLOBAL_POSTING_LOCK = PListRLock()
 GLOBAL_OPTIMIZE_LOCK = PListLock()
 
@@ -127,9 +125,15 @@ class PostingListContainer(object):
             self.changed = True
             return self._unlocked_remove(*args, **kwargs)
 
-    def _deleted_set(self):
-        # FIXME!
-        return set()
+    def purge_deleted(self, deleted_sig, deleted_set):
+        changes = 0
+        for sig in self.words:
+			overlap = (self.words[sig] & deleted_set)
+            if (sig != deleted_sig) and overlap:
+                self.words[sig] -= overlap
+                changes += len(overlap)
+        self.changes += changes
+        return changes
 
     def save(self, split=True):
         if not self.changes:
@@ -146,10 +150,9 @@ class PostingListContainer(object):
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
             # Optimizing for fast loads, so deletion only happens on save.
-            del_set = self._deleted_set()
             output = '\n'.join('\t'.join(l) for l
-                               in ([sig] + [str(v) for v in (values-del_set)]
-                                   for sig, values in self.words.iteritems())
+                               in ([sig] + [str(v) for v in vals]
+                                   for sig, vals in self.words.iteritems())
                                if len(l) > 1)
             t.append(time.time())
 
@@ -286,7 +289,7 @@ class PostingListContainer(object):
         return (None, None)
 
 
-class NewPostingList(object):
+class PostingList(object):
     """A posting list is a map of search terms to message IDs."""
 
     HASH_LEN = 24
@@ -340,62 +343,7 @@ class OldPostingList(object):
 
     @classmethod
     def _Optimize(cls, session, idx, force=False):
-        return  # Disabled, this is incompatible with new posting lists!
-
-        postinglist_kb = session.config.sys.postinglist_kb
-
-        # Pass 1: Compact all files that are 90% or more of our target size
-        for c in cls.CHARACTERS:
-            postinglist_dir = session.config.postinglist_dir(c)
-            for fn in sorted(os.listdir(postinglist_dir)):
-                if mailpile.util.QUITTING:
-                    break
-                filesize = os.path.getsize(os.path.join(postinglist_dir, fn))
-                if force or (filesize > 900 * postinglist_kb):
-                    session.ui.mark('Pass 1: Compacting >%s<' % fn)
-                    play_nice_with_threads()
-                    with GLOBAL_POSTING_LOCK:
-                        # FIXME: Remove invalid and deleted messages from
-                        #        posting lists.
-                        cls(session, fn, sig=fn).save()
-
-        # Pass 2: While mergable pair exists: merge them!
-        for c in cls.CHARACTERS:
-            postinglist_dir = session.config.postinglist_dir(c)
-            files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
-            files.sort(key=lambda a: -len(a))
-            for fn in files:
-                if mailpile.util.QUITTING:
-                    break
-                size = os.path.getsize(os.path.join(postinglist_dir, fn))
-                fnp = fn[:-1]
-                while not os.path.exists(os.path.join(postinglist_dir, fnp)):
-                    fnp = fnp[:-1]
-                size += os.path.getsize(os.path.join(postinglist_dir, fnp))
-                if (fnp and
-                    size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
-                    session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
-                    play_nice_with_threads()
-                    try:
-                        GLOBAL_POSTING_LOCK.acquire()
-                        path_fn = os.path.join(postinglist_dir, fn)
-                        path_fnp = os.path.join(postinglist_dir, fnp)
-                        with open(path_fn, 'r') as fd:
-                            with open(path_fnp, 'a') as fdp:
-                                for line in fd:
-                                    fdp.write(line)
-                    finally:
-                        try:
-                            os.remove(os.path.join(postinglist_dir, fn))
-                        except (OSError, IOError):
-                            pass
-                        GLOBAL_POSTING_LOCK.release()
-
-        filecount = 0
-        for c in cls.CHARACTERS:
-            filecount += len(os.listdir(session.config.postinglist_dir(c)))
-        session.ui.mark('Optimized %s posting lists' % filecount)
-        return filecount
+        return 0  # Disabled, this is incompatible with new posting lists!
 
     @classmethod
     def _Append(cls, session, word, mail_ids, compact=True, sig=None):
@@ -597,15 +545,24 @@ class GlobalPostingList(OldPostingList):
         # Record the largest known msg_mid here so it doesn't get lost
         cls.UpdateMaxMsgMid(session, [b36(cls.GetMaxMsgIdxPos())])
 
+        deleted = GlobalPostingList(session, 'deleted:is')
+        deleted_set = deleted.hits()
+        deleted_sig = deleted.sig
+
         starttime = time.time()
         count = 0
         global GLOBAL_GPL
         if (GLOBAL_GPL and (not lazy or len(GLOBAL_GPL) > 50*1024)):
-            # Processing keys in order is more efficient, as it lets things
-            # accumulate in the PLC_CACHE.
+            pls = GlobalPostingList(session, '')
+
+            # Why sort? Processing keys in order is more efficient, as it lets
+            # things accumulate in the PLC_CACHE.
             keys = sorted(GLOBAL_GPL.keys())
-            if ratio:
-                keyn = int(len(keys) * ratio)
+            if not quick and not lazy:
+                keys = sorted(keys + pls.plc_keys())
+
+            if ratio and keys:
+                keyn = int(max(1, len(keys) * min(1.0, ratio)))
                 start = random.randint(0, len(keys))
                 # This lets the selection wrap around to the beginning,
                 # so we don't have a bias against writing out the first
@@ -613,30 +570,27 @@ class GlobalPostingList(OldPostingList):
                 keys += keys
                 keys = keys[start:start+keyn]
 
-            pls = GlobalPostingList(session, '')
             for sig in keys:
-                if (count % 7) == 0:
-                    PLC_CACHE_FlushAndClean(session, min_changes=100000)
+                if pls._migrate(sig):
+                    pls._purge_deleted(sig, deleted_sig, deleted_set)
+                    count += 1
+                elif pls._purge_deleted(sig, deleted_sig, deleted_set):
+                    count += 1
+
                 if (count % 97) == 0:
+                    PLC_CACHE_FlushAndClean(session, min_changes=10000)
                     session.ui.mark(('Updating search index... %d%% (%s)'
                                      ) % (count * 100 / len(keys), sig))
 
-                # If we're doing a full optimize later, we disable the
-                # compaction here. Otherwise it follows the normal
-                # rules (compacts as necessary).
-                pls._migrate(sig, compact=quick)
-                count += 1
+                if runtime and (starttime + runtime) < time.time():
+                    break
                 if mailpile.util.QUITTING:
                     break
-                if runtime and starttime + (0.80 * runtime) < time.time():
-                    break
+
             PLC_CACHE_FlushAndClean(session)
             pls.save()
 
-        if quick or mailpile.util.QUITTING:
-            return count
-        else:
-            return OldPostingList._Optimize(session, idx, force=force)
+        return count
 
     @classmethod
     def SaveFile(cls, session, prefix):
@@ -731,11 +685,20 @@ class GlobalPostingList(OldPostingList):
         with self.lock:
             sig = sig or self.sig
             if sig in GPL_NEVER_MIGRATE:
-                return
+                return False
             if sig in self.WORDS and len(self.WORDS[sig]) > 0:
                 PostingList.Append(self.session, sig, self.WORDS[sig],
                                    sig=sig, compact=compact)
                 del self.WORDS[sig]
+                return True
+        return False
+
+    def _purge_deleted(self, sig, deleted_sig, deleted_set):
+        if sig in GPL_NEVER_MIGRATE:
+            return False
+        with self.lock:
+            plc = PostingListContainer.Load(self.session, sig)
+            return plc.purge_deleted(deleted_sig, deleted_set)
 
     def remove(self, eids):
         PostingList(self.session, self.word).remove(eids).save()
@@ -745,8 +708,7 @@ class GlobalPostingList(OldPostingList):
         return (self.WORDS.get(self.sig, set())
                 | PostingList(self.session, self.word).hits())
 
-
-if NEW_POSTING_LIST:
-    PostingList = NewPostingList
-else:
-    PostingList = OldPostingList
+    def plc_keys(self):
+        keys = []
+        # FIXME: Scan the posting list directory tree for keys as well
+        return list(keys)

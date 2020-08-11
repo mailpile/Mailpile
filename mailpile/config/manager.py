@@ -1368,14 +1368,15 @@ class ConfigManager(ConfigDict):
                 if HealthCheck.check(config.background, config):
                     rs_interval = (config.prefs.rescan_interval or 1800)
                     runtime = rs_interval / 10
-                    ratio = 1.0 / (7*24*3600.0 / rs_interval) # Optimize 1x/week
+                    ratio = 2.0 / (7*24*3600.0 / rs_interval) # Optimize 2x/week
                     config.slow_worker.add_unique_task(
                         config.background, 'Optimize GPL',
-                        lambda: GlobalPostingList.Optimize(config.background,
-                                                           config.index,
-                                                           lazy=True,
-                                                           ratio=ratio,
-                                                           runtime=runtime))
+                        lambda: GlobalPostingList.Optimize(
+                            config.background,
+                            config.index,
+                            lazy=(not user_probably_asleep()),
+                            ratio=ratio,
+                            runtime=runtime))
 
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval

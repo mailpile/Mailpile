@@ -852,6 +852,16 @@ def dict_merge(*dicts):
     return final
 
 
+def user_probably_asleep():
+    """
+    Returns true if we think it is night time and/or the user has been
+    idle for a good amount of time.
+    """
+    hour = datetime.now().hour
+    idle = time.time() - LAST_USER_ACTIVITY
+    return ((hour > 22) or (hour < 7) or (idle > 7200)) and (idle > 1800)
+
+
 def play_nice(niceness):
     if hasattr(os, 'nice'):
         try:
