@@ -128,7 +128,7 @@ class PostingListContainer(object):
     def purge_deleted(self, deleted_sig, deleted_set):
         changes = 0
         for sig in self.words:
-			overlap = (self.words[sig] & deleted_set)
+	    overlap = (self.words[sig] & deleted_set)
             if (sig != deleted_sig) and overlap:
                 self.words[sig] -= overlap
                 changes += len(overlap)
