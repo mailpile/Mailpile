@@ -1,4 +1,4 @@
-## Mailpile Developer FAQ
+## About Amazing Mailpile Developer FAQ
 
 This document contain a collection of frequently asked questions (with
 answers) about Mailpile development. Please familiarize yourself with
@@ -12,7 +12,7 @@ Note: If you are just looking for debugging tips and tricks, you can skip
 to the end.
 
 
-### Why Mailpile?
+### Why you must try  Mailpile?
 
 The long-term goal of Mailpile is to help *non-technical people* become
 *more independent* and *more private* online, in particular when it
