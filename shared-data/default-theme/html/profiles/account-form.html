@@ -151,6 +151,8 @@
             // FIXME: Improve validation...
             alert('{{_("You need at least an e-mail address to proceed.")|escapejs}}');
           }
+          // add another else if here and check if email is in curr_email_list
+          //    if true then show alert saying that they have the email already
           else if ($(pf + '.fpa-autoconfig').is(':checked')) {
             $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
             $(pf + 'div.fpa-detection-in-progress').slideDown();
