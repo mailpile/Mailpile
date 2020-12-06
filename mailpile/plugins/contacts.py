@@ -1211,6 +1211,19 @@ class AddProfile(ProfileVCard(AddVCard)):
             # When editing, this doesn't run first, so we invoke it now.
             state = self._before_vcard_create(vcard.kind, [], vcard=vcard)
 
+        if self.name == "profiles/add":
+
+            all_vcards = self.session.config.vcards.find_vcards([], kinds=['profile'])
+            all_emails = [ [vcl.value for vcl in vc.get_all('email')] for vc in all_vcards ]
+            all_emails = [item for sublist in all_emails for item in sublist]
+            
+            new_email = self.data.get('email', [None])[0]
+
+            
+            if new_email in all_emails:
+                raise ValueError("duplicate email address used")
+            
+
         vcard.signature = self.data.get('signature', [''])[0]
         vcard.email = self.data.get('email', [None])[0] or vcard.email
         vcard.fn = self.data.get('name', [None])[0] or vcard.fn
