@@ -37,17 +37,26 @@
         },
         validate: function() {
           var basic_problems = 0;
+          var dup_email_problems = 0;
           if ($(pf + 'input[name=name]').val() == "" ||
               $(pf + 'input[name=email]').val().indexOf('@') < 0) {
             basic_problems += 1;
             $(pf + 'input[name=name], ' + pf + 'input[name=email]'
               ).on('change', _fpa.validate);
           }
+
+          if (emails.indexOf($(pf + 'input[name=email]').val().toLowerCase()) >= 0) {
+            dup_email_problems += 1;
+            $(pf + 'input[name=name], ' + pf + 'input[name=email]'
+              ).on('change', _fpa.validate);
+          }
+          
           // FIXME: Validate other things too, improve e-mail validation
           //_fpa.display($('.fpa-basics-ok'), basic_problems < 1);
           _fpa.display($('.fpa-basics-bad'), basic_problems > 0);
+          _fpa.display($('.fpa-basics-dup'), dup_email_problems > 0);
           _fpa.display($('#fpa-submit'),
-                       (basic_problems < 1) &&
+                       (basic_problems < 1) && (dup_email_problems < 1) &&
                        (!$(pf + '.fpa-autoconfig').is(':checked')));
         },
         next: function(show) {
@@ -302,6 +311,8 @@
       <span class="icon-signature-unknown fpa-basics-bad right hide" style="padding: 5px; color: #ff5;"
             title="{{_('At least a name and e-mail are required!')}}"></span>
       <span class="icon-checkmark fpa-basics-ok right hide" style="padding: 5px; color: #0d0;"></span>
+      <span class="icon-signature-unknown fpa-basics-dup right hide" style="padding: 5px; color: red;"
+            title="{{_('This email address is already in use!')}}"></span>
     </p>
     <div class="section profile-add-basics {% if ui_open and ui_open != 'basics' %}hide{% endif %}"
          style="position: relative;">

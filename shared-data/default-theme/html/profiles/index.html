@@ -228,7 +228,7 @@
         {%- set p = result.profiles[result.rids[profile_rid]] %}
          
           {% for e in p.email %}
-            emails.push("{{ e.email }}")
+            emails.push("{{ e.email }}".toLowerCase())
           {%- endfor %}
           
       {%- endfor %}
