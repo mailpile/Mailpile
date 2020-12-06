@@ -147,62 +147,77 @@
         },
         basics_next: function() {
           var email = $(pf + '.fpa-email').val();
+          var name = $(pf + '.fpa-name').val();
           if (!email) {
             // FIXME: Improve validation...
             alert('{{_("You need at least an e-mail address to proceed.")|escapejs}}');
           }
-          // add another else if here and check if email is in curr_email_list
-          //    if true then show alert saying that they have the email already
-          // curr_email_list = Mailpile.API.profiles_get(params?){}
-          else if ($(pf + '.fpa-autoconfig').is(':checked')) {
-            $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
-            $(pf + 'div.fpa-detection-in-progress').slideDown();
-            $(pf + '.fpa-detection-progress').html('{{_("Detecting settings for: ")|escapejs}}' + email);
-            var ev_source = '.*.SetupGetEmailSettings';
-            var watch_id = EventLog.subscribe(ev_source, function(ev) {
-              if (ev.private_data['track-id'] == new_src_id) {
-                $(pf + '.fpa-detection-progress').html(ev.message);
-              }
-            });
-            Mailpile.API.setup_email_servers_get({
-              'track-id': new_src_id,
-              '_timeout': (Mailpile.ajax_timeout * 30), // AJAX timeout
-              'timeout': 240000,  // Server-side deadline
-              'email': email,
-              '_error_callback': function(response, _status) {
-                console.log("Detection error " + _status);
-                $(pf + 'div.fpa-detection-in-progress').slideUp();
-                $(pf + 'div.fpa-network-settings').slideDown();
-                _fpa.next('profile-add-route');
-                $(pf + '.fpa-detection-failed').slideDown();
-                EventLog.unsubscribe(ev_source, watch_id);
-              }
-            }, function(data) {
-              EventLog.unsubscribe(ev_source, watch_id);
-              $(pf + 'div.fpa-detection-in-progress').slideUp();
-              $(pf + 'div.fpa-network-settings').slideDown();
-              $('.edit-provider-settings').hide();
-              var nxt = undefined;
-              var result = undefined;
-              if (data.result) result = data.result[email];
-              if (result) nxt = _fpa.copy_email_settings(result);
-              if (data.result && data.result['login_failed']) {
-                _fpa.next('profile-add-basics');
-                $(pf + '.fpa-autoconfig').prop('checked', true);
-                $(pf + '.fpa-login-failed').slideDown();
-              }
-              else if (nxt) {
-                _fpa.next(nxt);
-              }
-              else {
-                _fpa.next('profile-add-route');
-                $(pf + '.fpa-detection-failed').slideDown();
-              }
-            });
-            return false;
+          else if (!name) {
+            alert('{{_("You need at least a name to proceed.")|escapejs}}');
           }
           else {
-            return _fpa.next("profile-add-route");
+            Mailpile.API.profiles_get({}, function(data) {
+              var profile_emails = data.result.emails;
+              var profile_names = data.result.profiles.map(profile => profile.fn);
+              if (profile_emails.hasOwnProperty(email)) {
+                // check if email is already associated with other profile
+                alert('{{_("This e-mail address has already been added.")|escapejs}}');
+              }
+              else if (profile_names.includes(name)) {
+                // check if name is already associated with other profile
+                alert('{{_("You need a unique name to proceed.")|escapejs}}');
+              }
+              else if ($(pf + '.fpa-autoconfig').is(':checked')) {
+                $(pf + 'div.section, ' + pf + 'div.fpa-network-settings').slideUp();
+                $(pf + 'div.fpa-detection-in-progress').slideDown();
+                $(pf + '.fpa-detection-progress').html('{{_("Detecting settings for: ")|escapejs}}' + email);
+                var ev_source = '.*.SetupGetEmailSettings';
+                var watch_id = EventLog.subscribe(ev_source, function(ev) {
+                  if (ev.private_data['track-id'] == new_src_id) {
+                    $(pf + '.fpa-detection-progress').html(ev.message);
+                  }
+                });
+                Mailpile.API.setup_email_servers_get({
+                  'track-id': new_src_id,
+                  '_timeout': (Mailpile.ajax_timeout * 30), // AJAX timeout
+                  'timeout': 240000,  // Server-side deadline
+                  'email': email,
+                  '_error_callback': function(response, _status) {
+                    console.log("Detection error " + _status);
+                    $(pf + 'div.fpa-detection-in-progress').slideUp();
+                    $(pf + 'div.fpa-network-settings').slideDown();
+                    _fpa.next('profile-add-route');
+                    $(pf + '.fpa-detection-failed').slideDown();
+                    EventLog.unsubscribe(ev_source, watch_id);
+                  }
+                }, function(data) {
+                  EventLog.unsubscribe(ev_source, watch_id);
+                  $(pf + 'div.fpa-detection-in-progress').slideUp();
+                  $(pf + 'div.fpa-network-settings').slideDown();
+                  $('.edit-provider-settings').hide();
+                  var nxt = undefined;
+                  var result = undefined;
+                  if (data.result) result = data.result[email];
+                  if (result) nxt = _fpa.copy_email_settings(result);
+                  if (data.result && data.result['login_failed']) {
+                    _fpa.next('profile-add-basics');
+                    $(pf + '.fpa-autoconfig').prop('checked', true);
+                    $(pf + '.fpa-login-failed').slideDown();
+                  }
+                  else if (nxt) {
+                    _fpa.next(nxt);
+                  }
+                  else {
+                    _fpa.next('profile-add-route');
+                    $(pf + '.fpa-detection-failed').slideDown();
+                  }
+                });
+                return false;
+              }
+              else {
+                return _fpa.next("profile-add-route");
+              }
+            })
           }
         },
         copy_email_settings: function(result) {
@@ -322,7 +337,8 @@
       <div style="padding-right: 0em; width: 29em;">
         <label>{{_("Name")}}</label>
         <input type="text" name="name" style="width: 100%"
-               value="{{ result.name }}" placeholder="Ada Lovelace">
+               class='fpa-name' value="{{ result.name }}"
+               placeholder="Ada Lovelace">
       </div>
       <div class="basics old">
         <div class="left" style="margin-right: 1em; width: 29em;">
