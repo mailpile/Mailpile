@@ -220,6 +220,21 @@
 </script>
 {% endif %}
 <script type='text/javascript'>
+  let emails = []
+  
+  {%- if result.profiles|length > 0 %}   
+    {%- if result.rids %}
+      {%- for profile_rid in result.rids %}
+        {%- set p = result.profiles[result.rids[profile_rid]] %}
+         
+          {% for e in p.email %}
+            emails.push("{{ e.email }}")
+          {%- endfor %}
+          
+      {%- endfor %}
+    {% endif %}
+  {% endif %}
+  
   Mailpile.API.logs_events_get({incomplete: true}, EventLog.invoke_callbacks);
 </script>
 {%- endblock %}
