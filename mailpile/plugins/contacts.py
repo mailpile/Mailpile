@@ -1218,7 +1218,7 @@ class AddProfile(ProfileVCard(AddVCard)):
             all_emails = [item for sublist in all_emails for item in sublist]
             
             all_emails = [email.lower() for email in all_emails]
-            new_email = self.data.get('email', [None])[0].lower()
+            new_email = (self.data.get('email', [None])[0] or vcard.email).lower()
 
             if new_email in all_emails:
                 raise ValueError("duplicate email address used")
