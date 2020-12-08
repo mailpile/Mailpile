@@ -157,13 +157,13 @@
           }
           else {
             Mailpile.API.profiles_get({}, function(data) {
-              var profile_emails = data.result.emails;
-              var profile_names = data.result.profiles.map(profile => profile.fn);
-              if (profile_emails.hasOwnProperty(email)) {
+              var profile_emails = Object.keys(data.result.emails).map(email => email.toLowerCase());
+              var profile_names = data.result.profiles.map(profile => profile.fn.toLowerCase());
+              if (profile_emails.includes(email.toLowerCase())) {
                 // check if email is already associated with other profile
                 alert('{{_("This e-mail address has already been added.")|escapejs}}');
               }
-              else if (profile_names.includes(name)) {
+              else if (profile_names.includes(name.toLowerCase())) {
                 // check if name is already associated with other profile
                 alert('{{_("You need a unique name to proceed.")|escapejs}}');
               }
