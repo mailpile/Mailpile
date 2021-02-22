@@ -1,5 +1,8 @@
 /* Modals - Crypto */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /* Modals - Crypto - try to find keys locally & remotely */
 Mailpile.UI.Modals.CryptoFindKeys = function(options) {
   options.container = '#search-keyservers';

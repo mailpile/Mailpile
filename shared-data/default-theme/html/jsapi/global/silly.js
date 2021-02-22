@@ -1,4 +1,8 @@
 /* Setup - Complete - Model */
+
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.silly_strings = {
   copying: [
     '{{_("Mail is being imported into your Mailpile")|escapejs}}',

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+
 ##[ Static ISPDB entries ]######################################################
 
 # https://autoconfig.thunderbird.net/v1.1/gmail.com - as of 2017-05-01

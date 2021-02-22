@@ -17,6 +17,9 @@
 #       a splash-screen. Arguably, more of this logic should be moved
 #       into `mailpile.plugins.gui` so everything is in one place.
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 from __future__ import print_function
 import copy
 import fasteners

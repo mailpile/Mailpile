@@ -3,6 +3,9 @@
 # IMPORTANT: This script runs as root and is invoked by the web server via sudo.
 #            So it's pretty security-sensitive: simple is better than clever!
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# 
 from __future__ import print_function
 DOC="""\
 

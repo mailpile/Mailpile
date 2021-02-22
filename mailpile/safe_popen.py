@@ -22,6 +22,9 @@ from __future__ import print_function
 # handling of close() are taken advantage of, and adds a couple of
 # convenience functions and properties to make piping code more readable.
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 import os
 import subprocess
 import sys

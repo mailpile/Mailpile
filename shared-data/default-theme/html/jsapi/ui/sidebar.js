@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.UI.Sidebar.SubtagsToggle = function(tid) {
   // Strategy: assume whatever is in the DOM is correct and take actions
   // based on that (after all, that's what the users sees). However, we

@@ -1,4 +1,7 @@
 /* UI - Configure the toggle based on current selection */
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.set_bulk_action_tag_toggle = function($elem, have_tags) {
   var $elem = $elem.find('.bulk-action-tag-op');
   if ($elem && $elem.data('op') == 'toggle') {

@@ -1,4 +1,7 @@
 // Providing Keybinding/Keyboard shortcuts via Mousetrap
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.initialize_keybindings = function() {
   Mousetrap.bind("?", function() { Mailpile.display_keybindings(); });
   Mousetrap.bindGlobal("esc", function() {

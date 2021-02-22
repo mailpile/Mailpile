@@ -6,6 +6,9 @@
 # If run with -i as the first argument, it will then drop to an interactive
 # python shell for experimenting and manual testing.
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 from __future__ import print_function
 import os
 import sys

@@ -6,6 +6,10 @@
 # name and then go delete sections you aren't going to use.
 #
 # Happy hacking!
+# 
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 
 from gettext import gettext as _
 from mailpile.plugins import PluginManager

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n

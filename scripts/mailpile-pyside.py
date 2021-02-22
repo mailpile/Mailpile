@@ -4,6 +4,9 @@
 #
 #   http://agateau.com/2012/02/03/pyqtwebkit-experiments-part-2-debugging/
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 import sys
 from PySide.QtCore import *
 from PySide.QtGui import *

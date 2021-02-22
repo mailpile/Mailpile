@@ -12,6 +12,9 @@
 ** independently of the others. This should makes selection behavior stable,
 ** no matter how updates happen (AJAX, js, ...).
 */
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.UI.Selection = (function(){
 
 var update_callbacks = {};

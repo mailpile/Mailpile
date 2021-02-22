@@ -1,6 +1,10 @@
 /* This is the demo plugin's javascript code!
    The name of the returned class will be `mailpile.plugins.demos`.
  */
+ 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 return {
     new_tool_click: function() {
         alert('Are you ready to see a whole new world?');

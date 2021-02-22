@@ -1,5 +1,8 @@
 /* Crypto - Import */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 
 Mailpile.Crypto.Import.Key = function(import_data) {
   // Set Null

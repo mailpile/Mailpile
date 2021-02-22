@@ -8,6 +8,9 @@
 # operations and assist with rendering the results in various formats (text,
 # HTML, JSON, etc.).
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 ###############################################################################
 import datetime
 import getpass

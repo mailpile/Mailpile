@@ -2,6 +2,9 @@
 #
 # Standalone script for minimizing PGP keys, using the same logic as
 # we use for Autocrypt.
+# 
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
 #
 from mailpile.crypto.autocrypt import get_minimal_PGP_key
 import os

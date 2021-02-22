@@ -1,5 +1,8 @@
 /* Composer - Crypto */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.Composer.Crypto.UpdateEncryptionState = function(mid, chain, initial) {
   // Assemble all the recipient addresses, as well as our sending address
   var emails = [$('#compose-from-selected-' + mid).find('.address').html()];

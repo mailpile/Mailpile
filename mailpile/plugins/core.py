@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # These are the Mailpile core commands, the public "API" we expose for
 # searching, tagging and editing e-mail.
 #

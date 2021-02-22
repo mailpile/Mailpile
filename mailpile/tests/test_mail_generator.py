@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import unittest
 import mailpile
 

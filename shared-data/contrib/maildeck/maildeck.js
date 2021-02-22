@@ -1,6 +1,9 @@
 /* MailDeck.js is the javascript code
    The name of the returned class will be `mailpile.plugins.maildeck`.
  */
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-late
+
 return {
     load: function(e) {
         Mailpile.plugins.maildeck.column_add('in:github');

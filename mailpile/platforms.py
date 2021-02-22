@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 This module tries to centralize most of the platform-specific code in use by
 Mailpile. If you find yourself checking which platform the app runs on, adding

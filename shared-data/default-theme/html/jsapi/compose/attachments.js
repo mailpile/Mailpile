@@ -1,5 +1,7 @@
 /* Compose - Attachments */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Prompts the user if a full-page-refresh happens while uploading attachments.
 window.addEventListener("beforeunload", function (event) {
   if (Mailpile.Composer.Attachments.Uploader.hasPendingUploads()) {

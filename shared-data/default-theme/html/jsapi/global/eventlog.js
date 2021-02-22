@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 var EventLog = {
   eventBindings: [],  // All the subscriptions
   last_ts: Mailpile.local_storage['eventlog_last_ts'] || -1800,

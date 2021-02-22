@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.fix_url = function(url) {
   if (url.indexOf("{{ config.sys.http_path }}") != 0) {
     return "{{ config.sys.http_path }}" + url;

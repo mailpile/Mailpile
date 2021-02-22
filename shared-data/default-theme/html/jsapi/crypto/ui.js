@@ -1,5 +1,8 @@
 /* Crypto - UI */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.UI.Crypto.ScoreColor = function(score) {
 
   var score_color = 'color-01-gray-mid';

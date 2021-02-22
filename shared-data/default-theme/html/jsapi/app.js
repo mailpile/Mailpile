@@ -1,4 +1,7 @@
 /* JS - Crypto */
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 {% include("jsapi/crypto/init.js") %}
 {% include("jsapi/crypto/events.js") %}
 {% include("jsapi/crypto/find.js") %}

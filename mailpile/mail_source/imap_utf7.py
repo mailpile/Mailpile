@@ -1,6 +1,8 @@
 # -*- coding: utf-8- -*-
 
 # from: http://piao-tech.blogspot.no/2010/03/get-offlineimap-working-with-non-ascii.html#resources
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 import binascii
 import codecs

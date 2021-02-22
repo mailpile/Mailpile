@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # vim: set fileencoding=utf-8 :
 #
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes

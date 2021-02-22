@@ -1,5 +1,7 @@
 // Placeholder logic, copied from here: 
 // https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 {# Magic #}
 {% do http_response_headers.append(('Service-Worker-Allowed', U("/"))) %}

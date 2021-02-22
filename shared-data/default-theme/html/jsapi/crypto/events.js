@@ -1,5 +1,8 @@
 /* Crypto - Events */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 $(document).on('click', '.btn-crypto-search-key', function(e) {
   e.preventDefault();
   Mailpile.UI.Modals.CryptoFindKeys({ query: '' });

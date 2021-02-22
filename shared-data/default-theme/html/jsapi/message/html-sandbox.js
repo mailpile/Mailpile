@@ -1,4 +1,7 @@
 // HTML mail display & sandboxing
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 
 
 Mailpile.Message.ShowHTMLLegacy = function(mid, $old_message_body, html_data) {

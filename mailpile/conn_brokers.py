@@ -30,6 +30,9 @@ from __future__ import print_function
 #    - Implement HTTP/SMTP/IMAP/POP3 TLS upgrade-brokers
 #    - Prevent unbrokered socket.socket connections
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 import datetime
 import socket
 import ssl

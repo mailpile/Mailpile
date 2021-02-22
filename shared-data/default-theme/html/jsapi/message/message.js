@@ -1,5 +1,8 @@
 /* Message */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 Mailpile.Message.AnalyzeMessageInline = function(mid) {
   // Iterate through all plain-text parts of the e-mail
   $('#message-' + mid).find('.message-part-text').each(function(i, text_part) {

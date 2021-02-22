@@ -1,4 +1,7 @@
 /* Thread - Show People In Conversation */
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 $(document).on('click', '.show-thread-people', function() {
   // FIXME: Old/unreliable modal code
   $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));

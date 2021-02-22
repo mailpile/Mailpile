@@ -1,5 +1,7 @@
 /* Crypto - Find */
 
+// SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 Mailpile.Crypto.FixupKeyStructure = function(key) {
     // Make sure these attribute exists, default to False

@@ -1,5 +1,8 @@
 from __future__ import print_function
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# 
 # This is code to stream data to or from encrypted storage. If the invoking
 # code us correctly written, it should be able to work with data far in
 # excess of available RAM.

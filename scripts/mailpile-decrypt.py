@@ -1,4 +1,6 @@
 #!/usr/bin/python2.7
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """
 This tool will (attempt to) decrypt files encrypted by Mailpile.
 

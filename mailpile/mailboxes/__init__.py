@@ -7,6 +7,10 @@
 ## a "pointer" which should be a short as possible while still encoding the
 ## info required to locate this message and this message only within the
 ## larger mailbox.
+# 
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 
 import time
 from urllib import quote, unquote

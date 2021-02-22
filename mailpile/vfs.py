@@ -17,6 +17,9 @@
 #   - Localize the code which deals with character sets and visual
 #     representation of file names and paths to one place.
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 import copy
 import glob
 import os

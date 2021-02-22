@@ -1,4 +1,7 @@
 #!/usr/bin/python
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 build-desktop.py - Checkout and build Mailpile for desktop platforms (win/mac)
 

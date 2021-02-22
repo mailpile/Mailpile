@@ -1,4 +1,7 @@
 from __future__ import print_function
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# 
 # This implements our IMAP mail source. It has been tested against the
 # following IMAP implementations:
 #

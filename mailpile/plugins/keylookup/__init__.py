@@ -12,6 +12,9 @@
 # Our current strategy is close, but is missing the nuanced interaction with the
 # local shared keychain.
 #
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 import copy
 import math
 import traceback

@@ -1,5 +1,7 @@
 #!/usr/bin/env python2.7
 #This script builds a DCH changelog from the git commit log
+# SPDX-FileCopyrightText: 2011-2015  Bjarni R. Einarsson, Mailpile ehf and friends
+# SPDX-License-Identifier: AGPL-3.0-or-later
 from __future__ import print_function
 from subprocess import check_output, call
 from multiprocessing import Pool
