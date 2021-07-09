@@ -1,4 +1,4 @@
-# WIX Mailpile packaging framwork #
+# WIX Mailpile packaging framework #
 
 The WIX mailpile packaging framework automates constructing a windows package
 for mailpile and it's dependencies. It attempts to pull in dependencies in as
