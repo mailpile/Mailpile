@@ -41,7 +41,7 @@ Also, have you seen [the main Mailpile website](https://www.mailpile.is/) and
 
 * If you're unable to find an open issue addressing the problem,
   [open a new one](https://github.com/mailpile/Mailpile/issues/new). Be
-  sure to include a **title and clear description**, as much relevant
+  sure to include a **title and clear description**, and as much relevant
   information as possible.
 
 * Remember, we cannot read your mind or see your screen, so you'll
