@@ -204,10 +204,7 @@ class InteractCommand(Command):
         #       has been configured.
         splash = HelpSplash(session, 'help', []).run()
         motd = MessageOfTheDay(session, 'motd', ['--noupdate']).run()
-        session.ui.display_result(splash)
-        print()  # FIXME: This is a hack!
-        session.ui.display_result(motd)
-
+        session.ui.display_list_of_results([splash,motd])
         Interact(session)
 
         return self._success(_('Ran interactive shell'))
