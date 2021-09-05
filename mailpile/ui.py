@@ -422,10 +422,16 @@ class UserInteraction:
         return ttype.lower(), mode, wrap_in_json, template
     
     def display_list_of_results(self,list_of_results):
-        self.display_result(list_of_results.pop(0))
-        for result in list_of_results:
-            sys.stdout.write('\n')
-            self.display_result(result)
+        try:
+            self.display_result(list_of_results.pop(0))
+            for result in list_of_results:
+                sys.stdout.write('\n')
+                self.display_result(result)
+        except (TypeError, ValueError, KeyError, IndexError,
+                UnicodeDecodeError):
+            traceback.print_exc()
+            return '[%s]' % _('Internal Error')
+
     def display_result(self, result):
         """Render command result objects to the user"""
         try:
