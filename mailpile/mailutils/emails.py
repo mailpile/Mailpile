@@ -932,6 +932,42 @@ class Email(object):
             result = self.msg_parsed
         if not result:
             raise IndexError(_('Message not found'))
+
+
+        ########Translate inline images referencing attached contentId (cid) to base64 image.##########        
+        
+        base_64_images = dict()
+
+        ##Obtaining attached images cid and adding imageType and base64 payload to dictionary
+        for part in result.walk():
+            content_type = part.get('Content-Type')
+            content_encoding = part.get('Content-Transfer-Encoding')            
+            
+            if(content_type.startswith('image') and content_encoding == 'base64'):
+                content_type = content_type[:content_type.index(';')]
+                content_id = part.get('Content-ID')
+                payload = part.get_payload()
+
+                base_64_images[content_id[1:-1]] = (content_type,payload)
+
+        ##Detect all cid references in email html body and replace by base64 dictionary content:
+        cid_src_regex = '(?:(?<=src="cid:)|(?<=src=3D"cid:)).+?(?=")'
+        cid_pattern = re.compile(cid_src_regex)
+
+        for part in result.walk():
+            content_type = part.get('Content-Type')
+
+            if content_type.startswith('text/html'):
+                payload = part.get_payload()
+                
+                for cid in cid_pattern.findall(payload):
+                    if cid in base_64_images:                        
+                        payload = payload.replace('cid:' + cid, 'data:{0};base64, {1}'.format(base_64_images[cid][0],base_64_images[cid][1]))
+
+                part.set_payload(payload)
+
+        ############################################################################################
+
         return result
 
     def is_thread(self):
