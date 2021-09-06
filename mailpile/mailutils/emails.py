@@ -956,14 +956,23 @@ class Email(object):
 
         for part in result.walk():
             content_type = part.get('Content-Type')
+            content_encoding = part.get('Content-Transfer-Encoding')            
 
             if content_type.startswith('text/html'):
                 payload = part.get_payload()
+
+                #if quoted printable, equal signs and line breaks might get in the way. Decode.
+                if content_encoding == 'quoted-printable':
+                    payload = quopri.decodestring(payload)
                 
                 for cid in cid_pattern.findall(payload):
                     if cid in base_64_images:                        
                         payload = payload.replace('cid:' + cid, 'data:{0};base64, {1}'.format(base_64_images[cid][0],base_64_images[cid][1]))
 
+                #encode back if quoted-printable
+                if content_encoding == 'quoted-printable':
+                    payload = quopri.encodestring(payload)
+                
                 part.set_payload(payload)
 
         ############################################################################################
