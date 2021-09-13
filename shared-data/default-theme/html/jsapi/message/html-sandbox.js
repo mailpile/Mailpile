@@ -196,8 +196,7 @@ Mailpile.Message.SetHTMLPolicy = function(mid, old_policy, new_policy) {
 };
 
 
-Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy, allow_images) {
-
+Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy, allow_images) {  
   var $iframe_html = (
     '<iframe id="message-iframe-' + part_id + '" seamless');
 {% if config.prefs.html5_sandbox %}
@@ -286,12 +285,13 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy, allow
     ));
     $msg_details.find('.display-now').click(function() {
       $wrapper.remove();
-      Mailpile.Message.SandboxHTML(part_id, $part, html_data, 'images');
+      $msg_details.find('.html-image-question').remove();
+      Mailpile.Message.SandboxHTML(part_id, $part, html_data, 'images', true);
     });
     $msg_details.find('.display-always').click(function() {
       $wrapper.remove();
       $msg_details.find('.html-image-question').remove();
-      Mailpile.Message.SandboxHTML(part_id, $part, html_data, 'images');
+      Mailpile.Message.SandboxHTML(part_id, $part, html_data, 'images', true);
       Mailpile.Message.SetHTMLPolicy($part.closest('.has-mid').data('mid'),
                                      policy, 'images');
     });
@@ -315,7 +315,7 @@ Mailpile.Message.SandboxHTML = function(part_id, $part, html_data, policy, allow
 };
 
 
-Mailpile.Message.ShowHTML = function(mid, policy, allow_images) {
+Mailpile.Message.ShowHTML = function(mid, policy, allow_images) {  
   // HTML Parts Exist
   var $msg = $('#message-' + mid);
   var html_data = $msg.data('html');
