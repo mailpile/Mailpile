@@ -884,7 +884,12 @@ class HealthCheck(Command):
 
     def command(self, args=None):
         self.check(self.session, self.session.config)
-        return self._success(self.event.message, result=self.event)
+        event_as_dict = self.event.as_dict()
+        formatted_result = "Health Check\n"
+        formatted_result += "Date: "+event_as_dict["date"]+"\n"
+        formatted_result += "Event id: "+event_as_dict["event_id"]+"\n"
+        formatted_result += "Result: "+event_as_dict["message"]+"\n"
+        return self._success(self.event.message, result=formatted_result)
 
 
 class GpgCommand(Command):
