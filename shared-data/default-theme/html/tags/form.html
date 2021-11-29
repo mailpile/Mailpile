@@ -114,10 +114,9 @@
       <label>{{_("Parent")}}</label>
       <select name="{{prefix}}parent">
           <option value="">-- {{_("None")}} --</option>
-{%-   for ptag in mailpile("tags", "mode=tree").result.tags %}
+{%-   for ptag in mailpile("tags").result.tags %}
 {%-     if (ptag.display == "priority" or ptag.display == "tag")
-            and ptag.slug != tag.slug
-            and not ptag.parent %}
+            and ptag.slug != tag.slug %}
           <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
 {%-     endif %}
 {%-   endfor %}
