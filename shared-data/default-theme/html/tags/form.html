@@ -93,6 +93,16 @@
       </div>
 {%-   endif %}
 {%- endif %}
+      <label>{{_("Parent")}}</label>
+      <select name="{{prefix}}parent">
+          <option value="">-- {{_("None")}} --</option>
+{%-   for ptag in mailpile("tags").result.tags %}
+{%-     if (ptag.display == "priority" or ptag.display == "tag")
+            and ptag.slug != tag.slug %}
+          <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
+{%-     endif %}
+{%-   endfor %}
+      </select>
 {%- if tag.subtags %}
       <br clear="both"><label>{{_("Subtags")}}</label>
       <ul class="items grouped">
@@ -110,17 +120,6 @@
         </li>
 {%-   endfor %}
       </ul>
-{%- else %}
-      <label>{{_("Parent")}}</label>
-      <select name="{{prefix}}parent">
-          <option value="">-- {{_("None")}} --</option>
-{%-   for ptag in mailpile("tags").result.tags %}
-{%-     if (ptag.display == "priority" or ptag.display == "tag")
-            and ptag.slug != tag.slug %}
-          <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
-{%-     endif %}
-{%-   endfor %}
-      </select>
 {%- endif %}
       <br clear="both">
     </div>
