@@ -710,7 +710,7 @@ class ListTags(TagCommand):
                 if mode in ('both', 'tree') or (wanted and mode != 'flat'):
                     info['subtags'] = ListTags(self.session,
                                                arg=[t.slug for t in subtags],
-                                               data={'_recursion': 1}
+                                               data={'_recursion': 0}
                                                ).run().result['tags']
 
             result.append(info)
