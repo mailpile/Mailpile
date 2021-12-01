@@ -14,18 +14,18 @@ approved Free Software license.
 
 Mailpile places great emphasis on providing a clean, elegant user
 interface and pleasant user experience. In particular, Mailpile aims to
-make it easy and convenient to receive and send PGP encrypted or signed
+make it easy and convenient to receive and send **PGP** encrypted or **signed**
 e-mail.
 
 Mailpile's primary user interface is web-based, but it also has a basic
-command-line interface and an API for developers. Using web technology
+command-line interface (CLI) and an API for developers. Using web technology
 for the interface allows Mailpile to function both as a local desktop
 application (accessed by visiting `localhost` in the browser) or a
 remote web-mail on a personal server or VPS.
 
 The core of Mailpile is a fast search engine, custom written to deal
 with large volumes of e-mail on consumer hardware. The search engine
-allows e-mail to be organized using tags (similar to GMail's labels) and
+allows e-mail to be organized using tags which is similar to GMail's labels, and
 the application can be configured to automatically tag incoming mail
 either based on static rules or bayesian classifiers.
 
@@ -33,7 +33,7 @@ either based on static rules or bayesian classifiers.
 it is ready, Mailpile is really only suitable for developers who can help
 us find and fix the last few bugs. Our beta releases are obsolete and
 **should not be used**, in part for security reasons! For more details
-[follow @MailpileTeam on Twitter](https://twitter.com/MailpileTeam)
+**follow** [@MailpileTeam on Twitter](https://twitter.com/MailpileTeam)
 or [read our blog](https://www.mailpile.is/blog/).
 
 
@@ -75,7 +75,7 @@ Contributors:
 - Brennan Novak (<https://brennannovak.com/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Lots more, run `git shortlog -s` for a list! (Or check
-  [GitHub](https://github.com/mailpile/Mailpile/graphs/contributors).)
+  [GitHub](https://github.com/mailpile/Mailpile/graphs/contributors)).
 
 And of course, we couldn't do this without [our community of
 backers](https://www.mailpile.is/#community).
