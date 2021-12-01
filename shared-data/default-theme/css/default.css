@@ -7310,6 +7310,9 @@ div.notification-bubble span.action {
   top: 20%;
 }
 /* Sidebar - Subtags */
+#sidebar li.sidebar-subtag {
+  position: relative;
+}
 #sidebar ul.sidebar-subtags {
   margin-bottom: 8px;
   padding: 0px;
