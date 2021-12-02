@@ -126,10 +126,16 @@
           <option value="">-- {{_("None")}} --</option>
 {%-   for ptag in mailpile("tags", "mode=tree").result.tags %}
 {%-     if (ptag.display == "priority" or ptag.display == "tag")
-            and ptag.slug != tag.slug
-            and not ptag.parent %}
+            and ptag.slug != tag.slug %}
           <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
 {%-     endif %}
+{%-     for leaf in ptag.subtags %}
+{%-       if (leaf.display == "priority" or leaf.display == "tag")
+              and leaf.slug != tag.slug 
+              and depth.value == 0 %}
+            <option value="{{leaf.tid}}"{% if leaf.tid == tag.parent %} selected="selected"{% endif %}>{{ leaf.name }}</option>
+{%-       endif %}
+{%-     endfor %}
 {%-   endfor %}
       </select>
 {%- endif %}
