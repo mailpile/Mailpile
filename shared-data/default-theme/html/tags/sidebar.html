@@ -49,10 +49,17 @@
 </li>
 {%  if tag.subtags %}
 {%   for subtag in tag.subtags if subtag.display in ('tag', 'archive') %}
+{%     if not tag.parent %}
 <li id="sidebar-tag-{{subtag.tid}}"
     data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
     class="sidebar-subtag sidebar-tags-{% if subtag.flag_allow_add %}draggable{% else %}default{% endif %} subtag-of-{{tag.tid}}
            {%- if subtags_collapsed or 'archive' in (subtag.display, tag.display) %} hide should-hide{% endif %}">
+{%     else %}
+<li id="sidebar-tag-{{subtag.tid}}"
+    data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}"
+    class="sidebar-subtag-leaf sidebar-tags-{% if subtag.flag_allow_add %}draggable{% else %}default{% endif %} subtag-of-{{tag.tid}}
+           {%- if subtags_collapsed or 'archive' in (subtag.display, tag.display) %} hide should-hide{% endif %}">
+{%    endif %}
   {{ render_sidebar_tag(subtag) }}
 </li>
 {%   endfor %}

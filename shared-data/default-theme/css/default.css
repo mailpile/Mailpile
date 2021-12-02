@@ -7309,7 +7309,7 @@ div.notification-bubble span.action {
   right: 4px;
   top: 20%;
 }
-/* Sidebar - Subtags */
+/* Sidebar - Non-Leaf Subtags */
 #sidebar li.sidebar-subtag {
   position: relative;
 }
@@ -7341,6 +7341,22 @@ div.notification-bubble span.action {
   font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 16px;
 }
+
+/* Sidebar - Leaf Subtags */
+#sidebar li.sidebar-subtag-leaf a.sidebar-tag span.icon {
+  margin-left: 32px;
+  font-size: 12px;
+  line-height: 12px;
+}
+#sidebar li.sidebar-subtag-leaf a.sidebar-tag span.name,
+#sidebar li.sidebar-subtag-leaf a.sidebar-tag span.notification {
+  vertical-align: middle;
+  font-weight: normal;
+  font-size: 12px;
+  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 12px;
+}
+
 /* Sidebar - Edit */
 a.sidebar-tag span.sidebar-tag-archive {
   cursor: pointer;
