@@ -93,16 +93,6 @@
       </div>
 {%-   endif %}
 {%- endif %}
-      <label>{{_("Parent")}}</label>
-      <select name="{{prefix}}parent">
-          <option value="">-- {{_("None")}} --</option>
-{%-   for ptag in mailpile("tags").result.tags %}
-{%-     if (ptag.display == "priority" or ptag.display == "tag")
-            and ptag.slug != tag.slug %}
-          <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
-{%-     endif %}
-{%-   endfor %}
-      </select>
 {%- if tag.subtags %}
       <br clear="both"><label>{{_("Subtags")}}</label>
       <ul class="items grouped">
@@ -120,6 +110,28 @@
         </li>
 {%-   endfor %}
       </ul>
+{%- endif %}
+{% set depth = {'value': 0} %}
+{%- for sub in tag.subtags %} 
+{%-   if depth.value == 0 %}
+{%      if depth.update({'value': 1}) %} {% endif %}
+{%    endif %}
+{%-   for leaf in sub.subtags %} 
+{%      if depth.update({'value': 2}) %} {% endif %}
+{%-   endfor %}
+{%- endfor %}
+{%- if depth.value < 2 %}
+      <label>{{_("Parent")}}</label>
+      <select name="{{prefix}}parent">
+          <option value="">-- {{_("None")}} --</option>
+{%-   for ptag in mailpile("tags", "mode=tree").result.tags %}
+{%-     if (ptag.display == "priority" or ptag.display == "tag")
+            and ptag.slug != tag.slug
+            and not ptag.parent %}
+          <option value="{{ptag.tid}}"{% if ptag.tid == tag.parent %} selected="selected"{% endif %}>{{ ptag.name }}</option>
+{%-     endif %}
+{%-   endfor %}
+      </select>
 {%- endif %}
       <br clear="both">
     </div>
