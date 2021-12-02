@@ -184,6 +184,7 @@ Mailpile.UI.Sidebar.OrganizeToggle = function(elem) {
     $('a.sidebar-tag .notification').hide();
     $('li.sidebar-tag .sidebar-tag-expand').hide();
     $('.sidebar-subtag').slideUp();
+    $('.sidebar-subtag-leaf').slideUp();
 
     // Add Settings Button
     $.each($('li.sidebar-tag'), function(key, value) {

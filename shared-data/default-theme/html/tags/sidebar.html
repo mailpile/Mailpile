@@ -34,7 +34,7 @@
     <span class="notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
   </a>
 
-{%- set subtags_collapsed = (tag.tid in config.web.subtags_collapsed) %}
+{%- set subtags_collapsed = (tag.tid in config.web.subtags_collapsed or tag.parent in config.web.subtags_collapsed) %}
 {%- if tag.get("subtags") %}
     <a class="sidebar-tag-expand" data-tid="{{tag.tid}}"
        data-collapsed="{{ subtags_collapsed }}">
