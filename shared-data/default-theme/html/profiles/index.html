@@ -55,8 +55,6 @@
           <th colspan="2"></th>
           <th>{{_("Your name")}}</th>
           <th>{{_("E-mail address")}}</th>
-          <th style="text-align: right; padding-left: 1.5em;"><span class="icon icon-new"></span> {{_("New")}}</th>
-          <th style="text-align: right"><span class="icon icon-logo"></span> {{_("Total")}}</th>
           <th style="text-align: right; padding-left: 1.5em;"><span class="icon icon-settings"></span> {{_("Settings")}}</th>
           <th></th>
         </tr>
@@ -109,14 +107,6 @@
           <td id="email-address">{% for e in p.email %}
             {{ e.email }}{% if not loop.last %}<br>{% endif %}
           {%- endfor %}</td>
-          <td id="stats-new">
-            <span class="mobile-inline icon icon-new"></span>
-            <a href="{{ U('/in/', t.slug, '/?q=is:unread') }}"><b>{{ friendly_number(t.stats.new) }}</b></a>
-          </td>
-          <td id="stats-all">
-            <span class="mobile-inline icon icon-logo"></span>
-            <a href="{{ U('/in/', t.slug, '/') }}">{{ friendly_number(t.stats.all) }}</a>
-           </td>
            <td id="settings-actions">
              {%- if not (p['x-mailpile-profile-source'] or []) %}
              <a class="auto-modal" data-flags="reload" data-icon="icon-mailsource"
