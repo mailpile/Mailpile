@@ -174,7 +174,7 @@
           {%- if loop.index == (loop.length - 1) and
                  message.text_parts[last_part].type in ("signature", "quote") -%}
             {% do special_text_parts.append("quote") %}
-      <div class="message-part-quote hide">{{ part_text|to_br }}</div>
+      <div>{{ part_text|to_br }}</div>
           {# If this part is a quote at end of message, hide #}
           {%- elif loop.last %}
             {%- do special_text_parts.append("quote") %}
@@ -184,7 +184,7 @@
           {%- endif -%}
         {%- elif part.type == "signature" %}
           {%- do special_text_parts.append("signature") %}
-      <div class="message-part-signature hide">{{ part_text|to_br }}</div>
+      <div>{{ part_text|to_br }}</div>
         {%- else %}
       <div class="message-part-text"><em>{{_("Unknown Text Part")}}</em></div>
         {%- endif %}
