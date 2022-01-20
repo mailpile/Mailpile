@@ -1260,6 +1260,12 @@ class MailIndex(BaseIndex):
                     # FIXME: Search for URLs in the text part, add to urls list.
                     textparts += 1
                     pinfo = '%x::T' % len(payload[0])
+                    # regex for a URL, recognizes two alphanumeric characters separated by "." as a URL
+                    regex = r'(?:http://)?\w+\.\S*[^.\s]'
+                    # extract non-overlapping URLs from textpart in the order found
+                    urls_found = re.findall(regex,textpart)
+                    # add to list of URLs
+                    urls.append(x for x in urls_found)
 
             if ctype == 'text/html':
                 _loader(part)
