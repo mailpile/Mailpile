@@ -2,6 +2,20 @@
 
 [![Build Status](https://img.shields.io/travis/mailpile/Mailpile/master.svg)](https://travis-ci.org/mailpile/Mailpile)
 
+**IMPORTANT NOTE**
+
+Development on this codebase has halted, until the
+[Python3 rewrite](https://community.mailpile.is/t/a-very-uninformative-progress-update-mailpile-2/785)
+has completed.
+
+Apologies to those who have unanswered, out-standing pull requests and
+issues. 😢 Your efforts are appreciated!
+
+If you rely on this code and have your own branch which you actively
+maintain, let us know: we would be happy to link to it.
+
+
+------------------------------------------------------------------------
 
 ## Introduction ##
 
