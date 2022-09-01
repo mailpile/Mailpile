@@ -275,7 +275,10 @@ class Worker(threading.Thread):
 
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
-                if len(self.JOBS) < 0:
+                # OpenRefactory Warning: Collection length comparison should be meaningful.
+                # The length of a collection is always greater than or equal to zero.
+                # So testing that a length is less than zero is always false.
+                if len(self.JOBS) < 1:
                     now = time.time()
                     self.JOBS.extend(snt for ts, snt
                                      in self.JOBS_LATER if ts <= now)
