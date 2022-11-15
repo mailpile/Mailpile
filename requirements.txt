@@ -1,6 +1,6 @@
 appdirs
 setuptools>=11.3
-cryptography>=1.3.4
+cryptography>=3.3.2
 lxml>=2.3.2
 imgsize
 Jinja2
