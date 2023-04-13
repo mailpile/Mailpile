@@ -14,6 +14,9 @@ issues. 😢 Your efforts are appreciated!
 If you rely on this code and have your own branch which you actively
 maintain, let us know: we would be happy to link to it.
 
+If you need to run Mailpile v1 to access legacy data, consider using
+our [legacy Docker images](https://github.com/mailpile/Mailpile-v1-Docker).
+
 
 ------------------------------------------------------------------------
 
