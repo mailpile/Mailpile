@@ -1,7 +1,5 @@
 # Welcome to Mailpile! #
 
-[![Build Status](https://img.shields.io/travis/mailpile/Mailpile/master.svg)](https://travis-ci.org/mailpile/Mailpile)
-
 **IMPORTANT NOTE**
 
 Development on this codebase has halted, until the
