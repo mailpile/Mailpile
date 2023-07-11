@@ -18,7 +18,7 @@ our [legacy Docker images](https://github.com/mailpile/Mailpile-v1-Docker).
 
 ------------------------------------------------------------------------
 
-## Introduction ##
+## Introduction (Obsolete) ##
 
 Mailpile (<https://www.mailpile.is/>) is a modern, fast web-mail client
 with user-friendly encryption and privacy features. The development of
@@ -44,30 +44,11 @@ allows e-mail to be organized using tags (similar to GMail's labels) and
 the application can be configured to automatically tag incoming mail
 either based on static rules or bayesian classifiers.
 
-**Note:** We are currently working towards a 1.0 release candidate. Until
-it is ready, Mailpile is really only suitable for developers who can help
-us find and fix the last few bugs. Our beta releases are obsolete and
-**should not be used**, in part for security reasons! For more details
-[follow @MailpileTeam on Twitter](https://twitter.com/MailpileTeam)
-or [read our blog](https://www.mailpile.is/blog/).
-
 
 ### Trying Mailpile
 
-We have live demos up and running [on our
-website](https://www.mailpile.is/demos/). If you are curious about what
-Mailpile looks like, please feel free to check it out.
-
-
-### Installing Mailpile
-
-Note that Mailpile is still in development and is not suitable for
-production or end-user use. However, developers and early adopters are
-encouraged to give it a try and even help us find bugs, fix them and
-develop new features.
-
-Please see our [download page](https://www.mailpile.is/download/) or read
-[the Getting Started guide on our wiki](https://github.com/pagekite/Mailpile/wiki/Getting-started).
+If you need to run Mailpile v1 to access legacy data, consider using
+our [legacy Docker images](https://github.com/mailpile/Mailpile-v1-Docker).
 
 
 ## Credits and License ##
