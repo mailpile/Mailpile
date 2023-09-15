@@ -346,7 +346,7 @@ class GPGKeyImportFromMail(Search):
             attid = self.data.get("att", 'application/pgp-keys')
         args.extend(["=%s" % x for x in self.data.get("mid", [])])
         eids = self._choose_messages(args)
-        if len(eids) < 0:
+        if not eids:
             return self._error("No messages selected", None)
         elif len(eids) > 1:
             return self._error("One message at a time, please", None)
