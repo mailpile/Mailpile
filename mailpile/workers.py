@@ -275,7 +275,7 @@ class Worker(threading.Thread):
 
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
-                if len(self.JOBS) < 0:
+                if not self.JOBS:
                     now = time.time()
                     self.JOBS.extend(snt for ts, snt
                                      in self.JOBS_LATER if ts <= now)
